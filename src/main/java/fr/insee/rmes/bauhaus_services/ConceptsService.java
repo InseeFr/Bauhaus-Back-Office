@@ -1,8 +1,10 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.MembersLg;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import fr.insee.rmes.model.concepts.PartialConcept;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
@@ -18,10 +20,10 @@ import java.util.Map;
  */
 
 public interface ConceptsService {
-		
-	String getConcepts() throws RmesException ;
+
+	List<PartialConcept> getConcepts() throws RmesException ;
 	
-	String getConceptsSearch() throws RmesException;
+	List<ConceptForAdvancedSearch> getConceptsSearch() throws RmesException;
 	
 	String getConceptsToValidate() throws RmesException;
 	
@@ -53,7 +55,7 @@ public interface ConceptsService {
 	
 	String getRelatedConcepts(String id) throws RmesException;
 
-	String deleteConcept(String id) throws RmesException;
+	void deleteConcept(String id) throws RmesException;
 
 	Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) throws RmesException;
 }

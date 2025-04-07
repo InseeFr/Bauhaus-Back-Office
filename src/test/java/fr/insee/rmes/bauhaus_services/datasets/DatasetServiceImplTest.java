@@ -28,7 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = {
@@ -54,14 +53,14 @@ import static org.mockito.Mockito.*;
 })
 class DatasetServiceImplTest {
 
-    @MockBean
+    @MockitoBean
     SeriesUtils seriesUtils;
-    @MockBean
+    @MockitoBean
     IdGenerator idGenerator;
 
-    @MockBean
+    @MockitoBean
     PublicationUtils publicationUtils;
-    @MockBean
+    @MockitoBean
     RepositoryGestion repositoryGestion;
     @Autowired
     DatasetServiceImpl datasetService;
@@ -95,26 +94,28 @@ class DatasetServiceImplTest {
     @Test
     void shouldReturnDatasets() throws RmesException {
         JSONArray array = new JSONArray();
-        array.put("result");
+        array.put(new JSONObject().put("id", "1").put("label", "label"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
-            String query = datasetService.getDatasets();
-            Assertions.assertEquals("[\"result\"]", query);
+            var datasets = datasetService.getDatasets();
+            Assertions.assertEquals("1", datasets.get(0).id());
+            Assertions.assertEquals("label", datasets.get(0).label());
         }
     }
 
     @Test
     void getDatasetsForDistributionCreationWithStamp() throws RmesException {
         JSONArray array = new JSONArray();
-        array.put("result");
+        array.put(new JSONObject().put("id", "1").put("label", "label"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
-            String query = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
-            Assertions.assertEquals("[\"result\"]", query);
+            var datasets = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
+            Assertions.assertEquals("1", datasets.get(0).id());
+            Assertions.assertEquals("label", datasets.get(0).label());
         }
     }
 
@@ -124,8 +125,14 @@ class DatasetServiceImplTest {
         JSONObject object1 = new JSONObject().put("id", "1").put("theme", "theme1");
         JSONObject object2 = new JSONObject().put("id", "1").put("theme", "theme2");
         JSONArray array = new JSONArray().put(object).put(object1).put(object2);
+        JSONArray keywords = new JSONArray().put(
+                new JSONObject().put("lang","fr").put("keyword", "keyword 1")
+        ).put(
+                new JSONObject().put("lang","en").put("keyword", "keyword 2")
+        );
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(keywords);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "statisticalUnit-1")));
@@ -134,9 +141,10 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
+            mockedFactory.when(() -> DatasetQueries.getKeywords(eq("1"), any())).thenReturn("query-keywords");
             Dataset response = datasetService.getDatasetByID("1");
             String responseJson = objectMapper.writeValueAsString(response);
-            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[],\"lg2\":[]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
+            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
         }
     }
 
@@ -408,7 +416,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
@@ -590,16 +598,17 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldNotDeleteNotUnpublishedDatasetAndReturn406() throws RmesException {
-        JSONArray mockJSON = new JSONArray("[{\n" +
-                "  \"id\": idTest,\n" +
-                "  \"validationState\": \"Not Unpublished\",\n" +
-                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
-                "}\n" +
-                "]");
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "Not Unpublished",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""");
 
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -615,17 +624,18 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldNotDeleteDataSetWithDistributionAndReturn400() throws RmesException {
-        JSONArray mockJSON = new JSONArray("[{\n" +
-                "  \"id\": idTest,\n" +
-                "  \"validationState\": \"Unpublished\",\n" +
-                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
-                "}\n" +
-                "]");
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "Unpublished",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
+                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -644,12 +654,13 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldDeleteDataSet() throws RmesException {
-        JSONArray mockJSON = new JSONArray("[{\n" +
-                "  \"id\": idTest,\n" +
-                "  \"validationState\": \"Unpublished\",\n" +
-                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
-                "}\n" +
-                "]");
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "Unpublished",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 
@@ -658,7 +669,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)
 
         ) {
 

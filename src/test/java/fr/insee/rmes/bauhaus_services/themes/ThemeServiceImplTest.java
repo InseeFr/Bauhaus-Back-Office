@@ -9,7 +9,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
         "fr.insee.rmes.bauhaus.theme.conceptSchemeFilter=filter1"
 })
 class ThemeServiceImplTest {
-    @MockBean
+    @MockitoBean
     RepositoryGestion repositoryGestion;
 
     @Autowired

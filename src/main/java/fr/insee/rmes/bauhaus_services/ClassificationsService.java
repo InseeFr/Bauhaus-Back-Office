@@ -1,44 +1,45 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
-import org.springframework.web.multipart.MultipartFile;
+import fr.insee.rmes.model.classification.PartialClassification;
+import fr.insee.rmes.model.classification.PartialClassificationFamily;
+import fr.insee.rmes.model.classification.PartialClassificationSeries;
+
+import java.util.List;
 
 public interface ClassificationsService {
 	
-	public String getFamilies() throws RmesException;
+	List<PartialClassificationFamily> getFamilies() throws RmesException;
 	
-	public String getFamily(String id) throws RmesException;
+	String getFamily(String id) throws RmesException;
 	
-	public String getFamilyMembers(String id) throws RmesException;
+	String getFamilyMembers(String id) throws RmesException;
 
-	public String getSeries() throws RmesException;
+	List<PartialClassificationSeries> getSeries() throws RmesException;
 	
-	public String getOneSeries(String id) throws RmesException;
+	String getOneSeries(String id) throws RmesException;
 	
-	public String getSeriesMembers(String id) throws RmesException;
+	String getSeriesMembers(String id) throws RmesException;
 	
-	public String getClassifications() throws RmesException;
+	List<PartialClassification> getClassifications() throws RmesException;
 	
-	public String getClassification(String id) throws RmesException;
+	String getClassification(String id) throws RmesException;
 
-	public void updateClassification(String id, String body) throws RmesException;
+	void updateClassification(String id, String body) throws RmesException;
 
-	public String getClassificationLevels(String id) throws RmesException;
+	String getClassificationLevels(String id) throws RmesException;
 	
-	public String getClassificationLevel(String classificationid, String levelId) throws RmesException;
+	String getClassificationLevel(String classificationid, String levelId) throws RmesException;
 	
-	public String getClassificationLevelMembers(String classificationid, String levelId) throws RmesException;
+	String getClassificationLevelMembers(String classificationid, String levelId) throws RmesException;
 	
-	public String getCorrespondences() throws RmesException;
+	String getCorrespondences() throws RmesException;
 	
-	public String getCorrespondence(String id) throws RmesException;
+	String getCorrespondence(String id) throws RmesException;
 	
-	public String getCorrespondenceAssociations(String id) throws RmesException;
+	String getCorrespondenceAssociations(String id) throws RmesException;
 	
-	public String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException;
+	String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException;
 
-	public String setClassificationValidation(String id) throws RmesException;
-
-	public void uploadClassification(MultipartFile file, String database) throws RmesException;
-
+	void setClassificationValidation(String id) throws RmesException;
 }

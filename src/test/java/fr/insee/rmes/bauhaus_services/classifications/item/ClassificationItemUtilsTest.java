@@ -20,8 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +49,25 @@ class ClassificationItemUtilsTest {
 
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemUtils.updateClassificationItem(item, "http://uri", "1"));
         assertThat(exception.getDetails()).contains("The property prefLabelLg1 is required");
+
+    }
+
+    @Test
+    void shouldThrowExceptionIfPrefLabelLg2Null() throws RmesException {
+        when(config.getLg1()).thenReturn("fr");
+        when(config.getLg2()).thenReturn("en");
+
+
+        RdfUtils.setConfig(config);
+        ItemsQueries.setConfig(config);
+        ClassificationItem item = new ClassificationItem();
+        item.setId("1");
+        item.setPrefLabelLg1("label1");
+        item.setDefinitionLg1("<p>Definition Lg1</p>");
+        item.setDefinitionLg1Uri("http://definition-lg1");
+
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemUtils.updateClassificationItem(item, "http://uri", "1"));
+        assertThat(exception.getDetails()).contains("The property prefLabelLg2 is required");
 
     }
 

@@ -3,13 +3,17 @@ package fr.insee.rmes.webservice;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.webservice.dataset.DatasetResources;
+import fr.insee.rmes.model.dataset.PartialDataset;
+import fr.insee.rmes.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -24,8 +28,11 @@ class DatasetResourcesTest {
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
-        when(datasetService.getDatasets()).thenReturn("result");
-        Assertions.assertEquals("result", datasetResources.getDatasets());
+        List<PartialDataset> datasets = new ArrayList<>();
+        datasets.add(new PartialDataset("1", "label"));
+
+        when(datasetService.getDatasets()).thenReturn(datasets);
+        Assertions.assertEquals(1, datasetResources.getDatasets().size());
     }
 
 

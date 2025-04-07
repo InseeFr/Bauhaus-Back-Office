@@ -77,7 +77,8 @@ public class FilesUtils {
 				.replace("Œ", "OE")
 				.replaceAll("[-_]", " ")
 				.replaceAll("\\p{Punct}", "")
-				.replace(":", "");
+				.replace(":", "")
+				.replace("’", "");
 	}
 
 	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {

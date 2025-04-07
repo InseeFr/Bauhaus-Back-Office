@@ -12,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
@@ -88,18 +89,17 @@ public class IndicatorsUtils {
 	}
 
 	private void validate(Indicator indicator) throws RmesException {
+		if(indicator.isWasGeneratedByEmpty()){
+			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
+		}
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
+			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
 		}
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
+			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
 		}
 	}
 
-	public Indicator getIndicatorById(String id) throws RmesException{
-		return buildIndicatorFromJson(getIndicatorJsonById(id), false);
-	}
-	
 	public Indicator getIndicatorById(String id, boolean forXML) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id), forXML);
 	}
@@ -204,7 +204,7 @@ public class IndicatorsUtils {
 
 	private void addOneTypeOfLink(String id, JSONObject object, IRI predicate) throws RmesException {
 		JSONArray links = repositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
-		if (links.length() != 0) {
+		if (!links.isEmpty()) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			object.put(predicate.getLocalName(), links);
 		}
@@ -212,7 +212,7 @@ public class IndicatorsUtils {
 
 	private void addOneOrganizationLink(String id, JSONObject object, IRI predicate) throws RmesException {
 		JSONArray organizations = repositoryGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
-		if (organizations.length() != 0) {
+		if (!organizations.isEmpty()) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);
 				orga.put("type", ObjectType.ORGANIZATION.labelType());
@@ -385,12 +385,12 @@ public class IndicatorsUtils {
 		repositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
-	public String setIndicatorValidation(String id)  throws RmesException  {
-		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, id))) {
-			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
-		}
+	public void validateIndicator(String id)  throws RmesException  {
 
-		indicatorPublication.publishIndicator(id);
+		Indicator indicator = getIndicatorById(id, false);
+
+		indicatorPublication.validate(indicator);
+		indicatorPublication.publish(id);
 
 		IRI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
 
@@ -401,8 +401,6 @@ public class IndicatorsUtils {
 		logger.info("Validate indicator : {}" , indicatorURI);
 
 		repositoryGestion.objectValidation(indicatorURI, model);
-
-		return id;
 	}
 
 	private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
@@ -423,7 +421,7 @@ public class IndicatorsUtils {
 		logger.info("Generate indicator id");
 		JSONObject json = repositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : {}" , json);
-		if (json.length()==0) {return null;}
+		if (json.isEmpty()) {return null;}
 		String id = json.getString(Constants.ID);
 		if (id.equals(Constants.UNDEFINED)) {return null;}
 		int idInt = Integer.parseInt(id.substring(1))+1;

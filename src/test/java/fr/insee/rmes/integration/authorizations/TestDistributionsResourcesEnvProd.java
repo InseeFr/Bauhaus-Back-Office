@@ -12,14 +12,14 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.webservice.distribution.DistributionResources;
+import fr.insee.rmes.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -50,13 +50,13 @@ class TestDistributionsResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
-    @MockBean
+    @MockitoBean
     private JwtDecoder jwtDecoder;
-    @MockBean
+    @MockitoBean
     private DatasetService datasetService;
-    @MockBean
+    @MockitoBean
     private DistributionService distributionService;
-    @MockBean
+    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
 
     private final String idep = "xxxxxx";

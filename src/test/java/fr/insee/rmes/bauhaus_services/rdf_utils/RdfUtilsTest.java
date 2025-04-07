@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -8,7 +9,17 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class RdfUtilsTest {
+
+    @Test
+    void testCreateBlankNode_ShouldReturnNonNullBNode() {
+        BNode result = RdfUtils.createBlankNode();
+        assertTrue(result.isBNode(), "The created blank node should be a blank node");
+    }
+
     @Test
     void shouldReturnNullWhenCallingAddTripeStringMdToXhtml2WithNullValue(){
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
@@ -44,6 +55,6 @@ class RdfUtilsTest {
         Resource graph = null;
 
         RdfUtils.addTripleStringMdToXhtml2(iri, predicate, value, lang, prefix, model, graph);
-        Assertions.assertEquals("[(http://iri, http://predicate, http://iri/prefix/fr) [null], (http://iri/prefix/fr, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf-vocabulary.ddialliance.org/xkos#ExplanatoryNote) [null], (http://iri/prefix/fr, http://eurovoc.europa.eu/schema#noteLiteral, \"<p>value</p>\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>) [null], (http://iri/prefix/fr, http://www.w3.org/2001/XMLSchema#language, \"fr\"^^<http://www.w3.org/2001/XMLSchema#language>) [null]]", model.toString());
+        assertEquals("[(http://iri, http://predicate, http://iri/prefix/fr) [null], (http://iri/prefix/fr, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf-vocabulary.ddialliance.org/xkos#ExplanatoryNote) [null], (http://iri/prefix/fr, http://eurovoc.europa.eu/schema#noteLiteral, \"<p>value</p>\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>) [null], (http://iri/prefix/fr, http://www.w3.org/2001/XMLSchema#language, \"fr\"^^<http://www.w3.org/2001/XMLSchema#language>) [null]]", model.toString());
     }
 }

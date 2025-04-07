@@ -265,7 +265,7 @@ public class StructureComponentUtils extends RdfService {
         logger.info("Generate id for component");
         JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, RdfUtils.toString(type)));
         logger.debug("JSON when generating the id of a component : {}", json);
-        if (json.length() == 0) {
+        if (json.isEmpty()) {
             return prefix + "1000";
         }
         String id = json.getString(Constants.ID);

@@ -39,7 +39,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	public String getGeoFeatures() throws RmesException {
 		logger.info("Starting to get geo features");
 		JSONArray resQuery = repoGestion.getResponseAsArray(GeoQueries.getFeaturesQuery());
-		if (resQuery.length() != 0) {
+		if (!resQuery.isEmpty()) {
 			for (int i = resQuery.length() - 1; i >= 0; i--) {
 				JSONObject feature = resQuery.getJSONObject(i);
 				if (feature.has(HAS_COMPOSITION)) {
@@ -186,13 +186,8 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 
 
-		geoFeature.getUnions().forEach(feature -> {
-			RdfUtils.addTripleUri(geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph());
-
-		});
-		geoFeature.getDifference().forEach(feature -> {
-			RdfUtils.addTripleUri(geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph());
-		});
+		geoFeature.getUnions().forEach(feature -> RdfUtils.addTripleUri(geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph()));
+		geoFeature.getDifference().forEach(feature -> RdfUtils.addTripleUri(geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph()));
 		repoGestion.loadSimpleObject(geoIRI, model);
 
 		return RdfUtils.toString(geoIRI);

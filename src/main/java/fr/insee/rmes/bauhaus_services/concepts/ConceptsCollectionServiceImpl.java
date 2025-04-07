@@ -6,10 +6,12 @@ import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuild
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.PartialCollection;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -42,8 +44,12 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
 
     @Override
-    public String getCollections()  throws RmesException{
-        return repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
+    public List<PartialCollection> getCollections()  throws RmesException{
+        var collections =  repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery());
+
+        return DiacriticSorter.sort(collections,
+                PartialCollection[].class,
+                PartialCollection::label);
     }
 
     @Override
@@ -88,7 +94,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
             String fileName = getFileNameForExport(collection, lg);
             if(conceptsIds.isEmpty()){
-                return collectionExport.exportAsResponseODT(fileName, xmlContent,true,true,true, lg);
+                return collectionExport.exportAsResponseODT(fileName, xmlContent,true, lg);
             }
 
             Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds, null);

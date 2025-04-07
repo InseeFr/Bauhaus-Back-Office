@@ -13,15 +13,13 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.model.concepts.CollectionForExportOld;
-import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.concepts.MembersLg;
+import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -63,16 +61,25 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
     @Override
-	public String getConcepts()  throws RmesException{
+	public List<PartialConcept> getConcepts()  throws RmesException {
 		logger.info("Starting to get concepts list");
-		String resQuery = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+
+		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery());
+
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts,
+				PartialConcept[].class,
+				PartialConcept::label);
+
 	}
 
 	@Override
-	public String getConceptsSearch()  throws RmesException{
+	public List<ConceptForAdvancedSearch> getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
+		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery());
+
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts,
+				ConceptForAdvancedSearch[].class,
+				ConceptForAdvancedSearch::label);
 	}
 
 	@Override
@@ -101,7 +108,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws RmesException
 	 */	
 	@Override
-	public String deleteConcept(String id) throws RmesException {
+	public void deleteConcept(String id) throws RmesException {
 		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
@@ -136,11 +143,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 		/* deletion */
 		HttpStatus result= conceptsUtils.deleteConcept(id);
-		String successMessage=THE_CONCEPT+id+" has been deleted from graph "+RdfUtils.conceptGraph();
 		if (result!= HttpStatus.OK) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Unexpected return message: ",result.toString());
-		} else { 
-			return successMessage;
 		}
 	}
 

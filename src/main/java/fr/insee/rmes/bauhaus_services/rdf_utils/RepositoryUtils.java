@@ -113,11 +113,6 @@ public class RepositoryUtils {
 
 	/**
 	 * Method which aims to load a file in database
-	 * @param graph 
-	 * @param secondRepo TODO
-	 * @param updateQuery
-	 * @return String
-	 * @throws RmesException 
 	 */
 	public static HttpStatus persistFile(InputStream input,RDFFormat format, String graph, Repository repository, Repository secondRepo) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
@@ -415,7 +410,7 @@ public class RepositoryUtils {
 	 */
 	public static JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
 		JSONArray resArray = getResponseAsArray(query, repository);
-		if (resArray==null || resArray.length() == 0) {
+		if (resArray==null || resArray.isEmpty()) {
 			return new JSONObject();
 		}
 		return (JSONObject) resArray.get(0);
@@ -467,21 +462,7 @@ public class RepositoryUtils {
 		}
 		return arrayRes;
 	}
-	
-	
-	public JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
-		if (jsonSparql.get(RESULTS) == null) {
-			return null;
-		}
 
-		final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
-				.get(0);
-		final JSONObject jsonResults = new JSONObject();
-
-		Set<String> set = json.keySet();
-		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(Constants.VALUE)));
-		return jsonResults;
-	}
 	
 	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();

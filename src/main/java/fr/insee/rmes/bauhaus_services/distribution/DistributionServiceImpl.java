@@ -8,10 +8,12 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PartialDistribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -23,6 +25,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
@@ -69,8 +72,11 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
     @Override
-    public String getDistributions() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph())).toString();
+    public List<PartialDistribution> getDistributions() throws RmesException {
+        var distributions =  this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph()));
+        return DiacriticSorter.sort(distributions,
+                PartialDistribution[].class,
+                PartialDistribution::labelLg1);
     }
 
     @Override
@@ -111,10 +117,10 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.persist(distribution, false);
     }
 
-    private String update(String distributionId, Distribution distribution) throws RmesException {
+    private void update(String distributionId, Distribution distribution) throws RmesException {
         distribution.setId(distributionId);
 
-        return this.persist(distribution, false);
+        this.persist(distribution, false);
     }
 
     @Override
@@ -188,6 +194,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     private void validate(Distribution distribution) throws RmesException {
         if (distribution.getIdDataset() == null) {
             throw new RmesBadRequestException("The property idDataset is required");
+
         }
         if (distribution.getLabelLg1() == null) {
             throw new RmesBadRequestException("The property labelLg1 is required");

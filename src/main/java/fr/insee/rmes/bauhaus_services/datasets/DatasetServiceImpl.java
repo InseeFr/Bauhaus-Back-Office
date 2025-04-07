@@ -11,11 +11,13 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -27,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -105,12 +106,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public String getDatasets() throws RmesException {
+    public List<PartialDataset> getDatasets() throws RmesException {
         return this.getDatasets(null);
     }
 
     @Override
-    public String getDatasetsForDistributionCreation(String stamp) throws RmesException {
+    public List<PartialDataset> getDatasetsForDistributionCreation(String stamp) throws RmesException {
         return this.getDatasets(stamp);
     }
 
@@ -131,8 +132,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return id;
     }
 
-    private String getDatasets(String stamp) throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp)).toString();
+    private List<PartialDataset> getDatasets(String stamp) throws RmesException {
+        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp));
+        return DiacriticSorter.sort(datasets,
+                PartialDataset[].class,
+                PartialDataset::label);
     }
 
     @Override
@@ -192,7 +196,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         List<String> lg2 = new ArrayList<>();
 
         if(keywords != null){
-            keywords.forEach((k) -> {
+            keywords.forEach(k -> {
                 JSONObject keyword = (JSONObject) k;
                 if(keyword.getString("lang").equalsIgnoreCase(config.getLg1())){
                     lg1.add(keyword.getString("keyword"));
@@ -350,8 +354,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return (dataset.getTemporalCoverageDataType() != null);
     }
 
-    private HttpStatus deleteTemporalWhiteNode(String id) throws RmesException {
-        return repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
+    private void deleteTemporalWhiteNode(String id) throws RmesException {
+        repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
     }
 
     private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
@@ -360,8 +364,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
     }
 
-    private HttpStatus deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
-        return repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
+    private void deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
+        repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {

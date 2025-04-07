@@ -1,9 +1,7 @@
 package fr.insee.rmes.persistance.ontologies;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class ADMS {
@@ -12,8 +10,6 @@ public class ADMS {
     public static final String NAMESPACE = "http://www.w3.org/ns/adms#";
 
     public static final String PREFIX = "adms";
-
-    public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
     private static IRI createIRI(String suffix) {
         return factory.createIRI(NAMESPACE, suffix);

@@ -73,7 +73,7 @@ DocumentationsRubricsUtils extends RdfService {
 	public void getAllRubricsJson(String idSims, JSONObject jsonSims) throws RmesException {
 		JSONArray docRubrics = repoGestion
 				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims, langService.getLanguage1(), langService.getLanguage2()));
-		if (docRubrics.length() != 0) {
+		if (!docRubrics.isEmpty()) {
 			clearRubrics(idSims, docRubrics);
 			jsonSims.put("rubrics", docRubrics);
 		}
@@ -88,7 +88,7 @@ DocumentationsRubricsUtils extends RdfService {
 	 * @return
 	 * @throws RmesException
 	 */
-	private JSONArray clearRubrics(String idSims, JSONArray docRubrics) throws RmesException {
+	private void clearRubrics(String idSims, JSONArray docRubrics) throws RmesException {
 		Map<String, JSONObject> tempMultipleCodeList = new HashMap<>();
 
 		for (int i = docRubrics.length() - 1; i >= 0; i--) {
@@ -116,10 +116,9 @@ DocumentationsRubricsUtils extends RdfService {
 				clearGeographyRubric(rubric);
 			}
 		}
-		if (tempMultipleCodeList.size() != 0) {
+		if (!tempMultipleCodeList.isEmpty()) {
 			tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
 		}
-		return docRubrics;
 	}
 
 	private void clearGeographyRubric(JSONObject rubric) throws RmesException {

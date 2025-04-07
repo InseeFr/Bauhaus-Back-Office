@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
+        <version>3.4.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>4.3.0-beta.2</version>
+    <version>4.4.0</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -34,45 +34,6 @@
         </developer>
     </developers>
 
-
-    <profiles>
-        <profile>
-            <id>test-containers</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <includes>
-                                <include>**/testcontainers/**/*Test.java</include>
-                            </includes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/testcontainers/**/*Test.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <properties>
         <java.version>21</java.version>
         <springdoc.version>2.8.3</springdoc.version>
@@ -80,13 +41,15 @@
         <xdocreport.version>2.1.0</xdocreport.version>
         <jacoco.version>0.8.12</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java-jwt.version>4.4.0</java-jwt.version>
-        <json.version>20240303</json.version>
+        <java-jwt.version>4.5.0</java-jwt.version>
+        <json.version>20250107</json.version>
         <flexmark.version>0.64.8</flexmark.version>
         <jaxb.version>4.0.5</jaxb.version>
         <zt.version>1.17</zt.version>
         <saxon.version>12.5</saxon.version>
-        <minio.version>8.5.14</minio.version>
+        <minio.version>8.5.17</minio.version>
+        <record.builder.version>44</record.builder.version>
+
         <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
 
         <!-- SONAR -->
@@ -244,6 +207,13 @@
         </dependency>
 
         <dependency>
+            <groupId>io.soabase.record-builder</groupId>
+            <artifactId>record-builder-core</artifactId>
+            <version>${record.builder.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>minio</artifactId>
             <scope>test</scope>
@@ -260,18 +230,24 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>io.soabase.record-builder</groupId>
+                            <artifactId>record-builder-processor</artifactId>
+                            <version>${record.builder.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

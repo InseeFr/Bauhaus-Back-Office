@@ -24,13 +24,12 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 
@@ -45,12 +44,12 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.lg2=en"
 })
 class DistributionServiceImplTest {
-    @MockBean
+    @MockitoBean
     RepositoryGestion repositoryGestion;
 
-    @MockBean
+    @MockitoBean
     PublicationUtils publicationUtils;
-    @MockBean
+    @MockitoBean
     IdGenerator idGenerator;
     @Autowired
     DistributionServiceImpl distributionService;
@@ -64,13 +63,14 @@ class DistributionServiceImplTest {
     @Test
     void shouldReturnDistributions() throws RmesException {
         JSONArray array = new JSONArray();
-        array.put("result");
+        array.put(new JSONObject().put("id", "1").put("labelLg1", "label"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDistributions(any())).thenReturn("query");
-            String query = distributionService.getDistributions();
-            Assertions.assertEquals("[\"result\"]", query);
+            var distributions = distributionService.getDistributions();
+            Assertions.assertEquals("1", distributions.get(0).id());
+            Assertions.assertEquals("label", distributions.get(0).labelLg1());
         }
     }
 
@@ -149,7 +149,7 @@ class DistributionServiceImplTest {
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
@@ -317,10 +317,11 @@ class DistributionServiceImplTest {
 
     @Test
     void shouldNotDeleteNotUnpublishedDistributionAndReturn400() throws RmesException {
-        JSONObject mockJSON = new JSONObject("{\n" +
-                "  \"id\": \"idTest\",\n" +
-                "  \"validationState\": \"Not Unpublished\"\n" +
-                "}");
+        JSONObject mockJSON = new JSONObject("""
+                {
+                  "id": "idTest",
+                  "validationState": "Not Unpublished"
+                }""");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.deleteDistributionId("idTest"));
         Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished distributions can be deleted\"}", exception.getDetails());
@@ -334,7 +335,7 @@ class DistributionServiceImplTest {
         IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
         try(
                 MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class)
                 )
         {
             distributionQueriesMock.when(() -> DistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");

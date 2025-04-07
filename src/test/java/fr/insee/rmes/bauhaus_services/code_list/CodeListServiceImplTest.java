@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,12 +28,54 @@ class CodeListServiceImplTest {
     @Mock
     RepositoryGestion repositoryGestion;
 
+    @Mock
+    JSONObject counter;
+
     @Spy
     @InjectMocks
     CodeListServiceImpl codeListService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+
+    @Test
+    void getAllCodesLists() throws RmesException, JsonProcessingException {
+        try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
+            mockedFactory.when(() -> CodeListQueries.getAllCodesLists(false)).thenReturn("query");
+
+            JSONArray response = new JSONArray();
+            response.put(new JSONObject()
+                    .put("id", "1")
+                    .put("uri", "uri")
+                    .put("labelLg1", "labelLg1")
+                    .put("labelLg2", "labelLg2")
+                    .put("range", "range")
+            );
+
+            response.put(new JSONObject()
+                    .put("id", "1")
+                    .put("uri", "uri")
+                    .put("labelLg1", "élabelLg1")
+                    .put("labelLg2", "labelLg2")
+                    .put("range", "range")
+            );
+
+            response.put(new JSONObject()
+                    .put("id", "1")
+                    .put("uri", "uri")
+                    .put("labelLg1", "alabelLg1")
+                    .put("labelLg2", "labelLg2")
+                    .put("range", "range")
+            );
+            when(repositoryGestion.getResponseAsArray("query")).thenReturn(response);
+
+            var codesLists = codeListService.getAllCodesLists(false);
+            assertEquals(3, codesLists.size());
+            assertEquals("alabelLg1", codesLists.get(0).labelLg1());
+            assertEquals("élabelLg1", codesLists.get(1).labelLg1());
+            assertEquals("labelLg1", codesLists.get(2).labelLg1());
+        }
+    }
     @Test
     void getCodesJson() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {

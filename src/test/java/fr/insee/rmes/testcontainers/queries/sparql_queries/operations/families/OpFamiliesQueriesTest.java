@@ -5,19 +5,17 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-public class OpFamiliesQueriesTest  extends WithGraphDBContainer {
+@Tag("integration")
+class OpFamiliesQueriesTest  extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @BeforeAll

@@ -1,10 +1,11 @@
-package fr.insee.rmes.webservice.dataset;
+package fr.insee.rmes.webservice.datasets;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -39,7 +42,7 @@ public class DatasetResources {
     @GetMapping(produces = "application/json")
     @Operation(operationId = "getDatasets", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public String getDatasets() throws RmesException {
+    public List<PartialDataset> getDatasets() throws RmesException {
         return this.datasetService.getDatasets();
     }
 
@@ -72,7 +75,6 @@ public class DatasetResources {
     public String setDataset(
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
-
         return this.datasetService.update(datasetId, body);
     }
 

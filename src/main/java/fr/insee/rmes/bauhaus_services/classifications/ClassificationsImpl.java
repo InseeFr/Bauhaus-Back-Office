@@ -4,16 +4,21 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.classification.Classification;
+import fr.insee.rmes.model.classification.PartialClassification;
+import fr.insee.rmes.model.classification.PartialClassificationFamily;
+import fr.insee.rmes.model.classification.PartialClassificationSeries;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -23,28 +28,37 @@ import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
-public class ClassificationsImpl  extends RdfService  implements ClassificationsService {
+public class ClassificationsImpl implements ClassificationsService {
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-	@Autowired
-	ClassificationUtils classificationUtils;
-
-	@Autowired
-	private ClassificationPublication classificationPublication;
+	private final StampsRestrictionsService stampsRestrictionsService;
+	private final RepositoryGestion repoGestion;
+	private final ClassificationUtils classificationUtils;
+	private final ClassificationPublication classificationPublication;
 	
 	static final Logger logger = LoggerFactory.getLogger(ClassificationsImpl.class);
-	
+
+	public ClassificationsImpl(StampsRestrictionsService stampsRestrictionsService, RepositoryGestion repoGestion, ClassificationUtils classificationUtils, ClassificationPublication classificationPublication) {
+		this.stampsRestrictionsService = stampsRestrictionsService;
+		this.repoGestion = repoGestion;
+		this.classificationUtils = classificationUtils;
+		this.classificationPublication = classificationPublication;
+	}
+
 	@Override
-	public String getFamilies() throws RmesException {
+	public List<PartialClassificationFamily> getFamilies() throws RmesException {
 		logger.info("Starting to get classification families");
-		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery()).toString();
+		var families = repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery());
+
+		return DiacriticSorter.sort(families,
+				PartialClassificationFamily[].class,
+				PartialClassificationFamily::label);
 	}
 	
 	@Override
@@ -60,9 +74,14 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	}
 	
 	@Override
-	public String getSeries() throws RmesException {
+	public List<PartialClassificationSeries> getSeries() throws RmesException {
 		logger.info("Starting to get classifications series");
-		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery()).toString();
+		var series = repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery());
+
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series,
+				PartialClassificationSeries[].class,
+				PartialClassificationSeries::label
+		);
 	}
 	
 	@Override
@@ -78,9 +97,13 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	}
 	
 	@Override
-	public String getClassifications() throws RmesException {
+	public List<PartialClassification> getClassifications() throws RmesException {
 		logger.info("Starting to get classifications");
-		return repoGestion.getResponseAsArray(ClassificationsQueries.classificationsQuery()).toString();
+		var collections = repoGestion.getResponseAsArray(ClassificationsQueries.classificationsQuery());
+
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(collections,
+				PartialClassification[].class,
+				PartialClassification::label);
 	}
 	
 	@Override
@@ -152,11 +175,11 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	}
 
 	@Override
-	public String setClassificationValidation(String classificationId) throws RmesException {
+	public void setClassificationValidation(String classificationId) throws RmesException {
 		//GET graph
 		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classificationId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
-		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classificationId);}
+		if (listGraph.isEmpty()) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classificationId);}
 		String graph = listGraph.getString("graph");
 		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
@@ -171,22 +194,12 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
 		Model model = new LinkedHashModel();
-		IRI classifURI = RdfUtils.toURI(classifUriString);
-		model.add(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graphIri);
-		model.remove(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graphIri);
-		model.remove(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
+		IRI classificationURI = RdfUtils.toURI(classifUriString);
+		model.add(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graphIri);
+		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graphIri);
+		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
 		logger.info("Validate classification : {}", classifUriString);
-		repoGestion.objectValidation(classifURI, model);
+		repoGestion.objectValidation(classificationURI, model);
 
-		return classificationId;
-	}
-
-	@Override
-	public void uploadClassification(MultipartFile file, String database) throws RmesException {
-		// TODO 
-			// 1 . XSLT ods to XML 
-			// 2 . XSLT XML to trig.
-			// 3 . Call load trig service
-		
 	}
 }

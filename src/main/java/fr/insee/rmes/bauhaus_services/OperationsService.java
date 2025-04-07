@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.operations.Indicator;
-import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.model.operations.*;
+
+import java.util.List;
 
 public interface OperationsService {
 
@@ -11,7 +11,7 @@ public interface OperationsService {
 	 * FAMILIES
 	 * *******************************************************************************************/
 
-	String getFamilies() throws RmesException;
+	List<PartialOperationFamily> getFamilies() throws RmesException;
 
 	String getFamiliesForSearch() throws RmesException;
 
@@ -19,7 +19,7 @@ public interface OperationsService {
 	
 	void setFamily(String id, String body) throws RmesException;
 
-	String setFamilyValidation(String body) throws RmesException;
+	void setFamilyValidation(String body) throws RmesException;
 
 	String createFamily(String body) throws RmesException;
 
@@ -29,7 +29,7 @@ public interface OperationsService {
 	 * SERIES
 	 * *******************************************************************************************/
 
-	String getSeries() throws RmesException;
+	List<PartialOperationSeries> getSeries() throws RmesException;
 
 	String getSeriesForSearch() throws RmesException;
 	
@@ -45,7 +45,7 @@ public interface OperationsService {
 
 	String createSeries(String body) throws RmesException;
 
-	String setSeriesValidation(String body) throws RmesException;
+	void setSeriesValidation(String body) throws RmesException;
 
 	String getSeriesForSearchWithStamp(String stamp) throws RmesException;
 	
@@ -54,7 +54,7 @@ public interface OperationsService {
 	 * OPERATIONS
 	 * *******************************************************************************************/
 
-	String getOperations() throws RmesException ;
+	List<PartialOperation> getOperations() throws RmesException ;
 
 	Operation getOperationById(String id) throws RmesException ;
 
@@ -66,7 +66,7 @@ public interface OperationsService {
 
 	String createOperation(String body) throws RmesException;
 
-	String setOperationValidation(String body) throws RmesException;
+	void setOperationValidation(String body) throws RmesException;
 	
 	
 	/******************************************************************************************
@@ -74,7 +74,7 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 
-	String getIndicators() throws RmesException;
+	List<PartialOperationIndicator> getIndicators() throws RmesException;
 
 	String getIndicatorsWithSims() throws RmesException;
 
@@ -85,28 +85,17 @@ public interface OperationsService {
 	Indicator getIndicatorById(String id) throws RmesException;
 
 	/**
+	 * CREATE
+	 */
+	String setIndicator(String body) throws RmesException;
+
+	/**
 	 * UPDATE
-	 * @param id
-	 * @param body
-	 * @throws RmesException
 	 */
 	void setIndicator(String id, String body) throws RmesException;
 	
 	/**
 	 * PUBLISH
-	 * @param body
-	 * @throws RmesException
 	 */
-
-	String setIndicatorValidation(String body) throws RmesException;
-
-	/**
-	 * CREATE
-	 * @param body
-	 * @return
-	 * @throws RmesException
-	 */
-	String setIndicator(String body) throws RmesException;
-
-
+	void validateIndicator(String body) throws RmesException;
 }

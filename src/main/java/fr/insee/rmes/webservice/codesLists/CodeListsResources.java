@@ -8,9 +8,10 @@ import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
-import fr.insee.rmes.config.swagger.model.code_list.Id;
+import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,15 +69,14 @@ public class CodeListsResources extends GenericResources {
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a code list")
     public ResponseEntity<Void> deleteCodeList(@PathVariable(Constants.ID) @P("codesListId") String notation) throws RmesException {
-            codeListService.deleteCodeList(notation, false);
+        codeListService.deleteCodeList(notation, false);
             return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<List<CodeList>> getAllCodesLists() throws RmesException, JsonProcessingException {
-        List<CodeList> listCodeList = codeListService.getAllCodesLists(false);
-        return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
+    public List<PartialCodesList> getAllCodesLists() throws RmesException, JsonProcessingException {
+        return codeListService.getAllCodesLists(false);
     }
 
 
@@ -170,10 +170,10 @@ public class CodeListsResources extends GenericResources {
 
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
-    @PutMapping("/validate/{id}")
+    @PutMapping("/{id}/validate")
     @Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Id> publishFullCodeList(@PathVariable(Constants.ID) Id id) throws RmesException {
-        codeListService.publishCodeList(id.getIdentifier(), false);
+        codeListService.publishCodeList(id.identifier(), false);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 

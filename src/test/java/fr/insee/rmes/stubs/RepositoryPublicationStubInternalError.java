@@ -9,7 +9,7 @@ public class RepositoryPublicationStubInternalError extends RepositoryPublicatio
 
 
     @Override
-    public String getResponseInternalPublication(String query) throws RmesException {
+    public String getResponsePublication(String query) throws RmesException {
         throw new RmesException(500,ERROR_MESSAGE, DETAIL_ERROR_MESSAGE);
     }
 

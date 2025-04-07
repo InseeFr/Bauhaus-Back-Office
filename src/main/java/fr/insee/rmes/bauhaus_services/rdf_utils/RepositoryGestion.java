@@ -10,7 +10,6 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,8 +19,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -157,18 +154,6 @@ public class RepositoryGestion {
 		return statements;
 	}
 
-	public File getGraphAsFile(String context) throws RmesException {
-			if (context != null) return repositoryUtils.getCompleteGraphInTrig(repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-					rdfGestion.repositoryId()), context);
-			return repositoryUtils.getAllGraphsInZip(repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-					rdfGestion.repositoryId()));
-	}
-
-	public String[] getAllGraphs() throws RmesException {
-		return repositoryUtils.getAllGraphs(repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-				rdfGestion.repositoryId()));
-	}
-
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
 		try {
 			statements.close();
@@ -285,16 +270,11 @@ public class RepositoryGestion {
     }
 
 
-	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
-		return repositoryUtils.persistFile(input, format, graph, repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-				rdfGestion.repositoryId()), null);
-	}
-
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
 
 
 		try (RepositoryConnection conn=repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-						rdfGestion.repositoryId()).getConnection();)
+						rdfGestion.repositoryId()).getConnection())
 		{
 			clearReplaceLinks(object);
 			loadSimpleObject(object, model, conn);

@@ -1,10 +1,12 @@
 package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
+import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.webservice.OperationsCommonResources;
+import fr.insee.rmes.model.operations.PartialOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,19 +20,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Qualifier("Operation")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
-public class OperationsResources extends OperationsCommonResources {
+public class OperationsResources  {
+
+	protected final OperationsService operationsService;
+
+	protected final OperationsDocumentationsService documentationsService;
+
+	public OperationsResources(OperationsService operationsService, OperationsDocumentationsService documentationsService) {
+		this.operationsService = operationsService;
+		this.documentationsService = documentationsService;
+	}
 
 
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
-	public ResponseEntity<String> getOperations() throws RmesException {
-		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperations());
+	public List<PartialOperation> getOperations() throws RmesException {
+		return operationsService.getOperations();
 	}
 
 	@GetMapping(
@@ -67,7 +80,7 @@ public class OperationsResources extends OperationsCommonResources {
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
-	@PutMapping(value = "/operation/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/operation/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
 	public ResponseEntity<String> setOperationValidation(@PathVariable(Constants.ID) String id) throws RmesException {
 		operationsService.setOperationValidation(id);

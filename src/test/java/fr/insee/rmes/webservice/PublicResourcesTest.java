@@ -11,9 +11,9 @@ import fr.insee.rmes.external.services.authentication.stamps.StampsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote=35",
                 "fr.insee.rmes.bauhaus.concepts.defaultMailSender=email",
                 "fr.insee.rmes.bauhaus.concepts.defaultContributor=stamp",
-                "fr.insee.rmes.bauhaus.sugoi.ui=sugoUi",
                 "fr.insee.rmes.bauhaus.appHost=http://localhost",
                 "fr.insee.rmes.bauhaus.activeModules=operations,concepts",
                 "fr.insee.rmes.bauhaus.modules=operations,concepts"
@@ -45,9 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PublicResourcesTest {
     @Autowired
     private MockMvc mvc;
-    @MockBean
+    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
-    @MockBean
+    @MockitoBean
     StampsService stampsService;
 
     @Test
@@ -60,7 +59,6 @@ class PublicResourcesTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                            "authorizationHost":"sugoUi",
                             "defaultMailSender":"email",
                             "lg2":"en",
                             "lg1":"fr",
