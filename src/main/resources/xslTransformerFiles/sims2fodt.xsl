@@ -430,7 +430,7 @@
                 <xsl:variable name="codeList-variable" select="substring-after($address-complement,'/')"/>
                 <xsl:variable name="codeList-name" select="$series//*[local-name() = concat($series-variable,'List')]"/>
                 <xsl:variable name="code-value" select="$series//*[local-name() = concat($series-variable,'Code')]"/>
-                <xsl:copy-of select="$codeLists//CodeList[notation=$codeList-name]
+                <xsl:copy-of select="$codeLists//ExportedCodesList[notation=$codeList-name]
                                                 //codes[code=$code-value]
                                                 /*[local-name()=$codeList-variable]/text()"/>
             </xsl:when>
@@ -439,7 +439,7 @@
                 <xsl:variable name="codeList-variable" select="substring-after($address-complement,'/')"/>
                 <xsl:variable name="codeList-name" select="$indicator//*[local-name() = concat($indicator-variable,'List')]"/>
                 <xsl:variable name="code-value" select="$indicator//*[local-name() = concat($indicator-variable,'Code')]"/>
-                <xsl:copy-of select="$codeLists//CodeList[notation=$codeList-name]
+                <xsl:copy-of select="$codeLists//ExportedCodesList[notation=$codeList-name]
                                                //codes[code=$code-value]
                                                /*[local-name()=$codeList-variable]/text()"/>
             </xsl:when>
@@ -638,11 +638,11 @@
                         <xsl:variable name="codeList-name" select="$simsRubrics//codeList"/>
                         <xsl:variable name="code-value" select="$simsRubrics//value[not(value)]"/>
                         <xsl:choose>
-                            <xsl:when test="count($codeLists//CodeList[notation=$codeList-name]
+                            <xsl:when test="count($codeLists//ExportedCodesList[notation=$codeList-name]
                                                             //codes[code=$code-value]
                                                              /*[local-name()=$rubric-element]) &gt; 1">
                                 <text:list text:style-name="L1">
-                                    <xsl:for-each select="$codeLists//CodeList[notation=$codeList-name]
+                                    <xsl:for-each select="$codeLists//ExportedCodesList[notation=$codeList-name]
                                                                     //codes[code=$code-value]
                                                                      /*[local-name()=$rubric-element]">
                                         <text:list-item>
@@ -654,7 +654,7 @@
                                 </text:list>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="$codeLists//CodeList[notation=$codeList-name]
+                                <xsl:value-of select="$codeLists//ExportedCodesList[notation=$codeList-name]
                                                                 //codes[code=$code-value]
                                                                  /*[local-name()=$rubric-element]"/>
                             </xsl:otherwise>
