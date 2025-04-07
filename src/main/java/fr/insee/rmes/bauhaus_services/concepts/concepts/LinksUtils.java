@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.links;
+package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.model.links.Link;
@@ -43,7 +43,18 @@ public class LinksUtils {
 	}
 
 	private void addTripleReplacedByMatch(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> model.add(conceptURI, DCTERMS.IS_REPLACED_BY, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph()));
+		conceptsIDToLink.forEach(conceptIDToLink -> {
+			model.add(conceptURI, DCTERMS.IS_REPLACED_BY, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
+			model.add(RdfUtils.conceptIRI(conceptIDToLink), DCTERMS.REPLACES, conceptURI, RdfUtils.conceptGraph());
+		});
+	}
+
+	private void addTripleSucceed(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
+		conceptsIDToLink.forEach(conceptIDToLink -> {
+			model.add(conceptURI, DCTERMS.REPLACES, RdfUtils.conceptIRI(conceptIDToLink),
+					RdfUtils.conceptGraph());
+			model.add(RdfUtils.conceptIRI(conceptIDToLink), DCTERMS.IS_REPLACED_BY, conceptURI, RdfUtils.conceptGraph());
+		});
 	}
 
 	private void addTripleCloseMatch(IRI conceptURI, List<String> urn, Model model) {
@@ -68,14 +79,6 @@ public class LinksUtils {
 		conceptsIDToLink.forEach(conceptIDToLink -> 
 			model.add(conceptURI, DCTERMS.REFERENCES, RdfUtils.conceptIRI(conceptIDToLink),
 					RdfUtils.conceptGraph()));
-	}
-
-	private void addTripleSucceed(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> {
-			model.add(conceptURI, DCTERMS.REPLACES, RdfUtils.conceptIRI(conceptIDToLink),
-					RdfUtils.conceptGraph());
-			model.add(RdfUtils.conceptIRI(conceptIDToLink), DCTERMS.IS_REPLACED_BY, conceptURI, RdfUtils.conceptGraph());
-		});
 	}
 
 	private void addTripleRelated(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
