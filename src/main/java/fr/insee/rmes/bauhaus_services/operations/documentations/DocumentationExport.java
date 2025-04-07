@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
+import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
+import fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
@@ -54,7 +54,7 @@ public class DocumentationExport {
 	
 	final ParentUtils parentUtils;
 	
-	final CodeListService codeListServiceImpl;
+	final CodesListExport codeListServiceImpl;
 	
 	final OrganizationsService organizationsServiceImpl;
 	
@@ -68,7 +68,13 @@ public class DocumentationExport {
 	static final String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
 	private final int maxLength;
 
-	public DocumentationExport(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils, ExportUtils exportUtils, SeriesUtils seriesUtils, OperationsUtils operationsUtils, IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodeListService codeListServiceImpl, OrganizationsService organizationsServiceImpl, DocumentationsUtils documentationsUtils) {
+	public DocumentationExport(
+			@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
+			DocumentsUtils documentsUtils,
+			ExportUtils exportUtils,
+			SeriesUtils seriesUtils,
+			OperationsUtils operationsUtils,
+			IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
 		this.seriesUtils = seriesUtils;
 		this.operationsUtils = operationsUtils;
@@ -208,8 +214,7 @@ public class DocumentationExport {
 	public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal, int maxLength) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
-		String msdXML = buildShellSims();
-		xmlContent.put("msdFile", msdXML);
+		xmlContent.put("msdFile", buildShellSims());
 		return exportAsResponse(id, xmlContent,targetType,includeEmptyMas,lg1,lg2, document, goal, maxLength);
 	}
 	
@@ -284,7 +289,7 @@ public class DocumentationExport {
 		codeListsXML = codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
 
 		for(String code : neededCodeLists) {
-			DetailedCodeList codeList = codeListServiceImpl.getCodeListAndCodesForExport(code);
+			ExportedCodesList codeList = codeListServiceImpl.exportCodesList(code);
 			codeListsXML = codeListsXML.concat(XMLUtils.produceXMLResponse(codeList));
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
