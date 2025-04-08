@@ -10,4 +10,5 @@ The documentation can be found in the [docs](https://github.com/InseeFr/Bauhaus-
 ## Gitleaks
 
 We have set up Gitleaks on the project with a Git `pre-commit` hook.
+
 To make it effective, you need to run `mvn install -DskipTests` beforehand.
