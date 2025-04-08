@@ -30,8 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.logging.Logger;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -55,11 +53,8 @@ class DocumentsUtilsTest {
         GenericQueries.setConfig(new ConfigStub());
     }
 
-    private static final Logger logger = Logger.getLogger(String.valueOf(DocumentsUtilsTest.class));
-
-
     @Test
-    void shouldGetIdFromJson() throws RmesException {
+    void shouldGetIdFromJson(){
         DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
 
         JSONObject jsonFirst = new JSONObject();
