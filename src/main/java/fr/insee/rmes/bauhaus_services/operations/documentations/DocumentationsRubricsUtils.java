@@ -19,7 +19,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.documentations.Docume
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -49,7 +48,7 @@ DocumentationsRubricsUtils extends RdfService {
 	@Autowired
 	private MetadataStructureDefUtils msdUtils;
 
-	@Autowired @Setter
+	@Autowired
 	private DocumentsUtils docUtils;
 
 	@Autowired
@@ -64,6 +63,9 @@ DocumentationsRubricsUtils extends RdfService {
 	@Autowired
 	private GeographyService geoService;
 
+	public void setDocUtils(DocumentsUtils documentsUtils){
+		this.docUtils=documentsUtils;
+	}
 
 	/**
 	 * GETTER
