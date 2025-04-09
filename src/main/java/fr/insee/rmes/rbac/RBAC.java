@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.rbac;
+package fr.insee.rmes.rbac;
 
 public class RBAC {
     public enum Module {

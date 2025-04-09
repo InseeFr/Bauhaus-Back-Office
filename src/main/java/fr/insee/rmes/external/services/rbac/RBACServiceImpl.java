@@ -1,7 +1,7 @@
 package fr.insee.rmes.external.services.rbac;
 
-import fr.insee.rmes.config.auth.RBACConfiguration;
-import fr.insee.rmes.model.rbac.RBAC;
+import fr.insee.rmes.rbac.RBACConfiguration;
+import fr.insee.rmes.rbac.RBAC;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;

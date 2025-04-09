@@ -1,6 +1,6 @@
 package fr.insee.rmes.external.services.rbac;
 
-import fr.insee.rmes.model.rbac.RBAC;
+import fr.insee.rmes.rbac.RBAC;
 
 import java.util.List;
 import java.util.Map;
