@@ -14,18 +14,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RdfUtilsTest {
 
-    Model model ;
-    IRI predicate;
-    Resource graph;
+    Model modelExample ;
+    IRI predicateExample;
+    Resource graphExample;
     Resource objectResource;
     IRI objectIri;
     IRI valueIri;
 
     @BeforeEach
    void setUp(){
-       this.model=new LinkedHashModel();
-       this.predicate=new InternedIRI("namespacePredicate","localNamePredicate");
-       this.graph =new InternedIRI("namespaceGraph","localNameGraph");
+       this.modelExample=new LinkedHashModel();
+       this.predicateExample=new InternedIRI("namespacePredicate","localNamePredicate");
+       this.graphExample =new InternedIRI("namespaceGraph","localNameGraph");
        this.objectResource = new InternedIRI("namespaceObject","localNameObject");
        this.objectIri= new InternedIRI("https://namespaceObject","localNameObject");
        this.valueIri = new InternedIRI("namespaceValue","localNameValue");
@@ -41,18 +41,18 @@ class RdfUtilsTest {
     @Test
     void shouldAddTripleNode() {
         BNode value = RdfUtils.createBlankNode();
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleBNode(objectResource,predicate,value,model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleBNode(objectResource,predicateExample,value,modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleUri() {
 
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleUri(objectIri,predicate,valueIri,model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleUri(objectIri,predicateExample,valueIri,modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
 
         boolean compareSizesModel = modelSizeBefore<modelSizeAfter;
 
@@ -60,7 +60,7 @@ class RdfUtilsTest {
         Model modelOther = new LinkedHashModel();
 
         int modelOtherSizeBefore = modelOther.size();
-        RdfUtils.addTripleUri(objectOther,predicate,"urn:example:example",modelOther,graph);
+        RdfUtils.addTripleUri(objectOther,predicateExample,"urn:example:example",modelOther,graphExample);
         int modelOtherSizeAfter =modelOther.size();
 
         boolean compareSizesModelOther = modelOtherSizeBefore<modelOtherSizeAfter;
@@ -70,50 +70,50 @@ class RdfUtilsTest {
 
     @Test
     void shouldAddTripleInt() {
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleInt(objectIri,predicate,"urn:example:example",model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleInt(objectIri,predicateExample,"urn:example:example",modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleLiteralXML() {
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleLiteralXML(objectIri,predicate,"valueExample",model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleLiteralXML(objectIri,predicateExample,"valueExample",modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleDate() {
-        int modelSizeBefore = model.size();
-        RdfUtils. addTripleDate(objectIri,predicate,"2025-04-08",model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils. addTripleDate(objectIri,predicateExample,"2025-04-08",modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"2025-04-08", "2011-12-03T10:15:30Z" })
     void shouldAddTripleDateTime(String value) {
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleDateTime(objectIri,predicate,value,model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleDateTime(objectIri,predicateExample,value,modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"fr","example","2025" })
     void shouldAddTripleLanguage(String value) {
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleLanguage(objectIri,predicate,value,model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleLanguage(objectIri,predicateExample,value,modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleStringMdToXhtml2() {
-        IRI resultFirst = RdfUtils. addTripleStringMdToXhtml2(objectIri, predicate,"https://", "lang", "prefix", model, graph);
-        IRI resultSecond = RdfUtils. addTripleStringMdToXhtml2(objectIri, predicate,"", "lang", "prefix", model, graph);
+        IRI resultFirst = RdfUtils. addTripleStringMdToXhtml2(objectIri, predicateExample,"https://", "lang", "prefix", modelExample, graphExample);
+        IRI resultSecond = RdfUtils. addTripleStringMdToXhtml2(objectIri, predicateExample,"", "lang", "prefix",modelExample, graphExample);
         boolean createUri = "https://namespaceObjectlocalNameObject/prefix/lang".equals(resultFirst.toString());
         boolean notCreateUri = resultSecond==null;
         assertTrue(createUri && notCreateUri);
@@ -121,25 +121,25 @@ class RdfUtilsTest {
 
     @Test
     void shouldAddTripleStringMdToXhtml() {
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleStringMdToXhtml(objectIri,predicate,"example","fr",model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleStringMdToXhtml(objectIri,predicateExample,"example","fr",modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
     }
 
     @Test
     void shouldAddTripleString() {
 
-        int modelSizeBefore = model.size();
-        RdfUtils.addTripleString(objectIri,predicate,"example","fr",model,graph);
-        int modelSizeAfter = model.size();
+        int modelSizeBefore = modelExample.size();
+        RdfUtils.addTripleString(objectIri,predicateExample,"example","fr",modelExample,graphExample);
+        int modelSizeAfter = modelExample.size();
         boolean compareSizesModel = modelSizeBefore<modelSizeAfter;
 
         setUp();
 
         Model modelOther = new LinkedHashModel();
         int modelOtherSizeBefore = modelOther.size();
-        RdfUtils.addTripleString(objectIri,predicate,"example",modelOther,graph);
+        RdfUtils.addTripleString(objectIri,predicateExample,"example",modelOther,graphExample);
         int modelOtherSizeAfter = modelOther.size();
         boolean compareOtherSizesModel = modelOtherSizeBefore<modelOtherSizeAfter;
 
