@@ -110,7 +110,6 @@ public class ClassificationsImpl implements ClassificationsService {
 	public String getClassification(String id) throws RmesException{
 		logger.info("Starting to get a classification scheme");
 		JSONObject classification = repoGestion.getResponseAsObject(ClassificationsQueries.classificationQuery(id));
-		XhtmlToMarkdownUtils.convertJSONObject(classification);
 		return classification.toString();
 	}
 
