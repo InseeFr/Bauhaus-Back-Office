@@ -9,7 +9,7 @@ import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.external.services.authentication.stamps.RmesStampsImpl;
-import fr.insee.rmes.external.services.rbac.RBACService;
+import fr.insee.rmes.rbac.RbacFetcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -51,7 +51,7 @@ class UserResourcesEnvHorsProdTest {
     @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
     @MockitoBean
-    private RBACService rbacService;
+    private RbacFetcher rbacService;
     @MockitoBean
     private JwtDecoder jwtDecoder;
 

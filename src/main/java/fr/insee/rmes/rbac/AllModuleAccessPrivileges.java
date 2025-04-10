@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.rbac;
+package fr.insee.rmes.rbac;
 
 import java.util.Set;
 
