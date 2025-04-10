@@ -1,5 +1,6 @@
 package fr.insee.rmes.rbac;
 
+import java.util.List;
 import java.util.Set;
 
 public interface RbacFetcher {
@@ -8,5 +9,7 @@ public interface RbacFetcher {
 
     Set<ModuleAccessPrivileges.Privilege> getApplicationPrivilegesByRole(String roleName, RBAC.Module application);
 
-    RBAC.Strategy getApplicationActionStrategyByRole(String roleName, RBAC.Module application, RBAC.Privilege privilege);
+    RBAC.Strategy getApplicationActionStrategyByRole(List<String> roles, RBAC.Module application, RBAC.Privilege privilege);
+
+    Set<ModuleAccessPrivileges> computePrivileges(List<String> roles);
 }

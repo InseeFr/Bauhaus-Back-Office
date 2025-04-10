@@ -22,6 +22,6 @@ public class RBAC {
     }
 
     public enum Strategy {
-        ALL, STAMP
+        ALL, STAMP, NONE
     }
 }
