@@ -168,7 +168,7 @@ class CodeListServiceImplTest {
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(codeIri), model.capture(), eq(null));
 
             assertEquals("code", result);
-            Assertions.assertEquals("[(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, \"code\", http://codesListGraph) [http://codesListGraph]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, \"code\") [http://codesListGraph]]", model.getValue().toString());
         }
     }
 
