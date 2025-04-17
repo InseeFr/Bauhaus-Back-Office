@@ -3,7 +3,9 @@ package fr.insee.rmes.utils;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
-
+import org.springframework.http.MediaType;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XMLUtilsTest {
@@ -61,11 +63,54 @@ class XMLUtilsTest {
             	"isReplacedBy": [],\r
             	"validationState": "Modified"\r
             }""";
+
 	@Test
 	void givenJSon_whenSolveXml_thenResponseIsClean() throws RmesException {
-
 		String out = XMLUtils.solveSpecialXmlcharacters(series);
 		assertTrue(out.contains(Constants.XML_ESPERLUETTE_REPLACEMENT + "quot;"));
+	}
+
+	@Test
+	void shouldProduceResponse() {
+	Object obj= "<?xml version= “1.0” encoding=“ISO-8859-1”?>\n" +
+				"<note date=”01/01/99”>\n" +
+				"<to>Bauhaus</to>\n" +
+				"<from>Back</from>\n" +
+				"</note>";
+	String NotXmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_JSON_VALUE);
+	String XmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_XML_VALUE);
+	String NotXmlExpected ="\""+"<?xml version= “1.0” encoding=“ISO-8859-1”?>\\n<note date=”01/01/99”>\\n<to>Bauhaus</to>\\n<from>Back</from>\\n</note>\"";
+	String XmlExpected ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n" +
+			"<note date=”01/01/99”>\n" +
+			"<to>Bauhaus</to>\n" +
+			"<from>Back</from>\n" +
+			"</note></String>";
+	Boolean XmlExpectedEqualsActual = (XmlExpected.equals(XmlActual));
+	Boolean NotXmlExpectedEqualsActual = (NotXmlExpected.equals(NotXmlActual));
+	assertTrue(XmlExpectedEqualsActual && NotXmlExpectedEqualsActual);
+	}
+
+	@Test
+	void shouldGetTagValues() {
+		String text ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n" +
+				"<note date=”01/01/99”>\n" +
+				"<from>Github</from>\n" +
+				"<to>Example</to>\n" +
+				"<from>Back</from>\n" +
+				"<to>Internet</to>\n" +
+				"<from>Office!</from>\n" +
+				"</note></String>";
+		String tag ="from";
+		List<String> tagValues = XMLUtils.getTagValues(text,tag);
+		assertEquals(List.of("Github","Back","Office!"),tagValues);
+	}
+
+	@Test
+	void shouldProduceXMLResponse(){
+		Object obj ="Bauhaus-Back";
+		String produceXMLResponseActual = XMLUtils.produceXMLResponse(obj);
+		String produceXMLResponseExpected ="<String>Bauhaus-Back</String>";
+		assertEquals(produceXMLResponseExpected,produceXMLResponseActual);
 	}
 
 }
