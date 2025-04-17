@@ -72,34 +72,19 @@ class XMLUtilsTest {
 
 	@Test
 	void shouldProduceResponse() {
-	Object obj= "<?xml version= “1.0” encoding=“ISO-8859-1”?>\n" +
-				"<note date=”01/01/99”>\n" +
-				"<to>Bauhaus</to>\n" +
-				"<from>Back</from>\n" +
-				"</note>";
-	String NotXmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_JSON_VALUE);
-	String XmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_XML_VALUE);
-	String NotXmlExpected ="\""+"<?xml version= “1.0” encoding=“ISO-8859-1”?>\\n<note date=”01/01/99”>\\n<to>Bauhaus</to>\\n<from>Back</from>\\n</note>\"";
-	String XmlExpected ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n" +
-			"<note date=”01/01/99”>\n" +
-			"<to>Bauhaus</to>\n" +
-			"<from>Back</from>\n" +
-			"</note></String>";
-	Boolean XmlExpectedEqualsActual = (XmlExpected.equals(XmlActual));
-	Boolean NotXmlExpectedEqualsActual = (NotXmlExpected.equals(NotXmlActual));
-	assertTrue(XmlExpectedEqualsActual && NotXmlExpectedEqualsActual);
+	Object obj= "<?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <to>Bauhaus</to>\n <from>Back</from>\n </note>";
+	String notXmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_JSON_VALUE);
+	String xmlActual =XMLUtils.produceResponse(obj,MediaType.APPLICATION_XML_VALUE);
+	String notXmlExpected ="\"<?xml version= “1.0” encoding=“ISO-8859-1”?>\\n <note date=”01/01/99”>\\n <to>Bauhaus</to>\\n <from>Back</from>\\n </note>\"";
+	String xmlExpected ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <to>Bauhaus</to>\n <from>Back</from>\n </note></String>";
+	Boolean xmlExpectedEqualsActual = (xmlExpected.equals(xmlActual));
+	Boolean notXmlExpectedEqualsActual = (notXmlExpected.equals(notXmlActual));
+	assertTrue(xmlExpectedEqualsActual && notXmlExpectedEqualsActual);
 	}
 
 	@Test
 	void shouldGetTagValues() {
-		String text ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n" +
-				"<note date=”01/01/99”>\n" +
-				"<from>Github</from>\n" +
-				"<to>Example</to>\n" +
-				"<from>Back</from>\n" +
-				"<to>Internet</to>\n" +
-				"<from>Office!</from>\n" +
-				"</note></String>";
+		String text ="<String><?xml version= “1.0” encoding=“ISO-8859-1”?>\n <note date=”01/01/99”>\n <from>Github</from>\n <to>Example</to>\n <from>Back</from>\n <to>Internet</to>\n <from>Office!</from>\n </note></String>";
 		String tag ="from";
 		List<String> tagValues = XMLUtils.getTagValues(text,tag);
 		assertEquals(List.of("Github","Back","Office!"),tagValues);
