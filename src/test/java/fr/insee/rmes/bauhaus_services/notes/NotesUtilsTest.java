@@ -14,7 +14,7 @@ class NotesUtilsTest {
         VersionableNote versionableNote = new VersionableNote();
         String defaultBVersion = "defaultVersion";
         NotesUtils notesUtils = new NotesUtils();
-        String Result= notesUtils.getVersion(concept,versionableNote,defaultBVersion);
-        assertEquals("1",Result);
+        String result= notesUtils.getVersion(concept,versionableNote,defaultBVersion);
+        assertEquals("1",result);
     }
 }
