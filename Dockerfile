@@ -6,11 +6,11 @@ COPY ./src ./src
 RUN chmod +x mvnw
 RUN ./mvnw clean install -DskipTests=true
 
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /opt/app
+FROM eclipse-temurin:21-jre-jammy
 
-RUN addgroup -g 10000 javagroup
-RUN adduser -D -s / -u 10000 javauser -G javagroup
+RUN groupadd -g 10000 javagroup
+RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser
+RUN mkdir /opt/app/
 RUN chown -R 10000:10000 /opt/app/
 
 USER 10000
