@@ -16,7 +16,7 @@ class RmesExceptionHandlerTest {
         ResponseEntity<String> actual = rmesExceptionHandler.handleSubclassesOfRmesException(rmesException);
 
         String[] handleSubclassesBegin = actual.toString().split(",");
-        String[] handleSubclassesBeginWithoutSpace = handleSubclassesBegin[0].toString().split(" ");
+        String[] handleSubclassesBeginWithoutSpace = handleSubclassesBegin[0].split(" ");
 
         String beginningOfRmesException= "<"+codeError;
         boolean isCorrectBeginMessage = beginningOfRmesException.equals(handleSubclassesBeginWithoutSpace[0]);
