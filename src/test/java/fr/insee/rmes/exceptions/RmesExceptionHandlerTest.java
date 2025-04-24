@@ -3,15 +3,17 @@ package fr.insee.rmes.exceptions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.ResponseEntity;
+import java.nio.file.NoSuchFileException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RmesExceptionHandlerTest {
 
+    RmesExceptionHandler rmesExceptionHandler = new RmesExceptionHandler();
+
     @ParameterizedTest
     @ValueSource(ints = { 100,200,201,202,203,204,205,206,300,301,302,303,304,305,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,500,501,502,503,504,505 })
     void shouldReturnHandleSubclassesOfRmesExceptionDetails(int codeError) {
-        RmesExceptionHandler rmesExceptionHandler = new RmesExceptionHandler();
         RmesException rmesException = new RmesException(codeError,"RmesException message", "RmesExceptionDetails");
         ResponseEntity<String> actual = rmesExceptionHandler.handleSubclassesOfRmesException(rmesException);
 
@@ -35,24 +37,32 @@ class RmesExceptionHandlerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Bauhaus","back","unknown123","---"})
-    void shouldReturnHandleRmesFileExceptionDetails(String myFileName) {
-        RmesExceptionHandler rmesExceptionHandler = new RmesExceptionHandler();
-        RmesFileException rmesFileException = new RmesFileException(myFileName,"message",new Throwable("throwable"));
+    @ValueSource(strings = {"Bauhaus-Back-Office","FileName-Message-Throwable"})
+    void shouldReturnHandleRmesFileExceptionDetails(String infos) {
+        String[] details = infos.split("-");
+        RmesFileException rmesFileException = new RmesFileException(details[0],details[1],new Throwable(details[2]));
         ResponseEntity<String> actual = rmesExceptionHandler.handleRmesFileException(rmesFileException);
-        String expected="<500 INTERNAL_SERVER_ERROR Internal Server Error,RmesFileException{fileName='"+myFileName+"'},[]>";
+        String expected="<500 INTERNAL_SERVER_ERROR Internal Server Error,RmesFileException{fileName='"+details[0]+"'},[]>";
         assertEquals(expected,actual.toString());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"message-detail","myMessage-myDetail"})
     void shouldReturnHandleRmesExceptionDetails(String rmesExceptionInformation) {
-        String message = rmesExceptionInformation.split("-")[0];
-        String detail = rmesExceptionInformation.split("-")[1];
-        RmesExceptionHandler rmesExceptionHandler = new RmesExceptionHandler();
-        RmesException rmesException = new RmesException(401,message, detail);
+        String[] infos = rmesExceptionInformation.split("-");
+        RmesException rmesException = new RmesException(401,infos[0], infos[1]);
         ResponseEntity<String> actual = rmesExceptionHandler.handleRmesException(rmesException);
-        String expected="<500 INTERNAL_SERVER_ERROR Internal Server Error,{\"details\":\""+detail+"\",\"message\":\""+message+"\"},[]>";
+        String expected="<500 INTERNAL_SERVER_ERROR Internal Server Error,{\"details\":\""+infos[1]+"\",\"message\":\""+infos[0]+"\"},[]>";
+        assertEquals(expected,actual.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"fileOne-otherOne-reasonOne","fileTwo-otherTwo-reasonTwo"})
+    void shouldReturnHandleRmesExceptionFromNoSuchFileException(String details) {
+        String[] infos = details.split("-");
+        NoSuchFileException noSuchFileException = new NoSuchFileException(infos[0],infos[1],infos[2]);
+        ResponseEntity<String> actual = rmesExceptionHandler.handleRmesException(noSuchFileException);
+        String expected = "<404 NOT_FOUND Not Found,"+infos[0]+" -> "+infos[1]+": "+infos[2]+" does not exist,[]>";
         assertEquals(expected,actual.toString());
     }
 
