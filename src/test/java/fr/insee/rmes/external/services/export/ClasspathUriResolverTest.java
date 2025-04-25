@@ -20,10 +20,4 @@ class ClasspathUriResolverTest {
 
         assertTrue(prefixContent && suffixLength<=8);
     }
-
-
-
-
-
-
 }
