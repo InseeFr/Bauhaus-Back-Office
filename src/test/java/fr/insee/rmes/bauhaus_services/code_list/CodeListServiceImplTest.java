@@ -191,7 +191,7 @@ class CodeListServiceImplTest {
     }
 
     @Test
-    void shouldThrowRmesBadRequestExceptionsWhenValidateCodeList() throws RmesException {
+    void shouldThrowRmesBadRequestExceptionsWhenValidateCodeList() {
 
         JSONObject jsonObjectWithoutId = new JSONObject().put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample").put("code","codeExample");
         JSONObject jsonObjectWithoutLabelLg1 = new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample").put("code","codeExample");
