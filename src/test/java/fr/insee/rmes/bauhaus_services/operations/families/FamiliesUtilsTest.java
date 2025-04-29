@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import static fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils.verifyBodyToCreateFamily;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -103,11 +104,8 @@ class FamiliesUtilsTest {
         FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null,null, "fr", "en");
         Family familyCreate = new Family();
         familyCreate.setId("idExample");
+        familyCreate.setAbstractLg1("");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
         org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"542 : prefLabelLg1 not found\"}");
     }
-
-
-
-
 }
