@@ -7,3 +7,8 @@ Rest Endpoints and services Integration used by [Bauhaus](https://github.com/Ins
 
 The documentation can be found in the [docs](https://github.com/InseeFr/Bauhaus-Back-Office/tree/master/docs) folder and [browsed online](https://inseefr.github.io/Bauhaus-Back-Office).
 
+## Gitleaks
+
+We have set up Gitleaks on the project with a Git `pre-commit` hook.
+
+To make it effective, you need to run `mvn install -DskipTests` beforehand.
