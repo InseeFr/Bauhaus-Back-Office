@@ -147,7 +147,7 @@ class DocumentsUtilsTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
             verify(repositoryGestion, times(1)).loadSimpleObject(any(), model.capture());
-            Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>, http://documents/graph) [http://documents/graph]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>) [http://documents/graph]]", model.getValue().toString());
         }
     }
 }
