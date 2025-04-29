@@ -1,0 +1,3 @@
+#!/bin/bash
+
+gitleaks git --pre-commit --redact --staged --verbose
