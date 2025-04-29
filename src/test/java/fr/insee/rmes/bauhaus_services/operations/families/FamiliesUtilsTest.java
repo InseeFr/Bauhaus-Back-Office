@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.Family;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -14,11 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils.verifyBodyToCreateFamily;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
-
 
 @ExtendWith(MockitoExtension.class)
 class FamiliesUtilsTest {
@@ -31,7 +31,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(familyExample));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> verifyBodyToCreateFamily(familyExample));
         assertThat(exception.getDetails()).contains("Required title not entered by user.");
 
     }
@@ -81,5 +81,22 @@ class FamiliesUtilsTest {
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@fr", model.objects().toArray()[0].toString());
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@en", model.objects().toArray()[1].toString());
     }
+
+    @Test
+    void shouldThrowRmesNotFoundExceptionWhenCreateFamily() throws RmesException {
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null,null, "fr", "en");
+        RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
+        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
+    }
+
+
+
+
+
+
+
+
+
+
 
 }
