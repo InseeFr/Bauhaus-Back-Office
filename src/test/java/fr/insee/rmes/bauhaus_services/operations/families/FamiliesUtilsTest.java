@@ -27,11 +27,11 @@ class FamiliesUtilsTest {
     private RepositoryGestion repositoryGestion;
 
     @Mock
-    Family family;
+    Family familyExample;
 
     @Test
     void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(family));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(familyExample));
         assertThat(exception.getDetails()).contains("Required title not entered by user.");
 
     }
