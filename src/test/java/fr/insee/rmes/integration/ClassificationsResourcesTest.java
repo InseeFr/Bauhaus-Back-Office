@@ -10,6 +10,7 @@ import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.rbac.AccessPrivilegesChecker;
 import fr.insee.rmes.webservice.classifications.ClassificationsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -61,7 +62,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
+        BauhausMethodSecurityExpressionHandler.class,
+        AccessPrivilegesChecker.class
+})
 class ClassificationsResourcesTest {
 
     @Autowired
@@ -70,6 +73,8 @@ class ClassificationsResourcesTest {
     private JwtDecoder jwtDecoder;
     @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
+    @MockitoBean
+    AccessPrivilegesChecker accessPrivilegesChecker;
 
     @MockitoSpyBean
     ClassificationsService classificationsService;

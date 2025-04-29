@@ -12,6 +12,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,24 +41,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=datasets"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-class TestDistributionsResourcesEnvProd {
+class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
     @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
     private DatasetService datasetService;
     @MockitoBean
     private DistributionService distributionService;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
 
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";

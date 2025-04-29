@@ -60,15 +60,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "fr.insee.rmes.bauhaus.lg1=fr",
                 "fr.insee.rmes.bauhaus.lg2=en"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class,
+@Import({
         StructureComponentImpl.class,
         StructureImpl.class})
-class StructuresTest {
+class StructuresTest extends AbstractResourcesEnvProd{
 
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
@@ -85,15 +80,11 @@ class StructuresTest {
     @MockitoBean
     protected OperationsDocumentationsService documentationsService;
     @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
-    @MockitoBean
     StructureUtils structureUtils;
     @MockitoBean
     CodeListService codeListService;
     @Autowired
     private MockMvc mvc;
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     @Test
     void getComponentAsNoRole_ok() throws Exception {

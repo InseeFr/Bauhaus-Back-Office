@@ -7,6 +7,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.external.services.authentication.stamps.StampsService;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.webservice.PublicResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,17 +37,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
         })
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class})
-class PublicResourcesAuthorizationsTest {
+class PublicResourcesAuthorizationsTest extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
     @MockitoBean
     private StampsService stampsService;
 

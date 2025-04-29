@@ -10,6 +10,7 @@ import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.webservice.classifications.ClassificationsResources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,28 +46,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=classifications"}
 )
-
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-
-class TestClassificationsRessourcesEnvProd {
+class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
     @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
     private ClassificationsService classificationsService;
     @MockitoBean
     private ClassificationItemService classificationItemService;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
 
-    private final String idep = "xxxxxx";
+    private final String idep = "x xxxxx";
     private final String timbre = "XX59-YYY";
 
     static String familyId="10";

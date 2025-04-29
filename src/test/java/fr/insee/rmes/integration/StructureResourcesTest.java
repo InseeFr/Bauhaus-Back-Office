@@ -56,20 +56,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "fr.insee.rmes.bauhaus.lg2=en"}
 
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-
-class StructureResourcesTest {
+class StructureResourcesTest extends AbstractResourcesEnvProd{
     @Autowired
     private MockMvc mvc;
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
 
     @MockitoSpyBean
     StructureService structureService;

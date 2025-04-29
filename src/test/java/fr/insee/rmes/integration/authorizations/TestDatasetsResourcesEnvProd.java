@@ -10,6 +10,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Test;
@@ -42,23 +43,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.web=DEBUG",
                 "fr.insee.rmes.bauhaus.activeModules=datasets"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-class TestDatasetsResourcesEnvProd {
-
-
-    private static final Logger logger= LoggerFactory.getLogger(TestDatasetsResourcesEnvProd.class);
+class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
     @MockitoBean
     DatasetService datasetService;
 
