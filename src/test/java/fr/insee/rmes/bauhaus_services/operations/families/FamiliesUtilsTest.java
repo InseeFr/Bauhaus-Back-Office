@@ -1,8 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -28,17 +26,15 @@ class FamiliesUtilsTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
+    @Mock
+    Family family;
+
     @Test
     void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() throws RmesException, JsonProcessingException {
-        String body= "{\"id\":\"idExample\", \"value\": \"valueExample\"}";
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Family family = mapper.readValue(body,Family.class);
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(family));
         assertThat(exception.getDetails()).contains("Required title not entered by user.");
     }
-
-
+    
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
