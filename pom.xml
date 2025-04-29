@@ -289,6 +289,7 @@
                     <execution>
                         <goals>
                             <goal>install</goal>
+                            <goal>initialize</goal>
                         </goals>
                     </execution>
                 </executions>
