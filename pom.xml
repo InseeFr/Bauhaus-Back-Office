@@ -288,7 +288,9 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>install</goal>
+                           <goal>install</goal>
+                           <goal>initialize</goal>
+                           <goal>configure</goal>
                         </goals>
                     </execution>
                 </executions>
