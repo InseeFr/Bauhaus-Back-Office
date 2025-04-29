@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -31,7 +30,7 @@ class FamiliesUtilsTest {
     Family family;
 
     @Test
-    void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() throws RmesException, JsonProcessingException {
+    void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() {
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(family));
         assertThat(exception.getDetails()).contains("Required title not entered by user.");
 

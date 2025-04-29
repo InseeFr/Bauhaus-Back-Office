@@ -12,6 +12,7 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
+import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -105,6 +106,12 @@ public class FamiliesUtils {
 		}
 	}
 
+	public static void verifyBodyToCreateFamily(Family family) throws RmesBadRequestException {
+		if(family.prefLabelLg1==null || family.prefLabelLg1.trim().isEmpty()) {
+			throw new RmesBadRequestException("Required title not entered by user.");
+		}
+	}
+
 	public String createFamily(String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateFamily()) {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
@@ -112,8 +119,10 @@ public class FamiliesUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
+
 		try {
 			Family family = mapper.readValue(body,Family.class);
+			verifyBodyToCreateFamily(family);
 			family.setId(id);
 			family.setCreated(DateUtils.getCurrentDate());
 			family.setUpdated(DateUtils.getCurrentDate());
@@ -123,7 +132,6 @@ public class FamiliesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-
 		return id;
 	}
 
@@ -219,6 +227,4 @@ public class FamiliesUtils {
 		repositoryGestion.objectValidation(familyURI, model);
 			
 	}
-	
-	
 }
