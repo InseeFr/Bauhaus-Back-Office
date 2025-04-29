@@ -1,6 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
 import org.eclipse.rdf4j.model.IRI;
@@ -13,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 
@@ -21,6 +27,17 @@ class FamiliesUtilsTest {
 
     @Mock
     private RepositoryGestion repositoryGestion;
+
+    @Test
+    void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() throws RmesException, JsonProcessingException {
+        String body= "{\"id\":\"idExample\", \"value\": \"valueExample\"}";
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Family family = mapper.readValue(body,Family.class);
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(family));
+        assertThat(exception.getDetails()).contains("Required title not entered by user.");
+    }
+
 
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
