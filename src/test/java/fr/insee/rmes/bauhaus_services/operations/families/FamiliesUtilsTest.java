@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 
+
 @ExtendWith(MockitoExtension.class)
 class FamiliesUtilsTest {
 
@@ -33,8 +34,9 @@ class FamiliesUtilsTest {
     void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() throws RmesException, JsonProcessingException {
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> FamiliesUtils.verifyBodyToCreateFamily(family));
         assertThat(exception.getDetails()).contains("Required title not entered by user.");
+
     }
-    
+
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
