@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 
 @Component
@@ -104,12 +105,6 @@ public class FamiliesUtils {
 		}
 	}
 
-	public static void verifyBodyToCreateFamily(Family family) throws RmesBadRequestException {
-		if(family.prefLabelLg1==null || family.prefLabelLg1.trim().isEmpty()) {
-			throw new RmesBadRequestException("Required title not entered by user.");
-		}
-	}
-
 	public String createFamily(String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateFamily()) {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
@@ -120,7 +115,6 @@ public class FamiliesUtils {
 
 		try {
 			Family family = mapper.readValue(body,Family.class);
-			verifyBodyToCreateFamily(family);
 			family.setId(id);
 			family.setCreated(DateUtils.getCurrentDate());
 			family.setUpdated(DateUtils.getCurrentDate());
@@ -184,7 +178,7 @@ public class FamiliesUtils {
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
 		repositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
-		
+
 		repositoryGestion.loadSimpleObject(familyURI, model);
 	}
 
@@ -209,7 +203,7 @@ public class FamiliesUtils {
 
 	public void setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
-		
+
 		if(!stampsRestrictionsService.canCreateFamily()) {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
 		}
@@ -223,6 +217,8 @@ public class FamiliesUtils {
 		logger.info("Validate family : {}", familyURI);
 
 		repositoryGestion.objectValidation(familyURI, model);
-			
+
 	}
+
+
 }

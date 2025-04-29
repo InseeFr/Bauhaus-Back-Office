@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.Family;
@@ -15,9 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils.verifyBodyToCreateFamily;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -27,15 +23,6 @@ class FamiliesUtilsTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
-    @Mock
-    Family familyExample;
-
-    @Test
-    void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> verifyBodyToCreateFamily(familyExample));
-        assertThat(exception.getDetails()).contains("Required title not entered by user.");
-
-    }
 
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
@@ -108,4 +95,5 @@ class FamiliesUtilsTest {
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
         org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"542 : prefLabelLg1 not found\"}");
     }
+
 }
