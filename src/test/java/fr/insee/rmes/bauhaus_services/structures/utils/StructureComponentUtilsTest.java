@@ -2,7 +2,13 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import static fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils.MODIFIED;
+import static fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils.VALIDATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -45,6 +51,31 @@ class StructureComponentUtilsTest {
     void shouldThrowRmesExceptionWhenValidateComponentWithInvalidateType() {
         RmesException exception = assertThrows(RmesBadRequestException.class, () ->  structureComponentUtils.updateComponent("idExample","{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\",\"type\":\"typeExample\"}"));
         assertThat(exception.getDetails()).contains("{\"message\":\"The property type is not valid\"}");
+    }
+
+    @Test
+    void shouldThrowRmesExceptionWhenCreateComponent() {
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureComponentUtils.createComponent("{\"id\":\"idExample\",\"identifiant\":\"identifiantExample\",\"labelLg1\":\"labelLg1Example\",\"labelLg2\":\"labelLg2Example\",\"type\":\"typeExample\"}"));
+        assertThat(exception.getDetails()).contains("{\"message\":\"During the creation of a new component, the id property should be null\"}");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { VALIDATED, MODIFIED })
+    void shouldThrowRmesExceptionWhenDeleteComponent(String value) {
+        JSONObject component = new JSONObject().put("validationState",value);
+        RmesException exception = assertThrows(RmesException.class, () -> structureComponentUtils.deleteComponent(component,"id","type"));
+        assertThat(exception.getDetails()).contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
+    }
+
+    @Test
+    void shouldThrowRmesExceptionWhenDeleteComponentWithInvalidStructures() {
+        JSONObject exampleOne = new JSONObject().put("validationState",VALIDATED);
+        JSONObject exampleTwo = new JSONObject().put("validationState","example");
+        JSONArray structures = new JSONArray().put(exampleOne).put(exampleTwo);
+        JSONObject component = new JSONObject().put("validationState","value").put("structures",structures);
+
+        RmesException exception = assertThrows(RmesException.class, () -> structureComponentUtils.deleteComponent(component,"id","type"));
+        assertThat(exception.getDetails()).contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
     }
 
 }
