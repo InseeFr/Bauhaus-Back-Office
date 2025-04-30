@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONArray;
@@ -76,6 +77,20 @@ class StructureComponentUtilsTest {
 
         RmesException exception = assertThrows(RmesException.class, () -> structureComponentUtils.deleteComponent(component,"id","type"));
         assertThat(exception.getDetails()).contains("{\"details\":\"[]\",\"message\":\"You cannot delete a validated component\"}");
+    }
+
+    @Test
+    void shouldThrowRmesExceptionWhenPublishComponentWithInvalidCreator() {
+        JSONObject component = new JSONObject().put(Constants.CREATOR,"");
+        RmesException exception = assertThrows(RmesException.class, () -> structureComponentUtils.publishComponent(component));
+        assertThat(exception.getDetails()).contains("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}");
+    }
+
+    @Test
+    void shouldThrowRmesExceptionWhenPublishComponentWithInvalidDisseminationStatus() {
+        JSONObject component = new JSONObject().put(Constants.CREATOR,"creatorExample").put("disseminationStatus","");
+        RmesException exception = assertThrows(RmesException.class, () -> structureComponentUtils.publishComponent(component));
+        assertThat(exception.getDetails()).contains("{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}");
     }
 
 }
