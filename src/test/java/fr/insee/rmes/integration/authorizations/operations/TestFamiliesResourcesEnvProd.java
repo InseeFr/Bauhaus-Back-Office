@@ -9,6 +9,7 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.rbac.*;
 import fr.insee.rmes.webservice.operations.FamilyResources;
 import fr.insee.rmes.webservice.operations.SeriesResources;
 import org.junit.jupiter.api.Test;
@@ -24,8 +25,9 @@ import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
 
 @WebMvcTest(controllers = FamilyResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
@@ -42,7 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class})
+        UserProviderFromSecurityContext.class,
+        HasAccessAspect.class,
+        PropertiesAccessPrivilegesChecker.class})
 public class TestFamiliesResourcesEnvProd {
     @Autowired
     private MockMvc mvc;
@@ -54,6 +58,9 @@ public class TestFamiliesResourcesEnvProd {
     private OperationsDocumentationsService operationsDocumentationsService;
 
     @MockitoBean
+    private PropertiesAccessPrivilegesChecker propertiesAccessPrivilegesChecker;
+
+    @MockitoBean
     private JwtDecoder jwtDecoder;
 
     @MockitoBean
@@ -63,7 +70,8 @@ public class TestFamiliesResourcesEnvProd {
 
 
     @Test
-    void shouldReturn200IfHasAccess() throws Exception {
+    void getFamilies_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(get("/operations/families").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -72,11 +80,204 @@ public class TestFamiliesResourcesEnvProd {
     }
 
     @Test
-    void shouldReturn403IfHasNotAccess() throws Exception {
+    void getFamilies_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(get("/operations/families").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getFamilies_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/families")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getFamiliesForSearch_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(get("/operations/families/advanced-search").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void getFamiliesForSearch_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/families/advanced-search").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getFamiliesForSearch_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/families/advanced-search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getSeriesWithReport_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(get("/operations/families/1/seriesWithReport").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getSeriesWithReport_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/families/1/seriesWithReport").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getSeriesWithReport_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/families/1/seriesWithReport")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getFamilyByID_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(get("/operations/family/1").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getFamilyByID_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/family/1").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getFamilyByID_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(get("/operations/family/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void setFamilyById_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.UPDATE)).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(put("/operations/family/1").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void setFamilyById_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.UPDATE)).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(put("/operations/family/1").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void setFamilyById_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(put("/operations/family/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createFamily_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.CREATE)).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(post("/operations/family").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void createFamily_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.CREATE)).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(post("/operations/family").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void createFamily_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(post("/operations/family")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void setFamilyValidation_shouldReturn200IfHasAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.VALIDATE)).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(put("/operations/family/1/validate").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void setFamilyValidation_shouldReturn403IfHasNotAccess() throws Exception {
+        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.VALIDATE)).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(put("/operations/family/1/validate").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void setFamilyValidation_shouldReturn403IfAnonymous() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
+        mvc.perform(put("/operations/family/1/validate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
     }
 }

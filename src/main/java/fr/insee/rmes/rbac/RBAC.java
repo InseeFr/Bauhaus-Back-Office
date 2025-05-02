@@ -17,8 +17,7 @@ public class RBAC {
         READ,
         UPDATE,
         DELETE,
-        PUBLISH,
-        VALIDATE
+        PUBLISH
     }
 
     public enum Strategy {

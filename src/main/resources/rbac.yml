@@ -7,56 +7,48 @@ rbac:
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         collection:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         family:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         serie:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         operation:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         indicator:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         sims:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
         classification:
           create: ALL
           read: ALL
           update: ALL
           delete: ALL
           publish: ALL
-          validate: ALL
     Utilisateur_RMESGNCS:
       concept:
         read: ALL
@@ -80,57 +72,43 @@ rbac:
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
     Gestionnaire_ensemble_concepts_RMESGNCS:
       concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
     Gestionnaire_serie_RMESGNCS:
       family:
         read: STAMP
-        update: STAMP
-        publish: STAMP
-        validate: STAMP
       serie:
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
       operation:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
       sims:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
     Gestionnaire_indicateur_RMESGNCS:
       family:
         read: STAMP
-        update: STAMP
-        publish: STAMP
-        validate: STAMP
       serie:
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
       indicator:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
       sims:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP

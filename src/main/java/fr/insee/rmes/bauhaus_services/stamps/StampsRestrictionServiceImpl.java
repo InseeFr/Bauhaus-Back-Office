@@ -144,22 +144,13 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 	@Override
-	public boolean canCreateFamily() {
-		return canCreateFamilySeriesOrIndicator();
-	}
-
-	private boolean canCreateFamilySeriesOrIndicator() {
+	public boolean canCreateSeries() {
 		return authorizeMethodDecider.isAdmin();
 	}
 
 	@Override
-	public boolean canCreateSeries() {
-		return canCreateFamilySeriesOrIndicator();
-	}
-
-	@Override
 	public boolean canCreateIndicator() {
-		return canCreateFamilySeriesOrIndicator();
+		return authorizeMethodDecider.isAdmin();
 	}
 
 	@Override
