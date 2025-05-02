@@ -89,6 +89,11 @@ rbac:
         publish: STAMP
         validate: STAMP
     Gestionnaire_serie_RMESGNCS:
+      family:
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
       serie:
         read: STAMP
         update: STAMP
@@ -107,6 +112,11 @@ rbac:
         publish: STAMP
         validate: STAMP
     Gestionnaire_indicateur_RMESGNCS:
+      family:
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
       serie:
         read: STAMP
         update: STAMP
