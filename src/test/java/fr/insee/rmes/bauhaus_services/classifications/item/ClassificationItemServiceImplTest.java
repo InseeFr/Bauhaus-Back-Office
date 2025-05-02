@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 class ClassificationItemServiceImplTest {
 
     @InjectMocks
-    ClassificationItemServiceImpl structureUtils = new ClassificationItemServiceImpl();
+    ClassificationItemServiceImpl classificationItemServiceImpl = new ClassificationItemServiceImpl();
 
     @MockitoBean
     RepositoryGestion repoGestion;
@@ -36,7 +36,7 @@ class ClassificationItemServiceImplTest {
         JSONArray altLabels = new JSONArray().put(new JSONObject().put("C", "letterC").put("D", "letterD"));
         when(repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId))).thenReturn(item);
         when(repoGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId))).thenReturn(altLabels);
-        String actual = structureUtils.getClassificationItem(classificationId, itemId);
+        String actual = classificationItemServiceImpl.getClassificationItem(classificationId, itemId);
         String expected = "{\"A\":\"letterA\",\"B\":\"letterB\",\"altLabels\":[{\"C\":\"letterC\",\"D\":\"letterD\"}]}";
         Assertions.assertEquals(expected, actual);
     }
@@ -45,13 +45,13 @@ class ClassificationItemServiceImplTest {
     void shouldGetClassificationItemsWhenAltLabelIsNull() throws RmesException {
         when(repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId))).thenReturn(item);
         when(repoGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId))).thenReturn(new JSONArray());
-        String actual = structureUtils.getClassificationItem(classificationId, itemId);
+        String actual = classificationItemServiceImpl.getClassificationItem(classificationId, itemId);
         Assertions.assertEquals(item.toString(), actual);
     }
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateClassificationItem(){
-        RmesException exception = assertThrows(RmesException.class, () -> structureUtils.updateClassificationItem(classificationId,itemId,body));
+        RmesException exception = assertThrows(RmesException.class, () -> classificationItemServiceImpl.updateClassificationItem(classificationId,itemId,body));
         Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"Can't read request body\""));
     }
 }
