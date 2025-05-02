@@ -28,25 +28,39 @@ public class XsltUtils {
 	}
 
 
-	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
-			PrintStream printStream, Path tempDir) throws TransformerException {
-		// prepare transformer
+//	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
+//			PrintStream printStream, Path tempDir) throws TransformerException {
+//		// prepare transformer
+//		StreamSource xsrc = new StreamSource(xslFileIS);
+//		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
+//
+//		// Pass parameters in a file to the transformer
+//		xmlContent.forEach((paramName, xmlData) -> {
+//			try {
+//				addParameter(xsltTransformer, paramName, xmlData, tempDir);
+//			} catch (RmesException e) {
+//				logger.error(e.getMessageAndDetails());
+//			}
+//		});
+//
+//		// transformation
+//		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(printStream));
+//	}
+
+	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS,
+									 InputStream xslFileIS, PrintStream printStream) throws TransformerException {
+		// préparer le transformer
 		StreamSource xsrc = new StreamSource(xslFileIS);
 		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
 
-		// Pass parameters in a file to the transformer
-		xmlContent.forEach((paramName, xmlData) -> {
-			try {
-				addParameter(xsltTransformer, paramName, xmlData, tempDir);
-			} catch (RmesException e) {
-				logger.error(e.getMessageAndDetails());
-			}
-		});
+		// Passer les paramètres directement (en mémoire)
+		xmlContent.forEach(xsltTransformer::setParameter);
 
-		// transformation
+		// lancer la transformation
 		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(printStream));
 	}
-	
+
+
 
 	private static void addParameter(Transformer xsltTransformer, String paramName, String paramData, Path tempDir)
 			throws RmesException {
