@@ -1,26 +1,15 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 

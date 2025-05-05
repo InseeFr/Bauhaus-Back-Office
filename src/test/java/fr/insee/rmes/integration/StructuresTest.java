@@ -2,7 +2,6 @@ package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -10,12 +9,6 @@ import fr.insee.rmes.bauhaus_services.structures.impl.StructureComponentImpl;
 import fr.insee.rmes.bauhaus_services.structures.impl.StructureImpl;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.webservice.structures.StructureResources;
 import org.json.JSONArray;
@@ -24,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
