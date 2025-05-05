@@ -37,14 +37,14 @@ class ConceptsUtilsTest {
 
         ConceptsPublication conceptsPublication =  new ConceptsPublication();
         NoteManager noteManager = new NoteManager();
-        ConceptsUtils conceptsUtils = new ConceptsUtils(conceptsPublication,noteManager,19);
+        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication,noteManager,19);
 
         ConceptForExport conceptForExport = new ConceptForExport();
         conceptForExport.setId("id");
         conceptForExport.setPrefLabelLg1("prefLabel1");
         conceptForExport.setPrefLabelLg2("prefLabel2");
 
-        String response = conceptsUtils.getConceptExportFileName(conceptForExport);
+        String response = conceptsUtilsExample.getConceptExportFileName(conceptForExport);
 
         assertEquals("idPreflabel1",response);
     }
