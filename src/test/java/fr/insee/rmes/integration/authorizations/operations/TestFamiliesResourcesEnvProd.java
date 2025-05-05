@@ -139,7 +139,7 @@ class TestFamiliesResourcesEnvProd {
         );
     }
 
-    @MethodSource("provideDataForPutEndpoints")
+    @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
     void createFamily(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
         when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), any())).thenReturn(hasAccessReturn);

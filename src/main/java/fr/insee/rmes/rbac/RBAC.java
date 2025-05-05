@@ -9,7 +9,8 @@ public class RBAC {
         OPERATION,
         INDICATOR,
         SIMS,
-        CLASSIFICATION
+        CLASSIFICATION,
+        UNKNOWN,
     }
 
     public enum Privilege {
@@ -17,7 +18,8 @@ public class RBAC {
         READ,
         UPDATE,
         DELETE,
-        PUBLISH
+        PUBLISH,
+        UNKNOWN,
     }
 
     public enum Strategy {

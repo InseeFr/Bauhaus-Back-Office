@@ -8,6 +8,7 @@ import fr.insee.rmes.rbac.stamps.ObjectStampChecker;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service(value = "propertiesAccessPrivilegesChecker")
 public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecker {
@@ -50,7 +51,7 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     }
 
     private Optional<ModuleAccessPrivileges.Privilege> findStrategyByPrivilege(RBAC.Privilege privilege, Optional<ModuleAccessPrivileges> moduleAccessPrivileges) {
-        return moduleAccessPrivileges.get().privileges().stream().filter(p -> p.privilege().equals(privilege)).findFirst();
+        return moduleAccessPrivileges.orElse(new ModuleAccessPrivileges(RBAC.Module.UNKNOWN, Set.of())).privileges().stream().filter(p -> p.privilege().equals(privilege)).findFirst();
     }
 
     private Optional<ModuleAccessPrivileges> findModuleAccessPrivileges(User user, RBAC.Module module) {
