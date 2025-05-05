@@ -77,4 +77,5 @@ class ConceptsUtilsTest {
         Assertions.assertTrue(exception.getDetails().contains("This concept cannot be found in database"));
     }
 
+    
     }
