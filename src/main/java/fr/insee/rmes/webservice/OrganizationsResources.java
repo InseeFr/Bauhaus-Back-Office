@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class OrganizationsResources {
 
+
 	static final Logger logger = LoggerFactory.getLogger(OrganizationsResources.class);
 
 	final OrganizationsService organizationsService;

@@ -4,8 +4,6 @@ import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
-import fr.insee.rmes.rbac.AccessPrivilegesChecker;
-import fr.insee.rmes.rbac.RBAC;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -29,22 +27,20 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private final StampAuthorizationChecker stampAuthorizationChecker;
     private final StampFromPrincipal stampFromPrincipal;
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
-    private final AccessPrivilegesChecker accessPrivilegesChecker;
+
 
     private SecurityExpressionRootForBauhaus(
             MethodSecurityExpressionOperations methodSecurityExpressionOperations,
             StampAuthorizationChecker stampAuthorizationChecker,
-            StampFromPrincipal stampFromPrincipal,
-            AccessPrivilegesChecker accessPrivilegesChecker) {
+            StampFromPrincipal stampFromPrincipal) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
         this.stampAuthorizationChecker = stampAuthorizationChecker;
         this.stampFromPrincipal = stampFromPrincipal;
-        this.accessPrivilegesChecker = accessPrivilegesChecker;
     }
 
-    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal, AccessPrivilegesChecker accessPrivilegesChecker) {
-        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal), requireNonNull(accessPrivilegesChecker));
+    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
+        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal));
     }
 
     @Override
@@ -103,8 +99,8 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
     @Override
-    public boolean hasPermission(Object target, Object permission) {
-        return this.methodSecurityExpressionRoot.hasPermission(target,permission);
+    public boolean hasPermission(Object module, Object permission) {
+        return this.methodSecurityExpressionRoot.hasPermission(module,permission);
     }
 
     @Override
@@ -137,9 +133,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return methodSecurityExpressionOperations.getThis();
     }
 
-    public boolean hasAccess(RBAC.Module module, RBAC.Privilege privilege){
-        return this.accessPrivilegesChecker.hasAccess(module, privilege);
-    }
+
     public boolean isAdmin() {
         logger.trace("Check if {} is admin", methodSecurityExpressionRoot.getPrincipal());
         return hasRole(Roles.ADMIN);

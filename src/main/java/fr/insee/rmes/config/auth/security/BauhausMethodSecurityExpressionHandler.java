@@ -1,7 +1,6 @@
 package fr.insee.rmes.config.auth.security;
 
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.rbac.AccessPrivilegesChecker;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,17 +24,15 @@ public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurit
 
     private final StampAuthorizationChecker stampAuthorizationChecker;
     private final StampFromPrincipal stampFromPrincipal;
-    private final AccessPrivilegesChecker accessPrivilegesChecker;
 
     @Autowired
     public BauhausMethodSecurityExpressionHandler(
             StampAuthorizationChecker stampAuthorizationChecker,
-            StampFromPrincipal stampFromPrincipal,
-            AccessPrivilegesChecker accessPrivilegesChecker) {
+            StampFromPrincipal stampFromPrincipal) {
         logger.trace("Initializing GlobalMethodSecurityConfiguration with BauhausMethodSecurityExpressionHandler and DefaultRolePrefix = {}", DEFAULT_ROLE_PREFIX);
         this.stampAuthorizationChecker = requireNonNull(stampAuthorizationChecker);
         this.stampFromPrincipal = requireNonNull(stampFromPrincipal);
-        this.accessPrivilegesChecker = requireNonNull(accessPrivilegesChecker);
+
         setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
     }
 
@@ -43,7 +40,7 @@ public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurit
     public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication, MethodInvocation mi) {
         StandardEvaluationContext context = (StandardEvaluationContext) super.createEvaluationContext(authentication, mi);
         MethodSecurityExpressionOperations delegate = (MethodSecurityExpressionOperations) context.getRootObject().getValue();
-        context.setRootObject(SecurityExpressionRootForBauhaus.enrich(delegate, this.stampAuthorizationChecker, this.stampFromPrincipal, this.accessPrivilegesChecker));
+        context.setRootObject(SecurityExpressionRootForBauhaus.enrich(delegate, this.stampAuthorizationChecker, this.stampFromPrincipal));
         return context;
     }
 }
