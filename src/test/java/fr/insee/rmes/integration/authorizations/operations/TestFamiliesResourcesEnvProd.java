@@ -9,9 +9,9 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.rbac.*;
+import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.operations.FamilyResources;
-import fr.insee.rmes.webservice.operations.SeriesResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,10 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.Mockito.*;
 
 @WebMvcTest(controllers = FamilyResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
@@ -46,7 +45,7 @@ import static org.mockito.Mockito.*;
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         PropertiesAccessPrivilegesChecker.class})
-public class TestFamiliesResourcesEnvProd {
+class TestFamiliesResourcesEnvProd {
     @Autowired
     private MockMvc mvc;
 

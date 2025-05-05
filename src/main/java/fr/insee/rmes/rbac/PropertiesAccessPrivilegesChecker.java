@@ -16,7 +16,6 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     private final UserDecoder decoder;
 
     public PropertiesAccessPrivilegesChecker(RbacFetcher fetcher, UserDecoder decoder) {
-
         this.fetcher = fetcher;
         this.decoder = decoder;
     }
