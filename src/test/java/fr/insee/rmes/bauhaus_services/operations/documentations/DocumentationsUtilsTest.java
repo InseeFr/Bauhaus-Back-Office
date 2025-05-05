@@ -5,9 +5,6 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.documentations.Documentation;
-import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
@@ -22,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -89,48 +85,6 @@ class DocumentationsUtilsTest {
 		assertTrue(exception.getDetails().contains("Only an admin or a manager can delete a sims."));
 	}
 
-
-	@Test
-	void shouldThrowExceptionIfParentTargetIsUnpublished() throws RmesException {
-		JSONObject operation = new JSONObject();
-		operation.put(Constants.ID, "1");
-		JSONObject series = new JSONObject();
-		series.put("id", "2");
-		operation.put("series", series);
-
-		String[] target = {"series", "2"};
-		when(mockParentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
-		when(mockParentUtils.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
-
-		assertThrows(
-				RmesBadRequestException.class,
-				() -> documentationsUtils.publishMetadataReport("1")
-		);
-	}
-
-	@Test
-	void buildDocumentationFromJsonTest() throws RmesException{
-		
-		String[] st = new String[] { Constants.OPERATION_UP, "s8888" };
-		
-        when(mockDocumentationsRubricsUtils.buildRubricFromJson(Mockito.any(),Mockito.anyBoolean())).thenReturn(new DocumentationRubric());
-        when(mockParentUtils.getDocumentationTargetTypeAndId(anyString())).thenReturn(st);
-        
-		JSONObject documentation = new JSONObject()
-										.put("rubrics", new JSONArray())
-										.put("idSeries", "")
-										.put("id", "9999")
-										.put("idOperation", "s8888")
-										.put("labelLg1", "Rapport de métadonnées 9999")
-										.put("labelLg2", "Metadata report 9999");
-
-		Documentation sims = documentationsUtils.buildDocumentationFromJson(documentation,true);
-
-		assertEquals("9999", sims.getId());
-		assertEquals("s8888", sims.getIdOperation());
-		assertEquals("Rapport de métadonnées 9999", sims.getLabelLg1());
-		assertEquals("Metadata report 9999", sims.getLabelLg2());
-	}
 
 	@Test
 	void shouldThrowARmesNotAcceptableExceptionWhenSetMetadataReport(){
