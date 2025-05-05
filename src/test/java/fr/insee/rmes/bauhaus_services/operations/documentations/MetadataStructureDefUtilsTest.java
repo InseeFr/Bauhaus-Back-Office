@@ -1,16 +1,38 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
 class MetadataStructureDefUtilsTest {
 
+    @InjectMocks
     MetadataStructureDefUtils metadataStructureDefUtils = new MetadataStructureDefUtils();
+
+    @MockitoBean
+    RepositoryGestion repoGestion;
+
+    @Test
+    void shouldThrowARmesExceptionWhenGetMetadataAttributeById() throws RmesException {
+        String id ="2025";
+        when(repoGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id))).thenReturn(new JSONObject());
+        RmesException exception = assertThrows(RmesException.class, () -> metadataStructureDefUtils.getMetadataAttributeById(id));
+        assertTrue(exception.getDetails().contains("Attribute not found"));
+    }
 
     @Test
     void shouldThrowARmesExceptionWhenTransformRangeType() {
