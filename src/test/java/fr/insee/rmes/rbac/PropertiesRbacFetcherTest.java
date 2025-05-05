@@ -41,7 +41,7 @@ class PropertiesRbacFetcherTest {
         ModuleAccessPrivileges privileges = result.stream().filter(r -> r.application().equals(RBAC.Module.CLASSIFICATION)).findFirst().get();
 
         assertEquals(RBAC.Module.CLASSIFICATION, privileges.application());
-        assertEquals(6, privileges.privileges().size());
+        assertEquals(5, privileges.privileges().size());
 
         ModuleAccessPrivileges.Privilege privilege = privileges.privileges().stream().filter(p -> p.privilege().equals(RBAC.Privilege.UPDATE)).findFirst().get();
 

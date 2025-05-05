@@ -45,7 +45,6 @@ import static org.mockito.Mockito.*;
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
-        HasAccessAspect.class,
         PropertiesAccessPrivilegesChecker.class})
 public class TestFamiliesResourcesEnvProd {
     @Autowired
@@ -71,7 +70,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getFamilies_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(get("/operations/families").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +80,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getFamilies_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(get("/operations/families").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -100,7 +99,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getFamiliesForSearch_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(get("/operations/families/advanced-search").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +109,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getFamiliesForSearch_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(get("/operations/families/advanced-search").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -129,7 +128,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getSeriesWithReport_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(get("/operations/families/1/seriesWithReport").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,7 +138,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getSeriesWithReport_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(get("/operations/families/1/seriesWithReport").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -158,7 +157,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getFamilyByID_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(get("/operations/family/1").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +167,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void getFamilyByID_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.READ)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(get("/operations/family/1").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -187,7 +186,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void setFamilyById_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.UPDATE)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.UPDATE.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/operations/family/1").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -198,7 +197,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void setFamilyById_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.UPDATE)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.UPDATE.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(put("/operations/family/1").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -219,7 +218,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void createFamily_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.CREATE)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/operations/family").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -230,7 +229,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void createFamily_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.CREATE)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(post("/operations/family").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -251,7 +250,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void setFamilyValidation_shouldReturn200IfHasAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.VALIDATE)).thenReturn(true);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any())).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/operations/family/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -262,7 +261,7 @@ public class TestFamiliesResourcesEnvProd {
 
     @Test
     void setFamilyValidation_shouldReturn403IfHasNotAccess() throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(RBAC.Module.FAMILY, RBAC.Privilege.VALIDATE)).thenReturn(false);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.FAMILY.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any())).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("FAKE"));
         mvc.perform(put("/operations/family/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
