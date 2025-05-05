@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.annotation.AnnotationTemplateExpressionDefaults;
@@ -21,7 +20,6 @@ import static fr.insee.rmes.config.PropertiesKeys.CORS_ALLOWED_ORIGIN;
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
-@EnableAspectJAutoProxy
 public class CommonSecurityConfiguration {
 
     private static final Logger logger= LoggerFactory.getLogger(CommonSecurityConfiguration.class);
