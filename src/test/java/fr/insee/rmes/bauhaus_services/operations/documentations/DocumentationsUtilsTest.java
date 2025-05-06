@@ -5,6 +5,9 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
@@ -13,12 +16,17 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.Objects;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +40,9 @@ class DocumentationsUtilsTest {
 	ParentUtils parentUtils;
 
 	@MockitoBean
+	DocumentationsRubricsUtils documentationsRubricsUtils;
+
+	@MockitoBean
 	StampsRestrictionsService stampsRestrictionsService;
 
 	@InjectMocks
@@ -40,7 +51,7 @@ class DocumentationsUtilsTest {
 
     @Mock
     protected DocumentationsRubricsUtils mockDocumentationsRubricsUtils;
-    
+
     @Mock
     protected ParentUtils mockParentUtils;
 
@@ -77,14 +88,60 @@ class DocumentationsUtilsTest {
 
 
 	@Test
-	void shouldThrowRmesUnauthorizedExceptionWhenDeleteMetadataReportf() throws RmesException {
-		String id ="2025";
-		String[] examples = {Constants.SERIES_UP,"today","tomorrow"};
-		when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(examples);
-		RmesException exception = assertThrows(RmesUnauthorizedException.class, () -> documentationsUtils.deleteMetadataReport(id));
-		assertTrue(exception.getDetails().contains("Only an admin or a manager can delete a sims."));
+	void shouldThrowRmesNotFoundExceptionIfParentTargetIsUnpublished() throws RmesException {
+		String[] target = {"series", ""};
+		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.publishMetadataReport("1"));
+		assertTrue(exception.getDetails().contains("target not found for this Sims"));
 	}
 
+	@Test
+	void shouldThrowRmesBadRequestExceptionIfParentTargetIsUnpublished() throws RmesException {
+		String[] target = {"series", "seriesExample"};
+		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		when(parentUtils.getValidationStatus("seriesExample")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
+		assertTrue(exception.getDetails().contains("This metadataReport cannot be published before its target is published. "));
+	}
+
+	@Test
+	void shouldBuildDocumentationFromJsonTest() throws RmesException{
+
+		JSONObject letterA = new JSONObject().put("A","anExampleOfLetterA");
+		JSONObject letterB = new JSONObject().put("B","anExampleOfLetterB");
+		JSONObject letterC = new JSONObject().put("C","anExampleOfLetterC");
+		JSONArray alphabet = new JSONArray().put(letterA).put(letterB).put(letterC);
+
+		DocumentationRubric docA = new DocumentationRubric();
+		DocumentationRubric docB = new DocumentationRubric();
+		DocumentationRubric docC = new DocumentationRubric();
+		docA.setIdAttribute("idAttributeA");
+		docB.setIdAttribute("idAttributeB");
+		docC.setIdAttribute("idAttributeC");
+
+		String[] st = new String[] {Constants.OPERATION_UP, "s8888"};
+
+		when(documentationsRubricsUtils.buildRubricFromJson(letterA,true)).thenReturn(docA);
+		when(documentationsRubricsUtils.buildRubricFromJson(letterB,true)).thenReturn(docB);
+		when(documentationsRubricsUtils.buildRubricFromJson(letterC,true)).thenReturn(docC);
+		when(parentUtils.getDocumentationTargetTypeAndId(anyString())).thenReturn(st);
+
+		JSONObject jsonSims = new JSONObject()
+										.put("rubrics", alphabet)
+										.put("idSeries", "")
+										.put(Constants.ID, "9999")
+										.put("idOperation", "s8888")
+										.put(Constants.LABEL_LG1, "Rapport de métadonnées 9999")
+										.put(Constants.LABEL_LG2, "Metadata report 9999");
+
+		Documentation sims = documentationsUtils.buildDocumentationFromJson(jsonSims,true);
+
+		boolean idAttributeAValue = "IDATTRIBUTEA".equals(sims.getRubrics().getFirst().getIdAttribute());
+		boolean idAttributeBValue = "IDATTRIBUTEB".equals(sims.getRubrics().get(1).getIdAttribute());
+		boolean idAttributeCValue = "IDATTRIBUTEC".equals(sims.getRubrics().getLast().getIdAttribute());
+
+		assertTrue(idAttributeAValue && idAttributeBValue && idAttributeCValue);
+	}
 
 	@Test
 	void shouldThrowARmesNotAcceptableExceptionWhenSetMetadataReport(){
