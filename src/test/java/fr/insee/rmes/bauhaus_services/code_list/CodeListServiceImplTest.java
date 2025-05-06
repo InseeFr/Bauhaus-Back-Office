@@ -2,9 +2,11 @@ package fr.insee.rmes.bauhaus_services.code_list;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -185,5 +188,35 @@ class CodeListServiceImplTest {
             codeListService.deleteCodeFromCodeList("notation", "code");
             verify(repositoryGestion, times(1)).deleteObject(codeIRI, null);
         }
+    }
+
+    @Test
+    void shouldThrowRmesBadRequestExceptionsWhenValidateCodeList() {
+
+        JSONObject jsonObjectWithoutId = new JSONObject().put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample").put("code","codeExample");
+        JSONObject jsonObjectWithoutLabelLg1 = new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample").put("code","codeExample");
+        JSONObject jsonObjectWithoutLabelLg2=new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG1,"labelLg1Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample").put("code","codeExample");
+        JSONObject jsonObjectWithoutLastClassUriSegment= new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastListUriSegment","lastListUriSegmentExample").put("code","codeExample");
+        JSONObject jsonObjectWithoutLastListUriSegment = new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("code","codeExample");
+        JSONObject jsonObjectWithoutCodeKey = new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample");
+
+        RmesException exceptionId = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutId,false));
+        RmesException exceptionLabelLg1 = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLabelLg1,false));
+        RmesException exceptionLabelLg2 = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLabelLg2,false));
+        RmesException exceptionLastClassUriSegment = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLastClassUriSegment,false));
+        RmesException exceptionLastListUriSegment = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLastListUriSegment,false));
+        RmesException exceptionCodeKey = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutCodeKey,true));
+
+        boolean cantValidateId = "{\"message\":\"The id of the list should be defined\"}".equals(exceptionId.getDetails());
+        boolean cantValidateLabelLg1 = "{\"message\":\"The labelLg1 of the list should be defined\"}".equals(exceptionLabelLg1.getDetails());
+        boolean cantValidateLabelLg2 = "{\"message\":\"The labelLg2 of the list should be defined\"}".equals(exceptionLabelLg2.getDetails());
+        boolean cantValidateLastClassUriSegment = "{\"message\":\"The lastClassUriSegment of the list should be defined\"}".equals(exceptionLastClassUriSegment.getDetails());
+        boolean cantValidateLastListUriSegment = "{\"message\":\"The lastListUriSegment of the list should be defined\"}".equals(exceptionLastListUriSegment.getDetails());
+        boolean cantValidateCodeKey= "{\"code\":1102,\"message\":\"A code list should contain at least one code\"}".equals(exceptionCodeKey.getDetails());
+
+        List<Boolean> actual = List.of(cantValidateId,cantValidateLabelLg1,cantValidateLabelLg2,cantValidateLastClassUriSegment,cantValidateLastListUriSegment,cantValidateCodeKey);
+        List<Boolean> expected = List.of(true,true,true,true,true,true);
+
+        assertEquals(expected,actual);
     }
 }

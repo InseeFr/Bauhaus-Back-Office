@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.keycloak;
 
 import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
+import fr.insee.rmes.config.keycloak.ServerZone;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.stubs.KeycloakServicesStub;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +14,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -88,4 +87,40 @@ class KeycloakServicesTest {
         Mockito.verify(testRestTemplate).postForObject(eq("keycloak.dmz/protocol/openid-connect/token"), any(HttpEntity.class), eq(Token.class));
     }
 
+    @Test
+    void shouldAnswerThatTokenIsNotValid(){
+        String firstToken = null;
+        String secondToken = "eyJhbGciOiJSUzI1N1rQ";
+        String thirdToken = "-/*-";
+        String fourthToken = "11";
+        List<Boolean> actual = List.of(keycloakServices.isTokenValid(firstToken),
+                keycloakServices.isTokenValid(secondToken),
+                keycloakServices.isTokenValid(thirdToken),
+                keycloakServices.isTokenValid(fourthToken)
+                );
+        List<Boolean> expected = List.of(false,false,false,false);
+        assertEquals(expected,actual);
+    }
+
+    @Test
+    void shouldFindZoneFromUrlAndStoreIt(){
+        ServerZone firstServerZone = new ServerZone();
+        ServerZone secondServerZone = new ServerZone();
+
+        firstServerZone.setZone("DMZ");
+        secondServerZone.setZone("INTERNE");
+
+        Map<String, ServerZone> rdfserver = Map.of("FIRST",firstServerZone,"SECOND",secondServerZone);
+        KeycloakServerZoneConfiguration keycloakServerZoneConfiguration = new KeycloakServerZoneConfiguration(rdfserver);
+        KeycloakServices keycloakServicesExamples = new KeycloakServices("secret","clientID","serverKeycloak","secretDmz","clientDmzId","serverKeycloakDmz",keycloakServerZoneConfiguration);
+
+        ServerZone firstResearch = keycloakServicesExamples.findZoneFromUrlAndStoreIt("FIRST");
+        ServerZone secondResearch = keycloakServicesExamples.findZoneFromUrlAndStoreIt("SECOND");
+        ServerZone thirdResearch = keycloakServicesExamples.findZoneFromUrlAndStoreIt("non-existent URL");
+
+        List<ServerZone> actual = List.of(firstResearch,secondResearch,thirdResearch);
+        List<ServerZone> expected = List.of( firstServerZone,secondServerZone,secondServerZone);
+        assertEquals(expected.toString(),actual.toString());
+
+        }
 }
