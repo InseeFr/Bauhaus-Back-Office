@@ -45,12 +45,12 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnTrueWhenStrategyIsAll() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
-                new ModuleAccessPrivileges(Module.FAMILY, Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL)
                 ))
         ));
 
-        boolean result = checker.hasAccess("FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
 
         assertTrue(result);
     }
@@ -59,12 +59,12 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenStrategyIsNone() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
-                new ModuleAccessPrivileges(Module.FAMILY, Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.NONE)
                 ))
         ));
 
-        boolean result = checker.hasAccess("FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
 
         assertFalse(result);
     }
@@ -74,12 +74,12 @@ class PropertiesAccessPrivilegesCheckerTest {
         User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithDifferentStamp));
         when(fetcher.computePrivileges(userWithDifferentStamp.roles())).thenReturn(Set.of(
-                new ModuleAccessPrivileges(Module.FAMILY, Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP)
                 ))
         ));
 
-        boolean result = checker.hasAccess("FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
 
         assertFalse(result);
     }
@@ -89,7 +89,7 @@ class PropertiesAccessPrivilegesCheckerTest {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of());
 
-        boolean result = checker.hasAccess("FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
 
         assertFalse(result);
     }
@@ -98,10 +98,10 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenPrivilegeNotFound() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
-                new ModuleAccessPrivileges(Module.FAMILY, Set.of())
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of())
         ));
 
-        boolean result = checker.hasAccess("FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
 
         assertFalse(result);
     }

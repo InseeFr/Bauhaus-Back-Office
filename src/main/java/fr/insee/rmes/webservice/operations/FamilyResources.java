@@ -50,7 +50,7 @@ public class FamilyResources  {
 
 
 	@GetMapping("/families")
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.READ)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialOperationFamily> getFamilies() throws RmesException {
@@ -58,7 +58,7 @@ public class FamilyResources  {
 	}
 
 	@GetMapping("/families/advanced-search")
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.READ)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
 	public ResponseEntity<Object> getFamiliesForSearch() throws RmesException {
@@ -67,7 +67,7 @@ public class FamilyResources  {
 	}
 
 	@GetMapping("/families/{id}/seriesWithReport")
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.READ)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithReport", summary = "Series with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= Operation.class)))})
 	public ResponseEntity<Object> getSeriesWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
 		String series = operationsService.getSeriesWithReport(id);
@@ -75,7 +75,7 @@ public class FamilyResources  {
 	}
 
 	@GetMapping("/family/{id}")
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.READ)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 			)
@@ -85,7 +85,7 @@ public class FamilyResources  {
 	}
 
 	@PutMapping("/family/{id}")
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.UPDATE)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.UPDATE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update an existing family" )
 	public ResponseEntity<Object> setFamilyById(
 			@PathVariable(Constants.ID) String id, 
@@ -96,7 +96,7 @@ public class FamilyResources  {
 
 
 	@PostMapping("/family")
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.CREATE)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.CREATE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create a new family")
 	public ResponseEntity<Object> createFamily(
 			@Parameter(description = "Family to create", required = true, content = @Content(schema = @Schema(implementation = Family.class))) 
@@ -105,7 +105,7 @@ public class FamilyResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@HasAccess(module = RBAC.Module.FAMILY, privilege =  RBAC.Privilege.PUBLISH)
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.PUBLISH)
 	@PutMapping("/family/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(

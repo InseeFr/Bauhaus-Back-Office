@@ -19,12 +19,12 @@ class PropertiesRbacFetcherTest {
 
     @Test
     void shouldManageOneRole() {
-        assertThat(rbacFetcher.getApplicationActionStrategyByRole(List.of("Gestionnaire_indicateur_RMESGNCS"), RBAC.Module.SIMS, RBAC.Privilege.CREATE)).isEqualTo(RBAC.Strategy.STAMP);
+        assertThat(rbacFetcher.getApplicationActionStrategyByRole(List.of("Gestionnaire_indicateur_RMESGNCS"), RBAC.Module.OPERATION_SIMS, RBAC.Privilege.CREATE)).isEqualTo(RBAC.Strategy.STAMP);
     }
 
     @Test
     void shouldManageMultipleRole() {
-        assertThat(rbacFetcher.getApplicationActionStrategyByRole(List.of("Gestionnaire_indicateur_RMESGNCS", "Administrateur_RMESGNCS", "Unknown"), RBAC.Module.SIMS, RBAC.Privilege.CREATE)).isEqualTo(RBAC.Strategy.ALL);
+        assertThat(rbacFetcher.getApplicationActionStrategyByRole(List.of("Gestionnaire_indicateur_RMESGNCS", "Administrateur_RMESGNCS", "Unknown"), RBAC.Module.OPERATION_SIMS, RBAC.Privilege.CREATE)).isEqualTo(RBAC.Strategy.ALL);
     }
 
     @Test
@@ -38,9 +38,9 @@ class PropertiesRbacFetcherTest {
 
         assertEquals(8, result.size());
 
-        ModuleAccessPrivileges privileges = result.stream().filter(r -> r.application().equals(RBAC.Module.CLASSIFICATION)).findFirst().get();
+        ModuleAccessPrivileges privileges = result.stream().filter(r -> r.application().equals(RBAC.Module.CLASSIFICATION_CLASSIFICATION)).findFirst().get();
 
-        assertEquals(RBAC.Module.CLASSIFICATION, privileges.application());
+        assertEquals(RBAC.Module.CLASSIFICATION_CLASSIFICATION, privileges.application());
         assertEquals(5, privileges.privileges().size());
 
         ModuleAccessPrivileges.Privilege privilege = privileges.privileges().stream().filter(p -> p.privilege().equals(RBAC.Privilege.UPDATE)).findFirst().get();

@@ -1,113 +1,113 @@
 rbac:
   config:
     Administrateur_RMESGNCS:
-        concept:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        collection:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        family:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        serie:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        operation:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        indicator:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        sims:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-        classification:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
+      concept_concept:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      concept_collection:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_family:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_series:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_operation:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_indicator:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_sims:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      classification_classification:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Utilisateur_RMESGNCS:
-      concept:
+      concept_concept:
         read: ALL
-      collection:
+      concept_collection:
         read: ALL
-      family:
+      operation_family:
         read: ALL
-      serie:
+      operation_series:
         read: ALL
-      operation:
+      operation_operation:
         read: ALL
-      indicator:
+      operation_indicator:
         read: ALL
-      sims:
+      operation_sims:
         read: ALL
-      classification:
+      classification_classification:
         read: ALL
     Gestionnaire_concept_RMESGNCS:
-      concept:
+      concept_concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
     Gestionnaire_ensemble_concepts_RMESGNCS:
-      concept:
+      concept_concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
     Gestionnaire_serie_RMESGNCS:
-      family:
+      operation_family:
         read: STAMP
-      serie:
+      operation_series:
         read: STAMP
         update: STAMP
         publish: STAMP
-      operation:
+      operation_operation:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-      sims:
+      operation_sims:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
     Gestionnaire_indicateur_RMESGNCS:
-      family:
+      operation_family:
         read: STAMP
-      serie:
+      operation_series:
         read: STAMP
         update: STAMP
         publish: STAMP
-      indicator:
+      operation_indicator:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-      sims:
+      operation_sims:
         create: STAMP
         read: STAMP
         update: STAMP
