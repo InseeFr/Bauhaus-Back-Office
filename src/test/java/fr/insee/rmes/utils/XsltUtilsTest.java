@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.*;
-
+import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 class XsltUtilsTest {
@@ -18,7 +18,7 @@ class XsltUtilsTest {
     InputStream zipToCompleteIS;
 
     @Test
-    void shouldThrowNoSuchFileExceptionWhenBuildParams() throws IOException {
+    void shouldThrowNoSuchFileExceptionWhenBuildParams()  {
         String file="parent";
         String subfolder = "child";
         File output = new File(file,subfolder);
@@ -80,7 +80,7 @@ class XsltUtilsTest {
         };
 
         NoSuchFileException exception = assertThrows(NoSuchFileException.class, () ->XsltUtils.createOdtFromXml(output,finalPath ,zipToCompleteIS,tempDir));
-        assertNotSame("", exception.getMessage());
+        assertTrue(!Objects.equals(exception.getMessage(), "") && exception.getMessage()!=null);
 
     }
 
