@@ -7,7 +7,7 @@ import java.util.List;
 public record User(String id, List<String> roles, Stamp stamp) {
 
 
-	public static final User FAKE_USER = new User("fakeUser", List.of(Roles.ADMIN), "fakeStampForDvAndQf");
+	public static final User FAKE_USER = new User("fakeUser", List.of(Roles.ADMIN), "DG57-C003");
 	public static final User EMPTY_USER = new User();
     private User() {
         this(null, List.of(), "");

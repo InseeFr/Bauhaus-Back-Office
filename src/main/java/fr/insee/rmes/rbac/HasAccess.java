@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("@propertiesAccessPrivilegesChecker.hasAccess('{module}', '{privilege}', authentication.principal)")
+@PreAuthorize("@propertiesAccessPrivilegesChecker.hasAccess('{module}', '{privilege}', #id, authentication.principal)")
 public @interface HasAccess {
     RBAC.Module module();
     RBAC.Privilege privilege();

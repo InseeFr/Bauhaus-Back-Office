@@ -4,5 +4,5 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public interface AccessPrivilegesChecker {
 
-    boolean hasAccess(String module, String privilege, Object user) throws RmesException;
+    boolean hasAccess(String module, String privilege, String id, Object user) throws RmesException;
 }

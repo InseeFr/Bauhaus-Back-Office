@@ -5,7 +5,7 @@ import java.util.List;
 
 public class DefaultStampChecker implements  ObjectStampChecker {
     @Override
-    public List<String> getStamps() {
+    public List<String> getStamps(String id) {
         return Collections.emptyList();
     }
 }

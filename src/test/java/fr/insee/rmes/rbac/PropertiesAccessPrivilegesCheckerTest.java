@@ -29,14 +29,14 @@ class PropertiesAccessPrivilegesCheckerTest {
     void setUp() {
         fetcher = mock(RbacFetcher.class);
         decoder = mock(UserDecoder.class);
-        checker = new PropertiesAccessPrivilegesChecker(fetcher, decoder);
+        checker = new PropertiesAccessPrivilegesChecker(fetcher, decoder, null, null);
     }
 
     @Test
     void shouldReturnFalseWhenUserNotPresent() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.empty());
 
-        boolean result = checker.hasAccess("MODULE_1", "READ", "principal");
+        boolean result = checker.hasAccess("MODULE_1", "READ", "","principal");
 
         assertFalse(result);
     }
@@ -50,7 +50,7 @@ class PropertiesAccessPrivilegesCheckerTest {
                 ))
         ));
 
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
 
         assertTrue(result);
     }
@@ -64,7 +64,7 @@ class PropertiesAccessPrivilegesCheckerTest {
                 ))
         ));
 
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
 
         assertFalse(result);
     }
@@ -79,7 +79,7 @@ class PropertiesAccessPrivilegesCheckerTest {
                 ))
         ));
 
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
 
         assertFalse(result);
     }
@@ -89,7 +89,7 @@ class PropertiesAccessPrivilegesCheckerTest {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of());
 
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
 
         assertFalse(result);
     }
@@ -101,7 +101,7 @@ class PropertiesAccessPrivilegesCheckerTest {
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of())
         ));
 
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "principal");
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
 
         assertFalse(result);
     }

@@ -144,11 +144,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.DATASET_CONTRIBUTOR);
     }
 
-    public boolean isDatasetContributorWithStamp(String datasetId){
-        logger.trace("Check if {} is contributor for dataset {}", methodSecurityExpressionRoot.getPrincipal(), datasetId);
-        return isDatasetContributor() && isManagerForDatasetId(datasetId);
-    }
-
     public boolean isDistributionContributorWithStamp(String distributionId){
         logger.trace("Check if {} is contributor for distribution {}", methodSecurityExpressionRoot.getPrincipal(), distributionId);
         return isDatasetContributor() && isManagerForDistributionId(distributionId);

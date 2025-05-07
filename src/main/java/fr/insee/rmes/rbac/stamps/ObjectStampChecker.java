@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface ObjectStampChecker {
 
-    List<String> getStamps();
+    List<String> getStamps(String id);
 }

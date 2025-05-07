@@ -49,6 +49,12 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      dataset_dataset:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        delete: ALL
     Utilisateur_RMESGNCS:
       concept_concept:
         read: ALL
@@ -112,3 +118,12 @@ rbac:
         read: STAMP
         update: STAMP
         publish: STAMP
+    Gestionnaire_jeu_donnees_RMESGNCS:
+      dataset_dataset:
+        create: ALL
+        read: ALL
+        update: STAMP
+        publish: STAMP
+        delete: STAMP
+
+
