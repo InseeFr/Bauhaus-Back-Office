@@ -36,7 +36,7 @@ class PropertiesRbacFetcherTest {
     void shouldComputeStrategies(){
         var result = rbacFetcher.computePrivileges(List.of("Gestionnaire_indicateur_RMESGNCS", "Administrateur_RMESGNCS"));
 
-        assertEquals(8, result.size());
+        assertEquals(10, result.size());
 
         ModuleAccessPrivileges privileges = result.stream().filter(r -> r.application().equals(RBAC.Module.CLASSIFICATION_CLASSIFICATION)).findFirst().get();
 

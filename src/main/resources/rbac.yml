@@ -43,6 +43,12 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
       classification_classification:
         create: ALL
         read: ALL
@@ -50,6 +56,12 @@ rbac:
         delete: ALL
         publish: ALL
       dataset_dataset:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        delete: ALL
+      dataset_distribution:
         create: ALL
         read: ALL
         update: ALL
@@ -101,6 +113,12 @@ rbac:
         read: STAMP
         update: STAMP
         publish: STAMP
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Gestionnaire_indicateur_RMESGNCS:
       operation_family:
         read: STAMP
@@ -118,8 +136,20 @@ rbac:
         read: STAMP
         update: STAMP
         publish: STAMP
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Gestionnaire_jeu_donnees_RMESGNCS:
       dataset_dataset:
+        create: ALL
+        read: ALL
+        update: STAMP
+        publish: STAMP
+        delete: STAMP
+      dataset_distribution:
         create: ALL
         read: ALL
         update: STAMP

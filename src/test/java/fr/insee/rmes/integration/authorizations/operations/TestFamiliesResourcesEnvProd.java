@@ -92,8 +92,7 @@ class TestFamiliesResourcesEnvProd {
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
     void getData(String url, Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
-
-        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), anyString(), any())).thenReturn(hasAccessReturn);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
 
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
@@ -142,9 +141,9 @@ class TestFamiliesResourcesEnvProd {
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
     void createFamily(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
-        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), anyString(), any())).thenReturn(hasAccessReturn);
+        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
-       var request = post("/operations/family")
+        var request = post("/operations/family")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}");

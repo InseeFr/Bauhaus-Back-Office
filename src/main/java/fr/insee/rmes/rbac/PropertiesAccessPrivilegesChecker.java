@@ -5,6 +5,7 @@ import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.rbac.stamps.DatasetDatasetStampChecker;
+import fr.insee.rmes.rbac.stamps.DatasetDistributionStampChecker;
 import fr.insee.rmes.rbac.stamps.DefaultStampChecker;
 import fr.insee.rmes.rbac.stamps.ObjectStampChecker;
 import org.springframework.core.env.Environment;
@@ -69,6 +70,7 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     private ObjectStampChecker getObjectStampChecker(RBAC.Module module) {
         return switch (module) {
             case DATASET_DATASET -> new DatasetDatasetStampChecker(this.env, this.repositoryGestion);
+            case DATASET_DISTRIBUTION -> new DatasetDistributionStampChecker(this.env, this.repositoryGestion);
             default -> new DefaultStampChecker();
         };
     }
