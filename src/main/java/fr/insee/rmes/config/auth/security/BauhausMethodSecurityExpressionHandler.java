@@ -26,10 +26,13 @@ public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurit
     private final StampFromPrincipal stampFromPrincipal;
 
     @Autowired
-    public BauhausMethodSecurityExpressionHandler(StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
+    public BauhausMethodSecurityExpressionHandler(
+            StampAuthorizationChecker stampAuthorizationChecker,
+            StampFromPrincipal stampFromPrincipal) {
         logger.trace("Initializing GlobalMethodSecurityConfiguration with BauhausMethodSecurityExpressionHandler and DefaultRolePrefix = {}", DEFAULT_ROLE_PREFIX);
         this.stampAuthorizationChecker = requireNonNull(stampAuthorizationChecker);
         this.stampFromPrincipal = requireNonNull(stampFromPrincipal);
+
         setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
     }
 

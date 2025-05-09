@@ -2,15 +2,9 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.webservice.operations.SeriesResources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,9 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,13 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=operations"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-class TestSeriesResourcesEnvProd {
+class TestSeriesResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @Autowired
     private MockMvc mvc;
@@ -59,12 +45,6 @@ class TestSeriesResourcesEnvProd {
 
     @MockitoBean
     protected OperationsDocumentationsService documentationsService;
-
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";

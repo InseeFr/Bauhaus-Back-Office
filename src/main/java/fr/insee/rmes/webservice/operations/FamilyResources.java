@@ -8,6 +8,8 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.PartialOperationFamily;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +21,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,6 +50,7 @@ public class FamilyResources  {
 
 
 	@GetMapping("/families")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialOperationFamily> getFamilies() throws RmesException {
@@ -56,6 +58,7 @@ public class FamilyResources  {
 	}
 
 	@GetMapping("/families/advanced-search")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
 	public ResponseEntity<Object> getFamiliesForSearch() throws RmesException {
@@ -64,6 +67,7 @@ public class FamilyResources  {
 	}
 
 	@GetMapping("/families/{id}/seriesWithReport")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithReport", summary = "Series with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= Operation.class)))})
 	public ResponseEntity<Object> getSeriesWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
 		String series = operationsService.getSeriesWithReport(id);
@@ -71,6 +75,7 @@ public class FamilyResources  {
 	}
 
 	@GetMapping("/family/{id}")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 			)
@@ -79,8 +84,8 @@ public class FamilyResources  {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(family);
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping("/family/{id}")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.UPDATE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update an existing family" )
 	public ResponseEntity<Object> setFamilyById(
 			@PathVariable(Constants.ID) String id, 
@@ -90,8 +95,8 @@ public class FamilyResources  {
 	}
 
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping("/family")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.CREATE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create a new family")
 	public ResponseEntity<Object> createFamily(
 			@Parameter(description = "Family to create", required = true, content = @Content(schema = @Schema(implementation = Family.class))) 
@@ -100,7 +105,7 @@ public class FamilyResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.PUBLISH)
 	@PutMapping("/family/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(

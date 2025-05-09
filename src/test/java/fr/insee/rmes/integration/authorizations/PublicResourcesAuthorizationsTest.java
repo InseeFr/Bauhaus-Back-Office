@@ -1,19 +1,13 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.external.services.authentication.stamps.StampsService;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.webservice.PublicResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,17 +30,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
         })
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class})
-class PublicResourcesAuthorizationsTest {
+class PublicResourcesAuthorizationsTest extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
     @MockitoBean
     private StampsService stampsService;
 

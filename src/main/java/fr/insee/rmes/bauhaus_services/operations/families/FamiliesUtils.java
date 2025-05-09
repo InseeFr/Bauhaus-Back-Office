@@ -106,9 +106,6 @@ public class FamiliesUtils {
 	}
 
 	public String createFamily(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateFamily()) {
-			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
-		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
@@ -128,9 +125,6 @@ public class FamiliesUtils {
 	}
 
 	public void setFamily(String id, String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateFamily()) {
-			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create or modify a family.");
-		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family();
@@ -203,10 +197,6 @@ public class FamiliesUtils {
 
 	public void setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
-		
-		if(!stampsRestrictionsService.canCreateFamily()) {
-			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
-		}
 
 		familyPublication.publishFamily(id);
 

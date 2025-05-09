@@ -28,7 +28,11 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private final StampFromPrincipal stampFromPrincipal;
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
 
-    private SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
+
+    private SecurityExpressionRootForBauhaus(
+            MethodSecurityExpressionOperations methodSecurityExpressionOperations,
+            StampAuthorizationChecker stampAuthorizationChecker,
+            StampFromPrincipal stampFromPrincipal) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
         this.stampAuthorizationChecker = stampAuthorizationChecker;
@@ -95,8 +99,8 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
     @Override
-    public boolean hasPermission(Object target, Object permission) {
-        return this.methodSecurityExpressionRoot.hasPermission(target,permission);
+    public boolean hasPermission(Object module, Object permission) {
+        return this.methodSecurityExpressionRoot.hasPermission(module,permission);
     }
 
     @Override
@@ -129,6 +133,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return methodSecurityExpressionOperations.getThis();
     }
 
+
     public boolean isAdmin() {
         logger.trace("Check if {} is admin", methodSecurityExpressionRoot.getPrincipal());
         return hasRole(Roles.ADMIN);
@@ -137,11 +142,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     public boolean isDatasetContributor() {
         logger.trace("Check if {} is dataset contributor", methodSecurityExpressionRoot.getPrincipal());
         return hasRole(Roles.DATASET_CONTRIBUTOR);
-    }
-
-    public boolean isDatasetContributorWithStamp(String datasetId){
-        logger.trace("Check if {} is contributor for dataset {}", methodSecurityExpressionRoot.getPrincipal(), datasetId);
-        return isDatasetContributor() && isManagerForDatasetId(datasetId);
     }
 
     public boolean isDistributionContributorWithStamp(String distributionId){

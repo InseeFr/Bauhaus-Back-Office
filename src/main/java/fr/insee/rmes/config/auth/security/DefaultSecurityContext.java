@@ -25,7 +25,7 @@ public class DefaultSecurityContext {
 
     private static final List<String> DEFAULT_FAKE_ROLES = List.of(Roles.ADMIN);
     private static final String DEFAULT_FAKE_NAME = "fakeUser";
-    private static final Stamp DEFAULT_FAKE_STAMP = new Stamp("fakeStampForDvAndQf");
+    private static final Stamp DEFAULT_FAKE_STAMP = new Stamp("DG57-C003");
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultSecurityContext.class);
     private final boolean requiresSsl;
