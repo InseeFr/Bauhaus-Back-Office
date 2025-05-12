@@ -42,21 +42,21 @@ import java.util.TreeSet;
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "406", description = "Not Acceptable"),
         @ApiResponse(responseCode = "500", description = "Internal server error")})
+
 public class PublicResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
 
     private final StampsService stampsService;
-    private  final String env;
-    private final  String lg2;
-    private final  String lg1;
-    private final  String maxLengthScopeNote;
-    private  final String defaultMailSender;
+    private final String env;
+    private final String lg2;
+    private final String lg1;
+    private final String maxLengthScopeNote;
+    private final String defaultMailSender;
     private final String defaultContributor;
     private final String appHost;
     private final List<String> activeModules;
     private final List<String> modules;
-
     private final String version;
 
     public PublicResources(@Autowired StampsService stampsService,
@@ -78,7 +78,7 @@ public class PublicResources {
         this.defaultMailSender = defaultMailSender;
         this.defaultContributor = defaultContributor;
         this.appHost = appHost;
-        this.activeModules=activeModules;
+        this.activeModules = activeModules;
         this.modules = modules;
         this.version = version;
     }
