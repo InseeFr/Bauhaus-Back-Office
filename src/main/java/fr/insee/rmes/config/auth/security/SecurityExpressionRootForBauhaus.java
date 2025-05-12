@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,15 +143,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.DATASET_CONTRIBUTOR);
     }
 
-    public boolean isDistributionContributorWithStamp(String distributionId){
-        logger.trace("Check if {} is contributor for distribution {}", methodSecurityExpressionRoot.getPrincipal(), distributionId);
-        return isDatasetContributor() && isManagerForDistributionId(distributionId);
-    }
-
-    public boolean isContributorOfSerie(String seriesId) {
-        logger.trace("Check if {} is contributor for serie {}", methodSecurityExpressionRoot.getPrincipal(), seriesId);
-        return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
-    }
 
 //    for PUT and DELETE CodesList
     public boolean isContributorOfCodesList(String codesListId){
@@ -174,21 +164,8 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private static @Nullable String extractContributorStampFromBody(String body) {
         return (new JSONObject(body)).optString("contributor");
     }
-    private static @Nullable JSONArray extractContributorStampsFromBody(String body) {
-        return (new JSONObject(body)).optJSONArray("contributor");
-    }
 
 
-    public boolean isStructureContributor(String structureId){
-        logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
-    }
-
-    //for PUT and DELETE component
-    public boolean isComponentContributor(String componentId){
-        logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
-    }
 
     private boolean userHasStampWichManageResource(String resourceId, BiPredicate<String, Stamp> stampIsManager){
         if (resourceId==null){
@@ -199,31 +176,12 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
 
-    private boolean isManagerForSerieId(String seriesId) {
-        return userHasStampWichManageResource(seriesId, this.stampAuthorizationChecker::isSeriesManagerWithStamp);
-    }
-
     private boolean isManagerForCodesListId(String codesListId) {
         return userHasStampWichManageResource(codesListId, this.stampAuthorizationChecker::isCodesListManagerWithStamp);
     }
 
-    private boolean isManagerForDatasetId(String datasetId) {
-        return userHasStampWichManageResource(datasetId, this.stampAuthorizationChecker::isDatasetManagerWithStamp);
-    }
-    private boolean isManagerForDistributionId(String distributionId) {
-        return userHasStampWichManageResource(distributionId, this.stampAuthorizationChecker::isDistributionManagerWithStamp);
-    }
-
-    private boolean isManagerForStructureId(String structureId) {
-        return userHasStampWichManageResource(structureId, this.stampAuthorizationChecker::isStructureManagerWithStamp);
-    }
-
-    private boolean isManagerForComponentId(String componentId) {
-        return userHasStampWichManageResource(componentId, this.stampAuthorizationChecker::isComponentManagerWithStamp);
-    }
   
     private Optional<Stamp> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal());
     }
-
 }

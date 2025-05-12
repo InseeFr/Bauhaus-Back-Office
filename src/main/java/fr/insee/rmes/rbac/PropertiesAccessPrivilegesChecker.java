@@ -67,6 +67,8 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     private ObjectStampChecker getObjectStampChecker(RBAC.Module module) {
         return switch (module) {
             case OPERATION_SERIES -> new OperationSeriesStampChecker(this.env, this.repositoryGestion);
+            case STRUCTURE_STRUCTURE -> new StructureStructureStampChecker(this.env, this.repositoryGestion);
+            case STRUCTURE_COMPONENT -> new StructureComponentStampChecker(this.env, this.repositoryGestion);
             case DATASET_DATASET -> new DatasetDatasetStampChecker(this.env, this.repositoryGestion);
             case DATASET_DISTRIBUTION -> new DatasetDistributionStampChecker(this.env, this.repositoryGestion);
             default -> new DefaultStampChecker();
