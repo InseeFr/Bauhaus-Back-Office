@@ -1,6 +1,18 @@
 rbac:
   config:
     Administrateur_RMESGNCS:
+      structure_structure:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      structure_component:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
       concept_concept:
         create: ALL
         read: ALL
@@ -73,7 +85,24 @@ rbac:
         update: ALL
         publish: ALL
         delete: ALL
+    Gestionnaire_structures_RMESGNCS:
+      structure_structure:
+        create: ALL
+        read: ALL
+        update: STAMP
+        delete: STAMP
+        publish: STAMP
+      structure_component:
+        create: ALL
+        read: ALL
+        update: STAMP
+        delete: STAMP
+        publish: STAMP
     Utilisateur_RMESGNCS:
+      structure_structure:
+        read: ALL
+      structure_component:
+        read: ALL
       concept_concept:
         read: ALL
       concept_collection:
@@ -87,6 +116,10 @@ rbac:
       operation_indicator:
         read: ALL
       operation_sims:
+        read: ALL
+      dataset_dataset:
+        read: ALL
+      dataset_distribution:
         read: ALL
       classification_classification:
         read: ALL

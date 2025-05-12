@@ -178,24 +178,11 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return (new JSONObject(body)).optJSONArray("contributor");
     }
 
-    //for PUT and DELETE structure
+
     public boolean isStructureContributor(String structureId){
         logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
     }
-
-//  for POST structure or component
-    public boolean isStructureAndComponentContributor(String body) {
-        logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
-        Optional<Stamp> stamp = getStamp();
-        JSONArray contributors = extractContributorStampsFromBody(body);
-
-        if(contributors == null){
-            return false;
-        }
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && contributors.toList().stream().anyMatch(s -> ((String) s).equalsIgnoreCase(stamp.get().stamp()));
-    }
-
 
     //for PUT and DELETE component
     public boolean isComponentContributor(String componentId){
