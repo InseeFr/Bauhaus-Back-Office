@@ -51,7 +51,6 @@ public class MetadataReportResources {
 			}
 	)
 	@Operation(
-			operationId = "getMsd",
 			summary = "Metadata structure definition",
 			responses = {
 					@ApiResponse(content = @Content(schema = @Schema(implementation = MAS.class)))
@@ -75,7 +74,7 @@ public class MetadataReportResources {
 	}
 
 	@GetMapping(value = "/metadataAttribute/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getMA", summary = "Metadata attribute specification and property",
+	@Operation(summary = "Metadata attribute specification and property",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Attribute.class)))})
 	public ResponseEntity<Object> getMetadataAttribute(@PathVariable(Constants.ID) String id) throws RmesException {
 		String metadataAttribute = documentationsService.getMetadataAttribute(id);
@@ -83,7 +82,7 @@ public class MetadataReportResources {
 	}
 
 	@GetMapping(value = "/metadataAttributes", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getMAs", summary = "Metadata attributes specification and property",
+	@Operation(summary = "Metadata attributes specification and property",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type="array",implementation = Attribute.class)))})
 	public ResponseEntity<Object> getMetadataAttributes() throws RmesException {
 		String metadataAttribute = documentationsService.getMetadataAttributes();
@@ -92,7 +91,7 @@ public class MetadataReportResources {
 
 
 	@GetMapping(value = "/metadataReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getMetadataReport", summary = "Metadata report for an id",
+	@Operation(summary = "Metadata report for an id",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getMetadataReport(@PathVariable(Constants.ID) String id) throws RmesException {
@@ -101,7 +100,7 @@ public class MetadataReportResources {
 	}
 
 	@GetMapping(value = "/metadataReport/default", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getMetadataReportDefaultValue", summary = "Get default value for metadata report",
+	@Operation(summary = "Get default value for metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getMetadataReportDefaultValue() throws IOException {
@@ -109,7 +108,7 @@ public class MetadataReportResources {
 	}
 
 	@GetMapping(value = "/metadataReport/fullSims/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@Operation(operationId = "getFullSims", summary = "Full sims for an id",
+	@Operation(summary = "Full sims for an id",
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getFullSims(
@@ -139,7 +138,7 @@ public class MetadataReportResources {
 	 * @return
 	 */
 	@GetMapping(value = "/metadataReport/Owner/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id",
+	@Operation(summary = "Owner stamp for a Metadata report's id",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getMetadataReportOwner(@PathVariable(Constants.ID) String id) throws RmesException {
@@ -154,7 +153,7 @@ public class MetadataReportResources {
 	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR , T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setMetadataReport", summary = "Create metadata report",
+	@Operation(summary = "Create metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
 	public ResponseEntity<Object> setMetadataReport(
 			@Parameter(description = "Metadata report to create", required = true,
@@ -175,7 +174,7 @@ public class MetadataReportResources {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/metadataReport/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
+	@Operation(summary = "Update metadata report")
 	public ResponseEntity<Object> setMetadataReportById(
 			@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Report to update", required = true,
@@ -191,7 +190,7 @@ public class MetadataReportResources {
 	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@DeleteMapping(value = "/metadataReport/delete/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
+	@Operation(summary = "Delete metadata report")
 	public ResponseEntity<Object> deleteMetadataReportById(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		HttpStatus result = documentationsService.deleteMetadataReport(id);
@@ -209,7 +208,7 @@ public class MetadataReportResources {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/metadataReport/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
+	@Operation(summary = "Sims validation")
 	public ResponseEntity<String> setSimsValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		documentationsService.publishMetadataReport(id);
@@ -227,7 +226,7 @@ public class MetadataReportResources {
 	 * @return response
 	 */
 	@GetMapping(value = "/metadataReport/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	@Operation(summary = "Produce a document with a metadata report")
 	public ResponseEntity<?> getSimsExport(
 			@Parameter(
 				description = "Identifiant de la documentation (format : [0-9]{4})",
@@ -259,7 +258,7 @@ public class MetadataReportResources {
 	 * @return response
 	 */
 	@GetMapping(value = "/metadataReport/export/label/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getSimsExportLabel", summary = "Produce a document with a metadata report")
+	@Operation(summary = "Produce a document with a metadata report")
 	public ResponseEntity<?> getSimsExportForLabel(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
@@ -278,7 +277,7 @@ public class MetadataReportResources {
 	 * @return response
 	 */
 	@GetMapping(value = "/metadataReport/export/{id}/tempFiles", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getSimsExportFiles", summary = "Get xml files used to produce a document with a metadata report")
+	@Operation(summary = "Get xml files used to produce a document with a metadata report")
 	public ResponseEntity<Object> getSimsExportFiles(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,

@@ -60,14 +60,14 @@ public class ClassificationsResources {
 	}
 
 	@GetMapping(value = "/families", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getClassificationFamilies", summary = "List of classification families", 
+	@Operation(summary = "List of classification families",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialClassificationFamily> getFamilies() throws RmesException {
 		return classificationsService.getFamilies();
 	}
 	
 	@GetMapping(value="/family/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getFamily", summary = "Classification family", 
+	@Operation(summary = "Classification family",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = FamilyClass.class)))})
 	public ResponseEntity<Object> getFamily(@PathVariable(Constants.ID) String id) throws RmesException {
 		String family = classificationsService.getFamily(id);
@@ -75,7 +75,7 @@ public class ClassificationsResources {
 	}
 	
 	@GetMapping(value="/family/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getFamilyMembers", summary = "Members of family", 
+	@Operation(summary = "Members of family",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
 	public ResponseEntity<Object> getFamilyMembers(@PathVariable(Constants.ID) String id) throws RmesException {
 		String familyMembers = classificationsService.getFamilyMembers(id);
@@ -83,7 +83,7 @@ public class ClassificationsResources {
 	}
 
 	@GetMapping(value="/series", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getClassificationSeries", summary = "List of classification series", 
+	@Operation(summary = "List of classification series",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialClassificationSeries> getSeries() throws RmesException {
 		return classificationsService.getSeries();
@@ -96,7 +96,7 @@ public class ClassificationsResources {
 	}
 	
 	@GetMapping(value="/series/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getSeriesMembers", summary = "Members of series", 
+	@Operation(summary = "Members of series",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
 	public ResponseEntity<Object> getSeriesMembers(@PathVariable(Constants.ID) String id) throws RmesException {
 		String seriesMembers = classificationsService.getSeriesMembers(id);
@@ -104,7 +104,7 @@ public class ClassificationsResources {
 	}
 	
 	@GetMapping(value="",produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getClassifications", summary = "List of classifications", 
+	@Operation(summary = "List of classifications",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialClassification> getClassifications() throws RmesException {
 		return classificationsService.getClassifications();
@@ -118,7 +118,7 @@ public class ClassificationsResources {
 
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}")
-	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
+	@io.swagger.v3.oas.annotations.Operation(summary = "Update an existing classification" )
 	public ResponseEntity<Id> updateClassification(
 			@PathVariable(Constants.ID) Id id,
 			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
@@ -128,7 +128,7 @@ public class ClassificationsResources {
 
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}/validate")
-	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Publish a classification")
 	public ResponseEntity<Id> publishClassification(
 			@PathVariable(Constants.ID) Id id) throws RmesException {
 		classificationsService.setClassificationValidation(id.identifier());

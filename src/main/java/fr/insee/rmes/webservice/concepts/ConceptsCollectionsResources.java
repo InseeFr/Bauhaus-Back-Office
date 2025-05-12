@@ -56,21 +56,21 @@ public class ConceptsCollectionsResources {
     private final ConceptsCollectionService conceptsCollectionService;
 
     @GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCollections", summary = "List of collections",
+    @Operation(summary = "List of collections",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
     public List<PartialCollection> getCollections() throws RmesException {
         return conceptsCollectionService.getCollections();
     }
 
     @GetMapping(value = "/export/{id}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})
-    @Operation(operationId = "getCollectionExport", summary = "Blob of collection")
+    @Operation(summary = "Blob of collection")
     public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required = false) String accept) throws RmesException {
         return conceptsService.getCollectionExport(id, accept);
     }
 
 
     @GetMapping(value = "/export-zip/{id}/{type}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip"})
-    @Operation(operationId = "exportZipCollectionODT", summary = "Blob of concept")
+    @Operation(summary = "Blob of concept")
     public void exportZipCollection(
             @PathVariable(Constants.ID) String id,
             @PathVariable("type") String type,
@@ -82,7 +82,7 @@ public class ConceptsCollectionsResources {
     }
 
     @GetMapping(value = "/export/{id}/{type}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})
-    @Operation(operationId = "getCollectionExport", summary = "Blob of collection")
+    @Operation(summary = "Blob of collection")
     public ResponseEntity<?> getCollectionExport(
             @PathVariable(Constants.ID) String id,
             @PathVariable("type") String type,

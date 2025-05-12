@@ -49,7 +49,7 @@ public class GeographyResources {
 	 ******************************************************************************************************/
 	@GetMapping(value = "/territories", produces = MediaType.APPLICATION_JSON_VALUE)
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
-	@Operation(operationId = "getGeoFeatures", summary = "List of geofeatures",
+	@Operation(summary = "List of geofeatures",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=GeoFeature.class))))})
 	public ResponseEntity<Object> getGeoFeatures() throws RmesException {
 		String jsonResultat = geoService.getGeoFeatures();
@@ -58,7 +58,7 @@ public class GeographyResources {
 	
 	@GetMapping(value = "/territory/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
-	@Operation(operationId = "getGeoFeature", summary = "Geofeature",
+	@Operation(summary = "Geofeature",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=GeoFeature.class)))})
 	public ResponseEntity<Object> getGeoFeature(@PathVariable(Constants.ID) String id) throws RmesException {
 		String jsonResultat = geoService.getGeoFeatureById(id).toString();
@@ -68,7 +68,7 @@ public class GeographyResources {
 
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "createGeograohy", summary = "Create feature")
+	@Operation(summary = "Create feature")
 	public ResponseEntity<Object> createGeography(
 			@Parameter(description = "Geo Feature to create", required = true, 
             content = @Content(schema = @Schema(implementation = GeoFeature.class))) @RequestBody String body) {
@@ -82,7 +82,7 @@ public class GeographyResources {
 
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "updateGeography", summary = "Update geography ")
+	@Operation(summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Geo Feature to update", required = true, schema = @Schema(implementation= GeoFeature.class)) @RequestBody String body) {

@@ -54,7 +54,7 @@ public class DocumentsResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDocuments", summary = "List of documents and links",
+    @Operation(summary = "List of documents and links",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Document.class))))})
     public ResponseEntity<String> getDocuments() throws RmesException {
         String documents = documentsService.getDocuments();
@@ -64,7 +64,7 @@ public class DocumentsResources {
 
     @GetMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDocument", summary = "Get a Document",
+    @Operation(summary = "Get a Document",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = Document.class)))})
     public ResponseEntity<String> getDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return ResponseEntity.status(HttpStatus.OK)
@@ -74,7 +74,7 @@ public class DocumentsResources {
 
     @GetMapping(value = "/document/{id}/file", produces = "*/*")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "downloadDocument", summary = "Download the Document file")
+    @Operation(summary = "Download the Document file")
     public ResponseEntity<Resource> downloadDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return documentsService.downloadDocument(id);
     }
@@ -85,7 +85,7 @@ public class DocumentsResources {
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
-    @Operation(operationId = "setDocument", summary = "Create document")
+    @Operation(summary = "Create document")
     public ResponseEntity<String> setDocument(
             @Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation = Document.class))
             @RequestParam(value = "body") String body,
@@ -100,7 +100,7 @@ public class DocumentsResources {
 
     @PutMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
-    @Operation(operationId = "setDocumentById", summary = "Update document ")
+    @Operation(summary = "Update document ")
     public ResponseEntity<String> setDocument(
             @Parameter(
                     description = "Id",
@@ -121,7 +121,7 @@ public class DocumentsResources {
     }
 
 
-    @Operation(operationId = "changeDocument", summary = "Change document file")
+    @Operation(summary = "Change document file")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/document/{id}/file",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -141,7 +141,7 @@ public class DocumentsResources {
 
     @DeleteMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.DELETE)
-    @Operation(operationId = "deleteDocument", summary = "Delete a document")
+    @Operation(summary = "Delete a document")
     public ResponseEntity<Object> deleteDocument(
             @Parameter(
                     required = true,
@@ -156,7 +156,7 @@ public class DocumentsResources {
 
     @GetMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getLink", summary = "Get a Link",
+    @Operation(summary = "Get a Link",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = Document.class)))})
     public ResponseEntity<String> getLink(@PathVariable(Constants.ID) String id) throws RmesException {
 
@@ -170,7 +170,7 @@ public class DocumentsResources {
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
-    @Operation(operationId = "setDocument", summary = "Create link")
+    @Operation(summary = "Create link")
     public ResponseEntity<Object> setLink(
             @Parameter(description = "Link", required = true, schema = @Schema(implementation = Document.class))
             @RequestParam(value = "body") String body
@@ -180,7 +180,7 @@ public class DocumentsResources {
 
     @PutMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
-    @Operation(operationId = "setLinkById", summary = "Update link")
+    @Operation(summary = "Update link")
     public ResponseEntity<Object> setLink(
             @Parameter(
                     description = "Id",
@@ -201,7 +201,7 @@ public class DocumentsResources {
 
     @DeleteMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.DELETE)
-    @Operation(operationId = "deleteLink", summary = "Delete a link")
+    @Operation(summary = "Delete a link")
     public ResponseEntity<Object> deleteLink(
             @Parameter(
                     required = true,

@@ -44,14 +44,14 @@ public class PartialCodeListsResources extends GenericResources {
     CodeListService codeListService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
+    @Operation(summary = "Partial List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
     public List<PartialCodesList> getAllPartialCodesLists() throws JsonProcessingException, RmesException {
         return codeListService.getAllCodesLists(true);
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
+    @Operation(summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation (@PathVariable("notation") String notation) throws RmesException {
         String body = codeListService.getDetailedPartialCodesList(notation);
@@ -59,7 +59,7 @@ public class PartialCodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/parent/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getPartialsByParent", summary = "Get partials by Parent IRI",
+    @Operation(summary = "Get partials by Parent IRI",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
     public ResponseEntity<Object> getPartialsByParent(@PathVariable("parentCode") String parentIri) {
         try {
@@ -72,7 +72,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
     @PutMapping("/{id}/validate")
-    @io.swagger.v3.oas.annotations.Operation(operationId = "publishPartialCodeList", summary = "Publish a partial codelist")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Publish a partial codelist")
     public ResponseEntity<Object> publishPartialCodeList(
             @PathVariable(Constants.ID) String id) {
         try {
@@ -84,7 +84,7 @@ public class PartialCodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
+    @Operation(summary = "Return all lists for Advanced Search",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
@@ -97,7 +97,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createPartialCodeList", summary = "Create a code list")
+    @Operation(summary = "Create a code list")
     public ResponseEntity<Object> createPartialCodeList(
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
         try {
@@ -110,7 +110,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setCodesList", summary = "Create a code list")
+    @Operation(summary = "Create a code list")
     public ResponseEntity<Object> updatePartialCodeList(
             @PathVariable(Constants.ID) String componentId,
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
@@ -124,7 +124,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @DeleteMapping(value = "/{id}")
-    @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial code list")
+    @Operation(summary = "Delete a partial code list")
     public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
         try {
             codeListService.deleteCodeList(notation, true);

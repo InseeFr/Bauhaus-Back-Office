@@ -57,14 +57,14 @@ public class StructureResources {
     }
 
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructures", summary = "List of structures",
+    @Operation(summary = "List of structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public List<PartialStructure> getStructures() throws RmesException {
         return structureService.getStructures();
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructuresForSearch", summary = "List of structures for advanced search",
+    @Operation(summary = "List of structures for advanced search",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public ResponseEntity<Object> getStructuresForSearch() throws RmesException {
         String structures = structureService.getStructuresForSearch();
@@ -73,7 +73,6 @@ public class StructureResources {
 
     @GetMapping(value = "/structure/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            operationId = "getStructureById",
             summary = "Get a structure",
             responses = {
                     @ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))
@@ -86,14 +85,14 @@ public class StructureResources {
 
     @PreAuthorize("isAdmin() || isStructureContributor(#id)")
     @PutMapping(value = "/structure/{id}/validate", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "publishStructureById", summary = "Publish a structure")
+    @Operation(summary = "Publish a structure")
     public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) @P("id") String id) throws RmesException {
         String response = structureService.publishStructureById(id);
         return ResponseEntity.status(HttpStatus.SC_OK).body(response);
     }
 
     @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructureByIdDetails", summary = "Get all details of a structure",
+    @Operation(summary = "Get all details of a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
     public ResponseEntity<Object> getStructureByIdDetails(@PathVariable(Constants.ID) String id) throws RmesException {
         String structure = structureService.getStructureByIdWithDetails(id);
@@ -103,7 +102,7 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
     @PostMapping(value = "/structure",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setStructure", summary = "Create a structure")
+    @Operation(summary = "Create a structure")
     public ResponseEntity<Object> setStructure(
     		@Parameter(description = "Structure", required = true) @RequestBody String body) throws RmesException {
         String id = structureService.setStructure(body);
@@ -113,7 +112,7 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @PutMapping(value = "/structure/{structureId}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setStructure", summary = "Update a structure")
+    @Operation(summary = "Update a structure")
     public ResponseEntity<Object> setStructure(
     		@PathVariable("structureId") @P("structureId") String structureId,
     		@Parameter(description = "Structure", required = true) @RequestBody String body) throws RmesException {
@@ -123,34 +122,34 @@ public class StructureResources {
 
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId.identifier())")
     @DeleteMapping("/structure/{structureId}")
-    @Operation(operationId = "deleteStructure", summary = "Delete a structure")
+    @Operation(summary = "Delete a structure")
     public ResponseEntity<Id> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
         structureService.deleteStructure(structureId.identifier());
         return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
     }
 
     @GetMapping(value = "/components/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponentsForSearch", summary = "Get all mutualized components for advanced search")
+    @Operation(summary = "Get all mutualized components for advanced search")
     public ResponseEntity<Object> getComponentsForSearch() throws RmesException {
         String components = structureComponentService.getComponentsForSearch();
         return ResponseEntity.status(HttpStatus.SC_OK).body(components);
     }
 
     @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getAttributes", summary = "Get all mutualized attributes")
+    @Operation(summary = "Get all mutualized attributes")
     public ResponseEntity<Object> getAttributes() throws RmesException {
         String attributes = structureComponentService.getAttributes();
         return ResponseEntity.status(HttpStatus.SC_OK).body(attributes);
     }
 
     @GetMapping(value = "/components", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponents", summary = "Get all mutualized components")
+    @Operation(summary = "Get all mutualized components")
     public List<PartialStructureComponent> getComponents() throws RmesException {
         return structureComponentService.getComponents();
     }
 
     @GetMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponentById", summary = "Get a component")
+    @Operation(summary = "Get a component")
     public ResponseEntity<Object> getComponentById(@PathVariable(Constants.ID) String id) throws RmesException {
         String component = structureComponentService.getComponent(id);
         return ResponseEntity.status(HttpStatus.SC_OK).body(component);
@@ -158,7 +157,7 @@ public class StructureResources {
 
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @PutMapping(value = "/components/{id}/validate", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "publishComponentById", summary = "Publish a component")
+    @Operation(summary = "Publish a component")
     public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) @P("structureId") String id) throws RmesException {
         String result = structureComponentService.publishComponent(id);
         return ResponseEntity.status(HttpStatus.SC_OK).body(result);
@@ -166,7 +165,7 @@ public class StructureResources {
 
     @PreAuthorize("isAdmin() || isComponentContributor(#id)")
     @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "deleteComponentById", summary = "Delete a mutualized component")
+    @Operation(summary = "Delete a mutualized component")
     public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) @P("id") String id) throws RmesException {
         structureComponentService.deleteComponent(id);
         return ResponseEntity.status(HttpStatus.SC_OK).build();
@@ -175,7 +174,7 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isComponentContributor(#componentId)")
     @PutMapping(value = "/components/{id}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateComponent", summary = "Update a component")
+    @Operation(summary = "Update a component")
     public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) @P("componentId") String componentId,
     		@Parameter(description = "Component", required = true) @RequestBody String body) throws RmesException {
         String id = structureComponentService.updateComponent(componentId, body);
@@ -185,7 +184,7 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
     @PostMapping(value = "/components",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createComponent", summary = "Create a component")
+    @Operation(summary = "Create a component")
     public ResponseEntity<Object> createComponent(
     		@Parameter(description = "Component", required = true) @RequestBody String body) throws RmesException {
         String id = structureComponentService.createComponent(body);

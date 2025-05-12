@@ -42,7 +42,7 @@ public class DatasetResources {
 
     @GetMapping(produces = "application/json")
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDatasets", summary = "List of datasets",
+    @Operation(summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public List<PartialDataset> getDatasets() throws RmesException {
         return this.datasetService.getDatasets();
@@ -50,7 +50,7 @@ public class DatasetResources {
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDataset", summary = "Get a dataset",
+    @Operation(summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public Dataset getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDatasetByID(id);
@@ -58,7 +58,7 @@ public class DatasetResources {
 
     @GetMapping("/{id}/distributions")
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDistributionsByDataset", summary = "List of distributions for a dataset",
+    @Operation(summary = "List of distributions for a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDistributionsByDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDistributions(id);
@@ -66,7 +66,7 @@ public class DatasetResources {
 
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
-    @Operation(operationId = "createDataset", summary = "Create a dataset")
+    @Operation(summary = "Create a dataset")
     @ResponseStatus(HttpStatus.CREATED)
     public String setDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
@@ -75,7 +75,7 @@ public class DatasetResources {
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateDataset", summary = "Update a dataset")
+    @Operation(summary = "Update a dataset")
     public String setDataset(
             @PathVariable("id") String id,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
@@ -84,7 +84,7 @@ public class DatasetResources {
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
-    @Operation(operationId = "publishDataset", summary = "Publish a dataset",
+    @Operation(summary = "Publish a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.publishDataset(id);
@@ -92,14 +92,14 @@ public class DatasetResources {
 
     @GetMapping(value = "/archivageUnits", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getArchivageUnits", summary = "Get all archivage units")
+    @Operation(summary = "Get all archivage units")
     public String getArchivageUnits() throws RmesException {
         return this.datasetService.getArchivageUnits();
     }
 
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
-    @Operation(operationId = "patchDataset", summary = "Update a dataset")
+    @Operation(summary = "Update a dataset")
     public void patchDataset(
             @PathVariable("id") String id,
             @RequestBody PatchDataset dataset
@@ -110,7 +110,6 @@ public class DatasetResources {
     @DeleteMapping("/{id}")
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.DELETE)
     @Operation(
-            operationId = "deleteDataset",
             summary = "Delete a dataset"
     )
     @ApiResponses(value = {

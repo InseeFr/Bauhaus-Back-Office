@@ -40,7 +40,7 @@ public class OperationsResources  {
 
 
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", responses = {
+	@io.swagger.v3.oas.annotations.Operation(summary = "List of operations", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
 	public List<PartialOperation> getOperations() throws RmesException {
 		return operationsService.getOperations();
@@ -53,7 +53,7 @@ public class OperationsResources  {
 				MediaType.APPLICATION_XML_VALUE
 			}
 	)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Get an operation", responses = {
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get an operation", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(implementation = Operation.class))) })
 	public ResponseEntity<Operation> getOperationByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationById(id));
@@ -62,7 +62,7 @@ public class OperationsResources  {
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update an operation")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Update an operation")
 	public ResponseEntity<Void> setOperationById(@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Operation to update", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) throws RmesException {
 
@@ -72,7 +72,7 @@ public class OperationsResources  {
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Create operation")
 	public ResponseEntity<String> createOperation(
 			@Parameter(description = "Operation to create", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) throws RmesException {
 		String id = operationsService.createOperation(body);
@@ -81,7 +81,7 @@ public class OperationsResources  {
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/operation/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Operation validation")
 	public ResponseEntity<String> setOperationValidation(@PathVariable(Constants.ID) String id) throws RmesException {
 		operationsService.setOperationValidation(id);
 		return ResponseEntity.status(HttpStatus.OK).body(id);

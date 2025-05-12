@@ -48,7 +48,7 @@ public class DistributionResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDistributions", summary = "List of distributions",
+    @Operation(summary = "List of distributions",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public List<PartialDistribution> getDistributions() throws RmesException {
         return this.distributionService.getDistributions();
@@ -56,7 +56,7 @@ public class DistributionResources {
 
     @GetMapping("/{id}")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDistribution", summary = "Get a distribution",
+    @Operation(summary = "Get a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public Distribution getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
@@ -64,7 +64,7 @@ public class DistributionResources {
 
     @PutMapping("/{id}/validate")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.PUBLISH)
-    @Operation(operationId = "publishDistribution", summary = "Publish a distribution",
+    @Operation(summary = "Publish a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.publishDistribution(id);
@@ -72,7 +72,7 @@ public class DistributionResources {
 
     @GetMapping("/datasets")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDatasetsForDistributionCreation", summary = "List of datasets",
+    @Operation(summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public List<PartialDataset> getDatasetsForDistributionCreation(@AuthenticationPrincipal Object principal) throws RmesException {
         var user = userDecoder.fromPrincipal(principal).get();
@@ -85,7 +85,7 @@ public class DistributionResources {
 
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.CREATE)
-    @Operation(operationId = "createDistribution", summary = "Create a distribution")
+    @Operation(summary = "Create a distribution")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
@@ -94,7 +94,7 @@ public class DistributionResources {
 
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
-    @Operation(operationId = "updateDistribution", summary = "Update a distribution")
+    @Operation(summary = "Update a distribution")
     public String updateDistribution(
             @PathVariable("id") String id,
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
@@ -104,7 +104,6 @@ public class DistributionResources {
     @DeleteMapping("/{id}")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.DELETE)
     @Operation(
-            operationId = "deleteDistribution",
             summary = "Delete a distribution"
     )
     @ApiResponses(value = {
@@ -121,7 +120,7 @@ public class DistributionResources {
 
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
-    @Operation(operationId = "patchDistribution", summary = "Update a distribution")
+    @Operation(summary = "Update a distribution")
     public void patchDistribution(
             @PathVariable("id") String id,
             @RequestBody PatchDistribution distribution
