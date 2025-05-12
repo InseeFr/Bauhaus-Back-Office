@@ -1,5 +1,4 @@
 package fr.insee.rmes.rbac;
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(properties = "spring.config.additional-location=classpath:rbac.yml")
 @EnableConfigurationProperties(RBACConfiguration.class)
@@ -36,7 +36,7 @@ class PropertiesRbacFetcherTest {
     void shouldComputeStrategies(){
         var result = rbacFetcher.computePrivileges(List.of("Gestionnaire_indicateur_RMESGNCS", "Administrateur_RMESGNCS"));
 
-        assertEquals(10, result.size());
+        assertEquals(12, result.size());
 
         ModuleAccessPrivileges privileges = result.stream().filter(r -> r.application().equals(RBAC.Module.CLASSIFICATION_CLASSIFICATION)).findFirst().get();
 

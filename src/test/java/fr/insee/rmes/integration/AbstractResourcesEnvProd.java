@@ -1,7 +1,6 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
@@ -15,16 +14,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class,
-        PropertiesAccessPrivilegesChecker.class,
-        GeographyService.class
+@Import({
+    Config.class,
+    OpenIDConnectSecurityContext.class,
+    DefaultSecurityContext.class,
+    CommonSecurityConfiguration.class,
+    UserProviderFromSecurityContext.class,
+    BauhausMethodSecurityExpressionHandler.class,
+    PropertiesAccessPrivilegesChecker.class
 })
 public abstract class AbstractResourcesEnvProd {
+
     @MockitoBean
     protected JwtDecoder jwtDecoder;
     @MockitoBean
@@ -32,6 +32,7 @@ public abstract class AbstractResourcesEnvProd {
 
     @MockitoBean
     protected StampAuthorizationChecker stampAuthorizationChecker;
+
     @MockitoBean
     protected AccessPrivilegesChecker checker;
 }

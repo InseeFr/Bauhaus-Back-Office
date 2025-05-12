@@ -22,7 +22,7 @@ rbac:
       operation_series:
         create: ALL
         read: ALL
-        update: ALL
+        update: STAMP
         delete: ALL
         publish: ALL
       operation_operation:
@@ -89,6 +89,8 @@ rbac:
       operation_sims:
         read: ALL
       classification_classification:
+        read: ALL
+      geography:
         read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept_concept:

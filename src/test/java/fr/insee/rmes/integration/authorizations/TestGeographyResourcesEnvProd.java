@@ -33,8 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "logging.level.org.springframework.web=DEBUG",
-                "fr.insee.rmes.bauhaus.activeModules=datasets"}
+                "logging.level.org.springframework.web=DEBUG"}
 )
 class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
 

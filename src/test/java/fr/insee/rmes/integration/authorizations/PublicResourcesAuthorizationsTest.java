@@ -19,21 +19,24 @@ import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguratio
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-@WebMvcTest(controllers= PublicResources.class,
-        properties = {"fr.insee.rmes.bauhaus.env=PROD",
-                "jwt.stamp-claim=" + STAMP_CLAIM,
-                "jwt.role-claim=" + ROLE_CLAIM,
-                "jwt.id-claim=" + ID_CLAIM,
-                "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
-                "logging.level.org.springframework.security=DEBUG",
-                "logging.level.org.springframework.security.web.access=TRACE",
-                "logging.level.fr.insee.rmes.config.auth=TRACE",
-        })
+@WebMvcTest(
+    controllers= PublicResources.class,
+    properties = {
+        "fr.insee.rmes.bauhaus.env=PROD",
+        "jwt.stamp-claim=" + STAMP_CLAIM,
+        "jwt.role-claim=" + ROLE_CLAIM,
+        "jwt.id-claim=" + ID_CLAIM,
+        "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+        "logging.level.org.springframework.security=DEBUG",
+        "logging.level.org.springframework.security.web.access=TRACE",
+        "logging.level.fr.insee.rmes.config.auth=TRACE",
+    }
+)
 class PublicResourcesAuthorizationsTest extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
+
     @MockitoBean
     private StampsService stampsService;
 
@@ -47,5 +50,4 @@ class PublicResourcesAuthorizationsTest extends AbstractResourcesEnvProd {
         this.mvc.perform(get(endpoint).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
-
 }
