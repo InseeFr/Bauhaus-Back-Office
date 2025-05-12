@@ -107,6 +107,12 @@ public class SeriesUtils {
         if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), lg2))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
         }
+        if (series.getAccrualPeriodicityCode() == null) {
+            throw new RmesBadRequestException("The property accrualPeriodicityCode is required");
+        }
+        if (series.getTypeCode() == null) {
+            throw new RmesBadRequestException("The property typeCode is required");
+        }
     }
 
     private Series buildSeriesFromJson(JSONObject seriesJson, EncodingType encode) throws RmesException {
