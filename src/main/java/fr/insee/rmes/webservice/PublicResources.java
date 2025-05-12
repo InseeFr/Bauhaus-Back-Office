@@ -70,7 +70,7 @@ public class PublicResources {
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
                            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
                            @Value("${fr.insee.rmes.bauhaus.version}") String version,
-                           @Value("${fr.insee.rmes.bauhaus.extraMandatoryFields}") String extraMandatoryFields) {
+                           @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") String extraMandatoryFields) {
         this.stampsService = stampsService;
         this.env = env;
         this.lg2 = lg2;
