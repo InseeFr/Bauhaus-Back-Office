@@ -19,6 +19,7 @@ public class RBAC {
         CODESLIST_PARTIALCODESLIST,
         DATASET_DATASET,
         DATASET_DISTRIBUTION,
+        GEOGRAPHY,
         UNKNOWN,
     }
 

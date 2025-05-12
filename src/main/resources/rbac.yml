@@ -67,6 +67,12 @@ rbac:
         update: ALL
         publish: ALL
         delete: ALL
+      geography:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        delete: ALL
     Utilisateur_RMESGNCS:
       concept_concept:
         read: ALL

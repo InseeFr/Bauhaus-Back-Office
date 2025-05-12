@@ -1,6 +1,7 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
+import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
@@ -20,7 +21,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class,
-        PropertiesAccessPrivilegesChecker.class
+        PropertiesAccessPrivilegesChecker.class,
+        GeographyService.class
 })
 public abstract class AbstractResourcesEnvProd {
     @MockitoBean

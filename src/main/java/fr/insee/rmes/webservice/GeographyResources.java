@@ -4,6 +4,8 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.geography.GeoFeature;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -14,12 +16,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -36,18 +34,21 @@ import org.springframework.web.bind.annotation.*;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class GeographyResources  extends GenericResources {
+public class GeographyResources {
 
-	static final Logger logger = LoggerFactory.getLogger(GeographyResources.class);
-
-	@Autowired
+	final
 	GeographyService geoService;
+
+	public GeographyResources(GeographyService geoService) {
+		this.geoService = geoService;
+	}
 
 
 	/***************************************************************************************************
 	 * COG
 	 ******************************************************************************************************/
 	@GetMapping(value = "/territories", produces = MediaType.APPLICATION_JSON_VALUE)
+	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
 	@Operation(operationId = "getGeoFeatures", summary = "List of geofeatures",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=GeoFeature.class))))})
 	public ResponseEntity<Object> getGeoFeatures() throws RmesException {
@@ -56,6 +57,7 @@ public class GeographyResources  extends GenericResources {
 	}
 	
 	@GetMapping(value = "/territory/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
 	@Operation(operationId = "getGeoFeature", summary = "Geofeature",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=GeoFeature.class)))})
 	public ResponseEntity<Object> getGeoFeature(@PathVariable(Constants.ID) String id) throws RmesException {
@@ -64,7 +66,7 @@ public class GeographyResources  extends GenericResources {
 	}
 	
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "createGeograohy", summary = "Create feature")
 	public ResponseEntity<Object> createGeography(
@@ -78,7 +80,7 @@ public class GeographyResources  extends GenericResources {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "updateGeography", summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
