@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 import java.util.TreeSet;
 
@@ -57,7 +58,7 @@ public class PublicResources {
     private final List<String> activeModules;
     private final List<String> modules;
     private final String version;
-    private final String extraMandatoryFields;
+    private final List<String> extraMandatoryFields;
 
     public PublicResources(@Autowired StampsService stampsService,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
@@ -70,7 +71,7 @@ public class PublicResources {
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
                            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
                            @Value("${fr.insee.rmes.bauhaus.version}") String version,
-                           @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") String extraMandatoryFields) {
+                           @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) {
         this.stampsService = stampsService;
         this.env = env;
         this.lg2 = lg2;
@@ -79,7 +80,7 @@ public class PublicResources {
         this.defaultMailSender = defaultMailSender;
         this.defaultContributor = defaultContributor;
         this.appHost = appHost;
-        this.activeModules=activeModules;
+        this.activeModules = activeModules;
         this.modules = modules;
         this.version = version;
         this.extraMandatoryFields = extraMandatoryFields;
