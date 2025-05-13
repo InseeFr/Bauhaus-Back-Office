@@ -9,6 +9,8 @@ import fr.insee.rmes.config.swagger.model.concepts.*;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -59,6 +61,7 @@ public class ConceptsResources  {
 		this.conceptsCollectionService = conceptsCollectionService;
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
@@ -66,6 +69,7 @@ public class ConceptsResources  {
 		return conceptsService.getConcepts();
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/linkedConcepts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})																 
@@ -73,18 +77,17 @@ public class ConceptsResources  {
 		String concepts = conceptsService.getRelatedConcepts(id);
 		return ResponseEntity.status(HttpStatus.OK).body(concepts);
 	}
-	
-	
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
+
+
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.DELETE)
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Delete a concept")
 	public ResponseEntity<Object> deleteConcept(@PathVariable(Constants.ID) String id) throws RmesException {
 		conceptsService.deleteConcept(id);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Rich list of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsSearch.class))))})																 
@@ -92,6 +95,7 @@ public class ConceptsResources  {
 		return  conceptsService.getConceptsSearch();
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Get a concept",
 		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
@@ -100,6 +104,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(concept);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of concepts to validate",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsToValidate.class))))})
@@ -108,6 +113,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(concepts);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/{id}/links", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of linked concepts",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
@@ -116,6 +122,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(conceptLinks);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/{id}/notes/{conceptVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Last notes of the concept",
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
@@ -125,6 +132,7 @@ public class ConceptsResources  {
 	}
 
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collections/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Rich list of collections",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
@@ -133,6 +141,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(collections);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collections/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of collections to validate",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionsToValidate.class))))})
@@ -141,6 +150,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(collections);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Get a collection by its identifier",
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
@@ -149,6 +159,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(collection);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of collection member concepts",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
@@ -157,6 +168,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(collectionMembers);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.CREATE)
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -167,9 +179,7 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	//TODO Test with Roles.ADMIN, Roles.CONCEPT_CONTRIBUTOR (user stamp is contributor and user stamp is not contributor) : StampRestrictionsServiceImpl.isConceptManager
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Update a concept")
 	public ResponseEntity<Object> setConcept(
@@ -180,9 +190,7 @@ public class ConceptsResources  {
 		return ResponseEntity.noContent().build();
 	}
 
-	//TODO Test with admin and with concept_creator (user stamp is creator of all concepts, user stamp is not creator of one concept)
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value= "/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
@@ -192,18 +200,21 @@ public class ConceptsResources  {
 		return ResponseEntity.noContent().build();
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 		return conceptsService.getCollectionExport(id, accept);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(summary = "Blob of concept")
 	public ResponseEntity<?> exportConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 		return conceptsService.exportConcept(id, accept);
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/export-zip/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(summary = "Blob of concept")
 	public void exportZipConcept(
@@ -216,8 +227,7 @@ public class ConceptsResources  {
 		conceptsService.exportZipConcept(id, accept, response, lg, type, withConcepts);
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
@@ -226,9 +236,7 @@ public class ConceptsResources  {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")
+	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Update a collection")
 	public ResponseEntity<Object> setCollection(
@@ -239,8 +247,7 @@ public class ConceptsResources  {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")	
+	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value= "/collections/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Collections validation")
 	public ResponseEntity<Object> setCollectionsValidation(

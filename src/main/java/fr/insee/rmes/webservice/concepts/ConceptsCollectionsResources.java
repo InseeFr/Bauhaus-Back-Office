@@ -6,6 +6,8 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.PartialCollection;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -55,6 +57,7 @@ public class ConceptsCollectionsResources {
 
     private final ConceptsCollectionService conceptsCollectionService;
 
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of collections",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
@@ -62,13 +65,14 @@ public class ConceptsCollectionsResources {
         return conceptsCollectionService.getCollections();
     }
 
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/export/{id}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})
     @Operation(summary = "Blob of collection")
     public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required = false) String accept) throws RmesException {
         return conceptsService.getCollectionExport(id, accept);
     }
 
-
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/export-zip/{id}/{type}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip"})
     @Operation(summary = "Blob of concept")
     public void exportZipCollection(
@@ -81,6 +85,7 @@ public class ConceptsCollectionsResources {
         conceptsCollectionService.exportZipCollection(id, accept, response, lg, type, withConcepts);
     }
 
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/export/{id}/{type}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})
     @Operation(summary = "Blob of collection")
     public ResponseEntity<?> getCollectionExport(

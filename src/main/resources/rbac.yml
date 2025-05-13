@@ -98,6 +98,27 @@ rbac:
         update: STAMP
         delete: STAMP
         publish: STAMP
+    Proprietaire_collection_concepts_RMESGNCS:
+      concept_concept:
+        read: ALL
+        delete: ALL
+      concept_collection:
+        read: ALL
+        update: ALL
+        delete: ALL
+    Proprietaire_concept_RMESGNCS:
+      concept_concept:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      concept_collection:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Utilisateur_RMESGNCS:
       structure_structure:
         read: ALL

@@ -9,6 +9,8 @@ import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.classification.*;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -22,7 +24,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,13 +60,15 @@ public class ClassificationsResources {
 		this.classificationItemService = classificationItemService;
 	}
 
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/families", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of classification families",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialClassificationFamily> getFamilies() throws RmesException {
 		return classificationsService.getFamilies();
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/family/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Classification family",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = FamilyClass.class)))})
@@ -73,7 +76,8 @@ public class ClassificationsResources {
 		String family = classificationsService.getFamily(id);
 		return ResponseEntity.status(HttpStatus.OK).body(family);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/family/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Members of family",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
@@ -82,19 +86,22 @@ public class ClassificationsResources {
 		return ResponseEntity.status(HttpStatus.OK).body(familyMembers);
 	}
 
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/series", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of classification series",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialClassificationSeries> getSeries() throws RmesException {
 		return classificationsService.getSeries();
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/series/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getOneSeries(@PathVariable(Constants.ID) String id) throws RmesException {
 		String serie = classificationsService.getOneSeries(id);
 		return ResponseEntity.status(HttpStatus.OK).body(serie);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/series/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Members of series",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
@@ -102,21 +109,24 @@ public class ClassificationsResources {
 		String seriesMembers = classificationsService.getSeriesMembers(id);
 		return ResponseEntity.status(HttpStatus.OK).body(seriesMembers);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="",produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of classifications",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public List<PartialClassification> getClassifications() throws RmesException {
 		return classificationsService.getClassifications();
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
+
 	@GetMapping(value="/classification/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassification(@PathVariable(Constants.ID) String id) throws RmesException {
 		String classification = classificationsService.getClassification(id);
 		return ResponseEntity.status(HttpStatus.OK).body(classification);
 	}
 
-	@PreAuthorize("isAdmin()")
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value="/classification/{id}")
 	@io.swagger.v3.oas.annotations.Operation(summary = "Update an existing classification" )
 	public ResponseEntity<Id> updateClassification(
@@ -126,7 +136,7 @@ public class ClassificationsResources {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@PreAuthorize("isAdmin()")
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value="/classification/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(summary = "Publish a classification")
 	public ResponseEntity<Id> publishClassification(
@@ -134,37 +144,43 @@ public class ClassificationsResources {
 		classificationsService.setClassificationValidation(id.identifier());
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/classification/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationItems(@PathVariable(Constants.ID) String id) throws RmesException {
 		String items = classificationItemService.getClassificationItems(id);
 		return ResponseEntity.status(HttpStatus.OK).body(items);
 	}
-	
-	@GetMapping(value="/classification/{id}/levels", produces = MediaType.APPLICATION_JSON_VALUE)
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
+		@GetMapping(value="/classification/{id}/levels", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationLevels(@PathVariable(Constants.ID) String id) throws RmesException {
 		String classificationLevels = classificationsService.getClassificationLevels(id);
 		return ResponseEntity.status(HttpStatus.OK).body(classificationLevels);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/classification/{id}/level/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationLevel(@PathVariable(Constants.ID) String id, @PathVariable("levelId") String levelId) throws RmesException {
 		String classificationLevel =  classificationsService.getClassificationLevel(id, levelId);
 		return ResponseEntity.status(HttpStatus.OK).body(classificationLevel);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/classification/{classificationId}/level/{levelId}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationLevelMembers(@PathVariable("classificationId") String classificationId, @PathVariable("levelId") String levelId) throws RmesException {
 		String levelMembers = classificationsService.getClassificationLevelMembers(classificationId, levelId);
 		return ResponseEntity.status(HttpStatus.OK).body(levelMembers);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/classification/{classificationId}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationItem(@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId) throws RmesException {
 		String classificationItem = classificationItemService.getClassificationItem(classificationId, itemId);
 		return ResponseEntity.status(HttpStatus.OK).body(classificationItem);
 	}
 
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value="/classification/{classificationId}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> updateClassificationItem(
 			@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId,
@@ -172,37 +188,44 @@ public class ClassificationsResources {
 		classificationItemService.updateClassificationItem(classificationId, itemId, body);
 		return ResponseEntity.status(HttpStatus.OK).body(itemId);
 	}
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/classification/{classificationId}/item/{itemId}/notes/{conceptVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationItemNotes(@PathVariable("classificationId") String classificationId,
 			@PathVariable("itemId") String itemId, @PathVariable("conceptVersion") int conceptVersion) throws RmesException {
 		String notes = classificationItemService.getClassificationItemNotes(classificationId, itemId, conceptVersion);
 		return ResponseEntity.status(HttpStatus.OK).body(notes);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/classification/{classificationId}/item/{itemId}/narrowers", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationItemNarrowers(@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId) throws RmesException {
 		String narrowers = classificationItemService.getClassificationItemNarrowers(classificationId, itemId);
 		return ResponseEntity.status(HttpStatus.OK).body(narrowers);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/correspondences", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getCorrespondences() throws RmesException {
 		String correspondences = classificationsService.getCorrespondences();
 		return ResponseEntity.status(HttpStatus.OK).body(correspondences);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/correspondence/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getCorrespondence(@PathVariable(Constants.ID) String id) throws RmesException {
 		String correspondence = classificationsService.getCorrespondence(id);
 		return ResponseEntity.status(HttpStatus.OK).body(correspondence);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/correspondence/{id}/associations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getCorrespondenceAssociations(@PathVariable(Constants.ID) String id) throws RmesException {
 		String associations = classificationsService.getCorrespondenceAssociations(id);
 		return ResponseEntity.status(HttpStatus.OK).body(associations);
 	}
-	
+
+	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/correspondence/{correspondenceId}/association/{associationId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getCorrespondenceItem(@PathVariable("correspondenceId") String correspondenceId,
 			@PathVariable("associationId") String associationId) throws RmesException {
