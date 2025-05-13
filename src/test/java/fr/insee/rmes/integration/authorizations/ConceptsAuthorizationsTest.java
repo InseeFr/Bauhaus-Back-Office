@@ -1,5 +1,6 @@
-package fr.insee.rmes.bauhaus_services.concepts.concepts;
+package fr.insee.rmes.integration.authorizations;
 
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
-class ConceptsUtilsTest {
+class ConceptsAuthorizationsTest {
 
     @InjectMocks
     ConceptsUtils conceptsUtils = new ConceptsUtils(new ConceptsPublication(),new NoteManager(),5);
