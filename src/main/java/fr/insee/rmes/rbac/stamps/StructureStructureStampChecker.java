@@ -1,6 +1,5 @@
 package fr.insee.rmes.rbac.stamps;
 
-import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;

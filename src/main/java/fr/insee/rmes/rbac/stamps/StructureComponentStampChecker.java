@@ -1,6 +1,5 @@
 package fr.insee.rmes.rbac.stamps;
 
-import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
@@ -18,10 +17,9 @@ import java.util.List;
 public class StructureComponentStampChecker implements  ObjectStampChecker {
 
     private final RepositoryGestion repositoryGestion;
-    private final Environment env;
+
 
     public StructureComponentStampChecker(Environment env, RepositoryGestion repositoryGestion) {
-        this.env = env;
         this.repositoryGestion = repositoryGestion;
     }
 

@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
@@ -8,9 +7,7 @@ import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -49,12 +46,6 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
         String uriString = codeList.getString("iri");
         return RdfUtils.createIRI(uriString);
     }
-
-    private IRI findStructureIRI(String structureId) {
-        return RdfUtils.objectIRI(ObjectType.STRUCTURE, structureId);
-    }
-
-
 
 }
 

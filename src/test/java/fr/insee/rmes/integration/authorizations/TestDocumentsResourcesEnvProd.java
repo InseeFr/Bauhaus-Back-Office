@@ -1,13 +1,9 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.operations.DocumentsResources;
 import org.json.JSONObject;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,16 +14,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
