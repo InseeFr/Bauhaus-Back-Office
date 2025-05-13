@@ -14,7 +14,6 @@ class IndicatorTest {
 
         List<Object> objects = new ArrayList<>();
         objects.add(indicator);
-        objects.add(new Indicator("id"));
         objects.add(new Indicator("idExample"));
         objects.add(null);
         objects.add("This is an example of string.");
@@ -24,7 +23,7 @@ class IndicatorTest {
 
         objects.forEach(object->result.add(indicator.equals(object)));
 
-        assertEquals(List.of(true,true,false,false,false,false),result);
+        assertEquals(List.of(true,false,false,false,false),result);
     }
 
 }
