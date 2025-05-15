@@ -25,9 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 @Component
 public class ExportUtils {
@@ -79,107 +76,27 @@ public class ExportUtils {
                 .body(resource);
     }
 
-//    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
-//        logger.debug("Begin To export {} as InputStream", objectType);
-//
-//        File output = null;
-//        InputStream odtFileIS = null;
-//        InputStream xslFileIS = null;
-//        InputStream zipToCompleteIS = null;
-//        fileName = fileName.replace(extension, ""); //Remove extension if exists
-//
-//
-//        try {
-//            xslFileIS = getClass().getResourceAsStream(xslFile);
-//            odtFileIS = getClass().getResourceAsStream(xmlPattern);
-//            zipToCompleteIS = getClass().getResourceAsStream(zip);
-//
-//            // prepare output
-//            output = File.createTempFile(Constants.OUTPUT, FilesUtils.getExtension(Constants.XML));
-//            output.deleteOnExit();
-//
-//        } catch (IOException ioe) {
-//            logger.error(ioe.getMessage());
-//        }
-//
-//        try (OutputStream osOutputFile = FileUtils.openOutputStream(output);
-//             PrintStream printStream = new PrintStream(osOutputFile)) {
-//
-//            Path tempDir = Files.createTempDirectory("forExport");
-//            Path finalPath = Paths.get(tempDir.toString(), fileName + extension);
-//
-//            // transform
-//            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
-//            // create odt
-//            XsltUtils.createOdtFromXml(output, finalPath, zipToCompleteIS, tempDir);
-//
-//            logger.debug("End To export {} as InputStream", objectType);
-//
-//            return Files.newInputStream(finalPath);
-//        } catch (IOException | TransformerException e) {
-//            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-//        } finally {
-//            try {
-//                if (odtFileIS != null)
-//                    odtFileIS.close();
-//                if (xslFileIS != null)
-//                    xslFileIS.close();
-//                if (zipToCompleteIS != null)
-//                    zipToCompleteIS.close();
-//            } catch (IOException ioe) {
-//                logger.error(ioe.getMessage());
-//            }
-//        }
-//    }
-
-    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
+    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent,
+                                           String xslFile, String xmlPattern, String zip, String objectType,
+                                           String extension) throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
-
         try (
                 InputStream xslFileIS = getClass().getResourceAsStream(xslFile);
                 InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
-                InputStream zipToCompleteIS = getClass().getResourceAsStream(zip);
-                ByteArrayOutputStream xmlTransformedOutput = new ByteArrayOutputStream()
+                InputStream zipToCompleteIS = getClass().getResourceAsStream(zip)
         ) {
-            // Transform XML using XSL into the output stream
-            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, new PrintStream(xmlTransformedOutput), null);
+            ByteArrayOutputStream transformedXml = new ByteArrayOutputStream();
+            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, transformedXml);
 
-            // Get the transformed content as InputStream
-            InputStream transformedInput = new ByteArrayInputStream(xmlTransformedOutput.toByteArray());
-
-            // Create the final zip in memory
-            ByteArrayOutputStream finalZipOutput = new ByteArrayOutputStream();
-            try (ZipOutputStream zipOut = new ZipOutputStream(finalZipOutput);
-                 ZipInputStream zipIn = new ZipInputStream(zipToCompleteIS)) {
-
-                // Copy existing entries from the template ZIP
-                ZipEntry entry;
-                byte[] buffer = new byte[1024];
-                while ((entry = zipIn.getNextEntry()) != null) {
-                    zipOut.putNextEntry(new ZipEntry(entry.getName()));
-                    int len;
-                    while ((len = zipIn.read(buffer)) > 0) {
-                        zipOut.write(buffer, 0, len);
-                    }
-                    zipOut.closeEntry();
-                }
-
-                // Add transformed XML as new entry
-                zipOut.putNextEntry(new ZipEntry(fileName + extension));
-                int len;
-                while ((len = transformedInput.read(buffer)) > 0) {
-                    zipOut.write(buffer, 0, len);
-                }
-                zipOut.closeEntry();
-            }
-
+            ByteArrayOutputStream odtOutput = XsltUtils.createOdtFromXml(transformedXml.toByteArray(), zipToCompleteIS);
             logger.debug("End To export {} as InputStream", objectType);
-            return new ByteArrayInputStream(finalZipOutput.toByteArray());
 
+            return new ByteArrayInputStream(odtOutput.toByteArray());
         } catch (IOException | TransformerException e) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
         }
     }
+
 
     public ResponseEntity<Object> exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
         logger.debug("Begin To export temp files as Response");

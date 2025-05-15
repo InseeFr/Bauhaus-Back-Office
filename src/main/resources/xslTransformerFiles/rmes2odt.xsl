@@ -12,119 +12,19 @@
 
     <xsl:output method="xml" encoding="UTF-8" indent="yes" />
 
-    <!-- the params with the addresses of the files -->
-    <xsl:param name="seriesFile"/>
-    <xsl:param name="operationFile"/>
-    <xsl:param name="indicatorFile"/>
-    <xsl:param name="simsFile"/>
-    <xsl:param name="organizationsFile"/>
-    <xsl:param name="codeListsFile"/>
-    <xsl:param name="msdFile"/>
-    <xsl:param name="conceptFile"/>
-    <xsl:param name="collectionFile"/>
-    <xsl:param name="parametersFile"/>
 
-    <!-- the params with the content of the files -->
-    <xsl:param name="parameters">
-        <xsl:choose>
-            <xsl:when test="doc-available($parametersFile)">
-                <xsl:copy-of select="document($parametersFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <parameters/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="series" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($seriesFile)">
-                <xsl:copy-of select="document($seriesFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Series/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="operation" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($operationFile)">
-                <xsl:copy-of select="document($operationFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Operation/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="indicator" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($indicatorFile)">
-                <xsl:copy-of select="document($indicatorFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Indicator/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="sims" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($simsFile)">
-                <xsl:copy-of select="document($simsFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Sims/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="organizations" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($organizationsFile)">
-                <xsl:copy-of select="document($organizationsFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Organizations/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="codeLists" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($codeListsFile)">
-                <xsl:copy-of select="document($codeListsFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <CodeLists/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="msd" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($msdFile)">
-                <xsl:copy-of select="document($msdFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Msd/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="concepts" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($conceptFile)">
-                <xsl:copy-of select="document($conceptFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Concepts/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
-    <xsl:param name="collections" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($collectionFile)">
-                <xsl:copy-of select="document($collectionFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Collections/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
+    <!-- Paramètres injectés en mémoire via Java (DOMSource) -->
+    <xsl:param name="series" as="node()"/>
+    <xsl:param name="operation" as="node()"/>
+    <xsl:param name="indicator" as="node()"/>
+    <xsl:param name="sims" as="node()"/>
+    <xsl:param name="organizations" as="node()"/>
+    <xsl:param name="codeLists" as="node()"/>
+    <xsl:param name="msd" as="node()"/>
+    <xsl:param name="concepts" as="node()"/>
+    <xsl:param name="collections" as="node()"/>
+    <xsl:param name="parameters" as="node()"/>
+
 
     <!-- keep the minimum spaces from the data -->
     <xsl:strip-space elements="*" />
