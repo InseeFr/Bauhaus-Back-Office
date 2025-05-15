@@ -6,12 +6,14 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
+import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
-import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class CodeListsResources extends GenericResources {
         this.codeListService = codeListService;
     }
 
-    @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a code list")
     public ResponseEntity<String> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
@@ -56,23 +56,24 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a code list")
-    public ResponseEntity<String> updateCodesList(@PathVariable(Constants.ID) @P("codesListId") String id, @Parameter(description = "Code list", required = true) @RequestBody String body) throws RmesException {
+    public ResponseEntity<String> updateCodesList(@PathVariable(Constants.ID) String id, @Parameter(description = "Code list", required = true) @RequestBody String body) throws RmesException {
         codeListService.setCodesList(id, body, false);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping(value = "/{id}")
     @Operation(summary = "Delete a code list")
-    public ResponseEntity<Void> deleteCodeList(@PathVariable(Constants.ID) @P("codesListId") String notation) throws RmesException {
-        codeListService.deleteCodeList(notation, false);
+    public ResponseEntity<Void> deleteCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
+        codeListService.deleteCodeList(id, false);
             return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
     public List<PartialCodesList> getAllCodesLists() throws RmesException, JsonProcessingException {
@@ -80,7 +81,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<List<CodeList>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
@@ -89,7 +90,7 @@ public class CodeListsResources extends GenericResources {
 
     }
 
-
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<CodeList> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
@@ -97,7 +98,7 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
     }
 
-
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/detailed/{notation}/codes")
     @Operation(
             summary = "List of codes",
@@ -114,7 +115,7 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
-    @PreAuthorize("isAdmin()")
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Void> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
@@ -123,25 +124,26 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
-    @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.UPDATE)
+    @PutMapping(value = "/detailed/{id}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListItem.class)))})
-    public ResponseEntity<CodeListItem> updateCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
-        String id = codeListService.updateCodeFromCodeList(notation, code, body);
-        CodeListItem idCodeListItem = new CodeListItem(id);
+    public ResponseEntity<CodeListItem> updateCodeForCodeList(@PathVariable("id") String id, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
+        String response = codeListService.updateCodeFromCodeList(id, code, body);
+        CodeListItem idCodeListItem = new CodeListItem(response);
         return ResponseEntity.status(HttpStatus.OK).body(idCodeListItem);
 
     }
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
-    @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.CREATE)
+    @PostMapping(value = "/detailed/{id}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
-        String id = codeListService.addCodeFromCodeList(notation, body);
-        CodeListItem idCodeListItem = new CodeListItem(id);
+    public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("id") String id, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
+        String response = codeListService.addCodeFromCodeList(id, body);
+        CodeListItem idCodeListItem = new CodeListItem(response);
         return ResponseEntity.status(HttpStatus.CREATED).body(idCodeListItem);
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<CodeList> getCodeListByNotation(@PathVariable("notation") String notation) throws RmesException {
@@ -150,6 +152,7 @@ public class CodeListsResources extends GenericResources {
             return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))})
     public ResponseEntity<Page> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
@@ -159,6 +162,7 @@ public class CodeListsResources extends GenericResources {
 
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Code, labels and code list's notation", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
     public ResponseEntity<CodeLabelList> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
@@ -168,7 +172,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
+    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
     @Operation(summary = "Publish a codelist")
     public ResponseEntity<Id> publishFullCodeList(@PathVariable(Constants.ID) Id id) throws RmesException {

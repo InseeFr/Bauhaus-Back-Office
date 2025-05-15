@@ -1,6 +1,5 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.webservice.classifications.ClassificationsResources;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.webservice.concepts.ConceptsResources;
@@ -19,8 +18,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @ExtendWith(MockitoExtension.class)
 class UnactiveModulesTest {
 
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
 
     @Autowired(required = false)
     ClassificationsResources classificationsResources;

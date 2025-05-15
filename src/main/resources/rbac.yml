@@ -158,6 +158,11 @@ rbac:
         read: STAMP
         update: STAMP
         publish: STAMP
+    CNIS_RMESGNCS:
+      operation_operation:
+        update: ALL
+      operation_sims:
+        update: ALL
     Gestionnaire_serie_RMESGNCS:
       operation_family:
         read: STAMP

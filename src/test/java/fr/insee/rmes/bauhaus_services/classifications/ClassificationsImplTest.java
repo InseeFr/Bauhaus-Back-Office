@@ -30,7 +30,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationFamiliesList() throws RmesException {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1"));
@@ -57,7 +57,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationSeriesList() throws RmesException {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
@@ -89,7 +89,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationList() throws RmesException {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));

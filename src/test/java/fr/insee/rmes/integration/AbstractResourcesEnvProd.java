@@ -1,7 +1,6 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
@@ -30,8 +29,6 @@ public abstract class AbstractResourcesEnvProd {
     @MockitoBean
     protected DocumentsService documentsService;
 
-    @MockitoBean
-    protected StampAuthorizationChecker stampAuthorizationChecker;
 
     @MockitoBean
     protected AccessPrivilegesChecker checker;

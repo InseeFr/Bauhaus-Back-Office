@@ -101,9 +101,6 @@ public class ConceptsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 	public String setConcept(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateConcept()) {
-			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_CREATION_RIGHTS_DENIED, "Only an admin or concepts manager can create a new concept.");
-		}
 		Concept concept = setConcept(createID(), true, body);
 		logger.info("Create concept : {} - {}", concept.getId() , concept.getPrefLabelLg1());
 		return concept.getId();
@@ -116,9 +113,6 @@ public class ConceptsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 	public void setConcept(String id, String body) throws RmesException {
-		if(!stampsRestrictionsService.canModifyConcept(RdfUtils.conceptIRI(id))) {
-			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MODIFICATION_RIGHTS_DENIED, "");
-		}
 		Concept concept = setConcept(id, false, body);
 		logger.info("Update concept : {} - {}" , concept.getId() , concept.getPrefLabelLg1());
 	}
@@ -196,11 +190,6 @@ public class ConceptsUtils extends RdfService {
 			conceptsToValidateList.add(conceptURI);
 			model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
 			logger.info("Validate concept : {}" , conceptURI);
-		}
-		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList)) {
-			throw new RmesUnauthorizedException(
-					ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,
-					conceptsToValidate);
 		}
 		repoGestion.objectsValidation(conceptsToValidateList, model);
 		conceptsPublication.publishConcepts(conceptsToValidate);

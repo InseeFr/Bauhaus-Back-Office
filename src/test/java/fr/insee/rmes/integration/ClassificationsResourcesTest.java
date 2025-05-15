@@ -1,7 +1,6 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
@@ -71,9 +70,7 @@ class ClassificationsResourcesTest {
     private MockMvc mvc;
     @MockitoBean
     private JwtDecoder jwtDecoder;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
-    @MockitoBean
+        @MockitoBean
     AccessPrivilegesChecker accessPrivilegesChecker;
 
     @MockitoSpyBean

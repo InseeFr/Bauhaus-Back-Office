@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
@@ -43,8 +42,6 @@ class DocumentsUtilsTest {
     @Mock
     Config config;
 
-    @Mock
-    StampsRestrictionsService stampsRestrictionsService;
 
     @Mock
     FilesOperations filesOperations;
@@ -107,12 +104,10 @@ class DocumentsUtilsTest {
     void testIfDateMiseAJourSavedAsString() throws RmesException {
         DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
 
-        Stubber.forRdfService(documentsUtils).injectStampsRestrictionsService(stampsRestrictionsService);
         Stubber.forRdfService(documentsUtils).injectRepoGestion(repositoryGestion);
         Stubber.forRdfService(documentsUtils).injectConfig(config);
 
         when(config.getDocumentsStorageGestion()).thenReturn("/path/");
-        when(stampsRestrictionsService.canManageDocumentsAndLinks()).thenReturn(true);
         when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
         when(filesOperations.dirExists(any(Path.class))).thenReturn(true);

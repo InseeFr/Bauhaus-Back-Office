@@ -1,6 +1,5 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -46,8 +45,6 @@ class UserResourcesEnvProdTest {
     @Autowired
     private MockMvc mvc;
 
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
     @MockitoBean
     private RbacFetcher rbacService;
     @MockitoBean

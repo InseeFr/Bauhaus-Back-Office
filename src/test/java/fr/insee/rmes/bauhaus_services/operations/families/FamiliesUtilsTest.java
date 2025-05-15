@@ -27,7 +27,7 @@ class FamiliesUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en");
 
         var family = new Family();
         family.setId("1");
@@ -48,7 +48,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en");
 
         var family = new Family();
         family.setId("1");

@@ -114,10 +114,6 @@ public class OperationsUtils extends RdfService{
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
 					idSeries +" ; "+operation.getPrefLabelLg1());
 		}
-		// Vérifier droits
-		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
-		}
 
 		operation.setCreated(DateUtils.getCurrentDate());
 		operation.setModified(DateUtils.getCurrentDate());
@@ -129,19 +125,7 @@ public class OperationsUtils extends RdfService{
 	}
 
 
-	/**
-	 * UPDATE
-	 * @param id
-	 * @param body
-	 * @return
-	 * @throws RmesException
-	 */
 	public void setOperation(String id, String body) throws RmesException {
-		IRI seriesURI= parentUtils.getSeriesUriByOperationId(id);
-		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
-		}
-
 		Operation operation = new Operation(id);
 		try {
 			operation = Deserializer.deserializeJsonString(body, Operation.class);
@@ -197,9 +181,6 @@ public class OperationsUtils extends RdfService{
 		Model model = new LinkedHashModel();
 
 		IRI seriesURI = parentUtils.getSeriesUriByOperationId(idOperation);
-		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
-		}
 
 		//PUBLISH
 		JSONObject operationJson = getOperationJsonById(idOperation);

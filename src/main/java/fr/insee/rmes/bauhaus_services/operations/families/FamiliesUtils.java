@@ -8,7 +8,6 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
@@ -49,13 +48,11 @@ public class FamiliesUtils {
 	final RepositoryGestion repositoryGestion;
 	final String lg1;
 	final String lg2;
-	final StampsRestrictionsService stampsRestrictionsService;
 	public FamiliesUtils(@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.families-rich-text-new-structure}") boolean familiesRichTextNexStructure,
 						 FamOpeSerIndUtils famOpeSerUtils,
 						 FamilyPublication familyPublication,
 						 ParentUtils ownersUtils,
 						 RepositoryGestion repositoryGestion,
-						 StampsRestrictionsService stampsRestrictionsService,
 						 @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
 						 @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2) {
 
@@ -64,7 +61,6 @@ public class FamiliesUtils {
 		this.familyPublication = familyPublication;
 		this.ownersUtils = ownersUtils;
 		this.repositoryGestion = repositoryGestion;
-		this.stampsRestrictionsService = stampsRestrictionsService;
 		this.lg1 = lg1;
 		this.lg2 = lg2;
 	}

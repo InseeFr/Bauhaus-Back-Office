@@ -180,18 +180,10 @@ public class DocumentationsUtils extends RdfService{
 			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
-			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
-				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
-						"Only an admin or a manager can create a new sims.");
-			}
 			sims.setCreated(DateUtils.getCurrentDate());
 			sims.setUpdated(DateUtils.getCurrentDate());
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
-			if (!stampsRestrictionsService.canModifySims(seriesOrIndicatorUri)) {
-				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
-						"Only an admin, CNIS, or a manager can modify this sims.", id);
-			}
 			sims.setUpdated(DateUtils.getCurrentDate());
 			if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
@@ -250,10 +242,6 @@ public class DocumentationsUtils extends RdfService{
 		IRI seriesOrIndicatorUri = targetUri;
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(targetId);
-		}
-		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
-			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
-					"Only an admin or a manager can create a new sims.");
 		}
 
 
@@ -463,10 +451,6 @@ public class DocumentationsUtils extends RdfService{
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 
-		if (!stampsRestrictionsService.canDeleteSims()) {
-			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
-					"Only an admin or a manager can delete a sims.");
-		}		
 		Resource graph = RdfUtils.simsGraph(id);
 
 		HttpStatus result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
