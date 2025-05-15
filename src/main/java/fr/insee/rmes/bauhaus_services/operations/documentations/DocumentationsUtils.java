@@ -174,11 +174,6 @@ public class DocumentationsUtils extends RdfService{
 
 		String status = getDocumentationValidationStatus(id);
 
-		// Create or update rdf
-		IRI seriesOrIndicatorUri = targetUri;
-		if (RdfUtils.toString(targetUri).contains(this.operationsBaseUri)) {
-			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
-		}
 		if (create) {
 			sims.setCreated(DateUtils.getCurrentDate());
 			sims.setUpdated(DateUtils.getCurrentDate());
@@ -236,12 +231,6 @@ public class DocumentationsUtils extends RdfService{
 		case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
 		case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
 		default : break;
-		}
-
-		/* Check rights */
-		IRI seriesOrIndicatorUri = targetUri;
-		if (targetType.equals(Constants.OPERATION_UP)) {
-			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(targetId);
 		}
 
 
