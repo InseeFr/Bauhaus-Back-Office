@@ -34,11 +34,7 @@ public class CollectionsUtils extends RdfService {
 	@Autowired
 	ConceptsPublication conceptsPublication;
 	
-	/**
-	 * Collections
-	 * @throws RmesException 
-	 */
-	
+
 	public void setCollection(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
@@ -54,7 +50,6 @@ public class CollectionsUtils extends RdfService {
 	}
 	
 	public void setCollection(String id, String body) throws RmesException  {
-		IRI collectionURI = RdfUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
 
 		mapper.configure(
