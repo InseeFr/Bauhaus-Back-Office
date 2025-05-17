@@ -70,9 +70,6 @@ public class DocumentationsUtils extends RdfService{
 	@Autowired
 	ParentUtils parentUtils;
 
-	@Value("${"+OPERATIONS_BASE_URI+"}")
-	private String operationsBaseUri;
-
 	/**
 	 * GETTER
 	 * @param idSims
@@ -212,7 +209,6 @@ public class DocumentationsUtils extends RdfService{
 		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String targetId = target[1];
-		IRI targetUri = null;
 
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
@@ -225,14 +221,6 @@ public class DocumentationsUtils extends RdfService{
 					"This metadataReport cannot be published before its target is published. ",
 					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
 		}
-
-		switch(targetType) {
-		case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
-		case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
-		case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
-		default : break;
-		}
-
 
 		documentationPublication.publishSims(id);
 
