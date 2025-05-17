@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class OrganizationsResources {
 
+
 	static final Logger logger = LoggerFactory.getLogger(OrganizationsResources.class);
 
 	final OrganizationsService organizationsService;
@@ -46,7 +47,7 @@ public class OrganizationsResources {
 
 	@GetMapping(value = "/organization/{identifier}", 
 			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@Operation(operationId = "getOrganizationByIdentifier", summary = "Organization" , responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Organization.class)))})
+	@Operation(summary = "Organization" , responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Organization.class)))})
 	public ResponseEntity<Object> getOrganizationByIdentifier(@PathVariable("identifier") String identifier,
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
 		String resultat;
@@ -67,7 +68,7 @@ public class OrganizationsResources {
 
 	@GetMapping(value = "", 
 			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@Operation(operationId = "getOrganizations", summary = "List of organizations" , responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
+	@Operation(summary = "List of organizations" , responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getOrganizations(
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
 		String resultat;

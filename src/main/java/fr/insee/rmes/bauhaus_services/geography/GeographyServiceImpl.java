@@ -106,9 +106,6 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		// Est-ce il existe une geographie ayant l'id passé en paramètre
 		// si c'est non => 404
 
-		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new geo feature.");
-		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		GeoFeature geoFeature = new GeoFeature();
@@ -129,9 +126,6 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
 	@Override
 	public String createFeature(String body) throws RmesException {
-		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new geo feature.");
-		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		UUID id = UUID.randomUUID();

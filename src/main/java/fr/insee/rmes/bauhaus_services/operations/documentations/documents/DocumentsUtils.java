@@ -201,14 +201,6 @@ public class DocumentsUtils extends RdfService {
     public void createDocument(String id, String body, boolean isLink, InputStream documentFile, String documentName)
             throws RmesException {
 
-
-        /* Check rights */
-        if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-            logger.debug("You do not have the right to create the file {}", id);
-            throw new RmesUnauthorizedException(isLink ? ErrorCodes.LINK_CREATION_RIGHTS_DENIED : ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED,
-                    "Only an admin or a manager can create a new  " + (isLink ? "link." : "document."));
-        }
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         Document document = new Document(id, isLink);
@@ -426,10 +418,6 @@ public class DocumentsUtils extends RdfService {
                     break;
             }
 
-            if (!stampsRestrictionsService.canModifySims(targetIri)) {
-                throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
-                        "Only an admin, CNIS, or a manager can modify this sims.", simsUri);
-            }
         }
 
     }

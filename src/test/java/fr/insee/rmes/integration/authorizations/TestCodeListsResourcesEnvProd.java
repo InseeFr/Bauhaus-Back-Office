@@ -1,30 +1,23 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,282 +34,129 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=codelists"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-class TestCodeListsResourcesEnvProd {
+class TestCodeListsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
     @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
     private CodeListService codeListService;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
 
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
     int codesListId=10;
 
-    @Test
-    void putCodesListAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+    @MethodSource("provideCodeListData")
+    @ParameterizedTest
+    void updateCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
+        var request = put("/codeList/" + codesListId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @Test
-    void putCodesListAsCodesListContributor_stampOK() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre))).thenReturn(true);
+    @MethodSource("provideCodeListData")
+    @ParameterizedTest
+    void postCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre));
+        var request = post("/codeList/").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @Test
-    void putCodesListAsCodesListContributor_badCodesListStamp() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre))).thenReturn(false);
-        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre));
+
+
+    private static Stream<Arguments> provideCodeListData() {
+        return Stream.of(
+                Arguments.of(200, true, true),
+
+                Arguments.of(403, true, false),
+
+                Arguments.of(401, false, true)
+        );
     }
 
-    @Test
-    void putCodesListAsCodesListContributor_noAuth() throws Exception {
-        mvc.perform(put("/codeList/" + codesListId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isUnauthorized());
+    @MethodSource("provideCodeListData")
+    @ParameterizedTest
+    void deleteCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = delete("/codeList/" + codesListId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @Test
-    void putCodesListAsCodesListContributor_badRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
-        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
+    private static Stream<Arguments> provideCodeData() {
+        return Stream.of(
+                Arguments.of(201, true, true),
+
+                Arguments.of(403, true, false),
+
+                Arguments.of(401, false, true)
+        );
     }
 
-    @Test
-    void postCodesListAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
+    @MethodSource("provideCodeData")
+    @ParameterizedTest
+    void postCode(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = post("/codeList/detailed/1/codes").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @Test
-    void postCodesListAsCodesListContributor_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
-                .andExpect(status().isOk());
+
+    @MethodSource("provideCodeListData")
+    @ParameterizedTest
+    void putCode(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = put("/codeList/detailed/1/codes/2").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @Test
-    void postCodesList_noAuth() throws Exception {
-        mvc.perform(post("/codeList/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isUnauthorized());
+    @MethodSource("provideCodeListData")
+    @ParameterizedTest
+    void putCodesList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = put("/codeList/1/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @Test
-    void postCodesListAsNotCodesListContributor() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
-        mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void deleteCodesListAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(delete("/codeList/" + codesListId)
-                        .header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void deleteCodesList_noAuth() throws Exception {
-        mvc.perform(delete("/codeList/" + codesListId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void deleteUnpublishedCodesListAsCodesListContributor_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre))).thenReturn(true);
-        mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre));
-    }
-
-    @Test
-    void deletePublishedCodesListAsCodesListContributor_forbidden() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre))).thenReturn(false);
-        mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),new Stamp(timbre));
-    }
-
-    @Test
-    void postCodeAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(post("/codeList/detailed/1/codes").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    void postCodeAsCodesListContributor_ok() throws Exception {
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(anyString(), eq(new Stamp(timbre)))).thenReturn(true);
-
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        mvc.perform(post("/codeList/detailed/1/codes").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    void postCode_noAuth() throws Exception {
-        mvc.perform(post("/codeList/detailed/1/codes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void postCodeAsNotCodesListContributor() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bad_role"));
-        mvc.perform(post("/codeList/detailed/1/codes").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void putCodeAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(put("/codeList/detailed/1/codes/2").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void putCodeAsCodesListContributor_ok() throws Exception {
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(anyString(), eq(new Stamp(timbre)))).thenReturn(true);
-
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        mvc.perform(put("/codeList/detailed/1/codes/2").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void putCode_noAuth() throws Exception {
-        mvc.perform(put("/codeList/detailed/1/codes/2")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void putCodeAsNotCodesListContributor() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bad_role"));
-        mvc.perform(put("/codeList/detailed/1/codes/2").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void validateCodeAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(put("/codeList/1/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void validateCodeAsCodesListContributor_ok() throws Exception {
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(anyString(), eq(new Stamp(timbre)))).thenReturn(true);
-
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        mvc.perform(put("/codeList/1/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void validateCode_noAuth() throws Exception {
-        mvc.perform(put("/codeList/1/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void validateCodeAsNotCodesListContributor() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
-        mvc.perform(put("/codeList/1/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
-    }
 }
