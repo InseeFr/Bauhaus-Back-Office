@@ -30,6 +30,14 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasets.ftlh", params);
     }
 
+    public static String getDatasetsForSearch(String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("LG1", config.getLg1());
+
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetsForSearch.ftlh", params);
+    }
+
     public static String getDataset(String id, String datasetsGraph, String admsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
@@ -99,15 +107,12 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetDerivedFrom.ftlh", params);
     }
 
-
-
     public static String deleteDatasetQualifiedDerivationWhiteNode(String id, String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
         params.put("ID", id);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "deleteDatasetQualifiedDerivationWhiteNode.ftlh", params);
     }
-
 
     public static String getLinkedDocuments(String id, String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
