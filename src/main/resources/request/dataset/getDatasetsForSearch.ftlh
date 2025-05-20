@@ -1,22 +1,38 @@
-SELECT ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated
+SELECT ?id ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated
 
 FROM <${DATASET_GRAPH}>
 
 WHERE {
     ?uri rdf:type dcat:Dataset .
 
-    ?uri dct:title ?labelLg1
-    FILTER (lang(?labelLg1) = '${LG1}') .
+    ?uri dct:identifier ?id .
 
-    ?uri ^foaf:primaryTopic/dc:creator ?creator .
+    OPTIONAL {
+        ?uri dct:title ?labelLg1
+        FILTER (lang(?labelLg1) = '${LG1}') .
+    }
 
-    ?uri insee:disseminationStatus ?disseminationStatus .
+    OPTIONAL {
+        ?uri ^foaf:primaryTopic/dc:creator ?creator .
+    }
 
-    ?uri insee:validationState ?validationStatus .
+    OPTIONAL {
+        ?uri insee:disseminationStatus ?disseminationStatus .
+    }
 
-    ?uri prov:wasGeneratedBy ?wasGeneratedIRIs .
+    OPTIONAL {
+        ?uri insee:validationState ?validationStatus .
+    }
 
-    ?uri ^foaf:primaryTopic/dct:created ?created .
+    OPTIONAL {
+        ?uri prov:wasGeneratedBy ?wasGeneratedIRIs .
+    }
 
-    ?uri ^foaf:primaryTopic/dct:modified ?modified .
+    OPTIONAL {
+        ?uri ^foaf:primaryTopic/dct:created ?created .
+    }
+
+    OPTIONAL {
+        ?uri ^foaf:primaryTopic/dct:modified ?updated .
+    }
 }
