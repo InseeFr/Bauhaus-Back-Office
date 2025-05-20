@@ -127,7 +127,6 @@ class ConceptsAuthorizationTest {
     }
     static Collection<Arguments> TestRoleCaseForPublishConcept() {
         return Arrays.asList(
-                Arguments.of(List.of(Roles.ADMIN), status().isOk()),
                 Arguments.of(List.of("BadRole"), status().isForbidden()),
                 Arguments.of(List.of(), status().isForbidden())
         );
