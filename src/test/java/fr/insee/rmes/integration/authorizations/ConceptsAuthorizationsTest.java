@@ -65,7 +65,7 @@ class ConceptsAuthorizationTest {
 
     String idep = "xxxxxx";
     String timbre = "XX59-YYY";
-    static String familyId= "1.1";
+    static String familyId= "c1116";
     static String conceptVersion="16";
     static String id ="2025";
 
@@ -99,9 +99,9 @@ class ConceptsAuthorizationTest {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForUpdateConcept")
-    void updateConcept(List role, ResultMatcher expectedStatus) throws Exception {
+    void updateConcept(List<String> role, ResultMatcher expectedStatus) throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
-        mvc.perform(put("/concepts/collection/" + familyId).header("Authorization", "Bearer toto")
+        mvc.perform(put("/concepts/collection/" + familyId).header("Authorization", "Bearer totso")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
@@ -109,6 +109,7 @@ class ConceptsAuthorizationTest {
     }
     static Collection<Arguments> TestRoleCaseForUpdateConcept() {
         return Arrays.asList(
+                Arguments.of(List.of(Roles.ADMIN), status().is(204)),
                 Arguments.of(List.of("BadRoleOfUser",Roles.CONCEPTS_CONTRIBUTOR), status().isForbidden()),
                 Arguments.of(List.of(), status().isForbidden())
         );
@@ -117,7 +118,7 @@ class ConceptsAuthorizationTest {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForPublishConcept")
-    void publishClassification(List role, ResultMatcher expectedStatus) throws Exception {
+    void publishClassification(List<String> role, ResultMatcher expectedStatus) throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
         mvc.perform(put("/concepts/" + familyId + "/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,6 +128,7 @@ class ConceptsAuthorizationTest {
     }
     static Collection<Arguments> TestRoleCaseForPublishConcept() {
         return Arrays.asList(
+                Arguments.of(List.of(Roles.ADMIN), status().is(204)),
                 Arguments.of(List.of("BadRole"), status().isForbidden()),
                 Arguments.of(List.of(), status().isForbidden())
         );
