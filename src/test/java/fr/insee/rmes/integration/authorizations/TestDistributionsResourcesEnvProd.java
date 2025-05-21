@@ -161,7 +161,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
         var request = put("/distribution/1/validate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN_VALUE)
                 .content("{\"id\": \"1\"}");
 
         if(withBearer){

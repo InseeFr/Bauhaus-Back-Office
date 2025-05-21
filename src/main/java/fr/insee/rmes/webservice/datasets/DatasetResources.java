@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,7 +65,7 @@ public class DatasetResources {
         return this.datasetService.getDistributions(id);
     }
 
-    @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE, produces = "text/plain")
+    @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
     @Operation(summary = "Create a dataset")
     @ResponseStatus(HttpStatus.CREATED)
@@ -74,7 +75,7 @@ public class DatasetResources {
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Update a dataset")
     public String setDataset(
             @PathVariable("id") String id,
@@ -83,7 +84,7 @@ public class DatasetResources {
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.PUBLISH)
-    @PutMapping(value = "/{id}/validate", produces = "text/plain")
+    @PutMapping(value = "/{id}/validate", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Publish a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {

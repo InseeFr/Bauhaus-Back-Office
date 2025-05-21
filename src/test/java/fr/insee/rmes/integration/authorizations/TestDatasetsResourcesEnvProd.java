@@ -125,7 +125,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/datasets/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN_VALUE)
                 .content("{\"id\": \"1\"}");
 
         if(withBearer){
@@ -154,7 +154,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/datasets/1/validate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN_VALUE)
                 .content("{\"id\": \"1\"}");
 
         if(withBearer){
@@ -210,7 +210,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = patch("/datasets/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN_VALUE)
                 .content("{\"numObservations\": 1}");
 
         if(withBearer){
