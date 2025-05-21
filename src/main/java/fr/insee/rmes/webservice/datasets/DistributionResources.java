@@ -62,7 +62,7 @@ public class DistributionResources {
         return this.distributionService.getDistributionByID(id);
     }
 
-    @PutMapping("/{id}/validate")
+    @PutMapping(value = "/{id}/validate", produces = "text/plain")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.PUBLISH)
     @Operation(summary = "Publish a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})

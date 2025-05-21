@@ -64,7 +64,7 @@ public class DatasetResources {
         return this.datasetService.getDistributions(id);
     }
 
-    @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE, produces = "text/plain")
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
     @Operation(summary = "Create a dataset")
     @ResponseStatus(HttpStatus.CREATED)
@@ -83,7 +83,7 @@ public class DatasetResources {
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.PUBLISH)
-    @PutMapping("/{id}/validate")
+    @PutMapping(value = "/{id}/validate", produces = "text/plain")
     @Operation(summary = "Publish a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {
