@@ -72,14 +72,14 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenFamilyIsNull()  {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null,null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
         org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
     }
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenIdIsAbsent(){
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null,null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null,null, "fr", "en");
         Family familyCreate = new Family();
         familyCreate.setCreated("today");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
@@ -88,7 +88,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenPrefLabelLg1IsAbsent() {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null,null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null,null, "fr", "en");
         Family familyCreate = new Family();
         familyCreate.setId("idExample");
         familyCreate.setAbstractLg1("");

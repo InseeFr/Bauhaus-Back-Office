@@ -125,7 +125,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateClassification() {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl( repoGestion, null, null);
         RmesException exception = assertThrows(RmesNotFoundException.class, () -> classificationImpl.updateClassification("idExample","bodyExample"));
         Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"Can't read request body\",\"message\":\"1142 "));
     }
@@ -134,7 +134,7 @@ class ClassificationsImplTest {
     @Test
     void shouldThrowRmesExceptionWhenSetClassificationValidation() throws RmesException {
         String classificationId = "2025";
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
         when(repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classificationId))).thenReturn(new JSONObject());
         RmesException exception = assertThrows(RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
         Assertions.assertEquals("{\"details\":\"2025\",\"message\":\"1141 : Classification not found\"}", exception.getDetails());
