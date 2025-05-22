@@ -105,6 +105,7 @@ public class FamiliesUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
+
 		try {
 			Family family = mapper.readValue(body,Family.class);
 			family.setId(id);
@@ -116,7 +117,6 @@ public class FamiliesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-
 		return id;
 	}
 
@@ -168,7 +168,7 @@ public class FamiliesUtils {
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
 		repositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
-		
+
 		repositoryGestion.loadSimpleObject(familyURI, model);
 	}
 
@@ -193,7 +193,6 @@ public class FamiliesUtils {
 
 	public void setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
-
 		familyPublication.publishFamily(id);
 
 		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, id);
@@ -203,8 +202,8 @@ public class FamiliesUtils {
 		logger.info("Validate family : {}", familyURI);
 
 		repositoryGestion.objectValidation(familyURI, model);
-			
+
 	}
-	
-	
+
+
 }
