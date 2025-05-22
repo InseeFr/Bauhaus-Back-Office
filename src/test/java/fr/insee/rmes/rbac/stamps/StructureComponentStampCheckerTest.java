@@ -13,7 +13,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.springframework.core.env.Environment;
 
 import java.util.List;
 
@@ -27,9 +26,6 @@ class StructureComponentStampCheckerTest {
     private RepositoryGestion repositoryGestion;
 
     @Mock
-    private Environment environment;
-
-    @Mock
     private UriUtils uriUtils;
 
     @ Mock
@@ -40,12 +36,9 @@ class StructureComponentStampCheckerTest {
     @BeforeEach
     void setUp() {
         repositoryGestion = mock(RepositoryGestion.class);
-        environment = mock(Environment.class);
         uriUtils = mock(UriUtils.class);
         config = mock(Config.class);
 
-        when(environment.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.baseURI")).thenReturn("http://base/");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.baseGraph")).thenReturn("http://graph/");
         when(uriUtils.getBaseUriGestion(ObjectType.ATTRIBUTE_PROPERTY)).thenReturn("http://attribute");
 
         when(config.getStructuresComponentsGraph()).thenReturn("http://graph");
@@ -53,7 +46,7 @@ class StructureComponentStampCheckerTest {
 
         RdfUtils.setUriUtils(uriUtils);
         StructureQueries.setConfig(config);
-        checker = new StructureComponentStampChecker(environment, repositoryGestion);
+        checker = new StructureComponentStampChecker(repositoryGestion);
     }
 
     @Test

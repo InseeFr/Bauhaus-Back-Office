@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.springframework.core.env.Environment;
 
 import java.util.List;
 
@@ -25,9 +24,6 @@ class OperationSeriesStampCheckerTest {
     private RepositoryGestion repositoryGestion;
 
     @Mock
-    private Environment environment;
-
-    @Mock
     private UriUtils uriUtils;
 
     @Mock
@@ -38,19 +34,16 @@ class OperationSeriesStampCheckerTest {
     @BeforeEach
     void setUp() {
         repositoryGestion = mock(RepositoryGestion.class);
-        environment = mock(Environment.class);
         uriUtils = mock(UriUtils.class);
         config = mock(Config.class);
 
         OpSeriesQueries.setConfig(config);
         when(config.getOperationsGraph()).thenReturn("graph");
 
-        when(environment.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.baseURI")).thenReturn("http://base/");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.baseGraph")).thenReturn("http://graph/");
         when(uriUtils.getBaseUriGestion(ObjectType.SERIES)).thenReturn("http://series");
 
         RdfUtils.setUriUtils(uriUtils);
-        checker = new OperationSeriesStampChecker(environment, repositoryGestion);
+        checker = new OperationSeriesStampChecker(repositoryGestion);
     }
 
     @Test

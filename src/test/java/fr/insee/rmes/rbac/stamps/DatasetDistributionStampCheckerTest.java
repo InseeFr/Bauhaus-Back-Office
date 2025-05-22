@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.springframework.core.env.Environment;
 
 import java.util.List;
 
@@ -24,9 +23,6 @@ class DatasetDistributionStampCheckerTest {
     private RepositoryGestion repositoryGestion;
 
     @Mock
-    private Environment environment;
-
-    @Mock
     private UriUtils uriUtils;
 
     private DatasetDistributionStampChecker checker;
@@ -34,18 +30,13 @@ class DatasetDistributionStampCheckerTest {
     @BeforeEach
     void setUp() {
         repositoryGestion = mock(RepositoryGestion.class);
-        environment = mock(Environment.class);
         uriUtils = mock(UriUtils.class);
 
-        when(environment.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.baseURI")).thenReturn("http://base/");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.datasets.record.baseURI")).thenReturn("datasets");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.baseGraph")).thenReturn("http://graph/");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.datasets.graph")).thenReturn("datasetsGraph");
         when(uriUtils.getBaseUriGestion(ObjectType.DISTRIBUTION)).thenReturn("http://distribution");
 
         RdfUtils.setUriUtils(uriUtils);
 
-        checker = new DatasetDistributionStampChecker(environment, repositoryGestion);
+        checker = new DatasetDistributionStampChecker(repositoryGestion);
     }
 
     @Test

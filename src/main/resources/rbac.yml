@@ -85,6 +85,12 @@ rbac:
         update: ALL
         publish: ALL
         delete: ALL
+      codeslist_codeslist:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: all
     Gestionnaire_structures_RMESGNCS:
       structure_structure:
         create: ALL
@@ -98,6 +104,8 @@ rbac:
         update: STAMP
         delete: STAMP
         publish: STAMP
+      codeslist_codeslist:
+        read: ALL
     Proprietaire_collection_concepts_RMESGNCS:
       concept_concept:
         read: ALL
@@ -106,6 +114,8 @@ rbac:
         read: ALL
         update: ALL
         delete: ALL
+      codeslist_codeslist:
+        read: ALL
     Proprietaire_concept_RMESGNCS:
       concept_concept:
         create: ALL
@@ -119,6 +129,8 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      codeslist_codeslist:
+        read: ALL
     Utilisateur_RMESGNCS:
       structure_structure:
         read: ALL
@@ -146,23 +158,31 @@ rbac:
         read: ALL
       geography:
         read: ALL
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept_concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_ensemble_concepts_RMESGNCS:
       concept_concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
+      codeslist_codeslist:
+        read: ALL
     CNIS_RMESGNCS:
       operation_operation:
         update: ALL
       operation_sims:
         update: ALL
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_serie_RMESGNCS:
       operation_family:
         read: STAMP
@@ -186,6 +206,8 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_indicateur_RMESGNCS:
       operation_family:
         read: STAMP
@@ -209,6 +231,8 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_jeu_donnees_RMESGNCS:
       dataset_dataset:
         create: ALL
@@ -222,5 +246,7 @@ rbac:
         update: STAMP
         publish: STAMP
         delete: STAMP
+      codeslist_codeslist:
+        read: ALL
 
 

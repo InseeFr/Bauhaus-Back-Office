@@ -8,7 +8,6 @@ import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +18,7 @@ public class StructureComponentStampChecker implements  ObjectStampChecker {
     private final RepositoryGestion repositoryGestion;
 
 
-    public StructureComponentStampChecker(Environment env, RepositoryGestion repositoryGestion) {
+    public StructureComponentStampChecker(RepositoryGestion repositoryGestion) {
         this.repositoryGestion = repositoryGestion;
     }
 

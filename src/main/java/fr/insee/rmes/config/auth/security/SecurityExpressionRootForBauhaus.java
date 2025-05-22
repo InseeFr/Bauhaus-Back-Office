@@ -14,14 +14,13 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
 
     private SecurityExpressionRootForBauhaus(
-            MethodSecurityExpressionOperations methodSecurityExpressionOperations,
-            StampFromPrincipal stampFromPrincipal) {
+            MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
     }
 
-    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampFromPrincipal stampFromPrincipal) {
-        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations),  requireNonNull(stampFromPrincipal));
+    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
+        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations));
     }
 
     @Override
@@ -113,14 +112,5 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     public Object getThis() {
         return methodSecurityExpressionOperations.getThis();
     }
-
-
-
-
-/*
-    private boolean isManagerForCodesListId(String codesListId) {
-        return userHasStampWichManageResource(codesListId, this.stampAuthorizationChecker::isCodesListManagerWithStamp);
-    }*/
-
 
 }

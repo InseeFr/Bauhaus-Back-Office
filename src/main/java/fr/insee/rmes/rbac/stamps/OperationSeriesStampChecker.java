@@ -8,7 +8,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,7 @@ public class OperationSeriesStampChecker implements  ObjectStampChecker {
 
     private final RepositoryGestion repositoryGestion;
 
-    public OperationSeriesStampChecker(Environment env, RepositoryGestion repositoryGestion) {
+    public OperationSeriesStampChecker(RepositoryGestion repositoryGestion) {
         this.repositoryGestion = repositoryGestion;
     }
 

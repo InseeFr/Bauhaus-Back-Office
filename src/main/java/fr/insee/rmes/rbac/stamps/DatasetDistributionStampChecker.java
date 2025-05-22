@@ -8,7 +8,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,7 @@ public class DatasetDistributionStampChecker implements  ObjectStampChecker {
 
     private final RepositoryGestion repositoryGestion;
 
-    public DatasetDistributionStampChecker(Environment env, RepositoryGestion repositoryGestion) {
+    public DatasetDistributionStampChecker(RepositoryGestion repositoryGestion) {
         this.repositoryGestion = repositoryGestion;
     }
 

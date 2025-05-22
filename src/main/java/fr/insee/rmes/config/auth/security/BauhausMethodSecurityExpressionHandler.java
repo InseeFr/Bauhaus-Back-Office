@@ -21,14 +21,9 @@ public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurit
 
     private static final Logger logger= LoggerFactory.getLogger(BauhausMethodSecurityExpressionHandler.class);
 
-    private final StampFromPrincipal stampFromPrincipal;
 
-    @Autowired
-    public BauhausMethodSecurityExpressionHandler(
-            StampFromPrincipal stampFromPrincipal) {
+    public BauhausMethodSecurityExpressionHandler() {
         logger.trace("Initializing GlobalMethodSecurityConfiguration with BauhausMethodSecurityExpressionHandler and DefaultRolePrefix = {}", DEFAULT_ROLE_PREFIX);
-        this.stampFromPrincipal = requireNonNull(stampFromPrincipal);
-
         setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
     }
 
@@ -36,7 +31,7 @@ public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurit
     public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication, MethodInvocation mi) {
         StandardEvaluationContext context = (StandardEvaluationContext) super.createEvaluationContext(authentication, mi);
         MethodSecurityExpressionOperations delegate = (MethodSecurityExpressionOperations) context.getRootObject().getValue();
-        context.setRootObject(SecurityExpressionRootForBauhaus.enrich(delegate, this.stampFromPrincipal));
+        context.setRootObject(SecurityExpressionRootForBauhaus.enrich(delegate));
         return context;
     }
 }
