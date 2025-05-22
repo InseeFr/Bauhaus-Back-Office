@@ -7,7 +7,7 @@ import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
@@ -29,9 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class OperationsImpl  extends RdfService implements OperationsService {
+public class OperationsImpl  implements OperationsService {
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
+
+	@Autowired
+	RepositoryGestion repoGestion;
 
 	@Autowired
 	AuthorizeMethodDecider authorizeMethodDecider;

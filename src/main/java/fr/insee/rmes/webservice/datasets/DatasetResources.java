@@ -75,20 +75,20 @@ public class DatasetResources {
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
-    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a dataset")
-    public String setDataset(
+    public void setDataset(
             @PathVariable("id") String id,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
-        return this.datasetService.update(id, body);
+        this.datasetService.update(id, body);
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.PUBLISH)
-    @PutMapping(value = "/{id}/validate", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PutMapping(value = "/{id}/validate")
     @Operation(summary = "Publish a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
-    public String publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {
-        return this.datasetService.publishDataset(id);
+    public void publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {
+        this.datasetService.publishDataset(id);
     }
 
     @GetMapping(value = "/archivageUnits", consumes = APPLICATION_JSON_VALUE)

@@ -180,8 +180,6 @@ public class OperationsUtils extends RdfService{
 	public void setOperationValidation(String idOperation)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
-		IRI seriesURI = parentUtils.getSeriesUriByOperationId(idOperation);
-
 		//PUBLISH
 		JSONObject operationJson = getOperationJsonById(idOperation);
 		operationPublication.publishOperation(idOperation, operationJson);

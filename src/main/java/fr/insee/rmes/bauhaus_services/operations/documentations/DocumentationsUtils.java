@@ -204,7 +204,6 @@ public class DocumentationsUtils extends RdfService{
 
 		// Find target
 		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
-		String targetType = target[0];
 		String targetId = target[1];
 
 		if (targetId.isEmpty()) {

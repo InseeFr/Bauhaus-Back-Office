@@ -382,47 +382,6 @@ public class DocumentsUtils extends RdfService {
         }
     }
 
-    /**
-     * Check that if the file is referenced to by some sims, user has rights on these sims
-     *
-     * @param docId
-     * @throws RmesException
-     */
-    private void checkRightsToModifyFile(String docId) throws RmesException {
-        JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
-        if (sims.isEmpty()) return; //document's file isn't linked to a sims
-        for (int i = 0; i < sims.length(); i++) {
-            String simsUri = ((JSONObject) sims.get(i)).get(Constants.TEXT).toString();
-
-            Pattern p = Pattern.compile("(.*)attribut/([0-9]{4})/(.*)");
-            Matcher m = p.matcher(simsUri);
-            String simsId = null;
-            if (m.matches()) {
-                simsId = m.group(2);
-            }
-            String[] target = ownersUtils.getDocumentationTargetTypeAndId(simsId);
-            //target[0] =  targetType / target[1] idTarget
-            IRI targetIri = null;
-
-            switch (target[0]) {
-                case Constants.OPERATION_UP:
-                    targetIri = RdfUtils.objectIRI(ObjectType.OPERATION, target[1]);
-                    break;
-                case Constants.SERIES_UP:
-                    targetIri = RdfUtils.objectIRI(ObjectType.SERIES, target[1]);
-                    break;
-                case Constants.INDICATOR_UP:
-                    targetIri = RdfUtils.objectIRI(ObjectType.INDICATOR, target[1]);
-                    break;
-                default:
-                    break;
-            }
-
-        }
-
-    }
-
-
     public String changeFile(String docId, InputStream documentFile, String documentName) throws RmesException {
 
         JSONObject jsonDoc = getDocument(docId, false);
@@ -434,8 +393,6 @@ public class DocumentsUtils extends RdfService {
 
         String docUrl = getDocumentUrlFromDocument(jsonDoc);
 
-        // check rights
-        checkRightsToModifyFile(docId);
 
         // Warning if different file extension
         String oldExt = StringUtils.substringAfterLast(docUrl, ".");

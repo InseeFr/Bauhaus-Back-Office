@@ -460,9 +460,6 @@ public class SeriesUtils {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't parse series", e.getMessage());
         }
 
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
-
-
         checkSimsWithOperations(series);
 
         series.setUpdated(DateUtils.getCurrentDate());

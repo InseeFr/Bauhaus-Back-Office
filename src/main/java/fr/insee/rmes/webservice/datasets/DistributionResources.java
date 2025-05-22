@@ -63,12 +63,12 @@ public class DistributionResources {
         return this.distributionService.getDistributionByID(id);
     }
 
-    @PutMapping(value = "/{id}/validate", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PutMapping(value = "/{id}/validate")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.PUBLISH)
     @Operation(summary = "Publish a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
-    public String publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
-        return this.distributionService.publishDistribution(id);
+    public void publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
+        this.distributionService.publishDistribution(id);
     }
 
     @GetMapping("/datasets")
