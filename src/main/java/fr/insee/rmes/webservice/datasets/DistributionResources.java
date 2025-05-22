@@ -79,6 +79,13 @@ public class DistributionResources {
         return this.datasetService.getDatasetsForDistributionCreation(user.getStamp());
     }
 
+    @GetMapping(value = "/search", produces = "application/json")
+    @Operation(operationId = "getDistributionsForSearch", summary = "List of distributions for advanced search",
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
+        return this.distributionService.getDistributionsForSearch();
+    }
+
     @PreAuthorize("isAdmin() || isDatasetContributor()")
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDistribution", summary = "Create a distribution")
