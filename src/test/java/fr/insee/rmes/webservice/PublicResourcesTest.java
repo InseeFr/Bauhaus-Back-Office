@@ -1,6 +1,5 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -44,8 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PublicResourcesTest {
     @Autowired
     private MockMvc mvc;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+
     @MockitoBean
     StampsService stampsService;
 

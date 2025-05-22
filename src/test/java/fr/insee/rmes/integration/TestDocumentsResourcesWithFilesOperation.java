@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
@@ -41,8 +40,7 @@ class TestDocumentsResourcesWithFilesOperation {
 
     @MockitoBean
     private RepositoryPublication repositoryPublication;
-    @MockitoBean
-    private StampsRestrictionServiceImpl stampsRestrictionService;
+
     @MockitoBean
     private IdGenerator idGenerator;
     @MockitoBean

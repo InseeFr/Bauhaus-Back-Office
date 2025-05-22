@@ -8,6 +8,8 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class IndicatorsResources {
 		this.documentationsService = documentationsService;
 	}
 
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicators", produces=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getIndicators", summary = "List of indicators",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
@@ -48,6 +50,7 @@ public class IndicatorsResources {
 		return operationsService.getIndicators();
 	}
 
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicators/withSims",produces= MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
 	public ResponseEntity<Object> getIndicatorsWIthSims() throws RmesException {
@@ -55,8 +58,9 @@ public class IndicatorsResources {
 		return ResponseEntity.status(HttpStatus.OK).body(indicators);
 	}
 
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicators/advanced-search", produces=MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
+	@Operation(summary = "List of indicators for search",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
 		String indicators = operationsService.getIndicatorsForSearch();
@@ -64,8 +68,9 @@ public class IndicatorsResources {
 
 	}
 
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicator/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@Operation(operationId = "getIndicatorByID", summary = "Get an indicator",
+	@Operation(summary = "Get an indicator",
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true)@RequestHeader(required=false) String accept) throws RmesException {
@@ -77,21 +82,21 @@ public class IndicatorsResources {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value="/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setIndicatorById", summary = "Update an indicator")
+	@Operation(summary = "Update an indicator")
 	public ResponseEntity<Object> setIndicatorById(
 			@PathVariable(Constants.ID) String id, 
 			@Parameter(description = "Indicator to update", required = true,
 			content = @Content(schema = @Schema(implementation = Indicator.class))) @RequestBody String body) throws RmesException {
 
 		operationsService.setIndicator(id, body);
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value="/indicator/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
+	@Operation(summary = "Indicator validation")
 	public ResponseEntity<Object> setIndicatorValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 
@@ -99,9 +104,9 @@ public class IndicatorsResources {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value="/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setIndicator", summary = "Create indicator",
+	@Operation(summary = "Create indicator",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
 	public ResponseEntity<Object> setIndicator(
 			@Parameter(description = "Indicator to create", required = true,

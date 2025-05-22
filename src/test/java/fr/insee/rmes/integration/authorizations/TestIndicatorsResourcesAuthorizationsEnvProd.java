@@ -2,29 +2,24 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.operations.IndicatorsResources;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,12 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class})
-class TestIndicatorsResourcesAuthorizationsEnvProd {
+class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
@@ -55,138 +45,97 @@ class TestIndicatorsResourcesAuthorizationsEnvProd {
     @MockitoBean
     private OperationsDocumentationsService operationsDocumentationsService;
 
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
 
 
-    @ValueSource(strings = {
-            "/operations/indicators/",
-            "/operations/indicators/withSims",
-            "/operations/indicators/advanced-search",
-            "/operations/indicator/1"
-    })
+    private static Stream<Arguments> provideIndicatorDataGet() {
+        return Stream.of(
+                Arguments.of("/operations/indicators/", 200, true, true),
+                Arguments.of("/operations/indicators/", 403, true, false),
+                Arguments.of("/operations/indicators/",401, false, true),
+
+                Arguments.of("/operations/indicators/withSims", 200, true, true),
+                Arguments.of("/operations/indicators/withSims", 403, true, false),
+                Arguments.of("/operations/indicators/withSims",401, false, true),
+
+                Arguments.of("/operations/indicators/advanced-search", 200, true, true),
+                Arguments.of("/operations/indicators/advanced-search", 403, true, false),
+                Arguments.of("/operations/indicators/advanced-search",401, false, true),
+
+                Arguments.of("/operations/indicator/1", 200, true, true),
+                Arguments.of("/operations/indicator/1", 403, true, false),
+                Arguments.of("/operations/indicator/1",401, false, true)
+        );
+    }
+
+    @MethodSource("provideIndicatorDataGet")
     @ParameterizedTest
-    void getWithAdmin_Ok(String url) throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(get(url).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+    void getIndicator(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
-    @ValueSource(strings = {
-            "/operations/indicators/",
-            "/operations/indicators/withSims",
-            "/operations/indicators/advanced-search",
-            "/operations/indicator/1"
-    })
+    private static Stream<Arguments> provideIndicatorData() {
+        return Stream.of(
+                Arguments.of(200, true, true),
+
+                Arguments.of(403, true, false),
+
+                Arguments.of(401, false, true)
+        );
+    }
+
+    @MethodSource("provideIndicatorData")
     @ParameterizedTest
-    void getWithContributor_Ok(String url) throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.SERIES_CONTRIBUTOR));
-        mvc.perform(get(url).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+    void postIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = post("/operations/indicator").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"} ");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
+    @MethodSource("provideIndicatorData")
+    @ParameterizedTest
+    void putIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-    @Test
-    void postIndicatorWhenAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(post("/operations/indicator").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"} "))
-                .andExpect(status().isOk());
+        var request = put("/operations/indicator/1").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"} ");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
+    @MethodSource("provideIndicatorData")
+    @ParameterizedTest
+    void validateIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-    @Test
-    void postIndicatorWhenIndicatorContributor_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.INDICATOR_CONTRIBUTOR));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(post("/operations/indicator").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"} "))
-                .andExpect(status().isOk());
-    }
+        var request = put("/operations/indicator/1/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"} ");
 
-    @Test
-    void postIndicatorWhenIndicatorFakeRole_ko() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("fake"));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(post("/operations/indicator").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"} "))
-                .andExpect(status().isForbidden());
-    }
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
 
-    @Test
-    void putIndicatorWhenAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/1").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"} "))
-                .andExpect(status().is2xxSuccessful());
-    }
-
-    @Test
-    void putIndicatorWhenIndicatorContributor_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.INDICATOR_CONTRIBUTOR));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/1").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"} "))
-                .andExpect(status().is2xxSuccessful());
-    }
-
-    @Test
-    void putIndicatorWhenIndicatorFakeRole_ko() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("fake"));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/1").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"} "))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void validateIndicatorWhenAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/1/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void validateIndicatorWhenIndicatorContributor_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.INDICATOR_CONTRIBUTOR));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/1/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void validateIndicatorWhenIndicatorFakeRole_ko() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("fake"));
-        when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/1/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+        mvc.perform(request).andExpect(status().is(code));
     }
 }

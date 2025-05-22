@@ -34,7 +34,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationFamiliesList() throws RmesException {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1"));
@@ -61,7 +61,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationSeriesList() throws RmesException {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
@@ -93,7 +93,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldGetClassificationList() throws RmesException {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
@@ -125,7 +125,7 @@ class ClassificationsImplTest {
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateClassification() {
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl( repoGestion, null, null);
         RmesException exception = assertThrows(RmesNotFoundException.class, () -> classificationImpl.updateClassification("idExample","bodyExample"));
         Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"Can't read request body\",\"message\":\"1142 "));
     }
@@ -134,7 +134,7 @@ class ClassificationsImplTest {
     @Test
     void shouldThrowRmesExceptionWhenSetClassificationValidation() throws RmesException {
         String classificationId = "2025";
-        ClassificationsImpl classificationImpl = new ClassificationsImpl(null, repoGestion, null, null);
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, null, null);
         when(repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classificationId))).thenReturn(new JSONObject());
         RmesException exception = assertThrows(RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
         Assertions.assertEquals("{\"details\":\"2025\",\"message\":\"1141 : Classification not found\"}", exception.getDetails());

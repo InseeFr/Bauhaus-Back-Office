@@ -1,42 +1,26 @@
 package fr.insee.rmes.config.auth.security;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
-import java.util.Optional;
-import java.util.function.BiPredicate;
-
 import static java.util.Objects.requireNonNull;
 
 public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressionOperations, SecurityExpressionOperations {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityExpressionRootForBauhaus.class);
-
     private final MethodSecurityExpressionOperations methodSecurityExpressionOperations;
-    private final StampAuthorizationChecker stampAuthorizationChecker;
-    private final StampFromPrincipal stampFromPrincipal;
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
 
-    private SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
+
+    private SecurityExpressionRootForBauhaus(
+            MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
-        this.stampAuthorizationChecker = stampAuthorizationChecker;
-        this.stampFromPrincipal = stampFromPrincipal;
     }
 
-    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
-        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal));
+    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
+        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations));
     }
 
     @Override
@@ -95,8 +79,8 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
     @Override
-    public boolean hasPermission(Object target, Object permission) {
-        return this.methodSecurityExpressionRoot.hasPermission(target,permission);
+    public boolean hasPermission(Object module, Object permission) {
+        return this.methodSecurityExpressionRoot.hasPermission(module,permission);
     }
 
     @Override
@@ -127,116 +111,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     @Override
     public Object getThis() {
         return methodSecurityExpressionOperations.getThis();
-    }
-
-    public boolean isAdmin() {
-        logger.trace("Check if {} is admin", methodSecurityExpressionRoot.getPrincipal());
-        return hasRole(Roles.ADMIN);
-    }
-
-    public boolean isDatasetContributor() {
-        logger.trace("Check if {} is dataset contributor", methodSecurityExpressionRoot.getPrincipal());
-        return hasRole(Roles.DATASET_CONTRIBUTOR);
-    }
-
-    public boolean isDatasetContributorWithStamp(String datasetId){
-        logger.trace("Check if {} is contributor for dataset {}", methodSecurityExpressionRoot.getPrincipal(), datasetId);
-        return isDatasetContributor() && isManagerForDatasetId(datasetId);
-    }
-
-    public boolean isDistributionContributorWithStamp(String distributionId){
-        logger.trace("Check if {} is contributor for distribution {}", methodSecurityExpressionRoot.getPrincipal(), distributionId);
-        return isDatasetContributor() && isManagerForDistributionId(distributionId);
-    }
-
-    public boolean isContributorOfSerie(String seriesId) {
-        logger.trace("Check if {} is contributor for serie {}", methodSecurityExpressionRoot.getPrincipal(), seriesId);
-        return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
-    }
-
-//    for PUT and DELETE CodesList
-    public boolean isContributorOfCodesList(String codesListId){
-        logger.trace("Check if {} is contributor for codes list {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
-    }
-
-//    for POST CodesList
-    public boolean isCodesListContributor(String body) {
-        logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR)&& checkStampIsContributor(body);
-    }
-
-    private boolean checkStampIsContributor(String body) {
-        Optional<Stamp> stamp = getStamp();
-        return stamp.isPresent() && stamp.get().stamp().equalsIgnoreCase(extractContributorStampFromBody(body));
-    }
-
-    private static @Nullable String extractContributorStampFromBody(String body) {
-        return (new JSONObject(body)).optString("contributor");
-    }
-    private static @Nullable JSONArray extractContributorStampsFromBody(String body) {
-        return (new JSONObject(body)).optJSONArray("contributor");
-    }
-
-    //for PUT and DELETE structure
-    public boolean isStructureContributor(String structureId){
-        logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
-    }
-
-//  for POST structure or component
-    public boolean isStructureAndComponentContributor(String body) {
-        logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
-        Optional<Stamp> stamp = getStamp();
-        JSONArray contributors = extractContributorStampsFromBody(body);
-
-        if(contributors == null){
-            return false;
-        }
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && contributors.toList().stream().anyMatch(s -> ((String) s).equalsIgnoreCase(stamp.get().stamp()));
-    }
-
-
-    //for PUT and DELETE component
-    public boolean isComponentContributor(String componentId){
-        logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
-    }
-
-    private boolean userHasStampWichManageResource(String resourceId, BiPredicate<String, Stamp> stampIsManager){
-        if (resourceId==null){
-            throw new RmesRuntimeBadRequestException("id must be not null");
-        }
-        var stamp = getStamp();
-        return stamp.isPresent() && stampIsManager.test(resourceId, stamp.get());
-    }
-
-
-    private boolean isManagerForSerieId(String seriesId) {
-        return userHasStampWichManageResource(seriesId, this.stampAuthorizationChecker::isSeriesManagerWithStamp);
-    }
-
-    private boolean isManagerForCodesListId(String codesListId) {
-        return userHasStampWichManageResource(codesListId, this.stampAuthorizationChecker::isCodesListManagerWithStamp);
-    }
-
-    private boolean isManagerForDatasetId(String datasetId) {
-        return userHasStampWichManageResource(datasetId, this.stampAuthorizationChecker::isDatasetManagerWithStamp);
-    }
-    private boolean isManagerForDistributionId(String distributionId) {
-        return userHasStampWichManageResource(distributionId, this.stampAuthorizationChecker::isDistributionManagerWithStamp);
-    }
-
-    private boolean isManagerForStructureId(String structureId) {
-        return userHasStampWichManageResource(structureId, this.stampAuthorizationChecker::isStructureManagerWithStamp);
-    }
-
-    private boolean isManagerForComponentId(String componentId) {
-        return userHasStampWichManageResource(componentId, this.stampAuthorizationChecker::isComponentManagerWithStamp);
-    }
-  
-    private Optional<Stamp> getStamp() {
-        return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal());
     }
 
 }

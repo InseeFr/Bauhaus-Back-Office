@@ -35,15 +35,12 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static fr.insee.rmes.config.PropertiesKeys.OPERATIONS_BASE_URI;
 
 
 @Component
@@ -69,9 +66,6 @@ public class DocumentationsUtils extends RdfService{
 	
 	@Autowired
 	ParentUtils parentUtils;
-
-	@Value("${"+OPERATIONS_BASE_URI+"}")
-	private String operationsBaseUri;
 
 	/**
 	 * GETTER
@@ -174,24 +168,11 @@ public class DocumentationsUtils extends RdfService{
 
 		String status = getDocumentationValidationStatus(id);
 
-		// Create or update rdf
-		IRI seriesOrIndicatorUri = targetUri;
-		if (RdfUtils.toString(targetUri).contains(this.operationsBaseUri)) {
-			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
-		}
 		if (create) {
-			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
-				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
-						"Only an admin or a manager can create a new sims.");
-			}
 			sims.setCreated(DateUtils.getCurrentDate());
 			sims.setUpdated(DateUtils.getCurrentDate());
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
-			if (!stampsRestrictionsService.canModifySims(seriesOrIndicatorUri)) {
-				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
-						"Only an admin, CNIS, or a manager can modify this sims.", id);
-			}
 			sims.setUpdated(DateUtils.getCurrentDate());
 			if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
@@ -223,9 +204,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Find target
 		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
-		String targetType = target[0];
 		String targetId = target[1];
-		IRI targetUri = null;
 
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
@@ -238,24 +217,6 @@ public class DocumentationsUtils extends RdfService{
 					"This metadataReport cannot be published before its target is published. ",
 					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
 		}
-
-		switch(targetType) {
-		case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
-		case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
-		case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
-		default : break;
-		}
-
-		/* Check rights */
-		IRI seriesOrIndicatorUri = targetUri;
-		if (targetType.equals(Constants.OPERATION_UP)) {
-			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(targetId);
-		}
-		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
-			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
-					"Only an admin or a manager can create a new sims.");
-		}
-
 
 		documentationPublication.publishSims(id);
 
@@ -463,10 +424,6 @@ public class DocumentationsUtils extends RdfService{
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 
-		if (!stampsRestrictionsService.canDeleteSims()) {
-			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
-					"Only an admin or a manager can delete a sims.");
-		}		
 		Resource graph = RdfUtils.simsGraph(id);
 
 		HttpStatus result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));

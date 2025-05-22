@@ -55,6 +55,7 @@ public class DatasetQueries extends GenericQueries {
         return getDatasetArrays("getDatasetCreators.ftlh", datasetsGraph, id);
     }
 
+
     public static String getDatasetSpacialResolutions(String id, String datasetsGraph) throws RmesException {
         return getDatasetArrays("getDatasetSpacialResolutions.ftlh", datasetsGraph, id);
     }

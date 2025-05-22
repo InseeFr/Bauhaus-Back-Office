@@ -1,126 +1,252 @@
 rbac:
   config:
     Administrateur_RMESGNCS:
-        concept:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        collection:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        family:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        serie:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        operation:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        indicator:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        sims:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
-        classification:
-          create: ALL
-          read: ALL
-          update: ALL
-          delete: ALL
-          publish: ALL
-          validate: ALL
+      structure_structure:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      structure_component:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      concept_concept:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      concept_collection:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_family:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_series:
+        create: ALL
+        read: ALL
+        update: STAMP
+        delete: ALL
+        publish: ALL
+      operation_operation:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_indicator:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_sims:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      classification_classification:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      dataset_dataset:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        delete: ALL
+      dataset_distribution:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        delete: ALL
+      geography:
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        delete: ALL
+      codeslist_codeslist:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: all
+    Gestionnaire_structures_RMESGNCS:
+      structure_structure:
+        create: ALL
+        read: ALL
+        update: STAMP
+        delete: STAMP
+        publish: STAMP
+      structure_component:
+        create: ALL
+        read: ALL
+        update: STAMP
+        delete: STAMP
+        publish: STAMP
+      codeslist_codeslist:
+        read: ALL
+    Proprietaire_collection_concepts_RMESGNCS:
+      concept_concept:
+        read: ALL
+        delete: ALL
+      concept_collection:
+        read: ALL
+        update: ALL
+        delete: ALL
+      codeslist_codeslist:
+        read: ALL
+    Proprietaire_concept_RMESGNCS:
+      concept_concept:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      concept_collection:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      codeslist_codeslist:
+        read: ALL
     Utilisateur_RMESGNCS:
-      concept:
+      structure_structure:
         read: ALL
-      collection:
+      structure_component:
         read: ALL
-      family:
+      concept_concept:
         read: ALL
-      serie:
+      concept_collection:
         read: ALL
-      operation:
+      operation_family:
         read: ALL
-      indicator:
+      operation_series:
         read: ALL
-      sims:
+      operation_operation:
         read: ALL
-      classification:
+      operation_indicator:
+        read: ALL
+      operation_sims:
+        read: ALL
+      dataset_dataset:
+        read: ALL
+      dataset_distribution:
+        read: ALL
+      classification_classification:
+        read: ALL
+      geography:
+        read: ALL
+      codeslist_codeslist:
         read: ALL
     Gestionnaire_concept_RMESGNCS:
-      concept:
+      concept_concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_ensemble_concepts_RMESGNCS:
-      concept:
+      concept_concept:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
+      codeslist_codeslist:
+        read: ALL
+    CNIS_RMESGNCS:
+      operation_operation:
+        update: ALL
+      operation_sims:
+        update: ALL
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_serie_RMESGNCS:
-      serie:
+      operation_family:
+        read: STAMP
+      operation_series:
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
-      operation:
+      operation_operation:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
-      sims:
+      operation_sims:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      codeslist_codeslist:
+        read: ALL
     Gestionnaire_indicateur_RMESGNCS:
-      serie:
+      operation_family:
+        read: STAMP
+      operation_series:
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
-      indicator:
+      operation_indicator:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
-      sims:
+      operation_sims:
         create: STAMP
         read: STAMP
         update: STAMP
         publish: STAMP
-        validate: STAMP
+      operation_document:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      codeslist_codeslist:
+        read: ALL
+    Gestionnaire_jeu_donnees_RMESGNCS:
+      dataset_dataset:
+        create: ALL
+        read: ALL
+        update: STAMP
+        publish: STAMP
+        delete: STAMP
+      dataset_distribution:
+        create: ALL
+        read: ALL
+        update: STAMP
+        publish: STAMP
+        delete: STAMP
+      codeslist_codeslist:
+        read: ALL
+
+
