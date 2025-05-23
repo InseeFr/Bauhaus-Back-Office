@@ -7,13 +7,43 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DocumentationRubricTest {
-
+  
     @Mock
     List<Document> document1;
     List<Document> document2;
 
     @Test
-    void getIdAttribute() {
+    void shouldReturnBooleanWhenDocumentationRubricIsEmpty() {
+
+        DocumentationRubric documentationRubricNotEmpty = new DocumentationRubric();
+        documentationRubricNotEmpty.setValue(null);
+        documentationRubricNotEmpty.setLabelLg1("labelLg1");
+        documentationRubricNotEmpty.setLabelLg2("labelLg2");
+        documentationRubricNotEmpty.setCodeList("codeList");
+        documentationRubricNotEmpty.setDocumentsLg1(null);
+        documentationRubricNotEmpty.setDocumentsLg2(null);
+        documentationRubricNotEmpty.setUri(null);
+
+        documentationRubricNotEmpty.isEmpty();
+
+        DocumentationRubric documentationRubricEmpty = new DocumentationRubric();
+        documentationRubricEmpty.setValue(null);
+        documentationRubricEmpty.setLabelLg1("");
+        documentationRubricEmpty.setLabelLg2("");
+        documentationRubricEmpty.setCodeList("");
+        documentationRubricEmpty.setDocumentsLg1(null);
+        documentationRubricEmpty.setDocumentsLg2(null);
+        documentationRubricEmpty.setUri(null);
+
+        List<Boolean> actual = List.of(documentationRubricNotEmpty.isEmpty(),documentationRubricEmpty.isEmpty());
+
+        assertEquals(List.of(false,true),actual);
+
+    }
+
+
+   @Test
+   void shouldReturnBooleanWhenDocumentationRubricIsNotEmpty() {
 
         DocumentationRubric documentationRubric = new DocumentationRubric();
 
