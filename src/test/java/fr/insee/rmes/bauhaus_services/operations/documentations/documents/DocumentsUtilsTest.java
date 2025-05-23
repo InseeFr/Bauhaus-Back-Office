@@ -28,9 +28,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
-
 import java.nio.file.Path;
-
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -49,11 +48,33 @@ class DocumentsUtilsTest {
     @Mock
     FilesOperations filesOperations;
 
-
-
     @BeforeAll
     static void initGenericQueries() {
         GenericQueries.setConfig(new ConfigStub());
+    }
+
+    @Test
+    void shouldGetIdFromJson(){
+        DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
+
+        JSONObject jsonFirst = new JSONObject();
+        jsonFirst.put("id","32").put("creator","creatorExample");
+
+        JSONObject jsonSecond = new JSONObject();
+        jsonSecond.put("id","undefined").put("publisher","publisher");
+
+        JSONObject jsonThird = new JSONObject();
+        jsonThird.put("id","");
+
+        boolean getIdFromJsonFirst = documentsUtils.getIdFromJson(jsonFirst).toString().equals("32");
+        boolean getIdFromJsonSecond = documentsUtils.getIdFromJson(jsonSecond)==null;
+        boolean getIdFromJsonThird= documentsUtils.getIdFromJson(jsonThird)==null;
+
+        List<Boolean> expect = List.of(true,true,true);
+        List<Boolean> actual = List.of(getIdFromJsonFirst,getIdFromJsonSecond,getIdFromJsonThird);
+
+        assertEquals(expect,actual);
+
     }
 
     @Test
