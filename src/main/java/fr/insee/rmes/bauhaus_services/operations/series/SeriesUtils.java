@@ -100,20 +100,12 @@ public class SeriesUtils {
     }
 
 
-    private void validate(Series series, @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) throws RmesException {
+    private void validate(Series series) throws RmesException {
         if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), lg1))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
         }
         if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), lg2))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
-        }
-        for (String mandatoryFields : extraMandatoryFields) {
-            if (series.getAccrualPeriodicityCode() == null) {
-                throw new RmesBadRequestException("The property accrualPeriodicityCode is required");
-            }
-            if (series.getTypeCode() == null) {
-                throw new RmesBadRequestException("The property typeCode is required");
-            }
         }
     }
 
@@ -315,8 +307,8 @@ public class SeriesUtils {
         }
     }
 
-    private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus, @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) throws RmesException {
-        validate(series, extraMandatoryFields);
+    private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
+        validate(series);
 
         Model model = new LinkedHashModel();
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, series.getId());
@@ -422,7 +414,7 @@ public class SeriesUtils {
         }
     }
 
-    public String createSeries(String body, @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) throws RmesException {
+    public String createSeries(String body) throws RmesException {
 
         Series series = buildSeriesFromJson(new JSONObject(body), EncodingType.MARKDOWN);
         checkSimsWithOperations(series);
@@ -437,7 +429,7 @@ public class SeriesUtils {
         series.setCreated(DateUtils.getCurrentDate());
         series.setUpdated(DateUtils.getCurrentDate());
 
-        createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED, extraMandatoryFields);
+        createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
         logger.info("Create series : {} - {}", series.getId(), series.getPrefLabelLg1());
 
         return series.getId();
@@ -459,7 +451,7 @@ public class SeriesUtils {
     }
 
     /* Update Series */
-    public void setSeries(String id, String body, @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) throws RmesException {
+    public void setSeries(String id, String body) throws RmesException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
@@ -485,9 +477,9 @@ public class SeriesUtils {
         String status = ownersUtils.getFamOpSerValidationStatus(id);
         documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
         if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
-            createRdfSeries(series, null, ValidationStatus.UNPUBLISHED, extraMandatoryFields);
+            createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
         } else {
-            createRdfSeries(series, null, ValidationStatus.MODIFIED, extraMandatoryFields);
+            createRdfSeries(series, null, ValidationStatus.MODIFIED);
         }
         logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
     }
