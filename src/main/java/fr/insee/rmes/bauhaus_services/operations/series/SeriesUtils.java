@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -63,6 +64,8 @@ public class SeriesUtils {
     private final String lg1;
     private final boolean seriesRichTextNexStructure;
 
+    private final SeriesValidator validator;
+
     public SeriesUtils(
             @Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.series-rich-text-new-structure}") boolean seriesRichTextNexStructure,
             @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
@@ -74,7 +77,8 @@ public class SeriesUtils {
             StampsRestrictionsService stampsRestrictionsService, ParentUtils ownersUtils,
             SeriesPublication seriesPublication,
             DocumentationsUtils documentationsUtils,
-            UriUtils uriUtils) {
+            UriUtils uriUtils,
+            SeriesValidator validator) {
         this.seriesRichTextNexStructure = seriesRichTextNexStructure;
         this.lg1 = lg1;
         this.lg2 = lg2;
@@ -87,6 +91,7 @@ public class SeriesUtils {
         this.seriesPublication = seriesPublication;
         this.documentationsUtils = documentationsUtils;
         this.uriUtils = uriUtils;
+        this.validator = validator;
     }
 
     /*READ*/
@@ -97,16 +102,6 @@ public class SeriesUtils {
 
     public Series getSeriesById(String id, EncodingType encode) throws RmesException {
         return buildSeriesFromJson(getSeriesJsonById(id, encode), encode);
-    }
-
-
-    private void validate(Series series) throws RmesException {
-        if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), lg1))) {
-            throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
-        }
-        if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), lg2))) {
-            throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
-        }
     }
 
     private Series buildSeriesFromJson(JSONObject seriesJson, EncodingType encode) throws RmesException {
@@ -308,7 +303,7 @@ public class SeriesUtils {
     }
 
     private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
-        validate(series);
+        this.validator.validate(series);
 
         Model model = new LinkedHashModel();
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, series.getId());
