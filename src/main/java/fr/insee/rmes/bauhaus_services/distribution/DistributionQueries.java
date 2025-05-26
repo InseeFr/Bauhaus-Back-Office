@@ -21,6 +21,14 @@ public class DistributionQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributions.ftlh", params);
     }
 
+    public static String getDistributionsForSearch(String distributionGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, distributionGraph);
+        params.put("LG1", config.getLg1());
+
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributionsForSearch.ftlh", params);
+    }
+
     public static String getDistribution(String id, String distributionGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, distributionGraph);

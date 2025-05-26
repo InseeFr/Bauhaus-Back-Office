@@ -9,10 +9,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dataset.CatalogRecord;
-import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.model.dataset.PartialDataset;
-import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.model.dataset.*;
 import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
@@ -137,6 +134,14 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return DiacriticSorter.sort(datasets,
                 PartialDataset[].class,
                 PartialDataset::label);
+    }
+
+    @Override
+    public List<DatasetsForSearch> getDatasetsForSearch() throws RmesException {
+        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetsForSearch(getDatasetsGraph()));
+        return DiacriticSorter.sort(datasets,
+                DatasetsForSearch[].class,
+                DatasetsForSearch::labelLg1);
     }
 
     @Override
