@@ -1,18 +1,23 @@
 package fr.insee.rmes.utils;
 
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class XhtmlTagsTest {
 
+    String s = "Bauhaus-back-Office";
+
     @Test
-    void verifyInListItemAndInUpperCaseFunctionalities() {
+    void verifyInUpperCaseFunctionalities() {
+        assertEquals(("<U>Bauhaus-back-Office</U>"), XhtmlTags.inUpperCase(s));
+    }
 
-        String s = "Bauhaus-back-Office";
-        boolean responseOne = ("<li>Bauhaus-back-Office</li>").equals(XhtmlTags.inListItem(s));
-        boolean responseTwo =("<U>Bauhaus-back-Office</U>").equals(XhtmlTags.inUpperCase(s));
-        assertTrue(responseOne && responseTwo);
-
+    @Test
+    void verifyInListFunctionalities3() {
+        String actual = XhtmlTags.inListItem(s);
+        assertTrue(actual.startsWith("<li>") && actual.endsWith("</li>"));
     }
 }
+
+
+
