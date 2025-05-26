@@ -5,10 +5,10 @@ FROM <${DATASET_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
 
-    ?uri dct:identifier ?id .
+    ?uri dcterms:identifier ?id .
 
     OPTIONAL {
-        ?uri dct:title ?labelLg1
+        ?uri dcterms:title ?labelLg1
         FILTER (lang(?labelLg1) = '${LG1}') .
     }
 
@@ -29,10 +29,10 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uri ^foaf:primaryTopic/dct:created ?created .
+        ?uri ^foaf:primaryTopic/dcterms:created ?created .
     }
 
     OPTIONAL {
-        ?uri ^foaf:primaryTopic/dct:modified ?updated .
+        ?uri ^foaf:primaryTopic/dcterms:modified ?updated .
     }
 }

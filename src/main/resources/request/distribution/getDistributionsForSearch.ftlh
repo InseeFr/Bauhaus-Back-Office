@@ -9,10 +9,10 @@ WHERE {
     ?uriDataset rdf:type dcat:Dataset .
     ?uriDataset dcat:distribution ?uri .
 
-    ?uri dct:identifier ?distributionId .
+    ?uri dcterms:identifier ?distributionId .
 
     OPTIONAL {
-        ?uri dct:title ?distributionLabelLg1
+        ?uri dcterms:title ?distributionLabelLg1
         FILTER (lang(?distributionLabelLg1) = '${LG1}') .
     }
 
@@ -21,11 +21,11 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uri dct:created ?distributionCreated .
+        ?uri dcterms:created ?distributionCreated .
     }
 
     OPTIONAL {
-        ?uri dct:modified ?distributionUpdated .
+        ?uri dcterms:modified ?distributionUpdated .
     }
 
     OPTIONAL {
@@ -33,11 +33,11 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uriDataset dct:identifier ?id .
+        ?uriDataset dcterms:identifier ?id .
     }
 
     OPTIONAL {
-        ?uriDataset dct:title ?labelLg1
+        ?uriDataset dcterms:title ?labelLg1
         FILTER (lang(?labelLg1) = '${LG1}') .
     }
 
@@ -58,10 +58,10 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uriDataset ^foaf:primaryTopic/dct:created ?created .
+        ?uriDataset ^foaf:primaryTopic/dcterms:created ?created .
     }
 
     OPTIONAL {
-        ?uriDataset ^foaf:primaryTopic/dct:modified ?modified .
+        ?uriDataset ^foaf:primaryTopic/dcterms:modified ?modified .
     }
 }
