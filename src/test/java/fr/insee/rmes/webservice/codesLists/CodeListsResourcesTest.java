@@ -102,8 +102,4 @@ class CodeListsResourcesTest {
         Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>",actual);
     }
 
-
-
-
-
 }
