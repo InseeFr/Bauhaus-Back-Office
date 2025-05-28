@@ -61,7 +61,7 @@ class ConceptsAuthorizationsTest {
     @MockitoBean
     ConceptsCollectionService conceptsCollectionService;
     @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    StampAuthorizationChecker stampAuthorizationCheckers;
 
     String idep = "xxxxxx";
     String timbre = "XX59-YYY";
