@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class})
 
-class ConceptsAuthorizationTest {
+class ConceptsAuthorizationsTest {
 
     @Autowired
     MockMvc mvc;
