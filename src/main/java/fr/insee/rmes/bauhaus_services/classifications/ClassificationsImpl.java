@@ -6,11 +6,9 @@ import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.classification.Classification;
 import fr.insee.rmes.model.classification.PartialClassification;
@@ -24,7 +22,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +34,13 @@ import java.util.List;
 public class ClassificationsImpl implements ClassificationsService {
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-	private final StampsRestrictionsService stampsRestrictionsService;
 	private final RepositoryGestion repoGestion;
 	private final ClassificationUtils classificationUtils;
 	private final ClassificationPublication classificationPublication;
 	
 	static final Logger logger = LoggerFactory.getLogger(ClassificationsImpl.class);
 
-	public ClassificationsImpl(StampsRestrictionsService stampsRestrictionsService, RepositoryGestion repoGestion, ClassificationUtils classificationUtils, ClassificationPublication classificationPublication) {
-		this.stampsRestrictionsService = stampsRestrictionsService;
+	public ClassificationsImpl(RepositoryGestion repoGestion, ClassificationUtils classificationUtils, ClassificationPublication classificationPublication) {
 		this.repoGestion = repoGestion;
 		this.classificationUtils = classificationUtils;
 		this.classificationPublication = classificationPublication;
@@ -183,11 +178,7 @@ public class ClassificationsImpl implements ClassificationsService {
 		String graph = listGraph.getString("graph");
 		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
-		
-		
-		if(!stampsRestrictionsService.canValidateClassification((SimpleIRI) graphIri)) {
-			throw new RmesUnauthorizedException(ErrorCodes.CLASSIFICATION_VALIDATION_RIGHTS_DENIED, "Only authorized users can validate classifications.");
-		}
+
 
 		//PUBLISH
 		classificationPublication.publishClassification(graphIri);

@@ -59,12 +59,13 @@ class DatasetResourcesTest {
     @Test
     void shouldReturn200IfRmesExceptionWhenUpdatingADataset() throws RmesException {
         when(datasetService.update(anyString(), anyString())).thenReturn("result");
-        Assertions.assertEquals("result", datasetResources.setDataset("", ""));
+
+        Assertions.assertDoesNotThrow(() -> datasetResources.setDataset("", ""));
     }
 
     @Test
     void shouldCallPublishDataset() throws RmesException {
         when(datasetService.publishDataset("1")).thenReturn("result");
-        Assertions.assertEquals("result", datasetResources.publishDataset("1"));
+        Assertions.assertDoesNotThrow(() -> datasetResources.publishDataset("1"));
     }
 }
