@@ -50,16 +50,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class})
 
-class ConceptsAuthorizationTest {
+class ConceptsResourcesAuthorizationsTest {
 
     @Autowired
-    MockMvc mvc;
+    private MockMvc mvc;
     @MockitoBean
-    JwtDecoder jwtDecoder;
+    private JwtDecoder jwtDecoder;
     @MockitoBean
-    ConceptsService conceptsService;
+    private ConceptsService conceptsService;
     @MockitoBean
-    ConceptsCollectionService conceptsCollectionService;
+    private ConceptsCollectionService conceptsCollectionService;
     @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
 
@@ -134,4 +134,5 @@ class ConceptsAuthorizationTest {
         );
     }
 
+    
 }
