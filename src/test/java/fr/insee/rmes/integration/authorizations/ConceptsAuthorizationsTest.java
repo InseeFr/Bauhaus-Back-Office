@@ -53,15 +53,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ConceptsAuthorizationsTest {
 
     @Autowired
-    MockMvc mvc;
+    private MockMvc mvc;
     @MockitoBean
-    JwtDecoder jwtDecoder;
+    private JwtDecoder jwtDecoder;
     @MockitoBean
-    ConceptsService conceptsService;
+    private ConceptsService conceptsService;
     @MockitoBean
-    ConceptsCollectionService conceptsCollectionService;
+    private ConceptsCollectionService conceptsCollectionService;
     @MockitoBean
-    StampAuthorizationChecker stampAuthorizationCheckers;
+    StampAuthorizationChecker stampAuthorizationChecker;
 
     String idep = "xxxxxx";
     String timbre = "XX59-YYY";
