@@ -7,6 +7,8 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.PartialOperation;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,7 +19,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,13 +40,15 @@ public class OperationsResources  {
 	}
 
 
+	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", responses = {
+	@io.swagger.v3.oas.annotations.Operation(summary = "List of operations", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
 	public List<PartialOperation> getOperations() throws RmesException {
 		return operationsService.getOperations();
 	}
 
+	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(
 			value = "/operation/{id}",
 			produces = {
@@ -53,16 +56,15 @@ public class OperationsResources  {
 				MediaType.APPLICATION_XML_VALUE
 			}
 	)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Get an operation", responses = {
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get an operation", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(implementation = Operation.class))) })
 	public ResponseEntity<Operation> getOperationByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationById(id));
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
+	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update an operation")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Update an operation")
 	public ResponseEntity<Void> setOperationById(@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Operation to update", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) throws RmesException {
 
@@ -70,18 +72,18 @@ public class OperationsResources  {
 		return ResponseEntity.noContent().build();
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Create operation")
 	public ResponseEntity<String> createOperation(
 			@Parameter(description = "Operation to create", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) throws RmesException {
 		String id = operationsService.createOperation(body);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
+	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value = "/operation/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
+	@io.swagger.v3.oas.annotations.Operation(summary = "Operation validation")
 	public ResponseEntity<String> setOperationValidation(@PathVariable(Constants.ID) String id) throws RmesException {
 		operationsService.setOperationValidation(id);
 		return ResponseEntity.status(HttpStatus.OK).body(id);

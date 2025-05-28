@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
@@ -36,11 +34,7 @@ public class CollectionsUtils extends RdfService {
 	@Autowired
 	ConceptsPublication conceptsPublication;
 	
-	/**
-	 * Collections
-	 * @throws RmesException 
-	 */
-	
+
 	public void setCollection(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
@@ -56,11 +50,8 @@ public class CollectionsUtils extends RdfService {
 	}
 	
 	public void setCollection(String id, String body) throws RmesException  {
-		IRI collectionURI = RdfUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
-		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
-			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MODIFICATION_RIGHTS_DENIED,"rights denied",id);
-		}
+
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Collection collection = new Collection(id);
@@ -118,9 +109,7 @@ public class CollectionsUtils extends RdfService {
 			model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
 			logger.info("Validate collection : {}" , collectionURI);
 		}
-		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(collectionsToValidateList)) {
-			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,collectionsToValidate);
-		}
+
 		repoGestion.objectsValidation(collectionsToValidateList, model);
 		conceptsPublication.publishCollection(collectionsToValidate);
 	}

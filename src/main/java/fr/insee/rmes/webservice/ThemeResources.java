@@ -27,7 +27,7 @@ public class ThemeResources {
 
 
     @GetMapping(produces = "application/json")
-    @Operation(operationId = "getThemes", summary = "List of themes")
+    @Operation(summary = "List of themes")
     public String getThemes(@RequestParam(required = false) @Parameter(name = "schemeFilter", schema = @Schema(description = "Comma separated list of schemes",type = "string", allowableValues = {"classificationOfStatisticalDomain", "inseeTheme"})) String schemeFilter) throws RmesException {
         return this.themeService.getThemes(schemeFilter).toString();
     }

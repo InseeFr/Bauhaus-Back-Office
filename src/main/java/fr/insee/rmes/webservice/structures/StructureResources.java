@@ -7,8 +7,9 @@ import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
-import fr.insee.rmes.model.structures.PartialStructureComponent;
 import fr.insee.rmes.model.structures.Structure;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -22,8 +23,6 @@ import org.apache.http.HttpStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,24 +55,26 @@ public class StructureResources {
         this.structureComponentService = structureComponentService;
     }
 
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructures", summary = "List of structures",
+    @Operation(summary = "List of structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public List<PartialStructure> getStructures() throws RmesException {
         return structureService.getStructures();
     }
 
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructuresForSearch", summary = "List of structures for advanced search",
+    @Operation(summary = "List of structures for advanced search",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public ResponseEntity<Object> getStructuresForSearch() throws RmesException {
         String structures = structureService.getStructuresForSearch();
         return ResponseEntity.status(HttpStatus.SC_OK).body(structures);
     }
 
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/structure/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            operationId = "getStructureById",
             summary = "Get a structure",
             responses = {
                     @ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))
@@ -84,111 +85,49 @@ public class StructureResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(structure);
     }
 
-    @PreAuthorize("isAdmin() || isStructureContributor(#id)")
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping(value = "/structure/{id}/validate", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "publishStructureById", summary = "Publish a structure")
-    public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) @P("id") String id) throws RmesException {
+    @Operation(summary = "Publish a structure")
+    public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) String id) throws RmesException {
         String response = structureService.publishStructureById(id);
         return ResponseEntity.status(HttpStatus.SC_OK).body(response);
     }
 
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructureByIdDetails", summary = "Get all details of a structure",
+    @Operation(summary = "Get all details of a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
     public ResponseEntity<Object> getStructureByIdDetails(@PathVariable(Constants.ID) String id) throws RmesException {
         String structure = structureService.getStructureByIdWithDetails(id);
         return ResponseEntity.status(HttpStatus.SC_OK).body(structure);
     }
 
-    @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
+
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/structure",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setStructure", summary = "Create a structure")
+    @Operation(summary = "Create a structure")
     public ResponseEntity<Object> setStructure(
     		@Parameter(description = "Structure", required = true) @RequestBody String body) throws RmesException {
         String id = structureService.setStructure(body);
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
-    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/structure/{structureId}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setStructure", summary = "Update a structure")
+    @Operation(summary = "Update a structure")
     public ResponseEntity<Object> setStructure(
-    		@PathVariable("structureId") @P("structureId") String structureId,
+    		@PathVariable("structureId") String id,
     		@Parameter(description = "Structure", required = true) @RequestBody String body) throws RmesException {
-        String id = structureService.setStructure(structureId, body);
+        return ResponseEntity.status(HttpStatus.SC_OK).body(structureService.setStructure(id, body));
+    }
+
+    @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.DELETE)
+    @DeleteMapping("/structure/{id}")
+    @Operation(summary = "Delete a structure")
+    public ResponseEntity<Id> deleteStructure(@PathVariable("id") Id id) throws RmesException {
+        structureService.deleteStructure(id.identifier());
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
-    }
-
-    @PreAuthorize("isAdmin() || isStructureContributor(#structureId.identifier())")
-    @DeleteMapping("/structure/{structureId}")
-    @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public ResponseEntity<Id> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
-        structureService.deleteStructure(structureId.identifier());
-        return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
-    }
-
-    @GetMapping(value = "/components/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponentsForSearch", summary = "Get all mutualized components for advanced search")
-    public ResponseEntity<Object> getComponentsForSearch() throws RmesException {
-        String components = structureComponentService.getComponentsForSearch();
-        return ResponseEntity.status(HttpStatus.SC_OK).body(components);
-    }
-
-    @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getAttributes", summary = "Get all mutualized attributes")
-    public ResponseEntity<Object> getAttributes() throws RmesException {
-        String attributes = structureComponentService.getAttributes();
-        return ResponseEntity.status(HttpStatus.SC_OK).body(attributes);
-    }
-
-    @GetMapping(value = "/components", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponents", summary = "Get all mutualized components")
-    public List<PartialStructureComponent> getComponents() throws RmesException {
-        return structureComponentService.getComponents();
-    }
-
-    @GetMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponentById", summary = "Get a component")
-    public ResponseEntity<Object> getComponentById(@PathVariable(Constants.ID) String id) throws RmesException {
-        String component = structureComponentService.getComponent(id);
-        return ResponseEntity.status(HttpStatus.SC_OK).body(component);
-    }
-
-    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
-    @PutMapping(value = "/components/{id}/validate", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "publishComponentById", summary = "Publish a component")
-    public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) @P("structureId") String id) throws RmesException {
-        String result = structureComponentService.publishComponent(id);
-        return ResponseEntity.status(HttpStatus.SC_OK).body(result);
-    }
-
-    @PreAuthorize("isAdmin() || isComponentContributor(#id)")
-    @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "deleteComponentById", summary = "Delete a mutualized component")
-    public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) @P("id") String id) throws RmesException {
-        structureComponentService.deleteComponent(id);
-        return ResponseEntity.status(HttpStatus.SC_OK).build();
-    }
-
-    @PreAuthorize("isAdmin() || isComponentContributor(#componentId)")
-    @PutMapping(value = "/components/{id}",
-    		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateComponent", summary = "Update a component")
-    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) @P("componentId") String componentId,
-    		@Parameter(description = "Component", required = true) @RequestBody String body) throws RmesException {
-        String id = structureComponentService.updateComponent(componentId, body);
-        return ResponseEntity.status(HttpStatus.SC_OK).body(id);
-    }
-
-    @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
-    @PostMapping(value = "/components",
-    		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createComponent", summary = "Create a component")
-    public ResponseEntity<Object> createComponent(
-    		@Parameter(description = "Component", required = true) @RequestBody String body) throws RmesException {
-        String id = structureComponentService.createComponent(body);
-        return ResponseEntity.status(HttpStatus.SC_CREATED).body(id);
     }
 }

@@ -108,8 +108,8 @@ class DistributionResourcesTest {
 
     @Test
     void shouldCallPublishDistribution() throws RmesException {
-        when(distributionResources.publishDistribution("1")).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.publishDistribution("1"));
+        when(distributionService.publishDistribution("1")).thenReturn("result");
+        Assertions.assertDoesNotThrow(() -> distributionResources.publishDistribution("1"));
     }
 
 }

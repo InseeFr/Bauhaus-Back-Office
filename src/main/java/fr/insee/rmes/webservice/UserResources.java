@@ -54,7 +54,6 @@ public class UserResources {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            operationId = "getUserInformation",
             summary = "Get information about the logged-in user",
             responses = {
                     @ApiResponse(content = @Content(mediaType = "application/json"))
@@ -66,7 +65,7 @@ public class UserResources {
     }
 
     @GetMapping(value = "/stamp", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStamp", summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
+    @Operation(summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
     public Stamp getStamp(@AuthenticationPrincipal Object principal) throws RmesException {
         return stampsService.findStampFrom(principal);
     }

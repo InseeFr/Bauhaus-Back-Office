@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -23,7 +22,9 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,9 +42,6 @@ class DocumentationsUtilsTest {
 
 	@MockitoBean
 	DocumentationsRubricsUtils documentationsRubricsUtils;
-
-	@MockitoBean
-	StampsRestrictionsService stampsRestrictionsService;
 
 	@InjectMocks
 	@Spy
@@ -75,15 +73,6 @@ class DocumentationsUtilsTest {
 		when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(days);
 		RmesException exception = assertThrows(RmesNotAcceptableException.class, () -> documentationsUtils.deleteMetadataReport(id));
 		assertTrue(exception.getDetails().contains("Only a sims that documents a series can be deleted"));
-	}
-
-	@Test
-	void shouldThrowRmesUnauthorizedExceptionWhenDeleteMetadataReport() throws RmesException {
-		String id ="2025";
-		String[] examples = {Constants.SERIES_UP,"today","tomorrow"};
-		when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(examples);
-		RmesException exception = assertThrows(RmesUnauthorizedException.class, () -> documentationsUtils.deleteMetadataReport(id));
-		assertTrue(exception.getDetails().contains("Only an admin or a manager can delete a sims."));
 	}
 
 

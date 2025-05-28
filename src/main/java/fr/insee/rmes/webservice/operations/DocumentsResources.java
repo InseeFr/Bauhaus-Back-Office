@@ -5,6 +5,8 @@ import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -21,15 +23,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-/**
- * WebService class for resources of Documents and Links
- */
 @RestController
 @RequestMapping("/documents")
 @SecurityRequirement(name = "bearerAuth")
@@ -55,7 +53,8 @@ public class DocumentsResources {
     }
 
     @GetMapping
-    @Operation(operationId = "getDocuments", summary = "List of documents and links",
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "List of documents and links",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Document.class))))})
     public ResponseEntity<String> getDocuments() throws RmesException {
         String documents = documentsService.getDocuments();
@@ -64,7 +63,8 @@ public class DocumentsResources {
 
 
     @GetMapping("/document/{id}")
-    @Operation(operationId = "getDocument", summary = "Get a Document",
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "Get a Document",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = Document.class)))})
     public ResponseEntity<String> getDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return ResponseEntity.status(HttpStatus.OK)
@@ -73,21 +73,19 @@ public class DocumentsResources {
     }
 
     @GetMapping(value = "/document/{id}/file", produces = "*/*")
-    @Operation(operationId = "downloadDocument", summary = "Download the Document file")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "Download the Document file")
     public ResponseEntity<Resource> downloadDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return documentsService.downloadDocument(id);
     }
 
-
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
-    @Operation(operationId = "setDocument", summary = "Create document")
     @PostMapping(value = "/document",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
                     MediaType.APPLICATION_OCTET_STREAM_VALUE,
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
+    @Operation(summary = "Create document")
     public ResponseEntity<String> setDocument(
             @Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation = Document.class))
             @RequestParam(value = "body") String body,
@@ -100,11 +98,9 @@ public class DocumentsResources {
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @PutMapping("/document/{id}")
-    @Operation(operationId = "setDocumentById", summary = "Update document ")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
+    @Operation(summary = "Update document ")
     public ResponseEntity<String> setDocument(
             @Parameter(
                     description = "Id",
@@ -125,12 +121,8 @@ public class DocumentsResources {
     }
 
 
-
-
-        @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
-    @Operation(operationId = "changeDocument", summary = "Change document file")
+    @Operation(summary = "Change document file")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/document/{id}/file",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
                     MediaType.APPLICATION_OCTET_STREAM_VALUE,
@@ -147,11 +139,9 @@ public class DocumentsResources {
     }
 
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @DeleteMapping("/document/{id}")
-    @Operation(operationId = "deleteDocument", summary = "Delete a document")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.DELETE)
+    @Operation(summary = "Delete a document")
     public ResponseEntity<Object> deleteDocument(
             @Parameter(
                     required = true,
@@ -165,7 +155,8 @@ public class DocumentsResources {
 
 
     @GetMapping("/link/{id}")
-    @Operation(operationId = "getLink", summary = "Get a Link",
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "Get a Link",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = Document.class)))})
     public ResponseEntity<String> getLink(@PathVariable(Constants.ID) String id) throws RmesException {
 
@@ -173,15 +164,13 @@ public class DocumentsResources {
 
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @PostMapping(value = "/link",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
                     MediaType.APPLICATION_OCTET_STREAM_VALUE,
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
-    @Operation(operationId = "setDocument", summary = "Create link")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
+    @Operation(summary = "Create link")
     public ResponseEntity<Object> setLink(
             @Parameter(description = "Link", required = true, schema = @Schema(implementation = Document.class))
             @RequestParam(value = "body") String body
@@ -189,11 +178,9 @@ public class DocumentsResources {
         return ResponseEntity.status(HttpStatus.OK).body(documentsService.setLink(body));
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @PutMapping("/link/{id}")
-    @Operation(operationId = "setLinkById", summary = "Update link")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
+    @Operation(summary = "Update link")
     public ResponseEntity<Object> setLink(
             @Parameter(
                     description = "Id",
@@ -212,11 +199,9 @@ public class DocumentsResources {
         return ResponseEntity.ok(documentsService.setLink(documentIdString, body));
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
-            + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @DeleteMapping("/link/{id}")
-    @Operation(operationId = "deleteLink", summary = "Delete a link")
+    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.DELETE)
+    @Operation(summary = "Delete a link")
     public ResponseEntity<Object> deleteLink(
             @Parameter(
                     required = true,

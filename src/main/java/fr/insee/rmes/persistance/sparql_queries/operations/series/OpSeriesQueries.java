@@ -90,7 +90,8 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String getCreatorsBySeriesUri(String uriSeries) throws RmesException {
-		Map<String, Object> params = initParams();
+		Map<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put(URI_SERIES, uriSeries);
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
 	}

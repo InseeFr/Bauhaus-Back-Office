@@ -1,6 +1,6 @@
 package fr.insee.rmes.exceptions;
 
-import fr.insee.rmes.webservice.*;
+import fr.insee.rmes.webservice.UserResources;
 import fr.insee.rmes.webservice.classifications.ClassificationsResources;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;

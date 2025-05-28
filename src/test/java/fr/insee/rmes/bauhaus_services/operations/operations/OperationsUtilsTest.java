@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -33,8 +32,6 @@ class OperationsUtilsTest {
     @Mock
     ParentUtils parentUtils;
 
-    @Mock
-    StampsRestrictionsService stampsRestrictionsService;
 
     @Mock
     RepositoryGestion repositoryGestion;
@@ -52,7 +49,6 @@ class OperationsUtilsTest {
         when(famOpeSerIndUtils.createId()).thenReturn("1");
         when(famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
         when(parentUtils.checkIfSeriesHasSims(anyString())).thenReturn(false);
-        when(stampsRestrictionsService.canCreateOperation(any(IRI.class))).thenReturn(true);
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class);
              MockedStatic<OperationsQueries> operationsQueriesMockedStatic = Mockito.mockStatic(OperationsQueries.class)

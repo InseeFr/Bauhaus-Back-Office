@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.model.ValidationStatus;
@@ -23,14 +22,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class IndicatorPublication implements ObjectPublication<Indicator> {
 	final ParentUtils ownersUtils;
-	final StampsRestrictionsService stampsRestrictionsService;
 	final RepositoryGestion repoGestion;
 	final RepositoryPublication repositoryPublication;
 	final PublicationUtils publicationUtils;
 
-	public IndicatorPublication(ParentUtils ownersUtils, StampsRestrictionsService stampsRestrictionsService, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, PublicationUtils publicationUtils) {
+	public IndicatorPublication(ParentUtils ownersUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, PublicationUtils publicationUtils) {
 		this.ownersUtils = ownersUtils;
-		this.stampsRestrictionsService = stampsRestrictionsService;
 		this.repoGestion = repoGestion;
 		this.repositoryPublication = repositoryPublication;
 		this.publicationUtils = publicationUtils;
@@ -38,9 +35,6 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 
 	@Override
 	public void validate(Indicator indicator) throws RmesException {
-		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, indicator.getId()))) {
-			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
-		}
 
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
