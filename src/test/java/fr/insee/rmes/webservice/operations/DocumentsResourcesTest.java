@@ -70,4 +70,5 @@ class DocumentsResourcesTest {
         String actual =documentsResources.setLink(documentId," mocked body").toString();
         Assertions.assertTrue(actual.startsWith("<200 OK OK,"));
     }
+
 }
