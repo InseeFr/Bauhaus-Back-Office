@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
+import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -7,9 +8,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dataset.Distribution;
-import fr.insee.rmes.model.dataset.PartialDistribution;
-import fr.insee.rmes.model.dataset.PatchDistribution;
+import fr.insee.rmes.model.dataset.*;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
@@ -77,6 +76,14 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return DiacriticSorter.sort(distributions,
                 PartialDistribution[].class,
                 PartialDistribution::labelLg1);
+    }
+
+    @Override
+    public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
+        var distributions = this.repoGestion.getResponseAsArray(DistributionQueries.getDistributionsForSearch(getDistributionGraph()));
+        return DiacriticSorter.sort(distributions,
+                DistributionsForSearch[].class,
+                DistributionsForSearch::labelLg1);
     }
 
     @Override

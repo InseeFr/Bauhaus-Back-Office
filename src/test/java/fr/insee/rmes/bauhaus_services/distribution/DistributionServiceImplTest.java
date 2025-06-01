@@ -75,6 +75,34 @@ class DistributionServiceImplTest {
     }
 
     @Test
+    void shouldReturnDistributionsForSearch() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject()
+                .put("distributionId", "id")
+                .put("distributionLabelLg1", "labelLg1")
+                .put("distributionValidationStatus", "validationStatus")
+                .put("distributionCreated", "created")
+                .put("distributionUpdated", "updated")
+                .put("altIdentifier", "altIdentifier")
+                .put("id", "id")
+                .put("labelLg1", "labelLg1")
+                .put("creator", "creator")
+                .put("disseminationStatus", "disseminationStatus")
+                .put("validationStatus", "validationStatus")
+                .put("wasGeneratedIRIs", "wasGeneratedIRIs")
+                .put("created", "created")
+                .put("updated", "updated"));
+
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
+            mockedFactory.when(() -> DistributionQueries.getDistributionsForSearch(any())).thenReturn("query");
+            var distributions = distributionService.getDistributionsForSearch();
+            Assertions.assertEquals("id", distributions.get(0).distributionId());
+            Assertions.assertEquals("labelLg1", distributions.get(0).distributionLabelLg1());
+        }
+    }
+
+    @Test
     void shouldReturnDataset() throws RmesException, JSONException {
         JSONObject object = new JSONObject();
         object.put("id", "1");

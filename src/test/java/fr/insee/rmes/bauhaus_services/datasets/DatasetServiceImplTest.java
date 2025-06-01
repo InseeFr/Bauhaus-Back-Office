@@ -85,6 +85,29 @@ class DatasetServiceImplTest {
     }
 
     @Test
+    void shouldReturnDatasetsForSearch() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject()
+                .put("id", "id")
+                .put("labelLg1", "labelLg1")
+                .put("creator", "creator")
+                .put("disseminationStatus", "disseminationStatus")
+                .put("validationStatus", "validationStatus")
+                .put("wasGeneratedIRIs", "wasGeneratedIRIs")
+                .put("created", "created")
+                .put("updated", "updated")
+        );
+
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.getDatasetsForSearch(anyString())).thenReturn("query");
+            var datasets = datasetService.getDatasetsForSearch();
+            Assertions.assertEquals("id", datasets.get(0).id());
+            Assertions.assertEquals("labelLg1", datasets.get(0).labelLg1());
+        }
+    }
+
+    @Test
     void getDatasetsForDistributionCreationWithStamp() throws RmesException {
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label"));

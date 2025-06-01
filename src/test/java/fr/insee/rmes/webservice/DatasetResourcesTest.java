@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.DatasetsForSearch;
 import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +34,24 @@ class DatasetResourcesTest {
 
         when(datasetService.getDatasets()).thenReturn(datasets);
         Assertions.assertEquals(1, datasetResources.getDatasets().size());
+    }
+
+    @Test
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForSearch() throws RmesException {
+        List<DatasetsForSearch> datasets = new ArrayList<>();
+        datasets.add(new DatasetsForSearch(
+                "id",
+                "labelLg1",
+                "creator",
+                "disseminationStatus",
+                "validationStatus",
+                "wasGeneratedIRIs",
+                "created",
+                "updated"
+        ));
+
+        when(datasetService.getDatasetsForSearch()).thenReturn(datasets);
+        Assertions.assertEquals(1, datasetResources.getDatasetsForSearch().size());
     }
 
 

@@ -3,10 +3,7 @@ package fr.insee.rmes.webservice.datasets;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.model.dataset.Distribution;
-import fr.insee.rmes.model.dataset.PartialDataset;
-import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.model.dataset.*;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,6 +60,15 @@ public class DatasetResources {
     public String getDistributionsByDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDistributions(id);
     }
+
+    @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.READ)
+    @GetMapping(value = "/search", produces = "application/json")
+    @Operation(operationId = "getDatasetsForSearch", summary = "List of datasets for advanced search",
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
+    public List<DatasetsForSearch> getDatasetsForSearch() throws RmesException {
+        return this.datasetService.getDatasetsForSearch();
+    }
+
 
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
