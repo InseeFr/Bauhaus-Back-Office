@@ -7,6 +7,8 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.*;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -19,7 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,29 +47,32 @@ public class DistributionResources {
     }
 
     @GetMapping
-    @Operation(operationId = "getDistributions", summary = "List of distributions",
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "List of distributions",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public List<PartialDistribution> getDistributions() throws RmesException {
         return this.distributionService.getDistributions();
     }
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getDistribution", summary = "Get a distribution",
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "Get a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public Distribution getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
     }
 
-    @PutMapping("/{id}/validate")
-    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
-    @Operation(operationId = "publishDistribution", summary = "Publish a distribution",
+    @PutMapping(value = "/{id}/validate")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.PUBLISH)
+    @Operation(summary = "Publish a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
-    public String publishDistribution(@PathVariable(Constants.ID) String distributionId) throws RmesException {
-        return this.distributionService.publishDistribution(distributionId);
+    public void publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
+        this.distributionService.publishDistribution(id);
     }
 
     @GetMapping("/datasets")
-    @Operation(operationId = "getDatasetsForDistributionCreation", summary = "List of datasets",
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
+    @Operation(summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public List<PartialDataset> getDatasetsForDistributionCreation(@AuthenticationPrincipal Object principal) throws RmesException {
         var user = userDecoder.fromPrincipal(principal).get();
@@ -80,34 +84,35 @@ public class DistributionResources {
     }
 
     @GetMapping(value = "/search", produces = "application/json")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
     @Operation(operationId = "getDistributionsForSearch", summary = "List of distributions for advanced search",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
         return this.distributionService.getDistributionsForSearch();
     }
 
-    @PreAuthorize("isAdmin() || isDatasetContributor()")
+
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createDistribution", summary = "Create a distribution")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.CREATE)
+    @Operation(summary = "Create a distribution")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
         return this.distributionService.create(body);
     }
 
-    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateDistribution", summary = "Update a distribution")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
+    @Operation(summary = "Update a distribution")
     public String updateDistribution(
-            @PathVariable("id") String distributionId,
+            @PathVariable("id") String id,
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
-        return this.distributionService.update(distributionId, body);
+        return this.distributionService.update(id, body);
     }
 
-    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @DeleteMapping("/{id}")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.DELETE)
     @Operation(
-            operationId = "deleteDistribution",
             summary = "Delete a distribution"
     )
     @ApiResponses(value = {
@@ -117,18 +122,18 @@ public class DistributionResources {
             @ApiResponse(responseCode = "404", description = "This distribution does not exist")
     })
     public ResponseEntity<Void> deleteDistribution(
-            @PathVariable(Constants.ID) String distributionId) throws RmesException{
-        distributionService.deleteDistributionId(distributionId);
+            @PathVariable(Constants.ID) String id) throws RmesException{
+        distributionService.deleteDistributionId(id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "patchDistribution", summary = "Update a distribution")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.UPDATE)
+    @Operation(summary = "Update a distribution")
     public void patchDistribution(
-            @PathVariable("id") String distributionId,
+            @PathVariable("id") String id,
             @RequestBody PatchDistribution distribution
     ) throws RmesException{
-        this.distributionService.patchDistribution(distributionId, distribution);
+        this.distributionService.patchDistribution(id, distribution);
     }
 }

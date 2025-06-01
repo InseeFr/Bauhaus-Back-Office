@@ -2,16 +2,12 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.operations.MetadataReportResources;
 import org.junit.jupiter.api.Test;
@@ -19,20 +15,18 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,12 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=operations"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class})
-class TestMetadataReportResourcesAuthorizationsEnvProd {
+class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
@@ -66,18 +55,15 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @MockitoBean
     private OperationsService operationsService;
 
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
-
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
 
+
     @Test
     void testGetMSDJson() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -94,6 +80,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMSDXml() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         MSD msd = new MSD();
         String xmlResponse = "<MSD><key>value</key></MSD>";
@@ -114,6 +101,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMSDJsonRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         when(documentationsService.getMSDJson()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -126,6 +114,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMSDXmlRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         when(documentationsService.getMSD()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -139,6 +128,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMetadataAttribute() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String id = "testId";
         String jsonResponse = "{\"key\":\"value\"}";
@@ -156,6 +146,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMetadataAttributeRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String id = "testId";
 
@@ -170,6 +161,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMetadataAttributes() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -186,6 +178,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMetadataAttributesRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         when(documentationsService.getMetadataAttributes()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -199,6 +192,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     void testGetMetadataReport() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -215,6 +209,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMetadataReportRmesException() throws Exception {
         String id = "1234";
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
+
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMetadataReport(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -227,6 +223,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetMetadataReportDefaultValue() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -244,6 +241,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     void testGetFullSimsJson() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -261,6 +259,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     void testGetFullSimsXml() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         Documentation documentation = new Documentation();
         String xmlResponse = "<MSD><key>value</key></MSD>";
@@ -282,6 +281,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     void testGetFullSimsJsonRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         when(documentationsService.getFullSimsForJson(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -294,6 +294,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetFullSimsXmlRmesException() throws Exception {
         String id = "1234";
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
+
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getFullSimsForXml(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -307,6 +309,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetSimsExport() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -333,6 +336,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void testGetSimsExport_DefaultValues() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
         String id = "1234";
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
@@ -351,6 +355,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void postMetadataReportAdmin_OK() throws Exception {
         when(documentationsService.createMetadataReport(anyString())).thenReturn("{}");
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(true);
+
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/operations/metadataReport")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -377,6 +383,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void postMetadataReportContributor_OK() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_indicateur_RMESGNCS"));
+        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(true);
+
         when(documentationsService.createMetadataReport(anyString())).thenReturn("{}");
         mvc.perform(post("/operations/metadataReport")
                         .contentType(MediaType.APPLICATION_JSON)
