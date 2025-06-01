@@ -83,6 +83,15 @@ public class DistributionResources {
         return this.datasetService.getDatasetsForDistributionCreation(user.getStamp());
     }
 
+    @GetMapping(value = "/search", produces = "application/json")
+    @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
+    @Operation(operationId = "getDistributionsForSearch", summary = "List of distributions for advanced search",
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
+        return this.distributionService.getDistributionsForSearch();
+    }
+
+
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.CREATE)
     @Operation(summary = "Create a distribution")

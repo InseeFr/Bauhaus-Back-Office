@@ -7,6 +7,7 @@ import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.DistributionsForSearch;
 import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PartialDistribution;
 import fr.insee.rmes.webservice.datasets.DistributionResources;
@@ -39,7 +40,7 @@ class DistributionResourcesTest {
     UserDecoder userDecoder;
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDistributions() throws RmesException {
         List<PartialDistribution> distributions = new ArrayList<>();
         distributions.add(new PartialDistribution(
                 "1",
@@ -57,6 +58,30 @@ class DistributionResourcesTest {
 
         when(distributionService.getDistributions()).thenReturn(distributions);
         Assertions.assertEquals(1, distributionResources.getDistributions().size());
+    }
+
+    @Test
+    void shouldReturn200IfRmesExceptionWhenFetchingDistributionsForSearch() throws RmesException {
+        List<DistributionsForSearch> distributions = new ArrayList<>();
+        distributions.add(new DistributionsForSearch(
+                "id",
+                "labelLg1",
+                "validationStatus",
+                "created",
+                "updated",
+                "altIdentifier",
+                "id",
+                "labelLg1",
+                "creator",
+                "disseminationStatus",
+                "validationStatus",
+                "wasGeneratedIRIs",
+                "created",
+                "updated"
+        ));
+
+        when(distributionService.getDistributionsForSearch()).thenReturn(distributions);
+        Assertions.assertEquals(1, distributionResources.getDistributionsForSearch().size());
     }
 
     @Test
