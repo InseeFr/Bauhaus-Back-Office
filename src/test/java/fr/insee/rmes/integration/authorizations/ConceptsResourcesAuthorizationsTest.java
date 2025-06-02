@@ -133,6 +133,5 @@ class ConceptsResourcesAuthorizationsTest {
                 Arguments.of(List.of(), status().isForbidden())
         );
     }
-
-
+    
 }
