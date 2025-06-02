@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
@@ -20,11 +21,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -93,5 +96,43 @@ class ConceptsResourcesAuthorizationsTest {
                 Arguments.of("/concepts/collection/"+id)
         );
     }
+
+    @ParameterizedTest
+    @MethodSource("TestRoleCaseForUpdateConcept")
+    void updateConcept(List<String> role, ResultMatcher expectedStatus) throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
+        mvc.perform(put("/concepts/collection/" + familyId).header("Authorization", "Bearer totso")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(expectedStatus);
+    }
+    static Collection<Arguments> TestRoleCaseForUpdateConcept() {
+        return Arrays.asList(
+                Arguments.of(List.of(Roles.ADMIN), status().is(204)),
+                Arguments.of(List.of("BadRoleOfUser",Roles.CONCEPTS_CONTRIBUTOR), status().isForbidden()),
+                Arguments.of(List.of(), status().isForbidden())
+        );
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("TestRoleCaseForPublishConcept")
+    void publishClassification(List<String> role, ResultMatcher expectedStatus) throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
+        mvc.perform(put("/concepts/" + familyId + "/validate").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(expectedStatus);
+    }
+    static Collection<Arguments> TestRoleCaseForPublishConcept() {
+        return Arrays.asList(
+                Arguments.of(List.of(Roles.ADMIN), status().is(204)),
+                Arguments.of(List.of("BadRole"), status().isForbidden()),
+                Arguments.of(List.of(), status().isForbidden())
+        );
+    }
+
 
 }
