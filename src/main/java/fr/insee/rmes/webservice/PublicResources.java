@@ -42,22 +42,23 @@ import java.util.TreeSet;
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "406", description = "Not Acceptable"),
         @ApiResponse(responseCode = "500", description = "Internal server error")})
+
 public class PublicResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
 
     private final StampsService stampsService;
-    private  final String env;
-    private final  String lg2;
-    private final  String lg1;
-    private final  String maxLengthScopeNote;
-    private  final String defaultMailSender;
+    private final String env;
+    private final String lg2;
+    private final String lg1;
+    private final String maxLengthScopeNote;
+    private final String defaultMailSender;
     private final String defaultContributor;
     private final String appHost;
     private final List<String> activeModules;
     private final List<String> modules;
-
     private final String version;
+    private final List<String> extraMandatoryFields;
 
     public PublicResources(@Autowired StampsService stampsService,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
@@ -69,7 +70,8 @@ public class PublicResources {
                            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
                            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
-                           @Value("${fr.insee.rmes.bauhaus.version}") String version) {
+                           @Value("${fr.insee.rmes.bauhaus.version}") String version,
+                           @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) {
         this.stampsService = stampsService;
         this.env = env;
         this.lg2 = lg2;
@@ -78,9 +80,10 @@ public class PublicResources {
         this.defaultMailSender = defaultMailSender;
         this.defaultContributor = defaultContributor;
         this.appHost = appHost;
-        this.activeModules=activeModules;
+        this.activeModules = activeModules;
         this.modules = modules;
         this.version = version;
+        this.extraMandatoryFields = extraMandatoryFields;
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -98,6 +101,7 @@ public class PublicResources {
             props.put("activeModules", this.activeModules);
             props.put("modules", this.modules);
             props.put("version", this.version);
+            props.put("extraMandatoryFields", this.extraMandatoryFields);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
