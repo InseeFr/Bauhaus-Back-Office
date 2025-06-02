@@ -11,7 +11,6 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
@@ -50,8 +49,6 @@ public class SeriesUtils {
 
     final FamOpeSerIndUtils famOpeSerIndUtils;
 
-    final StampsRestrictionsService stampsRestrictionsService;
-
     final ParentUtils ownersUtils;
 
     final SeriesPublication seriesPublication;
@@ -74,7 +71,7 @@ public class SeriesUtils {
             CodeListService codeListService,
             OrganizationsService organizationsService,
             FamOpeSerIndUtils famOpeSerIndUtils,
-            StampsRestrictionsService stampsRestrictionsService, ParentUtils ownersUtils,
+            ParentUtils ownersUtils,
             SeriesPublication seriesPublication,
             DocumentationsUtils documentationsUtils,
             UriUtils uriUtils,
@@ -86,7 +83,6 @@ public class SeriesUtils {
         this.codeListService = codeListService;
         this.organizationsService = organizationsService;
         this.famOpeSerIndUtils = famOpeSerIndUtils;
-        this.stampsRestrictionsService = stampsRestrictionsService;
         this.ownersUtils = ownersUtils;
         this.seriesPublication = seriesPublication;
         this.documentationsUtils = documentationsUtils;
@@ -459,12 +455,6 @@ public class SeriesUtils {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't parse series", e.getMessage());
         }
 
-        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
-        if (!stampsRestrictionsService.canModifySeries(seriesURI)) {
-            throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED,
-                    "Only authorized users can modify series.");
-        }
-
         checkSimsWithOperations(series);
 
         series.setUpdated(DateUtils.getCurrentDate());
@@ -481,10 +471,6 @@ public class SeriesUtils {
 
     public void setSeriesValidation(String id) throws RmesException {
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
-        if (!stampsRestrictionsService.canValidateSeries(seriesURI)) {
-            throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED,
-                    "Only authorized users can publish series.");
-        }
 
         Model model = new LinkedHashModel();
         JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);

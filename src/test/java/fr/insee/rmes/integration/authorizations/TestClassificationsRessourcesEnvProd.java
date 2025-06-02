@@ -1,34 +1,27 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.classifications.ClassificationsResources;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,28 +38,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=classifications"}
 )
-
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
-
-class TestClassificationsRessourcesEnvProd {
+class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
     @MockitoBean
-    private JwtDecoder jwtDecoder;
-    @MockitoBean
     private ClassificationsService classificationsService;
     @MockitoBean
     private ClassificationItemService classificationItemService;
-    @MockitoBean
-    StampAuthorizationChecker stampAuthorizationChecker;
 
-    private final String idep = "xxxxxx";
+    private final String idep = "x xxxxx";
     private final String timbre = "XX59-YYY";
 
     static String familyId="10";
@@ -78,93 +59,188 @@ class TestClassificationsRessourcesEnvProd {
 
 
     @ParameterizedTest
-    @MethodSource("TestGetEndpointsOkWhenAnyRole")
-    void getObjectWithAnyRole(String url) throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get(url).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+    @MethodSource("testClassificationFamiliesGetEndpoint")
+    void getClassificationsFamilies(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
+
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
-    static Collection<Arguments> TestGetEndpointsOkWhenAnyRole(){
+    static Collection<Arguments> testClassificationFamiliesGetEndpoint(){
         return Arrays.asList(
-                Arguments.of("/classifications/families"),
-                Arguments.of("/classifications/family/" + familyId),
-                Arguments.of("/classifications/family/" + familyId + "/members"),
-                Arguments.of("/classifications/series"),
-                Arguments.of("/classifications/series/" + familyId),
-                Arguments.of("/classifications/series/" + familyId + "/members"),
-                Arguments.of("/classifications"),
-                Arguments.of("/classifications/classification/" + familyId),
-                Arguments.of("/classifications/classification/" + familyId + "/items"),
-                Arguments.of("/classifications/classification/" + familyId + "/level/" + levelId),
-                Arguments.of("/classifications/classification/"+ familyId + "/level/" + levelId + "/members"),
-                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId),
-                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/notes/" + conceptVersion),
-                Arguments.of("/classifications/classification/" + familyId + "/levels"),
-                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/narrowers"),
-                Arguments.of("/classifications/correspondences/"),
-                Arguments.of("/classifications/correspondence/" + familyId),
-                Arguments.of("/classifications/correspondence/" + familyId + "associations"),
-                Arguments.of("/classifications/correspondence/" + correspondenceId + "/association/" + associationId)
+                Arguments.of("/classifications/families", 200, true, true),
+                Arguments.of("/classifications/families", 403, true, false),
+                Arguments.of("/classifications/families", 401, false, true),
+
+                Arguments.of("/classifications/family/1", 200, true, true),
+                Arguments.of("/classifications/family/1", 403, true, false),
+                Arguments.of("/classifications/family/1", 401, false, true),
+
+                Arguments.of("/classifications/family/1/members", 200, true, true),
+                Arguments.of("/classifications/family/1/members", 403, true, false),
+                Arguments.of("/classifications/family/1/members", 401, false, true)
         );
     }
 
 
     @ParameterizedTest
-    @MethodSource("TestRoleCaseForUpdateClassification")
-    void updateClassification(List role, ResultMatcher expectedStatus) throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
-        mvc.perform(put("/classifications/classification/" + familyId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(expectedStatus);
+    @MethodSource("testClassificationSeriesGetEndpoint")
+    void getClassificationsSeries(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_SERIES.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
+
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
-    static Collection<Arguments> TestRoleCaseForUpdateClassification() {
+    static Collection<Arguments> testClassificationSeriesGetEndpoint(){
         return Arrays.asList(
-                Arguments.of(List.of(Roles.ADMIN), status().isOk()),
-                Arguments.of(List.of("BadRole"), status().isForbidden()),
-                Arguments.of(List.of(), status().isForbidden())
+                Arguments.of("/classifications/series", 200, true, true),
+                Arguments.of("/classifications/series", 403, true, false),
+                Arguments.of("/classifications/series", 401, false, true),
+
+                Arguments.of("/classifications/series/" + familyId, 200, true, true),
+                Arguments.of("/classifications/series/" + familyId, 403, true, false),
+                Arguments.of("/classifications/series/" + familyId, 401, false, true),
+
+                Arguments.of("/classifications/series/" + familyId + "/members", 200, true, true),
+                Arguments.of("/classifications/series/" + familyId + "/members", 403, true, false),
+                Arguments.of("/classifications/series/" + familyId + "/members", 401, false, true)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("testClassificationGetEndpoint")
+    void getClassifications(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_CLASSIFICATION.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
+
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
+    }
+    static Collection<Arguments> testClassificationGetEndpoint(){
+        return Arrays.asList(
+                Arguments.of("/classifications", 200, true, true),
+                Arguments.of("/classifications", 403, true, false),
+                Arguments.of("/classifications", 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId, 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId, 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId, 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId + "/items", 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId + "/items", 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId + "/items", 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId + "/level/" + levelId, 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId + "/level/" + levelId, 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId + "/level/" + levelId, 401, false, true),
+
+                Arguments.of("/classifications/classification/"+ familyId + "/level/" + levelId + "/members", 200, true, true),
+                Arguments.of("/classifications/classification/"+ familyId + "/level/" + levelId + "/members", 403, true, false),
+                Arguments.of("/classifications/classification/"+ familyId + "/level/" + levelId + "/members", 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId, 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId, 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId, 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/notes/" + conceptVersion, 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/notes/" + conceptVersion, 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/notes/" + conceptVersion, 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId + "/levels", 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId + "/levels", 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId + "/levels", 401, false, true),
+
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/narrowers", 200, true, true),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/narrowers", 403, true, false),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/narrowers", 401, false, true),
+
+                Arguments.of("/classifications/correspondences/", 200, true, true),
+                Arguments.of("/classifications/correspondences/", 403, true, false),
+                Arguments.of("/classifications/correspondences/", 401, false, true),
+
+                Arguments.of("/classifications/correspondence/" + familyId, 200, true, true),
+                Arguments.of("/classifications/correspondence/" + familyId, 403, true, false),
+                Arguments.of("/classifications/correspondence/" + familyId, 401, false, true),
+
+                Arguments.of("/classifications/correspondence/" + familyId + "associations", 200, true, true),
+                Arguments.of("/classifications/correspondence/" + familyId + "associations", 403, true, false),
+                Arguments.of("/classifications/correspondence/" + familyId + "associations", 401, false, true),
+
+                Arguments.of("/classifications/correspondence/" + correspondenceId + "/association/" + associationId, 200, true, true),
+                Arguments.of("/classifications/correspondence/" + correspondenceId + "/association/" + associationId, 403, true, false),
+                Arguments.of("/classifications/correspondence/" + correspondenceId + "/association/" + associationId, 401, false, true)
         );
     }
 
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForPublishClassification")
-    void publishClassification(List role, ResultMatcher expectedStatus) throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
-        mvc.perform(put("/classifications/classification/" + familyId + "/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(expectedStatus);
+    void publishClassification(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_CLASSIFICATION.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
+
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = put("/classifications/classification/" + familyId + "/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
+
     }
     static Collection<Arguments> TestRoleCaseForPublishClassification() {
         return Arrays.asList(
-                Arguments.of(List.of(Roles.ADMIN), status().isOk()),
-                Arguments.of(List.of("BadRole"), status().isForbidden()),
-                Arguments.of(List.of(), status().isForbidden())
+                Arguments.of(200, true, true),
+                Arguments.of(403, true, false),
+                Arguments.of(401, false, true)
         );
     }
 
 
-    @Test
-    void updateClassificationItemWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(put("/classifications/classification/" + familyId + "/item/" + itemId).header("Authorization", "Bearer toto")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
+    @ParameterizedTest
+    @MethodSource("TestRoleCaseForUploadClassification")
+    void updateClassificationItemWhenAnyRole(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+        when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_CLASSIFICATION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+
+        var request = put("/classifications/classification/" + familyId + "/item/" + itemId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+
+        if(withBearer){
+            request.header("Authorization", "Bearer toto");
+        }
+
+        mvc.perform(request).andExpect(status().is(code));
     }
 
 
 
     static Collection<Arguments> TestRoleCaseForUploadClassification(){
         return Arrays.asList(
-                Arguments.of(List.of(Roles.ADMIN), status().isOk(),1),
-                Arguments.of(List.of("BadRole"), status().isForbidden(),0),
-                Arguments.of(List.of(), status().isForbidden(),0)
+                Arguments.of(200, true, true),
+                Arguments.of(403, true, false),
+                Arguments.of(401, false, true)
         );
     }
 }

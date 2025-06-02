@@ -31,7 +31,7 @@ class SeriesUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        SeriesUtils indicatorsUtils = new SeriesUtils(true, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null , null, null, null, null, null);
+        SeriesUtils indicatorsUtils = new SeriesUtils(true, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null);
 
         var series = new Series();
         series.setId("1");
@@ -52,7 +52,7 @@ class SeriesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        SeriesUtils indicatorsUtils = new SeriesUtils(true, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null , null, null, null, null, null);
+        SeriesUtils indicatorsUtils = new SeriesUtils(true, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null);
 
         var series = new Series();
         series.setId("1");

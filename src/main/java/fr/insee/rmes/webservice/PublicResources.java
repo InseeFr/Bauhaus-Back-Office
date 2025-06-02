@@ -87,7 +87,7 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getInit", summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
+    @Operation(summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
     public ResponseEntity<Object> getProperties() throws RmesException {
         JSONObject props = new JSONObject();
         try {
@@ -110,7 +110,7 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStamps", summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
+    @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
     public ResponseEntity<Object> getStamps() {
         try {
             return ResponseEntity.status(HttpStatus.SC_OK).body(stampsService.getStamps());
@@ -120,7 +120,7 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = LabelUrl.class))))})
+    @Operation(summary = "List of dissemination status", responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = LabelUrl.class))))})
     public ResponseEntity<Object> getDisseminationStatus() {
         TreeSet<String> dsList = new TreeSet<>();
         for (DisseminationStatus ds : DisseminationStatus.values()) {

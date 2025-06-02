@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
@@ -28,9 +27,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
-
 import java.nio.file.Path;
-
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -43,17 +41,37 @@ class DocumentsUtilsTest {
     @Mock
     Config config;
 
-    @Mock
-    StampsRestrictionsService stampsRestrictionsService;
 
     @Mock
     FilesOperations filesOperations;
 
-
-
     @BeforeAll
     static void initGenericQueries() {
         GenericQueries.setConfig(new ConfigStub());
+    }
+
+    @Test
+    void shouldGetIdFromJson(){
+        DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
+
+        JSONObject jsonFirst = new JSONObject();
+        jsonFirst.put("id","32").put("creator","creatorExample");
+
+        JSONObject jsonSecond = new JSONObject();
+        jsonSecond.put("id","undefined").put("publisher","publisher");
+
+        JSONObject jsonThird = new JSONObject();
+        jsonThird.put("id","");
+
+        boolean getIdFromJsonFirst = documentsUtils.getIdFromJson(jsonFirst).toString().equals("32");
+        boolean getIdFromJsonSecond = documentsUtils.getIdFromJson(jsonSecond)==null;
+        boolean getIdFromJsonThird= documentsUtils.getIdFromJson(jsonThird)==null;
+
+        List<Boolean> expect = List.of(true,true,true);
+        List<Boolean> actual = List.of(getIdFromJsonFirst,getIdFromJsonSecond,getIdFromJsonThird);
+
+        assertEquals(expect,actual);
+
     }
 
     @Test
@@ -107,12 +125,10 @@ class DocumentsUtilsTest {
     void testIfDateMiseAJourSavedAsString() throws RmesException {
         DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
 
-        Stubber.forRdfService(documentsUtils).injectStampsRestrictionsService(stampsRestrictionsService);
         Stubber.forRdfService(documentsUtils).injectRepoGestion(repositoryGestion);
         Stubber.forRdfService(documentsUtils).injectConfig(config);
 
         when(config.getDocumentsStorageGestion()).thenReturn("/path/");
-        when(stampsRestrictionsService.canManageDocumentsAndLinks()).thenReturn(true);
         when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
         when(filesOperations.dirExists(any(Path.class))).thenReturn(true);

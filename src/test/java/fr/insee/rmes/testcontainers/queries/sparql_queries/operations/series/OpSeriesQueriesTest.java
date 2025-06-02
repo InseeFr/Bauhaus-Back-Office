@@ -85,7 +85,7 @@ class OpSeriesQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_series_crators() throws RmesException {
         OpSeriesQueries.setConfig(new ConfigStub());
-        JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsBySeriesUri("<http://bauhaus/operations/serie/s1236>"));
+        JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
         assertEquals(1, creators.length());
     }
