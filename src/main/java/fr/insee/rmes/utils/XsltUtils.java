@@ -19,6 +19,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -33,58 +34,36 @@ public class XsltUtils {
 	}
 
 
-	//	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
-//									 OutputStream outputStream) throws TransformerException {
-//		StreamSource xsrc = new StreamSource(xslFileIS);
-//		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
-//
-//		// Liste des paramètres XSLT attendus
-//		List<String> expectedParams = List.of(
-//				"series", "operation", "indicator", "sims",
-//				"organizations", "codeLists", "msd", "concepts",
-//				"collections", "parameters"
-//		);
-//
-//		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-//		dbf.setNamespaceAware(true);
-//
-//		try {
-//			DocumentBuilder builder = dbf.newDocumentBuilder();
-//
-//			for (String paramName : expectedParams) {
-//				String xmlData = xmlContent.getOrDefault(paramName, "<" + paramName + "/>");
-//				Document doc = builder.parse(new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8)));
-//				xsltTransformer.setParameter(paramName, new DOMSource(doc.getDocumentElement()));
-//			}
-//
-//		} catch (Exception e) {
-//			throw new RuntimeException("Error setting XSLT parameters", e);
-//		}
-//
-//		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(outputStream));
-//	}
-
-	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
+		public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
 									 OutputStream outputStream) throws TransformerException {
 		StreamSource xsrc = new StreamSource(xslFileIS);
 		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
 
-		xmlContent.forEach((paramName, xmlData) -> {
-			try {
-				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-				dbf.setNamespaceAware(true);
-				DocumentBuilder builder = dbf.newDocumentBuilder();
-				Document doc = builder.parse(new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8)));
+		// Liste des paramètres XSLT attendus
+		List<String> expectedParams = List.of(
+				"series", "operation", "indicator", "sims",
+				"organizations", "codeLists", "msd", "concepts",
+				"collections", "parameters"
+		);
 
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setNamespaceAware(true);
+
+		try {
+			DocumentBuilder builder = dbf.newDocumentBuilder();
+
+			for (String paramName : expectedParams) {
+				String xmlData = xmlContent.getOrDefault(paramName, "<" + paramName + "/>");
+				Document doc = builder.parse(new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8)));
 				xsltTransformer.setParameter(paramName, new DOMSource(doc.getDocumentElement()));
-			} catch (Exception e) {
-				throw new RuntimeException("Error setting XML parameter " + paramName, e);
 			}
-		});
+
+		} catch (Exception e) {
+			throw new RuntimeException("Error setting XSLT parameters", e);
+		}
 
 		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(outputStream));
 	}
-
 
 
 
