@@ -36,8 +36,8 @@ jobs:
         run: mvn -B clean test -DexcludedGroups="integration"
       - name: Run TestContainer
         run: mvn -B clean test -Dgroups="integration"
-      - name: Run Sonar
+      - name: Run full build + tests + Sonar
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pcoverage
+        run: mvn -B clean verify -Pcoverage org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
