@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+
 class ClassificationItemServiceImplTest {
 
     @InjectMocks
@@ -28,8 +29,26 @@ class ClassificationItemServiceImplTest {
     String classificationId = "classificationID";
     String itemId = "itemId";
     String body = "fake body for Json Object";
+    int conceptVersion = 3;
     JSONObject item = new JSONObject().put("A", "letterA").put("B", "letterB");
 
+
+    @Test
+    void shouldReturnResponseWhenGetClassificationItemNarrowers() throws RmesException {
+        when(repoGestion.getResponseAsArray(ItemsQueries.itemNarrowersQuery(classificationId, itemId))).thenReturn(item.names());
+        String actual = classificationItemServiceImpl.getClassificationItemNarrowers(classificationId, itemId);
+        String expected = "[\"A\",\"B\"]";
+        Assertions.assertEquals(expected, actual);
+    }
+
+
+    @Test
+    void shouldReturnResponseWhenGetClassificationItemNotes() throws RmesException {
+        when(repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion))).thenReturn(item);
+        String actual = classificationItemServiceImpl.getClassificationItemNotes(classificationId, itemId,conceptVersion);
+        String expected = "{\"A\":\"letterA\",\"B\":\"letterB\"}";
+        Assertions.assertEquals(expected, actual);
+    }
 
     @Test
     void shouldGetClassificationItemsWhenAltLabelNotNull() throws RmesException {
