@@ -5,6 +5,8 @@ import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifFamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,6 +32,30 @@ class ClassificationsImplTest {
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
+    }
+
+    @Test
+    void shouldGetFamily() throws RmesException {
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, new ClassificationUtils(), new ClassificationPublication());
+        when(repoGestion.getResponseAsObject(ClassifFamiliesQueries.familyQuery("mocked ID"))).thenReturn(new JSONObject().put("id","mocked result"));
+        String actual = classificationImpl.getFamily("mocked ID");
+        Assertions.assertEquals("{\"id\":\"mocked result\"}",actual);
+    }
+
+    @Test
+    void shouldGetFamilyMembers() throws RmesException {
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, new ClassificationUtils(), new ClassificationPublication());
+        when(repoGestion.getResponseAsArray(ClassifFamiliesQueries.familyMembersQuery("mocked ID"))).thenReturn(new JSONArray().put("mocked result"));
+        String actual = classificationImpl.getFamilyMembers("mocked ID");
+        Assertions.assertEquals("[\"mocked result\"]",actual);
+    }
+
+    @Test
+    void shouldGetOneSeries() throws RmesException {
+        ClassificationsImpl classificationImpl = new ClassificationsImpl(repoGestion, new ClassificationUtils(), new ClassificationPublication());
+        when(repoGestion.getResponseAsObject(ClassifSeriesQueries.oneSeriesQuery("mocked ID"))).thenReturn(new JSONObject().put("id","mocked result"));
+        String actual = classificationImpl.getOneSeries("mocked ID");
+        Assertions.assertEquals("{\"id\":\"mocked result\"}",actual);
     }
 
     @Test
