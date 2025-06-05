@@ -17,43 +17,52 @@
         <empty />
     </xsl:param>
     <!-- the params with the addresses of the files -->
-    <xsl:param name="seriesFile"/>
+    <xsl:param name="seriesFile" required="no"/>
+
     <xsl:param name="operationNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="operationFile"/>
+    <xsl:param name="operationFile" required="no"/>
+
     <xsl:param name="indicatorNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="indicatorFile"/>
+    <xsl:param name="indicatorFile" required="no"/>
+
     <xsl:param name="simsNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="simsFile"/>
+    <xsl:param name="simsFile" required="no"/>
+
     <xsl:param name="organizationsNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="organizationsFile"/>
+    <xsl:param name="organizationsFile" required="no"/>
+
     <xsl:param name="codeListsNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="codeListsFile"/>
+    <xsl:param name="codeListsFile" required="no"/>
+
     <xsl:param name="msdNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="msdFile"/>
-    <xsl:param name="conceptsNode" as="node()" required="no">
+    <xsl:param name="msdFile" required="no"/>
+
+    <xsl:param name="conceptNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="conceptFile"/>
-    <xsl:param name="collectionsNode" as="node()" required="no">
+    <xsl:param name="conceptFile" required="no"/>
+
+    <xsl:param name="collectionNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="collectionFile"/>
+    <xsl:param name="collectionFile" required="no"/>
+
     <xsl:param name="parametersNode" as="node()" required="no">
         <empty />
     </xsl:param>
-    <xsl:param name="parametersFile"/>
+    <xsl:param name="parametersFile" required="no"/>
 
     <!-- the params with the content of the files -->
 
@@ -153,7 +162,7 @@
                 <xsl:copy-of select="document($conceptFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <<xsl:copy-of select="$conceptsNode"/>/>
+                <xsl:copy-of select="$conceptNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -163,7 +172,7 @@
                 <xsl:copy-of select="document($collectionFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <<xsl:copy-of select="$collectionsNode"/>/>
+                <xsl:copy-of select="$collectionNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>

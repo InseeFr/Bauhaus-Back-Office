@@ -319,14 +319,15 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
 		String conceptXml = XMLUtils.produceXMLResponse(concept);
 		Map<String,String> xmlContent = new HashMap<>();
-		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
+		//TODO
+		xmlContent.put("conceptNode",  conceptXml.replace("ConceptForExport", "Concept"));
 		return xmlContent;
 	}
 	
 	private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
 		String collectionXml = XMLUtils.produceXMLResponse(collection);
 		Map<String,String> xmlContent = new HashMap<>();
-		xmlContent.put("collectionFile",  collectionXml.replace("CollectionForExport", "Collection"));
+		xmlContent.put("collectionNode",  collectionXml.replace("CollectionForExport", "Collection"));
 		return xmlContent;
 	}
 	

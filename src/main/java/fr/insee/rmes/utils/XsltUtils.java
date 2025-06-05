@@ -39,53 +39,28 @@ public class XsltUtils {
 		StreamSource xsrc = new StreamSource(xslFileIS);
 		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
 
-		List<String> expectedParams = List.of(
-				"series", "operation", "indicator", "sims",
-				"organizations", "codeLists", "msd", "concepts",
-				"collections", "parameters"
-		);
-
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-
-		try {
-			DocumentBuilder builder = dbf.newDocumentBuilder();
-
-			for (String paramName : expectedParams) {
-				String xmlData = xmlContent.getOrDefault(paramName, "<" + paramName + "/>");
+		xmlContent.forEach((paramName, xmlData) -> {
+			try {
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				dbf.setNamespaceAware(true);
+				DocumentBuilder builder = dbf.newDocumentBuilder();
 				Document doc = builder.parse(new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8)));
+
 				xsltTransformer.setParameter(paramName, new DOMSource(doc.getDocumentElement()));
+			} catch (Exception e) {
+				throw new RuntimeException("Error setting XML parameter " + paramName, e);
 			}
-		} catch (Exception e) {
-			throw new RuntimeException("Error setting XSLT parameters", e);
-		}
+		});
 
 		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(outputStream));
 	}
-	
 
-	private static void addParameter(Transformer xsltTransformer, String paramName, String paramData, Path tempDir)
-			throws RmesException {
-		// Pass parameters in a file
-		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-		try {
-			Path tempFile = Files.createTempFile(tempDir, paramName, FilesUtils.XML_EXTENSION);
-			String absolutePath = tempFile.toFile().getAbsolutePath();
-			InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
-			Files.copy(is, tempFile, options);
-			absolutePath = absolutePath.replace('\\', '/');
-			xsltTransformer.setParameter(paramName, absolutePath);
-		} catch (IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
-					"IOException - Can't create temp files for XSLT Transformer");
-		}
 
-	}
 
 	public static ByteArrayOutputStream createOdtFromXml(byte[] transformedXml, InputStream zipTemplateIS)
 			throws IOException {
+		// 1. Lire le ZIP modèle dans une Map<String, byte[]>
 		Map<String, byte[]> zipEntries = new HashMap<>();
-
 		try (ZipInputStream zis = new ZipInputStream(zipTemplateIS)) {
 			ZipEntry entry;
 			while ((entry = zis.getNextEntry()) != null) {
@@ -95,12 +70,15 @@ public class XsltUtils {
 			}
 		}
 
+		// 2. Écrire un nouveau ZIP avec "content.xml" + les autres fichiers
 		ByteArrayOutputStream odtOutput = new ByteArrayOutputStream();
 		try (ZipOutputStream zos = new ZipOutputStream(odtOutput)) {
+			// content.xml
 			zos.putNextEntry(new ZipEntry("content.xml"));
 			zos.write(transformedXml);
 			zos.closeEntry();
 
+			// autres fichiers
 			for (Map.Entry<String, byte[]> other : zipEntries.entrySet()) {
 				zos.putNextEntry(new ZipEntry(other.getKey()));
 				zos.write(other.getValue());
@@ -110,6 +88,7 @@ public class XsltUtils {
 
 		return odtOutput;
 	}
+
 
 
 	public static String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyFields, String targetType) {
