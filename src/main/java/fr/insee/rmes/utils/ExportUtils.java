@@ -76,56 +76,25 @@ public class ExportUtils {
                 .body(resource);
     }
 
-    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
+    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent,
+                                           String xslFile, String xmlPattern, String zip,
+                                           String objectType, String extension) throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
 
-        File output = null;
-        InputStream odtFileIS = null;
-        InputStream xslFileIS = null;
-        InputStream zipToCompleteIS = null;
-        fileName = fileName.replace(extension, ""); //Remove extension if exists
+        try (
+                InputStream xslFileIS = getClass().getResourceAsStream(xslFile);
+                InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
+                InputStream zipToCompleteIS = getClass().getResourceAsStream(zip)
+        ) {
+            ByteArrayOutputStream transformedXml = new ByteArrayOutputStream();
+            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, transformedXml);
 
-
-        try {
-            xslFileIS = getClass().getResourceAsStream(xslFile);
-            odtFileIS = getClass().getResourceAsStream(xmlPattern);
-            zipToCompleteIS = getClass().getResourceAsStream(zip);
-
-            // prepare output
-            output = File.createTempFile(Constants.OUTPUT, FilesUtils.getExtension(Constants.XML));
-            output.deleteOnExit();
-
-        } catch (IOException ioe) {
-            logger.error(ioe.getMessage());
-        }
-
-        try (OutputStream osOutputFile = FileUtils.openOutputStream(output);
-             PrintStream printStream = new PrintStream(osOutputFile)) {
-
-            Path tempDir = Files.createTempDirectory("forExport");
-            Path finalPath = Paths.get(tempDir.toString(), fileName + extension);
-
-            // transform
-            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
-            // create odt
-            XsltUtils.createOdtFromXml(output, finalPath, zipToCompleteIS, tempDir);
-
+            ByteArrayOutputStream odtOutput = XsltUtils.createOdtFromXml(transformedXml.toByteArray(), zipToCompleteIS);
             logger.debug("End To export {} as InputStream", objectType);
 
-            return Files.newInputStream(finalPath);
+            return new ByteArrayInputStream(odtOutput.toByteArray());
         } catch (IOException | TransformerException e) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-        } finally {
-            try {
-                if (odtFileIS != null)
-                    odtFileIS.close();
-                if (xslFileIS != null)
-                    xslFileIS.close();
-                if (zipToCompleteIS != null)
-                    zipToCompleteIS.close();
-            } catch (IOException ioe) {
-                logger.error(ioe.getMessage());
-            }
         }
     }
 
