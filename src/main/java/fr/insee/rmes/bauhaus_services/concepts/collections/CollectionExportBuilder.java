@@ -104,34 +104,34 @@ public class CollectionExportBuilder extends RdfService {
 
 	public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 		return exportUtils.exportAsODT(fileName, xmlContent,XSL_FILE,XML_PATERN,ZIP_OLD, Constants.COLLECTION);
 	}
 
 
 	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, ConceptsCollectionsResources.Language lg) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 		String xmlPattern = lg == ConceptsCollectionsResources.Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
 		return exportUtils.exportAsODT(fileName, xmlContent, XSL_FILE, xmlPattern, ZIP, Constants.COLLECTION);
 	}
 
 	public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 		return exportUtils.exportAsODS(fileName, xmlContent,XSL_FILE,XML_PATTERN_ODS,ZIP_ODS, Constants.COLLECTION);
 	}
 
 	public void exportMultipleCollectionsAsZipOdt(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, ConceptsCollectionsResources.Language lg, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
+		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_NODE, parametersXML));
 		String xmlPattern = lg == ConceptsCollectionsResources.Language.lg1 ? XML_PATTERN_FR : XML_PATTERN_EN;
 		exportMultipleResourceAsZip(collections,XSL_FILE,xmlPattern,ZIP, response, FilesUtils.ODT_EXTENSION, concepts, withConcepts);
 	}
 
 	public void exportMultipleCollectionsAsZipOds(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
-		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
+		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_NODE, parametersXML));
 		exportMultipleResourceAsZip(collections,XSL_FILE,XML_PATTERN_ODS, ZIP_ODS, response, FilesUtils.ODS_EXTENSION, concepts, withConcepts);
 	}
 

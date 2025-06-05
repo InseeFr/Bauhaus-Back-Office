@@ -99,7 +99,7 @@ public class DocumentationExport {
 
 		PatternAndZip patternAndZip = PatternAndZip.of(goal);
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 
 		Exporter exporter;
 		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
@@ -205,8 +205,7 @@ public class DocumentationExport {
 			boolean lg2) throws RmesException {
 		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 		return exportUtils.exportFilesAsResponse(xmlContent);
 	}
 	
