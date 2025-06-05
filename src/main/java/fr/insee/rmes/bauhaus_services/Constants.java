@@ -86,7 +86,7 @@ public class Constants {
 
 	
 	/*P*/
-	public static final String PARAMETERS_FILE = "parametersNode";
+	public static final String PARAMETERS_NODE = "parametersNode";
     public static final String PARENTS = "parents";
 	public static final String PREF_LABEL_LG1 = "prefLabelLg1";
 	public static final String PREF_LABEL_LG2 = "prefLabelLg2";
