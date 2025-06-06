@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.Stubber;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -8,6 +9,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -166,4 +168,38 @@ class DocumentsUtilsTest {
             Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>) [http://documents/graph]]", model.getValue().toString());
         }
     }
+
+    @Test
+    void shouldBuildDocumentFromJson() {
+
+        DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
+
+        JSONObject jsonObject = new JSONObject().
+                put(Constants.LABEL_LG1,"mocked Label LG1").
+                put(Constants.LABEL_LG2,"mocked Label LG2").
+                put(Constants.DESCRIPTION_LG1,"mocked Description LG1").
+                put(Constants.DESCRIPTION_LG2,"mocked Description LG2").
+                put(Constants.UPDATED_DATE,"mocked Updated Date").
+                put(Constants.LANG,"mocked Lang").
+                put(Constants.URL,"mocked URL").
+                put(Constants.URI,"mocked URI");
+
+        List<Boolean> actual = List.of(
+                documentsUtils.buildDocumentFromJson(jsonObject).getLabelLg1()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getLabelLg2()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getDescriptionLg1()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getDescriptionLg2()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getDateMiseAJour()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getLangue()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getUrl()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getUri()!=null
+                );
+
+        assertEquals(List.of(true,true,true,true,true,true,true,true),actual);
+
+    }
+
+
+
+
 }
