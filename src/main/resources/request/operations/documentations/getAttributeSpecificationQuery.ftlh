@@ -1,4 +1,4 @@
-SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs ?codeList
+SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?sansObject ?isPresentational ?maxOccurs ?codeList
   FROM <${MSD_GRAPH}> 
   FROM <${CODELIST_GRAPH}> 
   FROM <${MSD_CONCEPTS_GRAPH}>
@@ -7,10 +7,20 @@ SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs ?codeLi
 	  OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 
 	  OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
 									
-	  ?mas sdmx-mm:metadataAttributeProperty ?map . 
-	  ?map rdfs:range ?range .
-	  
-	  OPTIONAL {?range rdfs:seeAlso/skos:notation|skos:notation ?codeList .}
+	  ?mas sdmx-mm:metadataAttributeProperty ?map .
+	  {
+	    ?map rdfs:range/owl:UnionOf/(rdf:rest)*/rdf:first ?range .
+	    BIND(true AS ?sansObject)
+		FILTER (?range != insee:RubriqueSimsSansObjet)
+	  }
+	  UNION
+	  {
+	    ?map rdfs:range ?range .
+	    BIND(false AS ?sansObject)
+	  }
+FILTER (!isBlank(?range))
+
+OPTIONAL {?range rdfs:seeAlso/skos:notation|skos:notation ?codeList .}
 
 	  
 	  ?map sdmx-mm:concept ?concept .
