@@ -8,9 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class CollectionsUtilsTest {
 
     @Test
-    void shouldSetCollection() {
+    void shouldThrowAnExceptionWhenSetCollectionOnlyWithId() {
         CollectionsUtils collectionsUtils = new CollectionsUtils();
-        RmesException exception = assertThrows(RmesException.class, () -> collectionsUtils.setCollection("dfrfefe"));
+        RmesException exception = assertThrows(RmesException.class, () -> collectionsUtils.setCollection("mocked id"));
         Assertions.assertTrue(exception.getDetails().contains("IOException"));
     }
+
+    @Test
+    void shouldThrowAnExceptionWhenSetCollectionWithIdAndBody() {
+        CollectionsUtils collectionsUtils = new CollectionsUtils();
+        RmesException exception = assertThrows(RmesException.class, () -> collectionsUtils.setCollection("mocked id","mocked body"));
+        Assertions.assertTrue(exception.getDetails().contains("IOException"));
+    }
+
 }

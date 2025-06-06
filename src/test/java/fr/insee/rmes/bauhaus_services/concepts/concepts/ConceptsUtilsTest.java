@@ -3,11 +3,15 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +36,9 @@ class ConceptsUtilsTest {
 
     @MockitoBean
     RepositoryGestion repoGestion;
+
+    @MockitoBean
+    RepositoryPublication repositoryPublication;
 
     @Test
     void shouldReturnGetConceptExportFileName() {
@@ -77,5 +85,34 @@ class ConceptsUtilsTest {
         Assertions.assertTrue(exception.getDetails().contains("This concept cannot be found in database"));
     }
 
-    
+    @Test
+    void shouldCheckIfConceptExists() throws RmesException {
+        when(repoGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists("mocked id"))).thenReturn(true);
+        Assertions.assertTrue(conceptsUtils.checkIfConceptExists("mocked id"));
+    }
+
+    @Test
+    void shouldDeleteConcept() throws RmesException {
+        when(repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
+        when(repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
+        HttpStatus actual = conceptsUtils.deleteConcept("mocked id");
+        assertEquals(HttpStatus.BAD_REQUEST,actual);
+    }
+
+    @Test
+    void shouldGetRelatedConcepts() throws RmesException {
+        JSONArray jsonArray = new JSONArray().put("mocked Array");
+        when(repoGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery("mocked id"))).thenReturn(jsonArray);
+        JSONArray actual = conceptsUtils.getRelatedConcepts("mocked id");
+        assertEquals(jsonArray,actual);
+    }
+
+    @Test
+    void shouldGetGraphsWithConcept() throws RmesException {
+        JSONArray jsonArray = new JSONArray().put("mocked Array");
+        when(repoGestion.getResponseAsArray(ConceptsQueries.getGraphWithConceptQuery("mocked id"))).thenReturn(jsonArray);
+        JSONArray actual = conceptsUtils.getGraphsWithConcept("mocked id");
+        assertEquals(jsonArray,actual);
+    }
+
     }

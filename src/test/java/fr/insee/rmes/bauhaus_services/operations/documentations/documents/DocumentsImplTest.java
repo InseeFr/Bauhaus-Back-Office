@@ -101,4 +101,22 @@ class DocumentsImplTest {
         String actual = documentsImpl.changeDocument("docId",documentFile,"documentName");
         assertEquals("idExample",actual);
     }
+
+    @Test
+    void shouldSetLinkWhenSeveralArguments() throws RmesException {
+        DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
+        when(documentsUtils.createDocumentID()).thenReturn("id");
+        doNothing().when(documentsUtils).createDocument("id","body",true, null, null);
+        String actual = documentsImpl.setLink("body");
+        assertEquals("id",actual);
+    }
+
+    @Test
+    void shouldSetLinkWhenUsingOnlyOneParameter() throws RmesException {
+        DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
+        doNothing().when(documentsUtils).setDocument("id","body",true);
+        String actual = documentsImpl.setLink("id","body");
+        assertEquals("id",actual);
+    }
+
 } 
