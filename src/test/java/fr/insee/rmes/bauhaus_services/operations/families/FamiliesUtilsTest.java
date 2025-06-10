@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.Family;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -119,6 +121,35 @@ class FamiliesUtilsTest {
 
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@fr", model.objects().toArray()[0].toString());
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@en", model.objects().toArray()[1].toString());
+    }
+
+    @Mock
+    StampsRestrictionsService stampsRestrictionsService;
+
+    @Test
+    void shouldThrowRmesNotFoundExceptionWhenFamilyIsNull()  {
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, stampsRestrictionsService,"fr", "en");
+        RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
+        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
+    }
+
+    @Test
+    void shouldThrowRmesNotFoundExceptionWhenIdIsAbsent(){
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, stampsRestrictionsService,"fr", "en");
+        Family familyCreate = new Family();
+        familyCreate.setCreated("today");
+        RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
+        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
+    }
+
+    @Test
+    void shouldThrowRmesNotFoundExceptionWhenPrefLabelLg1IsAbsent() {
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, stampsRestrictionsService,"fr", "en");
+        Family familyCreate = new Family();
+        familyCreate.setId("idExample");
+        familyCreate.setAbstractLg1("");
+        RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
+        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"542 : prefLabelLg1 not found\"}");
     }
 
 }
