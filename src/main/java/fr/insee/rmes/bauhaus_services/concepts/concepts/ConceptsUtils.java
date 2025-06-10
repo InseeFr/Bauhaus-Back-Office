@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
-import fr.insee.rmes.bauhaus_services.links.LinksUtils;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -12,7 +11,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -102,9 +100,6 @@ public class ConceptsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 	public String setConcept(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateConcept()) {
-			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_CREATION_RIGHTS_DENIED, "Only an admin or concepts manager can create a new concept.");
-		}
 		Concept concept = setConcept(createID(), true, body);
 		logger.info("Create concept : {} - {}", concept.getId() , concept.getPrefLabelLg1());
 		return concept.getId();
@@ -117,9 +112,6 @@ public class ConceptsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 	public void setConcept(String id, String body) throws RmesException {
-		if(!stampsRestrictionsService.canModifyConcept(RdfUtils.conceptIRI(id))) {
-			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MODIFICATION_RIGHTS_DENIED, "");
-		}
 		Concept concept = setConcept(id, false, body);
 		logger.info("Update concept : {} - {}" , concept.getId() , concept.getPrefLabelLg1());
 	}
@@ -197,11 +189,6 @@ public class ConceptsUtils extends RdfService {
 			conceptsToValidateList.add(conceptURI);
 			model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
 			logger.info("Validate concept : {}" , conceptURI);
-		}
-		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList)) {
-			throw new RmesUnauthorizedException(
-					ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,
-					conceptsToValidate);
 		}
 		repoGestion.objectsValidation(conceptsToValidateList, model);
 		conceptsPublication.publishConcepts(conceptsToValidate);

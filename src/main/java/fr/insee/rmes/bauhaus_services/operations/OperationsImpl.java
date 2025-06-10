@@ -7,7 +7,8 @@ import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
@@ -28,9 +29,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class OperationsImpl  extends RdfService implements OperationsService {
+public class OperationsImpl  implements OperationsService {
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
+
+	@Autowired
+	RepositoryGestion repoGestion;
+
+	@Autowired
+	AuthorizeMethodDecider authorizeMethodDecider;
 
 	@Autowired
 	SeriesUtils seriesUtils;
@@ -76,7 +83,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
+		JSONArray series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithStampQuery(stamp, this.authorizeMethodDecider.isAdmin()));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));

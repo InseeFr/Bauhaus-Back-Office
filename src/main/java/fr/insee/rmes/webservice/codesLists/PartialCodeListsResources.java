@@ -7,6 +7,8 @@ import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,23 +44,26 @@ public class PartialCodeListsResources extends GenericResources {
     @Autowired
     CodeListService codeListService;
 
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
+    @Operation(summary = "Partial List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
     public List<PartialCodesList> getAllPartialCodesLists() throws JsonProcessingException, RmesException {
         return codeListService.getAllCodesLists(true);
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
+    @Operation(summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation (@PathVariable("notation") String notation) throws RmesException {
         String body = codeListService.getDetailedPartialCodesList(notation);
         return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/parent/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getPartialsByParent", summary = "Get partials by Parent IRI",
+    @Operation(summary = "Get partials by Parent IRI",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
     public ResponseEntity<Object> getPartialsByParent(@PathVariable("parentCode") String parentIri) {
         try {
@@ -70,9 +74,9 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
-    @io.swagger.v3.oas.annotations.Operation(operationId = "publishPartialCodeList", summary = "Publish a partial codelist")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Publish a partial codelist")
     public ResponseEntity<Object> publishPartialCodeList(
             @PathVariable(Constants.ID) String id) {
         try {
@@ -83,8 +87,9 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
+    @Operation(summary = "Return all lists for Advanced Search",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
@@ -95,9 +100,9 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createPartialCodeList", summary = "Create a code list")
+    @Operation(summary = "Create a code list")
     public ResponseEntity<Object> createPartialCodeList(
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
         try {
@@ -108,9 +113,9 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setCodesList", summary = "Create a code list")
+    @Operation(summary = "Create a code list")
     public ResponseEntity<Object> updatePartialCodeList(
             @PathVariable(Constants.ID) String componentId,
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
@@ -122,9 +127,9 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping(value = "/{id}")
-    @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial code list")
+    @Operation(summary = "Delete a partial code list")
     public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
         try {
             codeListService.deleteCodeList(notation, true);

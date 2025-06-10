@@ -63,6 +63,9 @@ DocumentationsRubricsUtils extends RdfService {
 	@Autowired
 	private GeographyService geoService;
 
+	public void setDocUtils(DocumentsUtils documentsUtils){
+		this.docUtils=documentsUtils;
+	}
 
 	/**
 	 * GETTER

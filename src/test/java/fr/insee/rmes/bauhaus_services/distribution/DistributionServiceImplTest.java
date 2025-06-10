@@ -57,7 +57,7 @@ class DistributionServiceImplTest {
     private static final String EMPTY_JSON_OBJECT = "{}";
     private static final String DISTRIB = "{\"id\":\"d1000\"}";
     private static final String DISTRIB_A_PATCHER = "{\"byteSize\":\"3\",\"labelLg2\":\"test_patch\",\"labelLg1\":\"test_patch\",\"created\":\"2024-04-10T16:34:09.651166561\",\"idDataset\":\"jd1004\",\"id\":\"d1004\",\"updated\":\"2024-04-07T16:34:09.651166561\",\"url\":\"http://test\", \"validationState\": \"Unpublished\"}";
-    private static final String DISTRIB_PATCHEE = "[(http://distributionIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://rdf.insee.fr/def/base#validationState, \"Unpublished\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\", http://datasetGraph/) [http://datasetGraph/]]";
+    private static final String DISTRIB_PATCHEE = "[(http://distributionIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004) [http://datasetGraph/], (http://distributionIRI/d1004, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\") [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\") [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\") [http://datasetGraph/]]";
 
 
     @Test
@@ -71,6 +71,34 @@ class DistributionServiceImplTest {
             var distributions = distributionService.getDistributions();
             Assertions.assertEquals("1", distributions.get(0).id());
             Assertions.assertEquals("label", distributions.get(0).labelLg1());
+        }
+    }
+
+    @Test
+    void shouldReturnDistributionsForSearch() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject()
+                .put("distributionId", "id")
+                .put("distributionLabelLg1", "labelLg1")
+                .put("distributionValidationStatus", "validationStatus")
+                .put("distributionCreated", "created")
+                .put("distributionUpdated", "updated")
+                .put("altIdentifier", "altIdentifier")
+                .put("id", "id")
+                .put("labelLg1", "labelLg1")
+                .put("creator", "creator")
+                .put("disseminationStatus", "disseminationStatus")
+                .put("validationStatus", "validationStatus")
+                .put("wasGeneratedIRIs", "wasGeneratedIRIs")
+                .put("created", "created")
+                .put("updated", "updated"));
+
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
+            mockedFactory.when(() -> DistributionQueries.getDistributionsForSearch(any())).thenReturn("query");
+            var distributions = distributionService.getDistributionsForSearch();
+            Assertions.assertEquals("id", distributions.get(0).distributionId());
+            Assertions.assertEquals("labelLg1", distributions.get(0).distributionLabelLg1());
         }
     }
 
@@ -186,7 +214,7 @@ class DistributionServiceImplTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-            Assertions.assertEquals("[(http://distributionIRI/idDataset, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://rdf.insee.fr/def/base#validationState, \"Unpublished\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/identifier, \"d1000\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/format, \"format\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#byteSize, \"byteSize\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#downloadURL, \"url\", http://datasetGraph/) [http://datasetGraph/]]".replaceAll("d1000", nextId), model.getValue().toString());
+            Assertions.assertEquals("[(http://distributionIRI/idDataset, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://datasetGraph/], (http://distributionIRI/d1000, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/identifier, \"d1000\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/format, \"format\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#byteSize, \"byteSize\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#downloadURL, \"url\") [http://datasetGraph/]]".replaceAll("d1000", nextId), model.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
     }
@@ -256,7 +284,7 @@ class DistributionServiceImplTest {
             if (withDataSetRemoval) {
                 verify(repositoryGestion, times(1)).deleteTripletByPredicateAndValue(any(), any(), any(), any(), any());
             }
-            Assertions.assertEquals("[(http://distributionIRI/d1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1001, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://rdf.insee.fr/def/base#validationState, \"Modified\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/identifier, \"d1001\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/format, \"format\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#byteSize, \"byteSize\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#downloadURL, \"url\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://distributionIRI/d1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1001) [http://datasetGraph/], (http://distributionIRI/d1001, http://rdf.insee.fr/def/base#validationState, \"Modified\") [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/identifier, \"d1001\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/format, \"format\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#byteSize, \"byteSize\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#downloadURL, \"url\") [http://datasetGraph/]]", model.getValue().toString());
             Assertions.assertEquals("d1001", id);
         }
     }
@@ -280,7 +308,7 @@ class DistributionServiceImplTest {
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
         verify(repositoryGestion, times(1)).objectValidation(eq(iri), model.capture());
-        Assertions.assertEquals("[(http://distributionIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+        Assertions.assertEquals("[(http://distributionIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\") [http://datasetGraph/]]", model.getValue().toString());
         Assertions.assertEquals("1", id);
     }
 

@@ -11,6 +11,7 @@ import fr.insee.rmes.utils.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -20,6 +21,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("integration")
 class OpSeriesQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
@@ -83,7 +85,7 @@ class OpSeriesQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_series_crators() throws RmesException {
         OpSeriesQueries.setConfig(new ConfigStub());
-        JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsBySeriesUri("<http://bauhaus/operations/serie/s1236>"));
+        JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
         assertEquals(1, creators.length());
     }

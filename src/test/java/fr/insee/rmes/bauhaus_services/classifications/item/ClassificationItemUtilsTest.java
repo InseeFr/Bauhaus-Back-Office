@@ -53,28 +53,21 @@ class ClassificationItemUtilsTest {
     }
 
     @Test
-    void shouldAddNotes() throws RmesException {
-
+    void shouldThrowExceptionIfPrefLabelLg2Null() throws RmesException {
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
+
 
         RdfUtils.setConfig(config);
         ItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
         item.setPrefLabelLg1("label1");
-        item.setPrefLabelLg2("label2");
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        classificationItemUtils.updateClassificationItem(item, "http://uri", "1");
-        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-        IRI iri = SimpleValueFactory.getInstance().createIRI("http://uri");
-
-        verify(repositoryGestion, times(1)).loadSimpleObjectWithoutDeletion(eq(iri), model.capture(), any());
-
-        Assertions.assertEquals("[(http://uri, http://www.w3.org/2004/02/skos/core#prefLabel, \"label1\"@fr, http://codeListGraph/1) [http://codeListGraph/1], (http://uri, http://www.w3.org/2004/02/skos/core#prefLabel, \"label2\"@en, http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://eurovoc.europa.eu/schema#noteLiteral, \"<p>Definition Lg1</p>\", http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://rdf-vocabulary.ddialliance.org/xkos#plainText, \"Definition Lg1\", http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://www.w3.org/1999/02/22-rdf-syntax-ns#value, \"<p>Definition Lg1</p>\", http://codeListGraph/1) [http://codeListGraph/1]]", model.getValue().toString());
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemUtils.updateClassificationItem(item, "http://uri", "1"));
+        assertThat(exception.getDetails()).contains("The property prefLabelLg2 is required");
 
     }
 }

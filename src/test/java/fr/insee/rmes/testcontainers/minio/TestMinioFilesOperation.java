@@ -5,10 +5,12 @@ import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.StatObjectArgs;
 import io.minio.errors.*;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,8 +20,11 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("integration")
+@Testcontainers
 class TestMinioFilesOperation {
 
+    @Container
     MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z");
 
     @BeforeAll
@@ -30,7 +35,6 @@ class TestMinioFilesOperation {
 
     @Test
     void testWritingThenCheckExistThenCopyThenRead_shouldBeOK() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        container.start();
         var nomFichier = "test.txt";
         MinioClient minioClient = MinioClient
                 .builder()
@@ -54,10 +58,6 @@ class TestMinioFilesOperation {
         assertThat(new String(minioFilesOperation.readInDirectoryGestion(nomFichier).readAllBytes())).isEqualTo(contenuFichier);
     }
 
-    @AfterEach
-    void tearDown() {
-        container.stop();
-    }
 
     private static boolean fileExistsInPublication(MinioClient minioClient, MinioFilesOperation minioFilesOperation, String nomFichier) throws ErrorResponseException, InsufficientDataException, InternalException, InvalidKeyException, InvalidResponseException, IOException, NoSuchAlgorithmException, ServerException, XmlParserException {
         return minioClient.statObject(

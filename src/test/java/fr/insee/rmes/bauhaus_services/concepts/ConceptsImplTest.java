@@ -11,6 +11,7 @@ import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,7 +47,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ConceptsImplTest {
 
-
     @Mock
     ConceptsUtils conceptsUtils;
 
@@ -56,10 +56,23 @@ class ConceptsImplTest {
     @Mock
     CollectionExportBuilder collectionExport;
 
+    @Mock
+    CollectionForExport collectionForExport;
+
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
     }
+
+
+    @Test
+    void shouldReturnFileNameForExport()  {
+        when(collectionForExport.getId()).thenReturn("421");
+        when(collectionForExport.getPrefLabelLg1()).thenReturn("FR");
+        String response = FilesUtils.generateFinalFileNameWithoutExtension(collectionForExport.getId() + "-" + collectionForExport.getPrefLabelLg1(), 32);
+        assertEquals("421Fr",response);
+    }
+
 
     @Test
     void shouldGetConceptsList() throws RmesException {

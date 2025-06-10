@@ -6,6 +6,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("integration")
 @SpringBootTest
 class DistributionServiceImplTest extends WithGraphDBContainer  {
     @Autowired

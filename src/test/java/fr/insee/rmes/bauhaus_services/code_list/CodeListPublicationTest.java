@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.code_list;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
@@ -9,6 +10,8 @@ import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.base.InternedIRI;
+import org.eclipse.rdf4j.model.impl.GenericStatement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -24,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -43,6 +47,18 @@ class CodeListPublicationTest {
 
     @Mock
     PublicationUtils publicationUtils;
+
+    @Mock
+    GenericStatement statement;
+
+
+    @Test
+    void shouldExcludeTriplet() {
+        InternedIRI myIRI = new InternedIRI("myIRI", "creator");
+        when(statement.getPredicate()).thenReturn(myIRI);
+        String pred = RdfUtils.toString(statement.getPredicate());
+        assertTrue(pred.endsWith("validationState") || pred.endsWith(Constants.CREATOR) || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith("lastCodeUriSegment"));
+    }
 
     @Test
     void shouldThrowExceptionIfNoStatements() throws RmesException {
@@ -118,7 +134,7 @@ class CodeListPublicationTest {
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
         verify(repositoryPublication).publishResource(any(), model.capture(), eq(Constants.CODELIST));
-        Assertions.assertEquals("[(http://codes-list/1, http://example.org/predicate1, \"Object 1\", http://example.org/context) [http://example.org/context]]", model.getValue().toString());
+        Assertions.assertEquals("[(http://codes-list/1, http://example.org/predicate1, \"Object 1\") [http://example.org/context]]", model.getValue().toString());
         verify(repositoryGestion).closeStatements(any());
     }
 
