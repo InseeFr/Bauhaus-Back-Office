@@ -6,7 +6,9 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -18,7 +20,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,12 +38,56 @@ class OperationsUtilsTest {
     @Mock
     ParentUtils parentUtils;
 
-
     @Mock
     RepositoryGestion repositoryGestion;
 
     @Mock
     Config config;
+
+    @Test
+    void shouldCheckFromBodyIfObjectExists() throws RmesException, IOException {
+        String body ="{\n" +
+                "  \"id\": \"s1528\",\n" +
+                "  \"prefLabelLg1\": \"Base non-salariés 2006\",\n" +
+                "  \"prefLabelLg2\": \"Self-employed database 2006\",\n" +
+                "  \"altLabelLg1\": null,\n" +
+                "  \"altLabelLg2\": null,\n" +
+                "  \"series\": {\n" +
+                "    \"id\": \"s1037\",\n" +
+                "    \"labelLg1\": \"Base non-salariés\",\n" +
+                "    \"labelLg2\": \"Self-employed database\",\n" +
+                "    \"creators\": [\n" +
+                "      \"DG75-F240\"\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  \"idSims\": \"2124\",\n" +
+                "  \"created\": null,\n" +
+                "  \"modified\": \"2024-02-19T11:13:54.59554532\",\n" +
+                "  \"validationState\": \"Modified\",\n" +
+                "  \"year\": null\n" +
+                "}";
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        String id = famOpeSerIndUtils.createId();
+        Operation operation = mapper.readValue(body, Operation.class);
+        operation.setId(id);
+        String idSeries= operation.getSeries().getId();
+        boolean objectExist = !famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES,idSeries);
+        Assertions.assertTrue(objectExist);
+    }
+
+    @Test
+    void shouldReturnAnExceptionWhenOneParameterIsNotPresentAtLeast() throws RmesException, IOException {
+        String body ="{\n" + "\"id\": \"2025\",\n" + "\"creator\": \"creatorExample\"\n" + "}";
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        String id = famOpeSerIndUtils.createId();
+        Operation operation = mapper.readValue(body, Operation.class);
+        operation.setId(id);
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> operationsUtils.verifyBodyToCreateOperations(operation));
+        assertThat(exception.getDetails()).contains("Required title not entered by user.");
+    }
+
 
     @Test
     void shouldStoreYearProperty() throws RmesException {
@@ -89,7 +139,5 @@ class OperationsUtilsTest {
             Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#gYear>) [http://operations-graph/]]", model.getValue().toString());
 
         }
-
-
     }
 }
