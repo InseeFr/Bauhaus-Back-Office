@@ -130,7 +130,7 @@ class FamiliesUtilsTest {
     void shouldThrowRmesNotFoundExceptionWhenFamilyIsNull()  {
         FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, stampsRestrictionsService,"fr", "en");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
-        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
+        assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
     }
 
     @Test
@@ -139,7 +139,7 @@ class FamiliesUtilsTest {
         Family familyCreate = new Family();
         familyCreate.setCreated("today");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
-        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
+        assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
     }
 
     @Test
@@ -149,7 +149,7 @@ class FamiliesUtilsTest {
         familyCreate.setId("idExample");
         familyCreate.setAbstractLg1("");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
-        org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"542 : prefLabelLg1 not found\"}");
+        assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"542 : prefLabelLg1 not found\"}");
     }
 
 }
