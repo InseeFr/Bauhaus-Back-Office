@@ -18,6 +18,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,11 +55,11 @@ public class ClassificationUtils extends RdfService {
         repoGestion.deleteTripletByPredicate(classificationIri, DC.DESCRIPTION, graph, null);
 
         if(classification.getDescriptionLg1() != null){
-            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(XhtmlToMarkdownUtils.markdownToXhtml(classification.getDescriptionLg1()), config.getLg1()), graph);
+            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(classification.getDescriptionLg1(), config.getLg1()), graph);
         }
 
         if(classification.getDescriptionLg2() != null){
-            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(XhtmlToMarkdownUtils.markdownToXhtml(classification.getDescriptionLg2()), config.getLg2()), graph);
+            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(classification.getDescriptionLg2(), config.getLg2()), graph);
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.BELONGS_TO, graph, null);
@@ -159,6 +160,7 @@ public class ClassificationUtils extends RdfService {
                 String raw = html.replaceAll("<[^>]*>", "");
                 model.add(noteIri, EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(html), graph);
                 model.add(noteIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
+                model.add(noteIri, RDF.VALUE, RdfUtils.setLiteralString(noteValue), graph);
             }
         }
     }

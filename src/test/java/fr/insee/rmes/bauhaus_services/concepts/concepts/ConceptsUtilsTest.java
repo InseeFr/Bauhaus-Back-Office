@@ -27,7 +27,7 @@ class ConceptsUtilsTest {
 
 
     @InjectMocks
-    ConceptsUtils conceptsUtils = new ConceptsUtils(new ConceptsPublication(),new NoteManager(),5);
+    ConceptsUtils conceptsUtils = new ConceptsUtils(new ConceptsPublication(),new NoteManager(null),5);
 
     @MockitoBean
     RepositoryGestion repoGestion;
@@ -36,7 +36,7 @@ class ConceptsUtilsTest {
     void shouldReturnGetConceptExportFileName() {
 
         ConceptsPublication conceptsPublication =  new ConceptsPublication();
-        NoteManager noteManager = new NoteManager();
+        NoteManager noteManager = new NoteManager(null);
         ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication,noteManager,19);
 
         ConceptForExport conceptForExport = new ConceptForExport();
