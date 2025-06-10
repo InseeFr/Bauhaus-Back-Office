@@ -17,7 +17,6 @@ import fr.insee.rmes.model.classification.PartialClassificationSeries;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
 import fr.insee.rmes.utils.DiacriticSorter;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
