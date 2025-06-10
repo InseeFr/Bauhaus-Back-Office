@@ -24,33 +24,4 @@ public record AuthorizeMethodDecider(PreAuthorizeChecker preAuthorizeChecker) {
 			return false;
 		}
 	}
-
-
-	public boolean isIndicatorContributor() {
-		return checkIfHasRole(Roles.INDICATOR_CONTRIBUTOR);
-	}
-
-	public boolean isConceptsContributor() {
-		return checkIfHasRole(Roles.CONCEPTS_CONTRIBUTOR);
-	}
-
-	
-	public boolean isConceptContributor() {
-		return checkIfHasRole(Roles.CONCEPT_CONTRIBUTOR);
-	}
-
-
-	public boolean isConceptCreator() {
-		return checkIfHasRole(Roles.CONCEPT_CREATOR);
-	}
-	
-	public boolean isSeriesContributor() {
-		return checkIfHasRole(Roles.SERIES_CONTRIBUTOR);
-	}
-
-	public boolean isCnis() {
-		return checkIfHasRole(Roles.CNIS);
-	}
-
-
 }

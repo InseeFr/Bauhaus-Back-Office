@@ -23,12 +23,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
 class FamiliesUtilsTest {
 
     @Mock
     private RepositoryGestion repositoryGestion;
+
 
     @Test
     void shouldReturnAnExceptionWhenTitleIsNotPresentAtLeast() throws RmesException, JsonProcessingException {
@@ -80,7 +80,7 @@ class FamiliesUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en");
 
         var family = new Family();
         family.setId("1");
@@ -101,7 +101,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en");
 
         var family = new Family();
         family.setId("1");
@@ -123,6 +123,7 @@ class FamiliesUtilsTest {
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@en", model.objects().toArray()[1].toString());
     }
 
+
     @Mock
     StampsRestrictionsService stampsRestrictionsService;
 
@@ -131,6 +132,7 @@ class FamiliesUtilsTest {
         FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, stampsRestrictionsService,"fr", "en");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
         assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
+
     }
 
     @Test
@@ -153,3 +155,4 @@ class FamiliesUtilsTest {
     }
 
 }
+

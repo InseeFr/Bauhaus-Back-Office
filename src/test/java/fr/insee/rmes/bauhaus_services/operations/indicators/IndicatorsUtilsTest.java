@@ -120,6 +120,7 @@ class IndicatorsUtilsTest {
     @Test
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
         JSONObject indicator = new JSONObject();
+
         indicator.put("prefLabelLg1","prefLabelLg1Example");
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
@@ -151,7 +152,7 @@ class IndicatorsUtilsTest {
             when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
             when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-            IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
+            IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
             assertThat(exception.getDetails()).contains("This prefLabelLg1 is already used by another indicator.");
         }
@@ -173,7 +174,7 @@ class IndicatorsUtilsTest {
             when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
             when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-            IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
+            IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
             assertThat(exception.getDetails()).contains("This prefLabelLg2 is already used by another indicator.");
         }
@@ -182,7 +183,7 @@ class IndicatorsUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -203,7 +204,7 @@ class IndicatorsUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -231,7 +232,7 @@ class IndicatorsUtilsTest {
         JSONObject jsonIndicator = new JSONObject(json);
         Indicator indicator = initIndicator();
 
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
 
 
         Indicator indicatorByApp = indicatorsUtils.buildIndicatorFromJson(jsonIndicator);

@@ -10,7 +10,6 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.model.ValidationStatus;
@@ -54,8 +53,6 @@ public class IndicatorsUtils {
 
 	final ParentUtils ownersUtils;
 
-	final StampsRestrictionsService stampsRestrictionsService;
-
 	private final DocumentationsUtils documentationsUtils;
 	private final UriUtils uriUtils;
 	private final String lg1;
@@ -70,7 +67,7 @@ public class IndicatorsUtils {
 			IndicatorPublication indicatorPublication,
 			FamOpeSerIndUtils famOpeSerIndUtils,
 			ParentUtils ownersUtils,
-			StampsRestrictionsService stampsRestrictionsService, DocumentationsUtils documentationsUtils,
+			DocumentationsUtils documentationsUtils,
 			UriUtils uriUtils,
 			@Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
 			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2) {
@@ -81,7 +78,6 @@ public class IndicatorsUtils {
 		this.indicatorPublication = indicatorPublication;
 		this.famOpeSerIndUtils = famOpeSerIndUtils;
 		this.ownersUtils = ownersUtils;
-		this.stampsRestrictionsService = stampsRestrictionsService;
 		this.documentationsUtils = documentationsUtils;
 		this.uriUtils = uriUtils;
 		this.lg1 = lg1;
@@ -268,9 +264,7 @@ public class IndicatorsUtils {
 	 */
 	public void setIndicator(String id, String body) throws RmesException {
 
-		if(!stampsRestrictionsService.canModifyIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, id))) {
-			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify indicators.");
-		}
+
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

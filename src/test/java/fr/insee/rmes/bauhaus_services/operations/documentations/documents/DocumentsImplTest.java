@@ -8,11 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -85,4 +83,22 @@ class DocumentsImplTest {
         verify(documentsUtils).checkFileNameValidity(documentName);
         verify(documentsUtils).changeFile(docId, documentFile, documentName);
     }
-}
+
+    @Test
+    void shouldCreateDocument() throws RmesException, IOException {
+        DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
+        InputStream documentFile = new InputStream() {public int read() {return 2025;}};
+        when(documentsUtils.createDocumentID()).thenReturn("idExample");
+        String actual = documentsImpl.createDocument("body",documentFile,"documentName");
+        assertEquals("idExample",actual);
+    }
+
+    @Test
+    void shouldChangeDocument() throws RmesException {
+        DocumentsImpl documentsImpl = new DocumentsImpl(documentsUtils);
+        InputStream documentFile = new InputStream() {public int read() {return 2025;}};
+        when(documentsUtils.changeFile("docId",documentFile,"documentName")).thenReturn("idExample");
+        String actual = documentsImpl.changeDocument("docId",documentFile,"documentName");
+        assertEquals("idExample",actual);
+    }
+} 

@@ -134,7 +134,7 @@ class CodeListPublicationTest {
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
         verify(repositoryPublication).publishResource(any(), model.capture(), eq(Constants.CODELIST));
-        Assertions.assertEquals("[(http://codes-list/1, http://example.org/predicate1, \"Object 1\", http://example.org/context) [http://example.org/context]]", model.getValue().toString());
+        Assertions.assertEquals("[(http://codes-list/1, http://example.org/predicate1, \"Object 1\") [http://example.org/context]]", model.getValue().toString());
         verify(repositoryGestion).closeStatements(any());
     }
 

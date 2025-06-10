@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -33,8 +32,6 @@ class OperationsUtilsTest {
     @Mock
     ParentUtils parentUtils;
 
-    @Mock
-    StampsRestrictionsService stampsRestrictionsService;
 
     @Mock
     RepositoryGestion repositoryGestion;
@@ -52,7 +49,6 @@ class OperationsUtilsTest {
         when(famOpeSerIndUtils.createId()).thenReturn("1");
         when(famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
         when(parentUtils.checkIfSeriesHasSims(anyString())).thenReturn(false);
-        when(stampsRestrictionsService.canCreateOperation(any(IRI.class))).thenReturn(true);
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class);
              MockedStatic<OperationsQueries> operationsQueriesMockedStatic = Mockito.mockStatic(OperationsQueries.class)
@@ -90,7 +86,7 @@ class OperationsUtilsTest {
 
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(operationIRI), model.capture());
 
-            Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\", http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#gYear>, http://operations-graph/) [http://operations-graph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#gYear>) [http://operations-graph/]]", model.getValue().toString());
 
         }
 
