@@ -9,7 +9,6 @@ import fr.insee.rmes.model.notes.concepts.ConceptsDatedNoteTypes;
 import fr.insee.rmes.model.notes.concepts.ConceptsVersionnedNoteTypes;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,8 +19,11 @@ import java.util.Set;
 @Component
 public class NoteManager {
 	
-	@Autowired
-	NotesUtils noteUtils;
+	final NotesUtils noteUtils;
+
+	public NoteManager(NotesUtils noteUtils) {
+		this.noteUtils = noteUtils;
+	}
 
 	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
 		// TODO : see extreme cases to close notes
