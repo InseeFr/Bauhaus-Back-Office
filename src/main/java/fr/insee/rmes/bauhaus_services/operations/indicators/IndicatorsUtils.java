@@ -84,6 +84,15 @@ public class IndicatorsUtils {
 		this.lg2 = lg2;
 	}
 
+
+	public void verifyBodyToCreateIndicator(Indicator indicator) throws RmesBadRequestException {
+		if(indicator.getPrefLabelLg1()==null || indicator.getPrefLabelLg1().trim().isEmpty()) {
+			throw new RmesBadRequestException("Required title not entered by user.");
+		}
+	}
+
+
+
 	private void validate(Indicator indicator) throws RmesException {
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
@@ -238,6 +247,8 @@ public class IndicatorsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		verifyBodyToCreateIndicator(indicator);
+
 		indicator.setCreated(DateUtils.getCurrentDate());
 		indicator.setUpdated(DateUtils.getCurrentDate());
 		createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);

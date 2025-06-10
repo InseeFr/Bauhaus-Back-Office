@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -26,10 +26,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -42,13 +43,90 @@ class IndicatorsUtilsTest {
     private FamOpeSerIndUtils famOpeSerIndUtils;
 
     @Test
+    void shouldThrowExceptionIfTitleWasNull() throws IOException {
+
+        String body = "{\n" +
+                "  \"idSims\": \"2210\",\n" +
+                "  \"prefLabelLg2\": \"Bilateral Official Development Assistance (ODA)\",\n" +
+                "  \"created\": \"2025-03-12T13:03:47.010469257\",\n" +
+                "  \"creators\": [\n" +
+                "    \"DG75-L330\"\n" +
+                "  ],\n" +
+                "  \"wasGeneratedBy\": [\n" +
+                "    {\n" +
+                "      \"labelLg2\": \"Other indexes\",\n" +
+                "      \"labelLg1\": \"Autres indicateurs\",\n" +
+                "      \"id\": \"s1034\",\n" +
+                "      \"type\": \"series\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"abstractLg1\": \"L’Indicateur 17.i2 **Aide publique au développement (APD)** bilatérale brute comprend deux sous-indicateurs :\\n\\n1. Montant de l’APD bilatérale brute par secteur ou sous-secteur ;\\n\\n2. Engagements d'APD bilatérale par marqueur.\\n\",\n" +
+                "  \"abstractLg2\": \"Indicator 17.i2 **Gross bilateral official development assistance (ODA)** includes two sub-indicators :\\n\\n1. Gross bilateral ODA by sector or sub-sector;\\n\\n2. Bilateral ODA commitments by marker.\\n\",\n" +
+                "  \"modified\": \"2025-03-12T13:09:38.918367992\",\n" +
+                "  \"publishers\": [],\n" +
+                "  \"altLabelLg2\": \"ODA\",\n" +
+                "  \"id\": \"p1709\",\n" +
+                "  \"contributors\": [],\n" +
+                "  \"altLabelLg1\": \"ODD 17.i2\",\n" +
+                "  \"validationState\": \"Unpublished\"\n" +
+                "}";
+
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Indicator indicator = mapper.readValue(body, Indicator.class);
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.verifyBodyToCreateIndicator(indicator));
+        assertThat(exception.getDetails()).contains("Required title not entered by user.");
+    }
+
+    @Test
+    void shouldThrowExceptionIfTitleWasSpace() throws IOException {
+
+        String body = "{\n" +
+                "  \"idSims\": \"2210\",\n" +
+                "  \"prefLabelLg1\": \"              \",\n" +
+                "  \"prefLabelLg2\": \"Bilateral Official Development Assistance (ODA)\",\n" +
+                "  \"created\": \"2025-03-12T13:03:47.010469257\",\n" +
+                "  \"creators\": [\n" +
+                "    \"DG75-L330\"\n" +
+                "  ],\n" +
+                "  \"wasGeneratedBy\": [\n" +
+                "    {\n" +
+                "      \"labelLg2\": \"Other indexes\",\n" +
+                "      \"labelLg1\": \"Autres indicateurs\",\n" +
+                "      \"id\": \"s1034\",\n" +
+                "      \"type\": \"series\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"abstractLg1\": \"L’Indicateur 17.i2 **Aide publique au développement (APD)** bilatérale brute comprend deux sous-indicateurs :\\n\\n1. Montant de l’APD bilatérale brute par secteur ou sous-secteur ;\\n\\n2. Engagements d'APD bilatérale par marqueur.\\n\",\n" +
+                "  \"abstractLg2\": \"Indicator 17.i2 **Gross bilateral official development assistance (ODA)** includes two sub-indicators :\\n\\n1. Gross bilateral ODA by sector or sub-sector;\\n\\n2. Bilateral ODA commitments by marker.\\n\",\n" +
+                "  \"modified\": \"2025-03-12T13:09:38.918367992\",\n" +
+                "  \"publishers\": [],\n" +
+                "  \"altLabelLg2\": \"ODA\",\n" +
+                "  \"id\": \"p1709\",\n" +
+                "  \"contributors\": [],\n" +
+                "  \"altLabelLg1\": \"ODD 17.i2\",\n" +
+                "  \"validationState\": \"Unpublished\"\n" +
+                "}";
+
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Indicator indicator = mapper.readValue(body, Indicator.class);
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.verifyBodyToCreateIndicator(indicator));
+        assertThat(exception.getDetails()).contains("Required title not entered by user.");
+    }
+
+
+
+    @Test
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
         JSONObject indicator = new JSONObject();
 
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-        assertThat(exception.getDetails()).contains("An indicator should be linked to a series.");
+        assertThat(exception.getDetails()).contains("Required title not entered by user.");
     }
 
     @Test
@@ -58,7 +136,7 @@ class IndicatorsUtilsTest {
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-        assertThat(exception.getDetails()).contains("An indicator should be linked to a series.");
+        assertThat(exception.getDetails()).contains("Required title not entered by user.");
     }
 
     @Test
