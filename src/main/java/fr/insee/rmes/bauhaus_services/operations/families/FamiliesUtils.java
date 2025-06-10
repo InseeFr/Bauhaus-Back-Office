@@ -105,6 +105,12 @@ public class FamiliesUtils {
 		}
 	}
 
+	public static void verifyBodyToCreateFamily(Family family) throws RmesBadRequestException {
+		if(family.prefLabelLg1==null || family.prefLabelLg1.trim().isEmpty()) {
+			throw new RmesBadRequestException("Required title not entered by user.");
+		}
+	}
+
 	public String createFamily(String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateFamily()) {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
@@ -112,8 +118,10 @@ public class FamiliesUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
+
 		try {
 			Family family = mapper.readValue(body,Family.class);
+			verifyBodyToCreateFamily(family);
 			family.setId(id);
 			family.setCreated(DateUtils.getCurrentDate());
 			family.setUpdated(DateUtils.getCurrentDate());
@@ -123,7 +131,6 @@ public class FamiliesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-
 		return id;
 	}
 
@@ -178,7 +185,7 @@ public class FamiliesUtils {
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
 		repositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
-		
+
 		repositoryGestion.loadSimpleObject(familyURI, model);
 	}
 
@@ -203,7 +210,7 @@ public class FamiliesUtils {
 
 	public void setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
-		
+
 		if(!stampsRestrictionsService.canCreateFamily()) {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
 		}
@@ -217,8 +224,8 @@ public class FamiliesUtils {
 		logger.info("Validate family : {}", familyURI);
 
 		repositoryGestion.objectValidation(familyURI, model);
-			
+
 	}
-	
-	
+
+
 }
