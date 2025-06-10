@@ -51,7 +51,7 @@ public class IndicatorsUtils {
 	final IndicatorPublication indicatorPublication;
 
 	final FamOpeSerIndUtils famOpeSerIndUtils;
-	
+
 	final ParentUtils ownersUtils;
 
 	final StampsRestrictionsService stampsRestrictionsService;
@@ -112,7 +112,7 @@ public class IndicatorsUtils {
 	public Indicator buildIndicatorFromJson(JSONObject indicatorJson) {
 		return buildIndicatorFromJson(indicatorJson,false);
 	}
-	
+
 	public Indicator buildIndicatorFromJson(JSONObject indicatorJson, boolean forXML) {
 		ObjectMapper mapper = new ObjectMapper();
 		String id= indicatorJson.getString(Constants.ID);
@@ -221,11 +221,18 @@ public class IndicatorsUtils {
 		object.put(predicate.getLocalName(), organizations);
 	}
 
+	public void verifyBodyToCreateIndicator(Indicator indicator) throws RmesBadRequestException {
+		if(indicator.getPrefLabelLg1()==null || indicator.getPrefLabelLg1().trim().isEmpty()) {
+			throw new RmesBadRequestException("Required title not entered by user.");
+		}
+	}
+
+
 	/**
 	 * Create
 	 * @param body
 	 * @return
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public String setIndicator(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -242,6 +249,9 @@ public class IndicatorsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+
+		verifyBodyToCreateIndicator(indicator);
+
 		indicator.setCreated(DateUtils.getCurrentDate());
 		indicator.setUpdated(DateUtils.getCurrentDate());
 		createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
@@ -254,7 +264,7 @@ public class IndicatorsUtils {
 	 * Update
 	 * @param id
 	 * @param body
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public void setIndicator(String id, String body) throws RmesException {
 
@@ -359,7 +369,7 @@ public class IndicatorsUtils {
 				RdfUtils.addTripleUri(indicURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publisher.getId()), model, RdfUtils.productsGraph());
 			}
 		}
-		
+
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
 		RdfUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
 
@@ -372,8 +382,8 @@ public class IndicatorsUtils {
 				String replaceUri = this.uriUtils.getCompleteUriGestion(replace.getType(), replace.getId());
 				addReplacesAndReplacedBy(model, RdfUtils.toURI(replaceUri), indicURI);
 			}
-		}		
-		
+		}
+
 		List<OperationsLink> isReplacedBys = indicator.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
@@ -411,7 +421,7 @@ public class IndicatorsUtils {
 			}
 		}
 	}
-	
+
 	private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
 		RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY ,next, model, RdfUtils.productsGraph());
 		RdfUtils.addTripleUri(next, DCTERMS.REPLACES ,previous, model, RdfUtils.productsGraph());
