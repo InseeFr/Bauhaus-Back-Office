@@ -59,26 +59,28 @@ public class XsltUtils {
 
 	public static ByteArrayOutputStream createOdtFromXml(byte[] transformedXml, InputStream zipTemplateIS)
 			throws IOException {
-		// 1. Lire le ZIP modèle dans une Map<String, byte[]>
 		Map<String, byte[]> zipEntries = new HashMap<>();
 		try (ZipInputStream zis = new ZipInputStream(zipTemplateIS)) {
 			ZipEntry entry;
 			while ((entry = zis.getNextEntry()) != null) {
-				if (!entry.getName().equals("content.xml")) {
-					zipEntries.put(entry.getName(), zis.readAllBytes());
+				String entryName = entry.getName();
+
+				if (entryName.contains("..") || entryName.startsWith("/") || entryName.startsWith("\\") || entryName.contains(":")) {
+					throw new IOException("Unsafe ZIP entry name: " + entryName);
+				}
+
+				if (!"content.xml".equals(entryName)) {
+					zipEntries.put(entryName, zis.readAllBytes());
 				}
 			}
 		}
 
-		// 2. Écrire un nouveau ZIP avec "content.xml" + les autres fichiers
 		ByteArrayOutputStream odtOutput = new ByteArrayOutputStream();
 		try (ZipOutputStream zos = new ZipOutputStream(odtOutput)) {
-			// content.xml
 			zos.putNextEntry(new ZipEntry("content.xml"));
 			zos.write(transformedXml);
 			zos.closeEntry();
 
-			// autres fichiers
 			for (Map.Entry<String, byte[]> other : zipEntries.entrySet()) {
 				zos.putNextEntry(new ZipEntry(other.getKey()));
 				zos.write(other.getValue());
@@ -88,6 +90,7 @@ public class XsltUtils {
 
 		return odtOutput;
 	}
+
 
 
 
