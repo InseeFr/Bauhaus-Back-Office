@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.Stubber;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -27,8 +28,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
+
 import java.nio.file.Path;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -166,4 +169,38 @@ class DocumentsUtilsTest {
             Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>) [http://documents/graph]]", model.getValue().toString());
         }
     }
+
+    @Test
+    void shouldBuildDocumentFromJson() {
+
+        DocumentsUtils documentsUtils = new DocumentsUtils(null, filesOperations);
+
+        JSONObject jsonObject = new JSONObject().
+                put(Constants.LABEL_LG1,"mocked Label LG1").
+                put(Constants.LABEL_LG2,"mocked Label LG2").
+                put(Constants.DESCRIPTION_LG1,"mocked Description LG1").
+                put(Constants.DESCRIPTION_LG2,"mocked Description LG2").
+                put(Constants.UPDATED_DATE,"mocked Updated Date").
+                put(Constants.LANG,"mocked Lang").
+                put(Constants.URL,"mocked URL").
+                put(Constants.URI,"mocked URI");
+
+        List<Boolean> actual = List.of(
+                documentsUtils.buildDocumentFromJson(jsonObject).getLabelLg1()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getLabelLg2()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getDescriptionLg1()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getDescriptionLg2()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getDateMiseAJour()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getLangue()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getUrl()!=null,
+                documentsUtils.buildDocumentFromJson(jsonObject).getUri()!=null
+                );
+
+        assertEquals(List.of(true,true,true,true,true,true,true,true),actual);
+
+    }
+
+
+
+
 }

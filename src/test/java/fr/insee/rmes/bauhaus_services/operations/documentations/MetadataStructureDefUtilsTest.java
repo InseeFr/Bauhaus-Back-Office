@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.HashMap;
+import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,4 +59,22 @@ class MetadataStructureDefUtilsTest {
         boolean isConstantsRangeTypeKeyAdded=jsonObjectBefore.has(Constants.RANGE_TYPE);
         Assertions.assertTrue(isRangeKeyRemoved && isConstantsCodeListKeyRemoved && isConstantsRangeTypeKeyAdded);
     }
+
+    @Test
+    void shouldGetMetadataAttributesUriWhenAttributesEmpty() throws RmesException {
+        when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery())).thenReturn(new JSONArray());
+        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
+        assertEquals(new HashMap<>(),actual);
+    }
+
+    @Test
+    void shouldGetMetadataAttributesUriWhenAttributesNotEmpty() throws RmesException {
+       JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
+       JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");
+       JSONArray array = new JSONArray().put(correctJsonObject).put(falseJsonObject);
+       when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery())).thenReturn(array);
+       Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
+       assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
+    }
+
 }

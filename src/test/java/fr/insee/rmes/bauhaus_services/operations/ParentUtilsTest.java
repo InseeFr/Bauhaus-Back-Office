@@ -1,11 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -38,9 +43,34 @@ class ParentUtilsTest {
     }
 
     @Test
+    void shouldCheckIfSeriesHasSims() throws RmesException {
+        when(repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasSims("uriSeries"))).thenReturn(true);
+        parentUtils.checkIfSeriesHasSims( "uriSeries");
+    }
+
+    @Test
+    void shouldCheckIfParentExists() throws RmesException {
+        when(repoGestion.getResponseAsBoolean(ParentQueries.checkIfExists("uriParent"))).thenReturn(true);
+        parentUtils.checkIfParentExists( "uriParent");
+    }
+
+    @Test
     void shouldGetDocumentationOwnersByIdSims() throws RmesException {
         when(repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(id))).thenReturn(null);
         assertNull(parentUtils.getDocumentationOwnersByIdSims(id));
+    }
+
+    @Test
+    void shouldGetIndicatorCreators() throws RmesException {
+        when(repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id))).thenReturn(null);
+        assertNull(parentUtils.getIndicatorCreators(id));
+    }
+
+    @Test
+    void shouldGetSeriesCreatorsWithIri() throws RmesException {
+        IRI iri = new InternedIRI("namespace", "localName");
+        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri("<" + RdfUtils.toString(iri) + ">"))).thenReturn(null);
+        assertNull(parentUtils.getSeriesCreators(id));
     }
 
     @Test
@@ -51,5 +81,36 @@ class ParentUtilsTest {
         assertTrue(exception.getDetails().contains("Cannot create Sims for a series which already has operations"));
     }
 
+    @Test
+    void shouldGetDocumentationTargetTypeAndId() throws RmesException {
+        JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"A");
+        when(repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims("idSims"))).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[OPERATION, A]",actual);
+    }
+
+    @Test
+    void shouldGetDocumentationTargetTypeAndWhenOneJsonKeysNull() throws RmesException {
+        JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"A");
+        when(repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims("idSims"))).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[SERIES, A]",actual);
+    }
+
+    @Test
+    void shouldGetDocumentationTargetTypeAndWhenTwoJsonKeysNull() throws RmesException {
+        JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"").put(Constants.ID_INDICATOR,"A").put(Constants.INDICATOR_UP,"B");
+        when(repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims("idSims"))).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[INDICATOR, A]",actual);
+    }
+
+    @Test
+    void shouldGetDocumentationTargetTypeAndWhenAllJsonKeysNull() throws RmesException {
+        JSONObject jsonObject =null;
+        when(repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims("idSims"))).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[null, null]",actual);
+    }
 }
 
