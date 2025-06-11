@@ -60,12 +60,15 @@ public class XsltUtils {
 	public static ByteArrayOutputStream createOdtFromXml(byte[] transformedXml, InputStream zipTemplateIS)
 			throws IOException {
 		Map<String, byte[]> zipEntries = new HashMap<>();
+
 		try (ZipInputStream zis = new ZipInputStream(zipTemplateIS)) {
 			ZipEntry entry;
 			while ((entry = zis.getNextEntry()) != null) {
 				String entryName = entry.getName();
 
-				if (entryName.contains("..") || entryName.startsWith("/") || entryName.startsWith("\\") || entryName.contains(":")) {
+				// Validation immédiate après getNextEntry (exigée par Sonar)
+				if (entryName == null || entryName.contains("..") || entryName.startsWith("/") ||
+						entryName.startsWith("\\") || entryName.contains(":")) {
 					throw new IOException("Unsafe ZIP entry name: " + entryName);
 				}
 
@@ -90,6 +93,7 @@ public class XsltUtils {
 
 		return odtOutput;
 	}
+
 
 
 
