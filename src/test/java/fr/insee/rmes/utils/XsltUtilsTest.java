@@ -3,15 +3,17 @@ package fr.insee.rmes.utils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XsltUtilsTest {
@@ -82,8 +84,6 @@ class XsltUtilsTest {
             public int compareTo(@NotNull Path other) {return 0;}
         };
 
-//        NoSuchFileException exception = assertThrows(NoSuchFileException.class, () ->XsltUtils.createOdtFromXml(output,finalPath ,zipToCompleteIS,tempDir));
-//        assertTrue(!Objects.equals(exception.getMessage(), "") && exception.getMessage()!=null);
 
     }
 
@@ -116,6 +116,22 @@ class XsltUtilsTest {
 
         assertTrue(actualCorrespondToExpectedIncludeEmptyFields && actualCorrespondToExpectedLanguage1 && actualCorrespondToExpectedLanguage2);
 
+    }
+
+    @Test
+    void shouldThrowExceptionForUnsafeZipEntry() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            zos.putNextEntry(new ZipEntry("../malicious.txt"));
+            zos.write("malicious content".getBytes());
+            zos.closeEntry();
+        }
+
+        InputStream maliciousZipIS = new ByteArrayInputStream(baos.toByteArray());
+        byte[] dummyXml = "<content></content>".getBytes();
+
+        assertThrows(IOException.class, () ->
+                XsltUtils.createOdtFromXml(dummyXml, maliciousZipIS));
     }
 
 }
