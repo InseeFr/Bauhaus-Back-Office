@@ -67,6 +67,18 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      classification_family:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      classification_series:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
       dataset_dataset:
         create: ALL
         read: ALL
@@ -155,6 +167,10 @@ rbac:
       dataset_distribution:
         read: ALL
       classification_classification:
+        read: ALL
+      classification_series:
+        read: ALL
+      classification_family:
         read: ALL
       geography:
         read: ALL
