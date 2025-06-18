@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,9 @@ import java.io.IOException;
 @RequestMapping("/operations")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
 public class MetadataReportResources {
+
+	private static final Logger logger = LoggerFactory.getLogger(MetadataReportResources.class);
+
 
 	protected final OperationsService operationsService;
 
@@ -180,6 +185,7 @@ public class MetadataReportResources {
 			@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Report to update", required = true,
 			content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) throws RmesException {
+		logger.info("Updating metadata report {}", id);
 		documentationsService.setMetadataReport(id, body);
 		return ResponseEntity.noContent().build();
 	}

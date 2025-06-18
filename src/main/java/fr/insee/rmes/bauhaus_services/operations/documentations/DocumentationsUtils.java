@@ -150,6 +150,8 @@ public class DocumentationsUtils extends RdfService{
 	 * @throws RmesException 
 	 */
 	public String setMetadataReport(String id, String body, boolean create) throws RmesException {
+		logger.info("Persist metadata report {}, {}, {}", id, body, create);
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
@@ -163,8 +165,11 @@ public class DocumentationsUtils extends RdfService{
 
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
+		logger.info("Target ID for metadata report {} is {}", id, idTarget);
+
 		if (create) {
 			id = checkTargetHasNoSimsAndcreateSimsId(idTarget);
+			logger.info("Generate ID {} when creating a metadata report", id);
 			sims.setId(id);
 			parentUtils.checkIfParentIsASeriesWithOperations(idTarget);
 		} else {
@@ -173,6 +178,7 @@ public class DocumentationsUtils extends RdfService{
 		IRI targetUri = getTarget(sims);
 
 		String status = getDocumentationValidationStatus(id);
+		logger.info("Get Validation Status for metadata report {}: {}", id, status);
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
@@ -181,6 +187,7 @@ public class DocumentationsUtils extends RdfService{
 		}
 		if (create) {
 			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
+				logger.info("This user are not able to create the metadata report of this target object {}", seriesOrIndicatorUri);
 				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
 						"Only an admin or a manager can create a new sims.");
 			}
@@ -189,6 +196,7 @@ public class DocumentationsUtils extends RdfService{
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
 			if (!stampsRestrictionsService.canModifySims(seriesOrIndicatorUri)) {
+				logger.info("This user are not able to update the metadata report of this target object {}", seriesOrIndicatorUri);
 				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
 						"Only an admin, CNIS, or a manager can modify this sims.", id);
 			}
@@ -288,7 +296,13 @@ public class DocumentationsUtils extends RdfService{
 		if (StringUtils.isNotEmpty(sims.getIdIndicator())) {				 
 			target = RdfUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
 		}
-		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) target = null; 
+
+		logger.info("Get Target IRI {} for metadata report {}", sims.getId(), target);
+
+		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) {
+			logger.info("The Target object {} for the metadata report {} does not exist", target, sims.getId());
+			target = null;
+		}
 		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
 			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
@@ -372,6 +386,7 @@ public class DocumentationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 	private void saveRdfMetadataReport(Documentation sims, IRI target, ValidationStatus state) throws RmesException {
+		logger.info("Start persisting metadata report {}", sims.getId());
 		Model model = new LinkedHashModel();
 		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, sims.getId());
 		Resource graph = RdfUtils.simsGraph(sims.getId());

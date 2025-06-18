@@ -77,6 +77,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 	private boolean isIndicatorCreator(IRI iri) throws RmesException {
+		logger.info("Checking if the user has the right stamp for the the indicator {}", iri);
 		return isOwnerForModule(getStamp(), List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
 	}
 	private boolean isConceptManager(IRI uri) throws RmesException {
@@ -95,10 +96,15 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 
 	private boolean checkResponsabilityForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<Object>, Predicate<Object>> predicateMatcher) throws RmesException {
 		JSONArray owners = repoGestion.getResponseAsArray(queryGenerator.generate(urisAsString(uris)));
+		logger.info("Checking if the user with the stamp {} has the right for this module", stamp);
 		return StringUtils.hasLength(stamp) &&
 				predicateMatcher.test(
 						owners.toList().stream()
-								.map(o -> findStamp(o, stampKey)),
+								.map(o -> {
+									var s = findStamp(o, stampKey);
+									logger.info("This object has as a creator {}", s);
+									return s;
+								}),
 						stamp::equals // apply predicate `stamp::equals` to the stream of stamps returned at the previous line
 				);
 	}

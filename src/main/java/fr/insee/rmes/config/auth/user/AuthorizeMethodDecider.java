@@ -19,8 +19,11 @@ public record AuthorizeMethodDecider(PreAuthorizeChecker preAuthorizeChecker) {
 		logger.debug("Check if user is {}", roleToCheck);
 		try {
 			this.preAuthorizeChecker.hasRole(roleToCheck);
+			logger.info("The user has the role {}", roleToCheck);
 			return true;
 		} catch (AccessDeniedException denied) {
+			logger.info("The user does not have the role {}", roleToCheck);
+
 			return false;
 		}
 	}

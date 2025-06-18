@@ -165,10 +165,13 @@ DocumentationsRubricsUtils extends RdfService {
 	 */
 	public void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics)
 			throws RmesException {
+
 		Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
 		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
 
 		for (DocumentationRubric rubric : rubrics) {
+			logger.info("Add rubric {} for metadata report {}", rubric.getIdAttribute(), simsId);
+
 			RangeType type = getRangeType(rubric);
 			IRI predicateUri;
 			IRI attributeUri;
