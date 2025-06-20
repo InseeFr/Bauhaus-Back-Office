@@ -187,5 +187,5 @@ class OperationsImplTest {
         JSONArray jsonArrayTwoElements = new JSONArray().put(firstJsonObject).put(secondJsonObject);
         when(repoGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery("2025"))).thenReturn(jsonArrayTwoElements);
         assertEquals("[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",operationsImpl.getOperationsWithoutReport("2025"));
-    }
+    };
 }
