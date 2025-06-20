@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -172,6 +171,21 @@ class OperationsImplTest {
             assertEquals("label 1", series.get(3).label());
             assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
         }
-
     }
+
+    @Test
+    void shouldGetSeriesWithSims() throws RmesException {
+        when(repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery())).thenReturn( new JSONArray().put("mockedExample"));
+        String actual = operationsImpl.getSeriesWithSims();
+        assertEquals("[\"mockedExample\"]",actual);
+    }
+
+    @Test
+    void shouldGetOperationsWithoutReportWithoutCondition() throws RmesException {
+        JSONObject firstJsonObject = new JSONObject().put("firstExample","mockedFirstExample");
+        JSONObject secondJsonObject = new JSONObject().put("secondExample","mockedSecondExample");
+        JSONArray jsonArrayTwoElements = new JSONArray().put(firstJsonObject).put(secondJsonObject);
+        when(repoGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery("2025"))).thenReturn(jsonArrayTwoElements);
+        assertEquals("[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",operationsImpl.getOperationsWithoutReport("2025"));
+    };
 }
