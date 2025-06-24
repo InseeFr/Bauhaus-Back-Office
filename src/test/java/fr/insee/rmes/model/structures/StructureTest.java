@@ -3,6 +3,7 @@ package fr.insee.rmes.model.structures;
 import fr.insee.rmes.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import java.util.List;
+import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StructureTest {
@@ -12,7 +13,7 @@ class StructureTest {
 
         Structure structure = new Structure();
 
-        Structure otherStructure = new Structure("mockedId");
+        Structure otherStructure = new Structure("mockedID");
 
         List<String> attributes = List.of("mockedID",
                 "mockedLabelLg1",
@@ -60,7 +61,9 @@ class StructureTest {
 
         boolean componentDefinitionListParameters =componentDefinitionArray.equals(structure.getComponentDefinitions());
 
-        assertTrue(stringParameters && stringListParameters && componentDefinitionListParameters);
+        boolean otherStructureAttribute= Objects.equals(otherStructure.getId(), "mockedID");
+
+        assertTrue(stringParameters && stringListParameters && componentDefinitionListParameters && otherStructureAttribute);
 
     }
 }
