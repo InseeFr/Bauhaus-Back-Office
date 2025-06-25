@@ -28,6 +28,10 @@ class MetadataStructureDefUtilsTest {
     @MockitoBean
     RepositoryGestion repoGestion;
 
+    JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
+    JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");
+    JSONArray array = new JSONArray().put(correctJsonObject).put(falseJsonObject);
+
     @Test
     void shouldThrowARmesExceptionWhenGetMetadataAttributeById() throws RmesException {
         String id ="2025";
@@ -69,12 +73,16 @@ class MetadataStructureDefUtilsTest {
 
     @Test
     void shouldGetMetadataAttributesUriWhenAttributesNotEmpty() throws RmesException {
-       JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
-       JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");
-       JSONArray array = new JSONArray().put(correctJsonObject).put(falseJsonObject);
        when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery())).thenReturn(array);
        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
        assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
+    }
+
+    @Test
+    void shouldThrowARmesExceptionWhenGetMetadataAttributes() throws RmesException {
+        when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery())).thenReturn(array);
+        RmesException exception = assertThrows(RmesException.class, () -> metadataStructureDefUtils.getMetadataAttributes());
+        assertTrue(exception.getDetails().contains("At least one attribute don't have range"));
     }
 
 }
