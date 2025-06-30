@@ -103,6 +103,12 @@ rbac:
         update: ALL
         delete: ALL
         publish: all
+      codeslist_partialcodeslist:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: all
     Gestionnaire_structures_RMESGNCS:
       structure_structure:
         create: ALL
@@ -175,6 +181,8 @@ rbac:
       geography:
         read: ALL
       codeslist_codeslist:
+        read: ALL
+      codeslist_partialcodeslist:
         read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept_concept:
