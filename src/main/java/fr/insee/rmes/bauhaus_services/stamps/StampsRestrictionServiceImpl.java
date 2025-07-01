@@ -91,7 +91,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 
     private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
-		return checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
+		return checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::anyMatch);
 	}
 
 	private boolean checkResponsabilityForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<Object>, Predicate<Object>> predicateMatcher) throws RmesException {
