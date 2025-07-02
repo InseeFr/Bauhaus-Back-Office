@@ -14,7 +14,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
+import java.util.List;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,6 +47,25 @@ class PublicResourcesTest {
 
     @MockitoBean
     StampsService stampsService;
+
+    @Test
+    void shouldReturnResponseEntityWhenGetProperties() throws Exception {
+        PublicResources publicResources = new PublicResources(stampsService,
+                "env",
+                "lg1",
+                "lg2",
+                "maxLengthScopeNote",
+                "defaultMailSender",
+                "defaultContributor",
+                "appHost",
+                List.of("activeModule"),
+                List.of("module"),
+                "version",
+                List.of("extraMandatoryFields"));
+        String actual = publicResources.getProperties().toString();
+       assertTrue(actual.startsWith("<200 OK OK"));
+    }
+
 
     @Test
     void shouldReturnTheInitPayload() throws Exception {
