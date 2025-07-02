@@ -17,7 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -69,7 +71,7 @@ class ParentUtilsTest {
     @Test
     void shouldGetSeriesCreatorsWithIri() throws RmesException {
         IRI iri = new InternedIRI("namespace", "localName");
-        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri("<" + RdfUtils.toString(iri) + ">"))).thenReturn(null);
+        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)))).thenReturn(null);
         assertNull(parentUtils.getSeriesCreators(id));
     }
 
