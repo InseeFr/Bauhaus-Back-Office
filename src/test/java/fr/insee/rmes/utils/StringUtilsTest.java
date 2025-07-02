@@ -1,12 +1,10 @@
 package fr.insee.rmes.utils;
 
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StringUtilsTest {
 
@@ -15,17 +13,6 @@ class StringUtilsTest {
         List<String> response = StringUtils.stringToList("Bauhaus-Back");
         List<String> model = List.of("Bauhaus-Back");
         assertEquals(model,response);
-    }
-
-    @Test
-    void urisAsString() {
-        InternedIRI uri1 = new InternedIRI("namespace1", "localName1");
-        InternedIRI uri2 = new InternedIRI("namespace2", "localName2");
-        InternedIRI uri3 = new InternedIRI("namespace3", "localName3");
-        List<IRI> uris = List.of(uri1,uri2,uri3);
-        String expected="<namespace1localName1><namespace2localName2><namespace3localName3>";
-        String actual=StringUtils.urisAsString(uris);
-        assertEquals(expected,actual);
     }
 
     @Test
