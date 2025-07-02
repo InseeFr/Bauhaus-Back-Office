@@ -117,7 +117,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri("<" + RdfUtils.toString(iri) + ">"));
+		return repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
 	}
 	
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
