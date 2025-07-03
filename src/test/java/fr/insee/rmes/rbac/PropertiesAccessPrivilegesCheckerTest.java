@@ -70,7 +70,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnFalseWhenStrategyIsStampAndStampDoesNotMatch() throws RmesException {
+    void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObect() throws RmesException {
         User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithDifferentStamp));
         when(fetcher.computePrivileges(userWithDifferentStamp.roles())).thenReturn(Set.of(
@@ -81,7 +81,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
         boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
 
-        assertFalse(result);
+        assertTrue(result);
     }
 
     @Test
