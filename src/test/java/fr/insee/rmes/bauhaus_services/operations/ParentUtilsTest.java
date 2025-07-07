@@ -10,14 +10,19 @@ import fr.insee.rmes.persistance.sparql_queries.operations.indicators.Indicators
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.base.InternedIRI;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -62,14 +67,18 @@ class ParentUtilsTest {
 
     @Test
     void shouldGetIndicatorCreators() throws RmesException {
-        when(repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id))).thenReturn(null);
-        assertNull(parentUtils.getIndicatorCreators(id));
+        var creators = new JSONArray().put(new JSONObject("creators", "stamp"));
+        try (MockedStatic<IndicatorsQueries> mockedFactory = Mockito.mockStatic(IndicatorsQueries.class)) {
+            mockedFactory.when(() -> IndicatorsQueries.getCreatorsById(id)).thenReturn("query");
+            when(repoGestion.getResponseAsJSONList("query")).thenReturn(creators);
+            assertEquals(creators, parentUtils.getIndicatorCreators(id));
+        }
     }
 
     @Test
     void shouldGetSeriesCreatorsWithIri() throws RmesException {
         IRI iri = new InternedIRI("namespace", "localName");
-        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri("<" + RdfUtils.toString(iri) + ">"))).thenReturn(null);
+        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)))).thenReturn(null);
         assertNull(parentUtils.getSeriesCreators(id));
     }
 
