@@ -64,7 +64,7 @@ class ParentUtilsTest {
 
     @Test
     void shouldGetIndicatorCreators() throws RmesException {
-        when(repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id))).thenReturn(null);
+        when(repoGestion.getResponseAsJSONList(anyString())).thenReturn(null);
         assertNull(parentUtils.getIndicatorCreators(id));
     }
 
