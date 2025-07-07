@@ -50,7 +50,10 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     private boolean authorizeFromStrategy(RBAC.Module module, Optional<ModuleAccessPrivileges.Privilege> privilegeAndStrategy, String id, User user) {
         return privilegeAndStrategy.map(value -> switch (value.strategy()) {
             case ALL -> true;
-            case STAMP -> getObjectStampChecker(module).getStamps(id).contains(user.getStamp());
+            case STAMP -> {
+                var stamps = getObjectStampChecker(module).getStamps(id);
+                yield stamps.isEmpty() || stamps.contains(user.getStamp());
+            }
             case NONE -> false;
         }).orElse(false);
     }
