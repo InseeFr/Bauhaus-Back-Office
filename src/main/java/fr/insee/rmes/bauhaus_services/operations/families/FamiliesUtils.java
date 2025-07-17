@@ -65,6 +65,13 @@ public class FamiliesUtils {
 		this.lg2 = lg2;
 	}
 
+	public static void verifyBodyToCreateFamily(Family family) throws RmesBadRequestException {
+		if(family.prefLabelLg1==null || family.prefLabelLg1.trim().isEmpty()) {
+			throw new RmesBadRequestException("Required title not entered by user.");
+		}
+	}
+
+
 	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = repositoryGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id, familiesRichTextNexStructure));
 		if (family.isEmpty()) {
@@ -108,6 +115,7 @@ public class FamiliesUtils {
 
 		try {
 			Family family = mapper.readValue(body,Family.class);
+			verifyBodyToCreateFamily(family);
 			family.setId(id);
 			family.setCreated(DateUtils.getCurrentDate());
 			family.setUpdated(DateUtils.getCurrentDate());
