@@ -65,7 +65,7 @@ WHERE {
 	}
 
 	OPTIONAL {
-    	?uri dcat:accessUrl ?accessUrl .
+    	?uri dcat:accessURL ?accessUrl .
     }
 
 	OPTIONAL {
