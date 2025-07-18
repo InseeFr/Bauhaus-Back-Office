@@ -1,6 +1,8 @@
-SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?updated ?validationState
-?format ?byteSize ?url
+SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?language ?created ?updated
+?format ?mediaType ?compressFormat ?byteSize ?accessUrl ?url ?validationState
+
 FROM <${DATASET_GRAPH}>
+
 WHERE {
 	?uri rdf:type dcat:Distribution .
     
@@ -34,6 +36,10 @@ WHERE {
 	    FILTER (lang(?descriptionLg2) = '${LG2}') .
 	}
 
+    OPTIONAL {
+		?uri dcat:language ?language .
+	}
+
 	OPTIONAL {
 		?uri dcterms:created ?created .
 	}
@@ -47,8 +53,20 @@ WHERE {
 	}
 
 	OPTIONAL {
+    	?uri dcat:mediaType ?mediaType .
+    }
+
+    OPTIONAL {
+    	?uri dcat:compressFormat ?compressFormat .
+    }
+
+	OPTIONAL {
 		?uri dcat:byteSize ?byteSize .
 	}
+
+	OPTIONAL {
+    	?uri dcat:accessUrl ?accessUrl .
+    }
 
 	OPTIONAL {
 		?uri dcat:downloadURL ?url .
