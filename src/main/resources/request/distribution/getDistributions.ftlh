@@ -38,7 +38,7 @@ WHERE {
 	}
 
 	OPTIONAL {
-        ?uri dcat:downloadURL ?url .
+        ?uri dcterms:language ?language .
     }
 
 	OPTIONAL {

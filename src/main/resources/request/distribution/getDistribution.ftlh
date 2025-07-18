@@ -37,7 +37,7 @@ WHERE {
 	}
 
     OPTIONAL {
-		?uri dcat:language ?language .
+		?uri dcterms:language ?language .
 	}
 
 	OPTIONAL {
