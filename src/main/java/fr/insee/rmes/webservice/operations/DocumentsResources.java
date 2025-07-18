@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice.operations;
 
+import fr.insee.rmes.Bauhaus;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
@@ -25,8 +26,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Properties;
 
 @RestController
 @RequestMapping("/documents")
@@ -134,6 +137,7 @@ public class DocumentsResources {
             @Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
     ) throws RmesException, IOException {
         String documentName = documentFile.getOriginalFilename();
+        verifyExtension(documentName);
         var url = documentsService.changeDocument(id, documentFile.getInputStream(), documentName);
         return ResponseEntity.status(HttpStatus.OK).body(url);
     }
@@ -222,6 +226,26 @@ public class DocumentsResources {
         //on peut ajouter d'autres contrôles
         return documentIdString.replaceAll("[/<>:\"]", "");
     }
+
+    private void verifyExtension(String fileName) throws IOException, RmesException {
+        InputStream input = Bauhaus.class.getClassLoader().getResourceAsStream("bauhaus-core.properties");
+        Properties prop = new Properties();
+        prop.load(input);
+        String[] extensionsExpected = prop.getProperty("fr.insee.rmes.bauhaus.extensions").split(",");
+        String[] fileNameElements = fileName.split("\\.");
+
+        if (fileNameElements.length < 2) {
+            throw new RmesException(0, "RmesException", "Invalid File Extension");
+        } else {
+            String extensionsActual = fileNameElements[fileNameElements.length - 1];
+            boolean isKnownActualExtension = Arrays.stream(extensionsExpected).anyMatch(extensionExpected -> extensionExpected.equals(extensionsActual));
+
+            if (!isKnownActualExtension) {
+                throw new RmesException(0, "RmesException", "Invalid File Extension");
+            }
+        }
+    }
+
 
 
 }
