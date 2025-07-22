@@ -27,7 +27,7 @@ public class ClassificationItem {
     public List<ClassificationItemShortLabel>  altLabels;
 
     @Schema(description = "narrowers")
-    public List<String>  narrowers;
+    public List<Narrower>  narrowers;
 
     @Schema(description = "broader URI")
     public String broaderURI;
@@ -168,11 +168,11 @@ public class ClassificationItem {
         this.altLabels = altLabels;
     }
 
-    public List<String> getNarrowers() {
+    public List<Narrower> getNarrowers() {
         return narrowers;
     }
 
-    public void setNarrowers(List<String> narrowers) {
+    public void setNarrowers(List<Narrower> narrowers) {
         this.narrowers = narrowers;
     }
 
