@@ -51,8 +51,11 @@ public class DocumentsResources {
 
     private final DocumentsService documentsService;
 
-    public DocumentsResources(DocumentsService documentsService) {
+    private final Properties properties;
+
+    public DocumentsResources(DocumentsService documentsService, Properties properties) {
         this.documentsService = documentsService;
+        this.properties = properties;
     }
 
     @GetMapping
@@ -229,9 +232,8 @@ public class DocumentsResources {
 
     private void verifyExtension(String fileName) throws IOException, RmesException {
         InputStream input = Bauhaus.class.getClassLoader().getResourceAsStream("bauhaus-core.properties");
-        Properties prop = new Properties();
-        prop.load(input);
-        String[] extensionsExpected = prop.getProperty("fr.insee.rmes.bauhaus.extensions").split(",");
+        properties.load(input);
+        String[] extensionsExpected = properties.getProperty("fr.insee.rmes.bauhaus.extensions").split(",");
         String[] fileNameElements = fileName.split("\\.");
 
         if (fileNameElements.length<2){
