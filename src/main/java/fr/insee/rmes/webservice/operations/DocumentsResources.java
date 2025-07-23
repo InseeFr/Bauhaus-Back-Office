@@ -1,6 +1,5 @@
 package fr.insee.rmes.webservice.operations;
 
-import fr.insee.rmes.Bauhaus;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
@@ -19,6 +18,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -27,9 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Properties;
 
 @RestController
 @RequestMapping("/documents")
@@ -51,11 +49,11 @@ public class DocumentsResources {
 
     private final DocumentsService documentsService;
 
-    private final Properties properties;
+    @Value("${fr.insee.rmes.bauhaus.extensions}")
+    private String properties;
 
-    public DocumentsResources(DocumentsService documentsService, Properties properties) {
+    public DocumentsResources(DocumentsService documentsService) {
         this.documentsService = documentsService;
-        this.properties = properties;
     }
 
     @GetMapping
@@ -230,10 +228,9 @@ public class DocumentsResources {
         return documentIdString.replaceAll("[/<>:\"]", "");
     }
 
-    private void verifyExtension(String fileName) throws IOException, RmesException {
-        InputStream input = Bauhaus.class.getClassLoader().getResourceAsStream("bauhaus-core.properties");
-        properties.load(input);
-        String[] extensionsExpected = properties.getProperty("fr.insee.rmes.bauhaus.extensions").split(",");
+    private void verifyExtension(String fileName) throws RmesException {
+
+        String[] extensionsExpected = properties.split(",");
         String[] fileNameElements = fileName.split("\\.");
 
         if (fileNameElements.length<2){
