@@ -59,7 +59,6 @@ class DocumentsResourcesTest {
         Assertions.assertTrue(actual.startsWith("<200 OK OK,"));
     }
 
-
     @ParameterizedTest
     @ValueSource(strings = { "mocked id", ""})
     void shouldReturnResponseWhenSetLink(String id) throws RmesException {
@@ -69,4 +68,5 @@ class DocumentsResourcesTest {
         String actual =documentsResources.setLink(documentId," mocked body").toString();
         Assertions.assertTrue(actual.startsWith("<200 OK OK,"));
     }
+
 }

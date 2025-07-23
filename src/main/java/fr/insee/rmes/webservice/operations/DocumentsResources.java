@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -25,8 +26,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/documents")
@@ -47,6 +48,9 @@ public class DocumentsResources {
     static final Logger logger = LoggerFactory.getLogger(DocumentsResources.class);
 
     private final DocumentsService documentsService;
+
+    @Value("${fr.insee.rmes.bauhaus.extensions}")
+    private String properties;
 
     public DocumentsResources(DocumentsService documentsService) {
         this.documentsService = documentsService;
@@ -134,6 +138,7 @@ public class DocumentsResources {
             @Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
     ) throws RmesException, IOException {
         String documentName = documentFile.getOriginalFilename();
+        verifyExtension(documentName);
         var url = documentsService.changeDocument(id, documentFile.getInputStream(), documentName);
         return ResponseEntity.status(HttpStatus.OK).body(url);
     }
@@ -223,5 +228,21 @@ public class DocumentsResources {
         return documentIdString.replaceAll("[/<>:\"]", "");
     }
 
+    private void verifyExtension(String fileName) throws RmesException {
 
+        String[] extensionsExpected = properties.split(",");
+        String[] fileNameElements = fileName.split("\\.");
+
+        if (fileNameElements.length<2){
+            throw new RmesException(0,"RmesException","Invalid File Extension");
+        }
+        else{
+            String extensionsActual=fileNameElements[fileNameElements.length-1];
+            boolean isKnownActualExtension = Arrays.stream(extensionsExpected).anyMatch(extensionExpected -> extensionExpected.equals(extensionsActual));
+
+            if (!isKnownActualExtension){
+                throw new RmesException(0,"RmesException","Invalid File Extension");
+            }
+        }
+    }
 }
