@@ -102,7 +102,13 @@ rbac:
         read: ALL
         update: ALL
         delete: ALL
-        publish: all
+        publish: ALL
+      codeslist_partialcodeslist:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Gestionnaire_structures_RMESGNCS:
       structure_structure:
         create: ALL
@@ -176,6 +182,8 @@ rbac:
         read: ALL
       codeslist_codeslist:
         read: ALL
+      codeslist_partialcodeslist:
+        read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept_concept:
         create: STAMP
@@ -203,7 +211,7 @@ rbac:
       operation_family:
         read: STAMP
       operation_series:
-        read: STAMP
+        read: ALL
         update: STAMP
         publish: STAMP
       operation_operation:
@@ -224,6 +232,19 @@ rbac:
         publish: ALL
       codeslist_codeslist:
         read: ALL
+    Gestionnaire_liste_codes_RMESGNCS:
+      codeslist_codeslist:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+      codeslist_partialcodeslist:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Gestionnaire_indicateur_RMESGNCS:
       operation_family:
         read: STAMP
