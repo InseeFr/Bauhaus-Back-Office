@@ -90,6 +90,14 @@ public class SeriesUtils {
         this.validator = validator;
     }
 
+    public void verifyBodyToCreateSeries(Series series) throws RmesBadRequestException {
+        if (series.getPrefLabelLg1()==null|| series.getCreators()==null || series.getAccrualPeriodicityCode()==null ||
+                series.getPrefLabelLg1().trim().isEmpty() || series.getAccrualPeriodicityCode().trim().isEmpty()
+        ){
+            throw new RmesBadRequestException("One or more required parameters are missing.");
+        }
+    }
+
     /*READ*/
 
     public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
@@ -409,6 +417,8 @@ public class SeriesUtils {
 
         Series series = buildSeriesFromJson(new JSONObject(body), EncodingType.MARKDOWN);
         checkSimsWithOperations(series);
+
+        verifyBodyToCreateSeries(series);
 
         // Tester l'existence de la famille
         String idFamily = series.getFamily().getId();
