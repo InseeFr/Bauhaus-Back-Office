@@ -239,7 +239,7 @@ class TestDocumentsResourcesEnvProd extends AbstractResourcesEnvProd {
         // Création d'un fichier multipart
         MockMultipartFile file = new MockMultipartFile(
                 "file",                // Nom du paramètre
-                "document.txt",        // Nom du fichier
+                "document.pdf",        // Nom du fichier
                 MediaType.TEXT_PLAIN_VALUE, // Type MIME
                 "Contenu du fichier".getBytes() // Contenu
         );
