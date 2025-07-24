@@ -7,13 +7,48 @@ public class Distribution {
     String labelLg2;
     String descriptionLg1;
     String descriptionLg2;
+    String language;
     String created;
     String updated;
     String format;
+    String mediaType;
+    String compressFormat;
     String byteSize;
+    String accessUrl;
     String url;
     String validationState;
 
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getCompressFormat() {
+        return compressFormat;
+    }
+
+    public void setCompressFormat(String compressFormat) {
+        this.compressFormat = compressFormat;
+    }
+
+    public String getAccessUrl() {
+        return accessUrl;
+    }
+
+    public void setAccessUrl(String accessUrl) {
+        this.accessUrl = accessUrl;
+    }
 
     public String getId() {
         return id;
