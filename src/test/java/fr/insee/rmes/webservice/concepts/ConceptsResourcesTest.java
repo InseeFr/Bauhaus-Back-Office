@@ -129,18 +129,18 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenSetCollection()  throws RmesException {
-        doNothing().when(conceptsService).setCollection( "mocked body");
+        when(conceptsService.setCollection( "mocked body")).thenReturn("1");
         ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
         String actual = conceptsResources.setCollection( "mocked body").toString();
-        Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
+        Assertions.assertEquals("<200 OK OK,1,[]>",actual);
     }
 
     @Test
     void shouldReturnResponseWhenSetCollectionWithIdAndBody()  throws RmesException {
-        doNothing().when(conceptsService).setCollection( "mocked id","mocked body");
+        when(conceptsService.setCollection( "mocked id","mocked body")).thenReturn("1");
         ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
         String actual = conceptsResources.setCollection( "mocked id","mocked body").toString();
-        Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
+        Assertions.assertEquals("<200 OK OK,mocked id,[]>",actual);
     }
 
     @Test
