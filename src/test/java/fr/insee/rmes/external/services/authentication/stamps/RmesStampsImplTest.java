@@ -11,7 +11,7 @@ public class RmesStampsImplTest {
    public void shouldCheckAbsenceOfDuplicatesInStaticAttribute(){
         Set set = new HashSet();
         set.addAll(RmesStampsImpl.stamps);
-        assertTrue(RmesStampsImpl.stamps.size()!=set.size());
+        assertNotEquals(RmesStampsImpl.stamps.size(),set.size());
     }
 
 
