@@ -24,7 +24,7 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
     @Autowired
-    ClassificationItemUtils classificationItemUtils;
+    ClassificationItemRepository classificationItemUtils;
 
 
     static final Logger logger = LoggerFactory.getLogger(ClassificationItemServiceImpl.class);
