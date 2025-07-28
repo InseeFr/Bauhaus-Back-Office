@@ -60,7 +60,7 @@ class TestDocumentsResourcesEnvProd extends AbstractResourcesEnvProd {
 
                 Arguments.of("/documents", 403, true, false),
                 Arguments.of("/documents/document/1", 403, true, false),
-                Arguments.of("/documents/document/1/file", 403, true, false),
+                Arguments.of("/documents/document/1/file", 200, true, false),
                 Arguments.of("/documents/link/1", 403, true, false),
 
                 Arguments.of("/documents", 401, false, true),

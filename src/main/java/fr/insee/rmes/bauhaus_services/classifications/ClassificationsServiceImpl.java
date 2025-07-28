@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.classifications;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -30,16 +29,16 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class ClassificationsImpl implements ClassificationsService {
+public class ClassificationsServiceImpl implements ClassificationsService {
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
 	private final RepositoryGestion repoGestion;
-	private final ClassificationUtils classificationUtils;
+	private final ClassificationRepository classificationUtils;
 	private final ClassificationPublication classificationPublication;
 	
-	static final Logger logger = LoggerFactory.getLogger(ClassificationsImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(ClassificationsServiceImpl.class);
 
-	public ClassificationsImpl(RepositoryGestion repoGestion, ClassificationUtils classificationUtils, ClassificationPublication classificationPublication) {
+	public ClassificationsServiceImpl(RepositoryGestion repoGestion, ClassificationRepository classificationUtils, ClassificationPublication classificationPublication) {
 		this.repoGestion = repoGestion;
 		this.classificationUtils = classificationUtils;
 		this.classificationPublication = classificationPublication;

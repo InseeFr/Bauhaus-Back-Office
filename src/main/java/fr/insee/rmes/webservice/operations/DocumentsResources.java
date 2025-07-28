@@ -77,7 +77,6 @@ public class DocumentsResources {
     }
 
     @GetMapping(value = "/document/{id}/file", produces = "*/*")
-    @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
     @Operation(summary = "Download the Document file")
     public ResponseEntity<Resource> downloadDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return documentsService.downloadDocument(id);
