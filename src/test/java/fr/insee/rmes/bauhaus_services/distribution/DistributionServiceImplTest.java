@@ -95,7 +95,7 @@ class DistributionServiceImplTest {
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.getDistributionsForSearch(any())).thenReturn("query");
+            mockedFactory.when(() -> DistributionQueries.getDistributionsForSearch(any(), any())).thenReturn("query");
             var distributions = distributionService.getDistributionsForSearch();
             Assertions.assertEquals("id", distributions.get(0).distributionId());
             Assertions.assertEquals("labelLg1", distributions.get(0).distributionLabelLg1());
