@@ -5,7 +5,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RBACConfigurationTest {
+class RBACConfigurationTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "firstMockedRoleName", "secondMockedRoleName","thirdMockedRoleName" })
