@@ -2,6 +2,7 @@ SELECT ?distributionId ?distributionLabelLg1 ?distributionValidationStatus ?dist
 ?id ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated
 
 FROM <${DATASET_GRAPH}>
+FROM <${ADMS_GRAPH}>
 
 WHERE {
     ?uri rdf:type dcat:Distribution .

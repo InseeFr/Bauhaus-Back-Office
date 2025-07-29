@@ -50,6 +50,13 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
     private String distributionsBaseUriSuffix;
 
+    @Value("${fr.insee.rmes.bauhaus.adms.graph}")
+    private String admsGraphSuffix;
+
+    private String getAdmsGraph(){
+        return baseGraph + admsGraphSuffix;
+    }
+
     private String getDistributionGraph(){
         return baseGraph + datasetsGraphSuffix;
     }
@@ -80,7 +87,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
-        var distributions = this.repoGestion.getResponseAsArray(DistributionQueries.getDistributionsForSearch(getDistributionGraph()));
+        var distributions = this.repoGestion.getResponseAsArray(DistributionQueries.getDistributionsForSearch(getDistributionGraph(), getAdmsGraph()));
         return DiacriticSorter.sort(distributions,
                 DistributionsForSearch[].class,
                 DistributionsForSearch::labelLg1);
