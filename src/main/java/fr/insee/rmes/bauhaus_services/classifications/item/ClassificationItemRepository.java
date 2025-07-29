@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
@@ -16,11 +15,14 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.SKOSXL;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 @Repository()
 public class ClassificationItemRepository {
+    static final Logger logger = LoggerFactory.getLogger(ClassificationItemRepository.class);
+
     ClassificationNoteService classificationNoteService;
     RepositoryGestion repoGestion;
     Config config;
@@ -70,18 +72,19 @@ public class ClassificationItemRepository {
         }
 
         if(item.getAltLabels() != null) {
-            item.getAltLabels().stream().forEach(altLabel -> {
+            item.getAltLabels().forEach(altLabel -> {
+                IRI altLabelIri = null;
                 try {
-                    IRI altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
+                    altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
                     repoGestion.deleteTripletByPredicate(altLabelIri, SKOSXL.LITERAL_FORM, graph, null);
-                    if(altLabel.getShortLabelLg1() != null){
+                    if (altLabel.getShortLabelLg1() != null) {
                         model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), config.getLg1()), graph);
                     }
-                    if(altLabel.getShortLabelLg2() != null){
+                    if (altLabel.getShortLabelLg2() != null) {
                         model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
                     }
                 } catch (RmesException e) {
-                    e.printStackTrace();
+                    logger.error("The altLabel {} can not be deleted", altLabelIri);
                 }
             });
         }
