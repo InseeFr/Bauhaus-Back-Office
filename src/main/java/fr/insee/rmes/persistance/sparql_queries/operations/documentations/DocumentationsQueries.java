@@ -24,11 +24,6 @@ public class DocumentationsQueries extends GenericQueries{
         return buildRequest("msdQuery.ftlh", params);
 	}
 	
-	/**
-	 * @param idMas
-	 * @return ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational 
-	 * @throws RmesException
-	 */
 	public static String getAttributeSpecificationQuery(String idMas) throws RmesException {
 		Map<String,Object> params = initParams();
 		params.put("idMas", idMas);
