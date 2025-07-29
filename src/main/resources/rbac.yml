@@ -231,6 +231,8 @@ rbac:
         read: STAMP
         update: STAMP
         publish: STAMP
+      operation_indicator:
+        read: ALL
       operation_sims:
         create: STAMP
         read: STAMP
