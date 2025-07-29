@@ -124,6 +124,8 @@ rbac:
         publish: STAMP
       codeslist_codeslist:
         read: ALL
+      geography:
+        read: ALL
     Proprietaire_collection_concepts_RMESGNCS:
       concept_concept:
         read: ALL
@@ -133,6 +135,8 @@ rbac:
         update: ALL
         delete: ALL
       codeslist_codeslist:
+        read: ALL
+      geography:
         read: ALL
     Proprietaire_concept_RMESGNCS:
       concept_concept:
@@ -148,6 +152,8 @@ rbac:
         delete: ALL
         publish: ALL
       codeslist_codeslist:
+        read: ALL
+      geography:
         read: ALL
     Utilisateur_RMESGNCS:
       structure_structure:
@@ -192,6 +198,8 @@ rbac:
         publish: STAMP
       codeslist_codeslist:
         read: ALL
+      geography:
+        read: ALL
     Gestionnaire_ensemble_concepts_RMESGNCS:
       concept_concept:
         create: STAMP
@@ -200,12 +208,16 @@ rbac:
         publish: STAMP
       codeslist_codeslist:
         read: ALL
+      geography:
+        read: ALL
     CNIS_RMESGNCS:
       operation_operation:
         update: ALL
       operation_sims:
         update: ALL
       codeslist_codeslist:
+        read: ALL
+      geography:
         read: ALL
     Gestionnaire_serie_RMESGNCS:
       operation_family:
@@ -232,6 +244,8 @@ rbac:
         publish: ALL
       codeslist_codeslist:
         read: ALL
+      geography:
+        read: ALL
     Gestionnaire_liste_codes_RMESGNCS:
       codeslist_codeslist:
         create: ALL
@@ -245,6 +259,8 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      geography:
+        read: ALL
     Gestionnaire_indicateur_RMESGNCS:
       operation_family:
         read: STAMP
@@ -270,6 +286,8 @@ rbac:
         publish: ALL
       codeslist_codeslist:
         read: ALL
+      geography:
+        read: ALL
     Gestionnaire_jeu_donnees_RMESGNCS:
       dataset_dataset:
         create: ALL
@@ -284,6 +302,8 @@ rbac:
         publish: STAMP
         delete: STAMP
       codeslist_codeslist:
+        read: ALL
+      geography:
         read: ALL
 
 
