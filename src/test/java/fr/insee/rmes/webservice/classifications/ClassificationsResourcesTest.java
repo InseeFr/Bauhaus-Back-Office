@@ -1,6 +1,6 @@
 package fr.insee.rmes.webservice.classifications;
 
-import fr.insee.rmes.bauhaus_services.ClassificationsService;
+import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.exceptions.RmesException;
