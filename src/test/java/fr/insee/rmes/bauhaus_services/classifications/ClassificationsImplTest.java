@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.classification.Classification;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
 import org.json.JSONArray;

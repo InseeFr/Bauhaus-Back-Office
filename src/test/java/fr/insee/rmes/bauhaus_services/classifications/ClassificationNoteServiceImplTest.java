@@ -33,7 +33,7 @@ class ClassificationNoteServiceImplTest {
     }
 
     @Test
-    public void testAddNotes_shouldDeleteAndAddTriplets_whenValueIsPresent() throws RmesException, RmesException {
+    void testAddNotes_shouldDeleteAndAddTriplets_whenValueIsPresent() throws RmesException {
         // Given
         String iri = "http://example.org/note";
         String value = "This is **markdown** content.";
@@ -54,7 +54,7 @@ class ClassificationNoteServiceImplTest {
     }
 
     @Test
-    public void testAddNotes_shouldOnlyDelete_whenValueIsEmpty() throws RmesException {
+    void testAddNotes_shouldOnlyDelete_whenValueIsEmpty() throws RmesException {
         String iri = "http://example.org/note";
         String value = ""; // empty
         Model model = new LinkedHashModel();
@@ -73,7 +73,7 @@ class ClassificationNoteServiceImplTest {
     }
 
     @Test
-    public void testAddNotes_shouldDoNothing_whenIriIsEmpty() throws RmesException {
+    void testAddNotes_shouldDoNothing_whenIriIsEmpty() throws RmesException {
         String value = "some value";
         Model model = new LinkedHashModel();
         Resource graph = new InternedIRI("namespaceGraph","localNameGraph");
