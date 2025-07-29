@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AllModuleAccessPrivilegesTest {
+ class AllModuleAccessPrivilegesTest {
 
     Set<fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege> firstSet = new HashSet<>(List.of(new fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ,RBAC.Strategy.NONE)));
     Set<fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege> secondSet = new HashSet<>(List.of(new fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ,RBAC.Strategy.ALL)));
