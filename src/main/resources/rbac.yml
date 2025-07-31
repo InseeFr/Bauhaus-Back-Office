@@ -267,7 +267,7 @@ rbac:
       operation_family:
         read: STAMP
       operation_series:
-        read: STAMP
+        read: ALL
         update: STAMP
         publish: STAMP
       operation_indicator:
