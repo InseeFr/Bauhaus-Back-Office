@@ -229,8 +229,9 @@ public class ConceptsResources  {
 	@Operation(summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Collection", required = true) @RequestBody String body) throws RmesException {
-		conceptsService.setCollection(body);
-		return ResponseEntity.noContent().build();
+		logger.info("Creating concepts collection : {}" , body);
+		String id = conceptsService.setCollection(body);
+		return ResponseEntity.ok(id);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
@@ -239,9 +240,9 @@ public class ConceptsResources  {
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Collection", required = true) @RequestBody String body) throws RmesException {
+		logger.info("Updating concepts collection : {}" , id);
 		conceptsService.setCollection(id, body);
-		logger.info("Update collection : {}" , id);
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(id);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
