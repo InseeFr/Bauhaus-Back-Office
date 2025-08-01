@@ -23,7 +23,7 @@ class ConceptsResourcesTest {
     ConceptsCollectionService conceptsCollectionService;
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.openMocks(this);
     }
 

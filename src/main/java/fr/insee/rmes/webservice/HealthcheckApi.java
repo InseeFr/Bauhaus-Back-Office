@@ -38,7 +38,7 @@ public class HealthcheckApi extends GenericResources {
 
     protected static final String KO_STATE = ": KO \n";
 
-    private static final String SPARL_QUERY = "SELECT * { ?s a ?t } LIMIT 1";
+    private static final String SPARQL_QUERY = "SELECT * { ?s a ?t } LIMIT 1";
 
     private final RepositoryGestion repoGestion;
 
@@ -110,7 +110,7 @@ public class HealthcheckApi extends GenericResources {
 
     private void checkDatabaseConnexion(StringJoiner errorMessage, StringJoiner stateResult, RequestExecutor executeRequest, String repoName) {
         try {
-            if (StringUtils.isEmpty(executeRequest.execute(SPARL_QUERY))) {
+            if (StringUtils.isEmpty(executeRequest.execute(SPARQL_QUERY))) {
                 errorMessage.add("-").add(repoName).add("doesn't return statement \n");
                 stateResult.add(" -").add(repoName).add(KO_STATE);
             } else {

@@ -23,7 +23,7 @@ class StructureResourcesTest {
     StructureService structureService;
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.openMocks(this);
     }
 
