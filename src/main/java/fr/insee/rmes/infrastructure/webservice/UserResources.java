@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.Stamp;

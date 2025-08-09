@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.exceptions.RmesException;
 import org.slf4j.Logger;

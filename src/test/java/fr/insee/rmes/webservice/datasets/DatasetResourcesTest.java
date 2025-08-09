@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice.datasets;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.infrastructure.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

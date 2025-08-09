@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.themes.ThemeService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.infrastructure.webservice.ThemeResources;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

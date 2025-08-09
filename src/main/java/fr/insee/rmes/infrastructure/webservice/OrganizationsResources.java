@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.config.swagger.model.IdLabel;

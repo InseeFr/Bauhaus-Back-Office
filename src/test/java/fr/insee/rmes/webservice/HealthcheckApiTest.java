@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.infrastructure.webservice.HealthcheckApi;
 import fr.insee.rmes.stubs.RepositoryGestionStub;
 import fr.insee.rmes.stubs.RepositoryPublicationStub;
 import fr.insee.rmes.stubs.RepositoryPublicationStubInternalError;
@@ -9,8 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.StringJoiner;
 
-import static fr.insee.rmes.webservice.HealthcheckApi.KO_STATE;
-import static fr.insee.rmes.webservice.HealthcheckApi.OK_STATE;
+import static fr.insee.rmes.infrastructure.webservice.HealthcheckApi.KO_STATE;
+import static fr.insee.rmes.infrastructure.webservice.HealthcheckApi.OK_STATE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class HealthcheckApiTest {

@@ -10,7 +10,7 @@ import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.DistributionsForSearch;
 import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PartialDistribution;
-import fr.insee.rmes.webservice.datasets.DistributionResources;
+import fr.insee.rmes.infrastructure.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

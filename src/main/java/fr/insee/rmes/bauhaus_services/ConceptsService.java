@@ -4,7 +4,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.model.concepts.PartialConcept;
-import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 

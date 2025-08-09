@@ -2,7 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.webservice.operations.DocumentsResources;
+import fr.insee.rmes.infrastructure.webservice.operations.DocumentsResources;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

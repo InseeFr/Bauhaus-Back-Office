@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.classifications;
+package fr.insee.rmes.infrastructure.webservice.classifications;
 
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;

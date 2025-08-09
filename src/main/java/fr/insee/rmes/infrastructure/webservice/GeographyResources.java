@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;

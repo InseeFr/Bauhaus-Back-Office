@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.codesLists;
+package fr.insee.rmes.infrastructure.webservice.codesLists;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,7 +15,7 @@ import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.webservice.GenericResources;
+import fr.insee.rmes.infrastructure.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

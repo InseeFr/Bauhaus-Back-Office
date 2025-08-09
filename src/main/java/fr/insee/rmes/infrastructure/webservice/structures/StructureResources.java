@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.structures;
+package fr.insee.rmes.infrastructure.webservice.structures;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
@@ -49,6 +49,7 @@ public class StructureResources {
 
     final
     StructureComponent structureComponentService;
+
 
     public StructureResources(StructureService structureService, StructureComponent structureComponentService) {
         this.structureService = structureService;

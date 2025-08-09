@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.operations;
+package fr.insee.rmes.infrastructure.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;

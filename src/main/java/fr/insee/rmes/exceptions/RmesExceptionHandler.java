@@ -1,14 +1,14 @@
 package fr.insee.rmes.exceptions;
 
-import fr.insee.rmes.webservice.UserResources;
-import fr.insee.rmes.webservice.classifications.ClassificationsResources;
-import fr.insee.rmes.webservice.codesLists.CodeListsResources;
-import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
-import fr.insee.rmes.webservice.concepts.ConceptsResources;
-import fr.insee.rmes.webservice.datasets.DatasetResources;
-import fr.insee.rmes.webservice.datasets.DistributionResources;
-import fr.insee.rmes.webservice.operations.*;
-import fr.insee.rmes.webservice.structures.StructureResources;
+import fr.insee.rmes.infrastructure.webservice.UserResources;
+import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.infrastructure.webservice.codesLists.CodeListsResources;
+import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.infrastructure.webservice.datasets.DatasetResources;
+import fr.insee.rmes.infrastructure.webservice.datasets.DistributionResources;
+import fr.insee.rmes.infrastructure.webservice.operations.*;
+import fr.insee.rmes.infrastructure.webservice.structures.StructureResources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

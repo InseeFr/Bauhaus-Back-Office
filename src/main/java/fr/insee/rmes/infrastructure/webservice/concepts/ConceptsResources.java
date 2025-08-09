@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.concepts;
+package fr.insee.rmes.infrastructure.webservice.concepts;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;

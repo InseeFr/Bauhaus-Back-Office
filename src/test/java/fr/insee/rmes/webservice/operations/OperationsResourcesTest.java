@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
+import fr.insee.rmes.infrastructure.webservice.operations.OperationsResources;
 import fr.insee.rmes.model.operations.Operation;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
