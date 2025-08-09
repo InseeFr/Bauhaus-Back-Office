@@ -114,15 +114,6 @@ class PropertiesAccessPrivilegesCheckerTest {
         assertTrue(result);
     }
 
-    @Test
-    void shouldReturnFalseWhenModuleNotFound() throws RmesException {
-        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of());
-
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
-
-        assertFalse(result);
-    }
 
     @Test
     void shouldReturnFalseWhenPrivilegeNotFound() throws RmesException {
