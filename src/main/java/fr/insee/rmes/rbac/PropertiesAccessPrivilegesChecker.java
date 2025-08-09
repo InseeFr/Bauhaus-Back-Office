@@ -39,7 +39,7 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
         var moduleAccessPrivileges = findModuleAccessPrivileges(user, module);
 
         if(moduleAccessPrivileges.isEmpty()){
-            return false;
+            return RBAC.Privilege.READ.toString().equalsIgnoreCase(privilegeIdentifier);
         }
 
         var privilegeAndStrategy = findStrategyByPrivilege(privilege, moduleAccessPrivileges);
