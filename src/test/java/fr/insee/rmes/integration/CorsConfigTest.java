@@ -3,7 +3,7 @@ package fr.insee.rmes.integration;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.external.services.authentication.stamps.StampsService;
-import fr.insee.rmes.webservice.PublicResources;
+import fr.insee.rmes.infrastructure.webservice.PublicResources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
