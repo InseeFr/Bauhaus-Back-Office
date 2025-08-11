@@ -186,22 +186,26 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	/**
 	 * Create new collection
-	 * @throws RmesException 
+	 *
+	 * @return
+	 * @throws RmesException
 	 */
 	@Override
-	public void setCollection(String body) throws RmesException {
-		collectionsUtils.setCollection(body);
+	public String setCollection(String body) throws RmesException {
+		return collectionsUtils.setCollection(body);
 	}
 	//	
 	/**
 	 * Modify collection
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 * @throws Exception 
+	 *
+	 * @return
+	 * @throws RmesException
+	 * @throws RmesUnauthorizedException
+	 * @throws Exception
 	 */
 	@Override
-	public void setCollection(String id, String body) throws RmesException {
-		collectionsUtils.setCollection(id, body);
+	public String setCollection(String id, String body) throws RmesException {
+		return collectionsUtils.setCollection(id, body);
 	}
 
 	/**

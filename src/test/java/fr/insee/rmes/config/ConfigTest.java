@@ -18,6 +18,7 @@ class ConfigTest {
     boolean isNotNullStructuresComponentsGraph = config.getStructuresComponentsGraph()!=null;
     boolean isNotNullStructuresGraph = config.getStructuresGraph()!=null;
     boolean isNotNullCodeListGraph = config.getCodeListGraph()!=null;
+    boolean isNotNullDocumentsStoragePublicationInterne = config.getDocumentsStoragePublicationInterne()!=null;
 
     List<Boolean> actual = List.of(
     isNullLg2,
@@ -28,10 +29,11 @@ class ConfigTest {
     isNotNullOrgInseeGraph,
     isNotNullStructuresComponentsGraph,
     isNotNullStructuresGraph,
-    isNotNullCodeListGraph
+    isNotNullCodeListGraph,
+    isNotNullDocumentsStoragePublicationInterne
     );
 
-    assertEquals(actual,List.of(true,true,true,true,true,true,true,true,true));
+    assertEquals(actual,List.of(true,true,true,true,true,true,true,true,true,false));
 
 }
 

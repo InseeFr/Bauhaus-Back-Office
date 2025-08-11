@@ -1,15 +1,16 @@
 package fr.insee.rmes.rbac;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.util.Collections;
 import java.util.List;
-
+import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(properties = "spring.config.additional-location=classpath:rbac.yml")
 @EnableConfigurationProperties(RBACConfiguration.class)
@@ -48,4 +49,37 @@ class PropertiesRbacFetcherTest {
         assertEquals(RBAC.Privilege.UPDATE, privilege.privilege());
         assertEquals(RBAC.Strategy.ALL, privilege.strategy());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "firstName", "secondName","thirdName" })
+    void shouldInitializeConstructorAndThrowUnknownRoleException( String roleName){
+
+        Map<RBAC.Privilege, RBAC.Strategy> firstLevel = Map.of(RBAC.Privilege.READ,RBAC.Strategy.STAMP);
+        Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> secondLevel = Map.of(RBAC.Module.CONCEPT_CONCEPT,firstLevel);
+        Map<String, Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>> thirdLevel = Map.of("roleName",secondLevel);
+        RBACConfiguration rbacConfiguration = new RBACConfiguration(thirdLevel);
+
+        PropertiesRbacFetcher propertiesRbacFetcher = new PropertiesRbacFetcher(rbacConfiguration);
+
+        UnknownRoleException exception = assertThrows(UnknownRoleException.class, () -> propertiesRbacFetcher.getPrivilegesByRole(roleName));
+
+        assertTrue(exception.getMessage().contains("Unknown role:"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "firstName", "secondName","thirdName" })
+    void shouldThrowUnknownApplicationException(String roleName){
+
+        Map<RBAC.Privilege, RBAC.Strategy> firstLevel = Map.of(RBAC.Privilege.READ,RBAC.Strategy.STAMP);
+        Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> secondLevel = Map.of(RBAC.Module.CONCEPT_CONCEPT,firstLevel);
+        Map<String, Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>> thirdLevel = Map.of(roleName,secondLevel);
+        RBACConfiguration rbacConfiguration = new RBACConfiguration(thirdLevel);
+
+        PropertiesRbacFetcher propertiesRbacFetcher = new PropertiesRbacFetcher(rbacConfiguration);
+
+        UnknownApplicationException exception = assertThrows(UnknownApplicationException.class, () -> propertiesRbacFetcher.getApplicationPrivilegesByRole(roleName, RBAC.Module.UNKNOWN));
+
+        assertTrue(exception.getMessage().contains("Unknown application 'UNKNOWN' for role:"));
+    }
+
 }

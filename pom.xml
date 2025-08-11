@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.5</version>
+        <version>3.5.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>4.8.0</version>
+    <version>4.9.0-rc0</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -49,7 +49,6 @@
         <saxon.version>12.5</saxon.version>
         <minio.version>8.5.17</minio.version>
         <record.builder.version>44</record.builder.version>
-
         <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
 
         <!-- SONAR -->
