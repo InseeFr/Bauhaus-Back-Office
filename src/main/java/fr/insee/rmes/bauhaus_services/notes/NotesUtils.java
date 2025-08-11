@@ -92,6 +92,7 @@ public class NotesUtils  extends RdfService {
 		model.add(note, INSEE.CONCEPT_VERSION, RdfUtils.setLiteralInt(datableNote.getConceptVersion()), RdfUtils.conceptGraph());
 		model.add(note, DCTERMS.ISSUED, RdfUtils.setLiteralDateTime(datableNote.getIssued()), RdfUtils.conceptGraph());	
 		model.add(note, EVOC.NOTE_LITERAL, RdfUtils.setLiteralXML(datableNote.getContent()), RdfUtils.conceptGraph());
+		model.add(note, RDF.VALUE, RdfUtils.setLiteralString(datableNote.getContent()), RdfUtils.conceptGraph());
 	}
 	
 	public void deleteDatableNote(String conceptId, DatableNote datableNote, List<IRI> notesToDelete)  throws RmesException{
