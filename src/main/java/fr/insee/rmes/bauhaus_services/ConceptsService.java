@@ -45,9 +45,9 @@ public interface ConceptsService {
 
 	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException;
 
-	void setCollection(String body) throws RmesException;
+	String setCollection(String body) throws RmesException;
 	
-	void setCollection(String id, String body) throws  RmesException;
+	String setCollection(String id, String body) throws  RmesException;
 	
 	void setCollectionsValidation(String body) throws  RmesException ;
 	

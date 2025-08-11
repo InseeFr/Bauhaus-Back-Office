@@ -93,7 +93,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     }
     static Collection<Arguments> TestRoleCaseForUpdateConcept() {
         return Arrays.asList(
-                Arguments.of(204, true, true),
+                Arguments.of(200, true, true),
                 Arguments.of(403, true, false),
                 Arguments.of(401, false, true)
         );

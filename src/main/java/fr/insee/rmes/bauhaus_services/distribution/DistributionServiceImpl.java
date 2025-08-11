@@ -190,14 +190,21 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);
         model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg1(), config.getLg1()), graph);
         model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg2(), config.getLg2()), graph);
+
         RdfUtils.addTripleString(distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCTERMS.LANGUAGE, distribution.getLanguage(), model, graph);
 
         RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.CREATED, distribution.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.MODIFIED, distribution.getUpdated(), model, graph);
 
         RdfUtils.addTripleString(distributionIRI, DCTERMS.FORMAT, distribution.getFormat(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCAT.MEDIA_TYPE, distribution.getMediaType(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCAT.COMPRESS_FORMAT, distribution.getCompressFormat(), model, graph);
+
         RdfUtils.addTripleString(distributionIRI, DCAT.BYTE_SIZE, distribution.getByteSize(), model, graph);
+
+        RdfUtils.addTripleString(distributionIRI, DCAT.ACCESS_URL, distribution.getAccessUrl(), model, graph);
         RdfUtils.addTripleString(distributionIRI, DCAT.DOWNLOAD_URL, distribution.getUrl(), model, graph);
 
         repoGestion.loadSimpleObject(distributionIRI, model, null);

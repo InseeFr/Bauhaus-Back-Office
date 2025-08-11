@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.utils.IdGenerator;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -33,9 +34,12 @@ public class CollectionsUtils extends RdfService {
 	
 	@Autowired
 	ConceptsPublication conceptsPublication;
-	
 
-	public void setCollection(String body) throws RmesException {
+	@Autowired
+	protected IdGenerator idGenerator;
+
+
+	public String setCollection(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -45,11 +49,10 @@ public class CollectionsUtils extends RdfService {
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
-		setRdfCollection(collection);
-		logger.info("Create collection : {} - {} ",  collection.getId(), collection.getPrefLabelLg1());
+		return setRdfCollection(collection);
 	}
 	
-	public void setCollection(String id, String body) throws RmesException  {
+	public String setCollection(String id, String body) throws RmesException  {
 		ObjectMapper mapper = new ObjectMapper();
 
 		mapper.configure(
@@ -61,8 +64,7 @@ public class CollectionsUtils extends RdfService {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 
 		}
-		setRdfCollection(collection);
-		logger.info("Update collection : {} - {} ",  collection.getId(), collection.getPrefLabelLg1());
+		return setRdfCollection(collection);
 	}
 	
 	public void collectionsValidation(String body) throws RmesException   {
@@ -70,16 +72,11 @@ public class CollectionsUtils extends RdfService {
 		collectionsValidation(collectionsToValidate);
 	}
 	
-	/**
-	 * Collections to graphDB
-	 * @throws RmesException 
-	 */
-	
-	public void setRdfCollection(Collection collection) throws RmesException {
+	public String setRdfCollection(Collection collection) throws RmesException {
+		String id = idGenerator.generateNextId();
 		Model model = new LinkedHashModel();
-		IRI collectionURI = RdfUtils.collectionIRI(collection.getId().replace(" ", "-").toLowerCase());
-		/*Required*/
-		model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, RdfUtils.conceptGraph());	
+		IRI collectionURI = RdfUtils.collectionIRI(id);
+		model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, RdfUtils.conceptGraph());
 		model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(collection.getIsValidated()), RdfUtils.conceptGraph());
 		model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(collection.getPrefLabelLg1(), config.getLg1()), RdfUtils.conceptGraph());
 		model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(collection.getCreated()), RdfUtils.conceptGraph());	
@@ -98,6 +95,8 @@ public class CollectionsUtils extends RdfService {
 		});
 		
 		repoGestion.loadSimpleObject(collectionURI, model);
+
+		return id;
 	}
 	
 	public void collectionsValidation(JSONArray collectionsToValidate) throws  RmesException  {
