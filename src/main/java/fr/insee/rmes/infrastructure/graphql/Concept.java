@@ -14,7 +14,5 @@ public record Concept(
         String contributor,
         boolean isValidated,
         LocalDateTime modified,
-        String disseminationStatus,
-        List<String> altLabelLg1,
-        List<String> altLabelLg2
+        String disseminationStatus
 ) {}
