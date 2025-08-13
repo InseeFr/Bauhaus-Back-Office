@@ -58,6 +58,29 @@ type Structure {
   created: String! # ou DateTime si scalar DateTime
   modified: String!
   disseminationStatus: String!
-  componentDefinitions: [String!]!
+  componentDefinitions: [ComponentDefinition!]!
   validationState: String!
+}
+
+type Component {
+  created: String!
+  identifiant: String!
+  type: String!
+  contributor: [String!]!
+  labelLg2: String!
+  labelLg1: String!
+  modified: String!
+  id: ID!
+  disseminationStatus: String!
+  validationState: String!
+}
+
+type ComponentDefinition {
+  component: Component!
+  attachment: [String!]!
+  created: String!
+  modified: String!
+  id: ID!
+  required: Boolean!
+  order: String!
 }
