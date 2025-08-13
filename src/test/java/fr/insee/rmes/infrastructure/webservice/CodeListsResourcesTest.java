@@ -7,7 +7,7 @@ import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
-import fr.insee.rmes.infrastructure.webservice.codesLists.CodeListsResources;
+import fr.insee.rmes.infrastructure.webservice.codes_lists.CodeListsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

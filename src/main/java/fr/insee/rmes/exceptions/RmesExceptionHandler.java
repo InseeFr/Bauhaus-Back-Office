@@ -2,7 +2,7 @@ package fr.insee.rmes.exceptions;
 
 import fr.insee.rmes.infrastructure.webservice.UserResources;
 import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
-import fr.insee.rmes.infrastructure.webservice.codesLists.CodeListsResources;
+import fr.insee.rmes.infrastructure.webservice.codes_lists.CodeListsResources;
 import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsResources;
 import fr.insee.rmes.infrastructure.webservice.datasets.DatasetResources;

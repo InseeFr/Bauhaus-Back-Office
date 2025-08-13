@@ -1,4 +1,4 @@
-package fr.insee.rmes.infrastructure.webservice.codesLists;
+package fr.insee.rmes.infrastructure.webservice.codes_lists;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
