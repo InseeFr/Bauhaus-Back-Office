@@ -1,10 +1,13 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.rbac.stamps.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import java.util.Set;
 
 @Service(value = "propertiesAccessPrivilegesChecker")
 public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecker {
+    static final Logger logger = LoggerFactory.getLogger(PropertiesAccessPrivilegesChecker.class);
 
     private final RbacFetcher fetcher;
     private final UserDecoder decoder;
@@ -28,6 +32,7 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
 
     @Override
     public boolean hasAccess(String module, String privilege, String id, Object principal) throws RmesException {
+        logger.debug("Checking access for module {}, privilege {} and id {}", module, privilege, id);
         var user = this.decoder.fromPrincipal(principal);
         return user.map(u -> hasAcccess(module, privilege, id, u)).orElse(false);
 
@@ -39,12 +44,19 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
         var moduleAccessPrivileges = findModuleAccessPrivileges(user, module);
 
         if(moduleAccessPrivileges.isEmpty()){
+            logger.debug("The user {} has an empty privilege for module {}", user.id(), moduleIdentifer);
             return false;
         }
 
         var privilegeAndStrategy = findStrategyByPrivilege(privilege, moduleAccessPrivileges);
 
-        return authorizeFromStrategy(module, privilegeAndStrategy, id, user);
+        var authorized = authorizeFromStrategy(module, privilegeAndStrategy, id, user);
+
+        if(!authorized){
+            logger.debug("The user {} does not have access to the module {}, privilege {} and id {}", user.id(), moduleIdentifer, privilegeIdentifier, id);
+        }
+
+        return authorized;
     }
 
     private boolean authorizeFromStrategy(RBAC.Module module, Optional<ModuleAccessPrivileges.Privilege> privilegeAndStrategy, String id, User user) {
