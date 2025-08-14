@@ -34,7 +34,7 @@ rbac:
       operation_series:
         create: ALL
         read: ALL
-        update: STAMP
+        update: ALL
         delete: ALL
         publish: ALL
       operation_operation:
