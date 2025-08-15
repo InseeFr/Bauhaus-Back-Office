@@ -50,7 +50,6 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
         logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
         JSONObject classificationItemNotes = repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
-        XhtmlToMarkdownUtils.convertJSONObject(classificationItemNotes);
         return classificationItemNotes.toString();
     }
 
