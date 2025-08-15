@@ -1,6 +1,7 @@
 package fr.insee.rmes.infrastructure.graphql;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -11,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import org.json.JSONArray;
@@ -19,6 +21,10 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class ConceptController {
@@ -91,8 +97,43 @@ public class ConceptController {
         return dataset;
     }
 
-    @SchemaMapping
-    public Structure dataStructure(Dataset dataset) throws RmesException, JsonProcessingException {
+    @QueryMapping
+    public List<Dataset> allDatasets() throws RmesException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        List<PartialDataset> datasets = datasetService.getDatasets();
+        List<Dataset> datasetsList =  new ArrayList<>();
+        datasets.forEach(d -> {
+            try {
+                datasetsList.add(datasetById(d.id()));
+            } catch (RmesException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return datasetsList;
+    }
+
+    @SchemaMapping(typeName = "Dataset", field = "dataStructure")
+    public Object dataStructure(Dataset dataset) throws RmesException, JsonProcessingException {
+        if("ae69c134-f92d-40cc-9b94-ae9d0921434d".equalsIgnoreCase(dataset.getId())){
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            String apiUrl = "https://poc-ddi-insee.netlify.app/.netlify/functions/api";
+
+            RestTemplate restTemplate = new RestTemplate();
+            String jsonResponse = restTemplate.getForObject(apiUrl, String.class);
+
+            // Extraction d'une propriété du JSON
+            JsonNode root = mapper.readTree(jsonResponse).get("DataRelationship").get(0);
+            DataRelationshipRecord structure = mapper.readValue(root.toString(), DataRelationshipRecord.class);
+            return structure;
+        }
         var fullUrl = dataset.getDataStructure();
         var id = fullUrl.substring(fullUrl.lastIndexOf("/") + 1);
         ObjectMapper mapper = new ObjectMapper();

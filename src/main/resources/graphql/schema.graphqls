@@ -1,6 +1,7 @@
 type Query {
     conceptById(id: ID): Concept
     datasetById(id: ID): Dataset
+    allDatasets: [Dataset!]!
 }
 
 type Concept {
@@ -39,7 +40,7 @@ type Dataset {
   linkedDocuments: [String!]!
   keywords: Keywords!
   statisticalUnit: [String!]!
-  dataStructure: Structure!
+  dataStructure: AllStructure!
   spacialResolutions: [String!]!
   disseminationStatus: String!
   wasGeneratedIRIs: [String!]!
@@ -48,18 +49,62 @@ type Dataset {
   catalogRecord: CatalogRecord!
 }
 
+union AllStructure = Structure | DataRelationShip
+
+
+type DataRelationShip {
+  isUniversallyUnique: String
+  versionDate: String
+  urn: ID
+  agency: String
+  id: ID!
+  version: String
+  dataRelationshipName: LangString
+  logicalRecord: LogicalRecord
+}
+
+type LangString {
+  string: LangValue
+}
+
+type LangValue {
+  lang: String
+  text: String
+}
+
+type LogicalRecord {
+  isUniversallyUnique: String
+  urn: ID
+  agency: String
+  id: ID
+  version: String
+  logicalRecordName: LangString
+  variablesInRecord: VariablesInRecord
+}
+
+type VariablesInRecord {
+  variableUsedReference: [VariableUsedReference!]!
+}
+
+type VariableUsedReference {
+  agency: String
+  id: ID
+  version: String
+  typeOfObject: String
+}
+
 type Structure {
   id: ID!
   identifiant: String!
-  labelLg1: String!
-  labelLg2: String!
-  creator: String!
-  contributor: [String!]!
-  created: String! # ou DateTime si scalar DateTime
-  modified: String!
-  disseminationStatus: String!
-  componentDefinitions: [ComponentDefinition!]!
-  validationState: String!
+  labelLg1: String
+  labelLg2: String
+  creator: String
+  contributor: [String!]
+  created: String # ou DateTime si scalar DateTime
+  modified: String
+  disseminationStatus: String
+  componentDefinitions: [ComponentDefinition!]
+  validationState: String
 }
 
 type Component {

@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class RdfService {
-
-
+	
 	@Autowired
 	protected RepositoryGestion repoGestion;
 
@@ -25,7 +24,6 @@ public abstract class RdfService {
 	
 	@Autowired
 	protected Config config;
-
 
 	@Autowired
 	protected PublicationUtils publicationUtils;
