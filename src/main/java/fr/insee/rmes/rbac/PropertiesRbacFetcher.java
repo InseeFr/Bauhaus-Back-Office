@@ -60,6 +60,10 @@ public class PropertiesRbacFetcher implements RbacFetcher {
     public Set<ModuleAccessPrivileges> computePrivileges(List<String> roles) {
         Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result = new HashMap<>();
 
+        if (roles == null || roles.isEmpty()) {
+            roles = List.of("default");
+        }
+
         for (String role : roles) {
             try {
                 Set<ModuleAccessPrivileges> modulePrivileges = getPrivilegesByRole(role);
