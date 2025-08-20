@@ -1,10 +1,10 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.external.services.authentication.stamps.StampsService;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.Stamp;
+import fr.insee.rmes.domain.port.serverside.StampsService;
 import fr.insee.rmes.rbac.ModuleAccessPrivileges;
 import fr.insee.rmes.rbac.RbacFetcher;
 import io.swagger.v3.oas.annotations.Operation;

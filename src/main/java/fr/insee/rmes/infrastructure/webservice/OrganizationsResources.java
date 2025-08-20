@@ -3,7 +3,7 @@ package fr.insee.rmes.infrastructure.webservice;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.organizations.Organization;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

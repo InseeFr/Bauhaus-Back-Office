@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.model.concepts.PartialConcept;
@@ -21,7 +21,7 @@ import java.util.Map;
 
 public interface ConceptsService {
 
-	List<PartialConcept> getConcepts() throws RmesException ;
+	List<PartialConcept> getConcepts() throws RmesException;
 	
 	List<ConceptForAdvancedSearch> getConceptsSearch() throws RmesException;
 	

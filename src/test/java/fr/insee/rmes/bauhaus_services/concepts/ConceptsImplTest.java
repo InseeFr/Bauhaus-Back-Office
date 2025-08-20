@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;

@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.swagger.model.Accept;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.rbac.HasAccess;

@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.model.ValidationStatus;

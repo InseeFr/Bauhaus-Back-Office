@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;

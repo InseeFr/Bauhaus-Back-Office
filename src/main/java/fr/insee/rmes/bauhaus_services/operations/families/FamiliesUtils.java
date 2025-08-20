@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
@@ -65,7 +66,7 @@ public class FamiliesUtils {
 		this.lg2 = lg2;
 	}
 
-	public JSONObject getFamilyById(String id) throws RmesException{
+	public JSONObject getFamilyById(String id) throws RmesException {
 		JSONObject family = repositoryGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id, familiesRichTextNexStructure));
 		if (family.isEmpty()) {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");

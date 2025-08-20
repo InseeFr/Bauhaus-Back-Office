@@ -1,5 +1,7 @@
 package fr.insee.rmes.exceptions;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.infrastructure.webservice.PublicResources;
 import fr.insee.rmes.infrastructure.webservice.UserResources;
 import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
 import fr.insee.rmes.infrastructure.webservice.codes_lists.CodeListsResources;
@@ -18,6 +20,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.nio.file.NoSuchFileException;
 
 @ControllerAdvice(assignableTypes = {
+        PublicResources.class,
+
         CodeListsResources.class,
         MetadataReportResources.class,
         UserResources.class,
@@ -61,7 +65,7 @@ public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RmesException.class)
     public final ResponseEntity<String> handleRmesException(RmesException exception){
-        logger.error(exception.getMessageAndDetails(), exception);
+        logger.error(exception.getMessage(), exception);
         return ResponseEntity.internalServerError().body(exception.getDetails());
     }
 
