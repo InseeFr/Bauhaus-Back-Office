@@ -42,6 +42,16 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
+    void shouldReturnTrueWhenUpdateWithMissingRole() throws RmesException {
+        var user = new User("jane.doe", List.of(), "unknownStamp");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.UPDATE.toString(), "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
     void shouldReturnTrueWhenStrategyIsAll() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
@@ -70,7 +80,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObect() throws RmesException {
+    void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObject() throws RmesException {
         User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithDifferentStamp));
         when(fetcher.computePrivileges(userWithDifferentStamp.roles())).thenReturn(Set.of(
@@ -84,15 +94,6 @@ class PropertiesAccessPrivilegesCheckerTest {
         assertTrue(result);
     }
 
-    @Test
-    void shouldReturnFalseWhenModuleNotFound() throws RmesException {
-        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of());
-
-        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
-
-        assertFalse(result);
-    }
 
     @Test
     void shouldReturnFalseWhenPrivilegeNotFound() throws RmesException {

@@ -9,7 +9,7 @@ WHERE {
         ?seriesIri dcterms:hasPart ?iri .
         OPTIONAL{
             ?iri skos:altLabel ?altLabel .
-            FILTER (lang(?altLabel) = '${LG2}')
+            FILTER (lang(?altLabel) = '${LG1}')
         }
     }
 }
