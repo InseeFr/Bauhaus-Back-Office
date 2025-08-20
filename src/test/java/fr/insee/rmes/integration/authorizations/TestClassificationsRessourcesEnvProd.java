@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

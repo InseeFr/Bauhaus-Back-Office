@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.webservice.operations.IndicatorsResources;
+import fr.insee.rmes.infrastructure.webservice.operations.IndicatorsResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
