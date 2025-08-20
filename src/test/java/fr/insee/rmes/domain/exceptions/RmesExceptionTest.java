@@ -17,7 +17,7 @@ class RmesExceptionTest {
 
 
     @Test
-    void ctor_status_message_details() throws Exception {
+    void ctor_status_message_details() {
         RmesException ex = new RmesException(400, "bad request", "oops");
         assertEquals(400, ex.getStatus());
         JSONObject d = detailsJson(ex);
@@ -27,7 +27,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_message_jsonArrayDetails() throws Exception {
+    void ctor_status_message_jsonArrayDetails() {
         JSONArray arr = new JSONArray().put("e1").put("e2");
         RmesException ex = new RmesException(422, "validation failed", arr);
 
@@ -40,7 +40,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_errorCode_message_details() throws Exception {
+    void ctor_status_errorCode_message_details() {
         RmesException ex = new RmesException(404, 1001, "not found", "resource X");
         assertEquals(404, ex.getStatus());
         JSONObject d = detailsJson(ex);
@@ -50,7 +50,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_errorCode_details_only() throws Exception {
+    void ctor_status_errorCode_details_only() {
         RmesException ex = new RmesException(409, 2001, "conflict occurred");
         assertEquals(409, ex.getStatus());
         JSONObject d = detailsJson(ex);
@@ -60,7 +60,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_errorCode_jsonArrayDetails() throws Exception {
+    void ctor_status_errorCode_jsonArrayDetails() {
         JSONArray arr = new JSONArray().put(1).put(2).put(3);
         RmesException ex = new RmesException(400, 3001, arr);
 
@@ -73,7 +73,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_errorCode_message_jsonArrayDetails() throws Exception {
+    void ctor_status_errorCode_message_jsonArrayDetails() {
         JSONArray arr = new JSONArray().put("e1");
         RmesException ex = new RmesException(400, 3002, "oops", arr);
 
@@ -87,7 +87,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_errorCode_message_jsonObjectDetails() throws Exception {
+    void ctor_status_errorCode_message_jsonObjectDetails() {
         JSONObject det = new JSONObject().put("path", "/api/resource").put("hint", "retry");
         RmesException ex = new RmesException(401, 5001, "unauthorized", det);
 
@@ -102,7 +102,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_httpStatus_message_details() throws Exception {
+    void ctor_httpStatus_message_details() {
         RmesException ex = new RmesException(HttpStatus.FORBIDDEN, "nope", "denied");
         assertEquals(HttpStatus.FORBIDDEN.value(), ex.getStatus());
         JSONObject d = detailsJson(ex);
@@ -112,7 +112,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_message_exceptionCause_sets500_and_cause() throws Exception {
+    void ctor_message_exceptionCause_sets500_and_cause() {
         Exception cause = new IllegalStateException("BOOM");
         RmesException ex = new RmesException("wrapper message", cause);
 
@@ -123,7 +123,7 @@ class RmesExceptionTest {
     }
 
     @Test
-    void ctor_status_message_details_cause() throws Exception {
+    void ctor_status_message_details_cause() {
         Throwable cause = new RuntimeException("root");
         RmesException ex = new RmesException(418, "I’m a teapot", "brew failed", cause);
 
