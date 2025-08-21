@@ -239,9 +239,7 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
         <executions>
-          <!-- Prepare the property pointing to the JaCoCo runtime agent which is
-                         passed as VM argument when the Maven Surefire plugin is executed. -->
-          <execution>
+      <execution>
             <id>pre-unit-test</id>
             <goals>
               <goal>prepare-agent</goal>
