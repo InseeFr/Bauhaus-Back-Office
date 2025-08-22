@@ -3,7 +3,7 @@ package fr.insee.rmes.infrastructure.webservice.operations;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;

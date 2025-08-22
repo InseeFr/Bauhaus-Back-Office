@@ -10,7 +10,7 @@ import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.MSD;

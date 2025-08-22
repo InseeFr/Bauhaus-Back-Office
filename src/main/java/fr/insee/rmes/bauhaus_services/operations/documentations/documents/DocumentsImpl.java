@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

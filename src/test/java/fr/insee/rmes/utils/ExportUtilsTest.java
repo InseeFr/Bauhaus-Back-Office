@@ -1,7 +1,7 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.ArrayList;
