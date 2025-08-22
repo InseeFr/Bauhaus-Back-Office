@@ -1,7 +1,6 @@
 package fr.insee.rmes.stubs;
 
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-
 public class RepositoryPublicationStubInternalError extends RepositoryPublicationStub {
 
     public static final String ERROR_MESSAGE="error";

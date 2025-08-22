@@ -1,6 +1,6 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
 import org.junit.jupiter.params.ParameterizedTest;
