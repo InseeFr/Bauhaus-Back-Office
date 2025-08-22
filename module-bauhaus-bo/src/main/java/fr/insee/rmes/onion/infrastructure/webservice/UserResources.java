@@ -2,8 +2,8 @@ package fr.insee.rmes.onion.infrastructure.webservice;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Stamp;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import fr.insee.rmes.rbac.ModuleAccessPrivileges;
 import fr.insee.rmes.rbac.RbacFetcher;

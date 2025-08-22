@@ -1,7 +1,6 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-
 /**
  * Interface that will expose an utility method to validate if an object can be published,
  * and another one for publishing it if the validate methode does not throw an exception.

@@ -29,6 +29,7 @@ import java.nio.file.NoSuchFileException;
         ConceptsCollectionsResources.class,
         
         StructureResources.class,
+
         ClassificationsResources.class,
 
         // <DatasetModule>

@@ -2,12 +2,15 @@ package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import org.junit.function.ThrowingRunnable;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,7 +48,7 @@ class ExportUtilsTest {
     void shouldThrowNullPointerExceptionWhenExportFilesAsResponse(){
         Map<String, String> xmlContent = new HashMap<>();
         xmlContent.put("exampleOfValue",null);
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> exportUtils.exportFilesAsResponse(xmlContent));
+        NullPointerException exception = assertThrows(NullPointerException.class, (ThrowingRunnable) () -> exportUtils.exportFilesAsResponse(xmlContent));
         assertEquals("Cannot invoke \"String.getBytes(java.nio.charset.Charset)\" because \"xmlData\" is null", exception.getMessage());
     }
 
@@ -53,7 +56,7 @@ class ExportUtilsTest {
     void shouldThrowNullPointerExceptionWhenExportFilesAsInputStream(){
         Map<String, String> xmlContent = new HashMap<>();
         xmlContent.put("red","strawberry");
-        RmesException exception = assertThrows(RmesException.class, () -> exportUtils.exportAsInputStream("fileName", xmlContent, "xslFile", "xmlPattern", "zip", "objectType", "extension"));
+        RmesException exception = assertThrows(RmesException.class, (ThrowingRunnable) () -> exportUtils.exportAsInputStream("fileName", xmlContent, "xslFile", "xmlPattern", "zip", "objectType", "extension"));
         assertTrue(exception.getDetails().contains("TransformerConfigurationException"));
     }
 
