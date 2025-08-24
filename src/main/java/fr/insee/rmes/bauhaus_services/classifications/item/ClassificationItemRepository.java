@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import org.eclipse.rdf4j.model.IRI;

@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.*;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import fr.insee.rmes.rbac.HasAccess;

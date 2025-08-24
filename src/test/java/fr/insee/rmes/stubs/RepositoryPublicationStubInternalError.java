@@ -1,6 +1,6 @@
 package fr.insee.rmes.stubs;
 
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 
 public class RepositoryPublicationStubInternalError extends RepositoryPublicationStub {
 

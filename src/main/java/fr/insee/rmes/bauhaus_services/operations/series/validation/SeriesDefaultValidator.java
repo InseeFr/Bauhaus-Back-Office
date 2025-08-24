@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.series.validation;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import org.springframework.beans.factory.annotation.Value;

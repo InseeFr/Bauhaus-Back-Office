@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 
 /**
  * Interface that will expose an utility method to validate if an object can be published,

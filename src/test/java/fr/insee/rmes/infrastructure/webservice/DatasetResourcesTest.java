@@ -1,7 +1,7 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.DatasetsForSearch;
 import fr.insee.rmes.model.dataset.PartialDataset;

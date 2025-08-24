@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.PartialCollection;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
@@ -158,7 +158,8 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
                     collectionsConcepts.put(fileName, concepts);
                 }
             } catch (RmesException e) {
-                logger.error(e.getMessageAndDetails());
+                logger.error(e.getMessage());
+                logger.error(e.getDetails());
             }
         });
 

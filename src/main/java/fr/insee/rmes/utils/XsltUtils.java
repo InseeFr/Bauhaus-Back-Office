@@ -1,7 +1,7 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -39,7 +39,8 @@ public class XsltUtils {
 			try {
 				addParameter(xsltTransformer, paramName, xmlData, tempDir);
 			} catch (RmesException e) {
-				logger.error(e.getMessageAndDetails());
+				logger.error(e.getMessage());
+				logger.error(e.getDetails());
 			}
 		});
 

@@ -1,5 +1,6 @@
 package fr.insee.rmes.exceptions;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 
 public class RmesNotFoundException extends RmesException {

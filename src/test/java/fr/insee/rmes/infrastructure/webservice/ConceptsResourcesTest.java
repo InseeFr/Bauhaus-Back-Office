@@ -1,7 +1,7 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

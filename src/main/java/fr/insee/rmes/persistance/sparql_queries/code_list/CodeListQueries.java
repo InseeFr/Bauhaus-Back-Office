@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.code_list;
 
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.springframework.util.StringUtils;
 

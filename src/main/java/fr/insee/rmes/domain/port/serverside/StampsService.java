@@ -1,7 +1,7 @@
-package fr.insee.rmes.external.services.authentication.stamps;
+package fr.insee.rmes.domain.port.serverside;
 
-import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.Stamp;
 
 import java.util.List;
 

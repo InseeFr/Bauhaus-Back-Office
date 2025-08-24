@@ -1,4 +1,4 @@
-package fr.insee.rmes.external.services.authentication.stamps;
+package fr.insee.rmes.infrastructure.stamps;
 
 import org.junit.Test;
 import java.util.HashSet;
@@ -6,14 +6,9 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RmesStampsImplTest {
-
     @Test
-   public void shouldCheckAbsenceOfDuplicatesInStaticAttribute(){
-        Set set = new HashSet();
-        set.addAll(RmesStampsImpl.stamps);
+    public void shouldCheckAbsenceOfDuplicatesInStaticAttribute(){
+        Set<String> set = new HashSet<>(RmesStampsImpl.stamps);
         assertNotEquals(RmesStampsImpl.stamps.size(),set.size());
     }
-
-
-
 }

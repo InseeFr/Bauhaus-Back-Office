@@ -1,4 +1,4 @@
-package fr.insee.rmes.exceptions;
+package fr.insee.rmes.domain.exceptions;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -70,10 +70,6 @@ public class RmesException extends Exception {
         this.status=HttpStatus.INTERNAL_SERVER_ERROR.value();
     }
 
-    public RestMessage toRestMessage(){
-		return new RestMessage(this.status, this.getMessage(), this.details);
-	}
-
 	public int getStatus() {
 		return status;
 	}
@@ -82,10 +78,6 @@ public class RmesException extends Exception {
 		return details;
 	}
 
-	public String getMessageAndDetails() {
-		return getMessage() + " " + details;
-	}
-	
 	private String createDetails(Integer errorCode, String message, String detailsParam) {
 		JSONObject det = new JSONObject();
 		if (errorCode != null) det.put(CODE, errorCode);

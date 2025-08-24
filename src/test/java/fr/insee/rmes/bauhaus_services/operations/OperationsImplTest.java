@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
