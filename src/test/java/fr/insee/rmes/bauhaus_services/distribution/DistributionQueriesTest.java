@@ -1,28 +1,26 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.eq;
 
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
 class DistributionQueriesTest {
-    @Autowired
-    Config config;
-
+    @BeforeAll
+    static void init(){
+        DistributionQueries.setConfig(new ConfigStub());
+    }
     @Test
     void shouldCallGetDistributionQuery() throws RmesException {
-        DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
@@ -38,7 +36,6 @@ class DistributionQueriesTest {
 
     @Test
     void shouldCallGetDistributionByIdQuery() throws RmesException {
-        DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
@@ -54,7 +51,6 @@ class DistributionQueriesTest {
 
     @Test
     void shouldCallGetDistributionByDistributionIdQuery() throws RmesException {
-        DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
@@ -70,7 +66,6 @@ class DistributionQueriesTest {
 
     @Test
     void shouldCallGetLastIdQuery() throws RmesException {
-        DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
@@ -83,7 +78,6 @@ class DistributionQueriesTest {
 
     @Test
     void shouldCallGetContributorsByDistributionUri() throws RmesException {
-        DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DISTRIBUTION_GRAPH_URI", "distribution-graph-uri");
