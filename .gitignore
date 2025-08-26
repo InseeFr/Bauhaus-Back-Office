@@ -7,6 +7,5 @@ node_modules
 .project
 .idea
 *.iml
-src/main/resources/request/BeforeMarkdown.ftlh
 .properties
 .run/

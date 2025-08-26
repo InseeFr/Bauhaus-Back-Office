@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 @Tag("integration")
-public class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
+class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
 
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
