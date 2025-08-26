@@ -1,7 +1,7 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import java.util.List;

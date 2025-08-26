@@ -1,8 +1,8 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.infrastructure.webservice.structures.StructureResources;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.infrastructure.webservice.structures.StructureResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -9,7 +9,7 @@ import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.infrastructure.webservice.operations.FamilyResources;
+import fr.insee.rmes.onion.infrastructure.webservice.operations.FamilyResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

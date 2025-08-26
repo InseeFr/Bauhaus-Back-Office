@@ -1,10 +1,10 @@
 package fr.insee.rmes.infrastructure.webservice;
 
-import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
-import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsCollectionsResources;
-import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsResources;
-import fr.insee.rmes.infrastructure.webservice.operations.*;
-import fr.insee.rmes.infrastructure.webservice.structures.StructureResources;
+import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.onion.infrastructure.webservice.operations.*;
+import fr.insee.rmes.onion.infrastructure.webservice.structures.StructureResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

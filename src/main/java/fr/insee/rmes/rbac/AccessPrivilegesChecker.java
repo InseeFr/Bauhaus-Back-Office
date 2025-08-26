@@ -1,6 +1,6 @@
 package fr.insee.rmes.rbac;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 
 public interface AccessPrivilegesChecker {
 

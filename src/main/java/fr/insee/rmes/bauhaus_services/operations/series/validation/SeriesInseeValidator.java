@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.series.validation;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Series;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
