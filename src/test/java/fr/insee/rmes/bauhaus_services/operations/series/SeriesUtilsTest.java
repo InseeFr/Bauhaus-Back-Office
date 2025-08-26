@@ -1,9 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -15,11 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
 class SeriesUtilsTest {
     @Mock

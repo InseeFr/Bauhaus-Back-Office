@@ -1,5 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice.operations;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
@@ -10,14 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class DocumentsResourcesTest {
 
     @MockitoBean

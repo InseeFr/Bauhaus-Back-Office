@@ -1,5 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice.concepts;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
@@ -10,12 +11,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class ConceptsResourcesTest {
     @MockitoBean
     ConceptsService conceptsService;

@@ -1,5 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice.classifications;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
@@ -9,12 +10,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class ClassificationsResourcesTest {
 
     @MockitoBean

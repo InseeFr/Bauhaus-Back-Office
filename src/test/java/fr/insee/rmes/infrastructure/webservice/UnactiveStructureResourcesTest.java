@@ -1,5 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
@@ -10,10 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 
-@SpringBootTest(properties = "fr.insee.rmes.bauhaus.activeModules=")
+@AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
 class UnactiveModulesTest {
 

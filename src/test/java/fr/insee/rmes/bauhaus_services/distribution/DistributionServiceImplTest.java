@@ -1,13 +1,14 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
@@ -23,7 +24,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
@@ -32,17 +32,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-
-
-@SpringBootTest(properties = {
-        "fr.insee.rmes.bauhaus.baseGraph=http://",
-        "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
-        "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
-        "fr.insee.rmes.bauhaus.datasets.baseURI=distributionIRI",
-        "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
-        "fr.insee.rmes.bauhaus.lg1=fr",
-        "fr.insee.rmes.bauhaus.lg2=en"
-})
+@AppSpringBootTest
 class DistributionServiceImplTest {
     @MockitoBean
     RepositoryGestion repositoryGestion;
@@ -57,7 +47,7 @@ class DistributionServiceImplTest {
     private static final String EMPTY_JSON_OBJECT = "{}";
     private static final String DISTRIB = "{\"id\":\"d1000\"}";
     private static final String DISTRIB_A_PATCHER = "{\"byteSize\":\"3\",\"labelLg2\":\"test_patch\",\"labelLg1\":\"test_patch\",\"created\":\"2024-04-10T16:34:09.651166561\",\"idDataset\":\"jd1004\",\"id\":\"d1004\",\"updated\":\"2024-04-07T16:34:09.651166561\",\"url\":\"http://test\", \"validationState\": \"Unpublished\"}";
-    private static final String DISTRIB_PATCHEE = "[(http://distributionIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004) [http://datasetGraph/], (http://distributionIRI/d1004, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\") [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\") [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\") [http://datasetGraph/]]";
+    private static final String DISTRIB_PATCHEE = "[(http://datasetIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004) [http://datasetGraph/], (http://distributionIRI/d1004, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\") [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\") [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\") [http://datasetGraph/]]";
 
 
     @Test
@@ -214,7 +204,7 @@ class DistributionServiceImplTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-            Assertions.assertEquals("[(http://distributionIRI/idDataset, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://datasetGraph/], (http://distributionIRI/d1000, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/identifier, \"d1000\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/format, \"format\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#byteSize, \"byteSize\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#downloadURL, \"url\") [http://datasetGraph/]]".replaceAll("d1000", nextId), model.getValue().toString());
+            Assertions.assertEquals("[(http://datasetIRI/idDataset, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://datasetGraph/], (http://distributionIRI/d1000, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/identifier, \"d1000\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1000, http://purl.org/dc/terms/format, \"format\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#byteSize, \"byteSize\") [http://datasetGraph/], (http://distributionIRI/d1000, http://www.w3.org/ns/dcat#downloadURL, \"url\") [http://datasetGraph/]]".replaceAll("d1000", nextId), model.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
     }
@@ -284,7 +274,7 @@ class DistributionServiceImplTest {
             if (withDataSetRemoval) {
                 verify(repositoryGestion, times(1)).deleteTripletByPredicateAndValue(any(), any(), any(), any(), any());
             }
-            Assertions.assertEquals("[(http://distributionIRI/d1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1001) [http://datasetGraph/], (http://distributionIRI/d1001, http://rdf.insee.fr/def/base#validationState, \"Modified\") [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/identifier, \"d1001\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/format, \"format\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#byteSize, \"byteSize\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#downloadURL, \"url\") [http://datasetGraph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://datasetIRI/d1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1001) [http://datasetGraph/], (http://distributionIRI/d1001, http://rdf.insee.fr/def/base#validationState, \"Modified\") [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/identifier, \"d1001\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/format, \"format\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#byteSize, \"byteSize\") [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#downloadURL, \"url\") [http://datasetGraph/]]", model.getValue().toString());
             Assertions.assertEquals("d1001", id);
         }
     }

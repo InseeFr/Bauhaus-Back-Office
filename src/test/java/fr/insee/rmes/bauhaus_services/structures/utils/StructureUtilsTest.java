@@ -1,11 +1,12 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.structures.Structure;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -15,13 +16,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class StructureUtilsTest {
     @InjectMocks
     StructureUtils structureUtils = new StructureUtils();

@@ -2,17 +2,18 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
@@ -39,18 +39,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(properties = {
-        "fr.insee.rmes.bauhaus.baseGraph=http://",
-        "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
-        "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
-        "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
-        "fr.insee.rmes.bauhaus.datasets.record.baseURI=recordIRI",
-        "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
-        "fr.insee.rmes.bauhaus.adms.graph=adms",
-        "fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI=identifiantsAlternatifs/jeuDeDonnees",
-        "fr.insee.rmes.bauhaus.lg1=fr",
-        "fr.insee.rmes.bauhaus.lg2=en"
-})
+@AppSpringBootTest
 class DatasetServiceImplTest {
 
     @MockitoBean
