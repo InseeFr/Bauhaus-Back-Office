@@ -14,6 +14,7 @@ import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -231,6 +232,9 @@ DocumentationsRubricsUtils extends RdfService {
 			if (StringUtils.isNotEmpty(featureUri)) {
 				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
 			}
+			break;
+		case RUBRIQUE_SANS_OBJECT:
+			RdfUtils.addTripleUri(attributeUri, predicateUri, INSEE.RUBRIQUE_SANS_OBJECT, model, graph);
 			break;
 		default:
 			break;
