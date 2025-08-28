@@ -1,6 +1,5 @@
 package fr.insee.rmes.persistance.ontologies;
 
-import fr.insee.rmes.bauhaus_services.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -34,7 +33,6 @@ public class INSEE {
 	public static final IRI OPERATION = INSEE.createIRI("StatisticalOperation");
 	public static final IRI SERIES = INSEE.createIRI("StatisticalOperationSeries");
 	public static final IRI INDICATOR = INSEE.createIRI("StatisticalIndicator");
-	public static final IRI DOCUMENT  = INSEE.createIRI(Constants.DOCUMENT);
 	public static final IRI DATA_COLLECTOR = INSEE.createIRI("dataCollector");
 	public static final IRI CONCEPT_VERSION = INSEE.createIRI("conceptVersion");
 	public static final IRI IS_VALIDATED = INSEE.createIRI("isValidated");
@@ -51,5 +49,5 @@ public class INSEE {
 
 	public static final IRI SPATIAL_RESOLUTION = INSEE.createIRI("spatialResolution");
 	public static final IRI SPATIAL_TEMPORAL = INSEE.createIRI("spatialTemporal");
-
+	public static final IRI RUBRIQUE_SANS_OBJECT = INSEE.createIRI("rubriqueSansObjet");
 }

@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import org.apache.commons.lang3.StringUtils;
@@ -24,15 +24,6 @@ public class MetadataStructureDefUtils  extends RdfService {
 		static final Logger logger = LoggerFactory.getLogger(MetadataStructureDefUtils.class);
 
 
-	public JSONObject getMetadataAttributeById(String id) throws RmesException{
-		JSONObject mas = repoGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
-		if (mas.isEmpty()) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
-		transformRangeType(mas);
-		mas.put(Constants.ID, id);
-		return mas;
-	}
-	
-
 	public void transformRangeType(JSONObject mas) throws RmesException {
 		if (!mas.has(RANGE)) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", (mas.has("id") ? mas.get(Constants.ID) : mas).toString());}
 		String rangeUri = mas.getString(RANGE);
@@ -46,17 +37,6 @@ public class MetadataStructureDefUtils  extends RdfService {
 
 	}
 
-	public JSONArray getMetadataAttributes() throws RmesException {
-		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery());
-		if (!attributesList.isEmpty()) {
-			 for (int i = 0; i < attributesList.length(); i++) {
-		         JSONObject attribute = attributesList.getJSONObject(i);
-		         transformRangeType(attribute);
-		     }
-		}
-		return attributesList;
-	}
-	
 	public Map<String,String> getMetadataAttributesUri() throws RmesException {
 		Map<String,String> attributes = new HashMap<>();
 		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery());

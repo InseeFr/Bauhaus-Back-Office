@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.eclipse.rdf4j.model.Resource;
@@ -22,31 +22,6 @@ public class DocumentationsQueries extends GenericQueries{
 	public static String msdQuery() throws RmesException{
 		Map<String,Object> params = initParams();
         return buildRequest("msdQuery.ftlh", params);
-	}
-	
-	/**
-	 * @param idMas
-	 * @return ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational 
-	 * @throws RmesException
-	 */
-	public static String getAttributeSpecificationQuery(String idMas) throws RmesException {
-		Map<String,Object> params = initParams();
-		params.put("idMas", idMas);
-		params.put("uniqueAttr","true");
-		params.put("MSD_GRAPH",config.getMsdGraph());
-		params.put("CODELIST_GRAPH",config.getCodeListGraph());
-		params.put("MSD_CONCEPTS_GRAPH", config.getMsdConceptsGraph());
-        return buildRequest("getAttributeSpecificationQuery.ftlh", params);
-	}
-	
-	/**
-	 * @return ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational
-	 * @throws RmesException
-	 */
-	public static String getAttributesQuery() throws RmesException {
-		Map<String,Object> params = initParams();
-		params.put("uniqueAttr","false");
-        return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
 	
 	/**

@@ -1,0 +1,13 @@
+package fr.insee.rmes.onion.domain.port.serverside;
+
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.model.Stamp;
+
+import java.util.List;
+
+public interface StampsService {
+	
+	List<String> getStamps() throws RmesException;
+
+	Stamp findStampFrom(Object principal) throws RmesException;
+}

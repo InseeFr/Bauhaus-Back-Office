@@ -47,4 +47,19 @@ public class ConfigStub extends Config {
     public String getCodeListGraph() {
         return "http://rdf.insee.fr/graphes/codes";
     }
+
+    @Override
+    public String getDocumentationsGraph(){
+        return "http://rdf.insee.fr/graphes/qualite/rapport";
+    }
+
+    @Override
+    public String getMsdGraph(){
+        return "http://rdf.insee.fr/graphes/qualite/simsv2fr";
+    }
+
+    @Override
+    public String getMsdConceptsGraph(){
+        return "http://rdf.insee.fr/graphes/concepts/qualite";
+    }
 }
