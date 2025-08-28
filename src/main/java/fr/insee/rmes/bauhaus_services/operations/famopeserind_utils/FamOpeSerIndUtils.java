@@ -71,7 +71,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 	
 	public List<Object> buildObjectListFromJson(JSONArray items, String className) {
 		List<Object> result = new ArrayList<>();
-		Class<?> cls = null;
+		Class<?> cls;
 		try {
 			cls = Class.forName(className);
 		for (int i = 0; i < items.length(); i++) {

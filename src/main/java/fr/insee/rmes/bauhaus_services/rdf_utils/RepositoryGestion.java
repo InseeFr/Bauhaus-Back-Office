@@ -329,7 +329,7 @@ public class RepositoryGestion {
         try(RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
                 rdfGestion.repositoryId()).getConnection()){
             for (IRI predicat : typeOfLink) {
-                RepositoryResult<Statement> statements = null;
+                RepositoryResult<Statement> statements;
                 exceptionCirucmstances="get " + predicat + " links from " + object;
                 statements = conn.getStatements(null, predicat, object, false);
                 exceptionCirucmstances="remove " + predicat + " links from " + object;

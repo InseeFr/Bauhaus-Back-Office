@@ -70,10 +70,8 @@ public class DateUtils {
                 .from(dateTime.atZone(ZoneId.systemDefault())
                         .toInstant());
     }
-
-
     /**
-     * @param String date with format DateTimeFormatter.ISO_DATE_TIME
+     * @param dateStr date with format DateTimeFormatter.ISO_DATE_TIME
      * @return String date with format ISO_LOCAL_DATE
      */
     public static String getDate(String dateStr) {

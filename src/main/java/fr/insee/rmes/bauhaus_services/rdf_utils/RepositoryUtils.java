@@ -69,7 +69,7 @@ public class RepositoryUtils {
 
 
 	public RepositoryConnection getConnection(Repository repository) throws RmesException {
-		RepositoryConnection con = null;
+		RepositoryConnection con;
 		try {
 			con = repository.getConnection();
 		} catch (RepositoryException e) {
@@ -88,7 +88,7 @@ public class RepositoryUtils {
 	 */
 	public static HttpStatus executeUpdate(String updateQuery,Repository repository) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
-		Update update = null;
+		Update update;
 		String queryWithPrefixes = QueryUtils.PREFIXES + updateQuery;
 		try {
 			RepositoryConnection conn = repository.getConnection();
@@ -167,7 +167,7 @@ public class RepositoryUtils {
 	}
 	
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
-		RepositoryResult<Statement> statements = null;
+		RepositoryResult<Statement> statements;
 		try {
 			statements = con.getStatements(null, null, null,context); //get the complete Graph
 		} catch (RepositoryException e) {
@@ -180,7 +180,7 @@ public class RepositoryUtils {
 		RepositoryConnection connection = repository.getConnection();
 		Resource graphToExport =  RdfUtils.toURI(context);
 		String filename = context.replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
-		File tempFile = null;
+		File tempFile;
 		try {
 			tempFile = File.createTempFile(filename, ".trig");
 		} catch (IOException e1) {
@@ -216,7 +216,7 @@ public class RepositoryUtils {
 		Stream<File> files = Arrays.stream(graphs).map(graph -> getCompleteGraphInTrigWithoutException(repo, graph)).filter(Objects::nonNull);
 
 		//Compile all trig in a zip
-		File tempZipFile = null;
+		File tempZipFile;
 		try {
 			tempZipFile = File.createTempFile("exportAll", ".zip");
 		} catch (IOException e1) {
@@ -283,7 +283,7 @@ public class RepositoryUtils {
 	 * @throws RmesException 
 	 */
 	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
-		TupleQuery tupleQuery = null;
+		TupleQuery tupleQuery;
 		String result;
 		try {
 			var stream = new ByteArrayOutputStream();
@@ -311,7 +311,7 @@ public class RepositoryUtils {
 	 * @throws RmesException 
 	 */
 	public static boolean executeAskQuery(RepositoryConnection conn, String query) throws RmesException {
-		BooleanQuery tupleQuery = null;
+		BooleanQuery tupleQuery;
 		try {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
 			var result =  tupleQuery.evaluate();
@@ -467,8 +467,8 @@ public class RepositoryUtils {
 	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
 		try (RepositoryConnection conn = repository.getConnection()){
-			RepositoryResult<Statement> nodes = null;
-			RepositoryResult<Statement> specifications = null;
+			RepositoryResult<Statement> nodes;
+			RepositoryResult<Statement> specifications;
 			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
 			while (nodes.hasNext()) {
 				Resource node = (Resource) nodes.next().getObject();

@@ -59,8 +59,8 @@ class DistributionServiceImplTest {
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDistributions(any())).thenReturn("query");
             var distributions = distributionService.getDistributions();
-            Assertions.assertEquals("1", distributions.get(0).id());
-            Assertions.assertEquals("label", distributions.get(0).labelLg1());
+            Assertions.assertEquals("1", distributions.getFirst().id());
+            Assertions.assertEquals("label", distributions.getFirst().labelLg1());
         }
     }
 
@@ -87,8 +87,8 @@ class DistributionServiceImplTest {
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDistributionsForSearch(any(), any())).thenReturn("query");
             var distributions = distributionService.getDistributionsForSearch();
-            Assertions.assertEquals("id", distributions.get(0).distributionId());
-            Assertions.assertEquals("labelLg1", distributions.get(0).distributionLabelLg1());
+            Assertions.assertEquals("id", distributions.getFirst().distributionId());
+            Assertions.assertEquals("labelLg1", distributions.getFirst().distributionLabelLg1());
         }
     }
 

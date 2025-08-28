@@ -10,7 +10,7 @@ import java.util.Map;
 public class ClassifSeriesQueries extends GenericQueries {
 	
 	public static String seriesQuery() throws RmesException {
-		Map params = new HashMap();
+		Map<String, String> params = new HashMap();
 		params.put("GRAPH", config.getClassifFamiliesGraph());
 		params.put("LG1", config.getLg1());
 		return FreeMarkerUtils.buildRequest("classifications/series/", "getSeries.ftlh", params);

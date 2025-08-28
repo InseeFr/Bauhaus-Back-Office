@@ -90,7 +90,7 @@ class ConceptsImplTest {
 
         assertEquals(4, concepts.size());
 
-        assertEquals("3", concepts.get(0).id());
+        assertEquals("3", concepts.getFirst().id());
         assertEquals("alabel 1", concepts.get(0).label());
         assertEquals("alatLabel1", concepts.get(0).altLabel());
 
@@ -123,7 +123,7 @@ class ConceptsImplTest {
 
         assertEquals(4, concepts.size());
 
-        assertEquals("3", concepts.get(0).id());
+        assertEquals("3", concepts.getFirst().id());
         assertEquals("alabel 1", concepts.get(0).label());
         assertEquals("alatLabel1", concepts.get(0).altLabel());
 

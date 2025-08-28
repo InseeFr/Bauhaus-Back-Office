@@ -143,7 +143,7 @@ public class StructureUtils extends RdfService {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Structure structure = null;
+        Structure structure;
         try {
             structure = mapper.readValue(body, Structure.class);
         } catch (IOException e) {

@@ -57,7 +57,7 @@ public class ExportUtils {
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
 
-        ByteArrayResource resource = null;
+        ByteArrayResource resource;
         try {
             resource = new ByteArrayResource(IOUtils.toByteArray(input));
             input.close();

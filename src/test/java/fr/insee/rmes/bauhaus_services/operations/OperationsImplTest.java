@@ -52,7 +52,7 @@ class OperationsImplTest {
 
             assertEquals(4, series.size());
 
-            assertEquals("3", series.get(0).id());
+            assertEquals("3", series.getFirst().id());
             assertEquals("alabel 1", series.get(0).label());
             assertEquals("alatLabel1", series.get(0).altLabel());
 
@@ -88,7 +88,7 @@ class OperationsImplTest {
 
             assertEquals(4, series.size());
 
-            assertEquals("3", series.get(0).id());
+            assertEquals("3", series.getFirst().id());
             assertEquals("alabel 1", series.get(0).label());
             assertEquals("alatLabel1", series.get(0).altLabel());
 
@@ -155,7 +155,7 @@ class OperationsImplTest {
 
             assertEquals(4, series.size());
 
-            assertEquals("3", series.get(0).id());
+            assertEquals("3", series.getFirst().id());
             assertEquals("alabel 1", series.get(0).label());
             assertEquals("alatLabel1", series.get(0).altLabel());
 

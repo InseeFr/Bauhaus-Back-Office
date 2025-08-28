@@ -54,7 +54,7 @@ class DocumentsImplTest {
         when(documentsUtils.createDocumentID()).thenReturn(generatedId);
         doNothing().when(documentsUtils).createDocument(generatedId, body, false, documentFile, documentName);
 
-        String result = null;
+        String result;
         try {
             result = documentService.createDocument(body, documentFile, documentName);
         } catch (IOException e) {

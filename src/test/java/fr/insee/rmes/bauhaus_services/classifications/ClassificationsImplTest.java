@@ -163,7 +163,7 @@ class ClassificationsImplTest {
 
         assertEquals(4, series.size());
 
-        assertEquals("3", series.get(0).id());
+        assertEquals("3", series.getFirst().id());
         assertEquals("alabel 1", series.get(0).label());
         assertEquals("label", series.get(0).altLabels());
 
@@ -195,7 +195,7 @@ class ClassificationsImplTest {
 
         assertEquals(4, series.size());
 
-        assertEquals("3", series.get(0).id());
+        assertEquals("3", series.getFirst().id());
         assertEquals("alabel 1", series.get(0).label());
         assertEquals("label", series.get(0).altLabels());
 

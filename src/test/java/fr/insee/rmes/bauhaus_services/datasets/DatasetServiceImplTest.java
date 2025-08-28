@@ -68,8 +68,8 @@ class DatasetServiceImplTest {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
             var datasets = datasetService.getDatasets();
-            Assertions.assertEquals("1", datasets.get(0).id());
-            Assertions.assertEquals("label", datasets.get(0).label());
+            Assertions.assertEquals("1", datasets.getFirst().id());
+            Assertions.assertEquals("label", datasets.getFirst().label());
         }
     }
 
@@ -91,8 +91,8 @@ class DatasetServiceImplTest {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasetsForSearch(anyString())).thenReturn("query");
             var datasets = datasetService.getDatasetsForSearch();
-            Assertions.assertEquals("id", datasets.get(0).id());
-            Assertions.assertEquals("labelLg1", datasets.get(0).labelLg1());
+            Assertions.assertEquals("id", datasets.getFirst().id());
+            Assertions.assertEquals("labelLg1", datasets.getFirst().labelLg1());
         }
     }
 
@@ -105,8 +105,8 @@ class DatasetServiceImplTest {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
             var datasets = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
-            Assertions.assertEquals("1", datasets.get(0).id());
-            Assertions.assertEquals("label", datasets.get(0).label());
+            Assertions.assertEquals("1", datasets.getFirst().id());
+            Assertions.assertEquals("label", datasets.getFirst().label());
         }
     }
 

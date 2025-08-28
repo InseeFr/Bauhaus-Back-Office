@@ -183,7 +183,7 @@ public class RepositoryPublication{
 				DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 
 		for (IRI predicat : typeOfLink) {
-			RepositoryResult<Statement> statements = null;
+			RepositoryResult<Statement> statements;
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);
 			} catch (RepositoryException e) {
