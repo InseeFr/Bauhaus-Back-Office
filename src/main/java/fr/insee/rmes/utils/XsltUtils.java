@@ -6,18 +6,24 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class XsltUtils {
 
@@ -29,53 +35,69 @@ public class XsltUtils {
 
 
 	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
-			PrintStream printStream, Path tempDir) throws TransformerException {
-		// prepare transformer
+									 OutputStream outputStream) throws TransformerException {
 		StreamSource xsrc = new StreamSource(xslFileIS);
 		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
 
-		// Pass parameters in a file to the transformer
 		xmlContent.forEach((paramName, xmlData) -> {
 			try {
-				addParameter(xsltTransformer, paramName, xmlData, tempDir);
-			} catch (RmesException e) {
-				logger.error(e.getMessageAndDetails());
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				dbf.setNamespaceAware(true);
+				DocumentBuilder builder = dbf.newDocumentBuilder();
+				Document doc = builder.parse(new ByteArrayInputStream(xmlData.getBytes(StandardCharsets.UTF_8)));
+
+				xsltTransformer.setParameter(paramName, new DOMSource(doc.getDocumentElement()));
+			} catch (Exception e) {
+				throw new RuntimeException("Error setting XML parameter " + paramName, e);
 			}
 		});
 
-		// transformation
-		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(printStream));
+		xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(outputStream));
 	}
-	
 
-	private static void addParameter(Transformer xsltTransformer, String paramName, String paramData, Path tempDir)
-			throws RmesException {
-		// Pass parameters in a file
-		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-		try {
-			Path tempFile = Files.createTempFile(tempDir, paramName, FilesUtils.XML_EXTENSION);
-			String absolutePath = tempFile.toFile().getAbsolutePath();
-			InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
-			Files.copy(is, tempFile, options);
-			absolutePath = absolutePath.replace('\\', '/');
-			xsltTransformer.setParameter(paramName, absolutePath);
-		} catch (IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
-					"IOException - Can't create temp files for XSLT Transformer");
+
+
+	public static ByteArrayOutputStream createOdtFromXml(byte[] transformedXml, InputStream zipTemplateIS)
+			throws IOException {
+		Map<String, byte[]> zipEntries = new HashMap<>();
+
+		try (ZipInputStream zis = new ZipInputStream(zipTemplateIS)) {
+			ZipEntry entry;
+			while ((entry = zis.getNextEntry()) != null) {
+				String entryName = entry.getName();
+
+				// Validation immédiate après getNextEntry (exigée par Sonar)
+				if (entryName == null || entryName.contains("..") || entryName.startsWith("/") ||
+						entryName.startsWith("\\") || entryName.contains(":")) {
+					throw new IOException("Unsafe ZIP entry name: " + entryName);
+				}
+
+				if (!"content.xml".equals(entryName)) {
+					zipEntries.put(entryName, zis.readAllBytes());
+				}
+			}
 		}
 
+		ByteArrayOutputStream odtOutput = new ByteArrayOutputStream();
+		try (ZipOutputStream zos = new ZipOutputStream(odtOutput)) {
+			zos.putNextEntry(new ZipEntry("content.xml"));
+			zos.write(transformedXml);
+			zos.closeEntry();
+
+			for (Map.Entry<String, byte[]> other : zipEntries.entrySet()) {
+				zos.putNextEntry(new ZipEntry(other.getKey()));
+				zos.write(other.getValue());
+				zos.closeEntry();
+			}
+		}
+
+		return odtOutput;
 	}
-	
-	public static void createOdtFromXml(File output, Path finalPath, InputStream zipToCompleteIS, Path tempDir)
-			throws IOException {
-		Path contentPath = Paths.get(tempDir.toString() + "/content.xml");
-		Files.copy(Paths.get(output.getAbsolutePath()), contentPath, StandardCopyOption.REPLACE_EXISTING);
-		Path zipPath = Paths.get(tempDir.toString() + "/export.zip");
-		Files.copy(zipToCompleteIS, zipPath, StandardCopyOption.REPLACE_EXISTING);
-		FilesUtils.addFileToZipFolder(contentPath.toFile(), zipPath.toFile());
-		Files.copy(zipPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
-	}
-	
+
+
+
+
+
 	public static String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyFields, String targetType) {
 		String includeEmptyFieldsString = (Boolean.TRUE.equals(includeEmptyFields) ? "true" : "false");
 		String parametersXML = "";
