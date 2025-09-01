@@ -40,7 +40,7 @@ class CollectionForExportTest {
         List<MembersLg> membersLg = collectionForExport.getMembersLg();
         assertEquals(2, membersLg.size());
 
-        MembersLg firstMember = membersLg.get(0);
+        MembersLg firstMember = membersLg.getFirst();
         assertEquals("1", firstMember.getId());
         assertEquals("Membre 1 Label Lg1", firstMember.getPrefLabelLg1());
         assertEquals("Membre 1 Label Lg2", firstMember.getPrefLabelLg2());

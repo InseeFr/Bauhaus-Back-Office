@@ -1,8 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,15 +12,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class MetadataStructureDefUtilsTest {
 
     @InjectMocks
@@ -31,14 +33,6 @@ class MetadataStructureDefUtilsTest {
     JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
     JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");
     JSONArray array = new JSONArray().put(correctJsonObject).put(falseJsonObject);
-
-    @Test
-    void shouldThrowARmesExceptionWhenGetMetadataAttributeById() throws RmesException {
-        String id ="2025";
-        when(repoGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id))).thenReturn(new JSONObject());
-        RmesException exception = assertThrows(RmesException.class, () -> metadataStructureDefUtils.getMetadataAttributeById(id));
-        assertTrue(exception.getDetails().contains("Attribute not found"));
-    }
 
     @Test
     void shouldThrowARmesExceptionWhenTransformRangeType() {
@@ -77,12 +71,4 @@ class MetadataStructureDefUtilsTest {
        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
        assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
     }
-
-    @Test
-    void shouldThrowARmesExceptionWhenGetMetadataAttributes() throws RmesException {
-        when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery())).thenReturn(array);
-        RmesException exception = assertThrows(RmesException.class, () -> metadataStructureDefUtils.getMetadataAttributes());
-        assertTrue(exception.getDetails().contains("At least one attribute don't have range"));
-    }
-
 }

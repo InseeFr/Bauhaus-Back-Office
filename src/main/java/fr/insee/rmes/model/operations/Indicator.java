@@ -3,7 +3,7 @@ package fr.insee.rmes.model.operations;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
 

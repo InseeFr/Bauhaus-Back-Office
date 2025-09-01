@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.PartialClassification;
 import fr.insee.rmes.model.classification.PartialClassificationFamily;
 import fr.insee.rmes.model.classification.PartialClassificationSeries;

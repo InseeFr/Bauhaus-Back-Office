@@ -1,7 +1,7 @@
 package fr.insee.rmes.config.auth.user;
 
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.domain.model.Stamp;
+import fr.insee.rmes.onion.domain.model.Stamp;
 
 import java.util.List;
 
