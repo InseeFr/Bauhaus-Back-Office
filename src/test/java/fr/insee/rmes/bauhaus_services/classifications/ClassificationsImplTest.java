@@ -1,9 +1,10 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
 import org.json.JSONArray;
@@ -14,14 +15,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class ClassificationsImplTest {
 
     @Mock
@@ -162,7 +163,7 @@ class ClassificationsImplTest {
 
         assertEquals(4, series.size());
 
-        assertEquals("3", series.get(0).id());
+        assertEquals("3", series.getFirst().id());
         assertEquals("alabel 1", series.get(0).label());
         assertEquals("label", series.get(0).altLabels());
 
@@ -194,7 +195,7 @@ class ClassificationsImplTest {
 
         assertEquals(4, series.size());
 
-        assertEquals("3", series.get(0).id());
+        assertEquals("3", series.getFirst().id());
         assertEquals("alabel 1", series.get(0).label());
         assertEquals("label", series.get(0).altLabels());
 

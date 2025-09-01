@@ -4,11 +4,11 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.onion.domain.port.serverside.DocumentationRepository;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
@@ -45,10 +45,10 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	DocumentationExport documentationsExport;
 
 	@Autowired
-	MetadataStructureDefUtils msdUtils;
-	
-	@Autowired
 	ParentUtils ownersUtils;
+
+	@Autowired
+	DocumentationRepository documentationRepository;
 
 
 	/***************************************************************************************************
@@ -70,18 +70,6 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	@Override
 	public MSD getMSD() throws RmesException {
 		return documentationsUtils.getMSD();
-	}
-
-	@Override
-	public String getMetadataAttribute(String id) throws RmesException {
-		JSONObject attribute = msdUtils.getMetadataAttributeById(id);
-		return attribute.toString();
-	}
-
-	@Override
-	public String getMetadataAttributes() throws RmesException {
-		String attributes = msdUtils.getMetadataAttributes().toString();
-		return QueryUtils.correctEmptyGroupConcat(attributes);
 	}
 
 	@Override

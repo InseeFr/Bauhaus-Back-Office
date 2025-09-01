@@ -1,5 +1,6 @@
 package fr.insee.rmes.domain.exceptions;
 
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;

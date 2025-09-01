@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;

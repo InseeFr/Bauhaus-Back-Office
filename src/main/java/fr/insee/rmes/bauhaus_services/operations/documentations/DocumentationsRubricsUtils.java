@@ -9,11 +9,12 @@ import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -232,6 +233,9 @@ DocumentationsRubricsUtils extends RdfService {
 				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
 			}
 			break;
+		case RUBRIQUE_SANS_OBJECT:
+			RdfUtils.addTripleUri(attributeUri, predicateUri, INSEE.RUBRIQUE_SANS_OBJECT, model, graph);
+			break;
 		default:
 			break;
 		}
@@ -306,11 +310,11 @@ DocumentationsRubricsUtils extends RdfService {
 
 	/**
 	 * From JSONObject to JAVA Object DocumentationRubric
-	 * @param JsonRubric
-	 * @return documentationRubric
-	 * @throws RmesException
+	 *
+	 * @param jsonRubric
+	 * @param forXml
+	 * @return
 	 */
-
 	public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric, boolean forXml) {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
 		if (jsonRubric.has(Constants.ID_ATTRIBUTE)) {

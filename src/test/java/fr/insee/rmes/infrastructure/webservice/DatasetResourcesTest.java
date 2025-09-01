@@ -1,11 +1,11 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.DatasetsForSearch;
 import fr.insee.rmes.model.dataset.PartialDataset;
-import fr.insee.rmes.infrastructure.webservice.datasets.DatasetResources;
+import fr.insee.rmes.onion.infrastructure.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

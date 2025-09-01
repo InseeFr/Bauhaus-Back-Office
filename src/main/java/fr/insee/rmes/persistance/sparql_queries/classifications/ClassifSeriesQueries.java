@@ -1,7 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 import java.util.HashMap;
@@ -10,7 +10,7 @@ import java.util.Map;
 public class ClassifSeriesQueries extends GenericQueries {
 	
 	public static String seriesQuery() throws RmesException {
-		Map params = new HashMap();
+		Map<String, Object> params = new HashMap<>();
 		params.put("GRAPH", config.getClassifFamiliesGraph());
 		params.put("LG1", config.getLg1());
 		return FreeMarkerUtils.buildRequest("classifications/series/", "getSeries.ftlh", params);

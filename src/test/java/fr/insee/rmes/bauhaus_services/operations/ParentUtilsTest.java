@@ -1,9 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -18,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Arrays;
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class ParentUtilsTest {
 
     @InjectMocks

@@ -6,13 +6,13 @@ import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
-import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -90,7 +90,7 @@ class ConceptsImplTest {
 
         assertEquals(4, concepts.size());
 
-        assertEquals("3", concepts.get(0).id());
+        assertEquals("3", concepts.getFirst().id());
         assertEquals("alabel 1", concepts.get(0).label());
         assertEquals("alatLabel1", concepts.get(0).altLabel());
 
@@ -123,7 +123,7 @@ class ConceptsImplTest {
 
         assertEquals(4, concepts.size());
 
-        assertEquals("3", concepts.get(0).id());
+        assertEquals("3", concepts.getFirst().id());
         assertEquals("alabel 1", concepts.get(0).label());
         assertEquals("alatLabel1", concepts.get(0).altLabel());
 

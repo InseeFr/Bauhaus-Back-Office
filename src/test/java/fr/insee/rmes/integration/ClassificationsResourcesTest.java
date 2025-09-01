@@ -10,7 +10,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.rbac.AccessPrivilegesChecker;
-import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
