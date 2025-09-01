@@ -10,7 +10,7 @@ import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.infrastructure.webservice.operations.DocumentsResources;
+import fr.insee.rmes.onion.infrastructure.webservice.operations.DocumentsResources;
 import io.minio.errors.MinioException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

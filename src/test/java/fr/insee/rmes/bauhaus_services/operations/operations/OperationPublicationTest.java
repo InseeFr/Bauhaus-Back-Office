@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;

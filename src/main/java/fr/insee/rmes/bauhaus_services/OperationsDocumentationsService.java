@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import org.springframework.http.HttpStatus;
@@ -19,11 +19,6 @@ public interface OperationsDocumentationsService {
 	
 	MSD getMSD() throws RmesException;
 
-	String getMetadataAttribute(String id) throws RmesException;
-
-	String getMetadataAttributes() throws RmesException;
-	
-	//SIMS
 	String getMetadataReport(String id) throws RmesException;
 
 	Documentation getFullSimsForXml(String id) throws RmesException;

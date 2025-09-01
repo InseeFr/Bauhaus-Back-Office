@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import fr.insee.rmes.utils.JSONUtils;

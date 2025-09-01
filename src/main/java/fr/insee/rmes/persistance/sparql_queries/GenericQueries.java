@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 
 public class GenericQueries {
 	

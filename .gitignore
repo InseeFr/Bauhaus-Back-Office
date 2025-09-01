@@ -6,8 +6,6 @@ node_modules
 .classpath
 .project
 .idea
-graphdb
 *.iml
-src/main/resources/request/BeforeMarkdown.ftlh
 .properties
 .run/
