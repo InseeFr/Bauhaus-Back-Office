@@ -2,7 +2,12 @@ package fr.insee.rmes.integration;
 
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/integration/CorsConfigDefaultToAppHostPropertyForOriginTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+=======
+import fr.insee.rmes.onion.domain.port.serverside.StampsService;
+import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/integration/CorsConfigDefaultToAppHostPropertyForOriginTest.java
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

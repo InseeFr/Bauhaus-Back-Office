@@ -4,14 +4,24 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+=======
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
+=======
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;

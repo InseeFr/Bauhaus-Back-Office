@@ -9,7 +9,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/datasets/DatasetServiceImplTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+=======
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/datasets/DatasetServiceImplTest.java
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.model.dataset.Dataset;

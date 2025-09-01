@@ -5,6 +5,10 @@ import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/classifications/ClassificationsResourcesTest.java
+=======
+import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/classifications/ClassificationsResourcesTest.java
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
