@@ -12,7 +12,7 @@ import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidat
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;

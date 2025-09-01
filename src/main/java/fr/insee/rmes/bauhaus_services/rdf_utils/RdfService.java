@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.*;
 import org.json.JSONArray;

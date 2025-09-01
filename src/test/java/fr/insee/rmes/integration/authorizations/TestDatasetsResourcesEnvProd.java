@@ -3,7 +3,7 @@ package fr.insee.rmes.integration.authorizations;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.infrastructure.webservice.datasets.DatasetResources;
+import fr.insee.rmes.onion.infrastructure.webservice.datasets.DatasetResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

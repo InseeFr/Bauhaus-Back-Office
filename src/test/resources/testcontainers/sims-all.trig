@@ -12,17 +12,20 @@
                     "<p>Mai (ou avril) &agrave; septembre. Les questionnaires sont envoy&eacute;s vers le 25 du mois pr&eacute;c&eacute;dant le mois de collecte.</p>"@fr ;
             <http://purl.org/dc/terms/language>
                     <http://bauhaus/codes/langue/fr> .
-    
+
     <http://bauhaus/qualite/attribut/1679/S.3.4>
             a       <http://www.w3.org/ns/sdmx-mm#ReportedAttribute> ;
             <http://bauhaus/qualite/simsv2fr/attribut/S.3.4>
-                    <http://bauhaus/qualite/attribut/1679/S.3.4/texte> , <http://bauhaus/qualite/attribut/1679/S.3.4/text> ;
+                    <http://rdf.insee.fr/def/base#rubriqueSansObjet> ;
             <http://www.w3.org/ns/sdmx-mm#metadataReport>
                     <http://bauhaus/qualite/rapport/1679> .
     
     <http://bauhaus/qualite/attribut/1679/S.4>
             a       <http://www.w3.org/ns/sdmx-mm#ReportedAttribute> ;
+            <http://bauhaus/qualite/simsv2fr/attribut/S.4>
+                    <http://rdf.insee.fr/def/base#rubriqueSansObjet> ;
             <http://www.w3.org/ns/sdmx-mm#metadataReport>
+
                     <http://bauhaus/qualite/rapport/1679> .
     
     <http://bauhaus/qualite/attribut/1679/S.18.3/texte>

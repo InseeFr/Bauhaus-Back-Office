@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.structures.impl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.structures.PartialStructureComponent;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;

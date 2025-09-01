@@ -2,9 +2,8 @@ package fr.insee.rmes.persistance.sparql_queries.code_list;
 
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +52,7 @@ public class CodeListQueries extends GenericQueries {
 	private static void addSearchPredicates(Map<String, Object> params, List<String> search) {
 		if(search != null){
 			search.forEach(s -> {
-				if(!StringUtils.isEmpty(s)){
+				if(!s.isEmpty()){
 					String key = s.startsWith("code:") ? "SEARCH_CODE" : "SEARCH_LABEL_LG1";
 					params.put(key, s.substring(s.indexOf(":") + 1 ));
 				}

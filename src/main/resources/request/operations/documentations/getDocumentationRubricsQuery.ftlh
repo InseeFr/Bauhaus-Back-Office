@@ -96,5 +96,12 @@ WHERE {
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
 			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} }
+
+		UNION {
+                ?reportAttr ?attr ?uri .
+                ?reportAttr ?attr insee:rubriqueSansObjet
+                BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
+                BIND('RUBRIQUE_SANS_OBJECT' AS ?rangeType) .
+        }
 			
 }

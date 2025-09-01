@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class DocumentsImplTest {
         when(documentsUtils.createDocumentID()).thenReturn(generatedId);
         doNothing().when(documentsUtils).createDocument(generatedId, body, false, documentFile, documentName);
 
-        String result = null;
+        String result;
         try {
             result = documentService.createDocument(body, documentFile, documentName);
         } catch (IOException e) {

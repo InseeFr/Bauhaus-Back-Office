@@ -6,7 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.insee.rmes.config.keycloak.KeycloakServer;
 import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
 import fr.insee.rmes.config.keycloak.ServerZone;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

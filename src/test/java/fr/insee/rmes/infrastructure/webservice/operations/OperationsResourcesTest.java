@@ -6,6 +6,7 @@ import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.onion.infrastructure.webservice.operations.OperationsResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;

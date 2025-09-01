@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
 
 import java.util.List;

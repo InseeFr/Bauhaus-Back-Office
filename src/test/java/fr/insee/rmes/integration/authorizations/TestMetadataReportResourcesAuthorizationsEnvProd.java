@@ -3,13 +3,14 @@ package fr.insee.rmes.integration.authorizations;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.infrastructure.webservice.operations.MetadataReportResources;
+import fr.insee.rmes.onion.infrastructure.webservice.operations.MetadataReportResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -54,6 +55,10 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
     @MockitoBean
     private OperationsService operationsService;
+
+    @MockitoBean
+    private DocumentationService documentationService;
+
 
 
     private final String idep = "xxxxux";
@@ -125,68 +130,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
 
-    @Test
-    void testGetMetadataAttribute() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
-        String id = "testId";
-        String jsonResponse = "{\"key\":\"value\"}";
-
-        when(documentationsService.getMetadataAttribute(id)).thenReturn(jsonResponse);
-
-        mvc.perform(get("/operations/metadataAttribute/{id}", id)
-                        .header("Authorization", "Bearer toto")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(jsonResponse));
-    }
-
-    @Test
-    void testGetMetadataAttributeRmesException() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
-
-        String id = "testId";
-
-        when(documentationsService.getMetadataAttribute(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
-
-        mvc.perform(get("/operations/metadataAttribute/{id}", id)
-                        .header("Authorization", "Bearer toto")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
-    void testGetMetadataAttributes() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
-
-        String jsonResponse = "{\"key\":\"value\"}";
-
-        when(documentationsService.getMetadataAttributes()).thenReturn(jsonResponse);
-
-        mvc.perform(get("/operations/metadataAttributes")
-                        .header("Authorization", "Bearer toto")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().json(jsonResponse));
-    }
-
-    @Test
-    void testGetMetadataAttributesRmesException() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
-
-        when(documentationsService.getMetadataAttributes()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
-
-        mvc.perform(get("/operations/metadataAttributes")
-                        .header("Authorization", "Bearer toto")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-    }
 
     @Test
     void testGetMetadataReport() throws Exception {

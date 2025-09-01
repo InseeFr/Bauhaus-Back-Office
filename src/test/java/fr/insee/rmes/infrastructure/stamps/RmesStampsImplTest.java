@@ -1,5 +1,6 @@
 package fr.insee.rmes.infrastructure.stamps;
 
+import fr.insee.rmes.onion.infrastructure.stamps.RmesStampsImpl;
 import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;

@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -183,7 +183,7 @@ public class RepositoryPublication{
 				DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 
 		for (IRI predicat : typeOfLink) {
-			RepositoryResult<Statement> statements = null;
+			RepositoryResult<Statement> statements;
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);
 			} catch (RepositoryException e) {

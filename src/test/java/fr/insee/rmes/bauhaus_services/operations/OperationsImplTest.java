@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -52,7 +52,7 @@ class OperationsImplTest {
 
             assertEquals(4, series.size());
 
-            assertEquals("3", series.get(0).id());
+            assertEquals("3", series.getFirst().id());
             assertEquals("alabel 1", series.get(0).label());
             assertEquals("alatLabel1", series.get(0).altLabel());
 
@@ -88,7 +88,7 @@ class OperationsImplTest {
 
             assertEquals(4, series.size());
 
-            assertEquals("3", series.get(0).id());
+            assertEquals("3", series.getFirst().id());
             assertEquals("alabel 1", series.get(0).label());
             assertEquals("alatLabel1", series.get(0).altLabel());
 
@@ -155,7 +155,7 @@ class OperationsImplTest {
 
             assertEquals(4, series.size());
 
-            assertEquals("3", series.get(0).id());
+            assertEquals("3", series.getFirst().id());
             assertEquals("alabel 1", series.get(0).label());
             assertEquals("alatLabel1", series.get(0).altLabel());
 

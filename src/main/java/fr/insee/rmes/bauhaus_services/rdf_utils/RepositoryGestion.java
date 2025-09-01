@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import jakarta.annotation.PostConstruct;
@@ -329,7 +329,7 @@ public class RepositoryGestion {
         try(RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
                 rdfGestion.repositoryId()).getConnection()){
             for (IRI predicat : typeOfLink) {
-                RepositoryResult<Statement> statements = null;
+                RepositoryResult<Statement> statements;
                 exceptionCirucmstances="get " + predicat + " links from " + object;
                 statements = conn.getStatements(null, predicat, object, false);
                 exceptionCirucmstances="remove " + predicat + " links from " + object;
