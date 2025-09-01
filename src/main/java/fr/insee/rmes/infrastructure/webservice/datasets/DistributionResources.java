@@ -3,7 +3,7 @@ package fr.insee.rmes.infrastructure.webservice.datasets;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.*;
