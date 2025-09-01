@@ -220,6 +220,11 @@ class ConceptsImplTest {
                 .ignoreWhitespace()
                 .ignoreComments()
                 .build();
+        String actualOdtContent = getOdtContent(result.getBody().getByteArray());
+        System.out.println("===== ACTUAL content.xml =====");
+        System.out.println(actualOdtContent);
+        System.out.println("===== EXPECTED content.xml =====");
+        System.out.println(expectedXmlForOdtContent);
         assertFalse(inputsDiffs.hasDifferences(), inputsDiffs.fullDescription());
     }
 
