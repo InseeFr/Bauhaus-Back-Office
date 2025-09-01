@@ -87,13 +87,13 @@ public class ConceptsExportBuilder extends RdfService {
 
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
-        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
         return exportUtils.exportAsODT(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
     }
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
-        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
         return exportUtils.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
     }
 

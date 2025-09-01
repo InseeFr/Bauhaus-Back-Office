@@ -99,7 +99,7 @@ public class DocumentationExport {
 
 		PatternAndZip patternAndZip = PatternAndZip.of(goal);
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 
 		Exporter exporter;
 		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
@@ -205,8 +205,7 @@ public class DocumentationExport {
 			boolean lg2) throws RmesException {
 		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-
+		xmlContent.put(Constants.PARAMETERS_NODE, parametersXML);
 		return exportUtils.exportFilesAsResponse(xmlContent);
 	}
 	
@@ -214,7 +213,7 @@ public class DocumentationExport {
 	public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal, int maxLength) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
-		xmlContent.put("msdFile", buildShellSims());
+		xmlContent.put("msdNode", buildShellSims());
 		return exportAsResponse(id, xmlContent,targetType,includeEmptyMas,lg1,lg2, document, goal, maxLength);
 	}
 	
@@ -223,7 +222,7 @@ public class DocumentationExport {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
 		String msdXML = buildShellSims();
-		xmlContent.put("msdFile", msdXML);
+		xmlContent.put("msdNode", msdXML);
 		return exportXmlFiles(xmlContent,targetType,includeEmptyMas,lg1,lg2);
 	}
 
@@ -295,12 +294,12 @@ public class DocumentationExport {
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 
-		xmlContent.put("simsFile",  simsXML);
-		xmlContent.put("seriesFile",  seriesXML);
-		xmlContent.put("operationFile",  operationXML);
-		xmlContent.put("indicatorFile",  indicatorXML);
-		xmlContent.put("codeListsFile",  codeListsXML);
-		xmlContent.put("organizationsFile",  organizationsXML);
+		xmlContent.put("simsNode",  simsXML);
+		xmlContent.put("seriesNode",  seriesXML);
+		xmlContent.put("operationNode",  operationXML);
+		xmlContent.put("indicatorNode",  indicatorXML);
+		xmlContent.put("codeListsNode",  codeListsXML);
+		xmlContent.put("organizationsNode",  organizationsXML);
 		return targetType;
 	}
 	

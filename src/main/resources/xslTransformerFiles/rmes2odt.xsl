@@ -12,26 +12,77 @@
 
     <xsl:output method="xml" encoding="UTF-8" indent="yes" />
 
+    <!-- Paramètres injectés en mémoire via Java (DOMSource) -->
+    <xsl:param name="seriesNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
     <!-- the params with the addresses of the files -->
-    <xsl:param name="seriesFile"/>
-    <xsl:param name="operationFile"/>
-    <xsl:param name="indicatorFile"/>
-    <xsl:param name="simsFile"/>
-    <xsl:param name="organizationsFile"/>
-    <xsl:param name="codeListsFile"/>
-    <xsl:param name="msdFile"/>
-    <xsl:param name="conceptFile"/>
-    <xsl:param name="collectionFile"/>
-    <xsl:param name="parametersFile"/>
+    <xsl:param name="seriesFile" required="no"/>
+
+    <xsl:param name="operationNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="operationFile" required="no"/>
+
+    <xsl:param name="indicatorNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="indicatorFile" required="no"/>
+
+    <xsl:param name="simsNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="simsFile" required="no"/>
+
+    <xsl:param name="organizationsNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="organizationsFile" required="no"/>
+
+    <xsl:param name="codeListsNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="codeListsFile" required="no"/>
+
+    <xsl:param name="msdNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="msdFile" required="no"/>
+
+    <xsl:param name="conceptNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="conceptFile" required="no"/>
+
+    <xsl:param name="collectionNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="collectionFile" required="no"/>
+
+    <xsl:param name="parametersNode" as="node()" required="no">
+        <empty />
+    </xsl:param>
+    <xsl:param name="parametersFile" required="no"/>
 
     <!-- the params with the content of the files -->
+
+<!--    <xsl:param name="parameters">-->
+<!--        <xsl:choose>-->
+<!--            <xsl:when test="$parametersNode/*">-->
+<!--                <xsl:copy-of select="$parametersNode"/>-->
+<!--            </xsl:when>-->
+<!--            <xsl:otherwise>-->
+<!--                <xsl:copy-of select="document($parametersFile)"/>-->
+<!--            </xsl:otherwise>-->
+<!--        </xsl:choose>-->
+<!--    </xsl:param>-->
     <xsl:param name="parameters">
         <xsl:choose>
             <xsl:when test="doc-available($parametersFile)">
                 <xsl:copy-of select="document($parametersFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <parameters/>
+                <xsl:copy-of select="$parametersNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -41,7 +92,7 @@
                 <xsl:copy-of select="document($seriesFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Series/>
+                <xsl:copy-of select="$seriesNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -51,7 +102,7 @@
                 <xsl:copy-of select="document($operationFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Operation/>
+                <xsl:copy-of select="$operationNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -61,7 +112,7 @@
                 <xsl:copy-of select="document($indicatorFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Indicator/>
+                <xsl:copy-of select="$indicatorNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -71,7 +122,7 @@
                 <xsl:copy-of select="document($simsFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Sims/>
+                <xsl:copy-of select="$simsNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -81,7 +132,7 @@
                 <xsl:copy-of select="document($organizationsFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Organizations/>
+                <xsl:copy-of select="$organizationsNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -91,7 +142,7 @@
                 <xsl:copy-of select="document($codeListsFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <CodeLists/>
+                <xsl:copy-of select="$codeListsNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -101,7 +152,7 @@
                 <xsl:copy-of select="document($msdFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Msd/>
+                <xsl:copy-of select="$msdNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -111,7 +162,7 @@
                 <xsl:copy-of select="document($conceptFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Concepts/>
+                <xsl:copy-of select="$conceptNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -121,7 +172,7 @@
                 <xsl:copy-of select="document($collectionFile)"/>
             </xsl:when>
             <xsl:otherwise>
-                <Collections/>
+                <xsl:copy-of select="$collectionNode"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -157,7 +208,7 @@
         <xsl:for-each select="$msd//mas">
             <xsl:sort data-type="number" select="substring-before(concat(substring-after(idMas,'.'),'.0'),'.')"/>
             <xsl:sort data-type="number" select="substring-after(substring-after(idMas,'.'),'.')"/>
-            <!-- ever mas or only the mas corresponding to a rubrics from the sims or its parent or its grand-parent -->
+            <!-- every mas or only the mas corresponding to a rubrics from the sims or its parent or its grand-parent -->
             <xsl:if test="$parameters//includeEmptyFields = 'true'
                 or idMas = $sims//rubrics/idAttribute
                 or idMas = $msd//mas[idMas = $sims//rubrics/idAttribute]/idParent
