@@ -210,15 +210,6 @@ rbac:
         read: ALL
       geography:
         read: ALL
-    CNIS_RMESGNCS:
-      operation_operation:
-        update: ALL
-      operation_sims:
-        update: ALL
-      codeslist_codeslist:
-        read: ALL
-      geography:
-        read: ALL
     Gestionnaire_serie_RMESGNCS:
       operation_family:
         read: STAMP
