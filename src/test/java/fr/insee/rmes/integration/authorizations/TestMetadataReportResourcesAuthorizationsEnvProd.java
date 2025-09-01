@@ -9,7 +9,7 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.operations.MetadataReportResources;
+import fr.insee.rmes.infrastructure.webservice.operations.MetadataReportResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;

@@ -17,7 +17,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;
-import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
