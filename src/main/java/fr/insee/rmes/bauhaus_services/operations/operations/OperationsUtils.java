@@ -61,6 +61,12 @@ public class OperationsUtils extends RdfService{
 		}
 	}
 
+	public void verifyBodyToCreateOperations(Operation operation) throws RmesBadRequestException {
+		if(operation.prefLabelLg1==null || operation.prefLabelLg1.trim().isEmpty()) {
+			throw new RmesBadRequestException("Required title not entered by user.");
+		}
+	}
+
 	public Operation getOperationById(String id) throws RmesException {
 		return buildOperationFromJson(getOperationJsonById(id));
 	}
@@ -103,6 +109,9 @@ public class OperationsUtils extends RdfService{
 			logger.error(e.getMessage());
 		}
 		operation.setId(id);
+
+		verifyBodyToCreateOperations(operation);
+
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
 		if (! famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
