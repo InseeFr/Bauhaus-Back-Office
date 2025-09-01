@@ -1,6 +1,10 @@
 package fr.insee.rmes.stubs;
 
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/stubs/RepositoryPublicationStubInternalError.java
+=======
+
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/stubs/RepositoryPublicationStubInternalError.java
 public class RepositoryPublicationStubInternalError extends RepositoryPublicationStub {
 
     public static final String ERROR_MESSAGE="error";

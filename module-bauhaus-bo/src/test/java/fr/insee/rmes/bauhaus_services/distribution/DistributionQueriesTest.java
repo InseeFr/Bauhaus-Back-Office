@@ -1,6 +1,10 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/distribution/DistributionQueriesTest.java
+=======
+import fr.insee.rmes.config.ConfigStub;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/distribution/DistributionQueriesTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

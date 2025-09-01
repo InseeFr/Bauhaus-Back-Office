@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import jakarta.validation.constraints.NotNull;

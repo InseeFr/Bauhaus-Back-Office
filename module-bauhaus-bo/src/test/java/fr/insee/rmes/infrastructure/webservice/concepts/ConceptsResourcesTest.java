@@ -4,12 +4,17 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/concepts/ConceptsResourcesTest.java
+=======
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/concepts/ConceptsResourcesTest.java
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/concepts/ConceptsResourcesTest.java
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,6 +22,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
+=======
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/concepts/ConceptsResourcesTest.java
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;

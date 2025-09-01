@@ -2,15 +2,26 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/integration/authorizations/TestMetadataReportResourcesAuthorizationsEnvProd.java
+=======
+import fr.insee.rmes.config.auth.roles.Roles;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/integration/authorizations/TestMetadataReportResourcesAuthorizationsEnvProd.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/integration/authorizations/TestMetadataReportResourcesAuthorizationsEnvProd.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.MetadataReportResources;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
+=======
+import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;
+import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.utils.XMLUtils;
+import fr.insee.rmes.onion.infrastructure.webservice.operations.MetadataReportResources;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/integration/authorizations/TestMetadataReportResourcesAuthorizationsEnvProd.java
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;

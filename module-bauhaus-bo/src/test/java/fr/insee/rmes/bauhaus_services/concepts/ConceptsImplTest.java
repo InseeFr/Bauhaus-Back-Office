@@ -14,6 +14,10 @@ import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/concepts/ConceptsImplTest.java
+=======
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/concepts/ConceptsImplTest.java
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;

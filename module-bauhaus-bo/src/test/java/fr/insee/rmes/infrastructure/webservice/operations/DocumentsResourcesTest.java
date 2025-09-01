@@ -4,6 +4,10 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/operations/DocumentsResourcesTest.java
+=======
+import fr.insee.rmes.onion.infrastructure.webservice.operations.DocumentsResources;
+>>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/operations/DocumentsResourcesTest.java
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

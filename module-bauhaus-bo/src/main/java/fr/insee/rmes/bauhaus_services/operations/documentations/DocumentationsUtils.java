@@ -15,6 +15,8 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
