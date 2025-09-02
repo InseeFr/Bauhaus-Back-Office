@@ -1,13 +1,19 @@
 package fr.insee.rmes.onion.infrastructure.graphdb.operations.queries;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.model.Resource;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class DocumentationQueries  extends GenericQueries {
+    private static final String ID_SIMS = Constants.ID_SIMS;
+
+
     private static Map<String,Object> initParams() {
         Map<String,Object> params = new HashMap<>();
         params.put("LG1", config.getLg1());
@@ -19,9 +25,75 @@ public class DocumentationQueries  extends GenericQueries {
         return params;
     }
 
+    public static String deleteGraph(Resource graph) throws RmesException {
+        Map<String,Object> params = initParams();
+        params.put("DOCUMENTATION_GRAPH", graph);
+        return buildRequest("deleteGraph.ftlh", params);
+    }
 
     private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException  {
         return FreeMarkerUtils.buildRequest("operations/documentations/", fileName, params);
+    }
+
+
+
+    public static String msdQuery() throws RmesException{
+        Map<String,Object> params = initParams();
+        return buildRequest("msdQuery.ftlh", params);
+    }
+
+    public static String getAttributesUriQuery() throws RmesException {
+        Map<String,Object> params = initParams();
+        return buildRequest("getAttributesUriQuery.ftlh", params);
+    }
+
+    public static String getDocumentationTitleQuery(String idSims) throws RmesException {
+        Map<String,Object> params = initParams();
+        params.put(ID_SIMS, idSims);
+        return buildRequest("getDocumentationTitleQuery.ftlh", params);
+    }
+
+    public static String getTargetByIdSims(String idSims) throws RmesException {
+        Map<String,Object> params = initParams();
+        params.put(ID_SIMS, idSims);
+        return buildRequest("getTargetByIdSimsQuery.ftlh", params);
+    }
+
+    public static String getSimsByTarget(String idTarget) throws RmesException {
+        Map<String,Object> params = initParams();
+        params.put("idTarget", idTarget);
+        return buildRequest("getSimsByIdTargetQuery.ftlh", params);
+    }
+
+    public static String getDocumentationRubricsQuery(String idSims, String clLg1, String clLg2) throws RmesException {
+        Map<String,Object> params = initParams();
+        params.put(ID_SIMS, idSims);
+        params.put("DATE", RangeType.DATE);
+        params.put("STRING", RangeType.STRING);
+        params.put("RICHTEXT", RangeType.RICHTEXT);
+        params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
+        params.put("CODELIST", RangeType.CODELIST);
+        params.put("ORGANIZATION", RangeType.ORGANIZATION);
+        params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
+
+        params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
+        params.put("ORG_INSEE_GRAPH", config.getOrgInseeGraph());
+
+        params.put("LG1_CL",clLg1);
+        params.put("LG2_CL",clLg2);
+        return buildRequest("getDocumentationRubricsQuery.ftlh", params);
+    }
+
+    public static String lastID() throws RmesException {
+        return buildRequest("lastID.ftlh", null);
+    }
+
+
+    public static String getPublicationState(String id) throws RmesException{
+        Map<String,Object> params = initParams();
+        params.put(Constants.ID_SIMS, id);
+        params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
+        return buildRequest("getPublicationStatusQuery.ftlh", params);
     }
 
     public static String getAttributeSpecificationQuery(String idMas) throws RmesException {
