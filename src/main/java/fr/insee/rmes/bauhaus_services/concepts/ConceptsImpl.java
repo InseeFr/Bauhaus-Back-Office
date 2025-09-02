@@ -11,15 +11,17 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.*;
+import fr.insee.rmes.model.concepts.Collection;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -48,14 +50,22 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	private final ConceptsExportBuilder conceptsExport;
 
 	private final CollectionExportBuilder collectionExport;
+	private final CollectionRepository collectionRepository;
 
 	private final int maxLength;
 
-    public ConceptsImpl(ConceptsUtils conceptsUtils, CollectionsUtils collectionsUtils, ConceptsExportBuilder conceptsExport, CollectionExportBuilder collectionExport, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
+    public ConceptsImpl(
+			ConceptsUtils conceptsUtils,
+			CollectionsUtils collectionsUtils,
+			ConceptsExportBuilder conceptsExport,
+			CollectionExportBuilder collectionExport,
+			CollectionRepository collectionRepository,
+			@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
         this.conceptsUtils = conceptsUtils;
         this.collectionsUtils = collectionsUtils;
         this.conceptsExport = conceptsExport;
         this.collectionExport = collectionExport;
+		this.collectionRepository = collectionRepository;
         this.maxLength = maxLength;
     }
 
@@ -191,8 +201,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws RmesException
 	 */
 	@Override
-	public String setCollection(String body) throws RmesException {
-		return collectionsUtils.setCollection(body);
+	public String createCollection(Collection collection) throws RmesException {
+		collection.setId(idGenerator.generateNextId());
+		return collectionRepository.save(collection);
 	}
 	//	
 	/**
@@ -204,8 +215,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws Exception
 	 */
 	@Override
-	public String setCollection(String id, String body) throws RmesException {
-		return collectionsUtils.setCollection(id, body);
+	public void updateCollection(String id, Collection collection) throws RmesException {
+		collectionRepository.save(collection);
 	}
 
 	/**

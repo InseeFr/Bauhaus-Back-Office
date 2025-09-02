@@ -3,8 +3,8 @@ package fr.insee.rmes.integration.authorizations;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.rbac.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -13,10 +13,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -81,19 +83,19 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     }
 
     @ParameterizedTest
-    @MethodSource("TestRoleCaseForUpdateConcept")
-    void updateConcept(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    @MethodSource("TestRoleCaseForUpdateCollection")
+    void updateCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        var request = put("/concepts/collection/definitions-insee-fr").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        var request = put("/concepts/collection/1").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
         if(withBearer){
             request.header("Authorization", "Bearer toto");
         }
         mvc.perform(request).andExpect(status().is(code));
     }
-    static Collection<Arguments> TestRoleCaseForUpdateConcept() {
+    static Collection<Arguments> TestRoleCaseForUpdateCollection() {
         return Arrays.asList(
-                Arguments.of(200, true, true),
+                Arguments.of(204, true, true),
                 Arguments.of(403, true, false),
                 Arguments.of(401, false, true)
         );

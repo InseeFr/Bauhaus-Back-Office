@@ -6,9 +6,10 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.*;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -228,10 +231,15 @@ public class ConceptsResources  {
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
-			@Parameter(description = "Collection", required = true) @RequestBody String body) throws RmesException {
+			@Parameter(description = "Collection", required = true) @RequestBody Collection body) throws RmesException {
 		logger.info("Creating concepts collection : {}" , body);
-		String id = conceptsService.setCollection(body);
-		return ResponseEntity.ok(id);
+		String id = conceptsService.createCollection(body);
+		URI location = ServletUriComponentsBuilder
+				.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(id)
+				.toUri();
+		return ResponseEntity.created(location).body(id);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
@@ -239,10 +247,15 @@ public class ConceptsResources  {
 	@Operation(summary = "Update a collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Collection", required = true) @RequestBody String body) throws RmesException {
+			@Parameter(description = "Collection", required = true) @RequestBody Collection body) throws RmesException {
 		logger.info("Updating concepts collection : {}" , id);
-		conceptsService.setCollection(id, body);
-		return ResponseEntity.ok(id);
+
+		if (body.getId() != null && !id.equals(body.getId())) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		conceptsService.updateCollection(id, body);
+		return ResponseEntity.noContent().build();
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)

@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.graphdb.queries;
+package fr.insee.rmes.onion.infrastructure.graphdb.operations.queries;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
