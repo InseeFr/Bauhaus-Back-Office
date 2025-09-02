@@ -3,8 +3,9 @@ package fr.insee.rmes.bauhaus_services.operations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.model.operations.PartialOperationFamily;
+import fr.insee.rmes.onion.domain.port.serverside.operations.OperationFamilyRepository;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
@@ -18,6 +19,10 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +34,9 @@ class OperationsImplTest {
 
     @Mock
     RepositoryGestion repoGestion;
+
+    @Mock
+    OperationFamilyRepository operationFamilyRepository;
 
     @BeforeAll
     static void initGenericQueries(){
@@ -109,33 +117,11 @@ class OperationsImplTest {
 
     @Test
     void shouldGetFamiliesList() throws RmesException {
-
-        try (MockedStatic<OpFamiliesQueries> mockedFactory = Mockito.mockStatic(OpFamiliesQueries.class)) {
-            mockedFactory.when(OpFamiliesQueries::familiesQuery).thenReturn("query");
-
-            JSONArray array = new JSONArray();
-            array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-            array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-            array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-            array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-            when(repoGestion.getResponseAsArray("query")).thenReturn(array);
-            var series = operationsImpl.getFamilies().stream().toList();
-
-            assertEquals(4, series.size());
-
-            assertEquals("3", series.get(0).id());
-            assertEquals("alabel 1", series.get(0).label());
-
-            assertEquals("2", series.get(1).id());
-            assertEquals("elabel 1", series.get(1).label());
-
-            assertEquals("4", series.get(2).id());
-            assertEquals("élabel 1", series.get(2).label());
-
-            assertEquals("1", series.get(3).id());
-            assertEquals("label 1", series.get(3).label());
-        }
-
+        when(operationFamilyRepository.getFamilies()).thenReturn(new ArrayList<>(Collections.singleton(new PartialOperationFamily("1", "label"))));
+        var series = operationsImpl.getFamilies().stream().toList();
+        assertEquals(1, series.size());
+        assertEquals("1", series.get(0).id());
+        assertEquals("label", series.get(0).label());
     }
 
     @Test

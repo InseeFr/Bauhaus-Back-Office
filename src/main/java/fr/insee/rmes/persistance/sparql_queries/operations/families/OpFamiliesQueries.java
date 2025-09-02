@@ -34,13 +34,6 @@ public class OpFamiliesQueries extends GenericQueries{
 		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
 	}
 
-	public static String familiesQuery() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
-		params.put("LG1", config.getLg1());
-		return  buildRequest("getFamilies.ftlh", params);
-	}
-
 
 	public static String familyQuery(String id, boolean familiesRichTextNextStructure) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();

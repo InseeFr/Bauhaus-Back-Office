@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.OperationFamilyQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
@@ -25,8 +26,9 @@ class OpFamiliesQueriesTest  extends WithGraphDBContainer {
 
     @Test
     void should_return_all_families() throws Exception {
+        var operationFamilyQueries = new OperationFamilyQueries("fr", "http://rdf.insee.fr/graphes/", "operations");
         OpSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(operationFamilyQueries.familiesQuery());
         assertEquals(56, result.length());
 
         for (var i = 0; i < result.length(); i++){

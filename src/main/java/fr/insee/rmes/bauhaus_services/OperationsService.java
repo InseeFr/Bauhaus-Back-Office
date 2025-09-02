@@ -1,7 +1,8 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.model.operations.PartialOperationFamily;
 
 import java.util.List;
 
