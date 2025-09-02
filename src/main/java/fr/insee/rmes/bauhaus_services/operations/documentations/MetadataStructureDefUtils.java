@@ -3,9 +3,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
@@ -39,7 +39,7 @@ public class MetadataStructureDefUtils  extends RdfService {
 
 	public Map<String,String> getMetadataAttributesUri() throws RmesException {
 		Map<String,String> attributes = new HashMap<>();
-		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery());
+		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationQueries.getAttributesUriQuery());
 		if (!attributesList.isEmpty()) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);

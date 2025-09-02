@@ -4,7 +4,7 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -60,14 +60,14 @@ class MetadataStructureDefUtilsTest {
 
     @Test
     void shouldGetMetadataAttributesUriWhenAttributesEmpty() throws RmesException {
-        when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsArray(DocumentationQueries.getAttributesUriQuery())).thenReturn(new JSONArray());
         Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
         assertEquals(new HashMap<>(),actual);
     }
 
     @Test
     void shouldGetMetadataAttributesUriWhenAttributesNotEmpty() throws RmesException {
-       when(repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery())).thenReturn(array);
+       when(repoGestion.getResponseAsArray(DocumentationQueries.getAttributesUriQuery())).thenReturn(array);
        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
        assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
     }

@@ -6,13 +6,14 @@ import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,6 +60,10 @@ class ConceptsImplTest {
     @Mock
     CollectionForExport collectionForExport;
 
+
+    @Mock
+    CollectionRepository collectionRepository;
+
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
@@ -76,7 +81,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsList() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10);
         Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
 
         JSONArray array = new JSONArray();
@@ -109,7 +114,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsListForAdvancedSearch() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null,  10);
         Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
 
         JSONArray array = new JSONArray();
@@ -148,7 +153,7 @@ class ConceptsImplTest {
         collection.setPrefLabelLg2("Lg2Collection");
 
         when(collectionExport.getCollectionDataOld("1")).thenReturn(collection);
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10);
 
         conceptsImpl.getCollectionExport("1", "application/json");
 
@@ -162,7 +167,7 @@ class ConceptsImplTest {
         collection.setPrefLabelLg1("Lg1Collection");
         collection.setPrefLabelLg2("Lg2Collection");
 
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, 10);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, 10);
 
         assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, ConceptsCollectionsResources.Language.lg1));
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, ConceptsCollectionsResources.Language.lg2));
@@ -174,7 +179,7 @@ class ConceptsImplTest {
         ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, new ExportUtils(200, null));
 
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, 10);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, null, 10);
 
         JSONObject jsonConcept = new JSONObject("""
                 {
