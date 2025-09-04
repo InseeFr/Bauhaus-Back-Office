@@ -15,7 +15,7 @@ public class OrganizationQueries extends GenericQueries{
 
 				+ "WHERE { \n"
 				//id
-				+ "?organization dcterms:identifier '"+ identifier +"' . \n"
+				+ "?organization adms:identifier '"+ identifier +"' . \n"
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
@@ -76,7 +76,7 @@ public class OrganizationQueries extends GenericQueries{
 				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"
-				+ "?uri dcterms:identifier '"+ identifier +"' . \n"
+				+ "?uri adms:identifier '"+ identifier +"' . \n"
 
 				+ "} \n" ;
 	}
