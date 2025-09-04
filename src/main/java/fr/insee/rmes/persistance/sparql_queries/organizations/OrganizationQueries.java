@@ -56,7 +56,7 @@ public class OrganizationQueries extends GenericQueries{
 
 				+ "WHERE { \n"
 				//id
-				+ "?organization dcterms:identifier ?id . \n"
+				+ "?organization adms:identifier ?id . \n"
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
