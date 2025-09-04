@@ -614,6 +614,11 @@
                     <xsl:when test="$simsRubrics//rangeType='ORGANIZATION'">
                         <xsl:variable name="organisation" select="$simsRubrics//value/value"/>
                         <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$rubric-element]"/>
+
+                        <xsl:message>
+                            <xsl:copy-of select="$original-text"/>
+                        </xsl:message>
+
                         <xsl:choose>
                             <xsl:when test="$original-text != '' and $rubric-element = 'labelLg1'">
                                 <xsl:variable name="altLabel" select="$organizations//item[id=$organisation]/altLabel"/>

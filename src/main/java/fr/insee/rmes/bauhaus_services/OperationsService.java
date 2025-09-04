@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.model.operations.PartialOperationFamily;
 
 import java.util.List;
 
@@ -12,12 +11,9 @@ public interface OperationsService {
 	 * FAMILIES
 	 * *******************************************************************************************/
 
-	List<PartialOperationFamily> getFamilies() throws RmesException;
-
 	String getFamiliesForSearch() throws RmesException;
 
-	String getFamilyByID(String id) throws RmesException ;
-	
+
 	void setFamily(String id, String body) throws RmesException;
 
 	void setFamilyValidation(String body) throws RmesException;

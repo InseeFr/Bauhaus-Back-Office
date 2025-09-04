@@ -35,45 +35,7 @@ public class OpFamiliesQueries extends GenericQueries{
 	}
 
 
-	public static String familyQuery(String id, boolean familiesRichTextNextStructure) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put("ID", id);
-		params.put("FAMILIES_RICH_TEXT_NEXT_STRUCTURE", familiesRichTextNextStructure);
-		return  buildRequest("getFamily.ftlh", params);
-	}
-
-	public static String getSeries(String idFamily) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put("ID", idFamily);
-		return  buildRequest("getSeries.ftlh", params);
-	}
-
-	public static String getSubjects(String idFamily) {
-		return "SELECT  ?id ?labelLg1 ?labelLg2 \n"
-				+ " FROM <"+config.getOperationsGraph()+"> \n"
-				+ "WHERE { \n" 
-
-				+ "?family dcterms:subject ?subjectUri . \n"
-				+ "?subjectUri skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "?subjectUri skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
-				
-				+ "?subjectUri skos:notation ?id . \n"
-
-				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
-				+ "}"
-				+ " ORDER BY ?subjectUri"
-				;
-	}
-	
-	  private OpFamiliesQueries() {
+	private OpFamiliesQueries() {
 		    throw new IllegalStateException("Utility class");
 	}
 

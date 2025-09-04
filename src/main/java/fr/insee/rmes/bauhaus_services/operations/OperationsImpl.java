@@ -11,7 +11,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.model.operations.PartialOperationFamily;
 import fr.insee.rmes.onion.domain.port.serverside.operations.OperationFamilyRepository;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -24,6 +23,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -53,6 +53,7 @@ public class OperationsImpl  implements OperationsService {
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
 
+	@Qualifier("graphql")
 	@Autowired
 	OperationFamilyRepository operationFamilyRepository;
 
@@ -197,23 +198,12 @@ public class OperationsImpl  implements OperationsService {
 	 * @throws RmesException 
 	 *****************************************************************************************************/
 
-	@Override
-	public List<PartialOperationFamily> getFamilies() throws RmesException {
-		logger.info("Starting to get families list");
-		return operationFamilyRepository.getFamilies();
-	}
 
 	@Override
 	public String getFamiliesForSearch() throws RmesException {
 		logger.info("Starting to get families list for search");
 		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesSearchQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
-	@Override
-	public String getFamilyByID(String id) throws RmesException {
-		JSONObject family = familiesUtils.getFamilyById(id);
-		return family.toString();
 	}
 
 	@Override

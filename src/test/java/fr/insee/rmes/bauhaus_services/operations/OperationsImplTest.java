@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.operations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.model.operations.PartialOperationFamily;
 import fr.insee.rmes.onion.domain.port.serverside.operations.OperationFamilyRepository;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -19,9 +18,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -113,15 +109,6 @@ class OperationsImplTest {
             assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
         }
 
-    }
-
-    @Test
-    void shouldGetFamiliesList() throws RmesException {
-        when(operationFamilyRepository.getFamilies()).thenReturn(new ArrayList<>(Collections.singleton(new PartialOperationFamily("1", "label"))));
-        var series = operationsImpl.getFamilies().stream().toList();
-        assertEquals(1, series.size());
-        assertEquals("1", series.get(0).id());
-        assertEquals("label", series.get(0).label());
     }
 
     @Test

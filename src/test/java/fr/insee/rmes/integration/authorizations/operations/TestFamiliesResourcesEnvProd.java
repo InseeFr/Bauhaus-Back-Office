@@ -7,6 +7,7 @@ import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.onion.domain.port.clientside.operations.FamilyService;
 import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.FamilyResources;
@@ -52,6 +53,9 @@ class TestFamiliesResourcesEnvProd {
 
     @MockitoBean
     private OperationsService operationsService;
+
+    @MockitoBean
+    private FamilyService familyService;
 
     @MockitoBean
     private OperationsDocumentationsService operationsDocumentationsService;

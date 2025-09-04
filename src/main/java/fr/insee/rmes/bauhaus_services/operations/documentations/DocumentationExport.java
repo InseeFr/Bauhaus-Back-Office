@@ -294,7 +294,10 @@ public class DocumentationExport {
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-
+/**
+ * <labelLg1>Cellule d'appui au pilotage des ressources (CAPR DDAR)</labelLg1>
+ * <labelLg1>Direction de la diffusion et de l'action régionale (DDAR)</labelLg1>
+ */
 		xmlContent.put("simsFile",  simsXML);
 		xmlContent.put("seriesFile",  seriesXML);
 		xmlContent.put("operationFile",  operationXML);

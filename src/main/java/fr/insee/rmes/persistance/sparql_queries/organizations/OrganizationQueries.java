@@ -51,7 +51,8 @@ public class OrganizationQueries extends GenericQueries{
 
 	public static String organizationsTwoLangsQuery() {
 		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabel \n"
-				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
+				+ "FROM" +
+				" <"+config.getOrganizationsGraph()+"> \n "
 				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"

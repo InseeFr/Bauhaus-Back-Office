@@ -57,7 +57,11 @@ public class DefaultSecurityContext {
                     anonymous.principal(fakeUser.id());
                 })
                 .authorizeHttpRequests(
-                        authorizeHttpRequest -> authorizeHttpRequest.anyRequest().permitAll());
+                        authorizeHttpRequest ->
+                                authorizeHttpRequest.anyRequest().permitAll()
+                )
+                .csrf(c -> c.ignoringRequestMatchers("/graphql"));
+
         if (requiresSsl) {
             http.requiresChannel(channel -> channel.requestMatchers("/**").requiresSecure());
         }
