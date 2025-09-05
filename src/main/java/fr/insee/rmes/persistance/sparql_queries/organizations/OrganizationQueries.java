@@ -50,13 +50,14 @@ public class OrganizationQueries extends GenericQueries{
 	}
 
 	public static String organizationsTwoLangsQuery() {
-		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabel \n"
+		return "SELECT DISTINCT ?id ?identifier ?labelLg1  ?labelLg2  ?altLabel \n"
 				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
 				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"
 				//id
 				+ "?organization adms:identifier ?id . \n"
+				+ "?organization dcterms:identifier ?identifier . \n"
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
@@ -66,7 +67,7 @@ public class OrganizationQueries extends GenericQueries{
 				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
 				+ "} \n" 
-				+ "GROUP BY ?id ?labelLg1 ?labelLg2 ?altLabel \n"
+				+ "GROUP BY ?id ?identifier ?labelLg1 ?labelLg2 ?altLabel \n"
 				+ "ORDER BY ?labelLg1 ";
 	}
 
