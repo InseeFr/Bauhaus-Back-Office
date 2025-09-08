@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import org.springframework.http.HttpStatus;

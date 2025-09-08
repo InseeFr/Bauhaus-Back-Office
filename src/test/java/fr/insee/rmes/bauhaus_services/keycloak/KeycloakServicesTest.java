@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.keycloak;
 
 import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
 import fr.insee.rmes.config.keycloak.ServerZone;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.stubs.KeycloakServicesStub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

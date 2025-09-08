@@ -6,7 +6,7 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.external.services.authentication.stamps.RmesStampsImpl;
+import fr.insee.rmes.infrastructure.stamps.RmesStampsImpl;
 import fr.insee.rmes.rbac.RbacFetcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

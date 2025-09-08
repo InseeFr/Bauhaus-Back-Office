@@ -1,9 +1,10 @@
-package fr.insee.rmes.external.services.authentication.stamps;
+package fr.insee.rmes.infrastructure.stamps;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.Stamp;
+import fr.insee.rmes.domain.port.serverside.StampsService;
 import org.springframework.stereotype.Service;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 

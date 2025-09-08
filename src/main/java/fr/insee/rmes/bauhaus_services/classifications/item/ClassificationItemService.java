@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 
 public interface ClassificationItemService {
     String getClassificationItems(String id) throws RmesException;

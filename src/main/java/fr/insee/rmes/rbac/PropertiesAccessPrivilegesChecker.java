@@ -3,7 +3,7 @@ package fr.insee.rmes.rbac;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.stamps.*;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
