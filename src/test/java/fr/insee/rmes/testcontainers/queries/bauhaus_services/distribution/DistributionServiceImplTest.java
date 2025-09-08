@@ -1,5 +1,6 @@
 package fr.insee.rmes.testcontainers.queries.bauhaus_services.distribution;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -9,14 +10,13 @@ import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
-@SpringBootTest
+@AppSpringBootTest
 class DistributionServiceImplTest extends WithGraphDBContainer  {
     @Autowired
     DistributionService distributionService;

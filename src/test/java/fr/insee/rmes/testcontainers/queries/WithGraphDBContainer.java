@@ -24,7 +24,7 @@ public class WithGraphDBContainer {
         String serviceName = "graphdb";
 
         YAMLMapper yamlMapper = new YAMLMapper();
-        JsonNode rootNode = null;
+        JsonNode rootNode;
         try {
             rootNode = yamlMapper.readTree(file);
             JsonNode servicesNode = rootNode.get("services");

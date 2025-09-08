@@ -87,7 +87,7 @@ public class DocumentationRubric {
 		if (value == null || value.isEmpty()) {
 			return null;
 		}
-		return value.get(0);
+		return value.getFirst();
 	}
 
 	public void setSingleValue(String value) {

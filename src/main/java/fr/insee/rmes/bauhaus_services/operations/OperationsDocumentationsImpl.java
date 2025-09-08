@@ -4,15 +4,15 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.onion.domain.port.serverside.DocumentationRepository;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -45,10 +45,10 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	DocumentationExport documentationsExport;
 
 	@Autowired
-	MetadataStructureDefUtils msdUtils;
-	
-	@Autowired
 	ParentUtils ownersUtils;
+
+	@Autowired
+	DocumentationRepository documentationRepository;
 
 
 	/***************************************************************************************************
@@ -58,7 +58,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Override
 	public String getMSDJson() throws RmesException {
-		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(DocumentationQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -70,18 +70,6 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	@Override
 	public MSD getMSD() throws RmesException {
 		return documentationsUtils.getMSD();
-	}
-
-	@Override
-	public String getMetadataAttribute(String id) throws RmesException {
-		JSONObject attribute = msdUtils.getMetadataAttributeById(id);
-		return attribute.toString();
-	}
-
-	@Override
-	public String getMetadataAttributes() throws RmesException {
-		String attributes = msdUtils.getMetadataAttributes().toString();
-		return QueryUtils.correctEmptyGroupConcat(attributes);
 	}
 
 	@Override

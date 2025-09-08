@@ -2,15 +2,15 @@ package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.DistributionsForSearch;
 import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PartialDistribution;
-import fr.insee.rmes.infrastructure.webservice.datasets.DistributionResources;
+import fr.insee.rmes.onion.infrastructure.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

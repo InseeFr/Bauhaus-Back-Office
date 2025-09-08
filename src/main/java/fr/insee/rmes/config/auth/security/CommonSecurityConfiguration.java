@@ -1,7 +1,7 @@
 package fr.insee.rmes.config.auth.security;
 
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

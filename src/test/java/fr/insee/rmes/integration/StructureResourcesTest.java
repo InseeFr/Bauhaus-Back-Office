@@ -2,8 +2,8 @@ package fr.insee.rmes.integration;
 
 
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.infrastructure.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.infrastructure.rbac.Roles;
+import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

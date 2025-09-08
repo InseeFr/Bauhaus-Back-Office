@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.organizations.Organization;
 
 import java.util.List;

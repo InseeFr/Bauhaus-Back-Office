@@ -1,27 +1,27 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Objects;
@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
+@AppSpringBootTest
 class DocumentationsUtilsTest {
 
 	@MockitoBean
@@ -54,15 +54,10 @@ class DocumentationsUtilsTest {
     @Mock
     protected ParentUtils mockParentUtils;
 
-	@BeforeEach
-	public void init() {
-		MockitoAnnotations.openMocks(this);
-	}
-
 	@Test
 	void shouldThrowRmesNotFoundExceptionWhenGetDocumentationByIdSims() throws RmesException {
 		String idSims ="2025";
-		when(repoGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims))).thenReturn(new JSONObject());
+		when(repoGestion.getResponseAsObject(DocumentationQueries.getDocumentationTitleQuery(idSims))).thenReturn(new JSONObject());
 		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.getDocumentationByIdSims(idSims));
 		assertTrue(exception.getDetails().contains("Documentation not found"));
 	}

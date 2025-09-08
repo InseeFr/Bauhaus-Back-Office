@@ -7,7 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -141,7 +142,7 @@ class DocumentsUtilsTest {
                 .put("id", "1")
                 .put("updatedDate", "2024-11-20").toString();
         var isLink = false;
-        var document = IOUtils.toInputStream("stream");
+        var document = IOUtils.toInputStream("stream", Charset.defaultCharset());
         var name = "documentName";
 
         String documentIRIString = "http://document/1";
