@@ -1,16 +1,16 @@
-package fr.insee.rmes.onion.infrastructure.graphdb;
+package fr.insee.rmes.onion.infrastructure.graphdb.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.exceptions.operations.NotFoundAttributeException;
 import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRubricWithoutRangeException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.onion.domain.port.serverside.DocumentationRepository;
-import fr.insee.rmes.onion.infrastructure.graphdb.queries.DocumentationQueries;
-import fr.insee.rmes.model.operations.documentations.RangeType;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
