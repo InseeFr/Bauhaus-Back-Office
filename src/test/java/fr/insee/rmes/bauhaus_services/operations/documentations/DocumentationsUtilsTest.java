@@ -13,15 +13,13 @@ import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -56,15 +54,10 @@ class DocumentationsUtilsTest {
     @Mock
     protected ParentUtils mockParentUtils;
 
-	@BeforeEach
-	public void init() {
-		MockitoAnnotations.openMocks(this);
-	}
-
 	@Test
 	void shouldThrowRmesNotFoundExceptionWhenGetDocumentationByIdSims() throws RmesException {
 		String idSims ="2025";
-		when(repoGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims))).thenReturn(new JSONObject());
+		when(repoGestion.getResponseAsObject(DocumentationQueries.getDocumentationTitleQuery(idSims))).thenReturn(new JSONObject());
 		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.getDocumentationByIdSims(idSims));
 		assertTrue(exception.getDetails().contains("Documentation not found"));
 	}

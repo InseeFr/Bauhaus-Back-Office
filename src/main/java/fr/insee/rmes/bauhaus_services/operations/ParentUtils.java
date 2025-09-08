@@ -5,10 +5,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
@@ -33,7 +33,7 @@ public class ParentUtils extends RdfService{
 	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
 		logger.info("Search Sims Owners' Stamps");
 		String stamps = null;
-		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
+		JSONObject target = repoGestion.getResponseAsObject(DocumentationQueries.getTargetByIdSims(idSims));
 		if (target != null) {
 			String idOperation = target.getString(Constants.ID_OPERATION);
 			String idSerie = target.getString(Constants.ID_SERIES);
@@ -123,7 +123,7 @@ public class ParentUtils extends RdfService{
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
 		logger.info("Search Sims Target Type and id");
 
-		JSONObject existingIdTarget =  repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		JSONObject existingIdTarget =  repoGestion.getResponseAsObject(DocumentationQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
 		String targetType = null;
 		if (existingIdTarget != null ) {

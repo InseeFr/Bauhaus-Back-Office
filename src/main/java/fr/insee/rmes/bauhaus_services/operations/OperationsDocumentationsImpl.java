@@ -12,7 +12,7 @@ import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Override
 	public String getMSDJson() throws RmesException {
-		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(DocumentationQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
