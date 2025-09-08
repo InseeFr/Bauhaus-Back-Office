@@ -1,6 +1,6 @@
 package fr.insee.rmes.config.auth.user;
 
-import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.infrastructure.rbac.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;

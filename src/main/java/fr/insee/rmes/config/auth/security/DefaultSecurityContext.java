@@ -1,6 +1,6 @@
 package fr.insee.rmes.config.auth.security;
 
-import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.onion.domain.model.Stamp;
