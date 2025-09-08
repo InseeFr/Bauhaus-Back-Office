@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.external.services.authentication.stamps.StampsService;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.port.serverside.StampsService;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -88,7 +88,7 @@ public class PublicResources {
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
-    public ResponseEntity<Object> getProperties() throws RmesException {
+    public ResponseEntity<String> getProperties() throws RmesException {
         JSONObject props = new JSONObject();
         try {
             props.put("appHost", this.appHost);
@@ -106,22 +106,18 @@ public class PublicResources {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
         }
-        return ResponseEntity.status(HttpStatus.SC_OK).body(props.toString());
+        return ResponseEntity.ok(props.toString());
     }
 
     @GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-    public ResponseEntity<Object> getStamps() {
-        try {
-            return ResponseEntity.status(HttpStatus.SC_OK).body(stampsService.getStamps());
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    public ResponseEntity<List<String>> getStamps() throws RmesException {
+        return ResponseEntity.ok(stampsService.getStamps());
     }
 
     @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of dissemination status", responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = LabelUrl.class))))})
-    public ResponseEntity<Object> getDisseminationStatus() {
+    public ResponseEntity<String> getDisseminationStatus() {
         TreeSet<String> dsList = new TreeSet<>();
         for (DisseminationStatus ds : DisseminationStatus.values()) {
             try {
@@ -130,8 +126,6 @@ public class PublicResources {
                 return ResponseEntity.status(500).body(e.getMessage());
             }
         }
-        return ResponseEntity.status(HttpStatus.SC_OK).body(dsList.toString());
+        return ResponseEntity.ok().body(dsList.toString());
     }
-
-
 }
