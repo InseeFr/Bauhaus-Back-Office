@@ -1,6 +1,6 @@
 package fr.insee.rmes;
 
-import fr.insee.rmes.onion.infrastructure.graphdb.GraphDBDocumentationRepository;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 

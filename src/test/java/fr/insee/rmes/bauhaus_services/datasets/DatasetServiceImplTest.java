@@ -44,13 +44,16 @@ class DatasetServiceImplTest {
 
     @MockitoBean
     SeriesUtils seriesUtils;
+
     @MockitoBean
     IdGenerator idGenerator;
 
     @MockitoBean
     PublicationUtils publicationUtils;
+
     @MockitoBean
     RepositoryGestion repositoryGestion;
+
     @Autowired
     DatasetServiceImpl datasetService;
 

@@ -11,16 +11,19 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -77,7 +80,7 @@ public class DocumentationsUtils extends RdfService{
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
 
 		// Get general informations
-		JSONObject doc = repoGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
+		JSONObject doc = repoGestion.getResponseAsObject(DocumentationQueries.getDocumentationTitleQuery(idSims));
 		if (doc.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Documentation not found", idSims);
 		}
@@ -189,7 +192,7 @@ public class DocumentationsUtils extends RdfService{
 
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {
-			return repoGestion.getResponseAsObject(DocumentationsQueries.getPublicationState(id)).getString("state");
+			return repoGestion.getResponseAsObject(DocumentationQueries.getPublicationState(id)).getString("state");
 		} catch (JSONException e) {
 			return Constants.UNDEFINED;
 		}
@@ -282,7 +285,7 @@ public class DocumentationsUtils extends RdfService{
 			throw new RmesException(HttpStatus.BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
 					"id Operation/Serie/Indicator or id is null");
 		}
-		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
 		if (existingIdTarget != null) {
 			idDatabase = (String) existingIdTarget.get(Constants.ID_OPERATION);
@@ -318,7 +321,7 @@ public class DocumentationsUtils extends RdfService{
 			throw new RmesException(HttpStatus.BAD_REQUEST, "id operation/serie/indicator can't be null",
 					"id is null");
 		}
-		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
+		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationQueries.getSimsByTarget(idTarget));
 		if (existingIdSims != null && existingIdSims.has(Constants.ID_SIMS)) {
 			logger.error("Documentation already exists");
 			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
@@ -362,7 +365,7 @@ public class DocumentationsUtils extends RdfService{
 	 */
 	private String createSimsID() throws RmesException {
 		logger.info("Generate documentation id");
-		JSONObject json = repoGestion.getResponseAsObject(DocumentationsQueries.lastID());
+		JSONObject json = repoGestion.getResponseAsObject(DocumentationQueries.lastID());
 		logger.debug("JSON for documentation id : {}", json);
 		if (json.isEmpty()) {
 			return "1000";
@@ -413,7 +416,7 @@ public class DocumentationsUtils extends RdfService{
 	
 
 	public MSD getMSD() throws RmesException {
-		return buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()));
+		return buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationQueries.msdQuery()));
 	}
 
 
@@ -427,9 +430,9 @@ public class DocumentationsUtils extends RdfService{
 
 		Resource graph = RdfUtils.simsGraph(id);
 
-		HttpStatus result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
+		HttpStatus result =  repoGestion.executeUpdate(DocumentationQueries.deleteGraph(graph));
 		if (result.equals(HttpStatus.OK)) {
-			result = repositoryPublication.executeUpdate(DocumentationsQueries.deleteGraph(graph));
+			result = repositoryPublication.executeUpdate(DocumentationQueries.deleteGraph(graph));
 		}
 
 		return result;
