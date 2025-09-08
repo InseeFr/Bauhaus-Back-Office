@@ -5,6 +5,7 @@ public class Constants {
 
 	/*A*/
 	public static final String ACCRUAL_PERIODICITY_LIST ="accrualPeriodicityList";
+	public static final String ACCRUAL_PERIODICITY ="accrualPeriodicity";
 	public static final String ALT_LABEL_LG1 = "altLabelLg1";
 	public static final String ALT_LABEL_LG2 = "altLabelLg2";
 
@@ -51,6 +52,7 @@ public class Constants {
 	/*H*/
 	public static final String HAS_DOC_LG1 = "hasDocLg1";
 	public static final String HAS_DOC_LG2 = "hasDocLg2";
+	public static final String HAS_PART = "hasPart";
 
 	
 	/*I*/
@@ -63,7 +65,7 @@ public class Constants {
 	public static final String INDICATOR_UP = "INDICATOR";
 	public static final String ISREPLACEDBY = "isReplacedBy";
 	public static final String ISVALIDATED = "isValidated";
-	
+	public static final String ISPARTOF = "isPartOf";
 	/*L*/
 	public static final String LABEL = "label";
 	public static final String LABEL_LG1 = "labelLg1";
@@ -109,6 +111,7 @@ public class Constants {
 	public static final String TEXT_LG1 = "texte";
 	public static final String TEXT_LG2 = "text";
 	public static final String TYPE_OF_OBJECT = "typeOfObject";
+	public static final String TYPE = "type";
 	public static final String TYPE_STRING = "String";
 	public static final String TYPELIST = "typeList";
 
@@ -121,6 +124,7 @@ public class Constants {
 
 	/*V*/
 	public static final String VALUE = "value";
+	public static final String VALIDATION_STATE = "validationState";
 
 	/*W*/
 	public static final String WASGENERATEDBY = "wasGeneratedBy";
