@@ -1,7 +1,7 @@
 package fr.insee.rmes.infrastructure.rbac;
 
-public interface Roles {
+public class Roles {
 
-	String ADMIN = "Administrateur_RMESGNCS";
+	public static final String ADMIN = "Administrateur_RMESGNCS";
 
 }
