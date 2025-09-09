@@ -214,7 +214,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -236,10 +235,7 @@
           </annotationProcessorPaths>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
+
       <!-- Plugin tests -->
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -263,24 +259,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>com.rudikershaw.gitbuildhook</groupId>
-        <artifactId>git-build-hook-maven-plugin</artifactId>
-        <version>3.4.1</version>
-        <configuration>
-          <installHooks>
-            <pre-commit>hooks/pre-commit</pre-commit>
-          </installHooks>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>install</goal>
-              <goal>initialize</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+
     </plugins>
   </build>
   <repositories>

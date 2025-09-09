@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for RMES" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/record-builder/record-builder-processor/44/record-builder-processor-44.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/java-composer/java-composer/1.0/java-composer-1.0.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/record-builder/record-builder-core/44/record-builder-core-44.jar" />
+        </processorPath>
+        <module name="module-domain" />
+        <module name="module-infrastructure" />
+      </profile>
+      <profile name="Annotation profile for module-bauhaus-bo" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/record-builder/record-builder-processor/44/record-builder-processor-44.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/java-composer/java-composer/1.0/java-composer-1.0.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/record-builder/record-builder-core/44/record-builder-core-44.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/record-builder/record-builder-processor/44/record-builder-processor-44.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/java-composer/java-composer/1.0/java-composer-1.0.jar" />
+          <entry name="$MAVEN_REPOSITORY$/io/soabase/record-builder/record-builder-core/44/record-builder-core-44.jar" />
+        </processorPath>
+        <module name="module-bauhaus-bo" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="bauhaus-application" target="21" />
+      <module name="bauhaus-bo (1)" target="17" />
+      <module name="bauhaus-domain" target="1.8" />
+      <module name="domain" target="1.5" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Bauhaus-BO" options="-parameters" />
+      <module name="bauhaus-application" options="-parameters" />
+      <module name="bauhaus-bo (1)" options="-parameters" />
+      <module name="bauhaus-domain" options="-parameters" />
+      <module name="module-bauhaus-bo" options="-parameters" />
+      <module name="module-domain" options="-parameters" />
+      <module name="module-infrastructure" options="-parameters" />
+    </option>
+  </component>
+</project>

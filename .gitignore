@@ -1,11 +1,11 @@
-target
+module-bauhaus-bo/target
 *.log
 node_modules
 *.war
 .settings
 .classpath
 .project
-.idea
+../.idea
 *.iml
 .properties
 .run/
