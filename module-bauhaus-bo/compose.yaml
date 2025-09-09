@@ -1,7 +1,7 @@
 name: bauhaus
 services:
   bauhaus-back:
-    build: .
+    build: ..
     ports:
       - "8080:8080"
     environment:
