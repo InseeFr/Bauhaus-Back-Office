@@ -79,6 +79,7 @@ public record RmesStampsImpl(UserDecoder userDecoder) implements StampsService {
 			"DG75-E420",
 			"DG75-E430",
 			"DG75-E440",
+			"DG75-E460",
 			"DG75-F001",
 			"DG75-F010",
 			"DG75-F101",
