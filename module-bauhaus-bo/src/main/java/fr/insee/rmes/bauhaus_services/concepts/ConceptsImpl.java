@@ -9,6 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -16,7 +17,6 @@ import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -247,7 +247,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException {
+	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response, Language lg, String type, boolean withConcepts) throws RmesException {
 		Map<String, Map<String, String>> collections = new HashMap<>();
 		Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
 
@@ -279,8 +279,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 	}
 
-	public String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
-		if (lg == ConceptsCollectionsResources.Language.lg2){
+	public String getFileNameForExport(CollectionForExport collection, Language lg){
+		if (lg == Language.lg2){
 			return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg2(), this.maxLength);
 		}
 		return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg1(), this.maxLength);

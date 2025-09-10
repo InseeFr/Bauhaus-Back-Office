@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import fr.insee.rmes.domain.model.Language;
 
 import java.util.List;
 
@@ -46,11 +47,6 @@ public class ConceptsCollectionsResources {
         this.conceptsService = conceptsService;
         this.conceptsCollectionService = conceptsCollectionService;
     }
-
-    public enum Language {
-        lg1, lg2
-    }
-
 
     private final ConceptsService conceptsService;
 

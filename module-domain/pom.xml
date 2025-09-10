@@ -8,7 +8,11 @@
   </parent>
 
   <artifactId>module-domain</artifactId>
+  <version>1.0.0</version>
 
   <name>module-domain</name>
 
+  <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
+  </build>
 </project>
