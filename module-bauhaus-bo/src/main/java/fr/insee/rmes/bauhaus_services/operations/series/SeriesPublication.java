@@ -3,12 +3,13 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.DCTERMS;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
@@ -16,22 +17,45 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
+
 @Repository
-public class SeriesPublication extends RdfService {
+public class SeriesPublication {
 
-    @Autowired
-    ParentUtils ownersUtils;
+    private static final Set<String> URI_PREDICATES_TO_TRANSFORM = Set.of(
+        Constants.ISPARTOF,
+        Constants.SEEALSO,
+        Constants.REPLACES,
+        Constants.ISREPLACEDBY,
+        Constants.DATA_COLLECTOR,
+        Constants.CONTRIBUTOR,
+        Constants.PUBLISHER,
+        Constants.ACCRUAL_PERIODICITY,
+        Constants.TYPE
+    );
 
-    public SeriesPublication(ParentUtils ownersUtils) {
+    private static final Set<String> PREDICATES_TO_IGNORE = Set.of(
+        Constants.ISVALIDATED,
+        Constants.VALIDATION_STATE,
+        Constants.HAS_PART
+    );
+
+    private final ParentUtils ownersUtils;
+    private final PublicationUtils publicationUtils;
+    private final RepositoryGestion repoGestion;
+    private final RepositoryPublication repositoryPublication;
+
+    public SeriesPublication(ParentUtils ownersUtils, PublicationUtils publicationUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication) {
         this.ownersUtils = ownersUtils;
+        this.publicationUtils = publicationUtils;
+        this.repoGestion = repoGestion;
+        this.repositoryPublication = repositoryPublication;
     }
 
     private static void checkIfSeriesExist(String id, RepositoryResult<Statement> statements) throws RmesNotFoundException {
@@ -39,6 +63,7 @@ public class SeriesPublication extends RdfService {
             throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found", id);
         }
     }
+
     public void publishSeries(String id, JSONObject series) throws RmesException {
         String familyId = series.getJSONObject(Constants.FAMILY).getString(Constants.ID);
         String status = ownersUtils.getValidationStatus(familyId);
@@ -62,29 +87,21 @@ public class SeriesPublication extends RdfService {
         RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, resource);
         RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, resource);
 
-        try {
+        readAllTriplets(statements, model, hasPartStatements, replacesStatements, isReplacedByStatements, resource, con);
+        Resource seriesToPublishResource = publicationUtils.tranformBaseURIToPublish(resource);
+        repositoryPublication.publishResource(seriesToPublishResource, model, "serie");
+
+    }
+
+    private void readAllTriplets(RepositoryResult<Statement> statements, Model model, RepositoryResult<Statement> hasPartStatements, RepositoryResult<Statement> replacesStatements, RepositoryResult<Statement> isReplacedByStatements, Resource resource, RepositoryConnection con) throws RmesException {
+        try (con) {
             while (statements.hasNext()) {
                 Statement st = statements.next();
-                String pred = RdfUtils.toString(st.getPredicate());
+                String predicate = RdfUtils.toString(st.getPredicate());
 
-                // Other URI to transform
-                if (pred.endsWith("isPartOf") ||
-                        pred.endsWith(Constants.SEEALSO) ||
-                        pred.endsWith(Constants.REPLACES) ||
-                        pred.endsWith(Constants.ISREPLACEDBY) ||
-                        pred.endsWith(Constants.DATA_COLLECTOR) ||
-                        pred.endsWith(Constants.CONTRIBUTOR) ||
-                        pred.endsWith(Constants.PUBLISHER) ||
-                        pred.endsWith("accrualPeriodicity") ||
-                        pred.endsWith("type")) {
+                if (URI_PREDICATES_TO_TRANSFORM.stream().anyMatch(predicate::endsWith)) {
                     transformSubjectAndObject(model, st);
-                } else if (pred.endsWith("isValidated")
-                        || pred.endsWith("validationState")
-                        || pred.endsWith("hasPart")) {
-                    // nothing, wouldn't copy this attr
-                }
-                // Literals
-                else {
+                } else if (PREDICATES_TO_IGNORE.stream().noneMatch(predicate::endsWith)) {
                     model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
                             st.getPredicate(),
                             st.getObject(),
@@ -96,8 +113,8 @@ public class SeriesPublication extends RdfService {
                 addStatementsToModel(model, isReplacedByStatements);
             }
 
-            /**
-             * We have to query all published operations linked to this series and publish all of them
+            /*
+              We have to query all published operations linked to this series and publish all of them
              */
             addOperationsWhoHavePartWithToModel(resource, model);
 
@@ -105,11 +122,7 @@ public class SeriesPublication extends RdfService {
         } finally {
             repoGestion.closeStatements(statements);
             repoGestion.closeStatements(hasPartStatements);
-            con.close();
         }
-        Resource seriesToPublishRessource = publicationUtils.tranformBaseURIToPublish(resource);
-        repositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
-
     }
 
 
