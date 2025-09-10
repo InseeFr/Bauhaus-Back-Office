@@ -1,7 +1,11 @@
 name: bauhaus
 services:
   bauhaus-back:
+<<<<<<< HEAD
     build: ../Dockerfile.bauhaus
+=======
+    build: ..
+>>>>>>> 6f7e20ca (feat: init mono repo (#991))
     ports:
       - "8080:8080"
     environment:
