@@ -1,0 +1,17 @@
+name: bauhaus
+services:
+  bauhaus-back:
+    build: ..
+    ports:
+      - "8080:8080"
+    environment:
+      - fr.insee.rmes.bauhaus.sesame.gestion.sesameServer=http://graphdb:7200
+    links:
+      - graphdb
+  graphdb:
+    image: ontotext/graphdb:10.8.4
+    restart: always
+    ports:
+      - "7200:7200"
+    environment:
+      GDB_JAVA_OPTS: "-Xmx1g -Xms512M"
