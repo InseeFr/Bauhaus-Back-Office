@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    "include-codeblock",
-    "sequence-diagrams"
-  ]
-}
