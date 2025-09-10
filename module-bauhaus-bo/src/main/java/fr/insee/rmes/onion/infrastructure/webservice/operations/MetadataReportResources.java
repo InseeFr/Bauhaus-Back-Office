@@ -18,6 +18,8 @@ import fr.insee.rmes.onion.domain.exceptions.operations.NotFoundAttributeExcepti
 import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
+import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;

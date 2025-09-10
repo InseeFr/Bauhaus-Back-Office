@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>module-domain</artifactId>
+<<<<<<< HEAD
   <version>1.0.0</version>
 
   <name>module-domain</name>
@@ -24,4 +25,9 @@
       </plugin>
     </plugins>
   </build>
+=======
+
+  <name>module-domain</name>
+
+>>>>>>> 6f7e20ca (feat: init mono repo (#991))
 </project>

@@ -70,4 +70,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           tags: "latest, ${{ needs.check-version.outputs.release-version }}"
+<<<<<<< HEAD
           dockerfile: Dockerfile.bauhaus
+=======
+          workdir: module-bauhaus-bo
+>>>>>>> 6f7e20ca (feat: init mono repo (#991))

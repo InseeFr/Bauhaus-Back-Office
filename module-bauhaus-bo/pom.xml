@@ -8,6 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
+<<<<<<< HEAD
   <version>4.13.0</version>
   <name>module-bauhaus-bo</name>
 
@@ -23,6 +24,11 @@
       <version>1.0.0</version>
     </dependency>
   </dependencies>
+=======
+  <version>4.13.0-rc0</version>
+  <name>module-bauhaus-bo</name>
+
+>>>>>>> 6f7e20ca (feat: init mono repo (#991))
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
