@@ -1,11 +1,11 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
@@ -44,7 +44,7 @@ public interface ConceptsService {
 
 	ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException;
 
-	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException;
+	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response, Language lg, String type, boolean withConcepts) throws RmesException;
 
 	String createCollection(Collection collection) throws RmesException;
 	

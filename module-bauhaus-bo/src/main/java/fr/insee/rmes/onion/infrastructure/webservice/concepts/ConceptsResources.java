@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.*;
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
@@ -220,7 +221,7 @@ public class ConceptsResources  {
 	public void exportZipConcept(
 			@PathVariable(Constants.ID) String id,
 			@PathVariable("type") String type,
-			@RequestParam("langue") ConceptsCollectionsResources.Language lg,
+			@RequestParam("langue") Language lg,
 			@RequestHeader(required=false) String accept,
 			@RequestParam("withConcepts") boolean withConcepts,
 			HttpServletResponse response) throws RmesException {

@@ -46,9 +46,6 @@ import java.util.List;
 public class ClassificationsResources {
 
 
-	public enum Language {
-		lg1, lg2
-	}
 	final
 	ClassificationsService classificationsService;
 

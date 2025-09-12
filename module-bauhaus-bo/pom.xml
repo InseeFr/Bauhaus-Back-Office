@@ -11,6 +11,13 @@
   <version>4.13.0-rc0</version>
   <name>module-bauhaus-bo</name>
 
+  <dependencies>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-domain</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>

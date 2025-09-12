@@ -1,7 +1,7 @@
 package fr.insee.rmes.onion.domain.port.serverside;
 
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.model.Stamp;
+import fr.insee.rmes.domain.model.Stamp;
 
 import java.util.List;
 

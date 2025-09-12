@@ -4,14 +4,15 @@ import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.PartialCollection;
+import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -84,7 +85,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     }
 
     @Override
-    public ResponseEntity<?> getCollectionExportODT(String id, String accept, ConceptsCollectionsResources.Language lg, boolean withConcepts, HttpServletResponse response) throws RmesException {
+    public ResponseEntity<?> getCollectionExportODT(String id, String accept, Language lg, boolean withConcepts, HttpServletResponse response) throws RmesException {
         logger.info("Exporting a collection {} to odt", id);
 
         try {
@@ -111,7 +112,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     }
 
     @Override
-    public ResponseEntity<?> getCollectionExportODS(String id, String accept, boolean withConcepts, HttpServletResponse response) throws RmesException {
+    public ResponseEntity<?> getCollectionExportODS(String id, String accept, boolean withConcepts, HttpServletResponse response) {
         logger.info("Exporting a collection {} to ods", id);
 
         try {
@@ -139,7 +140,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
 
     @Override
-    public void exportZipCollection(String ids, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException {
+    public void exportZipCollection(String ids, String acceptHeader, HttpServletResponse response, Language lg, String type, boolean withConcepts) throws RmesException {
         Map<String, Map<String, String>> collections = new HashMap<>();
         Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
 
@@ -171,8 +172,8 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         }
     }
 
-    private String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
-        String label = (lg == ConceptsCollectionsResources.Language.lg2 && collection.getPrefLabelLg2() != null) ? collection.getPrefLabelLg2() : collection.getPrefLabelLg1();
+    private String getFileNameForExport(CollectionForExport collection, Language lg){
+        String label = (lg == Language.lg2 && collection.getPrefLabelLg2() != null) ? collection.getPrefLabelLg2() : collection.getPrefLabelLg1();
         return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + label, maxLength);
     }
 

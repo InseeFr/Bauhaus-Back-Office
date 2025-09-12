@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.domain.model.operations;
+package fr.insee.rmes.domain.model.operations;
 
 import org.json.JSONObject;
 
