@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import io.swagger.v3.oas.annotations.Operation;

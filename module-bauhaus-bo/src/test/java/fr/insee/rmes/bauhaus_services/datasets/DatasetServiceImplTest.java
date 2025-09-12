@@ -13,7 +13,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
