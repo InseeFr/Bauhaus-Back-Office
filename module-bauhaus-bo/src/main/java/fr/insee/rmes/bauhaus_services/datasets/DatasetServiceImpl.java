@@ -419,7 +419,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     }
 
-    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph) throws RmesException {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
@@ -427,9 +427,15 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if(dataset.getAltIdentifier() != null){
             Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
             IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
+
+
             RdfUtils.addTripleUri(datasetIri, ADMS.HAS_IDENTIFIER, datasetAdmsIri, model, graph);
-            RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, model, admsGraph);
-            RdfUtils.addTripleString(datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), model, admsGraph);
+
+            Model datasetAdmsModel = new LinkedHashModel();
+            RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, datasetAdmsModel, admsGraph);
+            RdfUtils.addTripleString(datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), datasetAdmsModel, admsGraph);
+            repoGestion.loadSimpleObject(datasetAdmsIri, datasetAdmsModel, null);
+
         }
 
     }
