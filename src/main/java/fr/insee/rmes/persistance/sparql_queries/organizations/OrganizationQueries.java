@@ -8,77 +8,44 @@ import java.util.HashMap;
 
 public class OrganizationQueries extends GenericQueries{
 
-	public static String organizationQuery(String identifier) {
-		return "SELECT  ?labelLg1 ?labelLg2 ?altLabel ?type ?motherOrganization ?linkedTo ?seeAlso \n"
-				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
+	public static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
+	public static final String ORGANIZATIONS_INSEE_GRAPH = "ORGANIZATIONS_INSEE_GRAPH";
+	public static final String ORGANIZATIONS_FOLDER = "organizations/";
 
-				+ "WHERE { \n"
-				//id
-				+ "?organization dcterms:identifier '"+ identifier +"' . \n"
-
-				//labels
-				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "')} \n"
-				+ "OPTIONAL {?organization skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') }\n"
-				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
-
-				//type (exclude org:Organization and org:OrganizationUnit)
-				+ "OPTIONAL {?organization rdf:type ?type . \n"
-				+ "FILTER (!strstarts(str(?type),str(org:))) } \n"
-
-				//links
-				+ "OPTIONAL {?organization org:unitOf ?motherOrganizationUri ."
-				+ "?motherOrganizationUri  dcterms:identifier ?motherOrganization .} \n"
-				+ "OPTIONAL {?organization org:linkedTo ?linkedToUri ."
-				+ "?linkedToUri  dcterms:identifier ?linkedTo .} \n"
-
-				//seeAlso
-				+ "OPTIONAL {?organization rdfs:seeAlso ?seeAlso .} \n"
-
-				+ "} \n" ;
+	public static String organizationQuery(String identifier) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+		params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("IDENTIFIER", identifier);
+		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getOrganization.ftlh", params);
 	}
 
 	public static String organizationsQuery() throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
-		params.put("ORGANIZATIONS_INSEE_GRAPH", config.getOrgInseeGraph());
+		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+		params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		return FreeMarkerUtils.buildRequest("organizations/", "getOrganizations.ftlh", params);
+		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getOrganizations.ftlh", params);
 	}
 
-	public static String organizationsTwoLangsQuery() {
-		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabel \n"
-				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
-
-				+ "WHERE { \n"
-				//id
-				+ "?organization dcterms:identifier ?id . \n"
-
-				//labels
-				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "')} \n"
-				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} \n"
-				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
-
-				+ "} \n" 
-				+ "GROUP BY ?id ?labelLg1 ?labelLg2 ?altLabel \n"
-				+ "ORDER BY ?labelLg1 ";
+	public static String organizationsTwoLangsQuery() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+		params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getOrganizationsTwoLangs.ftlh", params);
 	}
 
-	public static String getUriById(String identifier) {
-		return "SELECT  ?uri \n"
-				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
-
-				+ "WHERE { \n"
-				+ "?uri dcterms:identifier '"+ identifier +"' . \n"
-
-				+ "} \n" ;
+	public static String getUriById(String identifier) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+		params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put("IDENTIFIER", identifier);
+		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getUriById.ftlh", params);
 	}
 
 	  private OrganizationQueries() {

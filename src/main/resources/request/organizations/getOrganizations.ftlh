@@ -2,7 +2,7 @@ SELECT DISTINCT ?iri ?id ?label ?altLabel ?labelLg2
 FROM <${ORGANIZATIONS_GRAPH}>
 FROM <${ORGANIZATIONS_INSEE_GRAPH}>
 WHERE {
-    ?iri dcterms:identifier ?id .
+    ?iri adms:identifier ?id .
 
     OPTIONAL { ?iri skos:prefLabel ?label .
     FILTER (lang(?label) = '${LG1}')}
