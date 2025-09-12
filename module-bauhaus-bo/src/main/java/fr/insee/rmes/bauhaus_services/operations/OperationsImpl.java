@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -193,15 +193,6 @@ public class OperationsImpl  implements OperationsService {
 	 * @throws RmesException 
 	 *****************************************************************************************************/
 
-	@Override
-	public List<PartialOperationFamily> getFamilies() throws RmesException {
-		logger.info("Starting to get families list");
-		var families = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery());
-
-		return DiacriticSorter.sort(families,
-				PartialOperationFamily[].class,
-				PartialOperationFamily::label);
-	}
 
 	@Override
 	public String getFamiliesForSearch() throws RmesException {
@@ -210,11 +201,6 @@ public class OperationsImpl  implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
-	@Override
-	public String getFamilyByID(String id) throws RmesException {
-		JSONObject family = familiesUtils.getFamilyById(id);
-		return family.toString();
-	}
 
 	@Override
 	public void setFamily(String id, String body) throws RmesException {

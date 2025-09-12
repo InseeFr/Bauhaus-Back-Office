@@ -2,7 +2,7 @@ package fr.insee.rmes.onion.infrastructure.stamps;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Stamp;
 import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import org.springframework.stereotype.Service;
