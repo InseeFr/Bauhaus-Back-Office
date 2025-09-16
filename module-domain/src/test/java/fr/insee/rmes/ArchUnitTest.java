@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-public class ArchUnitTest {
+class ArchUnitTest {
 
     private final JavaClasses importedClasses = new ClassFileImporter()
             .withImportOption(location -> !location.contains("/test-classes/"))

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-public class InfrastructureNamingTest {
+class InfrastructureNamingTest {
     @Test
     void responseNaming() {
         JavaClasses classes = new ClassFileImporter().importPackages("fr.insee.rmes.webservice.response");
