@@ -27,7 +27,7 @@ public class FamilyServiceImpl implements FamilyService {
 
     @Override
     public OperationFamily getFamily(String id) throws RmesException {
-        logger.info("Starting to get family {}", id);
+        logger.info("Starting to get family");
         return operationFamilyRepository.getFullFamily(id);
     }
 

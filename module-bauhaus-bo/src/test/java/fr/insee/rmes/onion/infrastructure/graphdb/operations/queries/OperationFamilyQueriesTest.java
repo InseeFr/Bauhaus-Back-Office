@@ -51,7 +51,7 @@ class OperationFamilyQueriesTest {
     }
 
     @Test
-    void familiesQuery_ShouldThrowRmesExceptionWhenFreeMarkerFails() throws RmesException {
+    void familiesQuery_ShouldThrowRmesExceptionWhenFreeMarkerFails() {
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
@@ -86,7 +86,7 @@ class OperationFamilyQueriesTest {
     }
 
     @Test
-    void familyQuery_ShouldThrowRmesExceptionWhenFreeMarkerFails() throws RmesException {
+    void familyQuery_ShouldThrowRmesExceptionWhenFreeMarkerFails() {
         String familyId = "123";
         boolean familiesRichTextNexStructure = false;
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
@@ -123,7 +123,7 @@ class OperationFamilyQueriesTest {
     }
 
     @Test
-    void getSeries_ShouldThrowRmesExceptionWhenFreeMarkerFails() throws RmesException {
+    void getSeries_ShouldThrowRmesExceptionWhenFreeMarkerFails() {
         String familyId = "456";
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
