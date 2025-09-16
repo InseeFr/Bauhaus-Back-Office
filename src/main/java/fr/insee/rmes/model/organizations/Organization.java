@@ -9,6 +9,9 @@ public class Organization {
 	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 
+	@Schema(description = "Identifier")
+	public String identifier;
+
 	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String labelLg1;
 

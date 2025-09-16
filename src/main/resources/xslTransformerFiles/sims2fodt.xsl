@@ -614,23 +614,24 @@
                     <xsl:when test="$simsRubrics//rangeType='ORGANIZATION'">
                         <xsl:variable name="organisation" select="$simsRubrics//value/value"/>
                         <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$rubric-element]"/>
+                        <xsl:variable name="stamp" select="$organizations//item[id=$organisation]/identifier"/>
                         <xsl:choose>
                             <xsl:when test="$original-text != '' and $rubric-element = 'labelLg1'">
                                 <xsl:variable name="altLabel" select="$organizations//item[id=$organisation]/altLabel"/>
                                 <xsl:choose>
                                     <xsl:when test="$altLabel != ''">
-                                        <xsl:value-of select="concat($organisation,' : ',$original-text,' - ',$altLabel)"/>
+                                        <xsl:value-of select="concat($stamp,' : ',$original-text,' - ',$altLabel)"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:value-of select="concat($organisation,' : ',$original-text)"/>
+                                        <xsl:value-of select="concat($stamp,' : ',$original-text)"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:when>
                             <xsl:when test="$original-text != ''">
-                                <xsl:value-of select="concat($organisation,' : ',$original-text)"/>
+                                <xsl:value-of select="concat($stamp,' : ',$original-text)"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="$organisation"/>
+                                <xsl:value-of select="$stamp"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>

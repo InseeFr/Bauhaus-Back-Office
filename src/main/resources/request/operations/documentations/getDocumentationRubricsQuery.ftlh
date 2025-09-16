@@ -83,7 +83,7 @@ WHERE {
 		UNION {
 			?reportAttr ?attr ?organisationUri . 
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
-			?organisationUri dcterms:identifier ?value .
+			?organisationUri adms:identifier ?value .
 			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
 		} 
 		
