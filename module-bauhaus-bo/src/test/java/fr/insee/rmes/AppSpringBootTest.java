@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "spring.config.additional-location=classpath:rbac.yml",
+                "spring.config.additional-location=classpath:testing-rbac.yml",
                 "fr.insee.rmes.bauhaus.baseGraph=http://rdf.insee.fr/graphes/",
                 "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
                 "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
@@ -26,7 +26,8 @@ import java.lang.annotation.Target;
                 "fr.insee.rmes.bauhaus.lg1=fr",
                 "fr.insee.rmes.bauhaus.lg2=en",
                 "fr.insee.rmes.bauhaus.activeModules=operations",
-                "fr.insee.rmes.bauhaus.operations.graph=operations"
+                "fr.insee.rmes.bauhaus.operations.graph=operations",
+                "spring.hateoas.use-hal-as-default-json-media-type=true"
         }
 )
 @Import(GraphDBDocumentationRepository.class)

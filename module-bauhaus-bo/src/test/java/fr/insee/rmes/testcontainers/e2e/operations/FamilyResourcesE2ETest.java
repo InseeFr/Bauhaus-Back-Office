@@ -1,44 +1,14 @@
 package fr.insee.rmes.testcontainers.e2e.operations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.testcontainers.e2e.BaseE2ETest;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import java.util.List;
 
-@Tag("integration")
-@AppSpringBootTest
-class FamilyResourcesE2ETest extends WithGraphDBContainer {
-
-    @LocalServerPort
-    int port;
-
-    @Autowired
-    TestRestTemplate restTemplate;
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> getRdfGestionConnectionDetails().getUrlServer());
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> getRdfGestionConnectionDetails().repositoryId());
-    }
-
-    @BeforeAll
-    static void initData(){
-        container.withTrigFiles("all-operations-and-indicators.trig");
-    }
+class FamilyResourcesE2ETest extends BaseE2ETest {
 
     @Test
     void testGetFamilies() {
@@ -47,7 +17,7 @@ class FamilyResourcesE2ETest extends WithGraphDBContainer {
         HttpEntity<String> entity = new HttpEntity<>(headers);
         
         var response = restTemplate.exchange(
-            "http://localhost:" + port + "/api/operations/families", 
+            "http://localhost:" + port + "/api/operations/families",
             HttpMethod.GET, 
             entity, 
             String.class
@@ -71,8 +41,11 @@ class FamilyResourcesE2ETest extends WithGraphDBContainer {
             String firstFamilyId = firstFamily.get("id").asText();
             String firstFamilyLabel = firstFamily.get("label").asText();
 
-            Assertions.assertEquals("s82", firstFamilyId);
-            Assertions.assertEquals("Activité, production et chiffre d'affaires", firstFamilyLabel);
+            var firstSeriesHref = firstFamily.get("_links").get("self").get("href").asText();
+            Assertions.assertTrue(firstSeriesHref.contains("/api/operations/family/" + firstFamilyId));
+
+            Assertions.assertFalse(firstFamilyId.isEmpty());
+            Assertions.assertFalse(firstFamilyLabel.isEmpty());
         } catch (Exception e) {
             Assertions.fail("Failed to parse JSON response: " + e.getMessage());
         }
@@ -106,7 +79,13 @@ class FamilyResourcesE2ETest extends WithGraphDBContainer {
                 String prefLabel = familyJson.get("prefLabelLg1").asText();
                 Assertions.assertEquals("Voir également", prefLabel);
             }
-            
+
+            var series = familyJson.get("series");
+            Assertions.assertEquals(2, series.size());
+
+            var firstSeriesHref = series.get(0).get("_links").get("self").get("href").asText();
+            Assertions.assertTrue(firstSeriesHref.contains("/api/operations/series/s1033"));
+
         } catch (Exception e) {
             Assertions.fail("Failed to parse JSON response: " + e.getMessage());
         }

@@ -26,7 +26,7 @@ class ThemeQueriesTest {
 
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("CONCEPTS_GRAPH", "http://concepts-graph");
+                put("CONCEPTS_GRAPH", "http://rdf.insee.fr/graphes/concepts-graph");
                 put("LG1", "fr");
                 put("CONCEPT_SCHEME_FILTER", "filter1,filter2");
             }};
@@ -42,7 +42,7 @@ class ThemeQueriesTest {
 
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("CONCEPTS_GRAPH", "http://concepts-graph");
+                put("CONCEPTS_GRAPH", "http://rdf.insee.fr/graphes/concepts-graph");
                 put("LG1", "fr");
                 put("CONCEPT_SCHEME_FILTER", "filter3");
             }};
