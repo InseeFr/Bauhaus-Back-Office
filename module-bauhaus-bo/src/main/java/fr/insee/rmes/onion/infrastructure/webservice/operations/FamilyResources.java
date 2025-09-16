@@ -84,19 +84,16 @@ public class FamilyResources  {
 	)
 	public OperationFamilyResponse getFamilyByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		var family =  familyService.getFamily(id);
-		var familyResponse =  OperationFamilyResponse.fromDomain(
-				family,
-				family.series().stream().map(series -> {
-					var response = OperationFamilySeriesResponse.fromDomain(series);
-					response.add(linkTo(SeriesResources.class).slash("series").slash(series.id()).withSelfRel());
-					return response;
-				}).toList(),
-				family.subjects().stream().map(OperationFamilySubjectResponse::fromDomain).toList()
+        return OperationFamilyResponse.fromDomain(
+                family,
+                family.series().stream().map(series -> {
+                    var response = OperationFamilySeriesResponse.fromDomain(series);
+                    response.add(linkTo(SeriesResources.class).slash("series").slash(series.id()).withSelfRel());
+                    return response;
+                }).toList(),
+                family.subjects().stream().map(OperationFamilySubjectResponse::fromDomain).toList()
 
-		);
-		familyResponse.add(linkTo(SeriesResources.class).slash("series").slash(family.id()).withSelfRel());
-
-		return familyResponse;
+        );
 	}
 
 	@GetMapping("/families/advanced-search")
