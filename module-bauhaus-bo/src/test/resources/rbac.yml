@@ -1,0 +1,12 @@
+rbac:
+  config:
+    Administrateur_RMESGNCS:
+      operation_family:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
+    Utilisateur_RMESGNCS:
+      operation_family:
+        read: ALL
