@@ -1,6 +1,6 @@
 package fr.insee.rmes.model.structures;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import java.util.List;
 
 public class MutualizedComponent {

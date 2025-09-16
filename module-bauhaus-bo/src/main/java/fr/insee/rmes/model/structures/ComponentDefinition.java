@@ -1,6 +1,7 @@
 package fr.insee.rmes.model.structures;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+
 public class ComponentDefinition {
 
     private String id;

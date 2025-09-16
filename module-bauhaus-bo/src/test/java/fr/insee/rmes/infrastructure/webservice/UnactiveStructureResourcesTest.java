@@ -65,13 +65,13 @@ class UnactiveModulesTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfTheOperationsModuleIsNotActive(){
-        Assertions.assertNull(documentsResources);
-        Assertions.assertNull(familyResources);
-        Assertions.assertNull(indicatorsResources);
-        Assertions.assertNull(metadataReportResources);
-        Assertions.assertNull(operationsResources);
-        Assertions.assertNull(seriesResources);
+    void shouldNotReturnAnyErrorBecauseOperationsIsActive(){
+        Assertions.assertNotNull(documentsResources);
+        Assertions.assertNotNull(familyResources);
+        Assertions.assertNotNull(indicatorsResources);
+        Assertions.assertNotNull(metadataReportResources);
+        Assertions.assertNotNull(operationsResources);
+        Assertions.assertNotNull(seriesResources);
     }
 
 }

@@ -11,8 +11,12 @@ import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+<<<<<<< HEAD
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/integration/authorizations/TestMetadataReportResourcesAuthorizationsEnvProd.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
+=======
+import fr.insee.rmes.domain.exceptions.RmesException;
+>>>>>>> 895fe5ae (refactor: migrate getFamily et getFamilies to the hexagonale architecture (#995))
 import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.MetadataReportResources;
 import fr.insee.rmes.rbac.RBAC;
