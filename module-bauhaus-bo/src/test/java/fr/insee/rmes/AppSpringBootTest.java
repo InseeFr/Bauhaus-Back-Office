@@ -1,10 +1,6 @@
 package fr.insee.rmes;
 
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/AppSpringBootTest.java
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
-=======
-import fr.insee.rmes.onion.infrastructure.graphdb.GraphDBDocumentationRepository;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/AppSpringBootTest.java
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 

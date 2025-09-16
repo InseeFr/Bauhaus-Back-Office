@@ -46,7 +46,6 @@ public class LevelsQueries extends GenericQueries{
 					+ "OPTIONAL {?previousLevel skos:prefLabel ?broaderLg2 . \n"
 					+ "FILTER (lang(?broaderLg2) = '" + config.getLg2() + "') } \n"
 				+ "BIND(STRAFTER(STRAFTER(STR(?previousLevel),'/codes/'), '/') AS ?idBroader) } \n"
-			+ ""
 			+ "} \n"
 			+ "} \n";	
 	}

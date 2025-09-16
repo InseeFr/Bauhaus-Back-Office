@@ -49,7 +49,7 @@ class CollectionForExportTest {
         MembersLg secondMember = membersLg.get(1);
         assertEquals("2", secondMember.getId());
         assertEquals("Membre 2 Label Lg1", secondMember.getPrefLabelLg1());
-        assertEquals(null, secondMember.getPrefLabelLg2()); // prefLabelLg2 n'existe pas
-        assertEquals(null, secondMember.getCreator()); // creator n'existe pas
+        assertNull(secondMember.getPrefLabelLg2()); // prefLabelLg2 n'existe pas
+        assertNull(secondMember.getCreator()); // creator n'existe pas
     }
 }

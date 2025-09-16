@@ -18,8 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -168,7 +168,7 @@ class CodeListsResourcesTest {
     void shouldReturn200WithDeleteCodeForCodeList() throws RmesException {
         when(codeListService.deleteCodeFromCodeList("notation", "1")).thenReturn("body");
         ResponseEntity<Void> response = codeListsResources.deleteCodeForCodeList("notation", "1");
-        assertEquals(null, response.getBody());
+        assertNull(response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
