@@ -31,8 +31,13 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
+<<<<<<< HEAD
     void shouldReturnDefaultValueSetIfEmptyRolesList(){
         assertThat(rbacFetcher.computePrivileges(Collections.<String>emptyList()).size()).isEqualTo(18);
+=======
+    void shouldReturnEmptySetIfEmptyRolesList(){
+        assertThat(rbacFetcher.computePrivileges(Collections.emptyList()).size()).isEqualTo(0);
+>>>>>>> ac94829a (fix: use new Java API (#996))
     }
 
     @Test
