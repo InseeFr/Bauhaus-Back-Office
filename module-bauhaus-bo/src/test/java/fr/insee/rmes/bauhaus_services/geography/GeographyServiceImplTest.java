@@ -7,7 +7,7 @@ import fr.insee.rmes.onion.domain.exceptions.RmesException;
 =======
 >>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/geography/GeographyServiceImplTest.java
 import fr.insee.rmes.model.geography.GeoFeature;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

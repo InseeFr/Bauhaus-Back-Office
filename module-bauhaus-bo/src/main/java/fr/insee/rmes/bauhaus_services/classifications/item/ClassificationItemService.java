@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 
 
 public interface ClassificationItemService {

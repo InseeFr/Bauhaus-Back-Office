@@ -2,7 +2,7 @@ package fr.insee.rmes.onion.domain.port.clientside;
 
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.exceptions.operations.NotFoundAttributeException;
 import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRubricWithoutRangeException;
 

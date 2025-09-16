@@ -1,9 +1,8 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.PartialCollection;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.PartialCollection;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;

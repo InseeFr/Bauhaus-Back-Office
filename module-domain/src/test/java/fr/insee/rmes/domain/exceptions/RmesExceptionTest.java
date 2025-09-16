@@ -1,6 +1,5 @@
 package fr.insee.rmes.domain.exceptions;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -9,8 +8,6 @@ import org.springframework.http.HttpStatus;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RmesExceptionTest {
-
-
     private static JSONObject detailsJson(RmesException ex) {
         assertNotNull(ex.getDetails(), "details should not be null");
         return new JSONObject(ex.getDetails());

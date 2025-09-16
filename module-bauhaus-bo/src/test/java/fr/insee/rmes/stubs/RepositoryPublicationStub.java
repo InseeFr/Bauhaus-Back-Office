@@ -3,7 +3,7 @@ package fr.insee.rmes.stubs;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.repository.Repository;
 
 public class RepositoryPublicationStub extends RepositoryPublication {

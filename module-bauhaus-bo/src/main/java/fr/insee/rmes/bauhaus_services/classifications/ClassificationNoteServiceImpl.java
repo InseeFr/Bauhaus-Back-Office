@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;

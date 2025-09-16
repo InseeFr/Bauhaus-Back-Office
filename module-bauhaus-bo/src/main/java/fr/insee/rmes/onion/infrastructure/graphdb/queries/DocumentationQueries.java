@@ -1,7 +1,7 @@
 package fr.insee.rmes.onion.infrastructure.graphdb.queries;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public class DocumentationQueries  extends GenericQueries {
     }
 
 
-    private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException  {
+    private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
         return FreeMarkerUtils.buildRequest("operations/documentations/", fileName, params);
     }
 

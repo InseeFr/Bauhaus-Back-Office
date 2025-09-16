@@ -16,8 +16,12 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
+<<<<<<< HEAD
 import fr.insee.rmes.onion.domain.exceptions.RmesException;
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
+=======
+import fr.insee.rmes.domain.exceptions.RmesException;
+>>>>>>> 895fe5ae (refactor: migrate getFamily et getFamilies to the hexagonale architecture (#995))
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 =======
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;

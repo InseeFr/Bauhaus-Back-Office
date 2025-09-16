@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.exceptions.operations.NotFoundAttributeException;
 import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.onion.domain.port.serverside.DocumentationRepository;
