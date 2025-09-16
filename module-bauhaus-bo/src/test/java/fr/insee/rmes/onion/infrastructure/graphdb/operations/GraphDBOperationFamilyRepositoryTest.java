@@ -235,9 +235,9 @@ class GraphDBOperationFamilyRepositoryTest {
             assertEquals(familyId, result.id());
             assertEquals("Family Label", result.prefLabelLg1());
             assertEquals(1, result.series().size());
-            assertEquals("s1", result.series().get(0).id());
+            assertEquals("s1", result.series().getFirst().id());
             assertEquals(1, result.subjects().size());
-            assertEquals("sub1", result.subjects().get(0).id());
+            assertEquals("sub1", result.subjects().getFirst().id());
         }
     }
 
