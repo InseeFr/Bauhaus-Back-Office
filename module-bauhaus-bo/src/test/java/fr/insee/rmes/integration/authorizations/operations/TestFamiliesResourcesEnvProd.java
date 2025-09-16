@@ -7,6 +7,8 @@ import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.domain.model.operations.families.OperationFamily;
+import fr.insee.rmes.domain.port.clientside.FamilyService;
 import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.FamilyResources;
@@ -21,6 +23,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -57,6 +60,9 @@ class TestFamiliesResourcesEnvProd {
     private OperationsDocumentationsService operationsDocumentationsService;
 
     @MockitoBean
+    private FamilyService familyService;
+
+    @MockitoBean
     private PropertiesAccessPrivilegesChecker propertiesAccessPrivilegesChecker;
 
     @MockitoBean
@@ -91,7 +97,18 @@ class TestFamiliesResourcesEnvProd {
     void getData(String url, Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
         when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
-
+        when(familyService.getFamily(anyString())).thenReturn(new OperationFamily(
+                "id",
+                "prefLabelLg1",
+                "prefLabelLg2",
+                "abstractLg1",
+                "abstractLg2",
+                "validationState",
+                "created",
+                "modified",
+                Collections.emptyList(),
+                Collections.emptyList()
+                ));
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
         if(withBearer){
