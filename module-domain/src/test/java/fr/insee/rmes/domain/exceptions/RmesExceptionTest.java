@@ -15,6 +15,13 @@ class RmesExceptionTest {
 
 
     @Test
+    void ctor_status_details() {
+        RmesException ex = new RmesException(404, "resource not found");
+        assertEquals(404, ex.getStatus());
+        assertEquals("resource not found", ex.getDetails());
+    }
+
+    @Test
     void ctor_status_message_details() {
         RmesException ex = new RmesException(400, "bad request", "oops");
         assertEquals(400, ex.getStatus());

@@ -13,6 +13,11 @@ public class RmesException extends Exception {
     private final int status;
     private final String details;
 
+    public RmesException(int status, String details) {
+        this.status = status;
+        this.details = details;
+    }
+
     public RmesException(int status, String message, String details) {
         super();
         this.status = status;
