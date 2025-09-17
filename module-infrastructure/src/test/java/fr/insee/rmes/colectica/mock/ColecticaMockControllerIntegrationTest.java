@@ -31,4 +31,23 @@ class ColecticaMockControllerIntegrationTest {
         String response = controller.getColectica();
         assertEquals("Mock Colectica Server Response", response);
     }
+
+    @Test
+    void shouldGetPhysicalInstances() {
+        assertNotNull(controller);
+        var instances = controller.getPhysicalInstances();
+        assertNotNull(instances);
+        assertEquals(3, instances.size());
+        assertEquals("pi-1", instances.get(0).get("id"));
+        assertEquals("Physical Instance 1", instances.get(0).get("label"));
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceById() {
+        assertNotNull(controller);
+        var instance = controller.getPhysicalInstance("test-id");
+        assertNotNull(instance);
+        assertEquals("test-id", instance.get("id"));
+        assertEquals("Physical Instance test-id", instance.get("label"));
+    }
 }
