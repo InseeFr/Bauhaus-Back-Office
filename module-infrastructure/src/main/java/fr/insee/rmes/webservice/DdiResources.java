@@ -5,6 +5,7 @@ import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import fr.insee.rmes.domain.port.clientside.DDIService;
 import fr.insee.rmes.webservice.response.ddi.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.webservice.response.ddi.PhysicalInstanceResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
                 MediaType.APPLICATION_JSON_VALUE
         }
 )
+@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('ddi')")
 public class DdiResources {
 
     private final DDIService ddiService;

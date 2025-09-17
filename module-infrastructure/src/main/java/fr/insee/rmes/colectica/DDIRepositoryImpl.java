@@ -76,8 +76,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public PhysicalInstance getPhysicalInstance(String id) {
-        logger.info("Getting physical instance with id: {} from Colectica mock via HTTP", id);
-        
         String url = colecticaConfiguration.baseURI() + "/physical-instances/" + id;
         
         Map<String, String> response = restTemplate.getForObject(url, Map.class);
