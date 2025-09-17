@@ -45,7 +45,7 @@
     <saxon.version>12.5</saxon.version>
     <minio.version>8.5.17</minio.version>
     <record.builder.version>44</record.builder.version>
-    <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
+    <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
     <!-- SONAR -->
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
