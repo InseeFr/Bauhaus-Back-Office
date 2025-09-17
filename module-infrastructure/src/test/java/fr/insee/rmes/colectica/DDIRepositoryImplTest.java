@@ -1,5 +1,8 @@
 package fr.insee.rmes.colectica;
 
+import fr.insee.rmes.colectica.dto.ColecticaItem;
+import fr.insee.rmes.colectica.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.dto.QueryRequest;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,9 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -41,21 +41,68 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetPhysicalInstances() {
         // Given
-        String baseURI = "http://localhost:8082/colectica";
-        String expectedUrl = baseURI + "/physical-instances";
+        String baseURI = "http://localhost:8082/api/colectica";
+        String expectedUrl = baseURI + "/_query";
+        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
         
-        List<Map<String, String>> mockResponse = List.of(
-                Map.of("id", "pi-1", "label", "Physical Instance 1"),
-                Map.of("id", "pi-2", "label", "Physical Instance 2")
+        ColecticaItem item1 = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Instance Physique 1", "en", "Physical Instance 1"), // itemName
+            Map.of("fr-FR", "Label 1", "en", "Label 1"), // label
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "PhysicalInstance", // itemType
+            "agency1", // agencyId
+            1, // version
+            "pi-1", // identifier
+            null, // item
+            null, // notes
+            null, // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            1L, // transactionId
+            0 // versionCreationType
         );
         
+        ColecticaItem item2 = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Instance Physique 2", "en", "Physical Instance 2"), // itemName
+            Map.of("fr-FR", "Label 2", "en", "Label 2"), // label
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "PhysicalInstance", // itemType
+            "agency2", // agencyId
+            1, // version
+            "pi-2", // identifier
+            null, // item
+            null, // notes
+            null, // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            2L, // transactionId
+            0 // versionCreationType
+        );
+        
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2));
+        
         when(colecticaConfiguration.baseURI()).thenReturn(baseURI);
-        when(restTemplate.exchange(
-                eq(expectedUrl),
-                eq(HttpMethod.GET),
-                eq(null),
-                any(ParameterizedTypeReference.class)
-        )).thenReturn(ResponseEntity.ok(mockResponse));
+        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(restTemplate.postForObject(eq(expectedUrl), any(QueryRequest.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
 
         // When
         List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstances();
@@ -64,17 +111,13 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("pi-1", result.get(0).id());
-        assertEquals("Physical Instance 1", result.get(0).label());
+        assertEquals("Instance Physique 1", result.get(0).label());
         assertEquals("pi-2", result.get(1).id());
-        assertEquals("Physical Instance 2", result.get(1).label());
+        assertEquals("Instance Physique 2", result.get(1).label());
         
         verify(colecticaConfiguration).baseURI();
-        verify(restTemplate).exchange(
-                eq(expectedUrl),
-                eq(HttpMethod.GET),
-                eq(null),
-                any(ParameterizedTypeReference.class)
-        );
+        verify(colecticaConfiguration).itemTypes();
+        verify(restTemplate).postForObject(eq(expectedUrl), any(QueryRequest.class), eq(ColecticaResponse.class));
     }
 
     @Test

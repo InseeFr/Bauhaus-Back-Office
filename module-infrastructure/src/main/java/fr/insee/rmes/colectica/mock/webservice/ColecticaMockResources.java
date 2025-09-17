@@ -1,12 +1,11 @@
 package fr.insee.rmes.colectica.mock.webservice;
 
+import fr.insee.rmes.colectica.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.dto.QueryRequest;
+import fr.insee.rmes.colectica.mock.service.MockDataService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController()
@@ -14,18 +13,22 @@ import java.util.Map;
 @ConditionalOnProperty(name = "fr.insee.rmes.bauhaus.colectica.mock-server-enabled", havingValue = "true")
 public class ColecticaMockResources {
 
+    private final MockDataService mockDataService;
+
+    public ColecticaMockResources(MockDataService mockDataService) {
+        this.mockDataService = mockDataService;
+    }
+
     @GetMapping
     public String getColectica() {
         return "Mock Colectica Server Response";
     }
 
-    @GetMapping("/physical-instances")
-    public List<Map<String, String>> getPhysicalInstances() {
-        return List.of(
-                Map.of("id", "pi-1", "label", "Physical Instance 1"),
-                Map.of("id", "pi-2", "label", "Physical Instance 2"),
-                Map.of("id", "pi-3", "label", "Physical Instance 3")
-        );
+    @PostMapping("/_query")
+    public ColecticaResponse getPhysicalInstances(@RequestBody QueryRequest queryRequest) {
+        // For now, ignore the request body and return all instances
+        // In a real implementation, we would filter based on itemTypes
+        return mockDataService.getColecticaResponse();
     }
 
     @GetMapping("/physical-instances/{id}")

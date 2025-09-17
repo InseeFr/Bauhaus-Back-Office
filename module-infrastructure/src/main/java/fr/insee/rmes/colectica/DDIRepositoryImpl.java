@@ -1,12 +1,13 @@
 package fr.insee.rmes.colectica;
 
+import fr.insee.rmes.colectica.dto.ColecticaItem;
+import fr.insee.rmes.colectica.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.dto.QueryRequest;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,18 +30,48 @@ public class DDIRepositoryImpl implements DDIRepository {
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Getting physical instances from Colectica mock via HTTP");
         
-        String url = colecticaConfiguration.baseURI() + "/physical-instances";
+        String url = colecticaConfiguration.baseURI() + "/_query";
         
-        List<Map<String, String>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<Map<String, String>>>() {}
-        ).getBody();
+        // Create request body with itemTypes from configuration
+        QueryRequest requestBody = new QueryRequest(colecticaConfiguration.itemTypes());
+        
+        ColecticaResponse response = restTemplate.postForObject(url, requestBody, ColecticaResponse.class);
 
-        return response.stream()
-                .map(item -> new PartialPhysicalInstance(item.get("id"), item.get("label")))
+        return response.results().stream()
+                .map(item -> {
+                    String id = item.identifier();
+                    String label = extractLabelFromItem(item);
+                    return new PartialPhysicalInstance(id, label);
+                })
                 .toList();
+    }
+    
+    private String extractLabelFromItem(ColecticaItem item) {
+        // Extract label from ItemName or Label (both can have language variants)
+        String label = extractLabelFromLanguageMap(item.itemName());
+        if (label == null || label.trim().isEmpty()) {
+            label = extractLabelFromLanguageMap(item.label());
+        }
+        if (label == null || label.trim().isEmpty()) {
+            label = item.identifier(); // Fallback to ID if no label found
+        }
+        return label;
+    }
+    
+    private String extractLabelFromLanguageMap(Map<String, String> languageMap) {
+        if (languageMap == null) {
+            return null;
+        }
+        
+        // Try French first, then English, then first available
+        String label = languageMap.get("fr-FR");
+        if (label == null || label.trim().isEmpty()) {
+            label = languageMap.get("en");
+        }
+        if (label == null || label.trim().isEmpty()) {
+            label = languageMap.values().stream().findFirst().orElse(null);
+        }
+        return label;
     }
 
     @Override
