@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.QB;
+import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Model;
@@ -212,10 +213,10 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
-	 */
-	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
+     */
+	public static String executeQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
 		TupleQuery tupleQuery;
+
 		String result;
 		try {
 			var stream = new ByteArrayOutputStream();
@@ -240,9 +241,8 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
-	 */
-	public static boolean executeAskQuery(RepositoryConnection conn, String query) throws RmesException {
+     */
+	public static boolean executeAskQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
 		BooleanQuery tupleQuery;
 		try {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
@@ -260,9 +260,8 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
-	 */
-	public static String getResponse(String query, Repository repository) throws RmesException {
+     */
+	public static String getResponse(String query, Repository repository) throws DatabaseQueryException {
 		String response = "";
 		try {
 			RepositoryConnection conn = repository.getConnection();
@@ -275,9 +274,8 @@ public class RepositoryUtils {
 		return response;
 	}
 
-	private static void logAndThrowError(String query, RDF4JException e) throws RmesException {
-		logger.error("{} {}",EXECUTE_QUERY_FAILED, query, e);
-		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + query);
+	private static void logAndThrowError(String query, RDF4JException e) throws DatabaseQueryException {
+		throw new DatabaseQueryException(e, query);
 	}
 	
 	/**
@@ -285,9 +283,8 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
-	 */
-	public static boolean getResponseForAskQuery(String query, Repository repository) throws RmesException {
+     */
+	public static boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
 		boolean response = false;
 		try {
 			RepositoryConnection conn = repository.getConnection();
