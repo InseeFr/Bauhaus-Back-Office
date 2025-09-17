@@ -62,7 +62,7 @@ public class RepositoryUtils {
 		Repository repository=null;
 		try{
 			repository= this.repositoryInitiator.initRepository(rdfServer, repositoryID);
-		}catch(Exception e) {
+		} catch(Exception e) {
             logger.error("Initialisation de la connection à la base RDF {} impossible", rdfServer, e);
 		}
 		return repository;
