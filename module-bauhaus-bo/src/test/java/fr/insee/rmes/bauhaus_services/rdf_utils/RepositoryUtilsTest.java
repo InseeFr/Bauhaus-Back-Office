@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,9 @@ import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONPars
 import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONParser.RESULTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 class RepositoryUtilsTest {
@@ -174,6 +178,39 @@ class RepositoryUtilsTest {
         Repository result = repositoryUtils.initRepository(rdfServer, repositoryId);
         
         assertNotNull(result);
+    }
+
+    @Test
+    void shouldLogErrorAndReturnNullWhenInitRepositoryThrowsException() {
+        Logger logger = (Logger) LoggerFactory.getLogger(RepositoryUtils.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+        
+        try (MockedStatic<RepositoryInitiator> mockedStatic = mockStatic(RepositoryInitiator.class)) {
+            RepositoryInitiator mockInitiator = org.mockito.Mockito.mock(RepositoryInitiator.class);
+            mockedStatic.when(() -> RepositoryInitiator.newInstance(RepositoryInitiator.Type.ENABLED, keycloakServices))
+                       .thenReturn(mockInitiator);
+            
+            try {
+                org.mockito.Mockito.when(mockInitiator.initRepository(anyString(), anyString()))
+                                  .thenThrow(new RuntimeException("Connection failed"));
+            } catch (Exception e) {
+                fail("Mock setup failed", e);
+            }
+            
+            RepositoryUtils testRepositoryUtils = new RepositoryUtils(keycloakServices, RepositoryInitiator.Type.ENABLED);
+            Repository result = testRepositoryUtils.initRepository("http://localhost:8080", "testRepo");
+            
+            assertNull(result);
+            List<ILoggingEvent> logsList = listAppender.list;
+            assertTrue(logsList.stream().anyMatch(event -> 
+                event.getLevel() == Level.ERROR && 
+                event.getMessage().contains("Initialisation de la connection à la base RDF {} impossible")
+            ));
+        }
+        
+        logger.detachAppender(listAppender);
     }
 
 }
