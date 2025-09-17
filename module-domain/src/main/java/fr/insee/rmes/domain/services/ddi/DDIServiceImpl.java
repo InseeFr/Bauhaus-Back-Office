@@ -26,7 +26,6 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public PhysicalInstance getPhysicalInstance(String id) {
-        logger.info("Starting to get physical instance with id: {}", id);
         return ddiRepository.getPhysicalInstance(id);
     }
 }
