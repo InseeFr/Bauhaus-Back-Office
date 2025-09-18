@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -76,8 +78,9 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public PhysicalInstance getPhysicalInstance(String id) {
-        String url = colecticaConfiguration.baseURI() + "/physical-instances/" + id;
-        
+        String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
+        String url = colecticaConfiguration.baseURI() + "/physical-instances/" + encodedId;
+
         Map<String, String> response = restTemplate.getForObject(url, Map.class);
         
         return new PhysicalInstance(response.get("id"), response.get("label"));
