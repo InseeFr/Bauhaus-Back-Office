@@ -12,11 +12,11 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
 
       - name: Build API
         run: mvn package -Dchangelist=-SNAPSHOT --no-transfer-progress
@@ -37,5 +37,5 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          file: ./module-bauhaus-bo/Dockerfile
+          file: ./Dockerfile.bauhaus
           tags: ghcr.io/inseefr/bauhaus-back-office:${{ github.event.release.tag_name }}
