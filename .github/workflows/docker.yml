@@ -46,11 +46,11 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
 
       - name: Build API
         run: mvn package -Dchangelist=-SNAPSHOT --no-transfer-progress
@@ -70,4 +70,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           tags: "latest, ${{ needs.check-version.outputs.release-version }}"
-          workdir: module-bauhaus-bo
+          dockerfile: Dockerfile.bauhaus

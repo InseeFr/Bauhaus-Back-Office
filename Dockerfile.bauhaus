@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM eclipse-temurin:25-jdk-jammy AS builder
 WORKDIR /opt/app
 
 COPY ./.mvn .mvn
@@ -13,7 +13,7 @@ COPY ./module-infrastructure/ ./module-infrastructure
 RUN chmod +x mvnw
 RUN ./mvnw clean install -DskipTests=true
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 
 RUN groupadd -g 10000 javagroup
 RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser
