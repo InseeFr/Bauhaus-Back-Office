@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.ontologies;
+package fr.insee.rmes.graphdb.ontologies;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
@@ -6,28 +6,28 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class DCMITYPE {
+public class SCHEMA {
 	
-	private DCMITYPE() {
+	  private SCHEMA() {
 		    throw new IllegalStateException("Utility class");
 	}
 
 	
-	public static final String NAMESPACE = "http://purl.org/dc/dcmitype/";
+	public static final String NAMESPACE = "http://schema.org/";
 
 	/**
-	 * The recommended prefix for the INSEE namespace: "insee"
+	 * The recommended prefix for the SCHEMA namespace: "schema"
 	 */
-	public static final String PREFIX = "dcmitype";
+	public static final String PREFIX = "schema";
 	
 	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 	
-	public static final IRI TEXT;
+	public static final IRI URL;
 		
 	static {
 		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		TEXT = f.createIRI(NAMESPACE, "Text");
+		URL = f.createIRI(NAMESPACE, "url");
 	}
 	
 

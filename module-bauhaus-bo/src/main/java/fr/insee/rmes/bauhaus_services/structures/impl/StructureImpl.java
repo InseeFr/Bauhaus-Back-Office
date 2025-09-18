@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
-import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DiacriticSorter;

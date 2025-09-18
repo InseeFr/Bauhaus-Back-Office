@@ -14,7 +14,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;

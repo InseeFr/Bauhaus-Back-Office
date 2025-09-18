@@ -14,7 +14,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
-import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
