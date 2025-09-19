@@ -103,20 +103,6 @@ public class ConceptsQueries extends GenericQueries {
 	}
 	
 
-	public static String getOwner(String uri) throws RmesException {
-		Map<String, Object> params = new HashMap<>();
-		String cleanedUri = uri.replaceAll("[<>]", "");
-		params.put("URI", cleanedUri);
-		return buildConceptRequest("getOwner.ftlh", params);
-	}
-	
-	public static String getManager(String uri) {
-		return "SELECT ?manager { \n"
-				+ "?concept dc:contributor ?manager . \n" 
-				+ "VALUES ?concept { " + uri + " } \n"
-				+ "}";
-	}
-
 	/**
 	 * @param uriConcept
 	 * @return ?idGraph
@@ -138,17 +124,6 @@ public class ConceptsQueries extends GenericQueries {
 		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getLinkedConceptsQuery.ftlh", params);	
 	}
-	
-	/**
-	 * @param idConcept
-	 * @return String
-	 * @throws RmesException
-	 */
-	public static String getConceptUriByIDQuery(String idConcept)  throws RmesException {
-		Map<String, Object> params = initParams();
-		params.put("idConcept", idConcept);
-		return buildConceptRequest("getUriFromIdQuery.ftlh", params);	
-	}
 
 	/**
 	 * @param uriConcept, uriGraph
@@ -169,16 +144,7 @@ public class ConceptsQueries extends GenericQueries {
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}
 	
-	/**
-	 * @param uriConcept
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getConceptVersions(String uriConcept) throws RmesException {
-		Map<String, Object> params = initParams();
-		params.put(URI_CONCEPT, uriConcept);
-		return buildConceptRequest("getConceptVersionsQuery.ftlh", params);
-	}
+
 	
 	private static Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();

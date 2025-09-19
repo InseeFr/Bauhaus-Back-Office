@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.model.IRI;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class IndicatorsQueries extends GenericQueries{
 
 
