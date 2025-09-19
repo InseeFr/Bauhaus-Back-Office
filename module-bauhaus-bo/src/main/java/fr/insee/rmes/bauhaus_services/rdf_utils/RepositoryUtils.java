@@ -54,7 +54,7 @@ public class RepositoryUtils {
 	}
 
 	public Repository initRepository(String rdfServer, String repositoryID) {
-		if (rdfServer==null||rdfServer.equals("")) {
+		if (rdfServer==null|| rdfServer.isEmpty()) {
 			logger.warn("rdfServer ("+rdfServer+") et repositoryID("+repositoryID+") ne doivent pas être nuls dans RepositoryUtils.initRepository");
 			return null;
 		}
@@ -377,7 +377,7 @@ public class RepositoryUtils {
 	 */
 	public static JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
-		if (response.equals("")){
+		if (response.isEmpty()){
 			return null;
 		}
 		JSONObject res = new JSONObject(response);
@@ -393,7 +393,7 @@ public class RepositoryUtils {
 	 */
 	public static JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
-		if (response.equals("")){
+		if (response.isEmpty()){
 			return null;
 		}
 		JSONObject res = new JSONObject(response);

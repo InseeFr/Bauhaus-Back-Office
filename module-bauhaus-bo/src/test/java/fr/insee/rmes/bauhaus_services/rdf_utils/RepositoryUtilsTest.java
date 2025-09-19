@@ -14,13 +14,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
+
 import java.util.List;
 import java.util.Optional;
+
 import static fr.insee.rmes.bauhaus_services.Constants.VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONParser.BINDINGS;
 import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONParser.RESULTS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RepositoryUtilsTest {
 
@@ -116,7 +119,7 @@ class RepositoryUtilsTest {
         String fakeValue=null;
         JSONObject jsonActual = new JSONObject().put("Result", "ResultExample").put(RESULTS,fakeValue);
         JSONException exception = assertThrows(JSONException.class, () -> jsonActual.get(RESULTS));
-        JSONObject jsonImproved = new JSONObject().put("Result", "ResultExample").put(RESULTS,Optional.ofNullable(null));
+        JSONObject jsonImproved = new JSONObject().put("Result", "ResultExample").put(RESULTS,Optional.empty());
 
         Boolean jsonActualCanContainResult =  jsonActual.keySet().contains(RESULTS);
         Boolean jsonActualResultKeyContentBeNull = exception.getMessage().contains("JSONObject[\"results\"] not found");

@@ -1,8 +1,10 @@
 package fr.insee.rmes.bauhaus_services;
 
 import org.junit.jupiter.api.Test;
+
 import java.util.*;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConstantsTest {
 
@@ -183,8 +185,7 @@ class ConstantsTest {
         actual.addAll(startingWithTheLetterW);
         actual.addAll(startingWithTheLetterX);
 
-        SortedSet<String> expected = new TreeSet<>();
-        expected.addAll(actual);
+        SortedSet<String> expected = new TreeSet<>(actual);
 
         boolean isSizesDifferent = expected.size()!=actual.size();
         boolean isSameValue = Objects.equals(Constants.TEXT, Constants.TEXT_LG2);
