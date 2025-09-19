@@ -87,7 +87,6 @@ public class ConceptsQueries extends GenericQueries {
 		params.put("ID_CONCEPT", idConcept);
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptLinksById.ftlh", params);		
-		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
 	
 

@@ -6,8 +6,8 @@ import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
+import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,7 +19,6 @@ import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +59,7 @@ public class PublicResources {
     private final String version;
     private final List<String> extraMandatoryFields;
 
-    public PublicResources(@Autowired StampsService stampsService,
+    public PublicResources(StampsService stampsService,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
                            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
                            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
