@@ -53,10 +53,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Autowired
 	CodeListPublication codeListPublication;
-
-	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
-	String baseInternalURI;
-
+	
 	@Override
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
         return getCodesAsJSONObject(notation, page, perPage).toString();
