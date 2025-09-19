@@ -82,7 +82,7 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
-		logger.info("Starting to get series list with sims");
+		logger.info("Starting to get series list with sims based on a stamp");
 		JSONArray series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithStampQuery(stamp, this.authorizeMethodDecider.isAdmin()));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {

@@ -1,10 +1,13 @@
 package fr.insee.rmes.utils;
 
 import org.junit.jupiter.api.Test;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XhtmlTagsTest {
 
@@ -32,8 +35,7 @@ class XhtmlTagsTest {
                 XhtmlTags.CLOSEUPPERCASE
                 );
 
-        Set<String> set = new HashSet<>();
-        set.addAll(enums);
+        Set<String> set = new HashSet<>(enums);
         assertEquals(set.size(),enums.size());
 
     }

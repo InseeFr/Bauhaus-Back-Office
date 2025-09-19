@@ -8,7 +8,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeListItem {
 
-	private static String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
+	private static final String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
 
 	@Schema(description = "Iri", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String iri;
