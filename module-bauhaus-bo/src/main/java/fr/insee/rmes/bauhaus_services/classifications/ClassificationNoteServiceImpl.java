@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ClassificationNoteServiceImpl implements ClassificationNoteService {
-    private RepositoryGestion repositoryGestion;
+    private final RepositoryGestion repositoryGestion;
 
     public ClassificationNoteServiceImpl(RepositoryGestion repositoryGestion) {
         this.repositoryGestion = repositoryGestion;

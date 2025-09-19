@@ -9,8 +9,8 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
-import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.DocumentsResources;
+import fr.insee.rmes.utils.IdGenerator;
 import io.minio.errors.MinioException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +50,6 @@ class TestDocumentsResourcesWithFilesOperation {
     @MockitoBean
     private RepositoryGestion repositoryGestion;
 
-    private final String fichierId="ID";
-
     static final String nomFichier = "nomFichier";
     static final String objectName = "directoryGestion/"+nomFichier;
     static final String bucketName = "metadata_bucket";
@@ -59,6 +57,7 @@ class TestDocumentsResourcesWithFilesOperation {
     @Test
     void shouldLogAndReturnInternalException_WhenErrorOccursInMinio() throws Exception {
         var capture=startCapturingConsole();
+        String fichierId = "ID";
         mockMvc.perform(MockMvcRequestBuilders.get("/documents/document/" + fichierId + "/file"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string(containsString("fileName='" + nomFichier + "'")));

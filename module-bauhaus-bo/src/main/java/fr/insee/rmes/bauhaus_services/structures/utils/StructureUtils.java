@@ -6,9 +6,9 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
@@ -128,7 +128,7 @@ public class StructureUtils extends RdfService {
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
 
-            getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
+            this.repoGestion.getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
             componentDefinitionFlat.remove("component");
             componentDefinition.put("component", componentDefinitionFlat);
 
