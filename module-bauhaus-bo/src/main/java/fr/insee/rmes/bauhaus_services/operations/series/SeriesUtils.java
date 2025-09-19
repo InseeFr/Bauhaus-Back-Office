@@ -9,11 +9,14 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Series;
@@ -341,7 +344,7 @@ public class SeriesUtils {
         //PERIODICITY
         addCodeList(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode(), DCTERMS.ACCRUAL_PERIODICITY, model, seriesURI);
 
-        addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI);
+        addOperationLinks(series.getSeeAlso(), model, seriesURI);
 
         List<OperationsLink> replaces = series.getReplaces();
         Optional.ofNullable(replaces)
@@ -374,12 +377,12 @@ public class SeriesUtils {
         RdfUtils.addTripleUri(next, DCTERMS.REPLACES, previous, model, RdfUtils.operationsGraph());
     }
 
-    private void addOperationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI seriesURI) {
+    private void addOperationLinks(List<OperationsLink> links, Model model, IRI seriesURI) {
         if (links != null) {
             for (OperationsLink link : links) {
                 if (!link.isEmpty()) {
                     String linkUri = this.uriUtils.getCompleteUriGestion(link.getType(), link.getId());
-                    RdfUtils.addTripleUri(seriesURI, predicate, linkUri, model, RdfUtils.operationsGraph());
+                    RdfUtils.addTripleUri(seriesURI, RDFS.SEEALSO, linkUri, model, RdfUtils.operationsGraph());
                 }
             }
         }

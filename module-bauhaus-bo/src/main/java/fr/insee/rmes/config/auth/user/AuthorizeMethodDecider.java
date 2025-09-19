@@ -12,13 +12,9 @@ public record AuthorizeMethodDecider(PreAuthorizeChecker preAuthorizeChecker) {
 	private static final Logger logger = LoggerFactory.getLogger(AuthorizeMethodDecider.class);
 
 	public boolean isAdmin() {
-		return checkIfHasRole(Roles.ADMIN);
-	}
-
-	private boolean checkIfHasRole(String roleToCheck) {
-		logger.debug("Check if user is {}", roleToCheck);
+		logger.debug("Check if user is {}", Roles.ADMIN);
 		try {
-			this.preAuthorizeChecker.hasRole(roleToCheck);
+			this.preAuthorizeChecker.hasRole(Roles.ADMIN);
 			return true;
 		} catch (AccessDeniedException denied) {
 			return false;

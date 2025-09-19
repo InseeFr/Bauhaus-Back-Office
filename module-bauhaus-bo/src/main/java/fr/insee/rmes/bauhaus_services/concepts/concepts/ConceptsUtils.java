@@ -8,12 +8,11 @@ import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
@@ -52,19 +51,7 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public String getConceptExportFileName(ConceptForExport concept) {
-		return getAbstractExportFileName(concept.getId(), concept.getPrefLabelLg1(), concept.getPrefLabelLg2(), Language.lg1);
-	}
-
-	private String getAbstractExportFileName(String id, String labelLg1, String labelLg2, Language lg){
-		var initialFileName = getInitialFileName(labelLg1, labelLg2, lg);
-		return FilesUtils.generateFinalFileNameWithoutExtension(id + "-" + initialFileName, maxLength);
-	}
-
-	private String getInitialFileName(String labelLg1, String labelLg2, Language lg){
-		if(lg == Language.lg2){
-			return labelLg2;
-		}
-		return labelLg1;
+		return FilesUtils.generateFinalFileNameWithoutExtension(concept.getId() + "-" + concept.getPrefLabelLg1(), maxLength);
 	}
 
 	public String createID() throws RmesException {

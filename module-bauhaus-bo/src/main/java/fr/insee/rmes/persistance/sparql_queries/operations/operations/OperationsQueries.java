@@ -19,9 +19,6 @@ public class OperationsQueries extends GenericQueries {
 		return params;
 	}
 
-	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException {
-		return FreeMarkerUtils.buildRequest("operations/series/", fileName, params);
-	}
 
 	public static String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -64,15 +61,11 @@ public class OperationsQueries extends GenericQueries {
 		Map<String, Object> params = initParams();
 		params.put("ID", idSeries);
 		return FreeMarkerUtils.buildRequest("operations/series/", "getOperationsWithSimsQuery.ftlh", params);
-}
-	
-	  private OperationsQueries() {
-		    throw new IllegalStateException("Utility class");
 	}
 
 	public static String seriesWithSimsQuery(String idFamily) throws RmesException {
 		Map<String, Object> params = initParams();
 		params.put("ID_FAMILY", idFamily);
-		return buildIndicatorRequest("getSeriesWithSimsQuery.ftlh", params);
+		return FreeMarkerUtils.buildRequest("operations/series/", "getSeriesWithSimsQuery.ftlh", params);
 	}
 }
