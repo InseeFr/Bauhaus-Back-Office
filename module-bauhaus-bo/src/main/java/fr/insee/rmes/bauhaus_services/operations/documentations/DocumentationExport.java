@@ -121,7 +121,7 @@ public class DocumentationExport {
 		try {
 
 			Path directory = Files.createTempDirectory("sims");
-			logger.debug("Creating tempory directory {}", directory.toString());
+			logger.debug("Creating tempory directory {}", directory);
 			Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
 			logger.debug("Creating tempory directory {}", simsDirectory);
 

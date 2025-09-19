@@ -27,8 +27,8 @@ public class StorageConfiguration {
 
     @Bean
     @Profile("! s3")
-    public FilesOperations filesSytemOperations() {
-        return new FileSystemOperation();
+    public FilesOperations filesSytemOperations(Config config) {
+        return new FileSystemOperation(config);
     }
 
 }

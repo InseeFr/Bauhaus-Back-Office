@@ -5,14 +5,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
@@ -29,8 +28,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -51,21 +48,14 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	private static final String LAST_CODE_URI_SEGMENT = "lastCodeUriSegment";
 
-	static final Logger logger = LoggerFactory.getLogger(CodeListServiceImpl.class);
 	public static final String VALIDATION_STATE = "validationState";
 	public static final String CONCEPT = "concept/";
-
-
-	@Autowired
-	FamOpeSerIndUtils famOpeSerIndUtils;
 
 	@Autowired
 	CodeListPublication codeListPublication;
 
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
 	String baseInternalURI;
-
-    private final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
@@ -100,8 +90,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public CodeList getDetailedCodesList(String notation) throws RmesException {
 		String detailedCodesList = getDetailedCodesListJson(notation).toString();
-		CodeList codeList = Deserializer.deserializeJsonString(detailedCodesList, CodeList.class);
-		return codeList;
+        return Deserializer.deserializeJsonString(detailedCodesList, CodeList.class);
 	}
 
 	@Override
@@ -112,7 +101,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	public JSONObject getDetailedCodesListJson(String notation) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
-		getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
+		this.repoGestion.getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
 		return codeList;
 	}
 
@@ -181,8 +170,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		result.put("total", counter.get("count"));
 		result.put("page", page);
 		result.put(ITEMS, items);
-		Page numPage= Deserializer.deserializeJsonString(String.valueOf(result), Page.class);
-		return numPage;
+        return Deserializer.deserializeJsonString(String.valueOf(result), Page.class);
 	}
 
 
