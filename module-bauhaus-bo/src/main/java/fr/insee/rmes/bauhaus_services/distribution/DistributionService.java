@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.DistributionsForSearch;
 import fr.insee.rmes.model.dataset.PartialDistribution;

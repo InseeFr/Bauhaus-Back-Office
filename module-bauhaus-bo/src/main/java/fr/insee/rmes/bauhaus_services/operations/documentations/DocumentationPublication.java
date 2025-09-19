@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;

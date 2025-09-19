@@ -8,16 +8,16 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -25,8 +25,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,31 +64,6 @@ public class FamiliesUtils {
 		this.lg2 = lg2;
 	}
 
-	public JSONObject getFamilyById(String id) throws RmesException {
-		JSONObject family = repositoryGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id, familiesRichTextNexStructure));
-		if (family.isEmpty()) {
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
-		}
-		XhtmlToMarkdownUtils.convertJSONObject(family);
-		addFamilySeries(id, family);
-		addSubjects(id, family);
-		return family;
-	}
-
-
-	private void addFamilySeries(String idFamily, JSONObject family) throws RmesException {
-		JSONArray series = repositoryGestion.getResponseAsArray(OpFamiliesQueries.getSeries(idFamily));
-		if (!series.isEmpty()) {
-			family.put("series", series);
-		}
-	}
-
-	private void addSubjects(String idFamily, JSONObject family) throws RmesException {
-		JSONArray subjects = repositoryGestion.getResponseAsArray(OpFamiliesQueries.getSubjects(idFamily));
-		if (!subjects.isEmpty()) {
-			family.put("subjects", subjects);
-		}
-	}
 
 
 	private void validateFamily(Family family) throws RmesException {

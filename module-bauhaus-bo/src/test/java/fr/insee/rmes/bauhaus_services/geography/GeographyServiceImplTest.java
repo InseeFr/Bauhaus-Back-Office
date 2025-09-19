@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.geography;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.geography.GeoFeature;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

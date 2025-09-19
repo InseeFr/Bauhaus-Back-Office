@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.structures.Structure;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;

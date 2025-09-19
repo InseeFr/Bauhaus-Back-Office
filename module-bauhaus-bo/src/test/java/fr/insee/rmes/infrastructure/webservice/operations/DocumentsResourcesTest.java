@@ -3,7 +3,7 @@ package fr.insee.rmes.infrastructure.webservice.operations;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.DocumentsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
