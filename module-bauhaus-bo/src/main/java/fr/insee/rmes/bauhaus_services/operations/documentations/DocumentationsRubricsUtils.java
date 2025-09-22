@@ -35,10 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class
@@ -322,7 +319,7 @@ DocumentationsRubricsUtils extends RdfService {
 		}
 		if (jsonRubric.has(Constants.VALUE)) {
 			try{
-				documentationRubric.setValue(fr.insee.rmes.utils.StringUtils.stringToList(jsonRubric.getString(Constants.VALUE)));
+				documentationRubric.setValue(Collections.singletonList(jsonRubric.getString(Constants.VALUE)));
 			}
 			catch(JSONException e) {
 				/* value is not a string but an array */

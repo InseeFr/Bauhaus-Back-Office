@@ -67,7 +67,11 @@ public class ConceptsResources  {
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of concepts",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
+	responses = {
+			@ApiResponse(
+					content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))
+		}
+	)
 	public List<PartialConcept> getConcepts() throws RmesException {
 		return conceptsService.getConcepts();
 	}

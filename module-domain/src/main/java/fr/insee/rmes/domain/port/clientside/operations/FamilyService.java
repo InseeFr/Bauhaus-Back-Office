@@ -1,4 +1,4 @@
-package fr.insee.rmes.domain.port.clientside;
+package fr.insee.rmes.domain.port.clientside.operations;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;

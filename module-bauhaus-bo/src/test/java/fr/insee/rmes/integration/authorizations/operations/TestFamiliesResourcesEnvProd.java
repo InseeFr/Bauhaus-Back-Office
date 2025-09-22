@@ -8,7 +8,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
-import fr.insee.rmes.domain.port.clientside.FamilyService;
+import fr.insee.rmes.domain.port.clientside.operations.FamilyService;
 import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.FamilyResources;

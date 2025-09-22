@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.application;
 
-import fr.insee.rmes.domain.port.clientside.FamilyService;
+import fr.insee.rmes.domain.port.clientside.operations.FamilyService;
 import fr.insee.rmes.domain.port.serverside.OperationFamilyRepository;
 import fr.insee.rmes.domain.services.operations.FamilyServiceImpl;
 import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;

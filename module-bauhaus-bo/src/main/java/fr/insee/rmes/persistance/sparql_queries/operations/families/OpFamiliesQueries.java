@@ -33,14 +33,4 @@ public class OpFamiliesQueries extends GenericQueries{
 		params.put("LG2", config.getLg2());
 		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
 	}
-
-
-
-
-	
-	  private OpFamiliesQueries() {
-		    throw new IllegalStateException("Utility class");
-	}
-
-
 }
