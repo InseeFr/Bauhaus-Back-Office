@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '25'
-          distribution: 'temurin'
+          distribution: 'corretto'
 
       - name: Build API
         run: mvn package -Dchangelist=-SNAPSHOT --no-transfer-progress

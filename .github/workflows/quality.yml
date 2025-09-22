@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '25'
-          distribution: 'temurin'
+          distribution: 'corretto'
       - name: Run unit tests
         run: mvn -B clean test -DexcludedGroups="integration"
       - name: Run TestContainer
