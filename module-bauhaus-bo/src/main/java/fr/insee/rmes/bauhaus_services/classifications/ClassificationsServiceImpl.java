@@ -13,7 +13,7 @@ import fr.insee.rmes.model.classification.Classification;
 import fr.insee.rmes.model.classification.PartialClassification;
 import fr.insee.rmes.model.classification.PartialClassificationFamily;
 import fr.insee.rmes.model.classification.PartialClassificationSeries;
-import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
 import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
