@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.ontologies;
+package fr.insee.rmes.graphdb.ontologies;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
