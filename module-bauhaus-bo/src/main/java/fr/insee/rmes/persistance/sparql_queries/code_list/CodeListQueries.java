@@ -106,12 +106,7 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
 	}
 
-	public static String getContributorsByCodesListUri(String uriCodesList) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		initParams(params);
-		params.put(URI_CODESLIST, uriCodesList);
-		return buildCodesListRequest("getCodesListContributorsByUriQuery.ftlh", params);
-	}
+
 
 		public static String getCodeListLabelByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -155,14 +150,6 @@ public class CodeListQueries extends GenericQueries {
 		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
-	public static String getCodeListIRIByNotation(String notation) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		initParams(params);
-		params.put(NOTATION, notation);
-		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
-		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListIRIByNotation.ftlh", params);
-	}
-
 
 	public static String getCodesListsForSearch(boolean partial) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();

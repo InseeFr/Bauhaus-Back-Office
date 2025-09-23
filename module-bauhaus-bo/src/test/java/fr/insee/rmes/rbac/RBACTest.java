@@ -1,10 +1,12 @@
 package fr.insee.rmes.rbac;
 
 import org.junit.jupiter.api.Test;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RBACTest {
 
@@ -31,8 +33,7 @@ class RBACTest {
                 RBAC.Module.UNKNOWN.toString()
         );
 
-        Set<String> set = new HashSet<>();
-        set.addAll(enums);
+        Set<String> set = new HashSet<>(enums);
         assertEquals(set.size(),enums.size());
 
     }
@@ -47,8 +48,7 @@ class RBACTest {
                 RBAC.Privilege.UNKNOWN.toString()
         );
 
-        Set<String> set = new HashSet<>();
-        set.addAll(enums);
+        Set<String> set = new HashSet<>(enums);
         assertEquals(set.size(),enums.size());
     }
 
@@ -58,8 +58,7 @@ class RBACTest {
                 RBAC.Strategy.STAMP.toString(),
                 RBAC.Strategy.NONE.toString()
         );
-        Set<String> set = new HashSet<>();
-        set.addAll(enums);
+        Set<String> set = new HashSet<>(enums);
         assertEquals(set.size(),enums.size());
     }
 

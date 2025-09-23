@@ -9,7 +9,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.PAV;
@@ -308,8 +311,7 @@ public class DocumentsUtils extends RdfService {
 
     public JSONArray getDocumentsUriAndUrlForSims(String id) throws RmesException {
         logger.debug("Querrying the list of uri and url for all documents for the SIMS {}", id);
-        JSONArray documents = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
-        return documents;
+        return repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
     }
 
     /**

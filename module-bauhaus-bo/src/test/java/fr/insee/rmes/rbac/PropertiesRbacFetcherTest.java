@@ -32,19 +32,19 @@ class PropertiesRbacFetcherTest {
 
     @Test
     void shouldReturnEmptySetIfEmptyRolesList(){
-        assertThat(rbacFetcher.computePrivileges(Collections.emptyList()).size()).isEqualTo(0);
+        assertThat(rbacFetcher.computePrivileges(Collections.emptyList())).hasSize(0);
     }
 
     @Test
     void shouldComputeStrategies(){
         var result = rbacFetcher.computePrivileges(List.of("Gestionnaire_indicateur_RMESGNCS", "Administrateur_RMESGNCS"));
 
-        assertEquals(18, result.size());
+        assertThat(result).hasSize(18);
 
         ModuleAccessPrivileges privileges = result.stream().filter(r -> r.application().equals(RBAC.Module.CLASSIFICATION_CLASSIFICATION)).findFirst().get();
 
         assertEquals(RBAC.Module.CLASSIFICATION_CLASSIFICATION, privileges.application());
-        assertEquals(5, privileges.privileges().size());
+        assertThat(privileges.privileges()).hasSize(5);
 
         ModuleAccessPrivileges.Privilege privilege = privileges.privileges().stream().filter(p -> p.privilege().equals(RBAC.Privilege.UPDATE)).findFirst().get();
 

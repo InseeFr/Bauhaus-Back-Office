@@ -125,6 +125,7 @@ class DatasetServiceImplTest {
                 new JSONObject().put("lang","en").put("keyword", "keyword 2")
         );
 
+        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(keywords);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
@@ -344,6 +345,8 @@ class DatasetServiceImplTest {
 
         JSONArray array = new JSONArray().put(object);
         when(seriesUtils.isSeriesAndOperationsExist(any())).thenReturn(true);
+        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
+
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
         when(repositoryGestion.getResponseAsArray("query-contributor")).thenReturn(new JSONArray().put(new JSONObject().put("contributor", "contributor")));

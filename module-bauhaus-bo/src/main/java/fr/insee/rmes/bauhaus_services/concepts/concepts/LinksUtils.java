@@ -11,8 +11,6 @@ import java.util.List;
 
 public class LinksUtils {
 
-	//TODO generalize or move in concepts
-	
 	public void createRdfLinks(IRI conceptURI, List<Link> links, Model model) {
 
 		// Create links
