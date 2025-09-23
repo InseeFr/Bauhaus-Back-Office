@@ -1,0 +1,2473 @@
+{
+  "Results": [
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Test publication ter"
+      },
+      "Label": {
+        "fr-FR": "Test publication ter"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "b04e117e-c703-4750-9fcf-e7c45dafe22d",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Test new PI bis"
+      },
+      "Label": {
+        "fr-FR": "Test new PI bis"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "dcc51f30-d9ce-4386-8c20-8a20dbde31fa",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier thl-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier thl-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "cis2022_diff"
+      },
+      "Label": {
+        "fr-FR": "cis2022_diff"
+      },
+      "Description": {
+        "fr-FR": "Résultats de l'enquête communautaire sur l'innovation 2022"
+      },
+      "VersionRationale": {
+        "fr-FR": "version envoyée au CASD"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "89a85330-edff-4416-9c69-a56afd52ba11",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "en": "vac2021meth2021"
+      },
+      "Label": {
+        "en": "vac2021meth2021"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "Test Esane VAC 2021"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "bd22517e-67e3-4496-b5e5-25ab06df33a6",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "en": "vac2020meth2021"
+      },
+      "Label": {
+        "en": "vac2020meth2021"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "Test Esane VAC 2021"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "4b542e5e-77bf-4dc3-8984-a1a08c77e055",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "RAPSODIE"
+      },
+      "Label": {
+        "fr-FR": "RAPSODIE"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "ajout variables au dessin"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 4,
+      "Identifier": "55d8e76a-a4fb-4fbd-b30e-b1f07bf89cdd",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier3"
+      },
+      "Label": {
+        "fr-FR": "Fichier3"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "c979fbcb-2d79-44e5-8e3a-e91b1692b53d",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "16abcee2-930a-4c35-8d9e-e59139b7f9b0",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "PI1"
+      },
+      "Label": {
+        "fr-FR": "PI1"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "35828200-30eb-41e0-a5e9-3949a5d256bd",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "CNAF-FR6"
+      },
+      "Label": {
+        "fr-FR": "CNAF-FR6"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 3,
+      "Identifier": "215f447f-b8f3-40a6-b145-4555f6a8f7e7",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "fichier_test_jsonV2"
+      },
+      "Label": {
+        "fr-FR": "fichier_test_jsonV2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 4,
+      "Identifier": "8cc710fd-c3a1-4ee9-a6f0-b19c060b6c88",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "BaseIra2023"
+      },
+      "Label": {
+        "fr-FR": "BaseIra2023"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 16,
+      "Identifier": "daf5e51b-1ed4-43af-9d7f-4c58e9821b5c",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier_de_données_CITRUS"
+      },
+      "Label": {
+        "fr-FR": "Fichier_de_données_CITRUS"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "variables_RESTUL_CITRUS_VT300625"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "5a54204c-d7ab-4289-9435-2cf1883ba9be",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier thl-CASD POSTMAN"
+      },
+      "Label": {
+        "fr-FR": "Fichier thl-CASD POSTMAN"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "7dafd0e0-5050-4069-81c4-1f3fb8be5426",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "EXP-TOUR25V2"
+      },
+      "Label": {
+        "fr-FR": "EXP-TOUR25V2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "dd5d19d2-77db-42bf-b487-cb67d568cf32",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Experimentation - Données Collecte Tourisme 2025 Herbergement collectif"
+      },
+      "Label": {
+        "fr-FR": "Experimentation - Données Collecte Tourisme 2025 Herbergement collectif"
+      },
+      "Description": {
+        "fr-FR": "Fichier demo experimentation initialisation doc fichier à partir récupération Pogues"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "e20ce97b-23f3-4954-9fa4-8d33cfd47656",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Parc_ahc_01_01_2025"
+      },
+      "Label": {
+        "fr-FR": "Parc_ahc_01_01_2025"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "f30ac148-7f91-4b7c-8849-a0d67182552b",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Parc_htl_01_01_2025"
+      },
+      "Label": {
+        "fr-FR": "Parc_htl_01_01_2025"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "58f63821-d02c-4865-9699-685d9a83a01f",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Parc_cpg_01_01_2025"
+      },
+      "Label": {
+        "fr-FR": "Parc_cpg_01_01_2025"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "efc1fdef-3814-4a11-9d74-32c91f5a7081",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Experimentation - Données Collecte Tourisme 2025 Herbergement collectif"
+      },
+      "Label": {
+        "fr-FR": "Experimentation - Données Collecte Tourisme 2025 Herbergement collectif"
+      },
+      "Description": {
+        "fr-FR": "Fichier demo experimentation initialisation doc fichier à partir récupération Pogues"
+      },
+      "VersionRationale": {
+        "fr-FR": "publication avec experimentation données de collecte à patir de pogues"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "1f779490-3d49-461b-a8f3-a1ab741e4d7c",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "c5d51009-3aef-425c-89f7-f88553d1e415",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "1392be59-8148-4aa8-9734-929c9a5d6882",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "c3a28114-f6b4-474e-8d89-ea1e254af277",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "aee213ff-b704-4fa7-8a7b-0ab5dae22a07",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "3d0a409b-d676-46b3-bfe2-48edd5717410",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier1"
+      },
+      "Label": {
+        "fr-FR": "Fichier1"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "a498c4a8-872e-442d-93a5-a15b7711ecbe",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier1"
+      },
+      "Label": {
+        "fr-FR": "Fichier1"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "27fa9d8f-f9c1-4006-945d-5022986c67f7",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier1"
+      },
+      "Label": {
+        "fr-FR": "Fichier1"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "a7e87aa8-777d-4fa7-a07f-79ec3737f846",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier1"
+      },
+      "Label": {
+        "fr-FR": "Fichier1"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "75b9ee7c-d639-4db8-82f8-8749156feb09",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier1"
+      },
+      "Label": {
+        "fr-FR": "Fichier1"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "4616043a-7108-4c75-84af-db33bcf69c9a",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier2"
+      },
+      "Label": {
+        "fr-FR": "Fichier2"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication du jeu de test d'origine pour les comparaison de mode de publication"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "42adb014-7aad-4151-a07b-5fe49ba3f5c9",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier1"
+      },
+      "Label": {
+        "fr-FR": "Fichier1"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication du jeu de test d'origine pour les comparaison de mode de publication"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "048e52c6-3309-42f2-bb48-7d3d955d5786",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "MAD BTS"
+      },
+      "Label": {
+        "fr-FR": "MAD BTS"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "int.example",
+      "Version": 1,
+      "Identifier": "173b286a-e217-4aac-859a-6b28cb6785c0",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Parc_ahc_01_01_2025"
+      },
+      "Label": {
+        "fr-FR": "Parc_ahc_01_01_2025"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "26583448-f6a0-4870-a948-d49cdc5960cf",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Parc_htl_01_01_2025"
+      },
+      "Label": {
+        "fr-FR": "Parc_htl_01_01_2025"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "29037477-eb7d-47eb-9915-7b1ae694a71a",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Parc_cpg_01_01_2025"
+      },
+      "Label": {
+        "fr-FR": "Parc_cpg_01_01_2025"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "67193dd6-bd4b-4ec1-850b-1b1f8518c310",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier_donnees_Cren"
+      },
+      "Label": {
+        "fr-FR": "Fichier_donnees_Cren"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "Fichier Cren"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "61fd0612-5ffd-4204-8392-ed41c8d7ddd8",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier de données"
+      },
+      "Label": {
+        "fr-FR": "Fichier de données"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "1ed028e4-f16f-4322-a464-e77bf95f597c",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier FPR"
+      },
+      "Label": {
+        "fr-FR": "Fichier FPR"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "76686403-cc8b-488c-9bc5-277feee5bb09",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier FPR"
+      },
+      "Label": {
+        "fr-FR": "Fichier FPR"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "operation fictive pour roll over etendue"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "b46bcbf3-3f8b-4949-a3f9-0fc41eee98ce",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "fichier CASD"
+      },
+      "Label": {
+        "fr-FR": "fichier CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "operation fictive pour roll over etendue"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "7c549311-dba7-4d18-b486-554832b4785c",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "fichier_test_droit"
+      },
+      "Label": {
+        "fr-FR": "fichier_test_droit"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "pour tester les droits"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "f70d4d4f-945b-47e0-9021-9483a7127655",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "fichier_test_version_json"
+      },
+      "Label": {
+        "fr-FR": "fichier_test_version_json"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "d32507d6-39da-4ae2-b355-15ff93ed7128",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "MAD_BATI"
+      },
+      "Label": {
+        "fr-FR": "MAD_BATI"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "Mise à jour"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "6774e999-473d-4c78-a866-fa85713bc98c",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "ARC_BATI"
+      },
+      "Label": {
+        "fr-FR": "ARC_BATI"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "64cf9417-ecc1-43ce-bd31-4850f105ab12",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "pi"
+      },
+      "Label": {
+        "fr-FR": "pi"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "0278464b-b963-4c98-8b75-9305654e764a",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "stock établissements"
+      },
+      "Label": {
+        "fr-FR": "stock établissements"
+      },
+      "Description": {
+        "fr-FR": "fichier stocks établissements"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 4,
+      "Identifier": "e4ab1643-ac62-4dfd-8b82-0d9abf5f9a8c",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "liens de succession"
+      },
+      "Label": {
+        "fr-FR": "liens de succession"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "53df1b7d-ba10-4058-a8f2-039f2e907c84",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "stock unités légales"
+      },
+      "Label": {
+        "fr-FR": "stock unités légales"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "31ebe91f-da64-41cb-961c-a50e6fe21b56",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "flux_salaries_2021"
+      },
+      "Label": {
+        "fr-FR": "flux_salaries_2021"
+      },
+      "Description": {
+        "fr-FR": "Fichier des flux de salariés 2021"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "fc7899b0-72d4-486f-9a67-f257f658f6d5",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "flores_etab_2021"
+      },
+      "Label": {
+        "fr-FR": "flores_etab_2021"
+      },
+      "Description": {
+        "fr-FR": "Fichier Etablissements 2021"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "c7243823-d1e7-4023-bdf0-d8ebb1eed9a4",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "flores_ent_2021"
+      },
+      "Label": {
+        "fr-FR": "flores_ent_2021"
+      },
+      "Description": {
+        "fr-FR": "Fichier Entreprises 2021"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "ea437500-1fc2-4d9c-aa56-2ec9a2523847",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "fichier_test"
+      },
+      "Label": {
+        "fr-FR": "fichier_test"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "f5d43242-7a45-41e1-9b58-f78eb4da1e3f",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Saphir"
+      },
+      "Label": {
+        "fr-FR": "Saphir"
+      },
+      "Description": {
+        "fr-FR": "Fichier Saphir : Système d'analyse de la population par l'historique des recensements"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "458ee9fe-9bba-444e-bd67-f4b44f0cb25e",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "panel17"
+      },
+      "Label": {
+        "fr-FR": "panel17"
+      },
+      "Description": {
+        "fr-FR": "Table de\n          correspondance entre les logements de l'ERFS 2016 et l'ERFS 2017"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "81b0026e-e26b-4496-ae1e-f10a2257aa9f",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Ménages - exploitation complémentaire"
+      },
+      "Label": {
+        "fr-FR": "Ménages - exploitation complémentaire"
+      },
+      "Description": {
+        "fr-FR": "Exploitation complémentaire des données au niveau ménages"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "98f44baf-8a11-47a3-b401-a91617a045c1",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "mrf17e17t4"
+      },
+      "Label": {
+        "fr-FR": "mrf17e17t4"
+      },
+      "Description": {
+        "fr-FR": "Fichier ne comportant\n          que les variables du quatrième trimestre 2017 de l'Enquête Emploi mais contenant tous les\n          ménages des tiers que l'on a cherchés à apparier (donc même les ménages pour lesquels\n          aucune déclaration fiscale n'a été retrouvée)"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "e8fb7c0f-6fa8-452e-a52a-5382314525cf",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "menage17"
+      },
+      "Label": {
+        "fr-FR": "menage17"
+      },
+      "Description": {
+        "fr-FR": "Table avec pour\n          chaque ménage de l'échantillon stricto sensu ses revenus et caractéristiques au quatrième\n          trimestre 2017 de l'Enquête Emploi en continu"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "246b79ff-95cf-4813-bd51-46000e1767d6",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Logements - exploitation principale"
+      },
+      "Label": {
+        "fr-FR": "Logements - exploitation principale"
+      },
+      "Description": {
+        "fr-FR": "Exploitation principale des données par logements"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "a0ebb63d-a715-4679-8650-0b4dc2278db3",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "irf17e17t4"
+      },
+      "Label": {
+        "fr-FR": "irf17e17t4"
+      },
+      "Description": {
+        "fr-FR": "Fichier comprenant\n          toutes les personnes dont le ménage a répondu au quatrième trimestre 2017 de l'Enquête\n          Emploi"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "25a2e37a-65b8-440f-836e-a095f187cb22",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Individus - exploitation principale"
+      },
+      "Label": {
+        "fr-FR": "Individus - exploitation principale"
+      },
+      "Description": {
+        "fr-FR": "Exploitation principale des données par individus"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "387f823f-dd50-4cbf-b954-645bab1edcd2",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Individus - exploitation complémentaire"
+      },
+      "Label": {
+        "fr-FR": "Individus - exploitation complémentaire"
+      },
+      "Description": {
+        "fr-FR": "Exploitation complémentaire des données par individus"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "04b142c8-86a6-45b4-8f4b-8ae3c6572c67",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "indivi17"
+      },
+      "Label": {
+        "fr-FR": "indivi17"
+      },
+      "Description": {
+        "fr-FR": "Table contenant tous\n          les individus appartenant à un ménage répondant au quatrième trimestre 2017 de l'Enquête\n          Emploi et apparié, que ceux-ci aient rempli ou non un questionnaire individuel lors de\n          cette enquête"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "34abf2d5-f0bb-47df-b3d2-42ff7f8f5874",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "indfip2017"
+      },
+      "Label": {
+        "fr-FR": "indfip2017"
+      },
+      "Description": {
+        "fr-FR": "Fichier décrivant les\n          individus qui n'appartiennent pas à un ménage de l'Enquête Emploi mais qui ont été\n          retrouvés dans la déclaration fiscale d'un des membres d'un ménage"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "cc9d772c-5eec-4f1f-a3fe-f8946af25257",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "foyer17"
+      },
+      "Label": {
+        "fr-FR": "foyer17"
+      },
+      "Description": {
+        "fr-FR": "Table 2017 contenant\n          un extrait des variables issues du fichier fiscal de l’impôt sur le revenu"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "3f5af038-66da-46e0-8ce6-38fea30a35e1",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "foyer16"
+      },
+      "Label": {
+        "fr-FR": "foyer16"
+      },
+      "Description": {
+        "fr-FR": "Table 2016 contenant\n          un extrait des variables issues du fichier fiscal de l’impôt sur le revenu"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "e3efc8d2-5147-466a-94b6-7d3634a097a8",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Familles - exploitation complémentaire"
+      },
+      "Label": {
+        "fr-FR": "Familles - exploitation complémentaire"
+      },
+      "Description": {
+        "fr-FR": "Exploitation complémentaire des données au niveau famille"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "8a45be58-711b-477d-94cd-137028cc645d",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "extrait_th"
+      },
+      "Label": {
+        "fr-FR": "extrait_th"
+      },
+      "Description": {
+        "fr-FR": "Table contenant des\n          variables supplémentaires, issues des fichiers de la taxe d'habitation, permettant de\n          décrire le logement du ménage"
+      },
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "CASD",
+      "Version": 1,
+      "Identifier": "bb4881f5-3661-4acf-881c-53aed27e3207",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier thl-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier thl-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication teo2 avec physical Instance"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "16a35b68-4479-4282-95ed-ff7d151746e4",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier Indiv-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier Indiv-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication teo2 avec physical Instance"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "6dd51a6c-41a0-4e26-b1ff-637b02c049f4",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier trajpro-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier trajpro-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication teo2 avec physical Instance"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "d5e54737-0fd6-4b97-ac14-97ede0817f90",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier trajmig-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier trajmig-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication teo2 avec physical Instance"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "13643957-9c3b-4eb8-b66c-4f3818aa4fbd",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier enfants-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier enfants-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication teo2 avec physical Instance"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "86634bdb-2f97-464f-b9e7-e895e07af9e3",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier bdd-ctx-CASD"
+      },
+      "Label": {
+        "fr-FR": "Fichier bdd-ctx-CASD"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "publication teo2 avec physical Instance"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "5a6f6b70-f234-4e00-8005-9594275a4ff7",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "PASRAU"
+      },
+      "Label": {
+        "fr-FR": "PASRAU"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "f898f5f5-4018-4740-9894-eedf03d9a572",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier BPE2021 EDL"
+      },
+      "Label": {
+        "fr-FR": "Fichier BPE2021 EDL"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "44b1209e-c024-405c-b397-a14d488def41",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier CUBE 2021"
+      },
+      "Label": {
+        "fr-FR": "Fichier CUBE 2021"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "d6eae7ca-7897-418f-b7b1-57398d12fe94",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier EDL enrichi 2021"
+      },
+      "Label": {
+        "fr-FR": "Fichier EDL enrichi 2021"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "7ad03922-b352-4e6e-b39e-a50de45d4cbf",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier EDL enrichi 2021"
+      },
+      "Label": {
+        "fr-FR": "Fichier EDL enrichi 2021"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "ajout fichier exemple pour aida exploitation 2021"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 2,
+      "Identifier": "b4f6947a-2340-4544-82c2-607e3b137329",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier EXP-BPE2021-EQUIP"
+      },
+      "Label": {
+        "fr-FR": "Fichier EXP-BPE2021-EQUIP"
+      },
+      "Description": {},
+      "VersionRationale": {},
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 1,
+      "Identifier": "dfd38427-de08-4e0a-b656-71f25ba51c56",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    },
+    {
+      "Summary": {},
+      "ItemName": {
+        "fr-FR": "Fichier indiv - FPR"
+      },
+      "Label": {
+        "fr-FR": "Fichier indiv - FPR"
+      },
+      "Description": {},
+      "VersionRationale": {
+        "fr-FR": "teO2"
+      },
+      "MetadataRank": 0,
+      "RepositoryName": null,
+      "IsAuthoritative": false,
+      "Tags": [],
+      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+      "AgencyId": "fr.insee",
+      "Version": 3,
+      "Identifier": "0b4561de-874b-403c-bd9b-96ee2b057c1f",
+      "Item": null,
+      "Notes": null,
+      "VersionDate": "0001-01-01T00:00:00",
+      "VersionResponsibility": null,
+      "IsPublished": false,
+      "IsDeprecated": false,
+      "IsProvisional": false,
+      "ItemFormat": "00000000-0000-0000-0000-000000000000",
+      "TransactionId": 0,
+      "VersionCreationType": 0
+    }
+  ],
+  "TotalResults": 82,
+  "ReturnedResults": 82,
+  "NextResult": null,
+  "DatabaseTime": "00:00:00.0163235",
+  "RepositoryTime": "00:00:00.0157262"
+}

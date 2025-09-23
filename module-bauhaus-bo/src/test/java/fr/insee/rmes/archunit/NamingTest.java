@@ -20,7 +20,7 @@ class NamingTest {
     void controllerPackageNaming() {
         JavaClasses classes = new ClassFileImporter().importPackages("fr.insee.rmes");
         classes().that().areAnnotatedWith(RestController.class)
-                .should().resideInAPackage("..infrastructure.webservice..").check(classes);
+                .should().resideInAPackage("..webservice..").check(classes);
     }
 
 }
