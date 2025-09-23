@@ -2,7 +2,7 @@ package fr.insee.rmes.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import org.apache.commons.text.StringEscapeUtils;

@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.Constants;
 import org.junit.jupiter.api.Test;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;

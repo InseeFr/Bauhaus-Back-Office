@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;

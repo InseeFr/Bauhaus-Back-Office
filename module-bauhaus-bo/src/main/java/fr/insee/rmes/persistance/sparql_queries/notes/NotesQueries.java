@@ -1,7 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.notes;
 
 import fr.insee.rmes.model.notes.DatableNote;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.graphdb.GenericQueries;
 import org.eclipse.rdf4j.model.IRI;
 
 public class NotesQueries extends GenericQueries{

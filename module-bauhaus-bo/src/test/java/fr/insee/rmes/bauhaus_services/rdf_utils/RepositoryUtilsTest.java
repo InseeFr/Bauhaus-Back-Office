@@ -1,7 +1,9 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.keycloak.KeycloakServices;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -16,7 +18,7 @@ import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import java.util.List;
 import java.util.Optional;
-import static fr.insee.rmes.bauhaus_services.Constants.VALUE;
+import static fr.insee.rmes.Constants.VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONParser.BINDINGS;
 import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONParser.RESULTS;
@@ -28,7 +30,7 @@ class RepositoryUtilsTest {
     KeycloakServices keycloakServices;
     Resource structure;
 
-    RepositoryUtils repositoryUtils = new RepositoryUtils(keycloakServices,RepositoryInitiator.Type.ENABLED);
+    RepositoryUtils repositoryUtils = new RepositoryUtils(keycloakServices, RepositoryInitiator.Type.ENABLED);
     Repository repositoryHTTP = new HTTPRepository("serverURL",null);
     String updateQuery="updateQuery";
 

@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfConnectionDetails;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
+import fr.insee.rmes.graphdb.RdfConnectionDetails;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 
 public class OperationsImplStubContainer extends OperationsImpl {
 

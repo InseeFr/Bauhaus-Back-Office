@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;

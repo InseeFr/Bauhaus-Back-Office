@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import org.json.JSONArray;
