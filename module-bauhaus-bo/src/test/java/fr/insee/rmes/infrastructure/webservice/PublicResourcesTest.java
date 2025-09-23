@@ -6,12 +6,9 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/PublicResourcesTest.java
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-=======
 import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/PublicResourcesTest.java
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,8 +16,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.List;
-import static org.junit.Assert.assertTrue;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,7 +66,7 @@ class PublicResourcesTest {
                 "version",
                 List.of("extraMandatoryFields"));
         String actual = publicResources.getProperties().toString();
-       assertTrue(actual.startsWith("<200 OK OK"));
+        Assertions.assertTrue(actual.startsWith("<200 OK OK"));
     }
 
 

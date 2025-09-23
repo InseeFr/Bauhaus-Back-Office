@@ -24,18 +24,13 @@ public class CollectionsUtils  {
 	static final Logger logger = LoggerFactory.getLogger(CollectionsUtils.class);
 	
 	private final ConceptsPublication conceptsPublication;
-	private final IdGenerator idGenerator;
 	private final RepositoryGestion repositoryGestion;
-	private final CollectionRepository collectionRepository;
 
 	public CollectionsUtils(ConceptsPublication conceptsPublication,
-                            IdGenerator idGenerator,
-                            RepositoryGestion repositoryGestion, CollectionRepository collectionRepository
+							RepositoryGestion repositoryGestion
     ) {
         this.conceptsPublication = conceptsPublication;
-        this.idGenerator = idGenerator;
         this.repositoryGestion = repositoryGestion;
-        this.collectionRepository = collectionRepository;
     }
 
 
