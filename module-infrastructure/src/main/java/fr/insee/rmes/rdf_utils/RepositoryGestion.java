@@ -1,4 +1,4 @@
-package fr.insee.rmes.infrastructure.rdf_utils;
+package fr.insee.rmes.rdf_utils;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;

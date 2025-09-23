@@ -1,4 +1,4 @@
-package fr.insee.rmes.infrastructure.utils;
+package fr.insee.rmes.utils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

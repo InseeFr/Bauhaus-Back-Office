@@ -19,10 +19,10 @@ public record CodesList(
     @DefaultSortField
     String labelLg1,
     
-    @Predicate(value = "skos:prefLabel")
+    @Predicate(value = "skos:prefLabel", optional = true)
     String labelLg2,
     
-    @Predicate(value = "rdfs:seeAlso")
+    @Predicate(value = "rdfs:seeAlso", optional = true, inverse = true)
     String range
 ) {
 }

@@ -21,6 +21,8 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
     private final Class<T> entityClass;
     private final Map<String, String> fieldToPredicateMap = new HashMap<>();
     private final Map<String, String> predicateToFieldMap = new HashMap<>();
+    private final Map<String, Boolean> fieldToOptionalMap = new HashMap<>();
+    private final Map<String, Boolean> fieldToInverseMap = new HashMap<>();
     private final Map<String, String> namespacePrefixes = new HashMap<>();
     private final String entityName;
     private final String graphName;
@@ -162,15 +164,29 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
         
         for (String field : fieldsToRetrieve) {
             String predicate = fieldToPredicateMap.get(field);
+            boolean isOptional = fieldToOptionalMap.getOrDefault(field, true);
+            boolean isInverse = fieldToInverseMap.getOrDefault(field, false);
+            
             if (predicate != null) {
                 if ("URI".equals(predicate)) {
                     query.append("  BIND(?" + entityName.toLowerCase() + " AS ?" + field + ")\n");
                 } else if (!"uri".equals(field)) {
+                    String triple;
+                    if (isInverse) {
+                        triple = "?" + field + " " + predicate + " ?" + entityName.toLowerCase();
+                    } else {
+                        triple = "?" + entityName.toLowerCase() + " " + predicate + " ?" + field;
+                    }
+                    
                     if (field.contains("Label".toLowerCase())) {
                         String lang = getLangForField(field);
-                        query.append("  OPTIONAL { ?" + entityName.toLowerCase() + " " + predicate + " ?" + field + " . FILTER(lang(?" + field + ") = \"" + lang + "\") }\n");
+                        triple += " . FILTER(lang(?" + field + ") = \"" + lang + "\")";
+                    }
+                    
+                    if (isOptional) {
+                        query.append("  OPTIONAL { " + triple + " }\n");
                     } else {
-                        query.append("  OPTIONAL { ?" + entityName.toLowerCase() + " " + predicate + " ?" + field + " }\n");
+                        query.append("  " + triple + " .\n");
                     }
                 } else {
                     query.append("  BIND(?" + entityName.toLowerCase() + " AS ?uri)\n");
@@ -208,11 +224,15 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
                     String predicateUri = buildPredicateUri(predicate);
                     fieldToPredicateMap.put(component.getName(), predicateUri);
                     predicateToFieldMap.put(predicateUri, component.getName());
+                    fieldToOptionalMap.put(component.getName(), predicate.optional());
+                    fieldToInverseMap.put(component.getName(), predicate.inverse());
                     collectNamespacePrefix(predicate);
                 } else if (statement != null) {
                     // Pour les champs @Statement, on les traite comme des URIs de subject
                     fieldToPredicateMap.put(component.getName(), "URI");
                     predicateToFieldMap.put("URI", component.getName());
+                    fieldToOptionalMap.put(component.getName(), false);
+                    fieldToInverseMap.put(component.getName(), false);
                 }
             }
         } else {
@@ -224,11 +244,15 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
                     String predicateUri = buildPredicateUri(predicate);
                     fieldToPredicateMap.put(field.getName(), predicateUri);
                     predicateToFieldMap.put(predicateUri, field.getName());
+                    fieldToOptionalMap.put(field.getName(), predicate.optional());
+                    fieldToInverseMap.put(field.getName(), predicate.inverse());
                     collectNamespacePrefix(predicate);
                 } else if (statement != null) {
                     // Pour les champs @Statement, on les traite comme des URIs de subject
                     fieldToPredicateMap.put(field.getName(), "URI");
                     predicateToFieldMap.put("URI", field.getName());
+                    fieldToOptionalMap.put(field.getName(), false);
+                    fieldToInverseMap.put(field.getName(), false);
                 }
             }
         }

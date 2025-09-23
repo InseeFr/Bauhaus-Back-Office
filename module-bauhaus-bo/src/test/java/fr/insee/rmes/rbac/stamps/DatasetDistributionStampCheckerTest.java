@@ -3,7 +3,7 @@ package fr.insee.rmes.rbac.stamps;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;

@@ -19,6 +19,7 @@ import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.onion.infrastructure.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

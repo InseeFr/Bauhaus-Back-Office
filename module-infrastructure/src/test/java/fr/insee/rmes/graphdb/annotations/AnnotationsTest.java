@@ -266,6 +266,151 @@ class AnnotationsTest {
         assertEquals("test:param", predicateAnnotation.value());
     }
 
+    @Test
+    void predicateAnnotationShouldHaveDefaultOptionalValue() throws Exception {
+        // Test that @Predicate has default optional=true
+        @SuppressWarnings("unused")
+        record TestRecordWithDefaultOptional(
+            @Predicate(value = "test:property")
+            String defaultOptionalField
+        ) {}
+        
+        RecordComponent component = getRecordComponent(TestRecordWithDefaultOptional.class, "defaultOptionalField");
+        assertNotNull(component);
+        
+        Predicate predicate = component.getAnnotation(Predicate.class);
+        assertNotNull(predicate);
+        assertTrue(predicate.optional()); // Default should be true
+    }
+
+    @Test
+    void predicateAnnotationShouldSupportOptionalFalse() throws Exception {
+        // Test explicit optional=false
+        @SuppressWarnings("unused")
+        record TestRecordWithMandatory(
+            @Predicate(value = "test:property", optional = false)
+            String mandatoryField
+        ) {}
+        
+        RecordComponent component = getRecordComponent(TestRecordWithMandatory.class, "mandatoryField");
+        assertNotNull(component);
+        
+        Predicate predicate = component.getAnnotation(Predicate.class);
+        assertNotNull(predicate);
+        assertFalse(predicate.optional());
+    }
+
+    @Test
+    void predicateAnnotationShouldSupportOptionalTrue() throws Exception {
+        // Test explicit optional=true
+        @SuppressWarnings("unused")
+        record TestRecordWithOptional(
+            @Predicate(value = "test:property", optional = true)
+            String optionalField
+        ) {}
+        
+        RecordComponent component = getRecordComponent(TestRecordWithOptional.class, "optionalField");
+        assertNotNull(component);
+        
+        Predicate predicate = component.getAnnotation(Predicate.class);
+        assertNotNull(predicate);
+        assertTrue(predicate.optional());
+    }
+
+    @Test
+    void predicateAnnotationShouldHaveDefaultInverseValue() throws Exception {
+        // Test that @Predicate has default inverse=false
+        @SuppressWarnings("unused")
+        record TestRecordWithDefaultInverse(
+            @Predicate(value = "test:property")
+            String defaultInverseField
+        ) {}
+        
+        RecordComponent component = getRecordComponent(TestRecordWithDefaultInverse.class, "defaultInverseField");
+        assertNotNull(component);
+        
+        Predicate predicate = component.getAnnotation(Predicate.class);
+        assertNotNull(predicate);
+        assertFalse(predicate.inverse()); // Default should be false
+    }
+
+    @Test
+    void predicateAnnotationShouldSupportInverseTrue() throws Exception {
+        // Test explicit inverse=true
+        @SuppressWarnings("unused")
+        record TestRecordWithInverse(
+            @Predicate(value = "test:property", inverse = true)
+            String inverseField
+        ) {}
+        
+        RecordComponent component = getRecordComponent(TestRecordWithInverse.class, "inverseField");
+        assertNotNull(component);
+        
+        Predicate predicate = component.getAnnotation(Predicate.class);
+        assertNotNull(predicate);
+        assertTrue(predicate.inverse());
+    }
+
+    @Test
+    void predicateAnnotationShouldSupportInverseFalse() throws Exception {
+        // Test explicit inverse=false
+        @SuppressWarnings("unused")
+        record TestRecordWithNormalDirection(
+            @Predicate(value = "test:property", inverse = false)
+            String normalField
+        ) {}
+        
+        RecordComponent component = getRecordComponent(TestRecordWithNormalDirection.class, "normalField");
+        assertNotNull(component);
+        
+        Predicate predicate = component.getAnnotation(Predicate.class);
+        assertNotNull(predicate);
+        assertFalse(predicate.inverse());
+    }
+
+    @Test
+    void predicateAnnotationShouldSupportAllCombinations() throws Exception {
+        // Test all combinations of optional and inverse
+        @SuppressWarnings("unused")
+        record TestRecordWithAllCombinations(
+            @Predicate(value = "test:prop1", optional = true, inverse = true)
+            String optionalInverse,
+            
+            @Predicate(value = "test:prop2", optional = true, inverse = false)
+            String optionalNormal,
+            
+            @Predicate(value = "test:prop3", optional = false, inverse = true)
+            String mandatoryInverse,
+            
+            @Predicate(value = "test:prop4", optional = false, inverse = false)
+            String mandatoryNormal
+        ) {}
+        
+        // Test optional=true, inverse=true
+        RecordComponent comp1 = getRecordComponent(TestRecordWithAllCombinations.class, "optionalInverse");
+        Predicate pred1 = comp1.getAnnotation(Predicate.class);
+        assertTrue(pred1.optional());
+        assertTrue(pred1.inverse());
+        
+        // Test optional=true, inverse=false
+        RecordComponent comp2 = getRecordComponent(TestRecordWithAllCombinations.class, "optionalNormal");
+        Predicate pred2 = comp2.getAnnotation(Predicate.class);
+        assertTrue(pred2.optional());
+        assertFalse(pred2.inverse());
+        
+        // Test optional=false, inverse=true
+        RecordComponent comp3 = getRecordComponent(TestRecordWithAllCombinations.class, "mandatoryInverse");
+        Predicate pred3 = comp3.getAnnotation(Predicate.class);
+        assertFalse(pred3.optional());
+        assertTrue(pred3.inverse());
+        
+        // Test optional=false, inverse=false
+        RecordComponent comp4 = getRecordComponent(TestRecordWithAllCombinations.class, "mandatoryNormal");
+        Predicate pred4 = comp4.getAnnotation(Predicate.class);
+        assertFalse(pred4.optional());
+        assertFalse(pred4.inverse());
+    }
+
     // Helper method to check if ElementType array contains specific type
     private boolean containsElementType(ElementType[] types, ElementType target) {
         for (ElementType type : types) {

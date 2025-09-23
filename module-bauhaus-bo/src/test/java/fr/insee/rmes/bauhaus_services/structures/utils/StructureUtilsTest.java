@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.structures.Structure;

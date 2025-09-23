@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.themes;
 
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;

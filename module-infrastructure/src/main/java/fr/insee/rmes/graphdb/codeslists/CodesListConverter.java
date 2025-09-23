@@ -1,7 +1,6 @@
-package fr.insee.rmes.infrastructure.codeslist;
+package fr.insee.rmes.graphdb.codeslists;
 
 import fr.insee.rmes.domain.codeslist.model.CodesListDomain;
-import fr.insee.rmes.graphdb.codeslists.CodesList;
 
 /**
  * Converter between infrastructure models (CodesList) and domain models (CodesListDomain).

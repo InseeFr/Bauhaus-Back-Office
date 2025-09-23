@@ -32,7 +32,19 @@ class SparqlQueryBuilderTest {
             String labelLg1,
             
             @Predicate(value = "rdfs:comment")
-            String description
+            String description,
+            
+            @Predicate(value = "skos:altLabel", optional = true)
+            String optionalField,
+            
+            @Predicate(value = "dcterms:title", optional = false)
+            String mandatoryField,
+            
+            @Predicate(value = "rdfs:seeAlso", inverse = true)
+            String inverseField,
+            
+            @Predicate(value = "skos:broader", optional = false, inverse = true)
+            String mandatoryInverseField
     ) {}
 
     @Entity(type = "foaf:Person")
@@ -341,5 +353,127 @@ class SparqlQueryBuilderTest {
 
         assertNotNull(query);
         assertTrue(query.contains("<http://example.com/property>"));
+    }
+
+    @Test
+    void shouldGenerateOptionalTripleForOptionalField() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("optionalField").build();
+
+            assertNotNull(query);
+            assertTrue(query.contains("OPTIONAL { ?testentity skos:altLabel ?optionalField"));
+        }
+    }
+
+    @Test
+    void shouldGenerateMandatoryTripleForMandatoryField() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("mandatoryField").build();
+
+            assertNotNull(query);
+            assertTrue(query.contains("?testentity dcterms:title ?mandatoryField ."));
+            assertFalse(query.contains("OPTIONAL { ?testentity dcterms:title ?mandatoryField"));
+        }
+    }
+
+    @Test
+    void shouldGenerateInverseTripleForInverseField() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("inverseField").build();
+
+            assertNotNull(query);
+            assertTrue(query.contains("OPTIONAL { ?inverseField rdfs:seeAlso ?testentity"));
+        }
+    }
+
+    @Test
+    void shouldGenerateMandatoryInverseTripleForMandatoryInverseField() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("mandatoryInverseField").build();
+
+            assertNotNull(query);
+            assertTrue(query.contains("?mandatoryInverseField skos:broader ?testentity ."));
+            assertFalse(query.contains("OPTIONAL"));
+        }
+    }
+
+    @Test
+    void shouldHandleComplexQueryWithOptionalAndInverseFields() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("optionalField", "mandatoryField", "inverseField", "mandatoryInverseField").build();
+
+            assertNotNull(query);
+            // Optional field should be in OPTIONAL block
+            assertTrue(query.contains("OPTIONAL { ?testentity skos:altLabel ?optionalField"));
+            // Mandatory field should NOT be in OPTIONAL block
+            assertTrue(query.contains("?testentity dcterms:title ?mandatoryField ."));
+            // Inverse field should be in OPTIONAL block with inverted subject/object
+            assertTrue(query.contains("OPTIONAL { ?inverseField rdfs:seeAlso ?testentity"));
+            // Mandatory inverse field should NOT be in OPTIONAL block but with inverted subject/object
+            assertTrue(query.contains("?mandatoryInverseField skos:broader ?testentity ."));
+        }
+    }
+
+    @Test
+    void shouldReturnCorrectFieldMappingsWithOptionalAndInverse() {
+        SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+        var mapping = builder.getFieldToPredicateMapping();
+
+        assertNotNull(mapping);
+        assertEquals("skos:altLabel", mapping.get("optionalField"));
+        assertEquals("dcterms:title", mapping.get("mandatoryField"));
+        assertEquals("rdfs:seeAlso", mapping.get("inverseField"));
+        assertEquals("skos:broader", mapping.get("mandatoryInverseField"));
+    }
+
+    @Test
+    void shouldDefaultToOptionalTrueWhenNotSpecified() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("description").build();
+
+            assertNotNull(query);
+            // Default behavior should be optional=true
+            assertTrue(query.contains("OPTIONAL { ?testentity rdfs:comment ?description"));
+        }
+    }
+
+    @Test
+    void shouldDefaultToInverseFalseWhenNotSpecified() throws RmesException {
+        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+            mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
+                    .thenReturn("http://test.graph");
+
+            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            String query = builder.select("description").build();
+
+            assertNotNull(query);
+            // Default behavior should be inverse=false (normal subject-predicate-object order)
+            assertTrue(query.contains("?testentity rdfs:comment ?description"));
+            assertFalse(query.contains("?description rdfs:comment ?testentity"));
+        }
     }
 }

@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 

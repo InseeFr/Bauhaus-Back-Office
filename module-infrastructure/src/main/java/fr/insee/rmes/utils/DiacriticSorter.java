@@ -1,4 +1,4 @@
-package fr.insee.rmes.infrastructure.utils;
+package fr.insee.rmes.utils;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;
@@ -11,8 +11,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static fr.insee.rmes.infrastructure.utils.MethodHandleUtils.findMethodHandle;
-import static fr.insee.rmes.infrastructure.utils.MethodHandleUtils.safeInvokeMethodHandle;
+import static fr.insee.rmes.utils.MethodHandleUtils.findMethodHandle;
+import static fr.insee.rmes.utils.MethodHandleUtils.safeInvokeMethodHandle;
 
 public class DiacriticSorter {
 

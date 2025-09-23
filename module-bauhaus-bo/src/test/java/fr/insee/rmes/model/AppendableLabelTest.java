@@ -1,7 +1,7 @@
 package fr.insee.rmes.model;
 
 import fr.insee.rmes.model.concepts.PartialConcept;
-import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,4 +1,4 @@
-package fr.insee.rmes.infrastructure.utils;
+package fr.insee.rmes.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
