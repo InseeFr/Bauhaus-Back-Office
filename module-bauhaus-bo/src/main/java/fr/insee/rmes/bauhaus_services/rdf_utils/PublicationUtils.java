@@ -1,7 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.ValidationStatus;
 import jakarta.validation.constraints.NotNull;
 import org.apache.http.HttpStatus;
@@ -18,8 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Set;
 
-import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_GESTION;
-import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_PUBLICATION;
+import static fr.insee.rmes.PropertiesKeys.BASE_URI_GESTION;
+import static fr.insee.rmes.PropertiesKeys.BASE_URI_PUBLICATION;
 import static java.util.Objects.requireNonNull;
 
 @Service

@@ -10,7 +10,7 @@ import fr.insee.rmes.model.concepts.PartialCollection;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
-import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import jakarta.servlet.http.HttpServletResponse;

@@ -16,7 +16,7 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    List<CodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
+    List<fr.insee.rmes.model.codeslists.PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
 
     String getCodesListByIRI(String iri) throws RmesException;
 

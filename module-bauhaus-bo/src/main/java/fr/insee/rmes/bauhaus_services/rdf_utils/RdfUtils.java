@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.DeprecatedConfig;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
@@ -21,7 +23,7 @@ public class RdfUtils {
 
 	private RdfUtils(){}
 	
-	private static Config config;
+	private static DeprecatedConfig config;
 
 	private static UriUtils uriUtils;
 
@@ -305,7 +307,7 @@ public class RdfUtils {
 		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
 	}
 
-	public static void setConfig(Config config) {
+	public static void setConfig(DeprecatedConfig config) {
 		RdfUtils.config = config;
 	}
 

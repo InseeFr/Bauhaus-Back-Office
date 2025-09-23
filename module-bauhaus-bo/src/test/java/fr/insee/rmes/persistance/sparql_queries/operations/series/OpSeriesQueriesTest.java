@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.graphdb.GenericQueries;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

@@ -1,5 +1,7 @@
 package fr.insee.rmes.config;
 
+import fr.insee.rmes.Config;
+
 public class ConfigStub extends Config {
 
     @Override

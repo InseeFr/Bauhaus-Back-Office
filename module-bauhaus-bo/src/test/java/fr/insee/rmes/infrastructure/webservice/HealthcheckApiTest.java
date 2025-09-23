@@ -1,6 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.onion.infrastructure.webservice.HealthcheckResources;
 import fr.insee.rmes.stubs.RepositoryGestionStub;

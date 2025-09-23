@@ -1,13 +1,14 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.graphdb.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_GESTION;
-import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_PUBLICATION;
+import static fr.insee.rmes.PropertiesKeys.BASE_URI_GESTION;
+import static fr.insee.rmes.PropertiesKeys.BASE_URI_PUBLICATION;
 
 @Component
 public record UriUtils(  String baseUriPublication, String baseUriGestion, PropertiesFinder propertiesFinder) {
