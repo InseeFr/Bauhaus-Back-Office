@@ -47,7 +47,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void entityAnnotationShouldBeRuntimeRetained() throws Exception {
+    void entityAnnotationShouldBeRuntimeRetained() {
         Entity entityAnnotation = TestRecord.class.getAnnotation(Entity.class);
         assertNotNull(entityAnnotation);
         assertEquals("TestEntity", entityAnnotation.value());
@@ -64,7 +64,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void graphAnnotationShouldBeRuntimeRetained() throws Exception {
+    void graphAnnotationShouldBeRuntimeRetained() {
         Graph graphAnnotation = TestRecord.class.getAnnotation(Graph.class);
         assertNotNull(graphAnnotation);
         assertEquals("http://test.graph", graphAnnotation.value());
@@ -80,14 +80,13 @@ class AnnotationsTest {
     }
 
     @Test
-    void statementAnnotationShouldWorkOnRecordComponents() throws Exception {
+    void statementAnnotationShouldWorkOnRecordComponents() {
         RecordComponent uriComponent = getRecordComponent(TestRecord.class, "uri");
         assertNotNull(uriComponent);
         
         Statement statementAnnotation = uriComponent.getAnnotation(Statement.class);
         assertNotNull(statementAnnotation);
         
-        // Verify annotation metadata
         Target target = Statement.class.getAnnotation(Target.class);
         assertNotNull(target);
         assertTrue(containsElementType(target.value(), ElementType.FIELD));
@@ -108,7 +107,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldWorkOnRecordComponents() throws Exception {
+    void predicateAnnotationShouldWorkOnRecordComponents() {
         RecordComponent propertyComponent = getRecordComponent(TestRecord.class, "property");
         assertNotNull(propertyComponent);
         
@@ -141,7 +140,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void defaultSortFieldAnnotationShouldWorkOnRecordComponents() throws Exception {
+    void defaultSortFieldAnnotationShouldWorkOnRecordComponents() {
         RecordComponent sortComponent = getRecordComponent(TestRecord.class, "sortField");
         assertNotNull(sortComponent);
         
@@ -169,7 +168,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void typeAnnotationShouldWorkOnClasses() throws Exception {
+    void typeAnnotationShouldWorkOnClasses() {
         // Test with a class that has @Type annotation
         @Type("test:CustomType")
         class TypedClass {}
@@ -201,7 +200,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void allAnnotationsShouldBePresent() throws Exception {
+    void allAnnotationsShouldBePresent() {
         // Verify all expected annotations are present on test record
         assertTrue(TestRecord.class.isAnnotationPresent(Entity.class));
         assertTrue(TestRecord.class.isAnnotationPresent(Graph.class));
@@ -226,7 +225,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void annotationsShouldWorkWithReflection() throws Exception {
+    void annotationsShouldWorkWithReflection() {
         // Test that annotations can be discovered via reflection
         Annotation[] classAnnotations = TestRecord.class.getAnnotations();
         assertTrue(classAnnotations.length >= 2);
@@ -248,7 +247,6 @@ class AnnotationsTest {
 
     @Test
     void shouldHandleMethodParameters() throws Exception {
-        // Test method with Predicate annotation on parameter
         class TestMethodClass {
             @SuppressWarnings("unused")
             public void testMethod(@Predicate(value = "test:param") String param) {}
@@ -267,7 +265,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldHaveDefaultOptionalValue() throws Exception {
+    void predicateAnnotationShouldHaveDefaultOptionalValue() {
         // Test that @Predicate has default optional=true
         @SuppressWarnings("unused")
         record TestRecordWithDefaultOptional(
@@ -284,7 +282,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldSupportOptionalFalse() throws Exception {
+    void predicateAnnotationShouldSupportOptionalFalse() {
         // Test explicit optional=false
         @SuppressWarnings("unused")
         record TestRecordWithMandatory(
@@ -301,7 +299,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldSupportOptionalTrue() throws Exception {
+    void predicateAnnotationShouldSupportOptionalTrue() {
         // Test explicit optional=true
         @SuppressWarnings("unused")
         record TestRecordWithOptional(
@@ -318,7 +316,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldHaveDefaultInverseValue() throws Exception {
+    void predicateAnnotationShouldHaveDefaultInverseValue() {
         // Test that @Predicate has default inverse=false
         @SuppressWarnings("unused")
         record TestRecordWithDefaultInverse(
@@ -335,7 +333,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldSupportInverseTrue() throws Exception {
+    void predicateAnnotationShouldSupportInverseTrue() {
         // Test explicit inverse=true
         @SuppressWarnings("unused")
         record TestRecordWithInverse(
@@ -352,7 +350,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldSupportInverseFalse() throws Exception {
+    void predicateAnnotationShouldSupportInverseFalse() {
         // Test explicit inverse=false
         @SuppressWarnings("unused")
         record TestRecordWithNormalDirection(
@@ -369,7 +367,7 @@ class AnnotationsTest {
     }
 
     @Test
-    void predicateAnnotationShouldSupportAllCombinations() throws Exception {
+    void predicateAnnotationShouldSupportAllCombinations() {
         // Test all combinations of optional and inverse
         @SuppressWarnings("unused")
         record TestRecordWithAllCombinations(
