@@ -11,7 +11,7 @@ import fr.insee.rmes.model.structures.PartialStructure;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;

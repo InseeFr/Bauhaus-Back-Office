@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;

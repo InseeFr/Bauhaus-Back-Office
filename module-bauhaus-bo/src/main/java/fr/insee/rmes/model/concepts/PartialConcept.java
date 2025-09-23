@@ -1,6 +1,6 @@
 package fr.insee.rmes.model.concepts;
 
-import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
+import fr.insee.rmes.utils.DiacriticSorter;
 import io.soabase.recordbuilder.core.RecordBuilder;
 
 @RecordBuilder

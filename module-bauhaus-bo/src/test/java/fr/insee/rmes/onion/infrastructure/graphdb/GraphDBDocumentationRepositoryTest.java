@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.infrastructure.graphdb;
 
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;

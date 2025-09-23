@@ -1,13 +1,11 @@
-package fr.insee.rmes.infrastructure.codeslist;
+package fr.insee.rmes.graphdb.codeslists;
 
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.codeslist.CodesListRepository;
 import fr.insee.rmes.domain.codeslist.model.CodesListDomain;
 import fr.insee.rmes.graphdb.DefaultSortFieldResolver;
 import fr.insee.rmes.graphdb.SparqlQueryBuilder;
-import fr.insee.rmes.graphdb.codeslists.CodesList;
-import fr.insee.rmes.graphdb.codeslists.PartialCodesList;
-import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;

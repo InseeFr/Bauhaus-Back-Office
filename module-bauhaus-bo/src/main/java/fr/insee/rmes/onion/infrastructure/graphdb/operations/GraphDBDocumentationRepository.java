@@ -2,7 +2,7 @@ package fr.insee.rmes.onion.infrastructure.graphdb.operations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;

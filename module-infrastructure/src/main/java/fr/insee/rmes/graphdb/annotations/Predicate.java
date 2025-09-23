@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface Predicate {
     String value();
     String namespace() default "";
+    boolean optional() default true;
+    boolean inverse() default false;
 }

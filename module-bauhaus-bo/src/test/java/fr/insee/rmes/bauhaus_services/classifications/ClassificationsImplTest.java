@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.domain.exceptions.RmesException;

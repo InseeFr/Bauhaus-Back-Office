@@ -1,6 +1,6 @@
 package fr.insee.rmes.stubs;
 
-import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 
 public class RepositoryGestionStub extends RepositoryGestion {
 
