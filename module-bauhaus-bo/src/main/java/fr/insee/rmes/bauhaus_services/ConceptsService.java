@@ -1,11 +1,11 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.model.concepts.PartialConcept;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 

@@ -10,7 +10,7 @@ public class KeycloakServerZoneConfiguration {
     private Map<String, ServerZone> zoneByServers;
 
 
-    public KeycloakServerZoneConfiguration() {
+    public  KeycloakServerZoneConfiguration() {
     }
 
     public void setZoneByServers(Map<String, ServerZone> zoneByServers) {

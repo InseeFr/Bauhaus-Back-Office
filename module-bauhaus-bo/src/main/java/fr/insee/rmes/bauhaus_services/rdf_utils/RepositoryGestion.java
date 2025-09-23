@@ -1,8 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.EVOC;
-import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ontologies.EVOC;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -410,6 +411,16 @@ public class RepositoryGestion {
 
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {
 		return repositoryUtils.getCompleteGraph(con,graphIri);
+	}
+
+	public void getMultipleTripletsForObject(JSONObject object, String objectKey, String query, String queryKey) throws RmesException {
+		JSONArray array = this.getResponseAsArray(query);
+		List<String> results = new ArrayList<>();
+		if(array == null){
+			return;
+		}
+		array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
+		object.put(objectKey, results);
 	}
 
 }

@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -94,8 +94,7 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-		HttpStatus status = RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-		return status;
+        return RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 	public void publishConcept(Resource concept, Model model, List<Resource> noteToClear,

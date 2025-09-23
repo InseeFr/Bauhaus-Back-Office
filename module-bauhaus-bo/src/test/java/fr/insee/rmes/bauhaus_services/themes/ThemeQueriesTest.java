@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.themes;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -26,7 +26,7 @@ class ThemeQueriesTest {
 
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("CONCEPTS_GRAPH", "http://concepts-graph");
+                put("CONCEPTS_GRAPH", "http://rdf.insee.fr/graphes/concepts-graph");
                 put("LG1", "fr");
                 put("CONCEPT_SCHEME_FILTER", "filter1,filter2");
             }};
@@ -42,7 +42,7 @@ class ThemeQueriesTest {
 
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("CONCEPTS_GRAPH", "http://concepts-graph");
+                put("CONCEPTS_GRAPH", "http://rdf.insee.fr/graphes/concepts-graph");
                 put("LG1", "fr");
                 put("CONCEPT_SCHEME_FILTER", "filter3");
             }};

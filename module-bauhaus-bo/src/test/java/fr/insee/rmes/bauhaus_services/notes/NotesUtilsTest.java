@@ -1,13 +1,13 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
-import fr.insee.rmes.persistance.ontologies.EVOC;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.graphdb.ontologies.EVOC;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.XKOS;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;

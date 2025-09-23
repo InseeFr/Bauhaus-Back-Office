@@ -6,7 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.insee.rmes.config.keycloak.KeycloakServer;
 import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
 import fr.insee.rmes.config.keycloak.ServerZone;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,9 +55,7 @@ public class KeycloakServices {
 
     private void logKeycloakServerZones(KeycloakServerZoneConfiguration keycloakServerZoneConfiguration) {
             var zonesByServer = keycloakServerZoneConfiguration.rdfserver();
-            logger.info("\n------- Servers zone configuration ------\n" +
-                    zonesByServer.entrySet().stream().reduce(new StringBuilder(), (sb,entry)->sb.append(entry.getKey()+ " -> "+entry.getValue()).append("\n"),StringBuilder::append).toString()+
-                    "-------------------------------------------");
+        logger.info("\n------- Servers zone configuration ------\n{}-------------------------------------------", zonesByServer.entrySet().stream().reduce(new StringBuilder(), (sb, entry) -> sb.append(entry.getKey() + " -> " + entry.getValue()).append("\n"), StringBuilder::append).toString());
     }
 
     /**
@@ -73,7 +71,7 @@ public class KeycloakServices {
 
         var zone=findZoneForKeycloakForRdfServer(rdfServerUrl);
 
-        log.debug("GET Keycloak access token pour " + zone);
+        log.debug("GET Keycloak access token pour {}", zone);
 
         KeycloakServer keycloakServer = keycloakServers.get(zone.zone());
 
@@ -116,7 +114,7 @@ public class KeycloakServices {
                 .map(Map.Entry::getValue)
                 .findAny();
         if (retour.isEmpty()){
-            logger.warn("Unable to find server zone for url "+url+" : default zone used");
+            logger.warn("Unable to find server zone for url {} : default zone used", url);
             retour= Optional.of(ServerZone.defaultZone());
         }
         zonesByUrl.put(url, retour.get());

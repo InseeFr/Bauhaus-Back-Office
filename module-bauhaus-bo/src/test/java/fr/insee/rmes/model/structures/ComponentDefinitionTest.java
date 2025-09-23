@@ -1,9 +1,10 @@
 package fr.insee.rmes.model.structures;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
-import static org.junit.Assert.assertTrue;
 
 class ComponentDefinitionTest {
 
@@ -41,6 +42,6 @@ class ComponentDefinitionTest {
         boolean mutualizedComponentParameter = component==componentDefinition.getComponent();
         boolean booleanParameter = componentDefinition.getRequired();
 
-        assertTrue(stringParameters && stringArrayParameter && mutualizedComponentParameter && booleanParameter);
+        Assertions.assertTrue(stringParameters && stringArrayParameter && mutualizedComponentParameter && booleanParameter);
     }
 }

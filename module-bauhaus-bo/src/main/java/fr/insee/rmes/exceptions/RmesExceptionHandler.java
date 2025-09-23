@@ -1,6 +1,6 @@
 package fr.insee.rmes.exceptions;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
 import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
