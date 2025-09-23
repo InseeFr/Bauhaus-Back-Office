@@ -10,7 +10,10 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -32,11 +35,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class RepositoryUtils {
@@ -54,15 +55,15 @@ public class RepositoryUtils {
 	}
 
 	public Repository initRepository(String rdfServer, String repositoryID) {
-		if (rdfServer==null||rdfServer.equals("")) {
-			logger.warn("rdfServer ("+rdfServer+") et repositoryID("+repositoryID+") ne doivent pas être nuls dans RepositoryUtils.initRepository");
+		if (rdfServer==null|| rdfServer.isEmpty()) {
+            logger.warn("rdfServer ({}) et repositoryID ({}) ne doivent pas être nuls dans RepositoryUtils.initRepository", rdfServer, repositoryID);
 			return null;
 		}
 		Repository repository=null;
 		try{
 			repository= this.repositoryInitiator.initRepository(rdfServer, repositoryID);
 		}catch(Exception e) {
-			logger.error("Initialisation de la connection à la base RDF " + rdfServer + " impossible", e);
+            logger.error("Initialisation de la connection à la base RDF {} impossible", rdfServer, e);
 		}
 		return repository;
 	}
@@ -201,79 +202,10 @@ public class RepositoryUtils {
 			logger.debug("Begin to get trig file for {}", context);
 			return getCompleteGraphInTrig(repo, context);
 		}catch(RmesException | RepositoryException e) {
-			logger.error("Graph {} can't be writen in a trig - {}, {}", context, e.getClass(), e.getMessage());
+			logger.error("Graph {} can't be written in a trig - {}, {}", context, e.getClass(), e.getMessage());
 		}
 		return null;
 	}
-	
-	public static File getAllGraphsInZip(Repository repo) throws RmesException {
-		//Get all graphs name
-		String[] graphs = getAllGraphs(repo);
-		if (graphs == null) throw new RmesException(HttpStatus.EXPECTATION_FAILED,"Can't find any graph","Check database");
-		
-		//For each graph, create a trig file with statements
-		final var fileCounter = new AtomicInteger();
-		Stream<File> files = Arrays.stream(graphs).map(graph -> getCompleteGraphInTrigWithoutException(repo, graph)).filter(Objects::nonNull);
-
-		//Compile all trig in a zip
-		File tempZipFile;
-		try {
-			tempZipFile = File.createTempFile("exportAll", ".zip");
-		} catch (IOException e1) {
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), "IOException - Failed to create temp file");
-		}
-		
-		try(OutputStream outZip = new FileOutputStream(tempZipFile)){
-			 ZipOutputStream zos = new ZipOutputStream(outZip);
-			 files.forEach(file -> {
-				fileCounter.incrementAndGet();
-				addFileToZip(zos, file);
-			 });
-	        zos.close();
-			if (graphs.length != fileCounter.get()) throw new RmesException(HttpStatus.EXPECTATION_FAILED,"Some graphs can't be writen in a trig","Error in processing getCompleteGraphInTrig");
-			return tempZipFile;
-		} catch (IOException e) {
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException - Failed to getGraph in file");
-		}
-		
-    }
-
-	public static void addFileToZip(ZipOutputStream zos, File file) {
-		String filename = file.getName();
-		logger.debug("Add file {} to zip", filename);
-		ZipEntry entry = new ZipEntry(filename);
-		    try {
-				zos.putNextEntry(entry);
-			    if (file.isFile()) {
-			        copyBytes(zos, new FileInputStream(file));
-			    }
-			    zos.closeEntry();
-			} catch (IOException e) {
-				logger.error("IOException - Can't add file {} to zip", filename);
-			}
-
-	}
-		
-		
-		
-	private static void copyBytes(ZipOutputStream zipOut, FileInputStream fileInputStream) throws IOException {
-        byte[] bytes = new byte[1024];
-        int length;
-        while((length = fileInputStream.read(bytes)) >= 0) {
-            zipOut.write(bytes, 0, length);
-        }
-	}
-
-	public static String[] getAllGraphs(Repository repo) throws RmesException {
-		RepositoryConnection connection = repo.getConnection();
-		TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL,GenericQueries.getAllGraphs());
-		TupleQueryResult rs = tupleQuery.evaluate();
-		String[] graphs = rs.stream().map(g -> g.getValue("g").stringValue()).toArray(String[]::new);
-		logger.info("Graphs in database : {}", (graphs != null ? graphs.length : "0"));
-		connection.close();
-		return graphs;
-	}
-		
 
 	/**
 	 * Method which aims to execute a sparql query
@@ -377,7 +309,7 @@ public class RepositoryUtils {
 	 */
 	public static JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
-		if (response.equals("")){
+		if (response.isEmpty()){
 			return null;
 		}
 		JSONObject res = new JSONObject(response);
@@ -393,7 +325,7 @@ public class RepositoryUtils {
 	 */
 	public static JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
-		if (response.equals("")){
+		if (response.isEmpty()){
 			return null;
 		}
 		JSONObject res = new JSONObject(response);

@@ -1,40 +1,28 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-=======
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
-<<<<<<< HEAD
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
-=======
-import fr.insee.rmes.domain.exceptions.RmesException;
->>>>>>> 895fe5ae (refactor: migrate getFamily et getFamilies to the hexagonale architecture (#995))
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
-=======
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/DocumentationsUtilsTest.java
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Objects;
 
@@ -44,30 +32,43 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@AppSpringBootTest
 class DocumentationsUtilsTest {
 
-	@MockitoBean
-	RepositoryGestion repoGestion;
+	@Mock
+	private RepositoryGestion repoGestion;
 
-	@MockitoBean
-	ParentUtils parentUtils;
+	@Mock
+	private RepositoryPublication repositoryPublication;
 
-	@MockitoBean
-	DocumentationsRubricsUtils documentationsRubricsUtils;
+	@Mock
+	private Config config;
+
+	@Mock
+	private ParentUtils parentUtils;
+
+	@Mock
+	private DocumentationsRubricsUtils documentationsRubricsUtils;
+
+	@Mock
+	private DocumentationPublication documentationPublication;
 
 	@InjectMocks
-	@Spy
 	private DocumentationsUtils documentationsUtils;
 
-    @Mock
-    protected DocumentationsRubricsUtils mockDocumentationsRubricsUtils;
-
-    @Mock
-    protected ParentUtils mockParentUtils;
 
 	@Test
 	void shouldThrowRmesNotFoundExceptionWhenGetDocumentationByIdSims() throws RmesException {
+
+		when(config.getLg1()).thenReturn("fr");
+		when(config.getLg2()).thenReturn("en");
+		when(config.getDocumentationsGraph()).thenReturn("http://rdf.insee.fr/graphes/documentations");
+		when(config.getMsdGraph()).thenReturn("http://rdf.insee.fr/graphes/msd");
+		when(config.getCodeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codelists");
+		when(config.getMsdConceptsGraph()).thenReturn("http://rdf.insee.fr/graphes/msd-concepts");
+
+		// Configurer la variable statique dans GenericQueries
+		GenericQueries.setConfig(config);
+
 		String idSims ="2025";
 		when(repoGestion.getResponseAsObject(DocumentationQueries.getDocumentationTitleQuery(idSims))).thenReturn(new JSONObject());
 		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.getDocumentationByIdSims(idSims));

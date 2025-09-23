@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,12 +9,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+
 import static java.util.Objects.requireNonNull;
 
 public class FileSystemOperation implements FilesOperations {
 
-    @Autowired
-    protected Config config;
+    private final Config config;
+
+    public FileSystemOperation(Config config) {
+        this.config = config;
+    }
 
     @Override
     public void delete(Path absolutePath) {

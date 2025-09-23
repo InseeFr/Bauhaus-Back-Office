@@ -311,8 +311,7 @@ public class DocumentsUtils extends RdfService {
 
     public JSONArray getDocumentsUriAndUrlForSims(String id) throws RmesException {
         logger.debug("Querrying the list of uri and url for all documents for the SIMS {}", id);
-        JSONArray documents = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
-        return documents;
+        return repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
     }
 
     /**

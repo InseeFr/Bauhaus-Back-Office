@@ -56,7 +56,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 		JSONObject structure = repoGestion.getResponseAsObject(StructureQueries.getStructureById(id));
 
 		IRI iri = RdfUtils.structureIRI(id);
-		getMultipleTripletsForObject(structure, "contributor", StructureQueries.getStructureContributors(iri), "contributor");
+		this.repoGestion.getMultipleTripletsForObject(structure, "contributor", StructureQueries.getStructureContributors(iri), "contributor");
 
 		return structureUtils.formatStructure(structure, id).toString();
 	}

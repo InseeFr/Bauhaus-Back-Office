@@ -1,7 +1,6 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -67,7 +66,7 @@ class XMLUtilsTest {
             }""";
 
 	@Test
-	void givenJSon_whenSolveXml_thenResponseIsClean() throws RmesException {
+	void givenJSon_whenSolveXml_thenResponseIsClean() {
 		String out = XMLUtils.solveSpecialXmlcharacters(series);
 		assertTrue(out.contains(Constants.XML_ESPERLUETTE_REPLACEMENT + "quot;"));
 	}

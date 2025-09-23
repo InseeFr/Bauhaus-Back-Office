@@ -12,11 +12,6 @@ class ADMSTest {
     }
 
     @Test
-    void shouldHaveCorrectPrefix() {
-        assertEquals("adms", ADMS.PREFIX);
-    }
-
-    @Test
     void shouldHaveValidIdentifierConstant() {
         assertNotNull(ADMS.IDENTIFIER);
         assertEquals("http://www.w3.org/ns/adms#Identifier", ADMS.IDENTIFIER.toString());

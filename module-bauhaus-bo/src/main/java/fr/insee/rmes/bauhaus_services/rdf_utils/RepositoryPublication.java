@@ -94,8 +94,7 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-		HttpStatus status = RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-		return status;
+        return RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 	public void publishConcept(Resource concept, Model model, List<Resource> noteToClear,

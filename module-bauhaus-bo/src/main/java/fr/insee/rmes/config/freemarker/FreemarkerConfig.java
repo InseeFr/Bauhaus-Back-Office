@@ -7,8 +7,6 @@ import freemarker.template.TemplateExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Locale;
 
 
@@ -27,13 +25,9 @@ public class FreemarkerConfig {
         // Specify the source where the template files come from. Here I set a
         // plain directory for it, but non-file-system sources are possible too:
 
-        try {
-            TemplateLoader templateLoader = getTemplateLoader();
-            logger.info("Init freemarker templateloader {} , {}", FreemarkerConfig.class.getClassLoader().getResource("request"), FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
-            cfg.setTemplateLoader(templateLoader);
-        } catch (IOException | URISyntaxException e) {
-            logger.error(e.getMessage());
-        }
+        TemplateLoader templateLoader = getTemplateLoader();
+        logger.info("Init freemarker templateloader {} , {}", FreemarkerConfig.class.getClassLoader().getResource("request"), FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
+        cfg.setTemplateLoader(templateLoader);
 
         // Set the preferred charset template files are stored in. UTF-8 is
         // a good choice in most applications:
@@ -55,12 +49,8 @@ public class FreemarkerConfig {
 
     /**
      * Get template loader
-     *
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException
      */
-    private static TemplateLoader getTemplateLoader() throws IOException, URISyntaxException {
+    private static TemplateLoader getTemplateLoader() {
        return new ClassTemplateLoader(FreemarkerConfig.class, "/request");
     }
 

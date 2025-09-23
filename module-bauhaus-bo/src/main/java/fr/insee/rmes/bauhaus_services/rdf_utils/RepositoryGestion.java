@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -410,6 +411,16 @@ public class RepositoryGestion {
 
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {
 		return repositoryUtils.getCompleteGraph(con,graphIri);
+	}
+
+	public void getMultipleTripletsForObject(JSONObject object, String objectKey, String query, String queryKey) throws RmesException {
+		JSONArray array = this.getResponseAsArray(query);
+		List<String> results = new ArrayList<>();
+		if(array == null){
+			return;
+		}
+		array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
+		object.put(objectKey, results);
 	}
 
 }

@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -130,14 +131,12 @@ public class SeriesPublication {
         JSONArray operations = repoGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
         JSONUtils.stream(operations)
                 .map(operation -> operation.getString("operation"))
-                .forEach(iri -> {
-                    model.add(
-                            publicationUtils.tranformBaseURIToPublish(resource),
-                            DCTERMS.HAS_PART,
-                            publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
-                            RdfUtils.operationsGraph()
-                    );
-                });
+                .forEach(iri -> model.add(
+                        publicationUtils.tranformBaseURIToPublish(resource),
+                        DCTERMS.HAS_PART,
+                        publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
+                        RdfUtils.operationsGraph()
+                ));
     }
 
     public void addStatementsToModel(Model model, RepositoryResult<Statement> statements) {

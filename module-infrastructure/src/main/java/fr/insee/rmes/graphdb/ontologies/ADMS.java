@@ -9,8 +9,6 @@ public class ADMS {
 
     public static final String NAMESPACE = "http://www.w3.org/ns/adms#";
 
-    public static final String PREFIX = "adms";
-
     private static IRI createIRI(String suffix) {
         return factory.createIRI(NAMESPACE, suffix);
     }

@@ -9,8 +9,8 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.MSD;
@@ -121,7 +121,7 @@ public class DocumentationExport {
 		try {
 
 			Path directory = Files.createTempDirectory("sims");
-			logger.debug("Creating tempory directory {}", directory.toString());
+			logger.debug("Creating tempory directory {}", directory);
 			Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
 			logger.debug("Creating tempory directory {}", simsDirectory);
 
@@ -185,7 +185,7 @@ public class DocumentationExport {
 							Files.createDirectory(documentDirectory);
 						}
 
-						logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
+						logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory);
 						Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
 						Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
 					}

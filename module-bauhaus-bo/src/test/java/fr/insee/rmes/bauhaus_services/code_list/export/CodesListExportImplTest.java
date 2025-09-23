@@ -11,7 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -23,8 +24,6 @@ class CodesListExportImplTest {
 
     @InjectMocks
     private CodesListExportImpl codesListExport;
-
-    private final String notation = "CL_001";
 
 
     @Test
@@ -43,6 +42,7 @@ class CodesListExportImplTest {
         when(repositoryGestion.getResponseAsArray(anyString()))
                 .thenReturn(codesArray);
 
+        String notation = "CL_001";
         ExportedCodesList result = codesListExport.exportCodesList(notation);
 
         assertNotNull(result);
