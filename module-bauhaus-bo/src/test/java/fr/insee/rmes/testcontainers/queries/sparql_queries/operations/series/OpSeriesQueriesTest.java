@@ -1,8 +1,8 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;

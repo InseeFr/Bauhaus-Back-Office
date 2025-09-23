@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
 
 public record RdfServiceStubber(RdfService rdfService) {
 

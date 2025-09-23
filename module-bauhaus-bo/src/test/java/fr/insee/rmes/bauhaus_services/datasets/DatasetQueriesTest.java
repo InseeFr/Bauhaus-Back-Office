@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;

@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
@@ -11,7 +11,7 @@ import fr.insee.rmes.model.structures.PartialStructure;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;

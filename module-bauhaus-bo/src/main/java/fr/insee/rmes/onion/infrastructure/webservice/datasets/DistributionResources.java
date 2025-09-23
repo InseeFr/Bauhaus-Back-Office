@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.infrastructure.webservice.datasets;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.infrastructure.rbac.Roles;

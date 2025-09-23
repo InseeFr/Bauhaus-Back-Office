@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.graphdb.ObjectType;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.junit.jupiter.api.Test;
 

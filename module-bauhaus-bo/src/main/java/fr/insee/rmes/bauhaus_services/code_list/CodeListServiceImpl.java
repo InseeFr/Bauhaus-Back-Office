@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
@@ -13,16 +14,12 @@ import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
-import fr.insee.rmes.graphdb.SparqlQueryBuilder;
-import fr.insee.rmes.graphdb.codeslists.CodesList;
-import fr.insee.rmes.graphdb.codeslists.PartialCodesList;
-import fr.insee.rmes.graphdb.DefaultSortFieldResolver;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.infrastructure.utils.Deserializer;
+import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -33,7 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -447,26 +443,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<CodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
-		JSONArray codeslists;
-		
-		if (partial) {
-			codeslists = repoGestion.getResponseAsArray(
-					SparqlQueryBuilder.forEntity(PartialCodesList.class)
-							.select("id", "uri", "labelLg1", "labelLg2", "range")
-							.build()
-			);
-		} else {
-			codeslists = repoGestion.getResponseAsArray(
-					SparqlQueryBuilder.forEntity(CodesList.class)
-							.select("id", "uri", "labelLg1", "labelLg2", "range")
-							.build()
-			);
-		}
-
+	public List<fr.insee.rmes.model.codeslists.PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+		var codeslists = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial));
 		return DiacriticSorter.sort(codeslists,
-				fr.insee.rmes.graphdb.codeslists.CodesList[].class,
-				DefaultSortFieldResolver.resolveSortFunction(CodesList.class));
+				fr.insee.rmes.model.codeslists.PartialCodesList[].class,
+				fr.insee.rmes.model.codeslists.PartialCodesList::labelLg1);
 	}
 
 	@Override

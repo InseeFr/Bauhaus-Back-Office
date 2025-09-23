@@ -1,8 +1,9 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
+import fr.insee.rmes.DeprecatedConfig;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
@@ -21,6 +22,9 @@ import static org.mockito.Mockito.*;
 class ClassificationItemUtilsTest {
     @Mock
     Config config;
+
+    @Mock
+    DeprecatedConfig deprecatedConfig;
 
     @Mock
     RepositoryGestion repositoryGestion;
@@ -63,8 +67,10 @@ class ClassificationItemUtilsTest {
 
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
-        RdfUtils.setConfig(config);
+
+        when(deprecatedConfig.getCodeListGraph()).thenReturn("http://codeListGraph");
+
+        RdfUtils.setConfig(deprecatedConfig);
         ItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");

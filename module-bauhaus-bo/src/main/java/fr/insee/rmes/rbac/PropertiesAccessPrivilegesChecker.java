@@ -1,6 +1,6 @@
 package fr.insee.rmes.rbac;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.domain.exceptions.RmesException;

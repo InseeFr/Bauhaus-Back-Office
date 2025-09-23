@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
+import fr.insee.rmes.graphdb.RepositoryInitiatorWithAuthent;
+import fr.insee.rmes.keycloak.KeycloakServices;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;

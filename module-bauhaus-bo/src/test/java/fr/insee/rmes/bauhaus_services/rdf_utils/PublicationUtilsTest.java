@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.ValidationStatus;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.base.InternedIRI;

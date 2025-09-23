@@ -1,13 +1,13 @@
 package fr.insee.rmes.onion.infrastructure.graphdb.operations;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.infrastructure.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
 import fr.insee.rmes.domain.model.operations.families.OperationFamilySeries;
 import fr.insee.rmes.domain.model.operations.families.OperationFamilySubject;
 import fr.insee.rmes.domain.model.operations.families.PartialOperationFamily;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.OperationFamilyQueries;
-import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.infrastructure.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
