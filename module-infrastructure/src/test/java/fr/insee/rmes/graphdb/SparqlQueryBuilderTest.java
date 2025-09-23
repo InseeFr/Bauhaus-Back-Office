@@ -2,7 +2,6 @@ package fr.insee.rmes.graphdb;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.annotations.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
