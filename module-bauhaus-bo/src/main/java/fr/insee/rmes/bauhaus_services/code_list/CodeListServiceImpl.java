@@ -13,8 +13,11 @@ import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
+import fr.insee.rmes.graphdb.SparqlQueryBuilder;
+import fr.insee.rmes.graphdb.codeslists.CodesList;
+import fr.insee.rmes.graphdb.codeslists.PartialCodesList;
+import fr.insee.rmes.graphdb.DefaultSortFieldResolver;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -30,6 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -443,11 +447,26 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
-		var codeslists = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial));
+	public List<CodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+		JSONArray codeslists;
+		
+		if (partial) {
+			codeslists = repoGestion.getResponseAsArray(
+					SparqlQueryBuilder.forEntity(PartialCodesList.class)
+							.select("id", "uri", "labelLg1", "labelLg2", "range")
+							.build()
+			);
+		} else {
+			codeslists = repoGestion.getResponseAsArray(
+					SparqlQueryBuilder.forEntity(CodesList.class)
+							.select("id", "uri", "labelLg1", "labelLg2", "range")
+							.build()
+			);
+		}
+
 		return DiacriticSorter.sort(codeslists,
-				PartialCodesList[].class,
-				PartialCodesList::labelLg1);
+				fr.insee.rmes.graphdb.codeslists.CodesList[].class,
+				DefaultSortFieldResolver.resolveSortFunction(CodesList.class));
 	}
 
 	@Override

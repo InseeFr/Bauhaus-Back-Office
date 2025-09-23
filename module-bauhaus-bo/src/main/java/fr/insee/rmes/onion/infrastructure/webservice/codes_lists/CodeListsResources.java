@@ -13,6 +13,7 @@ import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.onion.infrastructure.webservice.GenericResources;
+import fr.insee.rmes.graphdb.codeslists.CodesList;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.Deserializer;
@@ -74,7 +75,7 @@ public class CodeListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public List<PartialCodesList> getAllCodesLists() throws RmesException, JsonProcessingException {
+    public List<CodesList> getAllCodesLists() throws RmesException, JsonProcessingException {
         return codeListService.getAllCodesLists(false);
     }
 
