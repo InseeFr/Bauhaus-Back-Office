@@ -78,6 +78,7 @@ public class DocumentationQueries  extends GenericQueries {
 
         params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
         params.put("ORG_INSEE_GRAPH", config.getOrgInseeGraph());
+        params.put("COG_GRAPH", config.getGeographyGraph());
 
         params.put("LG1_CL",clLg1);
         params.put("LG2_CL",clLg2);
