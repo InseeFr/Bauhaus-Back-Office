@@ -154,13 +154,13 @@ class DocumentationAttributeTest {
     void testRecordEquality() {
         // Given
         DocumentationAttribute attr1 = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false
+            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, ""
         );
         DocumentationAttribute attr2 = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false
+            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, ""
         );
         DocumentationAttribute attr3 = new DocumentationAttribute(
-            "INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false
+            "INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, ""
         );
 
         // Then
@@ -174,7 +174,7 @@ class DocumentationAttributeTest {
     void testRecordToString() {
         // Given
         DocumentationAttribute attr = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false
+            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, ""
         );
 
         // When
