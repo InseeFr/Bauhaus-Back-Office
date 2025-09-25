@@ -3,6 +3,7 @@ SELECT distinct ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?ha
 	FROM <${CODELIST_GRAPH}> 
 	FROM <${ORGANIZATIONS_GRAPH}>
 	FROM <${ORG_INSEE_GRAPH}>
+	FROM <${COG_GRAPH}>
 
     FROM NAMED  <${MSD_GRAPH}> 
 
@@ -90,9 +91,7 @@ WHERE {
 		<#-- RangeType.GEOGRAPHY : value (uri), label -->
 		UNION {
 			?reportAttr ?attr ?uri . 
-			GRAPH  <${MSD_GRAPH}>  {
-					?attr rdfs:range geo:Feature .
-				}
+			?uri igeo:nom ?igeoNom .
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
 			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} }
