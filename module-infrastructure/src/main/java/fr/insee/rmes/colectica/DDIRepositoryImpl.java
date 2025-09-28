@@ -6,7 +6,6 @@ import fr.insee.rmes.colectica.dto.QueryRequest;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
-import jakarta.validation.constraints.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
