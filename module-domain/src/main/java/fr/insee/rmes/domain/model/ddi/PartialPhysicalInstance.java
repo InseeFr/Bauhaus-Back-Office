@@ -1,4 +1,6 @@
 package fr.insee.rmes.domain.model.ddi;
 
-public record PartialPhysicalInstance(String id, String label) {
+import java.util.Date;
+
+public record PartialPhysicalInstance(String id, String label, Date versionDate) {
 }

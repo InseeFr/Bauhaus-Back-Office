@@ -6,6 +6,7 @@ import fr.insee.rmes.colectica.dto.QueryRequest;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
+import jakarta.validation.constraints.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +47,14 @@ public class DDIRepositoryImpl implements DDIRepository {
                 .map(item -> {
                     String id = item.identifier();
                     String label = extractLabelFromItem(item);
-                    return new PartialPhysicalInstance(id, label);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException e) {
+                        logger.debug("Impossible to parse {}", item.versionDate());
+                    }
+                    return new PartialPhysicalInstance(id, label, date);
                 })
                 .toList();
     }
