@@ -1,7 +1,12 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -11,8 +16,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
@@ -24,14 +34,23 @@ import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONPars
 import static org.eclipse.rdf4j.query.resultio.sparqljson.AbstractSPARQLJSONParser.RESULTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
 
+@ExtendWith(MockitoExtension.class)
 class RepositoryUtilsTest {
 
     @Mock
     KeycloakServices keycloakServices;
     Resource structure;
 
-    RepositoryUtils repositoryUtils = new RepositoryUtils(keycloakServices,RepositoryInitiator.Type.ENABLED);
+    RepositoryUtils repositoryUtils;
+
+    @BeforeEach
+    void setUp() {
+        repositoryUtils = new RepositoryUtils(keycloakServices, RepositoryInitiator.Type.ENABLED);
+    }
     Repository repositoryHTTP = new HTTPRepository("serverURL",null);
     String updateQuery="updateQuery";
 
@@ -75,13 +94,7 @@ class RepositoryUtilsTest {
         Assertions.assertTrue(actualCorrectValue);
     }
 
-    @Test
-    void shouldNotInitRepository(){
-        Repository actualRepositoryNull = repositoryUtils.initRepository(null,"repositoryID");
-        Repository actualRepositoryEmpty = repositoryUtils.initRepository("","repositoryID");
-        Repository actualRepositoryCompleted= repositoryUtils.initRepository("rdfServer",null);
-        Assertions.assertTrue(actualRepositoryNull==null && actualRepositoryEmpty==null && actualRepositoryCompleted==null);
-    }
+    
 
     @Test
     void shouldGetConnection() throws RmesException {
@@ -91,8 +104,7 @@ class RepositoryUtilsTest {
 
     @Test
     void shouldNotExecuteUpdate() throws RmesException {
-        Repository repository = null;
-        HttpStatus actualHttpStatus =RepositoryUtils.executeUpdate(updateQuery,repository);
+        HttpStatus actualHttpStatus =RepositoryUtils.executeUpdate(updateQuery, null);
         Assertions.assertEquals(HttpStatus.EXPECTATION_FAILED,actualHttpStatus);
     }
 
@@ -104,14 +116,14 @@ class RepositoryUtilsTest {
 
     @Test
     void shouldThrowAnRmesExceptionWhenGetResponse() {
-        RmesException exception = assertThrows(RmesException.class, () -> RepositoryUtils.getResponse(updateQuery,repositoryHTTP));
-        assertThat(exception.getDetails()).contains("Execute query failed :");
+        DatabaseQueryException exception = assertThrows(DatabaseQueryException.class, () -> RepositoryUtils.getResponse(updateQuery,repositoryHTTP));
+        assertThat(exception.getMessage()).contains("could not read protocol version from server");
     }
 
     @Test
     void shouldThrowAnRmesExceptionWhenGetResponseForAskQuery()  {
-        RmesException exception = assertThrows(RmesException.class, () -> RepositoryUtils.getResponseForAskQuery(updateQuery,repositoryHTTP));
-        assertThat(exception.getDetails()).contains("Execute query failed :");
+        DatabaseQueryException exception = assertThrows(DatabaseQueryException.class, () -> RepositoryUtils.getResponseForAskQuery(updateQuery,repositoryHTTP));
+        assertThat(exception.getMessage()).contains("could not read protocol version from server");
     }
 
     @Test
@@ -132,6 +144,73 @@ class RepositoryUtilsTest {
     void shouldThrowRmesExceptionWhenClearStructureAndComponents(){
         RmesException exception = assertThrows(RmesException.class, () -> RepositoryUtils.clearStructureAndComponents(structure,repositoryHTTP));
         assertThat(exception.getDetails()).contains("Failure deletion : ");
+    }
+
+    @Test
+    void shouldReturnNullAndLogWarningWhenInitRepositoryWithNullRdfServer() {
+        Logger logger = (Logger) LoggerFactory.getLogger(RepositoryUtils.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+        
+        Repository result = repositoryUtils.initRepository(null, "testRepo");
+        
+        assertNull(result);
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals(1, logsList.size());
+        assertEquals(Level.WARN, logsList.getFirst().getLevel());
+        assertTrue(logsList.getFirst().getMessage().contains("ne doivent pas être nuls"));
+        
+        logger.detachAppender(listAppender);
+    }
+
+    @Test
+    void shouldReturnNullWhenInitRepositoryWithEmptyRdfServer() {
+        Repository result = repositoryUtils.initRepository("", "testRepo");
+        assertNull(result);
+    }
+
+    @Test
+    void shouldReturnRepositoryWhenInitRepositoryWithValidParameters() {
+        String rdfServer = "http://localhost:8080";
+        String repositoryId = "testRepo";
+        
+        Repository result = repositoryUtils.initRepository(rdfServer, repositoryId);
+        
+        assertNotNull(result);
+    }
+
+    @Test
+    void shouldLogErrorAndReturnNullWhenInitRepositoryThrowsException() {
+        Logger logger = (Logger) LoggerFactory.getLogger(RepositoryUtils.class);
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+        
+        try (MockedStatic<RepositoryInitiator> mockedStatic = mockStatic(RepositoryInitiator.class)) {
+            RepositoryInitiator mockInitiator = org.mockito.Mockito.mock(RepositoryInitiator.class);
+            mockedStatic.when(() -> RepositoryInitiator.newInstance(RepositoryInitiator.Type.ENABLED, keycloakServices))
+                       .thenReturn(mockInitiator);
+            
+            try {
+                org.mockito.Mockito.when(mockInitiator.initRepository(anyString(), anyString()))
+                                  .thenThrow(new RuntimeException("Connection failed"));
+            } catch (Exception e) {
+                fail("Mock setup failed", e);
+            }
+            
+            RepositoryUtils testRepositoryUtils = new RepositoryUtils(keycloakServices, RepositoryInitiator.Type.ENABLED);
+            Repository result = testRepositoryUtils.initRepository("http://localhost:8080", "testRepo");
+            
+            assertNull(result);
+            List<ILoggingEvent> logsList = listAppender.list;
+            assertTrue(logsList.stream().anyMatch(event -> 
+                event.getLevel() == Level.ERROR && 
+                event.getMessage().contains("Initialisation de la connection à la base RDF {} impossible")
+            ));
+        }
+        
+        logger.detachAppender(listAppender);
     }
 
 }
