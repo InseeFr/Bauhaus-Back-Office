@@ -12,8 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -111,7 +113,9 @@ class DDIRepositoryImplTest {
         assertEquals(2, result.size());
         assertEquals("pi-1", result.get(0).id());
         assertEquals("Instance Physique 1", result.get(0).label());
-        assertEquals("Wed Jan 01 00:00:00 GMT 2025", result.get(0).versionDate().toString());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2025-01-01 00:00:00", sdf.format(result.get(0).versionDate()));
         assertEquals("pi-2", result.get(1).id());
         assertEquals("Instance Physique 2", result.get(1).label());
         assertNull(result.get(1).versionDate());
