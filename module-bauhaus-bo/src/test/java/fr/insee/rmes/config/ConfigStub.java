@@ -64,4 +64,9 @@ public class ConfigStub extends Config {
     public String getMsdConceptsGraph(){
         return "http://rdf.insee.fr/graphes/concepts/qualite";
     }
+
+    @Override
+    public String getConceptsGraph() {
+        return "http://rdf.insee.fr/graphes/concepts/";
+    }
 }
