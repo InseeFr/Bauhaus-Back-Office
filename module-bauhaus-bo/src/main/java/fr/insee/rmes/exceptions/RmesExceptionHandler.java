@@ -11,6 +11,7 @@ import fr.insee.rmes.onion.infrastructure.webservice.datasets.DatasetResources;
 import fr.insee.rmes.onion.infrastructure.webservice.datasets.DistributionResources;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.*;
 import fr.insee.rmes.onion.infrastructure.webservice.structures.StructureResources;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -46,6 +47,7 @@ import java.nio.file.NoSuchFileException;
         MetadataReportResources.class
         // </OperationModule>
 })
+@Order(2)
 public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({
