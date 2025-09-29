@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,8 +36,8 @@ class DdiResourcesTest {
     @Test
     void shouldGetPhysicalInstances() {
         List<PartialPhysicalInstance> expectedInstances = List.of(
-                new PartialPhysicalInstance("pi-1", "Physical Instance 1"),
-                new PartialPhysicalInstance("pi-2", "Physical Instance 2")
+                new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date()),
+                new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date())
         );
         when(ddiService.getPhysicalInstances()).thenReturn(expectedInstances);
 

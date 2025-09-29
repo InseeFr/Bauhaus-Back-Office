@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,9 +34,9 @@ class DDIServiceImplTest {
     void shouldGetPhysicalInstances() {
         // Given
         List<PartialPhysicalInstance> expectedInstances = List.of(
-                new PartialPhysicalInstance("pi-1", "Physical Instance 1"),
-                new PartialPhysicalInstance("pi-2", "Physical Instance 2"),
-                new PartialPhysicalInstance("pi-3", "Physical Instance 3")
+                new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date()),
+                new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date()),
+                new PartialPhysicalInstance("pi-3", "Physical Instance 3", new Date())
         );
         when(ddiRepository.getPhysicalInstances()).thenReturn(expectedInstances);
 
