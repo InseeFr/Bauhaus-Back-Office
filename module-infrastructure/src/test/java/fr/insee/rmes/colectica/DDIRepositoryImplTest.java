@@ -12,11 +12,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -61,7 +62,7 @@ class DDIRepositoryImplTest {
             "pi-1", // identifier
             null, // item
             null, // notes
-            null, // versionDate
+            "2025-01-01T00:00:00", // versionDate
             null, // versionResponsibility
             true, // isPublished
             false, // isDeprecated
@@ -112,9 +113,13 @@ class DDIRepositoryImplTest {
         assertEquals(2, result.size());
         assertEquals("pi-1", result.get(0).id());
         assertEquals("Instance Physique 1", result.get(0).label());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2025-01-01 00:00:00", sdf.format(result.get(0).versionDate()));
         assertEquals("pi-2", result.get(1).id());
         assertEquals("Instance Physique 2", result.get(1).label());
-        
+        assertNull(result.get(1).versionDate());
+
         verify(colecticaConfiguration).baseURI();
         verify(colecticaConfiguration).itemTypes();
         verify(restTemplate).postForObject(eq(expectedUrl), any(QueryRequest.class), eq(ColecticaResponse.class));

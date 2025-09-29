@@ -146,6 +146,12 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
+      ddi_physicalinstance:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Gestionnaire_structures_RMESGNCS:
       structure_structure:
         create: ALL

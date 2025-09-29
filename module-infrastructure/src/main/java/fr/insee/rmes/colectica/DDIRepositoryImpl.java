@@ -13,6 +13,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +46,14 @@ public class DDIRepositoryImpl implements DDIRepository {
                 .map(item -> {
                     String id = item.identifier();
                     String label = extractLabelFromItem(item);
-                    return new PartialPhysicalInstance(id, label);
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException e) {
+                        logger.debug("Impossible to parse {}", item.versionDate());
+                    }
+                    return new PartialPhysicalInstance(id, label, date);
                 })
                 .toList();
     }
