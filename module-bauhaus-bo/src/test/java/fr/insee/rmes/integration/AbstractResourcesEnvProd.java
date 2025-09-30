@@ -1,7 +1,7 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;

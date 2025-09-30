@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
 import fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList;
@@ -36,8 +36,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fr.insee.rmes.bauhaus_services.Constants.GOAL_COMITE_LABEL;
-import static fr.insee.rmes.bauhaus_services.Constants.GOAL_RMES;
+import static fr.insee.rmes.Constants.GOAL_COMITE_LABEL;
+import static fr.insee.rmes.Constants.GOAL_RMES;
 
 @Component
 public class DocumentationExport {

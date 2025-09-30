@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.infrastructure.graphdb.operations;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
 import fr.insee.rmes.domain.model.operations.families.OperationFamilySeries;

@@ -3,7 +3,7 @@ package fr.insee.rmes.onion.infrastructure.webservice.codes_lists;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.config.swagger.model.Id;
@@ -13,9 +13,14 @@ import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.onion.infrastructure.webservice.GenericResources;
+import fr.insee.rmes.graphdb.codeslists.CodesList;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.onion.infrastructure.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -73,9 +78,14 @@ public class CodeListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public List<PartialCodesList> getAllCodesLists() throws RmesException, JsonProcessingException {
-        return codeListService.getAllCodesLists(false);
+    @Operation(summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = PartialCodesList.class)))})
+    public ResponseEntity<List<PartialCodesList>> getAllCodesLists() throws RmesException, JsonProcessingException {
+        List<PartialCodesList> result = codeListService.getAllCodesLists(false);
+        return ResponseEntity.status(HttpStatus.OK)
+                .header("Deprecation", "true")
+                .header("Sunset", "2025-12-31")
+                .header("Link", "</v2/codes-list>; rel=\"successor-version\"")
+                .body(result);
     }
 
 

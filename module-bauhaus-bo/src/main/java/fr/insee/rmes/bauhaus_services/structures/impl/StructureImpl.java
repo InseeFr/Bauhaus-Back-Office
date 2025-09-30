@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;

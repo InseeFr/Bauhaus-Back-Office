@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Optional;
 
-import static fr.insee.rmes.config.PropertiesKeys.CORS_ALLOWED_ORIGIN;
+import static fr.insee.rmes.PropertiesKeys.CORS_ALLOWED_ORIGIN;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity

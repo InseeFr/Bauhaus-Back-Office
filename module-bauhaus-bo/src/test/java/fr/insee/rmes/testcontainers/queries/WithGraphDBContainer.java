@@ -2,7 +2,7 @@ package fr.insee.rmes.testcontainers.queries;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfConnectionDetails;
+import fr.insee.rmes.graphdb.RdfConnectionDetails;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 

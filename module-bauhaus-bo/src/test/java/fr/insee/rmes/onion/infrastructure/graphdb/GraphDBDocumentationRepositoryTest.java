@@ -1,8 +1,8 @@
 package fr.insee.rmes.onion.infrastructure.graphdb;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;
