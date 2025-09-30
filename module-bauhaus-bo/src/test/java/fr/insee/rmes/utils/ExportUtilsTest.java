@@ -4,14 +4,8 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +61,7 @@ class ExportUtilsTest {
     }
 
     @Test
-    void shouldExportAsInputStream() throws RmesException, IOException, javax.xml.transform.TransformerException {
+    void shouldExportAsInputStream() throws RmesException, IOException {
         String fileName = "rapportqualiteautresindicateurs";
         Map<String, String> xmlContent = new HashMap<>(){{
             put("seriesFile","<Series><id>s1034</id><prefLabelLg1>Autres indicateurs</prefLabelLg1><prefLabelLg2>Other indexes</prefLabelLg2><altLabelLg1/><altLabelLg2/><abstractLg1/><abstractLg2/><historyNoteLg1/><historyNoteLg2/><family><id>s88</id><labelLg1>Voir également</labelLg1><labelLg2>See also</labelLg2></family><typeCode>I</typeCode><typeList>CL_SOURCE_CATEGORY</typeList><accrualPeriodicityCode>P</accrualPeriodicityCode><accrualPeriodicityList>CL_FREQ</accrualPeriodicityList><publishers/><contributors/><dataCollectors/><creators><creators>DG75-L201</creators></creators><seeAlso/><replaces/><isReplacedBy/><idSims>2253</idSims><created/><updated/></Series>");

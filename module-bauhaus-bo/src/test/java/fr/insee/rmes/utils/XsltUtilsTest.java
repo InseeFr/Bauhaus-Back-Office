@@ -1,14 +1,15 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 
+import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.FileSystem;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,8 +120,7 @@ class XsltUtilsTest {
     }
 
     @Test
-    void shouldExportAsInputStream() throws RmesException, IOException, javax.xml.transform.TransformerException {
-        String fileName = "rapportqualiteautresindicateurs";
+    void shouldExportAsInputStream() throws IOException, TransformerException {
         Map<String, String> xmlContent = new HashMap<>(){{
             put("seriesFile","<Series><id>s1034</id><prefLabelLg1>Autres indicateurs</prefLabelLg1><prefLabelLg2>Other indexes</prefLabelLg2><altLabelLg1/><altLabelLg2/><abstractLg1/><abstractLg2/><historyNoteLg1/><historyNoteLg2/><family><id>s88</id><labelLg1>Voir également</labelLg1><labelLg2>See also</labelLg2></family><typeCode>I</typeCode><typeList>CL_SOURCE_CATEGORY</typeList><accrualPeriodicityCode>P</accrualPeriodicityCode><accrualPeriodicityList>CL_FREQ</accrualPeriodicityList><publishers/><contributors/><dataCollectors/><creators><creators>DG75-L201</creators></creators><seeAlso/><replaces/><isReplacedBy/><idSims>2253</idSims><created/><updated/></Series>");
             put("simsFile","<Documentation><id>2253</id><idOperation/><idSeries>s1034</idSeries><idIndicator/><created/><updated/><labelLg1>Rapport qualité : Autres indicateurs</labelLg1><labelLg2>Quality report: Other indexes</labelLg2><rubrics><rubrics><idAttribute>S.1.3</idAttribute><labelLg1><p>&lt;p&gt;nom&lt;/p&gt;</p>\n" +

@@ -1,17 +1,10 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
