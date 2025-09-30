@@ -1,6 +1,6 @@
 package fr.insee.rmes.model.concepts;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import org.json.JSONArray;

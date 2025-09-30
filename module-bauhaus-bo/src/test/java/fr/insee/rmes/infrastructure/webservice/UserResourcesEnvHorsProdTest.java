@@ -1,6 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/UserResourcesEnvHorsProdTest.java
 =======

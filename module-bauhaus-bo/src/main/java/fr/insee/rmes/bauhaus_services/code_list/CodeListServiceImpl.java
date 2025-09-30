@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
@@ -14,7 +15,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -443,11 +443,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+	public List<fr.insee.rmes.model.codeslists.PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
 		var codeslists = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial));
 		return DiacriticSorter.sort(codeslists,
-				PartialCodesList[].class,
-				PartialCodesList::labelLg1);
+				fr.insee.rmes.model.codeslists.PartialCodesList[].class,
+				fr.insee.rmes.model.codeslists.PartialCodesList::labelLg1);
 	}
 
 	@Override

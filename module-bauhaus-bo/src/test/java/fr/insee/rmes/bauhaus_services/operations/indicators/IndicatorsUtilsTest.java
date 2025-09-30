@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/indicators/IndicatorsUtilsTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;

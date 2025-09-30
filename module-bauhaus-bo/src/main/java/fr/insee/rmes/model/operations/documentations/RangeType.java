@@ -1,6 +1,6 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.GEO;
 import fr.insee.rmes.graphdb.ontologies.INSEE;

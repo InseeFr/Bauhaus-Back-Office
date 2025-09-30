@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/structures/utils/StructureUtilsTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;

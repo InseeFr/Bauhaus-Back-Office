@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.Family;

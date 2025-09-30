@@ -1,21 +1,21 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;

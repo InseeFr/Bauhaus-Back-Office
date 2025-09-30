@@ -1,18 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-<<<<<<< HEAD
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/MetadataStructureDefUtilsTest.java
-=======
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/operations/documentations/MetadataStructureDefUtilsTest.java
-=======
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
->>>>>>> 895fe5ae (refactor: migrate getFamily et getFamilies to the hexagonale architecture (#995))
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;

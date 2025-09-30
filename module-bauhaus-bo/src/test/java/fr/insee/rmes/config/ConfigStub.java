@@ -1,5 +1,7 @@
 package fr.insee.rmes.config;
 
+import fr.insee.rmes.Config;
+
 public class ConfigStub extends Config {
 
     @Override
@@ -61,5 +63,10 @@ public class ConfigStub extends Config {
     @Override
     public String getMsdConceptsGraph(){
         return "http://rdf.insee.fr/graphes/concepts/qualite";
+    }
+
+    @Override
+    public String getConceptsGraph() {
+        return "http://rdf.insee.fr/graphes/concepts/";
     }
 }

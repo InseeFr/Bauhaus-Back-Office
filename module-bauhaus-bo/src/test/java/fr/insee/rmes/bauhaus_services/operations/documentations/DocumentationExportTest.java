@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;

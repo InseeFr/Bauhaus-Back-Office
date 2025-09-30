@@ -2,7 +2,7 @@ package fr.insee.rmes.onion.infrastructure.webservice.codes_lists;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.domain.exceptions.RmesException;
