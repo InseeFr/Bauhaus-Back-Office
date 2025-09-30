@@ -47,7 +47,7 @@
         <jaxb.version>4.0.5</jaxb.version>
         <zt.version>1.17</zt.version>
         <saxon.version>12.5</saxon.version>
-        <minio.version>8.5.17</minio.version>
+        <minio.version>8.6.0</minio.version>
         <record.builder.version>44</record.builder.version>
         <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
 
