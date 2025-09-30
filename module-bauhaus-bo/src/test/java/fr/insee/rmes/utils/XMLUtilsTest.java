@@ -6,8 +6,7 @@ import org.springframework.http.MediaType;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class XMLUtilsTest {
 	
@@ -65,6 +64,7 @@ class XMLUtilsTest {
             	"validationState": "Modified"\r
             }""";
 
+
 	@Test
 	void givenJSon_whenSolveXml_thenResponseIsClean() {
 		String out = XMLUtils.solveSpecialXmlcharacters(series);
@@ -98,5 +98,4 @@ class XMLUtilsTest {
 		String produceXMLResponseExpected ="<String>Bauhaus-Back</String>";
 		assertEquals(produceXMLResponseExpected,produceXMLResponseActual);
 	}
-
 }
