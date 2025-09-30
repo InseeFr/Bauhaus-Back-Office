@@ -4,6 +4,7 @@ SELECT distinct ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?ha
 	FROM <${ORGANIZATIONS_GRAPH}>
 	FROM <${ORG_INSEE_GRAPH}>
 	FROM <${COG_GRAPH}>
+	FROM <${DOCUMENTATIONS_GEO_GRAPH}>
 
     FROM NAMED  <${MSD_GRAPH}> 
 
