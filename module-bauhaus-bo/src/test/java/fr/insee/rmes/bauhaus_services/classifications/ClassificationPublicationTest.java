@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.Resource;

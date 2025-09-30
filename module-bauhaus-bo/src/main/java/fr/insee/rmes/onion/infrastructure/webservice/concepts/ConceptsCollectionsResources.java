@@ -2,7 +2,7 @@ package fr.insee.rmes.onion.infrastructure.webservice.concepts;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.PartialCollection;

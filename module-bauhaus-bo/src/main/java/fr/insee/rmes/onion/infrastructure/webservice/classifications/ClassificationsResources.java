@@ -1,7 +1,7 @@
 package fr.insee.rmes.onion.infrastructure.webservice.classifications;
 
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.IdLabel;

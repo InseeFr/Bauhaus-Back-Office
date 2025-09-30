@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
 
 import java.io.IOException;

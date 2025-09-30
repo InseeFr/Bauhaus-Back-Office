@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.infrastructure.webservice.operations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;

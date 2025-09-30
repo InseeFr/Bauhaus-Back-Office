@@ -8,6 +8,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.PartialCollection;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;

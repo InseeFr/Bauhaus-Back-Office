@@ -1,8 +1,8 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
+import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;

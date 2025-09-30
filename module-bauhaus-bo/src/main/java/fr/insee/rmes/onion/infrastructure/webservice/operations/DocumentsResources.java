@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.infrastructure.webservice.operations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.domain.exceptions.RmesException;

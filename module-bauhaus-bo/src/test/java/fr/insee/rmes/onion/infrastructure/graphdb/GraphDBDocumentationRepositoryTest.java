@@ -1,8 +1,8 @@
 package fr.insee.rmes.onion.infrastructure.graphdb;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/onion/infrastructure/graphdb/GraphDBDocumentationRepositoryTest.java
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;

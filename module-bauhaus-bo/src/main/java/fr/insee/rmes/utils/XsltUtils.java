@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;

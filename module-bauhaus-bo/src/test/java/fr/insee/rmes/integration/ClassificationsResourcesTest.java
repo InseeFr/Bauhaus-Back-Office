@@ -2,7 +2,7 @@ package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;

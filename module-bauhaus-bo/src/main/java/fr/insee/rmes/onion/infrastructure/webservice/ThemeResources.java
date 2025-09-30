@@ -1,6 +1,6 @@
 package fr.insee.rmes.onion.infrastructure.webservice;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.themes.ThemeService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.Operation;

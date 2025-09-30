@@ -5,8 +5,8 @@ import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuild
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.model.Language;

@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.distribution;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 <<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/distribution/DistributionServiceImplTest.java
 import fr.insee.rmes.onion.domain.exceptions.RmesException;

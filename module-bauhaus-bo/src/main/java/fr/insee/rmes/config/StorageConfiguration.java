@@ -1,5 +1,6 @@
 package fr.insee.rmes.config;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.FileSystemOperation;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
