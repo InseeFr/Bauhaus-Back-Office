@@ -1,13 +1,19 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class XMLUtilsTest {
 	
@@ -65,6 +71,7 @@ class XMLUtilsTest {
             	"validationState": "Modified"\r
             }""";
 
+
 	@Test
 	void givenJSon_whenSolveXml_thenResponseIsClean() {
 		String out = XMLUtils.solveSpecialXmlcharacters(series);
@@ -98,5 +105,4 @@ class XMLUtilsTest {
 		String produceXMLResponseExpected ="<String>Bauhaus-Back</String>";
 		assertEquals(produceXMLResponseExpected,produceXMLResponseActual);
 	}
-
 }
