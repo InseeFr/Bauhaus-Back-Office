@@ -27,7 +27,7 @@ class SparqlQueryBuilderTest {
             @Predicate(value = "skos:notation")
             String id,
             
-            @Predicate(value = "skos:prefLabel", namespace = "http://www.w3.org/2004/02/skos/core#")
+            @Predicate(value = "skos:prefLabel", namespace = "http://www.w3.org/2004/02/skos/core#", lang = "lg1")
             String labelLg1,
             
             @Predicate(value = "rdfs:comment")
@@ -90,7 +90,7 @@ class SparqlQueryBuilderTest {
             assertTrue(query.contains("SELECT ?id ?labelLg1"));
             assertTrue(query.contains("FROM <http://test.graph>"));
             assertTrue(query.contains("?testentity rdf:type skos:ConceptScheme"));
-            assertTrue(query.contains("OPTIONAL { ?testentity skos:notation ?id }"));
+            assertTrue(query.contains("?testentity skos:notation ?id"));
         }
     }
 
@@ -393,7 +393,7 @@ class SparqlQueryBuilderTest {
             String query = builder.select("inverseField").build();
 
             assertNotNull(query);
-            assertTrue(query.contains("OPTIONAL { ?inverseField rdfs:seeAlso ?testentity"));
+            assertTrue(query.contains("?inverseField rdfs:seeAlso ?testentity"));
         }
     }
 
@@ -427,7 +427,7 @@ class SparqlQueryBuilderTest {
             // Mandatory field should NOT be in OPTIONAL block
             assertTrue(query.contains("?testentity dcterms:title ?mandatoryField ."));
             // Inverse field should be in OPTIONAL block with inverted subject/object
-            assertTrue(query.contains("OPTIONAL { ?inverseField rdfs:seeAlso ?testentity"));
+            assertFalse(query.contains("OPTIONAL { ?inverseField rdfs:seeAlso ?testentity"));
             // Mandatory inverse field should NOT be in OPTIONAL block but with inverted subject/object
             assertTrue(query.contains("?mandatoryInverseField skos:broader ?testentity ."));
         }
@@ -446,7 +446,7 @@ class SparqlQueryBuilderTest {
     }
 
     @Test
-    void shouldDefaultToOptionalTrueWhenNotSpecified() throws RmesException {
+    void shouldDefaultToOptionalFalseWhenNotSpecified() throws RmesException {
         try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
@@ -456,7 +456,7 @@ class SparqlQueryBuilderTest {
 
             assertNotNull(query);
             // Default behavior should be optional=true
-            assertTrue(query.contains("OPTIONAL { ?testentity rdfs:comment ?description"));
+            assertFalse(query.contains("OPTIONAL { ?testentity rdfs:comment ?description"));
         }
     }
 

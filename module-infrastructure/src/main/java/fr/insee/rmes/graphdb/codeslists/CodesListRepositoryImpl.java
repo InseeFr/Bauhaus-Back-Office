@@ -35,14 +35,12 @@ public class CodesListRepositoryImpl implements CodesListRepository {
                 // Use PartialCodesList for partial code lists (skos:Collection)
                 codeslists = repositoryGestion.getResponseAsArray(
                         SparqlQueryBuilder.forEntity(PartialCodesList.class)
-                                .select("id", "uri", "labelLg1", "labelLg2", "range")
                                 .build()
                 );
             } else {
                 // Use CodesList for complete code lists (skos:ConceptScheme)
                 codeslists = repositoryGestion.getResponseAsArray(
                         SparqlQueryBuilder.forEntity(CodesList.class)
-                                .select("id", "uri", "labelLg1", "labelLg2", "range")
                                 .build()
                 );
             }

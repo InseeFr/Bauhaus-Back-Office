@@ -6,6 +6,7 @@ import fr.insee.rmes.graphdb.annotations.Graph;
 import fr.insee.rmes.graphdb.annotations.Predicate;
 import fr.insee.rmes.graphdb.annotations.Statement;
 import fr.insee.rmes.graphdb.annotations.Type;
+import fr.opensagres.xdocreport.template.freemarker.internal.XDocFreemarkerContext;
 import org.springframework.core.env.Environment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -24,6 +25,8 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
     private final Map<String, Boolean> fieldToOptionalMap = new HashMap<>();
     private final Map<String, Boolean> fieldToInverseMap = new HashMap<>();
     private final Map<String, String> namespacePrefixes = new HashMap<>();
+    private final Map<String, String> fieldToLangMap = new HashMap<>();
+
     private final String entityName;
     private final String graphName;
     private final String entityType;
@@ -178,8 +181,8 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
                         triple = "?" + entityName.toLowerCase() + " " + predicate + " ?" + field;
                     }
                     
-                    if (field.contains("Label".toLowerCase())) {
-                        String lang = getLangForField(field);
+                    if (fieldToLangMap.containsKey(field)) {
+                        String lang = getLangForField(fieldToLangMap.get(field));
                         triple += " . FILTER(lang(?" + field + ") = \"" + lang + "\")";
                     }
                     
@@ -226,6 +229,9 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
                     predicateToFieldMap.put(predicateUri, component.getName());
                     fieldToOptionalMap.put(component.getName(), predicate.optional());
                     fieldToInverseMap.put(component.getName(), predicate.inverse());
+                    if(!predicate.lang().isEmpty()){
+                        fieldToLangMap.put(component.getName(), predicate.lang());
+                    }
                     collectNamespacePrefix(predicate);
                 } else if (statement != null) {
                     // Pour les champs @Statement, on les traite comme des URIs de subject
@@ -295,13 +301,12 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
     }
     
     private String getLangForField(String field) {
-        if (field.contains("Lg1")) {
+        if (field.equalsIgnoreCase("lg1")) {
             return PropertyResolver.resolve("${fr.insee.rmes.bauhaus.lg1}");
-        } else if (field.contains("Lg2")) {
+        } else if (field.equalsIgnoreCase("lg2")) {
             return PropertyResolver.resolve("${fr.insee.rmes.bauhaus.lg2}");
         }
-        // Fallback par défaut
-        return field.contains("Lg1") ? "fr" : "en";
+        return "";
     }
     
     private void collectNamespacePrefix(Predicate predicate) {
