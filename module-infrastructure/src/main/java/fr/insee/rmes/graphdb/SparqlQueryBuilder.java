@@ -70,6 +70,14 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
         selectFields.addAll(fieldToPredicateMap.keySet());
         return this;
     }
+    
+    public SparqlQueryBuilder<T> selectAllExcept(String... excludedFields) {
+        Set<String> excluded = Set.of(excludedFields);
+        fieldToPredicateMap.keySet().stream()
+                .filter(field -> !excluded.contains(field))
+                .forEach(selectFields::add);
+        return this;
+    }
 
      public SparqlQueryBuilder<T> where(String field, Object value) {
         if (!fieldToPredicateMap.containsKey(field)) {
@@ -332,6 +340,40 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
 
     public Map<String, String> getFieldToPredicateMapping() {
         return new HashMap<>(fieldToPredicateMap);
+    }
+    
+    /**
+     * Returns the set of fields that should be lazy-loaded based on annotations.
+     * Currently identifies fields that are collections (List, Set) as lazy-loaded.
+     * 
+     * @return Set of field names that should be lazy-loaded
+     */
+    public Set<String> getLazyLoadedFields() {
+        Set<String> lazyFields = new HashSet<>();
+        
+        if (entityClass.isRecord()) {
+            for (RecordComponent component : entityClass.getRecordComponents()) {
+                if (isLazyLoadedType(component.getType())) {
+                    lazyFields.add(component.getName());
+                }
+            }
+        } else {
+            for (Field field : entityClass.getDeclaredFields()) {
+                if (isLazyLoadedType(field.getType())) {
+                    lazyFields.add(field.getName());
+                }
+            }
+        }
+        
+        return lazyFields;
+    }
+    
+    /**
+     * Checks if a type should be lazy-loaded.
+     * Currently considers List and Set types as lazy-loaded.
+     */
+    private boolean isLazyLoadedType(Class<?> type) {
+        return List.class.isAssignableFrom(type) || Set.class.isAssignableFrom(type);
     }
     
     @Override

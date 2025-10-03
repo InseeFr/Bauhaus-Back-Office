@@ -2,6 +2,8 @@ package fr.insee.rmes.graphdb.codeslists;
 
 import fr.insee.rmes.domain.codeslist.model.CodesListDomain;
 
+import java.util.Collections;
+
 /**
  * Converter between infrastructure models (CodesList) and domain models (CodesListDomain).
  * This class handles the mapping between different layers to maintain separation of concerns.
@@ -33,8 +35,8 @@ public class CodesListConverter {
                 codesList.validationState(),
                 codesList.disseminationStatus(),
                 codesList.modified(),
-                codesList.iriParent()
-
+                codesList.iriParent(),
+                Collections.emptyList()
         );
     }
     
@@ -63,7 +65,8 @@ public class CodesListConverter {
                 codesListDomain.getValidationState(),
                 codesListDomain.getDisseminationStatus(),
                 codesListDomain.getModified(),
-                codesListDomain.getIriParent()
+                codesListDomain.getIriParent(),
+                codesListDomain.getContributors()
         );
     }
 }

@@ -6,6 +6,8 @@ import fr.insee.rmes.graphdb.annotations.Predicate;
 import fr.insee.rmes.graphdb.annotations.Statement;
 import fr.insee.rmes.graphdb.annotations.DefaultSortField;
 
+import java.util.List;
+
 @Entity(type = "skos:ConceptScheme")
 @Graph("${fr.insee.rmes.bauhaus.baseGraph}${fr.insee.rmes.bauhaus.codelists.graph}")
 public record CodesList(
@@ -50,6 +52,9 @@ public record CodesList(
     String modified,
 
     @Predicate(value = "prov:wasDerivedFrom", optional = true)
-    String iriParent
+    String iriParent,
+
+    @Predicate(value = "dc:contributor", optional = true)
+    List<String> contributor
 ) {
 }
