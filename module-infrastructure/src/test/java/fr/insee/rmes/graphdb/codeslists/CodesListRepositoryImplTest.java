@@ -36,7 +36,7 @@ class CodesListRepositoryImplTest {
 
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        List<CodesListDomain> result = repository.findAllCodesLists(false);
+        List<CodesListDomain> result = repository.findAllCodesLists(false, "");
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -59,7 +59,7 @@ class CodesListRepositoryImplTest {
 
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        List<CodesListDomain> result = repository.findAllCodesLists(true);
+        List<CodesListDomain> result = repository.findAllCodesLists(true, "");
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -80,7 +80,7 @@ class CodesListRepositoryImplTest {
         JSONArray emptyResponse = new JSONArray();
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(emptyResponse);
 
-        List<CodesListDomain> result = repository.findAllCodesLists(false);
+        List<CodesListDomain> result = repository.findAllCodesLists(false, "");
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -95,7 +95,7 @@ class CodesListRepositoryImplTest {
 
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        List<CodesListDomain> result = repository.findAllCodesLists(false);
+        List<CodesListDomain> result = repository.findAllCodesLists(false, "");
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -114,7 +114,7 @@ class CodesListRepositoryImplTest {
             .thenThrow(new RuntimeException("Database connection failed"));
 
         RuntimeException exception = assertThrows(RuntimeException.class, 
-            () -> repository.findAllCodesLists(false));
+            () -> repository.findAllCodesLists(false, ""));
 
         assertEquals("Failed to retrieve codes lists", exception.getMessage());
         assertNotNull(exception.getCause());
@@ -126,7 +126,7 @@ class CodesListRepositoryImplTest {
         JSONArray mockResponse = new JSONArray();
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        repository.findAllCodesLists(true);
+        repository.findAllCodesLists(true, "");
 
         verify(repositoryGestion).getResponseAsArray(argThat(query -> 
             query.contains("skos:Collection")));
@@ -137,7 +137,7 @@ class CodesListRepositoryImplTest {
         JSONArray mockResponse = new JSONArray();
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        repository.findAllCodesLists(false);
+        repository.findAllCodesLists(false, "");
 
         verify(repositoryGestion).getResponseAsArray(argThat(query -> 
             query.contains("skos:ConceptScheme")));
@@ -148,7 +148,7 @@ class CodesListRepositoryImplTest {
         JSONArray mockResponse = new JSONArray();
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        repository.findAllCodesLists(false);
+        repository.findAllCodesLists(false, "");
 
         verify(repositoryGestion).getResponseAsArray(argThat(query -> 
             query.contains("id") && 

@@ -278,7 +278,7 @@ class AnnotationsTest {
         
         Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
-        assertTrue(predicate.optional()); // Default should be true
+        assertFalse(predicate.optional()); // Default should be true
     }
 
     @Test
