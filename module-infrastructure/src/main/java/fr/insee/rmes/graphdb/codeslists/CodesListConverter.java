@@ -35,8 +35,7 @@ public class CodesListConverter {
                 codesList.validationState(),
                 codesList.disseminationStatus(),
                 codesList.modified(),
-                codesList.iriParent(),
-                Collections.emptyList()
+                codesList.iriParent()
         );
     }
     
@@ -65,8 +64,7 @@ public class CodesListConverter {
                 codesListDomain.getValidationState(),
                 codesListDomain.getDisseminationStatus(),
                 codesListDomain.getModified(),
-                codesListDomain.getIriParent(),
-                codesListDomain.getContributors()
+                codesListDomain.getIriParent()
         );
     }
 }

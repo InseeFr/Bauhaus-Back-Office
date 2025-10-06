@@ -25,8 +25,7 @@ class CodesListConverterTest {
             "VALIDATED",
             "PUBLIC",
             "2023-01-02",
-            "http://example.com/parent",
-            Collections.emptyList()
+            "http://example.com/parent"
         );
         
         CodesListDomain result = CodesListConverter.toDomain(codesList);
@@ -64,8 +63,7 @@ class CodesListConverterTest {
             "VALIDATED",
             "PUBLIC",
             "2023-01-02",
-            "http://example.com/parent",
-            Collections.emptyList()
+            "http://example.com/parent"
         );
         
         CodesList result = CodesListConverter.toInfrastructure(codesListDomain);
@@ -103,7 +101,7 @@ class CodesListConverterTest {
 
     @Test
     void shouldHandleNullFieldsInInfrastructureToDomain() {
-        CodesList codesList = new CodesList(null, null, null, null, null, null, null, null, null, null, null, null, null, null, Collections.emptyList());
+        CodesList codesList = new CodesList(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         
         CodesListDomain result = CodesListConverter.toDomain(codesList);
         
@@ -126,7 +124,7 @@ class CodesListConverterTest {
 
     @Test
     void shouldHandleNullFieldsInDomainToInfrastructure() {
-        CodesListDomain codesListDomain = new CodesListDomain(null, null, null, null, null, null, null, null, null, null, null, null, null, null, Collections.emptyList());
+        CodesListDomain codesListDomain = new CodesListDomain(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         
         CodesList result = CodesListConverter.toInfrastructure(codesListDomain);
         
@@ -163,8 +161,7 @@ class CodesListConverterTest {
             "VALIDATED",
             "PUBLIC",
             "2023-01-02",
-            "http://example.com/parent",
-            Collections.emptyList()
+            "http://example.com/parent"
         );
         
         CodesListDomain domain = CodesListConverter.toDomain(originalCodesList);
@@ -202,8 +199,7 @@ class CodesListConverterTest {
             "VALIDATED",
             "PUBLIC",
             "2023-01-02",
-            "http://example.com/parent",
-            Collections.emptyList()
+            "http://example.com/parent"
         );
         
         CodesList infrastructure = CodesListConverter.toInfrastructure(originalDomain);
@@ -227,7 +223,7 @@ class CodesListConverterTest {
 
     @Test
     void shouldHandleEmptyStrings() {
-        CodesList codesList = new CodesList("", "", "", "", "", "", "", "", "", "", "", "", "", "", Collections.emptyList());
+        CodesList codesList = new CodesList("", "", "", "", "", "", "", "", "", "", "", "", "", "");
         
         CodesListDomain result = CodesListConverter.toDomain(codesList);
         
@@ -264,8 +260,7 @@ class CodesListConverterTest {
             null,
             "PUBLIC",
             null,
-            null,
-            Collections.emptyList()
+            null
         );
         
         CodesListDomain result = CodesListConverter.toDomain(codesList);
@@ -303,8 +298,7 @@ class CodesListConverterTest {
             "Validated",
             "PublicGeneric",
             "2023-01-15T15:30:00Z",
-            "http://example.com/parent/scheme",
-            Collections.emptyList()
+            "http://example.com/parent/scheme"
         );
         
         CodesListDomain result = CodesListConverter.toDomain(codesList);
@@ -337,8 +331,7 @@ class CodesListConverterTest {
             "Validated",
             "PublicGeneric",
             "2023-01-15T15:30:00Z",
-            "http://example.com/parent/scheme",
-            Collections.emptyList()
+            "http://example.com/parent/scheme"
         );
         
         CodesList result = CodesListConverter.toInfrastructure(domain);

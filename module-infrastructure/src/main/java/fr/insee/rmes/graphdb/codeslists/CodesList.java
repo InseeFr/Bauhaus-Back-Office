@@ -52,9 +52,7 @@ public record CodesList(
     String modified,
 
     @Predicate(value = "prov:wasDerivedFrom", optional = true)
-    String iriParent,
+    String iriParent
 
-    @Predicate(value = "dc:contributor", optional = true)
-    List<String> contributor
 ) {
 }
