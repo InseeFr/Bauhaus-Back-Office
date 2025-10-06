@@ -2,6 +2,8 @@ package fr.insee.rmes.graphdb.codeslists;
 
 import fr.insee.rmes.domain.codeslist.model.CodesListDomain;
 
+import java.util.Collections;
+
 /**
  * Converter between infrastructure models (CodesList) and domain models (CodesListDomain).
  * This class handles the mapping between different layers to maintain separation of concerns.
@@ -20,11 +22,21 @@ public class CodesListConverter {
         }
         
         return new CodesListDomain(
-                codesList.id(),
                 codesList.uri(),
+                codesList.id(),
                 codesList.labelLg1(),
                 codesList.labelLg2(),
-                codesList.range()
+                codesList.descriptionLg1(),
+                codesList.descriptionLg2(),
+                codesList.range(),
+                codesList.lastCodeUriSegment(),
+                codesList.created(),
+                codesList.creator(),
+                codesList.validationState(),
+                codesList.disseminationStatus(),
+                codesList.modified(),
+                codesList.iriParent(),
+                Collections.emptyList()
         );
     }
     
@@ -40,11 +52,21 @@ public class CodesListConverter {
         }
         
         return new CodesList(
-                codesListDomain.getId(),
                 codesListDomain.getUri(),
+                codesListDomain.getId(),
                 codesListDomain.getLabelLg1(),
                 codesListDomain.getLabelLg2(),
-                codesListDomain.getRange()
+                codesListDomain.getDescriptionLg1(),
+                codesListDomain.getDescriptionLg2(),
+                codesListDomain.getRange(),
+                codesListDomain.getLastCodeUriSegment(),
+                codesListDomain.getCreated(),
+                codesListDomain.getCreator(),
+                codesListDomain.getValidationState(),
+                codesListDomain.getDisseminationStatus(),
+                codesListDomain.getModified(),
+                codesListDomain.getIriParent(),
+                codesListDomain.getContributors()
         );
     }
 }
