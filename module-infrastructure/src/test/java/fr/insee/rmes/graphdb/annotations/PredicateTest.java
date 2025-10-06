@@ -26,7 +26,7 @@ class PredicateTest {
     void shouldHaveCorrectDefaultValues() throws NoSuchMethodException {
         // Test des valeurs par défaut
         assertEquals("", (String) Predicate.class.getMethod("namespace").getDefaultValue());
-        assertEquals(true, (Boolean) Predicate.class.getMethod("optional").getDefaultValue());
+        assertEquals(false, (Boolean) Predicate.class.getMethod("optional").getDefaultValue());
         assertEquals(false, (Boolean) Predicate.class.getMethod("inverse").getDefaultValue());
     }
 
@@ -59,7 +59,7 @@ class PredicateTest {
         assertNotNull(predicate);
         assertEquals("skos:prefLabel", predicate.value());
         assertEquals("", predicate.namespace());
-        assertTrue(predicate.optional());
+        assertFalse(predicate.optional());
         assertFalse(predicate.inverse());
     }
 
@@ -71,7 +71,7 @@ class PredicateTest {
         assertNotNull(predicate);
         assertEquals("skos:altLabel", predicate.value());
         assertEquals("http://www.w3.org/2004/02/skos/core#", predicate.namespace());
-        assertTrue(predicate.optional());
+        assertFalse(predicate.optional());
         assertFalse(predicate.inverse());
     }
 
@@ -95,7 +95,7 @@ class PredicateTest {
         assertNotNull(predicate);
         assertEquals("rdfs:seeAlso", predicate.value());
         assertEquals("", predicate.namespace());
-        assertTrue(predicate.optional());
+        assertFalse(predicate.optional());
         assertTrue(predicate.inverse());
     }
 

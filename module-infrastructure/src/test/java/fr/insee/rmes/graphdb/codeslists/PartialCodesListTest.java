@@ -44,7 +44,7 @@ class PartialCodesListTest {
         Predicate predicate = idComponent.getAnnotation(Predicate.class);
         assertEquals("skos:notation", predicate.value());
         assertEquals("", predicate.namespace());
-        assertTrue(predicate.optional());
+        assertFalse(predicate.optional());
     }
 
     @Test
@@ -66,7 +66,7 @@ class PartialCodesListTest {
         
         Predicate predicate = labelLg1Component.getAnnotation(Predicate.class);
         assertEquals("skos:prefLabel", predicate.value());
-        assertTrue(predicate.optional());
+        assertFalse(predicate.optional());
         
         RecordComponent labelLg2Component = getRecordComponent(PartialCodesList.class, "labelLg2");
         assertNotNull(labelLg2Component);
@@ -189,7 +189,7 @@ class PartialCodesListTest {
         RecordComponent labelLg1Component = getRecordComponent(PartialCodesList.class, "labelLg1");
         Predicate labelLg1Predicate = labelLg1Component.getAnnotation(Predicate.class);
         assertNotNull(labelLg1Predicate);
-        assertTrue(labelLg1Predicate.optional());
+        assertFalse(labelLg1Predicate.optional());
         
         RecordComponent labelLg2Component = getRecordComponent(PartialCodesList.class, "labelLg2");
         Predicate labelLg2Predicate = labelLg2Component.getAnnotation(Predicate.class);

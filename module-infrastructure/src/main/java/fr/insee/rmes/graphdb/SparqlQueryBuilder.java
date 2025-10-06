@@ -6,6 +6,7 @@ import fr.insee.rmes.graphdb.annotations.Graph;
 import fr.insee.rmes.graphdb.annotations.Predicate;
 import fr.insee.rmes.graphdb.annotations.Statement;
 import fr.insee.rmes.graphdb.annotations.Type;
+import fr.opensagres.xdocreport.template.freemarker.internal.XDocFreemarkerContext;
 import org.springframework.core.env.Environment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -24,6 +25,8 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
     private final Map<String, Boolean> fieldToOptionalMap = new HashMap<>();
     private final Map<String, Boolean> fieldToInverseMap = new HashMap<>();
     private final Map<String, String> namespacePrefixes = new HashMap<>();
+    private final Map<String, String> fieldToLangMap = new HashMap<>();
+
     private final String entityName;
     private final String graphName;
     private final String entityType;
@@ -65,6 +68,14 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
 
     public SparqlQueryBuilder<T> selectAll() {
         selectFields.addAll(fieldToPredicateMap.keySet());
+        return this;
+    }
+    
+    public SparqlQueryBuilder<T> selectAllExcept(String... excludedFields) {
+        Set<String> excluded = Set.of(excludedFields);
+        fieldToPredicateMap.keySet().stream()
+                .filter(field -> !excluded.contains(field))
+                .forEach(selectFields::add);
         return this;
     }
 
@@ -178,8 +189,8 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
                         triple = "?" + entityName.toLowerCase() + " " + predicate + " ?" + field;
                     }
                     
-                    if (field.contains("Label".toLowerCase())) {
-                        String lang = getLangForField(field);
+                    if (fieldToLangMap.containsKey(field)) {
+                        String lang = getLangForField(fieldToLangMap.get(field));
                         triple += " . FILTER(lang(?" + field + ") = \"" + lang + "\")";
                     }
                     
@@ -226,6 +237,9 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
                     predicateToFieldMap.put(predicateUri, component.getName());
                     fieldToOptionalMap.put(component.getName(), predicate.optional());
                     fieldToInverseMap.put(component.getName(), predicate.inverse());
+                    if(!predicate.lang().isEmpty()){
+                        fieldToLangMap.put(component.getName(), predicate.lang());
+                    }
                     collectNamespacePrefix(predicate);
                 } else if (statement != null) {
                     // Pour les champs @Statement, on les traite comme des URIs de subject
@@ -295,13 +309,12 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
     }
     
     private String getLangForField(String field) {
-        if (field.contains("Lg1")) {
+        if (field.equalsIgnoreCase("lg1")) {
             return PropertyResolver.resolve("${fr.insee.rmes.bauhaus.lg1}");
-        } else if (field.contains("Lg2")) {
+        } else if (field.equalsIgnoreCase("lg2")) {
             return PropertyResolver.resolve("${fr.insee.rmes.bauhaus.lg2}");
         }
-        // Fallback par défaut
-        return field.contains("Lg1") ? "fr" : "en";
+        return "";
     }
     
     private void collectNamespacePrefix(Predicate predicate) {
@@ -327,6 +340,40 @@ public class SparqlQueryBuilder<T> implements ApplicationContextAware {
 
     public Map<String, String> getFieldToPredicateMapping() {
         return new HashMap<>(fieldToPredicateMap);
+    }
+    
+    /**
+     * Returns the set of fields that should be lazy-loaded based on annotations.
+     * Currently identifies fields that are collections (List, Set) as lazy-loaded.
+     * 
+     * @return Set of field names that should be lazy-loaded
+     */
+    public Set<String> getLazyLoadedFields() {
+        Set<String> lazyFields = new HashSet<>();
+        
+        if (entityClass.isRecord()) {
+            for (RecordComponent component : entityClass.getRecordComponents()) {
+                if (isLazyLoadedType(component.getType())) {
+                    lazyFields.add(component.getName());
+                }
+            }
+        } else {
+            for (Field field : entityClass.getDeclaredFields()) {
+                if (isLazyLoadedType(field.getType())) {
+                    lazyFields.add(field.getName());
+                }
+            }
+        }
+        
+        return lazyFields;
+    }
+    
+    /**
+     * Checks if a type should be lazy-loaded.
+     * Currently considers List and Set types as lazy-loaded.
+     */
+    private boolean isLazyLoadedType(Class<?> type) {
+        return List.class.isAssignableFrom(type) || Set.class.isAssignableFrom(type);
     }
     
     @Override
