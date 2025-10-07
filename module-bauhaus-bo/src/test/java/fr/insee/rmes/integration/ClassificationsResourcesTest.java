@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -36,10 +37,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = ClassificationsResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
-                "jwt.stamp-claim=" + STAMP_CLAIM,
-                "jwt.role-claim=" + ROLE_CLAIM,
-                "jwt.id-claim=" + ID_CLAIM,
-                "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "jwt.stampClaim=" + STAMP_CLAIM,
+                "jwt.roleClaim=" + ROLE_CLAIM,
+                "jwt.idClaim=" + ID_CLAIM,
+                "jwt.roleClaimConfig.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "jwt.sourceClaim=source",
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
@@ -62,7 +64,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class,
-        AccessPrivilegesChecker.class
+        AccessPrivilegesChecker.class,
+        JwtProperties.class
 })
 class ClassificationsResourcesTest {
 

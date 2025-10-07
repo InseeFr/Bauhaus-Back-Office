@@ -12,6 +12,7 @@ import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.Source;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import static fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext.LOG_INFO_DEFAULT_STAMP;
-import static fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext.TIMBRE_ANONYME;
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,6 +79,8 @@ class OpenIDConnectSecurityContextTest {
         retour.put("sid", "c3000000-0000-0000-0000-000000000");
         retour.put("aud", List.of("account"));
         retour.put("timbre", timbre);
+        retour.put("source", "insee");
+        retour.put("inseegroupedefaut", List.of("group1", "group2")); // aucun ne se termine par _RMESGNCS
         retour.put("realm_access", simpleJsonObjectOf("roles", rolesOfRealmAccess));
         retour.put("idminefi", "1010101010101");
         retour.put("azp", "blblblblbl-frontend");
@@ -105,6 +107,7 @@ class OpenIDConnectSecurityContextTest {
         claims.put("given_name", "Fabrice");
         claims.put("sid", "c3000000-0000-0000-0000-000000000");
         claims.put("timbre", timbre);
+        claims.put("source", "insee");
         claims.put("realm_access", Map.of("roles", roles));
         claims.put("idminefi", "1010101010101");
         claims.put("azp", "blblblblbl-frontend");
@@ -187,11 +190,22 @@ class OpenIDConnectSecurityContextTest {
 
     @Test
     void testJwt() throws RmesException {
-        var oidcContext = new OpenIDConnectSecurityContext("timbre", "realm_access", "preferred_username", false, "roles");
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbre");
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
 
         User user = oidcContext.buildUserFromToken(jwtDecoded);
         assertThat(user.id()).isEqualTo(idep);
         assertThat(user.getStamp()).isEqualTo(timbre);
+        assertThat(user.source()).isEqualTo(Source.INSEE);
         assertThat(user.roles()).isEqualTo(roles);
     }
 
@@ -199,19 +213,159 @@ class OpenIDConnectSecurityContextTest {
     void testJwt_sansTimbre() throws RmesException {
         logOutputStream.reset();
 
-        var oidcContext = new OpenIDConnectSecurityContext("timbr", "realm_access", "preferred_username", false, "roles");
+        // Créer des claims sans timbre et sans groupes matchant
+        Map<String, Object> claimsWithoutStamp = new HashMap<>();
+        claimsWithoutStamp.put("preferred_username", idep);
+        claimsWithoutStamp.put("realm_access", Map.of("roles", roles));
+        claimsWithoutStamp.put("source", "insee");
+        claimsWithoutStamp.put("inseegroupedefaut", List.of("group1", "group2")); // aucun ne se termine par _RMESGNCS
 
-        User user = oidcContext.buildUserFromToken(jwtDecoded);
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbr"); // Pas présent dans les claims
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
+
+        User user = oidcContext.buildUserFromToken(claimsWithoutStamp);
         assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo(TIMBRE_ANONYME);
+        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP");
+        assertThat(user.source()).isEqualTo(Source.INSEE);
         assertThat(user.roles()).isEqualTo(roles);
         assertThat(logOutputStream.toString().trim()).hasToString(String.format(LOG_INFO_DEFAULT_STAMP.replace("{}", "%s"), idep));
         logOutputStream.reset();
     }
 
     @Test
+    void testJwt_stampFromInseeGroups() throws RmesException {
+        // Test avec un stamp trouvé dans inseeGroupClaim
+        Map<String, Object> claimsWithInseeGroups = new HashMap<>();
+        claimsWithInseeGroups.put("preferred_username", idep);
+        claimsWithInseeGroups.put("realm_access", Map.of("roles", roles));
+        claimsWithInseeGroups.put("source", "insee");
+        claimsWithInseeGroups.put("inseegroupedefaut", List.of("group1", "DR59-SNDI_RMESGNCS", "group3"));
+
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbre"); // pas présent dans les claims
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
+
+        User user = oidcContext.buildUserFromToken(claimsWithInseeGroups);
+        assertThat(user.id()).isEqualTo(idep);
+        assertThat(user.getStamp()).isEqualTo("DR59-SNDI_RMESGNCS");
+        assertThat(user.source()).isEqualTo(Source.INSEE);
+        assertThat(user.roles()).isEqualTo(roles);
+    }
+
+    @Test
+    void testJwt_stampFromInseeGroups_notFound() throws RmesException {
+        // Test avec aucun stamp trouvé dans inseeGroupClaim
+        Map<String, Object> claimsWithInseeGroups = new HashMap<>();
+        claimsWithInseeGroups.put("preferred_username", idep);
+        claimsWithInseeGroups.put("realm_access", Map.of("roles", roles));
+        claimsWithInseeGroups.put("source", "insee");
+        claimsWithInseeGroups.put("inseegroupedefaut", List.of("group1", "group2", "group3")); // aucun ne se termine par _RMESGNCS
+
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbre"); // pas présent dans les claims
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
+
+        User user = oidcContext.buildUserFromToken(claimsWithInseeGroups);
+        assertThat(user.id()).isEqualTo(idep);
+        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP"); // stamp par défaut
+        assertThat(user.source()).isEqualTo(Source.INSEE);
+        assertThat(user.roles()).isEqualTo(roles);
+    }
+
+    @Test
+    void testJwt_stampFromInseeGroups_emptyList() throws RmesException {
+        // Test avec une liste vide dans inseeGroupClaim
+        Map<String, Object> claimsWithEmptyInseeGroups = new HashMap<>();
+        claimsWithEmptyInseeGroups.put("preferred_username", idep);
+        claimsWithEmptyInseeGroups.put("realm_access", Map.of("roles", roles));
+        claimsWithEmptyInseeGroups.put("source", "insee");
+        claimsWithEmptyInseeGroups.put("inseegroupedefaut", List.of()); // liste vide
+
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbre");
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
+
+        User user = oidcContext.buildUserFromToken(claimsWithEmptyInseeGroups);
+        assertThat(user.id()).isEqualTo(idep);
+        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP"); // stamp par défaut
+        assertThat(user.source()).isEqualTo(Source.INSEE);
+        assertThat(user.roles()).isEqualTo(roles);
+    }
+
+    @Test
+    void testJwt_stampFromInseeGroups_nullClaim() throws RmesException {
+        // Test avec inseeGroupClaim null
+        Map<String, Object> claimsWithNullInseeGroups = new HashMap<>();
+        claimsWithNullInseeGroups.put("preferred_username", idep);
+        claimsWithNullInseeGroups.put("realm_access", Map.of("roles", roles));
+        claimsWithNullInseeGroups.put("source", "insee");
+        // pas de inseegroupedefaut
+
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbre");
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
+
+        User user = oidcContext.buildUserFromToken(claimsWithNullInseeGroups);
+        assertThat(user.id()).isEqualTo(idep);
+        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP"); // stamp par défaut
+        assertThat(user.source()).isEqualTo(Source.INSEE);
+        assertThat(user.roles()).isEqualTo(roles);
+    }
+
+    @Test
     void testJwtAuthenticationConverter() {
-        var oidcContext = new OpenIDConnectSecurityContext("timbre", "realm_access", "preferred_username", false, "roles");
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("timbre");
+        jwtProperties.setRoleClaim("realm_access");
+        jwtProperties.setIdClaim("preferred_username");
+        jwtProperties.setSourceClaim("source");
+        jwtProperties.setInseeGroupClaim("inseegroupedefaut");
+        jwtProperties.setHieApplicationPrefix("RMESGNCS");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.getRoleClaimConfig().setRoles("roles");
+        
+        var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
         var jwtAUthenticationConverter = oidcContext.jwtAuthenticationConverter();
         Jwt jwt = springJwt();
         var authenticationToken = jwtAUthenticationConverter.convert(jwt);

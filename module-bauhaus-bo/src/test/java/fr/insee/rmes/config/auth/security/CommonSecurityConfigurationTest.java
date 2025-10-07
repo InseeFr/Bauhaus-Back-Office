@@ -18,7 +18,15 @@ class CommonSecurityConfigurationTest {
 
     @Test
     void shouldReturnStampFromPrincipal(){
-        OpenIDConnectSecurityContext openIDConnectSecurityContext = new OpenIDConnectSecurityContext("stampClaim", "roleClaimKey", "idClaim", true,"keyForRolesInRoleClaim");
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("stampClaim");
+        jwtProperties.setRoleClaim("roleClaimKey");
+        jwtProperties.setIdClaim("idClaim");
+        jwtProperties.setSourceClaim("sourceClaim");
+        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
+        jwtProperties.getRoleClaimConfig().setRoles("keyForRolesInRoleClaim");
+        
+        OpenIDConnectSecurityContext openIDConnectSecurityContext = new OpenIDConnectSecurityContext(jwtProperties, true);
         UserDecoder user = openIDConnectSecurityContext.userDecoder();
         commonSecurityConfiguration.stampFromPrincipal(user);
         StampFromPrincipal stampFromPrincipal = commonSecurityConfiguration.stampFromPrincipal(user);
