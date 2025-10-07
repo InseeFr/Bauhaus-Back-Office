@@ -1,5 +1,6 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.config.auth.user.Source;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
@@ -34,8 +35,13 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     }
 
     private boolean hasAcccess(String moduleIdentifer, String privilegeIdentifier, String id, User user) {
-        var module = RBAC.Module.valueOf(moduleIdentifer);
         var privilege = RBAC.Privilege.valueOf(privilegeIdentifier);
+
+        if(user.source().equals(Source.INSEE) && privilege.equals(RBAC.Privilege.READ)){
+            return true;
+        }
+
+        var module = RBAC.Module.valueOf(moduleIdentifer);
         var moduleAccessPrivileges = findModuleAccessPrivileges(user, module);
 
         if(moduleAccessPrivileges.isEmpty()){
