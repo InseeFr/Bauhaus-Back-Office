@@ -21,7 +21,8 @@ class ArchUnitTest {
             .should().onlyDependOnClassesThat().resideInAnyPackage(
                 "fr.insee.rmes.domain..",
                 "java..",
-                "org.json.."
+                "org.json..",
+                "com.fasterxml.jackson.."
             );
 
         rule.check(importedClasses);
