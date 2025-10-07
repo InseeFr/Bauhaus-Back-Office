@@ -1,7 +1,17 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.domain.model.ddi.Citation;
+import fr.insee.rmes.domain.model.ddi.DataRelationshipName;
+import fr.insee.rmes.domain.model.ddi.DataRelationshipReference;
+import fr.insee.rmes.domain.model.ddi.Ddi4DataRelationship;
+import fr.insee.rmes.domain.model.ddi.Ddi4PhysicalInstance;
+import fr.insee.rmes.domain.model.ddi.Ddi4Response;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
+import fr.insee.rmes.domain.model.ddi.StringValue;
+import fr.insee.rmes.domain.model.ddi.Title;
+import fr.insee.rmes.domain.model.ddi.TopLevelReference;
+import fr.insee.rmes.domain.model.ddi.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.domain.port.clientside.DDIService;
 import fr.insee.rmes.webservice.response.ddi.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.webservice.response.ddi.PhysicalInstanceResponse;
@@ -10,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Date;
@@ -67,22 +79,120 @@ class DdiResourcesTest {
     }
 
     @Test
-    void shouldGetPhysicalInstanceById() {
-        String instanceId = "pi-123";
-        PhysicalInstance expectedInstance = new PhysicalInstance(instanceId, "Physical Instance 123");
-        when(ddiService.getPhysicalInstance(instanceId)).thenReturn(expectedInstance);
+    void shouldGetDdi4PhysicalInstance() {
+        // Given
+        Ddi4Response expectedResponse = createMockDdi4Response();
+        when(ddiService.getDdi4PhysicalInstance("1")).thenReturn(expectedResponse);
 
-        PhysicalInstanceResponse result = ddiResources.getPhysicalInstanceById(instanceId);
+        // When
+        ResponseEntity<Ddi4Response> result = ddiResources.getDdi4PhysicalInstance("1");
 
+        // Then
         assertNotNull(result);
-        assertEquals(instanceId, result.getId());
-        assertEquals("Physical Instance 123", result.getLabel());
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
         
-        // Verify hypermédia links
-        assertNotNull(result.getLinks());
-        assertEquals(1, result.getLinks().toList().size());
-        assertEquals("/ddi/physical-instance/" + instanceId, result.getRequiredLink("self").getHref());
+        Ddi4Response responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        assertEquals(1, responseBody.physicalInstance().size());
+        assertEquals(1, responseBody.dataRelationship().size());
+        assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", responseBody.physicalInstance().get(0).id());
         
-        verify(ddiService).getPhysicalInstance(instanceId);
+        verify(ddiService).getDdi4PhysicalInstance("1");
+    }
+
+    @Test
+    void shouldUpdatePhysicalInstance() {
+        // Given
+        String instanceId = "test-id";
+        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
+            "Updated Physical Instance Label",
+            "Updated DataRelationship Name"
+        );
+        Ddi4Response expectedResponse = createMockDdi4Response();
+        when(ddiService.updatePhysicalInstance(instanceId, request)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(instanceId, request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        
+        Ddi4Response responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        
+        verify(ddiService).updatePhysicalInstance(instanceId, request);
+    }
+
+    @Test
+    void shouldUpdatePhysicalInstanceWithPartialData() {
+        // Given
+        String instanceId = "test-id";
+        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
+            "Updated Label Only",
+            null
+        );
+        Ddi4Response expectedResponse = createMockDdi4Response();
+        when(ddiService.updatePhysicalInstance(instanceId, request)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(instanceId, request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        
+        Ddi4Response responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        
+        verify(ddiService).updatePhysicalInstance(instanceId, request);
+    }
+
+    private Ddi4Response createMockDdi4Response() {
+        // Create mock objects
+        StringValue titleStringValue = new StringValue("fr-FR", "Fichier thl-CASD");
+        Title title = new Title(titleStringValue);
+        Citation citation = new Citation(title);
+        
+        DataRelationshipReference dataRelRef = new DataRelationshipReference(
+            "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1", "DataRelationship"
+        );
+        
+        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
+            "true", "2024-06-03T14:29:23.4049817Z",
+            "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
+            "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1",
+            citation, dataRelRef
+        );
+        
+        StringValue drNameStringValue = new StringValue("fr-FR", "Dessin de fichier thl-CASD");
+        DataRelationshipName drName = new DataRelationshipName(drNameStringValue);
+        
+        Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
+            "true", "2024-06-03T14:29:23.4049817Z",
+            "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
+            "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
+            drName, null
+        );
+        
+        TopLevelReference topLevelRef = new TopLevelReference(
+            "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1", "PhysicalInstance"
+        );
+        
+        return new Ddi4Response(
+            "test-schema",
+            List.of(topLevelRef),
+            List.of(physicalInstance),
+            List.of(dataRelationship),
+            List.of(),
+            List.of(),
+            List.of()
+        );
     }
 }

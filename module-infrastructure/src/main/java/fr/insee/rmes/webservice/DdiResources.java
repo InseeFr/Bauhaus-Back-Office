@@ -1,7 +1,10 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.domain.model.ddi.Ddi4Response;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
+import fr.insee.rmes.domain.model.ddi.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.domain.port.clientside.DDIService;
 import fr.insee.rmes.webservice.response.ddi.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.webservice.response.ddi.PhysicalInstanceResponse;
@@ -9,7 +12,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,11 +56,22 @@ public class DdiResources {
                 .body(responses);
     }
 
+
     @GetMapping("/physical-instance/{id}")
-    public PhysicalInstanceResponse getPhysicalInstanceById(@PathVariable String id) {
-        PhysicalInstance instance = ddiService.getPhysicalInstance(id);
-        var response = PhysicalInstanceResponse.fromDomain(instance);
-        response.add(linkTo(DdiResources.class).slash("physical-instance").slash(id).withSelfRel());
-        return response;
+    public ResponseEntity<Ddi4Response> getDdi4PhysicalInstance(@PathVariable(Constants.ID) String id) {
+        Ddi4Response response = ddiService.getDdi4PhysicalInstance(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @PatchMapping("/physical-instance/{id}")
+    public ResponseEntity<Ddi4Response> updatePhysicalInstance(
+            @PathVariable String id,
+            @RequestBody UpdatePhysicalInstanceRequest request) {
+        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(id, request);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(updatedInstance);
     }
 }

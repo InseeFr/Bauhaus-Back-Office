@@ -22,7 +22,12 @@ public class Bauhaus{
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
+        
+        // Add StringHttpMessageConverter to handle text/plain responses
+        restTemplate.getMessageConverters().add(0, new org.springframework.http.converter.StringHttpMessageConverter());
+        
+        return restTemplate;
     }
 
 }

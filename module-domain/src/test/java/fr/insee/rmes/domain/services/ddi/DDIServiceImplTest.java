@@ -1,7 +1,8 @@
 package fr.insee.rmes.domain.services.ddi;
 
+import fr.insee.rmes.domain.model.ddi.Ddi4Response;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
-import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
+import fr.insee.rmes.domain.model.ddi.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,20 +58,63 @@ class DDIServiceImplTest {
     }
 
     @Test
-    void shouldGetPhysicalInstance() {
+    void shouldGetDdi4PhysicalInstance() {
         // Given
         String instanceId = "pi-test";
-        PhysicalInstance expectedInstance = new PhysicalInstance(instanceId, "Test Physical Instance");
-        when(ddiRepository.getPhysicalInstance(instanceId)).thenReturn(expectedInstance);
+        Ddi4Response expectedResponse = new Ddi4Response(
+            "test-schema",
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of()
+        );
+        when(ddiRepository.getPhysicalInstance(instanceId)).thenReturn(expectedResponse);
 
         // When
-        PhysicalInstance result = ddiService.getPhysicalInstance(instanceId);
+        Ddi4Response result = ddiService.getDdi4PhysicalInstance(instanceId);
 
         // Then
         assertNotNull(result);
-        assertEquals(instanceId, result.id());
-        assertEquals("Test Physical Instance", result.label());
+        assertEquals("test-schema", result.schema());
         
         verify(ddiRepository).getPhysicalInstance(instanceId);
     }
+
+    @Test
+    void shouldUpdatePhysicalInstance() {
+        // Given
+        String instanceId = "test-id";
+        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
+            "Updated Physical Instance Label",
+            "Updated DataRelationship Name"
+        );
+        Ddi4Response expectedResponse = new Ddi4Response(
+            "updated-schema",
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of()
+        );
+        when(ddiRepository.getPhysicalInstance(instanceId)).thenReturn(expectedResponse);
+
+        // When
+        Ddi4Response result = ddiService.updatePhysicalInstance(instanceId, request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("updated-schema", result.schema());
+        verify(ddiRepository).updatePhysicalInstance(instanceId, request);
+        verify(ddiRepository).getPhysicalInstance(instanceId);
+    }
+
+
+
+
+
+
+
 }

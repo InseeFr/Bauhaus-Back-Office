@@ -1,8 +1,10 @@
 package fr.insee.rmes.colectica;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.colectica.dto.ColecticaItem;
 import fr.insee.rmes.colectica.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.dto.QueryRequest;
+import fr.insee.rmes.domain.model.ddi.Ddi4Response;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
 import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,11 +34,14 @@ class DDIRepositoryImplTest {
     @Mock
     private ColecticaConfiguration colecticaConfiguration;
 
+    @Mock
+    private ObjectMapper objectMapper;
+
     private DDIRepositoryImpl ddiRepository;
 
     @BeforeEach
     void setUp() {
-        ddiRepository = new DDIRepositoryImpl(restTemplate, colecticaConfiguration);
+        ddiRepository = new DDIRepositoryImpl(restTemplate, colecticaConfiguration, objectMapper);
     }
 
     @Test
@@ -126,26 +131,24 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void shouldGetPhysicalInstanceById() {
+    void shouldGetPhysicalInstanceById() throws Exception {
         // Given
-        String baseURI = "http://localhost:8082/colectica";
         String instanceId = "pi-123";
-        String expectedUrl = baseURI + "/physical-instances/" + instanceId;
+        String expectedUrl = "https://poc-ddi-insee.netlify.app/.netlify/functions/api";
+        String jsonResponse = "{\"physicalInstance\":[],\"dataRelationship\":[]}";
         
-        Map<String, String> mockResponse = Map.of("id", instanceId, "label", "Physical Instance 123");
-        
-        when(colecticaConfiguration.baseURI()).thenReturn(baseURI);
-        when(restTemplate.getForObject(expectedUrl, Map.class)).thenReturn(mockResponse);
+        when(restTemplate.getForObject(expectedUrl, String.class)).thenReturn(jsonResponse);
+        when(objectMapper.readValue(jsonResponse, Ddi4Response.class))
+                .thenReturn(new Ddi4Response(null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of()));
 
         // When
-        PhysicalInstance result = ddiRepository.getPhysicalInstance(instanceId);
+        Ddi4Response result = ddiRepository.getPhysicalInstance(instanceId);
 
         // Then
         assertNotNull(result);
-        assertEquals(instanceId, result.id());
-        assertEquals("Physical Instance 123", result.label());
+        assertNotNull(result.physicalInstance());
+        assertNotNull(result.dataRelationship());
         
-        verify(colecticaConfiguration).baseURI();
-        verify(restTemplate).getForObject(expectedUrl, Map.class);
+        verify(restTemplate).getForObject(expectedUrl, String.class);
     }
 }
