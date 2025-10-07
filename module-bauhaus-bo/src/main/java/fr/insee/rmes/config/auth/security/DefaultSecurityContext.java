@@ -1,5 +1,6 @@
 package fr.insee.rmes.config.auth.security;
 
+import fr.insee.rmes.config.auth.user.Source;
 import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.config.auth.user.User;
@@ -43,7 +44,7 @@ public class DefaultSecurityContext {
             fakeRoles = DEFAULT_FAKE_ROLES;
         }
         Stamp fakeStamp = fakeUserConfiguration.stamp().map(Stamp::new).orElse(DEFAULT_FAKE_STAMP);
-        return new User(fakeName, fakeRoles, fakeStamp);
+        return new User(fakeName, fakeRoles, fakeStamp, Source.INSEE);
     }
 
 

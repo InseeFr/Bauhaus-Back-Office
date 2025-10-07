@@ -2,6 +2,7 @@ package fr.insee.rmes.rbac;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.Source;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege;
 import fr.insee.rmes.rbac.RBAC.Module;
@@ -23,7 +24,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     private UserDecoder decoder;
     private PropertiesAccessPrivilegesChecker checker;
 
-    private final User mockUser = new User("john.doe", List.of("ROLE_USER"), "myStamp");
+    private final User mockUser = new User("john.doe", List.of("ROLE_USER"), "myStamp", "ssm");
 
     @BeforeEach
     void setUp() {
@@ -43,7 +44,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
     @Test
     void shouldReturnTrueWhenGetWithMissingRole() throws RmesException {
-        var user = new User("jane.doe", List.of(), "unknownStamp");
+        var user = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
 
         boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.READ.toString(), "","principal");
@@ -53,7 +54,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
     @Test
     void shouldReturnTrueWhenGetWithUnknownRole() throws RmesException {
-        var user = new User("jane.doe", List.of("unknown"), "unknownStamp");
+        var user = new User("jane.doe", List.of("unknown"), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
 
         boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.READ.toString(), "","principal");
@@ -63,7 +64,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
     @Test
     void shouldReturnTrueWhenUpdateWithMissingRole() throws RmesException {
-        var user = new User("jane.doe", List.of(), "unknownStamp");
+        var user = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
 
         boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.UPDATE.toString(), "","principal");
@@ -101,7 +102,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
     @Test
     void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObject() throws RmesException {
-        User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp");
+        User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithDifferentStamp));
         when(fetcher.computePrivileges(userWithDifferentStamp.roles())).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
@@ -123,6 +124,55 @@ class PropertiesAccessPrivilegesCheckerTest {
         ));
 
         boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldReturnTrueWhenReadOperationAndInseeSource() throws RmesException {
+        // User with insee source should always have READ access regardless of RBAC configuration
+        var inseeUser = new User("jane.doe", List.of(), "unknownStamp", "insee");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(inseeUser));
+        // Even with no privileges configured or NONE strategy, should return true for READ + insee
+        when(fetcher.computePrivileges(inseeUser.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.READ, RBAC.Strategy.NONE)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.READ.toString(), "","principal");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void shouldNotReturnTrueWhenUpdateOperationAndInseeSource() throws RmesException {
+        // INSEE source should not bypass RBAC for non-READ operations
+        var inseeUser = new User("jane.doe", List.of(), "unknownStamp", "insee");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(inseeUser));
+        when(fetcher.computePrivileges(inseeUser.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.NONE)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.UPDATE.toString(), "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldNotReturnTrueWhenReadOperationAndNonInseeSource() throws RmesException {
+        // Non-INSEE source should not bypass RBAC even for READ operations
+        var nonInseeUser = new User("jane.doe", List.of(), "unknownStamp", "proconnect");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(nonInseeUser));
+        when(fetcher.computePrivileges(nonInseeUser.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.READ, RBAC.Strategy.NONE)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", RBAC.Privilege.READ.toString(), "","principal");
 
         assertFalse(result);
     }
