@@ -1,7 +1,8 @@
 package fr.insee.rmes.domain.services.ddi;
 
+import fr.insee.rmes.domain.model.ddi.Ddi4Response;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
-import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
+import fr.insee.rmes.domain.model.ddi.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.domain.port.clientside.DDIService;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
 import org.slf4j.Logger;
@@ -24,8 +25,15 @@ public class DDIServiceImpl implements DDIService {
         return ddiRepository.getPhysicalInstances();
     }
 
+
     @Override
-    public PhysicalInstance getPhysicalInstance(String id) {
+    public Ddi4Response getDdi4PhysicalInstance(String id) {
+        return this.ddiRepository.getPhysicalInstance(id);
+    }
+
+    @Override
+    public Ddi4Response updatePhysicalInstance(String id, UpdatePhysicalInstanceRequest request) {
+        ddiRepository.updatePhysicalInstance(id, request);
         return ddiRepository.getPhysicalInstance(id);
     }
 }
