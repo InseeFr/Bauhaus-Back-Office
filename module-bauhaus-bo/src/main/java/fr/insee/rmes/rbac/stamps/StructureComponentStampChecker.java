@@ -37,7 +37,7 @@ public class StructureComponentStampChecker implements  ObjectStampChecker {
                 }
             }
             return stamps;
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             return Collections.emptyList();
         }
     }

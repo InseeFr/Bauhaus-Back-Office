@@ -3,8 +3,6 @@ package fr.insee.rmes.graphdb.codeslists;
 import fr.insee.rmes.domain.codeslist.model.CodesListDomain;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CodesListConverterTest {

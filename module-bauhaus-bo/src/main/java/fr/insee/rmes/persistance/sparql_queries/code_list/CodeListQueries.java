@@ -15,7 +15,6 @@ public class CodeListQueries extends GenericQueries {
 	private static final String PARTIAL = "PARTIAL";
 	private static final String NOTATION = "NOTATION";
 	private static final String CODE = "CODE";
-	private static final String URI_CODESLIST = "URI_CODESLIST";
 	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
 
 	public static String isCodesListValidated(String codesListUri) throws RmesException {

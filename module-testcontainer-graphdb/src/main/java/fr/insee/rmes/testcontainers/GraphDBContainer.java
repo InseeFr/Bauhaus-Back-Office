@@ -33,7 +33,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
         try {
             String path = copyFile(ttlFile);
             execInContainer("curl", "-X", "POST", "-H", "Content-Type:multipart/form-data", "-F", "config=@" + path, "http://localhost:7200/rest/repositories");
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException _) {
             throw new AssertionError("The TTL file was not loaded");
         }
         return this;
@@ -43,7 +43,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
         try {
             String path = copyFile(file);
             execInContainer("curl", "-X", "POST", "-H", "Content-Type: application/x-trig", "--data-binary", "@" + path, "http://localhost:7200/repositories/bauhaus-test/statements");
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException _) {
             throw new AssertionError("The Trig file was not loaded");
         }
         return this;

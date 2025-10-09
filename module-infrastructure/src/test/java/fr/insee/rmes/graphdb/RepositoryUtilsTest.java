@@ -19,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class RepositoryUtilsTest {
@@ -44,8 +43,7 @@ class RepositoryUtilsTest {
         String repositoryID = "test-repo";
         
         Repository result = repositoryUtils.initRepository(rdfServer, repositoryID);
-        // With NO_AUTH type, this should work without throwing exceptions
-        // The actual result depends on the RepositoryInitiator implementation
+        assertNotNull(result);
     }
 
     @Test

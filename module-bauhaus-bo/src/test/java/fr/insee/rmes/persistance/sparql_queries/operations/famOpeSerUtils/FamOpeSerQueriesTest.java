@@ -193,8 +193,7 @@ class FamOpeSerQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), any(Map.class)))
                     .thenThrow(testException);
 
-            RmesException exception = assertThrows(RmesException.class, () -> 
-                FamOpeSerQueries.lastId()
+            RmesException exception = assertThrows(RmesException.class, FamOpeSerQueries::lastId
             );
 
             assertEquals(testException, exception);

@@ -6,7 +6,6 @@ import fr.insee.rmes.colectica.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.dto.QueryRequest;
 import fr.insee.rmes.domain.model.ddi.Ddi4Response;
 import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
-import fr.insee.rmes.domain.model.ddi.PhysicalInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

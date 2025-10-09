@@ -48,8 +48,7 @@ class CheckerServiceImplTest {
         List<CheckResult> results = checkerService.checks();
 
         // Then
-        assertThat(results).hasSize(3);
-        assertThat(results).containsExactly(result1, result2, result3);
+        assertThat(results).hasSize(3).containsExactly(result1, result2, result3);
     }
 
     @Test
@@ -66,8 +65,7 @@ class CheckerServiceImplTest {
         List<CheckResult> results = checkerService.checks();
 
         // Then
-        assertThat(results).hasSize(2);
-        assertThat(results).containsExactly(result1, result3);
+        assertThat(results).hasSize(2).containsExactly(result1, result3);
     }
 
     @Test
