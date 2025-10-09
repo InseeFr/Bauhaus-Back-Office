@@ -1,4 +1,4 @@
-package fr.insee.rmes.graphdb.annotations;
+package fr.insee.rmes.sparql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Type {
-    String value();
+public @interface Entity {
+    String value() default "";
+    String type() default "";
 }

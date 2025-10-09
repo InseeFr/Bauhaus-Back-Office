@@ -1,4 +1,4 @@
-package fr.insee.rmes.graphdb.annotations;
+package fr.insee.rmes.sparql.annotations;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,10 +11,10 @@ class PredicateTest {
     @Test
     void shouldHaveCorrectAnnotationProperties() throws NoSuchMethodException {
         // Test des propriétés de l'annotation
-        Method valueMethod = Predicate.class.getMethod("value");
-        Method namespaceMethod = Predicate.class.getMethod("namespace");
-        Method optionalMethod = Predicate.class.getMethod("optional");
-        Method inverseMethod = Predicate.class.getMethod("inverse");
+        final Method valueMethod = Predicate.class.getMethod("value");
+        final Method namespaceMethod = Predicate.class.getMethod("namespace");
+        final Method optionalMethod = Predicate.class.getMethod("optional");
+        final Method inverseMethod = Predicate.class.getMethod("inverse");
 
         assertNotNull(valueMethod);
         assertNotNull(namespaceMethod);
@@ -25,9 +25,9 @@ class PredicateTest {
     @Test
     void shouldHaveCorrectDefaultValues() throws NoSuchMethodException {
         // Test des valeurs par défaut
-        assertEquals("", (String) Predicate.class.getMethod("namespace").getDefaultValue());
-        assertEquals(false, (Boolean) Predicate.class.getMethod("optional").getDefaultValue());
-        assertEquals(false, (Boolean) Predicate.class.getMethod("inverse").getDefaultValue());
+        assertEquals("", Predicate.class.getMethod("namespace").getDefaultValue());
+        assertEquals(false, Predicate.class.getMethod("optional").getDefaultValue());
+        assertEquals(false, Predicate.class.getMethod("inverse").getDefaultValue());
     }
 
     // Classe de test pour tester les annotations
@@ -53,8 +53,8 @@ class PredicateTest {
 
     @Test
     void shouldReadDefaultPredicateAnnotation() throws NoSuchFieldException {
-        var field = TestEntity.class.getDeclaredField("defaultPredicate");
-        var predicate = field.getAnnotation(Predicate.class);
+        final var field = TestEntity.class.getDeclaredField("defaultPredicate");
+        final var predicate = field.getAnnotation(Predicate.class);
 
         assertNotNull(predicate);
         assertEquals("skos:prefLabel", predicate.value());
@@ -65,8 +65,8 @@ class PredicateTest {
 
     @Test
     void shouldReadPredicateWithNamespace() throws NoSuchFieldException {
-        var field = TestEntity.class.getDeclaredField("predicateWithNamespace");
-        var predicate = field.getAnnotation(Predicate.class);
+        final var field = TestEntity.class.getDeclaredField("predicateWithNamespace");
+        final var predicate = field.getAnnotation(Predicate.class);
 
         assertNotNull(predicate);
         assertEquals("skos:altLabel", predicate.value());
@@ -77,8 +77,8 @@ class PredicateTest {
 
     @Test
     void shouldReadMandatoryPredicate() throws NoSuchFieldException {
-        var field = TestEntity.class.getDeclaredField("mandatoryPredicate");
-        var predicate = field.getAnnotation(Predicate.class);
+        final var field = TestEntity.class.getDeclaredField("mandatoryPredicate");
+        final var predicate = field.getAnnotation(Predicate.class);
 
         assertNotNull(predicate);
         assertEquals("rdfs:label", predicate.value());
@@ -89,8 +89,8 @@ class PredicateTest {
 
     @Test
     void shouldReadInversePredicate() throws NoSuchFieldException {
-        var field = TestEntity.class.getDeclaredField("inversePredicate");
-        var predicate = field.getAnnotation(Predicate.class);
+        final var field = TestEntity.class.getDeclaredField("inversePredicate");
+        final var predicate = field.getAnnotation(Predicate.class);
 
         assertNotNull(predicate);
         assertEquals("rdfs:seeAlso", predicate.value());
@@ -101,8 +101,8 @@ class PredicateTest {
 
     @Test
     void shouldReadExplicitPredicate() throws NoSuchFieldException {
-        var field = TestEntity.class.getDeclaredField("explicitPredicate");
-        var predicate = field.getAnnotation(Predicate.class);
+        final var field = TestEntity.class.getDeclaredField("explicitPredicate");
+        final var predicate = field.getAnnotation(Predicate.class);
 
         assertNotNull(predicate);
         assertEquals("skos:notation", predicate.value());
@@ -113,8 +113,8 @@ class PredicateTest {
 
     @Test
     void shouldReadOptionalInversePredicate() throws NoSuchFieldException {
-        var field = TestEntity.class.getDeclaredField("optionalInversePredicate");
-        var predicate = field.getAnnotation(Predicate.class);
+        final var field = TestEntity.class.getDeclaredField("optionalInversePredicate");
+        final var predicate = field.getAnnotation(Predicate.class);
 
         assertNotNull(predicate);
         assertEquals("dcterms:hasPart", predicate.value());
@@ -126,10 +126,10 @@ class PredicateTest {
     @Test
     void shouldSupportAllCombinationsOfProperties() throws NoSuchFieldException {
         // Test que toutes les combinaisons de propriétés sont supportées
-        var fields = TestEntity.class.getDeclaredFields();
+        final var fields = TestEntity.class.getDeclaredFields();
         
-        for (var field : fields) {
-            var predicate = field.getAnnotation(Predicate.class);
+        for (final var field : fields) {
+            final var predicate = field.getAnnotation(Predicate.class);
             assertNotNull(predicate, "Field " + field.getName() + " should have @Predicate annotation");
             assertNotNull(predicate.value(), "Predicate value should not be null");
             assertNotNull(predicate.namespace(), "Predicate namespace should not be null");

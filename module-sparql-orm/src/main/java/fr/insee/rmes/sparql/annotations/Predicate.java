@@ -1,4 +1,4 @@
-package fr.insee.rmes.graphdb.annotations;
+package fr.insee.rmes.sparql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

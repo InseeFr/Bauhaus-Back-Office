@@ -1,33 +1,35 @@
 package fr.insee.rmes.graphdb;
 
-import fr.insee.rmes.graphdb.annotations.DefaultSortField;
+
+import fr.insee.rmes.sparql.annotations.DefaultSortField;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.function.Function;
 
-public class DefaultSortFieldResolver {
+public enum DefaultSortFieldResolver {
+    ;
 
     @SuppressWarnings("unchecked")
-    public static <T> Function<T, String> resolveSortFunction(Class<T> recordClass) {
+    public static <T> Function<T, String> resolveSortFunction(final Class<T> recordClass) {
         if (!recordClass.isRecord()) {
             throw new IllegalArgumentException("Only record classes are supported");
         }
 
-        for (RecordComponent component : recordClass.getRecordComponents()) {
+        for (final RecordComponent component : recordClass.getRecordComponents()) {
             if (component.isAnnotationPresent(DefaultSortField.class)) {
-                String fieldName = component.getName();
+                final String fieldName = component.getName();
                 try {
-                    Method accessor = recordClass.getMethod(fieldName);
-                    return (T record) -> {
+                    final Method accessor = recordClass.getMethod(fieldName);
+                    return (final T record) -> {
                         try {
-                            Object value = accessor.invoke(record);
-                            return value != null ? value.toString() : "";
-                        } catch (Exception e) {
+                            final Object value = accessor.invoke(record);
+                            return null != value ? value.toString() : "";
+                        } catch (final Exception e) {
                             return "";
                         }
                     };
-                } catch (NoSuchMethodException e) {
+                } catch (final NoSuchMethodException e) {
                     throw new RuntimeException("Accessor method not found for field: " + fieldName, e);
                 }
             }

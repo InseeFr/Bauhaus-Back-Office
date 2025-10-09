@@ -1,11 +1,12 @@
-package fr.insee.rmes.graphdb.annotations;
+package fr.insee.rmes.sparql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DefaultSortField {
+public @interface Graph {
+    String value();
 }

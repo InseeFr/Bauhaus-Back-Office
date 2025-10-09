@@ -1,4 +1,4 @@
-package fr.insee.rmes.graphdb;
+package fr.insee.rmes.sparql.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -10,24 +10,24 @@ public class PropertyResolver {
     private static Environment environment;
     
     @Autowired
-    public void setEnvironment(Environment env) {
-        PropertyResolver.environment = env;
+    public void setEnvironment(final Environment env) {
+        environment = env;
     }
     
-    public static String resolve(String value) {
-        if (environment == null || value == null) {
+    public static String resolve(final String value) {
+        if (null == environment || null == value) {
             return value;
         }
         
         // Résoudre les expressions Spring ${...} multiples
         String resolved = value;
         while (resolved.contains("${")) {
-            int start = resolved.indexOf("${");
-            int end = resolved.indexOf("}", start);
-            if (end == -1) break;
+            final int start = resolved.indexOf("${");
+            final int end = resolved.indexOf('}', start);
+            if (-1 == end) break;
             
-            String propertyName = resolved.substring(start + 2, end);
-            String propertyValue = environment.getProperty(propertyName, "");
+            final String propertyName = resolved.substring(start + 2, end);
+            final String propertyValue = PropertyResolver.environment.getProperty(propertyName, "");
             resolved = resolved.substring(0, start) + propertyValue + resolved.substring(end + 1);
         }
         

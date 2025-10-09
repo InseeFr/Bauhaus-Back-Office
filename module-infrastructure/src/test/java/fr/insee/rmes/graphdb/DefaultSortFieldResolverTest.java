@@ -1,6 +1,6 @@
 package fr.insee.rmes.graphdb;
 
-import fr.insee.rmes.graphdb.annotations.DefaultSortField;
+import fr.insee.rmes.sparql.annotations.DefaultSortField;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Function;
@@ -42,34 +42,34 @@ class DefaultSortFieldResolverTest {
 
     @Test
     void shouldResolveSortFunctionForValidRecord() {
-        Function<TestRecordWithDefaultSort, String> sortFunction = 
+        final Function<TestRecordWithDefaultSort, String> sortFunction =
             DefaultSortFieldResolver.resolveSortFunction(TestRecordWithDefaultSort.class);
         
         assertNotNull(sortFunction);
         
-        TestRecordWithDefaultSort record = new TestRecordWithDefaultSort("John", "A person", 25);
+        final TestRecordWithDefaultSort record = new TestRecordWithDefaultSort("John", "A person", 25);
         assertEquals("John", sortFunction.apply(record));
     }
 
     @Test
     void shouldReturnFirstAnnotatedFieldWhenMultipleDefaults() {
-        Function<TestRecordWithMultipleDefaults, String> sortFunction = 
+        final Function<TestRecordWithMultipleDefaults, String> sortFunction =
             DefaultSortFieldResolver.resolveSortFunction(TestRecordWithMultipleDefaults.class);
         
         assertNotNull(sortFunction);
         
-        TestRecordWithMultipleDefaults record = new TestRecordWithMultipleDefaults("John", "Description", 25);
+        final TestRecordWithMultipleDefaults record = new TestRecordWithMultipleDefaults("John", "Description", 25);
         assertEquals("John", sortFunction.apply(record));
     }
 
     @Test
     void shouldHandleNullValues() {
-        Function<TestRecordWithNullableField, String> sortFunction = 
+        final Function<TestRecordWithNullableField, String> sortFunction =
             DefaultSortFieldResolver.resolveSortFunction(TestRecordWithNullableField.class);
         
         assertNotNull(sortFunction);
         
-        TestRecordWithNullableField record = new TestRecordWithNullableField(null, "Description");
+        final TestRecordWithNullableField record = new TestRecordWithNullableField(null, "Description");
         assertEquals("", sortFunction.apply(record));
     }
 
@@ -77,18 +77,18 @@ class DefaultSortFieldResolverTest {
     void shouldHandleNonStringFields() {
         record TestRecordWithIntSort(@DefaultSortField Integer value, String name) {}
         
-        Function<TestRecordWithIntSort, String> sortFunction = 
+        final Function<TestRecordWithIntSort, String> sortFunction =
             DefaultSortFieldResolver.resolveSortFunction(TestRecordWithIntSort.class);
         
         assertNotNull(sortFunction);
         
-        TestRecordWithIntSort record = new TestRecordWithIntSort(42, "Test");
+        final TestRecordWithIntSort record = new TestRecordWithIntSort(42, "Test");
         assertEquals("42", sortFunction.apply(record));
     }
 
     @Test
     void shouldThrowExceptionForNonRecordClass() {
-        IllegalArgumentException exception = assertThrows(
+        final IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> DefaultSortFieldResolver.resolveSortFunction(NonRecordClass.class)
         );
@@ -98,7 +98,7 @@ class DefaultSortFieldResolverTest {
 
     @Test
     void shouldThrowExceptionWhenNoDefaultSortFieldAnnotation() {
-        RuntimeException exception = assertThrows(
+        final RuntimeException exception = assertThrows(
             RuntimeException.class,
             () -> DefaultSortFieldResolver.resolveSortFunction(TestRecordWithoutDefaultSort.class)
         );
@@ -108,13 +108,13 @@ class DefaultSortFieldResolverTest {
 
     @Test
     void shouldReturnEmptyStringWhenAccessorThrowsException() {
-        Function<TestRecordWithDefaultSort, String> sortFunction = 
+        final Function<TestRecordWithDefaultSort, String> sortFunction =
             DefaultSortFieldResolver.resolveSortFunction(TestRecordWithDefaultSort.class);
         
         assertNotNull(sortFunction);
         
-        TestRecordWithDefaultSort record = new TestRecordWithDefaultSort("Test", "Description", 25);
-        String result = sortFunction.apply(record);
+        final TestRecordWithDefaultSort record = new TestRecordWithDefaultSort("Test", "Description", 25);
+        final String result = sortFunction.apply(record);
         assertEquals("Test", result);
     }
 
@@ -122,15 +122,15 @@ class DefaultSortFieldResolverTest {
     void shouldHandleComplexObjectTypes() {
         record TestRecordWithObjectSort(@DefaultSortField Object value, String name) {}
         
-        Function<TestRecordWithObjectSort, String> sortFunction = 
+        final Function<TestRecordWithObjectSort, String> sortFunction =
             DefaultSortFieldResolver.resolveSortFunction(TestRecordWithObjectSort.class);
         
         assertNotNull(sortFunction);
         
-        TestRecordWithObjectSort record = new TestRecordWithObjectSort("StringValue", "Test");
+        final TestRecordWithObjectSort record = new TestRecordWithObjectSort("StringValue", "Test");
         assertEquals("StringValue", sortFunction.apply(record));
         
-        TestRecordWithObjectSort recordWithNull = new TestRecordWithObjectSort(null, "Test");
+        final TestRecordWithObjectSort recordWithNull = new TestRecordWithObjectSort(null, "Test");
         assertEquals("", sortFunction.apply(recordWithNull));
     }
 }
