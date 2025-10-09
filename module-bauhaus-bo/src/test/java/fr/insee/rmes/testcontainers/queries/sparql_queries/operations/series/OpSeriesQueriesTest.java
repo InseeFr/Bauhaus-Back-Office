@@ -6,7 +6,7 @@ import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
-import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import fr.insee.rmes.utils.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;

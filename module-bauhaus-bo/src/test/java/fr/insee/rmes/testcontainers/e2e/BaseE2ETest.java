@@ -2,7 +2,7 @@ package fr.insee.rmes.testcontainers.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
