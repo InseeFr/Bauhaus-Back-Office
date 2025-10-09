@@ -1,4 +1,4 @@
-package fr.insee.rmes.graphdb.annotations;
+package fr.insee.rmes.sparql.annotations;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +37,7 @@ class AnnotationsTest {
         @Statement
         private String uriField;
         
-        @Predicate(value = "test:prop")
+        @Predicate("test:prop")
         private String predicateField;
         
         @DefaultSortField
@@ -48,92 +48,92 @@ class AnnotationsTest {
 
     @Test
     void entityAnnotationShouldBeRuntimeRetained() {
-        Entity entityAnnotation = TestRecord.class.getAnnotation(Entity.class);
+        final Entity entityAnnotation = TestRecord.class.getAnnotation(Entity.class);
         assertNotNull(entityAnnotation);
         assertEquals("TestEntity", entityAnnotation.value());
         assertEquals("test:Type", entityAnnotation.type());
         
         // Verify annotation metadata
-        Target target = Entity.class.getAnnotation(Target.class);
+        final Target target = Entity.class.getAnnotation(Target.class);
         assertNotNull(target);
-        assertTrue(containsElementType(target.value(), ElementType.TYPE));
+        assertTrue(this.containsElementType(target.value(), ElementType.TYPE));
         
-        Retention retention = Entity.class.getAnnotation(Retention.class);
+        final Retention retention = Entity.class.getAnnotation(Retention.class);
         assertNotNull(retention);
         assertEquals(RetentionPolicy.RUNTIME, retention.value());
     }
 
     @Test
     void graphAnnotationShouldBeRuntimeRetained() {
-        Graph graphAnnotation = TestRecord.class.getAnnotation(Graph.class);
+        final Graph graphAnnotation = TestRecord.class.getAnnotation(Graph.class);
         assertNotNull(graphAnnotation);
         assertEquals("http://test.graph", graphAnnotation.value());
         
         // Verify annotation metadata
-        Target target = Graph.class.getAnnotation(Target.class);
+        final Target target = Graph.class.getAnnotation(Target.class);
         assertNotNull(target);
-        assertTrue(containsElementType(target.value(), ElementType.TYPE));
+        assertTrue(this.containsElementType(target.value(), ElementType.TYPE));
         
-        Retention retention = Graph.class.getAnnotation(Retention.class);
+        final Retention retention = Graph.class.getAnnotation(Retention.class);
         assertNotNull(retention);
         assertEquals(RetentionPolicy.RUNTIME, retention.value());
     }
 
     @Test
     void statementAnnotationShouldWorkOnRecordComponents() {
-        RecordComponent uriComponent = getRecordComponent(TestRecord.class, "uri");
+        final RecordComponent uriComponent = this.getRecordComponent(TestRecord.class, "uri");
         assertNotNull(uriComponent);
         
-        Statement statementAnnotation = uriComponent.getAnnotation(Statement.class);
+        final Statement statementAnnotation = uriComponent.getAnnotation(Statement.class);
         assertNotNull(statementAnnotation);
         
-        Target target = Statement.class.getAnnotation(Target.class);
+        final Target target = Statement.class.getAnnotation(Target.class);
         assertNotNull(target);
-        assertTrue(containsElementType(target.value(), ElementType.FIELD));
-        assertTrue(containsElementType(target.value(), ElementType.RECORD_COMPONENT));
+        assertTrue(this.containsElementType(target.value(), ElementType.FIELD));
+        assertTrue(this.containsElementType(target.value(), ElementType.RECORD_COMPONENT));
         
-        Retention retention = Statement.class.getAnnotation(Retention.class);
+        final Retention retention = Statement.class.getAnnotation(Retention.class);
         assertNotNull(retention);
         assertEquals(RetentionPolicy.RUNTIME, retention.value());
     }
 
     @Test
     void statementAnnotationShouldWorkOnFields() throws Exception {
-        Field uriField = TestClass.class.getDeclaredField("uriField");
+        final Field uriField = TestClass.class.getDeclaredField("uriField");
         assertNotNull(uriField);
         
-        Statement statementAnnotation = uriField.getAnnotation(Statement.class);
+        final Statement statementAnnotation = uriField.getAnnotation(Statement.class);
         assertNotNull(statementAnnotation);
     }
 
     @Test
     void predicateAnnotationShouldWorkOnRecordComponents() {
-        RecordComponent propertyComponent = getRecordComponent(TestRecord.class, "property");
+        final RecordComponent propertyComponent = this.getRecordComponent(TestRecord.class, "property");
         assertNotNull(propertyComponent);
         
-        Predicate predicateAnnotation = propertyComponent.getAnnotation(Predicate.class);
+        final Predicate predicateAnnotation = propertyComponent.getAnnotation(Predicate.class);
         assertNotNull(predicateAnnotation);
         assertEquals("test:property", predicateAnnotation.value());
         assertEquals("http://test.namespace", predicateAnnotation.namespace());
         
         // Verify annotation metadata
-        Target target = Predicate.class.getAnnotation(Target.class);
+        final Target target = Predicate.class.getAnnotation(Target.class);
         assertNotNull(target);
-        assertTrue(containsElementType(target.value(), ElementType.FIELD));
-        assertTrue(containsElementType(target.value(), ElementType.PARAMETER));
-        assertTrue(containsElementType(target.value(), ElementType.RECORD_COMPONENT));
+        assertTrue(this.containsElementType(target.value(), ElementType.FIELD));
+        assertTrue(this.containsElementType(target.value(), ElementType.PARAMETER));
+        assertTrue(this.containsElementType(target.value(), ElementType.RECORD_COMPONENT));
         
-        Retention retention = Predicate.class.getAnnotation(Retention.class);
+        final Retention retention = Predicate.class.getAnnotation(Retention.class);
         assertNotNull(retention);
         assertEquals(RetentionPolicy.RUNTIME, retention.value());
     }
 
     @Test
     void predicateAnnotationShouldHaveDefaultNamespace() throws Exception {
-        Field predicateField = TestClass.class.getDeclaredField("predicateField");
+        final Field predicateField = TestClass.class.getDeclaredField("predicateField");
         assertNotNull(predicateField);
         
-        Predicate predicateAnnotation = predicateField.getAnnotation(Predicate.class);
+        final Predicate predicateAnnotation = predicateField.getAnnotation(Predicate.class);
         assertNotNull(predicateAnnotation);
         assertEquals("test:prop", predicateAnnotation.value());
         assertEquals("", predicateAnnotation.namespace()); // Default empty namespace
@@ -141,29 +141,29 @@ class AnnotationsTest {
 
     @Test
     void defaultSortFieldAnnotationShouldWorkOnRecordComponents() {
-        RecordComponent sortComponent = getRecordComponent(TestRecord.class, "sortField");
+        final RecordComponent sortComponent = this.getRecordComponent(TestRecord.class, "sortField");
         assertNotNull(sortComponent);
         
-        DefaultSortField sortAnnotation = sortComponent.getAnnotation(DefaultSortField.class);
+        final DefaultSortField sortAnnotation = sortComponent.getAnnotation(DefaultSortField.class);
         assertNotNull(sortAnnotation);
         
         // Verify annotation metadata
-        Target target = DefaultSortField.class.getAnnotation(Target.class);
+        final Target target = DefaultSortField.class.getAnnotation(Target.class);
         assertNotNull(target);
-        assertTrue(containsElementType(target.value(), ElementType.FIELD));
-        assertTrue(containsElementType(target.value(), ElementType.RECORD_COMPONENT));
+        assertTrue(this.containsElementType(target.value(), ElementType.FIELD));
+        assertTrue(this.containsElementType(target.value(), ElementType.RECORD_COMPONENT));
         
-        Retention retention = DefaultSortField.class.getAnnotation(Retention.class);
+        final Retention retention = DefaultSortField.class.getAnnotation(Retention.class);
         assertNotNull(retention);
         assertEquals(RetentionPolicy.RUNTIME, retention.value());
     }
 
     @Test
     void defaultSortFieldAnnotationShouldWorkOnFields() throws Exception {
-        Field sortField = TestClass.class.getDeclaredField("sortField");
+        final Field sortField = TestClass.class.getDeclaredField("sortField");
         assertNotNull(sortField);
         
-        DefaultSortField sortAnnotation = sortField.getAnnotation(DefaultSortField.class);
+        final DefaultSortField sortAnnotation = sortField.getAnnotation(DefaultSortField.class);
         assertNotNull(sortAnnotation);
     }
 
@@ -173,16 +173,16 @@ class AnnotationsTest {
         @Type("test:CustomType")
         class TypedClass {}
         
-        Type typeAnnotation = TypedClass.class.getAnnotation(Type.class);
+        final Type typeAnnotation = TypedClass.class.getAnnotation(Type.class);
         assertNotNull(typeAnnotation);
         assertEquals("test:CustomType", typeAnnotation.value());
         
         // Verify annotation metadata
-        Target target = Type.class.getAnnotation(Target.class);
+        final Target target = Type.class.getAnnotation(Target.class);
         assertNotNull(target);
-        assertTrue(containsElementType(target.value(), ElementType.TYPE));
+        assertTrue(this.containsElementType(target.value(), ElementType.TYPE));
         
-        Retention retention = Type.class.getAnnotation(Retention.class);
+        final Retention retention = Type.class.getAnnotation(Retention.class);
         assertNotNull(retention);
         assertEquals(RetentionPolicy.RUNTIME, retention.value());
     }
@@ -193,7 +193,7 @@ class AnnotationsTest {
         @Entity
         record DefaultEntity() {}
         
-        Entity entityAnnotation = DefaultEntity.class.getAnnotation(Entity.class);
+        final Entity entityAnnotation = DefaultEntity.class.getAnnotation(Entity.class);
         assertNotNull(entityAnnotation);
         assertEquals("", entityAnnotation.value());
         assertEquals("", entityAnnotation.type());
@@ -205,20 +205,20 @@ class AnnotationsTest {
         assertTrue(TestRecord.class.isAnnotationPresent(Entity.class));
         assertTrue(TestRecord.class.isAnnotationPresent(Graph.class));
         
-        RecordComponent[] components = TestRecord.class.getRecordComponents();
+        final RecordComponent[] components = TestRecord.class.getRecordComponents();
         assertEquals(4, components.length);
         
         // Check each component has expected annotation
-        RecordComponent uriComp = getRecordComponent(TestRecord.class, "uri");
+        final RecordComponent uriComp = this.getRecordComponent(TestRecord.class, "uri");
         assertTrue(uriComp.isAnnotationPresent(Statement.class));
         
-        RecordComponent propComp = getRecordComponent(TestRecord.class, "property");
+        final RecordComponent propComp = this.getRecordComponent(TestRecord.class, "property");
         assertTrue(propComp.isAnnotationPresent(Predicate.class));
         
-        RecordComponent sortComp = getRecordComponent(TestRecord.class, "sortField");
+        final RecordComponent sortComp = this.getRecordComponent(TestRecord.class, "sortField");
         assertTrue(sortComp.isAnnotationPresent(DefaultSortField.class));
         
-        RecordComponent normalComp = getRecordComponent(TestRecord.class, "normalField");
+        final RecordComponent normalComp = this.getRecordComponent(TestRecord.class, "normalField");
         assertFalse(normalComp.isAnnotationPresent(Statement.class));
         assertFalse(normalComp.isAnnotationPresent(Predicate.class));
         assertFalse(normalComp.isAnnotationPresent(DefaultSortField.class));
@@ -227,13 +227,13 @@ class AnnotationsTest {
     @Test
     void annotationsShouldWorkWithReflection() {
         // Test that annotations can be discovered via reflection
-        Annotation[] classAnnotations = TestRecord.class.getAnnotations();
-        assertTrue(classAnnotations.length >= 2);
+        final Annotation[] classAnnotations = TestRecord.class.getAnnotations();
+        assertTrue(2 <= classAnnotations.length);
         
         boolean hasEntity = false;
         boolean hasGraph = false;
         
-        for (Annotation annotation : classAnnotations) {
+        for (final Annotation annotation : classAnnotations) {
             if (annotation instanceof Entity) {
                 hasEntity = true;
             } else if (annotation instanceof Graph) {
@@ -249,18 +249,18 @@ class AnnotationsTest {
     void shouldHandleMethodParameters() throws Exception {
         class TestMethodClass {
             @SuppressWarnings("unused")
-            public void testMethod(@Predicate(value = "test:param") String param) {}
+            public void testMethod(@Predicate("test:param") final String param) {}
         }
         
-        Method method = TestMethodClass.class.getMethod("testMethod", String.class);
+        final Method method = TestMethodClass.class.getMethod("testMethod", String.class);
         assertNotNull(method);
         
-        Annotation[][] paramAnnotations = method.getParameterAnnotations();
+        final Annotation[][] paramAnnotations = method.getParameterAnnotations();
         assertEquals(1, paramAnnotations.length);
         assertEquals(1, paramAnnotations[0].length);
-        assertTrue(paramAnnotations[0][0] instanceof Predicate);
+        assertInstanceOf(Predicate.class, paramAnnotations[0][0]);
         
-        Predicate predicateAnnotation = (Predicate) paramAnnotations[0][0];
+        final Predicate predicateAnnotation = (Predicate) paramAnnotations[0][0];
         assertEquals("test:param", predicateAnnotation.value());
     }
 
@@ -269,14 +269,14 @@ class AnnotationsTest {
         // Test that @Predicate has default optional=true
         @SuppressWarnings("unused")
         record TestRecordWithDefaultOptional(
-            @Predicate(value = "test:property")
+                @Predicate("test:property")
             String defaultOptionalField
         ) {}
         
-        RecordComponent component = getRecordComponent(TestRecordWithDefaultOptional.class, "defaultOptionalField");
+        final RecordComponent component = this.getRecordComponent(TestRecordWithDefaultOptional.class, "defaultOptionalField");
         assertNotNull(component);
         
-        Predicate predicate = component.getAnnotation(Predicate.class);
+        final Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
         assertFalse(predicate.optional()); // Default should be true
     }
@@ -290,10 +290,10 @@ class AnnotationsTest {
             String mandatoryField
         ) {}
         
-        RecordComponent component = getRecordComponent(TestRecordWithMandatory.class, "mandatoryField");
+        final RecordComponent component = this.getRecordComponent(TestRecordWithMandatory.class, "mandatoryField");
         assertNotNull(component);
         
-        Predicate predicate = component.getAnnotation(Predicate.class);
+        final Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
         assertFalse(predicate.optional());
     }
@@ -307,10 +307,10 @@ class AnnotationsTest {
             String optionalField
         ) {}
         
-        RecordComponent component = getRecordComponent(TestRecordWithOptional.class, "optionalField");
+        final RecordComponent component = this.getRecordComponent(TestRecordWithOptional.class, "optionalField");
         assertNotNull(component);
         
-        Predicate predicate = component.getAnnotation(Predicate.class);
+        final Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
         assertTrue(predicate.optional());
     }
@@ -320,14 +320,14 @@ class AnnotationsTest {
         // Test that @Predicate has default inverse=false
         @SuppressWarnings("unused")
         record TestRecordWithDefaultInverse(
-            @Predicate(value = "test:property")
+                @Predicate("test:property")
             String defaultInverseField
         ) {}
         
-        RecordComponent component = getRecordComponent(TestRecordWithDefaultInverse.class, "defaultInverseField");
+        final RecordComponent component = this.getRecordComponent(TestRecordWithDefaultInverse.class, "defaultInverseField");
         assertNotNull(component);
         
-        Predicate predicate = component.getAnnotation(Predicate.class);
+        final Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
         assertFalse(predicate.inverse()); // Default should be false
     }
@@ -341,10 +341,10 @@ class AnnotationsTest {
             String inverseField
         ) {}
         
-        RecordComponent component = getRecordComponent(TestRecordWithInverse.class, "inverseField");
+        final RecordComponent component = this.getRecordComponent(TestRecordWithInverse.class, "inverseField");
         assertNotNull(component);
         
-        Predicate predicate = component.getAnnotation(Predicate.class);
+        final Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
         assertTrue(predicate.inverse());
     }
@@ -358,10 +358,10 @@ class AnnotationsTest {
             String normalField
         ) {}
         
-        RecordComponent component = getRecordComponent(TestRecordWithNormalDirection.class, "normalField");
+        final RecordComponent component = this.getRecordComponent(TestRecordWithNormalDirection.class, "normalField");
         assertNotNull(component);
         
-        Predicate predicate = component.getAnnotation(Predicate.class);
+        final Predicate predicate = component.getAnnotation(Predicate.class);
         assertNotNull(predicate);
         assertFalse(predicate.inverse());
     }
@@ -385,33 +385,33 @@ class AnnotationsTest {
         ) {}
         
         // Test optional=true, inverse=true
-        RecordComponent comp1 = getRecordComponent(TestRecordWithAllCombinations.class, "optionalInverse");
-        Predicate pred1 = comp1.getAnnotation(Predicate.class);
+        final RecordComponent comp1 = this.getRecordComponent(TestRecordWithAllCombinations.class, "optionalInverse");
+        final Predicate pred1 = comp1.getAnnotation(Predicate.class);
         assertTrue(pred1.optional());
         assertTrue(pred1.inverse());
         
         // Test optional=true, inverse=false
-        RecordComponent comp2 = getRecordComponent(TestRecordWithAllCombinations.class, "optionalNormal");
-        Predicate pred2 = comp2.getAnnotation(Predicate.class);
+        final RecordComponent comp2 = this.getRecordComponent(TestRecordWithAllCombinations.class, "optionalNormal");
+        final Predicate pred2 = comp2.getAnnotation(Predicate.class);
         assertTrue(pred2.optional());
         assertFalse(pred2.inverse());
         
         // Test optional=false, inverse=true
-        RecordComponent comp3 = getRecordComponent(TestRecordWithAllCombinations.class, "mandatoryInverse");
-        Predicate pred3 = comp3.getAnnotation(Predicate.class);
+        final RecordComponent comp3 = this.getRecordComponent(TestRecordWithAllCombinations.class, "mandatoryInverse");
+        final Predicate pred3 = comp3.getAnnotation(Predicate.class);
         assertFalse(pred3.optional());
         assertTrue(pred3.inverse());
         
         // Test optional=false, inverse=false
-        RecordComponent comp4 = getRecordComponent(TestRecordWithAllCombinations.class, "mandatoryNormal");
-        Predicate pred4 = comp4.getAnnotation(Predicate.class);
+        final RecordComponent comp4 = this.getRecordComponent(TestRecordWithAllCombinations.class, "mandatoryNormal");
+        final Predicate pred4 = comp4.getAnnotation(Predicate.class);
         assertFalse(pred4.optional());
         assertFalse(pred4.inverse());
     }
 
     // Helper method to check if ElementType array contains specific type
-    private boolean containsElementType(ElementType[] types, ElementType target) {
-        for (ElementType type : types) {
+    private boolean containsElementType(final ElementType[] types, final ElementType target) {
+        for (final ElementType type : types) {
             if (type == target) {
                 return true;
             }
@@ -420,9 +420,9 @@ class AnnotationsTest {
     }
     
     // Helper method to get record component by name
-    private RecordComponent getRecordComponent(Class<?> recordClass, String componentName) {
-        RecordComponent[] components = recordClass.getRecordComponents();
-        for (RecordComponent component : components) {
+    private RecordComponent getRecordComponent(final Class<?> recordClass, final String componentName) {
+        final RecordComponent[] components = recordClass.getRecordComponents();
+        for (final RecordComponent component : components) {
             if (component.getName().equals(componentName)) {
                 return component;
             }

@@ -51,15 +51,15 @@ public enum ObjectType {
 	private final String baseUriPropertyName;
 	private final UnaryOperator<String> baseUriModifier;
 
-	ObjectType(String labelType, IRI uri, String baseUriPropertyName, UnaryOperator<String> baseUriModifier){
+	ObjectType(final String labelType, final IRI uri, final String baseUriPropertyName, final UnaryOperator<String> baseUriModifier){
 		this.uri=uri;
 		this.labelType=labelType;
 		this.baseUriPropertyName=baseUriPropertyName;
 		this.baseUriModifier=baseUriModifier;
 	}
 
-	public static Optional<ObjectType> getEnumByLabel(String labelType) {
-		return Arrays.stream(values()).filter(e->e.labelType.equals(labelType)).findAny();
+	public static Optional<ObjectType> getEnumByLabel(final String labelType) {
+		return Arrays.stream(ObjectType.values()).filter(e->e.labelType.equals(labelType)).findAny();
 	}
 
 
@@ -67,30 +67,30 @@ public enum ObjectType {
 	/**
 	 * Get Enum type by URI
 	 */
-	public static ObjectType getEnum(IRI uri) {
-		return Arrays.stream(values()).filter(e->Objects.equals(e.uri, uri))
+	public static ObjectType getEnum(final IRI uri) {
+		return Arrays.stream(ObjectType.values()).filter(e->Objects.equals(e.uri, uri))
 				.findAny()
-				.orElse(UNDEFINED);
+				.orElse(ObjectType.UNDEFINED);
 	}
 	
 	/**
 	 * Get label by URI
 	 */
-	public static String getLabelType(IRI uri) {
-		return getEnum(uri).labelType;
+	public static String getLabelType(final IRI uri) {
+		return ObjectType.getEnum(uri).labelType;
 	}
 
 
 	public String baseUriPropertyName() {
-		return this.baseUriPropertyName;
+		return baseUriPropertyName;
 	}
 
 	public UnaryOperator<String> baseUriModifier() {
-		return baseUriModifier;
+		return this.baseUriModifier;
 	}
 
 	public String labelType() {
-		return labelType;
+		return this.labelType;
 	}
 }
 

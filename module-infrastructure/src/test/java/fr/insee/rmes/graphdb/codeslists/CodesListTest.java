@@ -1,6 +1,6 @@
 package fr.insee.rmes.graphdb.codeslists;
 
-import fr.insee.rmes.graphdb.annotations.*;
+import fr.insee.rmes.sparql.annotations.*;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.RecordComponent;

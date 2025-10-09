@@ -291,6 +291,7 @@
   </repositories>
   <modules>
     <module>module-domain</module>
+    <module>module-sparql-orm</module>
     <module>module-infrastructure</module>
     <module>module-bauhaus-bo</module>
   </modules>

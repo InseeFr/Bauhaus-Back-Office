@@ -1,7 +1,11 @@
-package fr.insee.rmes.graphdb;
+package fr.insee.rmes.sparql;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.annotations.*;
+import fr.insee.rmes.sparql.annotations.Entity;
+import fr.insee.rmes.sparql.annotations.Graph;
+import fr.insee.rmes.sparql.annotations.Predicate;
+import fr.insee.rmes.sparql.annotations.Statement;
+import fr.insee.rmes.sparql.utils.PropertyResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -10,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.Environment;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 class SparqlQueryBuilderTest {
@@ -23,25 +27,25 @@ class SparqlQueryBuilderTest {
     public record TestEntity(
             @Statement
             String uri,
-            
-            @Predicate(value = "skos:notation")
+
+            @Predicate("skos:notation")
             String id,
-            
+
             @Predicate(value = "skos:prefLabel", namespace = "http://www.w3.org/2004/02/skos/core#", lang = "lg1")
             String labelLg1,
-            
-            @Predicate(value = "rdfs:comment")
+
+            @Predicate("rdfs:comment")
             String description,
-            
+
             @Predicate(value = "skos:altLabel", optional = true)
             String optionalField,
-            
+
             @Predicate(value = "dcterms:title", optional = false)
             String mandatoryField,
-            
+
             @Predicate(value = "rdfs:seeAlso", inverse = true)
             String inverseField,
-            
+
             @Predicate(value = "skos:broader", optional = false, inverse = true)
             String mandatoryInverseField
     ) {}
@@ -50,8 +54,8 @@ class SparqlQueryBuilderTest {
     public record SimpleEntity(
             @Statement
             String uri,
-            
-            @Predicate(value = "foaf:name")
+
+            @Predicate("foaf:name")
             String name
     ) {}
 
@@ -59,32 +63,32 @@ class SparqlQueryBuilderTest {
     public record EntityWithoutType(
             @Statement
             String uri,
-            
-            @Predicate(value = "rdfs:label")
+
+            @Predicate("rdfs:label")
             String label
     ) {}
 
 
     @Test
     void shouldCreateQueryBuilderForEntity() {
-        SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+        final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
         assertNotNull(builder);
     }
 
     @Test
     void shouldCreateQueryBuilderWithEnvironment() {
-        SparqlQueryBuilder<TestEntity> builder = new SparqlQueryBuilder<>(TestEntity.class, mockEnvironment);
+        final SparqlQueryBuilder<TestEntity> builder = new SparqlQueryBuilder<>(TestEntity.class, this.mockEnvironment);
         assertNotNull(builder);
     }
 
     @Test
     void shouldSelectSpecificFields() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id", "labelLg1").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id", "labelLg1").build();
 
             assertNotNull(query);
             assertTrue(query.contains("SELECT ?id ?labelLg1"));
@@ -96,12 +100,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldSelectAllFields() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.selectAll().build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.selectAll().build();
 
             assertNotNull(query);
             assertTrue(query.contains("SELECT"));
@@ -114,12 +118,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldAddWhereCondition() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id", "labelLg1")
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id", "labelLg1")
                     .where("id", "TEST001")
                     .build();
 
@@ -131,12 +135,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldAddUriWhereCondition() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id")
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id")
                     .where("uri", "http://example.com/resource")
                     .build();
 
@@ -147,9 +151,9 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldThrowExceptionForInvalidField() {
-        SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+        final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
         
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> builder.where("invalidField", "value"));
         
         assertTrue(exception.getMessage().contains("Field 'invalidField' not found"));
@@ -157,12 +161,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldAddOrderBy() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id", "labelLg1")
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id", "labelLg1")
                     .orderBy("labelLg1", "ASC")
                     .build();
 
@@ -173,12 +177,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldAddLimit() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id")
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id")
                     .limit(10)
                     .build();
 
@@ -189,12 +193,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldAddOffset() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id")
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id")
                     .offset(5)
                     .build();
 
@@ -205,12 +209,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldAddDistinct() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("id")
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("id")
                     .distinct()
                     .build();
 
@@ -221,8 +225,8 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldHandleEntityWithoutGraph() throws RmesException {
-        SparqlQueryBuilder<SimpleEntity> builder = SparqlQueryBuilder.forEntity(SimpleEntity.class);
-        String query = builder.select("name").build();
+        final SparqlQueryBuilder<SimpleEntity> builder = SparqlQueryBuilder.forEntity(SimpleEntity.class);
+        final String query = builder.select("name").build();
 
         assertNotNull(query);
         assertFalse(query.contains("FROM"));
@@ -231,8 +235,8 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldHandleEntityWithoutType() throws RmesException {
-        SparqlQueryBuilder<EntityWithoutType> builder = SparqlQueryBuilder.forEntity(EntityWithoutType.class);
-        String query = builder.select("label").build();
+        final SparqlQueryBuilder<EntityWithoutType> builder = SparqlQueryBuilder.forEntity(EntityWithoutType.class);
+        final String query = builder.select("label").build();
         
         System.out.println("Generated query for EntityWithoutType:\n" + query);
         
@@ -246,12 +250,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldGeneratePrefixesFromNamespaces() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("labelLg1").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("labelLg1").build();
 
             assertNotNull(query);
             assertTrue(query.contains("PREFIX skos:<http://www.w3.org/2004/02/skos/core#>"));
@@ -260,14 +264,14 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldHandleLanguageLabels() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${fr.insee.rmes.bauhaus.lg1}"))
                     .thenReturn("fr");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("labelLg1").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("labelLg1").build();
 
             assertNotNull(query);
             assertTrue(query.contains("FILTER(lang(?labelLg1) = \"fr\")"));
@@ -276,12 +280,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldHandleStatementFields() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("uri").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("uri").build();
 
             assertNotNull(query);
             assertTrue(query.contains("BIND(?testentity AS ?uri)"));
@@ -290,8 +294,8 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldReturnAvailableFields() {
-        SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-        var fields = builder.getAvailableFields();
+        final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+        final var fields = builder.getAvailableFields();
 
         assertNotNull(fields);
         assertTrue(fields.contains("uri"));
@@ -302,8 +306,8 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldReturnFieldToPredicateMapping() {
-        SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-        var mapping = builder.getFieldToPredicateMapping();
+        final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+        final var mapping = builder.getFieldToPredicateMapping();
 
         assertNotNull(mapping);
         assertEquals("URI", mapping.get("uri"));
@@ -314,12 +318,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldBuildComplexQuery() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder
                     .select("id", "labelLg1", "description")
                     .where("id", "TEST001")
                     .orderBy("labelLg1", "ASC")
@@ -343,12 +347,12 @@ class SparqlQueryBuilderTest {
     void shouldHandleHttpPredicateUris() throws RmesException {
         @Entity(type = "test:Entity")
         record EntityWithHttpUris(
-                @Predicate(value = "http://example.com/property")
+                @Predicate("http://example.com/property")
                 String field
         ) {}
 
-        SparqlQueryBuilder<EntityWithHttpUris> builder = SparqlQueryBuilder.forEntity(EntityWithHttpUris.class);
-        String query = builder.select("field").build();
+        final SparqlQueryBuilder<EntityWithHttpUris> builder = SparqlQueryBuilder.forEntity(EntityWithHttpUris.class);
+        final String query = builder.select("field").build();
 
         assertNotNull(query);
         assertTrue(query.contains("<http://example.com/property>"));
@@ -356,12 +360,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldGenerateOptionalTripleForOptionalField() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("optionalField").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("optionalField").build();
 
             assertNotNull(query);
             assertTrue(query.contains("OPTIONAL { ?testentity skos:altLabel ?optionalField"));
@@ -370,12 +374,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldGenerateMandatoryTripleForMandatoryField() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("mandatoryField").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("mandatoryField").build();
 
             assertNotNull(query);
             assertTrue(query.contains("?testentity dcterms:title ?mandatoryField ."));
@@ -385,12 +389,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldGenerateInverseTripleForInverseField() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("inverseField").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("inverseField").build();
 
             assertNotNull(query);
             assertTrue(query.contains("?inverseField rdfs:seeAlso ?testentity"));
@@ -399,12 +403,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldGenerateMandatoryInverseTripleForMandatoryInverseField() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("mandatoryInverseField").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("mandatoryInverseField").build();
 
             assertNotNull(query);
             assertTrue(query.contains("?mandatoryInverseField skos:broader ?testentity ."));
@@ -414,12 +418,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldHandleComplexQueryWithOptionalAndInverseFields() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("optionalField", "mandatoryField", "inverseField", "mandatoryInverseField").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("optionalField", "mandatoryField", "inverseField", "mandatoryInverseField").build();
 
             assertNotNull(query);
             // Optional field should be in OPTIONAL block
@@ -435,8 +439,8 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldReturnCorrectFieldMappingsWithOptionalAndInverse() {
-        SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-        var mapping = builder.getFieldToPredicateMapping();
+        final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+        final var mapping = builder.getFieldToPredicateMapping();
 
         assertNotNull(mapping);
         assertEquals("skos:altLabel", mapping.get("optionalField"));
@@ -447,12 +451,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldDefaultToOptionalFalseWhenNotSpecified() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("description").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("description").build();
 
             assertNotNull(query);
             // Default behavior should be optional=true
@@ -462,12 +466,12 @@ class SparqlQueryBuilderTest {
 
     @Test
     void shouldDefaultToInverseFalseWhenNotSpecified() throws RmesException {
-        try (MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
+        try (final MockedStatic<PropertyResolver> mockedPropertyResolver = mockStatic(PropertyResolver.class)) {
             mockedPropertyResolver.when(() -> PropertyResolver.resolve("${test.graph}"))
                     .thenReturn("http://test.graph");
 
-            SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
-            String query = builder.select("description").build();
+            final SparqlQueryBuilder<TestEntity> builder = SparqlQueryBuilder.forEntity(TestEntity.class);
+            final String query = builder.select("description").build();
 
             assertNotNull(query);
             // Default behavior should be inverse=false (normal subject-predicate-object order)
