@@ -61,7 +61,7 @@ class CheckResultTest {
 
         // When & Then
         assertThat(result1).isEqualTo(result2);
-        assertThat(result1.hashCode()).isEqualTo(result2.hashCode());
+        assertThat(result1.hashCode()).hasSameHashCodeAs(result2);
     }
 
     @Test

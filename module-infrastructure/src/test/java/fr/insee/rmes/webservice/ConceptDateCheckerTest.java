@@ -65,10 +65,10 @@ class ConceptDateCheckerTest {
         
         @SuppressWarnings("unchecked")
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value.get("status")).isEqualTo("completed");
-        assertThat(value.get("totalConcepts")).isEqualTo(2);
-        assertThat(value.get("validConcepts")).isEqualTo(2);
-        assertThat(value.get("invalidConcepts")).isEqualTo(0);
+        assertThat(value).containsEntry("status", "completed");
+        assertThat(value).containsEntry("totalConcepts", 2);
+        assertThat(value).containsEntry("validConcepts", 2);
+        assertThat(value).containsEntry("invalidConcepts", 0);
     }
 
     @Test
@@ -97,13 +97,14 @@ class ConceptDateCheckerTest {
         // Then
         assertThat(result).isPresent();
         CheckResult checkResult = result.get();
-        
+
         @SuppressWarnings("unchecked")
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value.get("status")).isEqualTo("completed");
-        assertThat(value.get("totalConcepts")).isEqualTo(2);
-        assertThat(value.get("validConcepts")).isEqualTo(0);
-        assertThat(value.get("invalidConcepts")).isEqualTo(2);
+        assertThat(value).containsEntry("status", "completed");
+        assertThat(value).containsEntry("totalConcepts", 2);
+        assertThat(value).containsEntry("validConcepts", 0);
+        assertThat(value).containsEntry("invalidConcepts", 2);
+
     }
 
     @Test
@@ -121,7 +122,7 @@ class ConceptDateCheckerTest {
         
         @SuppressWarnings("unchecked")
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value.get("status")).isEqualTo("error");
+        assertThat(value).containsEntry("status", "error");
     }
 
     @Test
@@ -138,13 +139,12 @@ class ConceptDateCheckerTest {
         // Then
         assertThat(result).isPresent();
         CheckResult checkResult = result.get();
-        
-        @SuppressWarnings("unchecked")
+
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value.get("status")).isEqualTo("completed");
-        assertThat(value.get("totalConcepts")).isEqualTo(0);
-        assertThat(value.get("validConcepts")).isEqualTo(0);
-        assertThat(value.get("invalidConcepts")).isEqualTo(0);
+        assertThat(value).containsEntry("status", "completed");
+        assertThat(value).containsEntry("totalConcepts", 0);
+        assertThat(value).containsEntry("validConcepts", 0);
+        assertThat(value).containsEntry("invalidConcepts", 0);
     }
 
     @Test

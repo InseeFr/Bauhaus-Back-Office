@@ -1,25 +1,21 @@
 package fr.insee.rmes.keycloak;
 
-import fr.insee.rmes.keycloak.KeycloakServerZoneConfiguration;
-import fr.insee.rmes.keycloak.ServerZone;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.keycloak.KeycloakServices;
-import fr.insee.rmes.keycloak.Token;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
