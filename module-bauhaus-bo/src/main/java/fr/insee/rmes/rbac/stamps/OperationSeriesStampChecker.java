@@ -35,7 +35,7 @@ public class OperationSeriesStampChecker implements  ObjectStampChecker {
                 }
             }
             return stamps;
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             return Collections.emptyList();
         }
     }

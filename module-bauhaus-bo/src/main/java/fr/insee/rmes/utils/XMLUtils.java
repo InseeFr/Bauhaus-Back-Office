@@ -175,7 +175,7 @@ public class XMLUtils {
 		TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (TransformerConfigurationException ignored) {
+        } catch (TransformerConfigurationException _) {
             logger.info(XMLConstants.FEATURE_SECURE_PROCESSING+" unsuported for net.sf.saxon.TransformerFactoryImpl");
         }
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");

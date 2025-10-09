@@ -14,8 +14,9 @@ import java.nio.file.Paths;
 
 @Testcontainers
 public class WithGraphDBContainer {
+
     @Container
-    public static GraphDBContainer container = new GraphDBContainer(getDockerImageName());
+    public static final GraphDBContainer container = new GraphDBContainer(getDockerImageName());
 
     private static String getDockerImageName() {
         Path filePath = Paths.get(System.getProperty("user.dir"), "compose.yaml");

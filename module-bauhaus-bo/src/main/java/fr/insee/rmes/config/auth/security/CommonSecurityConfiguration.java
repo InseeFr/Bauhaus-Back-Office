@@ -63,7 +63,7 @@ public class CommonSecurityConfiguration {
         return principal -> {
             try {
                 return userDecoder.fromPrincipal(principal).map(User::stamp);
-            } catch (RmesException e) {
+            } catch (RmesException _) {
                 return Optional.empty();
             }
         };

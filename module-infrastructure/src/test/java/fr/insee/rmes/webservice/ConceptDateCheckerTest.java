@@ -65,10 +65,10 @@ class ConceptDateCheckerTest {
         
         @SuppressWarnings("unchecked")
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value).containsEntry("status", "completed");
-        assertThat(value).containsEntry("totalConcepts", 2);
-        assertThat(value).containsEntry("validConcepts", 2);
-        assertThat(value).containsEntry("invalidConcepts", 0);
+        assertThat(value).containsEntry("status", "completed")
+                .containsEntry("totalConcepts", 2)
+                .containsEntry("validConcepts", 2)
+                .containsEntry("invalidConcepts", 0);
     }
 
     @Test
@@ -100,10 +100,10 @@ class ConceptDateCheckerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value).containsEntry("status", "completed");
-        assertThat(value).containsEntry("totalConcepts", 2);
-        assertThat(value).containsEntry("validConcepts", 0);
-        assertThat(value).containsEntry("invalidConcepts", 2);
+        assertThat(value).containsEntry("status", "completed")
+                .containsEntry("totalConcepts", 2)
+                .containsEntry("validConcepts", 0)
+                .containsEntry("invalidConcepts", 2);
 
     }
 
@@ -141,10 +141,10 @@ class ConceptDateCheckerTest {
         CheckResult checkResult = result.get();
 
         Map<String, Object> value = (Map<String, Object>) checkResult.getValue();
-        assertThat(value).containsEntry("status", "completed");
-        assertThat(value).containsEntry("totalConcepts", 0);
-        assertThat(value).containsEntry("validConcepts", 0);
-        assertThat(value).containsEntry("invalidConcepts", 0);
+        assertThat(value).containsEntry("status", "completed")
+                .containsEntry("totalConcepts", 0)
+                .containsEntry("validConcepts", 0)
+                .containsEntry("invalidConcepts", 0);
     }
 
     @Test
@@ -156,10 +156,10 @@ class ConceptDateCheckerTest {
         String query = conceptDateChecker.getSparqlQuery();
 
         // Then
-        assertThat(query).isNotNull();
-        assertThat(query).contains("SELECT");
-        assertThat(query).contains("?id");
-        assertThat(query).contains("?created");
-        assertThat(query).contains("?modified");
+        assertThat(query).isNotNull()
+                .contains("SELECT")
+                .contains("?id")
+                .contains("?created")
+                .contains("?modified");
     }
 }

@@ -92,8 +92,7 @@ class CheckResultTest {
         CheckResult result3 = new CheckResult("name", "value");
 
         // When & Then
-        assertThat(result1).isEqualTo(result2);
-        assertThat(result1).isNotEqualTo(result3);
+        assertThat(result1).isEqualTo(result2).isNotEqualTo(result3);
         assertThat(result3).isNotEqualTo(result1);
     }
 
@@ -133,9 +132,7 @@ class CheckResultTest {
         String toString = result.toString();
 
         // Then
-        assertThat(toString).contains("test_name");
-        assertThat(toString).contains("test_value");
-        assertThat(toString).contains("CheckResult");
+        assertThat(toString).contains("test_name").contains("test_value").contains("CheckResult");
     }
 
     @Test
@@ -147,7 +144,6 @@ class CheckResultTest {
         String toString = result.toString();
 
         // Then
-        assertThat(toString).contains("test_name");
-        assertThat(toString).contains("null");
+        assertThat(toString).contains("test_name").contains("null");
     }
 }

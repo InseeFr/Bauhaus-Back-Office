@@ -1,6 +1,5 @@
 package fr.insee.rmes.keycloak;
 
-import fr.insee.rmes.keycloak.Token;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
