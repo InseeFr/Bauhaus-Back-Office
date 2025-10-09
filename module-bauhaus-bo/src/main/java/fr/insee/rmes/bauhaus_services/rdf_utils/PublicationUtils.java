@@ -72,7 +72,7 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
                             if(statement.getObject().isBNode()){
                                 publishResource((Resource) statement.getObject(), Set.of());
                             }
-                        } catch(ClassCastException ignored){
+                        } catch(ClassCastException _){
                             model.add(tranformBaseURIToPublish(statement.getSubject()),
                                     statement.getPredicate(),
                                     statement.getObject(),

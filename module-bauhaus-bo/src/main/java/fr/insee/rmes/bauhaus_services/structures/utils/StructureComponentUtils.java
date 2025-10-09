@@ -196,7 +196,7 @@ public class StructureComponentUtils extends RdfService {
                     String value = jsonComponent.getString("attributeValue_" + index);
                     try {
                         RdfUtils.addTripleUri(componentURI, RdfUtils.toURI(predicate), value, model, graph);
-                    } catch(Exception e){
+                    } catch(Exception _){
                         model.add(componentURI, RdfUtils.toURI(predicate), RdfUtils.setLiteralString(value), graph);
                     }
                 }

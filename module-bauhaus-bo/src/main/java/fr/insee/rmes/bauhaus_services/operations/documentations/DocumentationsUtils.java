@@ -188,7 +188,7 @@ public class DocumentationsUtils  {
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {
 			return repoGestion.getResponseAsObject(DocumentationQueries.getPublicationState(id)).getString("state");
-		} catch (JSONException e) {
+		} catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}

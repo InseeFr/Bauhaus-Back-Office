@@ -27,7 +27,7 @@ public class MethodHandleUtils {
     private static Optional<MethodHandle> createMethodHandle(MethodHandleEntry methodHandleEntry) {
         try {
             return Optional.ofNullable(publicLookup.findVirtual(methodHandleEntry.containerClass(), methodHandleEntry.methodName(), methodHandleEntry.methodType()));
-        } catch (NoSuchMethodException | IllegalAccessException | SecurityException | NullPointerException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | SecurityException | NullPointerException _) {
             return Optional.empty();
         }
     }
@@ -38,7 +38,7 @@ public class MethodHandleUtils {
         targetThenParameters[0] = target;
         try {
             return requireNonNull(methodHandle).invokeWithArguments(targetThenParameters);
-        } catch (Throwable e) {
+        } catch (Throwable _) {
             return null;
         }
     }

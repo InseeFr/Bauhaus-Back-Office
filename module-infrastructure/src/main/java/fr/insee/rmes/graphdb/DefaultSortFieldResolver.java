@@ -25,7 +25,7 @@ public enum DefaultSortFieldResolver {
                         try {
                             final Object value = accessor.invoke(record);
                             return null != value ? value.toString() : "";
-                        } catch (final Exception e) {
+                        } catch (Exception _) {
                             return "";
                         }
                     };

@@ -180,7 +180,7 @@ DocumentationsRubricsUtils extends RdfService {
 				String predicate = attributesUriList.get(rubric.getIdAttribute());
 				predicateUri = RdfUtils.toURI(predicate);
 				attributeUri = getAttributeUri(simsId, predicate);
-			} catch (Exception e) {
+			} catch (Exception _) {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idAttribute not found", rubric.getIdAttribute());
 			}
 			RdfUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
@@ -324,7 +324,7 @@ DocumentationsRubricsUtils extends RdfService {
 			try{
 				documentationRubric.setValue(fr.insee.rmes.utils.StringUtils.stringToList(jsonRubric.getString(Constants.VALUE)));
 			}
-			catch(JSONException e) {
+			catch(JSONException _) {
 				/* value is not a string but an array */
 				JSONArray jsonArrayValue =jsonRubric.getJSONArray(Constants.VALUE);
 				documentationRubric.setValue(JSONUtils.jsonArrayToList(jsonArrayValue));

@@ -67,7 +67,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     Date date = null;
                     try {
                         date = formatter.parse(item.versionDate());
-                    } catch (ParseException | NullPointerException e) {
+                    } catch (ParseException | NullPointerException _) {
                         logger.debug("Impossible to parse {}", item.versionDate());
                     }
                     return new PartialPhysicalInstance(id, label, date);

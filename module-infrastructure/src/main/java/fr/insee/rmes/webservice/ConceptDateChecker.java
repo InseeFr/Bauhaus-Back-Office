@@ -68,7 +68,7 @@ public class ConceptDateChecker implements RuleChecker  {
             result.put("validConcepts", validConcepts);
             result.put("invalidConcepts", invalidConcepts.size());
             result.put("invalidConceptsList", invalidConcepts);
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             result.put("status", "error");
         }
 
@@ -102,7 +102,7 @@ public class ConceptDateChecker implements RuleChecker  {
         try {
             Instant.parse(dateString.trim()).atZone(java.time.ZoneId.systemDefault()).toLocalDate();
             return true;
-        } catch (DateTimeParseException e){
+        } catch (DateTimeParseException _){
             return false;
         }
     }

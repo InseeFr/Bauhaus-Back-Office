@@ -83,7 +83,7 @@ public class ClassificationItemRepository {
                     if (altLabel.getShortLabelLg2() != null) {
                         model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
                     }
-                } catch (RmesException e) {
+                } catch (RmesException _) {
                     logger.error("The altLabel {} can not be deleted", altLabelIri);
                 }
             });
