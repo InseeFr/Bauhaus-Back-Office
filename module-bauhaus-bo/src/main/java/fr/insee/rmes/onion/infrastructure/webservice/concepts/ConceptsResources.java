@@ -8,8 +8,6 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.*;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
-import fr.insee.rmes.domain.model.Language;
-import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import fr.insee.rmes.domain.exceptions.RmesException;

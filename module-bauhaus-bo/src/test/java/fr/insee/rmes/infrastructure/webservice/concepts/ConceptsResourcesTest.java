@@ -19,7 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
