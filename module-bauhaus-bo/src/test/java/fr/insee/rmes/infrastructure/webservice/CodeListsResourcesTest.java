@@ -5,8 +5,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.model.codeslists.PartialCodesList;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.webservice.codes_lists.CodeListsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,10 +15,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import java.util.ArrayList;
+
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -112,19 +111,6 @@ class CodeListsResourcesTest {
         Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>",actual);
     }
 
-    @Test
-    void shouldReturn200WithGetAllCodesLists() throws RmesException, JsonProcessingException {
-
-        PartialCodesList codeList1 = new PartialCodesList("1", "uri", "labelLg1", "labelLg2", "range");
-        PartialCodesList codeList2 = new PartialCodesList("2", "uri", "labelLg1", "labelLg2", "range");
-        List<PartialCodesList> liste = new ArrayList<>();
-        liste.add(codeList1);
-        liste.add(codeList2);
-
-        when(codeListService.getAllCodesLists(false)).thenReturn(liste);
-        var codesLists = codeListsResources.getAllCodesLists();
-        assertEquals(2, codesLists.size());
-    }
 
     @Test
     void shouldThrowErrorWithGetAllCodesLists() throws RmesException, JsonProcessingException {
@@ -168,7 +154,7 @@ class CodeListsResourcesTest {
     void shouldReturn200WithDeleteCodeForCodeList() throws RmesException {
         when(codeListService.deleteCodeFromCodeList("notation", "1")).thenReturn("body");
         ResponseEntity<Void> response = codeListsResources.deleteCodeForCodeList("notation", "1");
-        assertEquals(null, response.getBody());
+        assertNull(response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test

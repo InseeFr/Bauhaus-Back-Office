@@ -4,11 +4,12 @@ FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?iri skos:notation '${NOTATION}' ;
     skos:notation ?id .
+
     OPTIONAL {
         ?iri insee:lastCodeUriSegment ?lastCodeUriSegment .
     }
     OPTIONAL {
-    ?iri dcterms:created ?created .
+        ?iri dcterms:created ?created .
     }
     OPTIONAL {
     ?iri dc:creator ?creator .

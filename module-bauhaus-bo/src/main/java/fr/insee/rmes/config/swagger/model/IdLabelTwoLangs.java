@@ -6,7 +6,7 @@ import java.util.List;
 
 public class IdLabelTwoLangs {
 	
-	private static String classLink = "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
+	private static final String classLink = "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
 
 	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;

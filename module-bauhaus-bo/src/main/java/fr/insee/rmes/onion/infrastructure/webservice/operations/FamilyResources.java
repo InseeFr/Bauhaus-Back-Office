@@ -1,15 +1,19 @@
 package fr.insee.rmes.onion.infrastructure.webservice.operations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.config.swagger.model.IdLabel;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.operations.families.PartialOperationFamily;
+import fr.insee.rmes.domain.port.clientside.FamilyService;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.PartialOperationFamily;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.webservice.response.operations.OperationFamilyResponse;
+import fr.insee.rmes.webservice.response.operations.OperationFamilySeriesResponse;
+import fr.insee.rmes.webservice.response.operations.OperationFamilySubjectResponse;
+import fr.insee.rmes.webservice.response.operations.PartialOperationFamilyResponse;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 
 @Qualifier("Family")
 @RestController
@@ -32,6 +38,7 @@ import java.util.List;
 @RequestMapping(
 		value = "/operations",
 		produces = {
+				"application/hal+json",
 				MediaType.APPLICATION_JSON_VALUE,
 				MediaType.TEXT_PLAIN_VALUE
 		}
@@ -40,21 +47,53 @@ import java.util.List;
 public class FamilyResources  {
 
 	protected final OperationsService operationsService;
-
+	protected final FamilyService familyService;
 	protected final OperationsDocumentationsService documentationsService;
 
-	public FamilyResources(OperationsService operationsService, OperationsDocumentationsService documentationsService) {
+	public FamilyResources(OperationsService operationsService, FamilyService familyService, OperationsDocumentationsService documentationsService) {
 		this.operationsService = operationsService;
-		this.documentationsService = documentationsService;
+        this.familyService = familyService;
+        this.documentationsService = documentationsService;
 	}
 
 
 	@GetMapping("/families")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
 	@io.swagger.v3.oas.annotations.Operation(summary = "List of families",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public List<PartialOperationFamily> getFamilies() throws RmesException {
-		return operationsService.getFamilies();
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialOperationFamilyResponse.class))))})
+	public ResponseEntity<List<PartialOperationFamilyResponse>> getFamilies() throws RmesException {
+		List<PartialOperationFamily> families = familyService.getFamilies();
+
+        List<PartialOperationFamilyResponse> responses = families.stream()
+                .map(family -> {
+                    var response = PartialOperationFamilyResponse.fromDomain(family);
+                    response.add(linkTo(FamilyResources.class).slash("family").slash(family.id()).withSelfRel());
+                    return response;
+                })
+                .toList();
+		
+		return ResponseEntity.ok()
+				.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+				.body(responses);
+	}
+
+	@GetMapping("/family/{id}")
+	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get a family",
+			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = OperationFamilyResponse.class)))}
+	)
+	public OperationFamilyResponse getFamilyByID(@PathVariable(Constants.ID) String id) throws RmesException {
+		var family =  familyService.getFamily(id);
+        return OperationFamilyResponse.fromDomain(
+                family,
+                family.series().stream().map(series -> {
+                    var response = OperationFamilySeriesResponse.fromDomain(series);
+                    response.add(linkTo(SeriesResources.class).slash("series").slash(series.id()).withSelfRel());
+                    return response;
+                }).toList(),
+                family.subjects().stream().map(OperationFamilySubjectResponse::fromDomain).toList()
+
+        );
 	}
 
 	@GetMapping("/families/advanced-search")
@@ -74,15 +113,6 @@ public class FamilyResources  {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(series);
 	}
 
-	@GetMapping("/family/{id}")
-	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Get a family",
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
-			)
-	public ResponseEntity<Object> getFamilyByID(@PathVariable(Constants.ID) String id) throws RmesException {
-		String family = operationsService.getFamilyByID(id);
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(family);
-	}
 
 	@PutMapping("/family/{id}")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.UPDATE)

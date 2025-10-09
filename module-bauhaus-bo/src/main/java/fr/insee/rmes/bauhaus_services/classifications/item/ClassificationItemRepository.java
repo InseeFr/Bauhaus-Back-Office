@@ -2,10 +2,10 @@ package fr.insee.rmes.bauhaus_services.classifications.item;
 
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -83,7 +83,7 @@ public class ClassificationItemRepository {
                     if (altLabel.getShortLabelLg2() != null) {
                         model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
                     }
-                } catch (RmesException e) {
+                } catch (RmesException _) {
                     logger.error("The altLabel {} can not be deleted", altLabelIri);
                 }
             });

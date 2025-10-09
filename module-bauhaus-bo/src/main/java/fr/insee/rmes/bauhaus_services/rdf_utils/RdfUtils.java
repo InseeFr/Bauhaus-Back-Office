@@ -1,11 +1,12 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
-import fr.insee.rmes.persistance.ontologies.EVOC;
-import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.graphdb.ontologies.EVOC;
+import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.*;

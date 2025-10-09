@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,7 +14,7 @@ class FreeMarkerUtilsTest {
 
     @Test
     void buildRequestTest() throws RmesException {
-        assertThatCode(()->FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
+        assertThatCode(()-> FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
                 .doesNotThrowAnyException();
         assertThat(FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
                 .contains("""

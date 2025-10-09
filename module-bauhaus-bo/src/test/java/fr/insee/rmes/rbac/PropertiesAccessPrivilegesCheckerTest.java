@@ -2,7 +2,7 @@ package fr.insee.rmes.rbac;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege;
 import fr.insee.rmes.rbac.RBAC.Module;
 import org.junit.jupiter.api.BeforeEach;

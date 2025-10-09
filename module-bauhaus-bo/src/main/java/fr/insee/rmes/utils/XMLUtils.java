@@ -2,7 +2,7 @@ package fr.insee.rmes.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import org.apache.commons.text.StringEscapeUtils;
@@ -59,8 +59,6 @@ public class XMLUtils {
 			mapper = new XmlMapper();
 		} else {
 			mapper = new ObjectMapper();
-			// TODO : make it generic for all classes or change to
-			// 'produceXmlResponse'
 			mapper.addMixIn(Documentation.class, DocumentationJsonMixIn.class);
 		}
 		try {
@@ -177,7 +175,7 @@ public class XMLUtils {
 		TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (TransformerConfigurationException ignored) {
+        } catch (TransformerConfigurationException _) {
             logger.info(XMLConstants.FEATURE_SECURE_PROCESSING+" unsuported for net.sf.saxon.TransformerFactoryImpl");
         }
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");

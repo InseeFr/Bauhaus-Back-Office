@@ -1,11 +1,11 @@
 package fr.insee.rmes.onion.infrastructure.webservice.structures;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
 import fr.insee.rmes.model.structures.Structure;
 import fr.insee.rmes.rbac.HasAccess;

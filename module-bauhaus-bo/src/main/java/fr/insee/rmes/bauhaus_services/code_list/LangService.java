@@ -1,22 +1,25 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LangService extends RdfService {
+public class LangService {
 
 	private String language1;
 	private String language2;
-	
-	
-	@Autowired
-	protected CodeListService codeListService;
-	
+
+
+	private final CodeListService codeListService;
+	private final Config config;
+
+	public LangService(CodeListService codeListService, Config config) {
+		this.codeListService = codeListService;
+		this.config = config;
+	}
 
 	/**
 	 * Get psi.oasis language for the two technical language (cf. properties)

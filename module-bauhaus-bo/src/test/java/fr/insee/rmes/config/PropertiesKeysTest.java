@@ -1,5 +1,6 @@
 package fr.insee.rmes.config;
 
+import fr.insee.rmes.PropertiesKeys;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.SortedSet;
