@@ -5,10 +5,6 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/operations/indicators/IndicatorsUtilsTest.java
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-=======
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/operations/indicators/IndicatorsUtilsTest.java
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.domain.exceptions.RmesException;

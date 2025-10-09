@@ -2,15 +2,7 @@ package fr.insee.rmes.integration;
 
 
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/integration/StructureResourcesTest.java
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/integration/StructureResourcesTest.java
 import fr.insee.rmes.infrastructure.rbac.Roles;
-=======
-import fr.insee.rmes.config.auth.roles.Roles;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/integration/StructureResourcesTest.java
-=======
-import fr.insee.rmes.infrastructure.rbac.Roles;
->>>>>>> 16aff9c1 (refactor: delete CNIS role (#985)):src/test/java/fr/insee/rmes/integration/StructureResourcesTest.java
 import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

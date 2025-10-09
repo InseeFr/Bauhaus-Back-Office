@@ -3,10 +3,6 @@ package fr.insee.rmes.bauhaus_services.classifications;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/classifications/ClassificationsImplTest.java
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-=======
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/classifications/ClassificationsImplTest.java
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;

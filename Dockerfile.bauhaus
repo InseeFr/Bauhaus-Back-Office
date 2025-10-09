@@ -1,6 +1,5 @@
 FROM eclipse-temurin:25-jdk-jammy AS builder
 WORKDIR /opt/app
-<<<<<<<< HEAD:Dockerfile.bauhaus
 
 COPY ./.mvn .mvn
 COPY ./mvnw mvnw
@@ -11,11 +10,6 @@ COPY ./module-bauhaus-bo/ ./module-bauhaus-bo
 COPY ./module-domain/ ./module-domain
 COPY ./module-infrastructure/ ./module-infrastructure
 
-========
-COPY ../.mvn .mvn
-COPY ../mvnw pom.xml ./
-COPY src ./src
->>>>>>>> 6f7e20ca (feat: init mono repo (#991)):module-bauhaus-bo/Dockerfile
 RUN chmod +x mvnw
 RUN ./mvnw clean install -DskipTests=true
 

@@ -2,10 +2,6 @@ package fr.insee.rmes.bauhaus_services.geography;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/geography/GeographyServiceImplTest.java
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-=======
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/geography/GeographyServiceImplTest.java
 import fr.insee.rmes.model.geography.GeoFeature;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;

@@ -2,21 +2,14 @@ package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/UserResourcesEnvHorsProdTest.java
-=======
 import fr.insee.rmes.infrastructure.rbac.Roles;
->>>>>>> 16aff9c1 (refactor: delete CNIS role (#985)):src/test/java/fr/insee/rmes/infrastructure/webservice/UserResourcesEnvHorsProdTest.java
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/UserResourcesEnvHorsProdTest.java
 import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.onion.infrastructure.stamps.RmesStampsImpl;
-=======
-import fr.insee.rmes.onion.infrastructure.stamps.RmesStampsImpl;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/UserResourcesEnvHorsProdTest.java
 import fr.insee.rmes.rbac.RbacFetcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
