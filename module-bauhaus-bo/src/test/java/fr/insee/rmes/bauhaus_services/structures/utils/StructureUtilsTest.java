@@ -5,10 +5,6 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/structures/utils/StructureUtilsTest.java
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-=======
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/structures/utils/StructureUtilsTest.java
 import fr.insee.rmes.model.structures.Structure;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;

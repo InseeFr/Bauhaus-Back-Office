@@ -4,20 +4,16 @@ import fr.insee.rmes.Stubber;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
-import fr.insee.rmes.graphdb.GenericQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/bauhaus_services/concepts/ConceptsImplTest.java
-=======
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/bauhaus_services/concepts/ConceptsImplTest.java
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;

@@ -37,9 +37,5 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-<<<<<<< HEAD
           file: ./Dockerfile.bauhaus
-=======
-          file: ./module-bauhaus-bo/Dockerfile
->>>>>>> 6f7e20ca (feat: init mono repo (#991))
           tags: ghcr.io/inseefr/bauhaus-back-office:${{ github.event.release.tag_name }}

@@ -1,15 +1,8 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-<<<<<<< HEAD
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-<<<<<<< HEAD:module-bauhaus-bo/src/test/java/fr/insee/rmes/infrastructure/webservice/StructureResourcesTest.java
-=======
-=======
 import fr.insee.rmes.domain.exceptions.RmesException;
->>>>>>> 895fe5ae (refactor: migrate getFamily et getFamilies to the hexagonale architecture (#995))
 import fr.insee.rmes.onion.infrastructure.webservice.structures.StructureResources;
->>>>>>> 2c8e0c39 (feat: init sans object feature (#983)):src/test/java/fr/insee/rmes/infrastructure/webservice/StructureResourcesTest.java
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
