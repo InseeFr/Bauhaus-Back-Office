@@ -1,10 +1,11 @@
 package fr.insee.rmes.testcontainers.queries;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;

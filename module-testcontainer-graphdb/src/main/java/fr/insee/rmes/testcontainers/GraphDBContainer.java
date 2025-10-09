@@ -1,4 +1,4 @@
-package fr.insee.rmes.testcontainers.queries;
+package fr.insee.rmes.testcontainers;
 
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;

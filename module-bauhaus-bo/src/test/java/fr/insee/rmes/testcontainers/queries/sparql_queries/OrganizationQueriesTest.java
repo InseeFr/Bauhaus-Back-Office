@@ -5,7 +5,7 @@ import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;

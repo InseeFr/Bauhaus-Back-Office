@@ -10,7 +10,7 @@ import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRu
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;

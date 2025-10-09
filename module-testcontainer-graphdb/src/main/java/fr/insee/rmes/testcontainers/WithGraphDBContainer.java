@@ -1,4 +1,4 @@
-package fr.insee.rmes.testcontainers.queries;
+package fr.insee.rmes.testcontainers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;

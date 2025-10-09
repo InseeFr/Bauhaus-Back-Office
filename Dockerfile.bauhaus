@@ -10,6 +10,7 @@ COPY ./module-bauhaus-bo/ ./module-bauhaus-bo
 COPY ./module-domain/ ./module-domain
 COPY ./module-infrastructure/ ./module-infrastructure
 COPY ./module-sparql-orm/ ./module-sparql-orm
+COPY ./module-testcontainer-graphdb/ ./module-testcontainer-graphdb
 
 RUN chmod +x mvnw
 RUN ./mvnw clean install -DskipTests=true

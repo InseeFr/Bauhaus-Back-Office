@@ -5,7 +5,7 @@ import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
