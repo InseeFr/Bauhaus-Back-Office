@@ -250,7 +250,7 @@ public class DocumentsUtils extends RdfService {
 
         try {
             URI.create(url).toURL();
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException _) {
             logger.debug("The Link {} is not valid", id);
             throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);
         }
@@ -328,7 +328,7 @@ public class DocumentsUtils extends RdfService {
         JSONObject jsonDocs = new JSONObject();
         try {
             jsonDocs = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentQuery(id, isLink));
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             logger.error("Error when querrying the database for the document/link {}", id);
         }
 
@@ -622,9 +622,9 @@ public class DocumentsUtils extends RdfService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new ByteArrayResource(data));
-        }catch (NoSuchFileException e){
+        }catch (NoSuchFileException _){
             throw new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), filePath+" not found", filePath+" not found");
-        }catch (IOException e) {
+        }catch (IOException _) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }
     }

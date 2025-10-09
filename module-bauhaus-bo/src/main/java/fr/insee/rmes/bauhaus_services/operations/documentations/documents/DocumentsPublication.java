@@ -102,7 +102,7 @@ public class DocumentsPublication  extends RdfService{
                     renameAndAddTripleToModel(model, st, subject);
                 }
             }
-        } catch (RepositoryException | RmesException e) {
+        } catch (RepositoryException | RmesException _) {
             model = getModelWithErrorToPublish(documentId, filename);
         } finally {
             if (documentStatements != null) {
@@ -156,7 +156,7 @@ public class DocumentsPublication  extends RdfService{
 					object = RdfUtils.toURI(objectString);
 					object = publicationUtils.tranformBaseURIToPublish((Resource) object);
 
-				}catch(IllegalArgumentException iAe) {
+				}catch(IllegalArgumentException _) {
 					object = RdfUtils.setLiteralString(objectString);
 				}
 			}

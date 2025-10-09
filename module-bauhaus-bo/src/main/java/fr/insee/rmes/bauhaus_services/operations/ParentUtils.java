@@ -93,7 +93,7 @@ public class ParentUtils extends RdfService{
 		try {
 			return repoGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
 		}
-		catch (JSONException e) {
+		catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}
@@ -101,7 +101,7 @@ public class ParentUtils extends RdfService{
 	public String getFamOpSerValidationStatus(String id) throws RmesException {
 		try {		
 			return repoGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
-		catch (JSONException e) {
+		catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}

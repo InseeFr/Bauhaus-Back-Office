@@ -275,7 +275,7 @@ public class StructureUtils extends RdfService {
                 try {
                     createMutualizedComponent(component);
                     componentDefinition.setComponent(component);
-                } catch (RmesException e) {
+                } catch (RmesException _) {
                     logger.info("Cannot create component  : {}", component.getLabelLg1());
                 }
             }
@@ -334,7 +334,7 @@ public class StructureUtils extends RdfService {
                 IRI attachmentIRI ;
                 try {
                     attachmentIRI = RdfUtils.createIRI(attachment);
-                } catch (Exception e){
+                } catch (Exception _){
                     attachmentIRI = RdfUtils.structureComponentMeasureIRI(attachment);
                 }
 
@@ -406,7 +406,7 @@ public class StructureUtils extends RdfService {
             String idComponent = ((JSONObject) ids.get(i)).getString(Constants.ID);
             try {
                 structureComponent.publishComponent(idComponent);
-            } catch (RmesException e) {
+            } catch (RmesException _) {
                 throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_PUBLICATION_VALIDATED_COMPONENT, "The component " + idComponent + " component can not be published", new JSONArray());
             }
         }
