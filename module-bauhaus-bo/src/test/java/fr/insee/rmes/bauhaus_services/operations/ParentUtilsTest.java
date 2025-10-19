@@ -2,15 +2,12 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -77,8 +74,7 @@ class ParentUtilsTest {
 
     @Test
     void shouldGetSeriesCreatorsWithIri() throws RmesException {
-        IRI iri = new InternedIRI("namespace", "localName");
-        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)))).thenReturn(null);
+        when(repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsById(id))).thenReturn(null);
         assertNull(parentUtils.getSeriesCreators(id));
     }
 
