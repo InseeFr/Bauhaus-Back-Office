@@ -13,7 +13,7 @@ COPY ./module-sparql-orm/ ./module-sparql-orm
 COPY ./module-testcontainer-graphdb/ ./module-testcontainer-graphdb
 
 RUN chmod +x mvnw
-RUN ./mvnw clean install -Dmaven.test.skip=true
+RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true
 
 FROM eclipse-temurin:25-jre-jammy
 
