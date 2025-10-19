@@ -2,12 +2,17 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -21,7 +26,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,10 +84,21 @@ class ParentUtilsTest {
 
     @Test
     void shouldThrowRmesExceptionWhenCheckIfParentIsASeriesWithOperations() throws RmesException {
-        when(repoGestion.getResponseAsBoolean(ParentQueries.checkIfExists(anyString()))).thenReturn(true);
-        when(repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasOperation(anyString()))).thenReturn(true);
-        RmesException exception = assertThrows(RmesException.class, () -> parentUtils.checkIfParentIsASeriesWithOperations("id"));
-        assertTrue(exception.getDetails().contains("Cannot create Sims for a series which already has operations"));
+        String testId = "id";
+        String uriParent = "http://bauhaus/operations/series/id";
+        ValueFactory factory = SimpleValueFactory.getInstance();
+        IRI seriesIRI = factory.createIRI(uriParent);
+        
+        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class)) {
+            mockedRdfUtils.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, testId)).thenReturn(seriesIRI);
+            mockedRdfUtils.when(() -> RdfUtils.toString(seriesIRI)).thenReturn(uriParent);
+            
+            when(repoGestion.getResponseAsBoolean(ParentQueries.checkIfExists(uriParent))).thenReturn(true);
+            when(repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasOperation(uriParent))).thenReturn(true);
+            
+            RmesException exception = assertThrows(RmesException.class, () -> parentUtils.checkIfParentIsASeriesWithOperations(testId));
+            assertTrue(exception.getDetails().contains("Cannot create Sims for a series which already has operations"));
+        }
     }
 
     @Test
