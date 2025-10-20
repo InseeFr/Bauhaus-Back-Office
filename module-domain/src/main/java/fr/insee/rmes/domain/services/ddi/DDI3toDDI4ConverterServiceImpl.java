@@ -49,18 +49,10 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
                                 "PhysicalInstance"
                             ));
                         }
-                        case DATA_RELATIONSHIP_TYPE_ID -> {
-                            dataRelationships.add(xmlReader.parseDataRelationship(item.item()));
-                        }
-                        case VARIABLE_TYPE_ID -> {
-                            variables.add(xmlReader.parseVariable(item.item()));
-                        }
-                        case CODE_LIST_TYPE_ID -> {
-                            codeLists.add(xmlReader.parseCodeList(item.item()));
-                        }
-                        case CATEGORY_TYPE_ID -> {
-                            categories.add(xmlReader.parseCategory(item.item()));
-                        }
+                        case DATA_RELATIONSHIP_TYPE_ID -> dataRelationships.add(xmlReader.parseDataRelationship(item.item()));
+                        case VARIABLE_TYPE_ID -> variables.add(xmlReader.parseVariable(item.item()));
+                        case CODE_LIST_TYPE_ID -> codeLists.add(xmlReader.parseCodeList(item.item()));
+                        case CATEGORY_TYPE_ID -> categories.add(xmlReader.parseCategory(item.item()));
                     }
                 } catch (Exception e) {
                     logger.error("Error parsing DDI3 item of type {}", item.itemType(), e);

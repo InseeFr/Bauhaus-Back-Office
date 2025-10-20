@@ -13,6 +13,12 @@ import java.util.List;
  */
 public class Ddi3XmlReader {
 
+    public static final String IS_UNIVERSALLY_UNIQUE = "isUniversallyUnique";
+    public static final String VERSION_DATE = "versionDate";
+    public static final String URN = "URN";
+    public static final String AGENCY = "Agency";
+    public static final String ID = "ID";
+    public static final String VERSION = "Version";
     private final XmlHelper xmlHelper;
 
     public Ddi3XmlReader() {
@@ -28,12 +34,12 @@ public class Ddi3XmlReader {
         }
 
         return new Ddi4PhysicalInstance(
-            xmlHelper.getAttribute(piElement, "isUniversallyUnique"),
-            xmlHelper.getAttribute(piElement, "versionDate"),
-            xmlHelper.getElementText(piElement, "URN"),
-            xmlHelper.getElementText(piElement, "Agency"),
-            xmlHelper.getElementText(piElement, "ID"),
-            xmlHelper.getElementText(piElement, "Version"),
+            xmlHelper.getAttribute(piElement, IS_UNIVERSALLY_UNIQUE),
+            xmlHelper.getAttribute(piElement, VERSION_DATE),
+            xmlHelper.getElementText(piElement, URN),
+            xmlHelper.getElementText(piElement, AGENCY),
+            xmlHelper.getElementText(piElement, ID),
+            xmlHelper.getElementText(piElement, VERSION),
             parseCitation(piElement),
             parseDataRelationshipReference(piElement)
         );
@@ -48,12 +54,12 @@ public class Ddi3XmlReader {
         }
 
         return new Ddi4DataRelationship(
-            xmlHelper.getAttribute(drElement, "isUniversallyUnique"),
-            xmlHelper.getAttribute(drElement, "versionDate"),
-            xmlHelper.getElementText(drElement, "URN"),
-            xmlHelper.getElementText(drElement, "Agency"),
-            xmlHelper.getElementText(drElement, "ID"),
-            xmlHelper.getElementText(drElement, "Version"),
+            xmlHelper.getAttribute(drElement, IS_UNIVERSALLY_UNIQUE),
+            xmlHelper.getAttribute(drElement, VERSION_DATE),
+            xmlHelper.getElementText(drElement, URN),
+            xmlHelper.getElementText(drElement, AGENCY),
+            xmlHelper.getElementText(drElement, ID),
+            xmlHelper.getElementText(drElement, VERSION),
             parseDataRelationshipName(drElement),
             parseLogicalRecord(drElement)
         );
@@ -68,12 +74,12 @@ public class Ddi3XmlReader {
         }
 
         return new Ddi4Variable(
-            xmlHelper.getAttribute(varElement, "isUniversallyUnique"),
-            xmlHelper.getAttribute(varElement, "versionDate"),
-            xmlHelper.getElementText(varElement, "URN"),
-            xmlHelper.getElementText(varElement, "Agency"),
-            xmlHelper.getElementText(varElement, "ID"),
-            xmlHelper.getElementText(varElement, "Version"),
+            xmlHelper.getAttribute(varElement, IS_UNIVERSALLY_UNIQUE),
+            xmlHelper.getAttribute(varElement, VERSION_DATE),
+            xmlHelper.getElementText(varElement, URN),
+            xmlHelper.getElementText(varElement, AGENCY),
+            xmlHelper.getElementText(varElement, ID),
+            xmlHelper.getElementText(varElement, VERSION),
             parseVariableName(varElement),
             parseLabel(varElement),
             parseDescription(varElement),
@@ -91,12 +97,12 @@ public class Ddi3XmlReader {
         }
 
         return new Ddi4CodeList(
-            xmlHelper.getAttribute(clElement, "isUniversallyUnique"),
-            xmlHelper.getAttribute(clElement, "versionDate"),
-            xmlHelper.getElementText(clElement, "URN"),
-            xmlHelper.getElementText(clElement, "Agency"),
-            xmlHelper.getElementText(clElement, "ID"),
-            xmlHelper.getElementText(clElement, "Version"),
+            xmlHelper.getAttribute(clElement, IS_UNIVERSALLY_UNIQUE),
+            xmlHelper.getAttribute(clElement, VERSION_DATE),
+            xmlHelper.getElementText(clElement, URN),
+            xmlHelper.getElementText(clElement, AGENCY),
+            xmlHelper.getElementText(clElement, ID),
+            xmlHelper.getElementText(clElement, VERSION),
             parseLabel(clElement),
             parseCodes(clElement)
         );
@@ -111,12 +117,12 @@ public class Ddi3XmlReader {
         }
 
         return new Ddi4Category(
-            xmlHelper.getAttribute(catElement, "isUniversallyUnique"),
-            xmlHelper.getAttribute(catElement, "versionDate"),
-            xmlHelper.getElementText(catElement, "URN"),
-            xmlHelper.getElementText(catElement, "Agency"),
-            xmlHelper.getElementText(catElement, "ID"),
-            xmlHelper.getElementText(catElement, "Version"),
+            xmlHelper.getAttribute(catElement, IS_UNIVERSALLY_UNIQUE),
+            xmlHelper.getAttribute(catElement, VERSION_DATE),
+            xmlHelper.getElementText(catElement, URN),
+            xmlHelper.getElementText(catElement, AGENCY),
+            xmlHelper.getElementText(catElement, ID),
+            xmlHelper.getElementText(catElement, VERSION),
             parseLabel(catElement)
         );
     }
@@ -144,9 +150,9 @@ public class Ddi3XmlReader {
         if (refElement == null) return null;
 
         return new DataRelationshipReference(
-            xmlHelper.getElementText(refElement, "Agency"),
-            xmlHelper.getElementText(refElement, "ID"),
-            xmlHelper.getElementText(refElement, "Version"),
+            xmlHelper.getElementText(refElement, AGENCY),
+            xmlHelper.getElementText(refElement, ID),
+            xmlHelper.getElementText(refElement, VERSION),
             xmlHelper.getElementText(refElement, "TypeOfObject")
         );
     }
@@ -208,11 +214,11 @@ public class Ddi3XmlReader {
         if (lrElement == null) return null;
 
         return new LogicalRecord(
-            xmlHelper.getAttribute(lrElement, "isUniversallyUnique"),
-            xmlHelper.getElementText(lrElement, "URN"),
-            xmlHelper.getElementText(lrElement, "Agency"),
-            xmlHelper.getElementText(lrElement, "ID"),
-            xmlHelper.getElementText(lrElement, "Version"),
+            xmlHelper.getAttribute(lrElement, IS_UNIVERSALLY_UNIQUE),
+            xmlHelper.getElementText(lrElement, URN),
+            xmlHelper.getElementText(lrElement, AGENCY),
+            xmlHelper.getElementText(lrElement, ID),
+            xmlHelper.getElementText(lrElement, VERSION),
             parseLogicalRecordName(lrElement),
             parseVariablesInRecord(lrElement)
         );
@@ -242,9 +248,9 @@ public class Ddi3XmlReader {
         for (int i = 0; i < varRefs.getLength(); i++) {
             Element refElement = (Element) varRefs.item(i);
             refs.add(new VariableUsedReference(
-                xmlHelper.getElementText(refElement, "Agency"),
-                xmlHelper.getElementText(refElement, "ID"),
-                xmlHelper.getElementText(refElement, "Version"),
+                xmlHelper.getElementText(refElement, AGENCY),
+                xmlHelper.getElementText(refElement, ID),
+                xmlHelper.getElementText(refElement, VERSION),
                 xmlHelper.getElementText(refElement, "TypeOfObject")
             ));
         }
@@ -314,9 +320,9 @@ public class Ddi3XmlReader {
         Element refElement = xmlHelper.getChildElement(codeRepElement, "CodeListReference");
         if (refElement != null) {
             codeListRef = new CodeListReference(
-                xmlHelper.getElementText(refElement, "Agency"),
-                xmlHelper.getElementText(refElement, "ID"),
-                xmlHelper.getElementText(refElement, "Version"),
+                xmlHelper.getElementText(refElement, AGENCY),
+                xmlHelper.getElementText(refElement, ID),
+                xmlHelper.getElementText(refElement, VERSION),
                 xmlHelper.getElementText(refElement, "TypeOfObject")
             );
         }
@@ -336,19 +342,19 @@ public class Ddi3XmlReader {
             Element catRefElement = xmlHelper.getChildElement(codeElement, "CategoryReference");
             if (catRefElement != null) {
                 catRef = new CategoryReference(
-                    xmlHelper.getElementText(catRefElement, "Agency"),
-                    xmlHelper.getElementText(catRefElement, "ID"),
-                    xmlHelper.getElementText(catRefElement, "Version"),
+                    xmlHelper.getElementText(catRefElement, AGENCY),
+                    xmlHelper.getElementText(catRefElement, ID),
+                    xmlHelper.getElementText(catRefElement, VERSION),
                     xmlHelper.getElementText(catRefElement, "TypeOfObject")
                 );
             }
 
             codes.add(new Code(
-                xmlHelper.getAttribute(codeElement, "isUniversallyUnique"),
-                xmlHelper.getElementText(codeElement, "URN"),
-                xmlHelper.getElementText(codeElement, "Agency"),
-                xmlHelper.getElementText(codeElement, "ID"),
-                xmlHelper.getElementText(codeElement, "Version"),
+                xmlHelper.getAttribute(codeElement, IS_UNIVERSALLY_UNIQUE),
+                xmlHelper.getElementText(codeElement, URN),
+                xmlHelper.getElementText(codeElement, AGENCY),
+                xmlHelper.getElementText(codeElement, ID),
+                xmlHelper.getElementText(codeElement, VERSION),
                 catRef,
                 xmlHelper.getElementText(codeElement, "Value")
             ));

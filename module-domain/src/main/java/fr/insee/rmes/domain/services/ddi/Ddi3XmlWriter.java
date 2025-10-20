@@ -17,6 +17,15 @@ public class Ddi3XmlWriter {
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
     private static final String DDI_PHYSICAL_INSTANCE_NS = "ddi:physicalinstance:3_3";
     private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
+    public static final String FRAGMENT = "Fragment";
+    public static final String PHYSICAL_INSTANCE = "PhysicalInstance";
+    public static final String IS_UNIVERSALLY_UNIQUE = "isUniversallyUnique";
+    public static final String VERSION_DATE = "versionDate";
+    public static final String URN = "URN";
+    public static final String AGENCY = "Agency";
+    public static final String ID = "ID";
+    public static final String VERSION = "Version";
+    public static final String XML_LANG = "xml:lang";
 
     private final XMLOutputFactory xmlOutputFactory;
 
@@ -29,28 +38,28 @@ public class Ddi3XmlWriter {
         XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
 
         // Start Fragment
-        writer.writeStartElement("Fragment");
+        writer.writeStartElement(FRAGMENT);
         writer.writeDefaultNamespace(DDI_INSTANCE_NS);
         writer.writeNamespace("r", DDI_REUSABLE_NS);
 
         // Start PhysicalInstance
-        writer.writeStartElement("PhysicalInstance");
+        writer.writeStartElement(PHYSICAL_INSTANCE);
         writer.writeDefaultNamespace(DDI_PHYSICAL_INSTANCE_NS);
-        writer.writeAttribute("isUniversallyUnique", pi.isUniversallyUnique());
-        writer.writeAttribute("versionDate", pi.versionDate());
+        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, pi.isUniversallyUnique());
+        writer.writeAttribute(VERSION_DATE, pi.versionDate());
 
         // Write basic elements
-        writeElement(writer, DDI_REUSABLE_NS, "URN", pi.urn());
-        writeElement(writer, DDI_REUSABLE_NS, "Agency", pi.agency());
-        writeElement(writer, DDI_REUSABLE_NS, "ID", pi.id());
-        writeElement(writer, DDI_REUSABLE_NS, "Version", pi.version());
+        writeElement(writer, DDI_REUSABLE_NS, URN, pi.urn());
+        writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.agency());
+        writeElement(writer, DDI_REUSABLE_NS, ID, pi.id());
+        writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.version());
 
         // Write Citation if present
         if (pi.citation() != null && pi.citation().title() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Citation");
             writer.writeStartElement(DDI_REUSABLE_NS, "Title");
             writer.writeStartElement(DDI_REUSABLE_NS, "String");
-            writer.writeAttribute("xml:lang", pi.citation().title().string().xmlLang());
+            writer.writeAttribute(XML_LANG, pi.citation().title().string().xmlLang());
             writer.writeCharacters(pi.citation().title().string().text());
             writer.writeEndElement(); // String
             writer.writeEndElement(); // Title
@@ -60,9 +69,9 @@ public class Ddi3XmlWriter {
         // Write DataRelationshipReference if present
         if (pi.dataRelationshipReference() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "DataRelationshipReference");
-            writeElement(writer, DDI_REUSABLE_NS, "Agency", pi.dataRelationshipReference().agency());
-            writeElement(writer, DDI_REUSABLE_NS, "ID", pi.dataRelationshipReference().id());
-            writeElement(writer, DDI_REUSABLE_NS, "Version", pi.dataRelationshipReference().version());
+            writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.dataRelationshipReference().agency());
+            writeElement(writer, DDI_REUSABLE_NS, ID, pi.dataRelationshipReference().id());
+            writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.dataRelationshipReference().version());
             writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", pi.dataRelationshipReference().typeOfObject());
             writer.writeEndElement(); // DataRelationshipReference
         }
@@ -81,26 +90,26 @@ public class Ddi3XmlWriter {
         XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
 
         // Start Fragment
-        writer.writeStartElement("Fragment");
+        writer.writeStartElement(FRAGMENT);
         writer.writeDefaultNamespace(DDI_INSTANCE_NS);
         writer.writeNamespace("r", DDI_REUSABLE_NS);
 
         // Start DataRelationship
         writer.writeStartElement("DataRelationship");
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute("isUniversallyUnique", dr.isUniversallyUnique());
-        writer.writeAttribute("versionDate", dr.versionDate());
+        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, dr.isUniversallyUnique());
+        writer.writeAttribute(VERSION_DATE, dr.versionDate());
 
-        writeElement(writer, DDI_REUSABLE_NS, "URN", dr.urn());
-        writeElement(writer, DDI_REUSABLE_NS, "Agency", dr.agency());
-        writeElement(writer, DDI_REUSABLE_NS, "ID", dr.id());
-        writeElement(writer, DDI_REUSABLE_NS, "Version", dr.version());
+        writeElement(writer, DDI_REUSABLE_NS, URN, dr.urn());
+        writeElement(writer, DDI_REUSABLE_NS, AGENCY, dr.agency());
+        writeElement(writer, DDI_REUSABLE_NS, ID, dr.id());
+        writeElement(writer, DDI_REUSABLE_NS, VERSION, dr.version());
 
         // Write DataRelationshipName if present
         if (dr.dataRelationshipName() != null) {
             writer.writeStartElement("DataRelationshipName");
             writer.writeStartElement(DDI_REUSABLE_NS, "String");
-            writer.writeAttribute("xml:lang", dr.dataRelationshipName().string().xmlLang());
+            writer.writeAttribute(XML_LANG, dr.dataRelationshipName().string().xmlLang());
             writer.writeCharacters(dr.dataRelationshipName().string().text());
             writer.writeEndElement(); // String
             writer.writeEndElement(); // DataRelationshipName
@@ -110,17 +119,17 @@ public class Ddi3XmlWriter {
         if (dr.logicalRecord() != null) {
             LogicalRecord lr = dr.logicalRecord();
             writer.writeStartElement("LogicalRecord");
-            writer.writeAttribute("isUniversallyUnique", lr.isUniversallyUnique());
+            writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, lr.isUniversallyUnique());
 
-            writeElement(writer, DDI_REUSABLE_NS, "URN", lr.urn());
-            writeElement(writer, DDI_REUSABLE_NS, "Agency", lr.agency());
-            writeElement(writer, DDI_REUSABLE_NS, "ID", lr.id());
-            writeElement(writer, DDI_REUSABLE_NS, "Version", lr.version());
+            writeElement(writer, DDI_REUSABLE_NS, URN, lr.urn());
+            writeElement(writer, DDI_REUSABLE_NS, AGENCY, lr.agency());
+            writeElement(writer, DDI_REUSABLE_NS, ID, lr.id());
+            writeElement(writer, DDI_REUSABLE_NS, VERSION, lr.version());
 
             if (lr.logicalRecordName() != null) {
                 writer.writeStartElement("LogicalRecordName");
                 writer.writeStartElement(DDI_REUSABLE_NS, "String");
-                writer.writeAttribute("xml:lang", lr.logicalRecordName().string().xmlLang());
+                writer.writeAttribute(XML_LANG, lr.logicalRecordName().string().xmlLang());
                 writer.writeCharacters(lr.logicalRecordName().string().text());
                 writer.writeEndElement(); // String
                 writer.writeEndElement(); // LogicalRecordName
@@ -130,9 +139,9 @@ public class Ddi3XmlWriter {
                 writer.writeStartElement("VariablesInRecord");
                 for (VariableUsedReference ref : lr.variablesInRecord().variableUsedReference()) {
                     writer.writeStartElement("VariableUsedReference");
-                    writeElement(writer, DDI_REUSABLE_NS, "Agency", ref.agency());
-                    writeElement(writer, DDI_REUSABLE_NS, "ID", ref.id());
-                    writeElement(writer, DDI_REUSABLE_NS, "Version", ref.version());
+                    writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
+                    writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
+                    writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
                     writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", ref.typeOfObject());
                     writer.writeEndElement(); // VariableUsedReference
                 }
@@ -155,24 +164,24 @@ public class Ddi3XmlWriter {
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
 
-        writer.writeStartElement("Fragment");
+        writer.writeStartElement(FRAGMENT);
         writer.writeDefaultNamespace(DDI_INSTANCE_NS);
         writer.writeNamespace("r", DDI_REUSABLE_NS);
 
         writer.writeStartElement("Variable");
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute("isUniversallyUnique", var.isUniversallyUnique());
-        writer.writeAttribute("versionDate", var.versionDate());
+        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, var.isUniversallyUnique());
+        writer.writeAttribute(VERSION_DATE, var.versionDate());
 
-        writeElement(writer, DDI_REUSABLE_NS, "URN", var.urn());
-        writeElement(writer, DDI_REUSABLE_NS, "Agency", var.agency());
-        writeElement(writer, DDI_REUSABLE_NS, "ID", var.id());
-        writeElement(writer, DDI_REUSABLE_NS, "Version", var.version());
+        writeElement(writer, DDI_REUSABLE_NS, URN, var.urn());
+        writeElement(writer, DDI_REUSABLE_NS, AGENCY, var.agency());
+        writeElement(writer, DDI_REUSABLE_NS, ID, var.id());
+        writeElement(writer, DDI_REUSABLE_NS, VERSION, var.version());
 
         if (var.variableName() != null) {
             writer.writeStartElement("VariableName");
             writer.writeStartElement(DDI_REUSABLE_NS, "String");
-            writer.writeAttribute("xml:lang", var.variableName().string().xmlLang());
+            writer.writeAttribute(XML_LANG, var.variableName().string().xmlLang());
             writer.writeCharacters(var.variableName().string().text());
             writer.writeEndElement();
             writer.writeEndElement();
@@ -181,7 +190,7 @@ public class Ddi3XmlWriter {
         if (var.label() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Label");
             writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute("xml:lang", var.label().content().xmlLang());
+            writer.writeAttribute(XML_LANG, var.label().content().xmlLang());
             writer.writeCharacters(var.label().content().text());
             writer.writeEndElement();
             writer.writeEndElement();
@@ -190,7 +199,7 @@ public class Ddi3XmlWriter {
         if (var.description() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Description");
             writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute("xml:lang", var.description().content().xmlLang());
+            writer.writeAttribute(XML_LANG, var.description().content().xmlLang());
             writer.writeCharacters(var.description().content().text());
             writer.writeEndElement();
             writer.writeEndElement();
@@ -239,9 +248,9 @@ public class Ddi3XmlWriter {
 
                 if (codeRep.codeListReference() != null) {
                     writer.writeStartElement(DDI_REUSABLE_NS, "CodeListReference");
-                    writeElement(writer, DDI_REUSABLE_NS, "Agency", codeRep.codeListReference().agency());
-                    writeElement(writer, DDI_REUSABLE_NS, "ID", codeRep.codeListReference().id());
-                    writeElement(writer, DDI_REUSABLE_NS, "Version", codeRep.codeListReference().version());
+                    writeElement(writer, DDI_REUSABLE_NS, AGENCY, codeRep.codeListReference().agency());
+                    writeElement(writer, DDI_REUSABLE_NS, ID, codeRep.codeListReference().id());
+                    writeElement(writer, DDI_REUSABLE_NS, VERSION, codeRep.codeListReference().version());
                     writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", codeRep.codeListReference().typeOfObject());
                     writer.writeEndElement(); // CodeListReference
                 }
@@ -264,24 +273,24 @@ public class Ddi3XmlWriter {
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
 
-        writer.writeStartElement("Fragment");
+        writer.writeStartElement(FRAGMENT);
         writer.writeDefaultNamespace(DDI_INSTANCE_NS);
         writer.writeNamespace("r", DDI_REUSABLE_NS);
 
         writer.writeStartElement("CodeList");
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute("isUniversallyUnique", cl.isUniversallyUnique());
-        writer.writeAttribute("versionDate", cl.versionDate());
+        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, cl.isUniversallyUnique());
+        writer.writeAttribute(VERSION_DATE, cl.versionDate());
 
-        writeElement(writer, DDI_REUSABLE_NS, "URN", cl.urn());
-        writeElement(writer, DDI_REUSABLE_NS, "Agency", cl.agency());
-        writeElement(writer, DDI_REUSABLE_NS, "ID", cl.id());
-        writeElement(writer, DDI_REUSABLE_NS, "Version", cl.version());
+        writeElement(writer, DDI_REUSABLE_NS, URN, cl.urn());
+        writeElement(writer, DDI_REUSABLE_NS, AGENCY, cl.agency());
+        writeElement(writer, DDI_REUSABLE_NS, ID, cl.id());
+        writeElement(writer, DDI_REUSABLE_NS, VERSION, cl.version());
 
         if (cl.label() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Label");
             writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute("xml:lang", cl.label().content().xmlLang());
+            writer.writeAttribute(XML_LANG, cl.label().content().xmlLang());
             writer.writeCharacters(cl.label().content().text());
             writer.writeEndElement();
             writer.writeEndElement();
@@ -290,18 +299,18 @@ public class Ddi3XmlWriter {
         if (cl.code() != null && !cl.code().isEmpty()) {
             for (Code code : cl.code()) {
                 writer.writeStartElement("Code");
-                writer.writeAttribute("isUniversallyUnique", code.isUniversallyUnique());
+                writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, code.isUniversallyUnique());
 
-                writeElement(writer, DDI_REUSABLE_NS, "URN", code.urn());
-                writeElement(writer, DDI_REUSABLE_NS, "Agency", code.agency());
-                writeElement(writer, DDI_REUSABLE_NS, "ID", code.id());
-                writeElement(writer, DDI_REUSABLE_NS, "Version", code.version());
+                writeElement(writer, DDI_REUSABLE_NS, URN, code.urn());
+                writeElement(writer, DDI_REUSABLE_NS, AGENCY, code.agency());
+                writeElement(writer, DDI_REUSABLE_NS, ID, code.id());
+                writeElement(writer, DDI_REUSABLE_NS, VERSION, code.version());
 
                 if (code.categoryReference() != null) {
                     writer.writeStartElement(DDI_REUSABLE_NS, "CategoryReference");
-                    writeElement(writer, DDI_REUSABLE_NS, "Agency", code.categoryReference().agency());
-                    writeElement(writer, DDI_REUSABLE_NS, "ID", code.categoryReference().id());
-                    writeElement(writer, DDI_REUSABLE_NS, "Version", code.categoryReference().version());
+                    writeElement(writer, DDI_REUSABLE_NS, AGENCY, code.categoryReference().agency());
+                    writeElement(writer, DDI_REUSABLE_NS, ID, code.categoryReference().id());
+                    writeElement(writer, DDI_REUSABLE_NS, VERSION, code.categoryReference().version());
                     writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", code.categoryReference().typeOfObject());
                     writer.writeEndElement(); // CategoryReference
                 }
@@ -324,25 +333,25 @@ public class Ddi3XmlWriter {
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
 
-        writer.writeStartElement("Fragment");
+        writer.writeStartElement(FRAGMENT);
         writer.writeDefaultNamespace(DDI_INSTANCE_NS);
         writer.writeNamespace("r", DDI_REUSABLE_NS);
 
         writer.writeStartElement("Category");
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute("isUniversallyUnique", cat.isUniversallyUnique());
-        writer.writeAttribute("versionDate", cat.versionDate());
+        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, cat.isUniversallyUnique());
+        writer.writeAttribute(VERSION_DATE, cat.versionDate());
         writer.writeAttribute("isMissing", "false");
 
-        writeElement(writer, DDI_REUSABLE_NS, "URN", cat.urn());
-        writeElement(writer, DDI_REUSABLE_NS, "Agency", cat.agency());
-        writeElement(writer, DDI_REUSABLE_NS, "ID", cat.id());
-        writeElement(writer, DDI_REUSABLE_NS, "Version", cat.version());
+        writeElement(writer, DDI_REUSABLE_NS, URN, cat.urn());
+        writeElement(writer, DDI_REUSABLE_NS, AGENCY, cat.agency());
+        writeElement(writer, DDI_REUSABLE_NS, ID, cat.id());
+        writeElement(writer, DDI_REUSABLE_NS, VERSION, cat.version());
 
         if (cat.label() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Label");
             writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute("xml:lang", cat.label().content().xmlLang());
+            writer.writeAttribute(XML_LANG, cat.label().content().xmlLang());
             writer.writeCharacters(cat.label().content().text());
             writer.writeEndElement();
             writer.writeEndElement();
