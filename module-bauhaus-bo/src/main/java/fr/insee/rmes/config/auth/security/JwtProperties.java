@@ -12,7 +12,6 @@ public class JwtProperties {
     private String idClaim;
     private String sourceClaim;
     private String inseeGroupClaim;
-    private String anonymousStamp;
     private String hieApplicationPrefix;
     private RoleClaim roleClaimConfig = new RoleClaim();
 
@@ -54,14 +53,6 @@ public class JwtProperties {
 
     public void setRoleClaimConfig(RoleClaim roleClaimConfig) {
         this.roleClaimConfig = roleClaimConfig;
-    }
-
-    public String getAnonymousStamp() {
-        return anonymousStamp;
-    }
-
-    public void setAnonymousStamp(String anonymousStamp) {
-        this.anonymousStamp = anonymousStamp;
     }
 
     public String getHieApplicationPrefix() {

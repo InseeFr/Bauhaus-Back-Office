@@ -23,7 +23,6 @@ class CommonSecurityConfigurationTest {
         jwtProperties.setRoleClaim("roleClaimKey");
         jwtProperties.setIdClaim("idClaim");
         jwtProperties.setSourceClaim("sourceClaim");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.getRoleClaimConfig().setRoles("keyForRolesInRoleClaim");
         
         OpenIDConnectSecurityContext openIDConnectSecurityContext = new OpenIDConnectSecurityContext(jwtProperties, true);

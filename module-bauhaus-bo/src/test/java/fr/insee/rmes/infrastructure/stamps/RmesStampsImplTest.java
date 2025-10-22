@@ -19,8 +19,7 @@ public class RmesStampsImplTest {
         // Given
         UserDecoder mockUserDecoder = Mockito.mock(UserDecoder.class);
         JwtProperties jwtProperties = new JwtProperties();
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
-        
+
         RmesStampsImpl rmesStamps = new RmesStampsImpl(mockUserDecoder, jwtProperties);
         
         // When
@@ -30,20 +29,5 @@ public class RmesStampsImplTest {
         // Then
         assertNotEquals(stamps.size(), uniqueStamps.size(), "Il devrait y avoir des doublons dans la liste des timbres");
     }
-    
-    @Test
-    public void shouldIncludeAnonymousStampFromProperties(){
-        // Given
-        UserDecoder mockUserDecoder = Mockito.mock(UserDecoder.class);
-        JwtProperties jwtProperties = new JwtProperties();
-        jwtProperties.setAnonymousStamp("TEST_ANONYMOUS_STAMP");
-        
-        RmesStampsImpl rmesStamps = new RmesStampsImpl(mockUserDecoder, jwtProperties);
-        
-        // When
-        List<String> stamps = rmesStamps.getStamps();
-        
-        // Then
-        assertTrue(stamps.contains("TEST_ANONYMOUS_STAMP"), "La liste devrait contenir le timbre anonyme depuis les propriétés");
-    }
+
 }

@@ -4,7 +4,7 @@ import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.config.auth.user.Source;
+import fr.insee.rmes.domain.exceptions.MissingStampException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,11 +109,15 @@ public class OpenIDConnectSecurityContext {
         var id = (String) claims.get(jwtProperties.getIdClaim());
         var stamp = extractStamp(claims, id);
 
+        if(stamp.isEmpty()){
+            throw new MissingStampException("The User " + id + " does not have a stamp");
+        }
+
         var source = (String) claims.get(jwtProperties.getSourceClaim());
         var roles = extractRoles(claims).toList();
 
         logger.debug("Current User is {}, {} with roles {} from source {}", id, stamp, roles, source);
-        return new User(id, roles, stamp, source);
+        return new User(id, roles, stamp.get(), source);
     }
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
@@ -156,13 +160,14 @@ public class OpenIDConnectSecurityContext {
                 .map(JsonElement::getAsString);
     }
 
-    private String extractStamp(Map<String, Object> claims, String userId) {
+    private Optional<String> extractStamp(Map<String, Object> claims, String userId) {
         logger.debug("Extracting stamp for user {}", userId);
         
         var stamp = ofNullable((String) claims.get(jwtProperties.getStampClaim()));
 
         if (stamp.isPresent()) {
             logger.debug("Found stamp in stampClaim '{}' for user {}: {}", jwtProperties.getStampClaim(), userId, stamp.get());
+            return stamp;
         } else {
             logger.debug("No stamp found in stampClaim '{}' for user {}, checking inseeGroupClaim", jwtProperties.getStampClaim(), userId);
             
@@ -171,15 +176,13 @@ public class OpenIDConnectSecurityContext {
             
             if (stamp.isPresent()) {
                 logger.debug("Found stamp in inseeGroupClaim '{}' for user {}: {}", jwtProperties.getInseeGroupClaim(), userId, stamp.get());
+                return stamp;
             } else {
                 logger.debug("No stamp found in inseeGroupClaim '{}' for user {}, using anonymous stamp", jwtProperties.getInseeGroupClaim(), userId);
                 logger.info(LOG_INFO_DEFAULT_STAMP, userId);
-                stamp = of(jwtProperties.getAnonymousStamp());
+                return empty();
             }
         }
-
-        logger.debug("Final stamp for user {}: {}", userId, stamp.get());
-        return stamp.get();
     }
 
     private Optional<String> extractStampFromInseeGroups(Object inseeGroups) {

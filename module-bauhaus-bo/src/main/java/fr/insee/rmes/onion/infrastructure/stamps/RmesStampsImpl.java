@@ -9,6 +9,7 @@ import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import org.springframework.stereotype.Service;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -288,9 +289,7 @@ public record RmesStampsImpl(UserDecoder userDecoder, JwtProperties jwtPropertie
 
 	@Override
 	public List<String> getStamps() {
-		var stamps = new java.util.ArrayList<>(BASE_STAMPS);
-		stamps.add(jwtProperties.getAnonymousStamp());
-		return stamps;
+		return new ArrayList<>(BASE_STAMPS);
 	}
 
 	@Override
