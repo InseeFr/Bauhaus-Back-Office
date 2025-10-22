@@ -4,6 +4,7 @@ import fr.insee.rmes.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -164,27 +165,28 @@ class ConstantsTest {
                 Constants.XML_ESPERLUETTE_REPLACEMENT
                 );
 
-        List<String> actual =new ArrayList<>();
-        actual.addAll(startingWithTheLetterA);
-        actual.addAll(startingWithTheLetterC);
-        actual.addAll(startingWithTheLetterD);
-        actual.addAll(startingWithTheLetterE);
-        actual.addAll(startingWithTheLetterF);
-        actual.addAll(startingWithTheLetterG);
-        actual.addAll(startingWithTheLetterH);
-        actual.addAll(startingWithTheLetterI);
-        actual.addAll(startingWithTheLetterL);
-        actual.addAll(startingWithTheLetterM);
-        actual.addAll(startingWithTheLetterN);
-        actual.addAll(startingWithTheLetterO);
-        actual.addAll(startingWithTheLetterP);
-        actual.addAll(startingWithTheLetterR);
-        actual.addAll(startingWithTheLetterS);
-        actual.addAll(startingWithTheLetterT);
-        actual.addAll(startingWithTheLetterU);
-        actual.addAll(startingWithTheLetterV);
-        actual.addAll(startingWithTheLetterW);
-        actual.addAll(startingWithTheLetterX);
+        List<String> actual = Stream.of(
+                startingWithTheLetterA,
+                startingWithTheLetterC,
+                startingWithTheLetterD,
+                startingWithTheLetterE,
+                startingWithTheLetterF,
+                startingWithTheLetterG,
+                startingWithTheLetterH,
+                startingWithTheLetterI,
+                startingWithTheLetterL,
+                startingWithTheLetterM,
+                startingWithTheLetterN,
+                startingWithTheLetterO,
+                startingWithTheLetterP,
+                startingWithTheLetterR,
+                startingWithTheLetterS,
+                startingWithTheLetterT,
+                startingWithTheLetterU,
+                startingWithTheLetterV,
+                startingWithTheLetterW,
+                startingWithTheLetterX
+        ).flatMap(List::stream).toList();
 
         SortedSet<String> expected = new TreeSet<>(actual);
 
