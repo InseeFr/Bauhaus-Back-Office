@@ -13,6 +13,7 @@ import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.config.auth.user.Source;
+import fr.insee.rmes.domain.exceptions.MissingStampException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import java.util.Map;
 import static fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext.LOG_INFO_DEFAULT_STAMP;
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OpenIDConnectSecurityContextTest {
@@ -135,13 +137,8 @@ class OpenIDConnectSecurityContextTest {
                 .withIssuedAt(iat)
                 .withJWTId(jti)
                 .withHeader(headers);
-        claims.forEach((key, value)->{var unused=switch(value){
-            case String valueString -> auth0Jwt.withClaim(key, valueString);
-            case Map<?, ?> valueMap -> auth0Jwt.withClaim(key, (Map<String, Object>)valueMap);
-            case List<?> valueList -> auth0Jwt.withClaim(key,valueList);
-            case Integer valueInt -> auth0Jwt.withClaim(key, valueInt);
-            default -> throw new RuntimeException(value+ " cannot be cast to String, Map or List or Integer");
-        };});
+
+
         String token=auth0Jwt.sign(Algorithm.none());
 
 
@@ -197,7 +194,6 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
         var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
@@ -211,8 +207,6 @@ class OpenIDConnectSecurityContextTest {
 
     @Test
     void testJwt_sansTimbre() throws RmesException {
-        logOutputStream.reset();
-
         // Créer des claims sans timbre et sans groupes matchant
         Map<String, Object> claimsWithoutStamp = new HashMap<>();
         claimsWithoutStamp.put("preferred_username", idep);
@@ -227,18 +221,11 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
         var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
 
-        User user = oidcContext.buildUserFromToken(claimsWithoutStamp);
-        assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP");
-        assertThat(user.source()).isEqualTo(Source.INSEE);
-        assertThat(user.roles()).isEqualTo(roles);
-        assertThat(logOutputStream.toString().trim()).hasToString(String.format(LOG_INFO_DEFAULT_STAMP.replace("{}", "%s"), idep));
-        logOutputStream.reset();
+        assertThrows(MissingStampException.class, () -> oidcContext.buildUserFromToken(claimsWithoutStamp));
     }
 
     @Test
@@ -256,7 +243,6 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setIdClaim("preferred_username");
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
@@ -284,17 +270,12 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setIdClaim("preferred_username");
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
         var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
 
-        User user = oidcContext.buildUserFromToken(claimsWithInseeGroups);
-        assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP"); // stamp par défaut
-        assertThat(user.source()).isEqualTo(Source.INSEE);
-        assertThat(user.roles()).isEqualTo(roles);
+        assertThrows(MissingStampException.class, () -> oidcContext.buildUserFromToken(claimsWithInseeGroups));
     }
 
     @Test
@@ -312,17 +293,12 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setIdClaim("preferred_username");
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
         var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
 
-        User user = oidcContext.buildUserFromToken(claimsWithEmptyInseeGroups);
-        assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP"); // stamp par défaut
-        assertThat(user.source()).isEqualTo(Source.INSEE);
-        assertThat(user.roles()).isEqualTo(roles);
+        assertThrows(MissingStampException.class, () -> oidcContext.buildUserFromToken(claimsWithEmptyInseeGroups));
     }
 
     @Test
@@ -340,17 +316,13 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setIdClaim("preferred_username");
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
         var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
 
-        User user = oidcContext.buildUserFromToken(claimsWithNullInseeGroups);
-        assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo("bauhausGuest_STAMP"); // stamp par défaut
-        assertThat(user.source()).isEqualTo(Source.INSEE);
-        assertThat(user.roles()).isEqualTo(roles);
+        assertThrows(MissingStampException.class, () -> oidcContext.buildUserFromToken(claimsWithNullInseeGroups));
+
     }
 
     @Test
@@ -362,7 +334,6 @@ class OpenIDConnectSecurityContextTest {
         jwtProperties.setSourceClaim("source");
         jwtProperties.setInseeGroupClaim("inseegroupedefaut");
         jwtProperties.setHieApplicationPrefix("RMESGNCS");
-        jwtProperties.setAnonymousStamp("bauhausGuest_STAMP");
         jwtProperties.getRoleClaimConfig().setRoles("roles");
         
         var oidcContext = new OpenIDConnectSecurityContext(jwtProperties, false);
