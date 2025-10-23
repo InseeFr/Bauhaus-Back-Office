@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
-import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -263,7 +264,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDistributions(String id) throws RmesException {
-        return this.repoGestion.getResponseAsArray(DistributionQueries.getDatasetDistributions(id, getDatasetsGraph())).toString();
+        return this.repoGestion.getResponseAsArray(DatasetDistributionQueries.getDatasetDistributions(id, getDatasetsGraph())).toString();
     }
 
     @Override

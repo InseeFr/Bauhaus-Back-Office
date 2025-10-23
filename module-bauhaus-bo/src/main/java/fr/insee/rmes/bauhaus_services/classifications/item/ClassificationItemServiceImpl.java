@@ -8,7 +8,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationItemsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -37,8 +37,8 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     @Override
     public String getClassificationItem(String classificationId, String itemId) throws RmesException{
         logger.info("Starting to get classification item {} from {}", itemId, classificationId);
-        JSONObject item = repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId));
-        JSONArray altLabels = repoGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId));
+        JSONObject item = repoGestion.getResponseAsObject(ClassificationItemsQueries.itemQuery(classificationId, itemId));
+        JSONArray altLabels = repoGestion.getResponseAsArray(ClassificationItemsQueries.itemAltQuery(classificationId, itemId));
         if(!altLabels.isEmpty()) {
             item.put("altLabels", altLabels);
         }
@@ -48,14 +48,14 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     @Override
     public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
         logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
-        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
+        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(ClassificationItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
         return classificationItemNotes.toString();
     }
 
     @Override
     public String getClassificationItemNarrowers(String classificationId, String itemId) throws RmesException {
         logger.info("Starting to get classification item members {} from {}", itemId, classificationId);
-        return repoGestion.getResponseAsArray(ItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
+        return repoGestion.getResponseAsArray(ClassificationItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
     }
 
     @Override

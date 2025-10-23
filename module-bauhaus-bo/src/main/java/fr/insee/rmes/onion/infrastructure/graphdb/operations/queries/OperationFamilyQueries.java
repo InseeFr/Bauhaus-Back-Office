@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
-import static fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries.OPERATIONS_GRAPH;
+import static fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries.OPERATIONS_GRAPH;
 
 @Component
 public class OperationFamilyQueries {

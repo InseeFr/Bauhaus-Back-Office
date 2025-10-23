@@ -1,6 +1,6 @@
 package fr.insee.rmes.rbac.stamps;
 
-import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -26,7 +26,7 @@ public class DatasetDistributionStampChecker implements  ObjectStampChecker {
 
         IRI distributionIRI = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
         try {
-            JSONArray contributors = this.repositoryGestion.getResponseAsArray(DistributionQueries.getContributorsByDistributionUri(distributionIRI.toString()));
+            JSONArray contributors = this.repositoryGestion.getResponseAsArray(DatasetDistributionQueries.getContributorsByDistributionUri(distributionIRI.toString()));
             List<String> stamps = new ArrayList<>();
             for (int i = 0; i < contributors.length(); i++) {
                 JSONObject obj = contributors.getJSONObject(i);
