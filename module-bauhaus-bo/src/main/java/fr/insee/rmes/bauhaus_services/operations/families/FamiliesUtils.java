@@ -15,7 +15,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -67,10 +67,10 @@ public class FamiliesUtils {
 
 
 	private void validateFamily(Family family) throws RmesException {
-		if(repositoryGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
+		if(repositoryGestion.getResponseAsBoolean(OperationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
+		if(repositoryGestion.getResponseAsBoolean(OperationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
 		}
 	}

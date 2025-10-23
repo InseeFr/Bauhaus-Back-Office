@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.code_list.export;
 
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class CodesListExportImplTest {
     @Test
     void exportCodesList_shouldReturnExportedCodesList() throws Exception {
 
-        CodeListQueries.setConfig(new ConfigStub());
+        CodeListsQueries.setConfig(new ConfigStub());
 
         JSONObject codeList = new JSONObject().put("labelLg1", "My Code List");
         JSONArray codesArray = new JSONArray()
