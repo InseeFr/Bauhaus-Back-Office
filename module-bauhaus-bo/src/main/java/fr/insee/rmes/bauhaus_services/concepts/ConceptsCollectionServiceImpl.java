@@ -8,7 +8,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.PartialCollection;
-import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
@@ -45,7 +45,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     @Override
     public List<PartialCollection> getCollections()  throws RmesException{
-        var collections =  repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery());
+        var collections =  repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery());
 
         return DiacriticSorter.sort(collections,
                 PartialCollection[].class,
@@ -54,17 +54,17 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     @Override
     public String getCollectionsDashboard()  throws RmesException{
-        return repoGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
+        return repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsDashboardQuery()).toString();
     }
 
     @Override
     public String getCollectionByID(String id)  throws RmesException{
-        return repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id)).toString();
+        return repoGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery(id)).toString();
     }
 
     @Override
     public String getCollectionMembersByID(String id)  throws RmesException{
-        return repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
+        return repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id)).toString();
     }
 
     private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
@@ -76,7 +76,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     private List<String> getCollectionConceptsIds(String collectionId) throws RmesException {
         List<String> conceptsIds = new ArrayList<>();
-        JSONArray concepts = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(collectionId));
+        JSONArray concepts = repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(collectionId));
         for(int i = 0; i < concepts.length(); i++){
             conceptsIds.add(concepts.getJSONObject(i).getString("id"));
         }

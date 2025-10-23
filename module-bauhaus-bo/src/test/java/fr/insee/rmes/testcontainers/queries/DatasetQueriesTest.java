@@ -1,6 +1,6 @@
 package fr.insee.rmes.testcontainers.queries;
 
-import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;

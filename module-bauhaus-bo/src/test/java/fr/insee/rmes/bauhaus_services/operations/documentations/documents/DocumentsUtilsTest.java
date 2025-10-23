@@ -10,7 +10,7 @@ import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.GenericQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -151,7 +151,7 @@ class DocumentsUtilsTest {
         IRI graph = valueFactory.createIRI("http://documents/graph");
 
         try (MockedStatic<RdfUtils> rdfUtilsMockedStatic = Mockito.mockStatic(RdfUtils.class);
-             MockedStatic<DocumentsQueries> documentQueriesMockedStatic = Mockito.mockStatic(DocumentsQueries.class)
+             MockedStatic<OperationDocumentsQueries> documentQueriesMockedStatic = Mockito.mockStatic(OperationDocumentsQueries.class)
         ) {
             rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
             rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleString(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
@@ -160,7 +160,7 @@ class DocumentsUtilsTest {
             rdfUtilsMockedStatic.when(RdfUtils::documentsGraph).thenReturn(graph);
             rdfUtilsMockedStatic.when(() -> RdfUtils.toString(any())).thenReturn(documentIRIString);
             rdfUtilsMockedStatic.when(() -> RdfUtils.toURI(any())).thenReturn(documentIRI);
-            documentQueriesMockedStatic.when(() -> DocumentsQueries.checkLabelUnicity(eq("1"), anyString(), any())).thenReturn(documentIRIString);
+            documentQueriesMockedStatic.when(() -> OperationDocumentsQueries.checkLabelUnicity(eq("1"), anyString(), any())).thenReturn(documentIRIString);
 
 
             documentsUtils.createDocument(id, body, isLink, document, name);

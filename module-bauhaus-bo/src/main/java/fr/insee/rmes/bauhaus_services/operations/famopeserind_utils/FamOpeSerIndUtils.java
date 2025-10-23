@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
-import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 
 	public String createId() throws RmesException {
 		logger.info("Generate famOpeSer id");
-		JSONObject json = repoGestion.getResponseAsObject(FamOpeSerQueries.lastId());
+		JSONObject json = repoGestion.getResponseAsObject(OperationQueries.lastId());
 		logger.debug("JSON for famOpeSer id : {}", json);
 		if (json.isEmpty()) {return "1000";}
 		String id = json.getString(Constants.ID);
@@ -35,7 +35,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 	}
 
 	public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
-		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
+		return repoGestion.getResponseAsBoolean(OperationQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {

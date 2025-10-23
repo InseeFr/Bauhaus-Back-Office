@@ -10,7 +10,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -144,7 +144,7 @@ class SeriesPublicationTest {
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
              MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class);
-             MockedStatic<OpSeriesQueries> mockedQueries = mockStatic(OpSeriesQueries.class);
+             MockedStatic<OperationSeriesQueries> mockedQueries = mockStatic(OperationSeriesQueries.class);
              MockedStatic<JSONUtils> mockedJSONUtils = mockStatic(JSONUtils.class)) {
 
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(ValidationStatus.VALIDATED.getValue()))
@@ -154,7 +154,7 @@ class SeriesPublicationTest {
             mockedRdfUtils.when(() -> RdfUtils.createIRI(anyString())).thenReturn(iri);
             mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/predicate");
             
-            mockedQueries.when(() -> OpSeriesQueries.getPublishedOperationsForSeries(anyString()))
+            mockedQueries.when(() -> OperationSeriesQueries.getPublishedOperationsForSeries(anyString()))
                     .thenReturn("SELECT * WHERE { }");
             
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))
@@ -298,7 +298,7 @@ class SeriesPublicationTest {
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
              MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class);
-             MockedStatic<OpSeriesQueries> mockedQueries = mockStatic(OpSeriesQueries.class);
+             MockedStatic<OperationSeriesQueries> mockedQueries = mockStatic(OperationSeriesQueries.class);
              MockedStatic<JSONUtils> mockedJSONUtils = mockStatic(JSONUtils.class)) {
 
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(ValidationStatus.VALIDATED.getValue()))
@@ -306,7 +306,7 @@ class SeriesPublicationTest {
             mockedRdfUtils.when(() -> RdfUtils.seriesIRI(seriesId)).thenReturn(resource);
             mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/isPartOf");
 
-            mockedQueries.when(() -> OpSeriesQueries.getPublishedOperationsForSeries(anyString()))
+            mockedQueries.when(() -> OperationSeriesQueries.getPublishedOperationsForSeries(anyString()))
                     .thenReturn("SELECT * WHERE { }");
 
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))

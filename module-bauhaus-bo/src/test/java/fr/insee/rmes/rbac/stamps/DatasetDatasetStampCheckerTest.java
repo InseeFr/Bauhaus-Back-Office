@@ -1,6 +1,6 @@
 package fr.insee.rmes.rbac.stamps;
 
-import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;

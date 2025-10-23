@@ -12,9 +12,9 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -345,11 +345,11 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
                 throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(CodeListsQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
                 throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
         }
 

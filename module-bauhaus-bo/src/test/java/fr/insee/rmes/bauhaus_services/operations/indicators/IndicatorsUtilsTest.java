@@ -8,7 +8,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -69,8 +69,8 @@ class IndicatorsUtilsTest {
                 .put("prefLabelLg1", "prefLabelLg1")
                 .put("prefLabelLg2", "prefLabelLg2");
 
-        try (MockedStatic<IndicatorsQueries> mockedFactory = Mockito.mockStatic(IndicatorsQueries.class)) {
-            mockedFactory.when(() -> IndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query");
+        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
+            mockedFactory.when(() -> OperationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query");
 
             when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
             when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
@@ -89,9 +89,9 @@ class IndicatorsUtilsTest {
                 .put("prefLabelLg1", "prefLabelLg1")
                 .put("prefLabelLg2", "prefLabelLg2");
 
-        try (MockedStatic<IndicatorsQueries> mockedFactory = Mockito.mockStatic(IndicatorsQueries.class)) {
-            mockedFactory.when(() -> IndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query1");
-            mockedFactory.when(() -> IndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg2"), eq("en"))).thenReturn("query2");
+        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
+            mockedFactory.when(() -> OperationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query1");
+            mockedFactory.when(() -> OperationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg2"), eq("en"))).thenReturn("query2");
 
             when(repositoryGestion.getResponseAsBoolean("query1")).thenReturn(false);
             when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);

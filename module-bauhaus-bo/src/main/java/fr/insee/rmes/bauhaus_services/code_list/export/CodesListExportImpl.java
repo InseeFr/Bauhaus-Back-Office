@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.code_list.export;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
 import fr.insee.rmes.utils.Deserializer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,11 +26,11 @@ public class CodesListExportImpl implements  CodesListExport {
     }
 
     private JSONObject getCodesList(String notation) throws RmesException {
-        JSONObject codeList = this.repositoryGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
+        JSONObject codeList = this.repositoryGestion.getResponseAsObject(CodeListsQueries.getCodeListLabelByNotation(notation));
         return codeList.put(Constants.NOTATION, notation);
     }
 
     private JSONArray getCodes(String notation) throws RmesException {
-        return this.repositoryGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, 1, 0));
+        return this.repositoryGestion.getResponseAsArray(CodeListsQueries.getCodeListItemsByNotation(notation, 1, 0));
     }
 }

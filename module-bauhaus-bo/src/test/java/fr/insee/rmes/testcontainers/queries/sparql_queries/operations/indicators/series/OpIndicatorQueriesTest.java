@@ -4,8 +4,8 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -26,15 +26,15 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_true_if_label_exist() throws Exception {
-        OpSeriesQueries.setConfig(new ConfigStub());
-        boolean result = repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity("1", "Indice de prix des travaux d'entretien et d'amélioration de bâtiments", "fr"));
+        OperationSeriesQueries.setConfig(new ConfigStub());
+        boolean result = repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkPrefLabelUnicity("1", "Indice de prix des travaux d'entretien et d'amélioration de bâtiments", "fr"));
         assertTrue(result);
     }
 
     @Test
     void should_return_false_if_label_does_not_exist() throws Exception {
-        OpSeriesQueries.setConfig(new ConfigStub());
-        boolean result = repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity("1", "label", "fr"));
+        OperationSeriesQueries.setConfig(new ConfigStub());
+        boolean result = repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkPrefLabelUnicity("1", "label", "fr"));
         assertFalse(result);
     }
 }
