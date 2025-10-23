@@ -12,7 +12,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -64,7 +64,7 @@ class ConceptsUtilsTest {
         List<String> actual = new ArrayList<>();
             for (String element : identifiers ){
                 JSONObject json = new JSONObject().put(Constants.NOTATION,element);
-                when(repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID())).thenReturn(json);
+                when(repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID())).thenReturn(json);
                 actual.add(conceptsUtils.createID());
                 }
         List<String> expected = List.of("c8","c9","c10");
@@ -74,29 +74,29 @@ class ConceptsUtilsTest {
     @Test
     void shouldReturnFalseWhenCheckIfConceptExists() throws RmesException {
         String id= "2025";
-        when(repoGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists(id))).thenReturn(false);
+        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id))).thenReturn(false);
         assertFalse(conceptsUtils.checkIfConceptExists(id));
     }
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenGetConceptById() throws RmesException {
         String id= "2025";
-        when(repoGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists(id))).thenReturn(false);
+        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id))).thenReturn(false);
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->conceptsUtils.getConceptById(id));
         Assertions.assertTrue(exception.getDetails().contains("This concept cannot be found in database"));
     }
 
     @Test
     void shouldCheckIfConceptExists() throws RmesException {
-        when(repoGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists("mocked id"))).thenReturn(true);
+        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists("mocked id"))).thenReturn(true);
         Assertions.assertTrue(conceptsUtils.checkIfConceptExists("mocked id"));
     }
 
     @Test
     void shouldDeleteConcept() throws RmesException {
         RdfUtils.setConfig(new ConfigStub());
-        when(repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
-        when(repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
+        when(repoGestion.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
+        when(repositoryPublication.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
         HttpStatus actual = conceptsUtils.deleteConcept("mocked id");
         assertEquals(HttpStatus.BAD_REQUEST,actual);
     }
@@ -104,7 +104,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldGetRelatedConcepts() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
-        when(repoGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery("mocked id"))).thenReturn(jsonArray);
+        when(repoGestion.getResponseAsArray(ConceptConceptsQueries.getRelatedConceptsQuery("mocked id"))).thenReturn(jsonArray);
         JSONArray actual = conceptsUtils.getRelatedConcepts("mocked id");
         assertEquals(jsonArray,actual);
     }
@@ -112,7 +112,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldGetGraphsWithConcept() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
-        when(repoGestion.getResponseAsArray(ConceptsQueries.getGraphWithConceptQuery("mocked id"))).thenReturn(jsonArray);
+        when(repoGestion.getResponseAsArray(ConceptConceptsQueries.getGraphWithConceptQuery("mocked id"))).thenReturn(jsonArray);
         JSONArray actual = conceptsUtils.getGraphsWithConcept("mocked id");
         assertEquals(jsonArray,actual);
     }

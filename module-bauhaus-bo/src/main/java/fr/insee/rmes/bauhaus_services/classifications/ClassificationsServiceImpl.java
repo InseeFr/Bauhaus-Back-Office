@@ -47,7 +47,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 	@Override
 	public List<PartialClassificationFamily> getFamilies() throws RmesException {
 		logger.info("Starting to get classification families");
-		var families = repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery());
+		var families = repoGestion.getResponseAsArray(ClassificationFamiliesQueries.familiesQuery());
 
 		return DiacriticSorter.sort(families,
 				PartialClassificationFamily[].class,
@@ -57,19 +57,19 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 	@Override
 	public String getFamily(String id) throws RmesException {
 		logger.info("Starting to get classification family");
-		return repoGestion.getResponseAsObject(ClassifFamiliesQueries.familyQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassificationFamiliesQueries.familyQuery(id)).toString();
 	}
 	
 	@Override
 	public String getFamilyMembers(String id) throws RmesException {
 		logger.info("Starting to get classification family members");
-		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familyMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassificationFamiliesQueries.familyMembersQuery(id)).toString();
 	}
 	
 	@Override
 	public List<PartialClassificationSeries> getSeries() throws RmesException {
 		logger.info("Starting to get classifications series");
-		var series = repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery());
+		var series = repoGestion.getResponseAsArray(ClassificationSeriesQueries.seriesQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series,
 				PartialClassificationSeries[].class,
@@ -80,13 +80,13 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 	@Override
 	public String getOneSeries(String id) throws RmesException {
 		logger.info("Starting to get a classification series");
-		return repoGestion.getResponseAsObject(ClassifSeriesQueries.oneSeriesQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassificationSeriesQueries.oneSeriesQuery(id)).toString();
 	}
 	
 	@Override
 	public String getSeriesMembers(String id) throws RmesException {
 		logger.info("Starting to get members of a classification series");
-		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassificationSeriesQueries.seriesMembersQuery(id)).toString();
 	}
 	
 	@Override
@@ -127,43 +127,43 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 	@Override
 	public String getClassificationLevels(String id) throws RmesException{
 		logger.info("Starting to get levels of a classification scheme");
-		return repoGestion.getResponseAsArray(LevelsQueries.levelsQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassificationLevelsQueries.levelsQuery(id)).toString();
 	}
 	
 	@Override
 	public String getClassificationLevel(String classificationId, String levelId) throws RmesException{
 		logger.info("Starting to get a classification level");
-		return repoGestion.getResponseAsObject(LevelsQueries.levelQuery(classificationId, levelId)).toString();
+		return repoGestion.getResponseAsObject(ClassificationLevelsQueries.levelQuery(classificationId, levelId)).toString();
 	}
 	
 	@Override
 	public String getClassificationLevelMembers(String classificationId, String levelId)throws RmesException {
 		logger.info("Starting to get classification level members");
-		return repoGestion.getResponseAsArray(LevelsQueries.levelMembersQuery(classificationId, levelId)).toString();
+		return repoGestion.getResponseAsArray(ClassificationLevelsQueries.levelMembersQuery(classificationId, levelId)).toString();
 	}
 	
 	@Override
 	public String getCorrespondences() throws RmesException{
 		logger.info("Starting to get correspondences");
-		return repoGestion.getResponseAsArray(CorrespondencesQueries.correspondencesQuery()).toString();
+		return repoGestion.getResponseAsArray(ClassificationCorrespondencesQueries.correspondencesQuery()).toString();
 	}
 
 	@Override
 	public String getCorrespondence(String id) throws RmesException{
 		logger.info("Starting to get a correspondence scheme : {}" , id);
-		return repoGestion.getResponseAsObject(CorrespondencesQueries.correspondenceQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassificationCorrespondencesQueries.correspondenceQuery(id)).toString();
 	}
 	
 	@Override
 	public String getCorrespondenceAssociations(String id) throws RmesException{
 		logger.info("Starting to get correspondence associations : {}" , id);
-		return repoGestion.getResponseAsArray(CorrespondencesQueries.correspondenceAssociationsQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassificationCorrespondencesQueries.correspondenceAssociationsQuery(id)).toString();
 	}
 	
 	@Override
 	public String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException{
 		logger.info("Starting to get correspondence association : {} - {}" , correspondenceId , associationId);
-		return repoGestion.getResponseAsObject(CorrespondencesQueries.correspondenceAssociationQuery(correspondenceId, associationId)).toString();
+		return repoGestion.getResponseAsObject(ClassificationCorrespondencesQueries.correspondenceAssociationQuery(correspondenceId, associationId)).toString();
 	}
 
 	@Override

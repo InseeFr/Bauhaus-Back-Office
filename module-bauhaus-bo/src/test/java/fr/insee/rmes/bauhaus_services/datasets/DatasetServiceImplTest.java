@@ -3,7 +3,8 @@ package fr.insee.rmes.bauhaus_services.datasets;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -149,8 +150,8 @@ class DatasetServiceImplTest {
         array.put("1");
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        try (MockedStatic<DistributionQueries> mockedFactory = mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.getDatasetDistributions(eq("1"), any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.getDatasetDistributions(eq("1"), any())).thenReturn("query");
             String query = datasetService.getDistributions("1");
             Assertions.assertEquals("[\"1\"]", query);
         }
@@ -636,7 +637,7 @@ class DatasetServiceImplTest {
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class)
+                MockedStatic<DatasetDistributionQueries> distributionQueriesMock = mockStatic(DatasetDistributionQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -645,7 +646,7 @@ class DatasetServiceImplTest {
             datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
             when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
 
-            distributionQueriesMock.when(() -> DistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
+            distributionQueriesMock.when(() -> DatasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
             when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(mockDistrib);
 
             RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
@@ -669,7 +670,7 @@ class DatasetServiceImplTest {
         IRI datasetUri = RdfUtils.toURI(stringDatasetURI);
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
+                MockedStatic<DatasetDistributionQueries> distributionQueriesMock = mockStatic(DatasetDistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)
 
         ) {
@@ -680,7 +681,7 @@ class DatasetServiceImplTest {
             datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
             when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
 
-            distributionQueriesMock.when(() -> DistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
+            distributionQueriesMock.when(() -> DatasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
             when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
 
             datasetQueriesMock.when(() -> DatasetQueries.getDerivedDataset(any(), any())).thenReturn("query4 ");

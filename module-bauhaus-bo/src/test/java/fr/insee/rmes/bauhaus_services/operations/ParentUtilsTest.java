@@ -8,8 +8,8 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -53,8 +53,8 @@ class ParentUtilsTest {
 
     @Test
     void shouldCheckIfSeriesHasSims() throws RmesException {
-        try (MockedStatic<OpSeriesQueries> mockedQueries = Mockito.mockStatic(OpSeriesQueries.class)) {
-            mockedQueries.when(() -> OpSeriesQueries.checkIfSeriesHasSims("uriSeries")).thenReturn("mock-sims-query");
+        try (MockedStatic<OperationSeriesQueries> mockedQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
+            mockedQueries.when(() -> OperationSeriesQueries.checkIfSeriesHasSims("uriSeries")).thenReturn("mock-sims-query");
             when(repoGestion.getResponseAsBoolean("mock-sims-query")).thenReturn(true);
             parentUtils.checkIfSeriesHasSims("uriSeries");
         }
@@ -81,8 +81,8 @@ class ParentUtilsTest {
     @Test
     void shouldGetIndicatorCreators() throws RmesException {
         var creators = new JSONArray().put(new JSONObject("creators", "stamp"));
-        try (MockedStatic<IndicatorsQueries> mockedFactory = Mockito.mockStatic(IndicatorsQueries.class)) {
-            mockedFactory.when(() -> IndicatorsQueries.getCreatorsById(id)).thenReturn("query");
+        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
+            mockedFactory.when(() -> OperationIndicatorsQueries.getCreatorsById(id)).thenReturn("query");
             when(repoGestion.getResponseAsJSONList("query")).thenReturn(creators);
             assertEquals(creators, parentUtils.getIndicatorCreators(id));
         }
@@ -90,8 +90,8 @@ class ParentUtilsTest {
 
     @Test
     void shouldGetSeriesCreatorsWithIri() throws RmesException {
-        try (MockedStatic<OpSeriesQueries> mockedQueries = Mockito.mockStatic(OpSeriesQueries.class)) {
-            mockedQueries.when(() -> OpSeriesQueries.getCreatorsById(id)).thenReturn("mock-query");
+        try (MockedStatic<OperationSeriesQueries> mockedQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
+            mockedQueries.when(() -> OperationSeriesQueries.getCreatorsById(id)).thenReturn("mock-query");
             when(repoGestion.getResponseAsJSONList("mock-query")).thenReturn(null);
             assertNull(parentUtils.getSeriesCreators(id));
         }
@@ -106,13 +106,13 @@ class ParentUtilsTest {
         
         try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class);
              MockedStatic<ParentQueries> mockedParentQueries = Mockito.mockStatic(ParentQueries.class);
-             MockedStatic<OpSeriesQueries> mockedOpSeriesQueries = Mockito.mockStatic(OpSeriesQueries.class)) {
+             MockedStatic<OperationSeriesQueries> mockedOpSeriesQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
             
             mockedRdfUtils.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, testId)).thenReturn(seriesIRI);
             mockedRdfUtils.when(() -> RdfUtils.toString(seriesIRI)).thenReturn(uriParent);
             
             mockedParentQueries.when(() -> ParentQueries.checkIfExists(uriParent)).thenReturn("mock-parent-query");
-            mockedOpSeriesQueries.when(() -> OpSeriesQueries.checkIfSeriesHasOperation(uriParent)).thenReturn("mock-operation-query");
+            mockedOpSeriesQueries.when(() -> OperationSeriesQueries.checkIfSeriesHasOperation(uriParent)).thenReturn("mock-operation-query");
             
             when(repoGestion.getResponseAsBoolean("mock-parent-query")).thenReturn(true);
             when(repoGestion.getResponseAsBoolean("mock-operation-query")).thenReturn(true);

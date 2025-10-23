@@ -9,10 +9,10 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -55,7 +55,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public IRI getSeriesUriByOperationId(String idOperation) throws RmesException{
-		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(idOperation));
+		JSONObject series = repoGestion.getResponseAsObject(OperationsOperationQueries.seriesQuery(idOperation));
 		if (series != null && series.has(Constants.ID))		
 			return RdfUtils.objectIRI(ObjectType.SERIES, series.getString(Constants.ID));
 		return null;
@@ -63,7 +63,7 @@ public class ParentUtils extends RdfService{
 	
 
 	public boolean checkIfSeriesHasSims(String uriSeries) throws RmesException {
-		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasSims(uriSeries));
+		return repoGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasSims(uriSeries));
 	}
 	
 	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
@@ -77,7 +77,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public boolean checkIfSeriesHasOperation(String uriParent) throws RmesException {
-		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasOperation(uriParent));
+		return repoGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasOperation(uriParent));
 	}
 	
 	
@@ -91,7 +91,7 @@ public class ParentUtils extends RdfService{
 	
 	public String getIndicatorsValidationStatus(String id) throws RmesException{
 		try {
-			return repoGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
+			return repoGestion.getResponseAsObject(OperationIndicatorsQueries.getPublicationState(id)).getString("state");
 		}
 		catch (JSONException _) {
 			return Constants.UNDEFINED;
@@ -100,7 +100,7 @@ public class ParentUtils extends RdfService{
 	
 	public String getFamOpSerValidationStatus(String id) throws RmesException {
 		try {		
-			return repoGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
+			return repoGestion.getResponseAsObject(OperationQueries.getPublicationState(id)).getString("state"); }
 		catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
@@ -108,16 +108,16 @@ public class ParentUtils extends RdfService{
 	
 	
 	public JSONArray getIndicatorCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id));
+		return  repoGestion.getResponseAsJSONList(OperationIndicatorsQueries.getCreatorsById(id));
 	}
 	
 	
 	public JSONArray getSeriesCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsById(id));
+		return  repoGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsById(id));
 	}
 	
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
+		return repoGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
 	}
 	
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
