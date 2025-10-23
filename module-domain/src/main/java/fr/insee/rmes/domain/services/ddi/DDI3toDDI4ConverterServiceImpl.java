@@ -25,7 +25,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
     }
 
     @Override
-    public Ddi4Response convertDdi3ToDdi4(Ddi3Response ddi3) {
+    public Ddi4Response convertDdi3ToDdi4(Ddi3Response ddi3, String schemaUrl) {
         logger.info("Converting DDI3 to DDI4");
 
         List<Ddi4PhysicalInstance> physicalInstances = new ArrayList<>();
@@ -62,7 +62,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         }
 
         return new Ddi4Response(
-            "file:/jsonSchema.json",
+            schemaUrl,
             topLevelReferences.isEmpty() ? null : topLevelReferences,
             physicalInstances.isEmpty() ? null : physicalInstances,
             dataRelationships.isEmpty() ? null : dataRelationships,
