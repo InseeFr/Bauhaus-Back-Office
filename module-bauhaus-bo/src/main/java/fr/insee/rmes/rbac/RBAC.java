@@ -30,6 +30,7 @@ public class RBAC {
         UPDATE,
         DELETE,
         PUBLISH,
+        ADMINISTRATION,
         UNKNOWN,
     }
 
