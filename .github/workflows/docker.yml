@@ -34,34 +34,19 @@ jobs:
             exit 1
           fi
 
-  build-release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
-        id: extract_branch
-
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.extract_branch.outputs.branch }}
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "21"
-
-      - name: Build API
-        run: mvn package -Dchangelist=-SNAPSHOT --no-transfer-progress
-
   docker:
     needs:
       - check-version
-      - build-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check if on main branch
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "Error: Docker release is only allowed on main branch"
+            exit 1
+          fi
 
       - name: Publish to Docker Hub
         uses: elgohr/Publish-Docker-Github-Action@v5

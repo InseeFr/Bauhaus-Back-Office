@@ -1,5 +1,6 @@
 package fr.insee.rmes.config;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.FileSystemOperation;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
@@ -27,8 +28,8 @@ public class StorageConfiguration {
 
     @Bean
     @Profile("! s3")
-    public FilesOperations filesSytemOperations() {
-        return new FileSystemOperation();
+    public FilesOperations filesSytemOperations(Config config) {
+        return new FileSystemOperation(config);
     }
 
 }

@@ -1,9 +1,9 @@
 package fr.insee.rmes.persistance.sparql_queries.geography;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.GenericQueries;
 
 import java.util.HashMap;
 import java.util.Map;

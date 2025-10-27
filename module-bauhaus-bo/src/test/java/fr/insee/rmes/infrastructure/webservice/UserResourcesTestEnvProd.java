@@ -1,6 +1,6 @@
 package fr.insee.rmes.infrastructure.webservice;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;

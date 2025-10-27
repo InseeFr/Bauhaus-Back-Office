@@ -2,16 +2,16 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.MutualizedComponent;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
@@ -196,7 +196,7 @@ public class StructureComponentUtils extends RdfService {
                     String value = jsonComponent.getString("attributeValue_" + index);
                     try {
                         RdfUtils.addTripleUri(componentURI, RdfUtils.toURI(predicate), value, model, graph);
-                    } catch(Exception e){
+                    } catch(Exception _){
                         model.add(componentURI, RdfUtils.toURI(predicate), RdfUtils.setLiteralString(value), graph);
                     }
                 }

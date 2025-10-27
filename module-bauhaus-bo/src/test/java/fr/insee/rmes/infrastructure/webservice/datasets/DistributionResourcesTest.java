@@ -4,7 +4,7 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

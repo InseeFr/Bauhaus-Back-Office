@@ -1,10 +1,10 @@
 package fr.insee.rmes.rbac.stamps;
 
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,7 +35,7 @@ public class DatasetDistributionStampChecker implements  ObjectStampChecker {
                 }
             }
             return stamps;
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             return Collections.emptyList();
         }
     }

@@ -1,10 +1,10 @@
 package fr.insee.rmes.utils;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,7 +13,7 @@ class DateUtilsTest {
 	@Test
 	void getCurrentDate_ShouldReturnNonNullValue() {
 		String currentDate = DateUtils.getCurrentDate();
-		assertNotNull(currentDate);
+		Assertions.assertNotNull(currentDate);
 	}
 
 	@Test

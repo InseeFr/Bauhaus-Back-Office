@@ -1,7 +1,7 @@
 package fr.insee.rmes.model.notes.concepts;
 
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.Config;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;

@@ -1,10 +1,10 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.persistance.ontologies.DCMITYPE;
-import fr.insee.rmes.persistance.ontologies.GEO;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
+import fr.insee.rmes.graphdb.ontologies.GEO;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.eclipse.rdf4j.model.vocabulary.XSD;

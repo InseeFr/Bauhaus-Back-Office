@@ -2,21 +2,21 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.model.structures.Structure;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.http.HttpStatus;
@@ -128,7 +128,7 @@ public class StructureUtils extends RdfService {
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
 
-            getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
+            this.repoGestion.getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
             componentDefinitionFlat.remove("component");
             componentDefinition.put("component", componentDefinitionFlat);
 
@@ -275,7 +275,7 @@ public class StructureUtils extends RdfService {
                 try {
                     createMutualizedComponent(component);
                     componentDefinition.setComponent(component);
-                } catch (RmesException e) {
+                } catch (RmesException _) {
                     logger.info("Cannot create component  : {}", component.getLabelLg1());
                 }
             }
@@ -334,7 +334,7 @@ public class StructureUtils extends RdfService {
                 IRI attachmentIRI ;
                 try {
                     attachmentIRI = RdfUtils.createIRI(attachment);
-                } catch (Exception e){
+                } catch (Exception _){
                     attachmentIRI = RdfUtils.structureComponentMeasureIRI(attachment);
                 }
 
@@ -406,7 +406,7 @@ public class StructureUtils extends RdfService {
             String idComponent = ((JSONObject) ids.get(i)).getString(Constants.ID);
             try {
                 structureComponent.publishComponent(idComponent);
-            } catch (RmesException e) {
+            } catch (RmesException _) {
                 throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_PUBLICATION_VALIDATED_COMPONENT, "The component " + idComponent + " component can not be published", new JSONArray());
             }
         }

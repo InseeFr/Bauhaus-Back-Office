@@ -12,5 +12,5 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = {
         "fr.insee.rmes.bauhaus.force.ssl = false"
 })
-public class BaseConfigForMvcTests {
+public abstract class BaseConfigForMvcTests {
 }

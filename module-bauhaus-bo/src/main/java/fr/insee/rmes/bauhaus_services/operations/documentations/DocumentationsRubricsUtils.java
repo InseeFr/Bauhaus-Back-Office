@@ -1,22 +1,22 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
-import fr.insee.rmes.persistance.ontologies.DCMITYPE;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
@@ -180,7 +180,7 @@ DocumentationsRubricsUtils extends RdfService {
 				String predicate = attributesUriList.get(rubric.getIdAttribute());
 				predicateUri = RdfUtils.toURI(predicate);
 				attributeUri = getAttributeUri(simsId, predicate);
-			} catch (Exception e) {
+			} catch (Exception _) {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idAttribute not found", rubric.getIdAttribute());
 			}
 			RdfUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
@@ -324,7 +324,7 @@ DocumentationsRubricsUtils extends RdfService {
 			try{
 				documentationRubric.setValue(fr.insee.rmes.utils.StringUtils.stringToList(jsonRubric.getString(Constants.VALUE)));
 			}
-			catch(JSONException e) {
+			catch(JSONException _) {
 				/* value is not a string but an array */
 				JSONArray jsonArrayValue =jsonRubric.getJSONArray(Constants.VALUE);
 				documentationRubric.setValue(JSONUtils.jsonArrayToList(jsonArrayValue));

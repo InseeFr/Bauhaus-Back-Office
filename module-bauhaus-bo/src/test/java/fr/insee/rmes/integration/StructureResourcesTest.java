@@ -53,11 +53,10 @@ class StructureResourcesTest extends AbstractResourcesEnvProd{
     @MockitoSpyBean
     StructureService structureService;
 
-    private final String idep = "xxxxxx";
-    private final String timbre = "XX59-YYY";
-
     @Test
     void xssInjection_shouldBeEscaped() throws Exception {
+        String idep = "xxxxxx";
+        String timbre = "XX59-YYY";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         String maliciousId = "&lt;script&gt;alert(1);&lt;/script&gt;";
         mvc.perform(delete("/structures/structure/" + maliciousId).header("Authorization", "Bearer toto")

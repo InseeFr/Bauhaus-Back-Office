@@ -20,6 +20,7 @@ public class RBAC {
         DATASET_DATASET,
         DATASET_DISTRIBUTION,
         GEOGRAPHY,
+        DDI_PHYSICALINSTANCE,
         UNKNOWN,
     }
 

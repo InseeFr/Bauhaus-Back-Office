@@ -1,9 +1,9 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.GenericQueries;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +15,6 @@ public class CodeListQueries extends GenericQueries {
 	private static final String PARTIAL = "PARTIAL";
 	private static final String NOTATION = "NOTATION";
 	private static final String CODE = "CODE";
-	private static final String URI_CODESLIST = "URI_CODESLIST";
 	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
 
 	public static String isCodesListValidated(String codesListUri) throws RmesException {
@@ -106,12 +105,7 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
 	}
 
-	public static String getContributorsByCodesListUri(String uriCodesList) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		initParams(params);
-		params.put(URI_CODESLIST, uriCodesList);
-		return buildCodesListRequest("getCodesListContributorsByUriQuery.ftlh", params);
-	}
+
 
 		public static String getCodeListLabelByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -155,14 +149,6 @@ public class CodeListQueries extends GenericQueries {
 		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
-	public static String getCodeListIRIByNotation(String notation) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		initParams(params);
-		params.put(NOTATION, notation);
-		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
-		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListIRIByNotation.ftlh", params);
-	}
-
 
 	public static String getCodesListsForSearch(boolean partial) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();

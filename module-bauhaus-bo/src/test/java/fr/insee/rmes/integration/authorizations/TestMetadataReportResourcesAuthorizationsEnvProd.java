@@ -2,11 +2,11 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.infrastructure.rbac.Roles;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.MetadataReportResources;
 import fr.insee.rmes.rbac.RBAC;

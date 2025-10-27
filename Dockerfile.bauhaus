@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy AS builder
+FROM eclipse-temurin:25-jdk-jammy AS builder
 WORKDIR /opt/app
 
 COPY ./.mvn .mvn
@@ -9,11 +9,13 @@ COPY ./pom.xml ./
 COPY ./module-bauhaus-bo/ ./module-bauhaus-bo
 COPY ./module-domain/ ./module-domain
 COPY ./module-infrastructure/ ./module-infrastructure
+COPY ./module-sparql-orm/ ./module-sparql-orm
+COPY ./module-testcontainer-graphdb/ ./module-testcontainer-graphdb
 
 RUN chmod +x mvnw
-RUN ./mvnw clean install -DskipTests=true
+RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-jammy
 
 RUN groupadd -g 10000 javagroup
 RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser

@@ -2,28 +2,27 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.code_list.LangService;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -38,7 +37,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -48,30 +46,27 @@ import java.util.List;
 
 
 @Component
-public class DocumentationsUtils extends RdfService{
+public class DocumentationsUtils  {
 
 	static final Logger logger = LoggerFactory.getLogger(DocumentationsUtils.class);
 
+	private final RepositoryGestion repoGestion;
+	private final RepositoryPublication repositoryPublication;
+	private final Config config;
+	private final DocumentationsRubricsUtils documentationsRubricsUtils;
+	private final DocumentationPublication documentationPublication;
+	private final ParentUtils parentUtils;
 
-	@Autowired
-	private DocumentationsRubricsUtils documentationsRubricsUtils;
-	
-	@Autowired
-	private DocumentationPublication documentationPublication;
+    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, Config config, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils) {
+        this.repoGestion = repoGestion;
+        this.repositoryPublication = repositoryPublication;
+        this.config = config;
+        this.documentationsRubricsUtils = documentationsRubricsUtils;
+        this.documentationPublication = documentationPublication;
+        this.parentUtils = parentUtils;
+    }
 
-	@Autowired
-	LangService langService;
-
-	@Autowired
-	OrganizationsService organizationsServiceImpl;
-
-	@Autowired
-	CodeListService codeListServiceImpl;
-	
-	@Autowired
-	ParentUtils parentUtils;
-
-	/**
+    /**
 	 * GETTER
 	 * @param idSims
 	 * @return
@@ -193,7 +188,7 @@ public class DocumentationsUtils extends RdfService{
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {
 			return repoGestion.getResponseAsObject(DocumentationQueries.getPublicationState(id)).getString("state");
-		} catch (JSONException e) {
+		} catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}

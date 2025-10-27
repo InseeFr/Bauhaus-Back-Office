@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Organization {
 	
-	private static String classLink = "fr.insee.rmes.model.organizations.Organization";
+	private static final String classLink = "fr.insee.rmes.model.organizations.Organization";
 
 	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;

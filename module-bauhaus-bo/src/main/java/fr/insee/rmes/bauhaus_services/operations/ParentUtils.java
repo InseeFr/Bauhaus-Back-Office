@@ -1,12 +1,12 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
@@ -93,7 +93,7 @@ public class ParentUtils extends RdfService{
 		try {
 			return repoGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
 		}
-		catch (JSONException e) {
+		catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}
@@ -101,7 +101,7 @@ public class ParentUtils extends RdfService{
 	public String getFamOpSerValidationStatus(String id) throws RmesException {
 		try {		
 			return repoGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
-		catch (JSONException e) {
+		catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}

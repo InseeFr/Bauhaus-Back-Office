@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.graphdb.GenericQueries;
 
 public class CorrespondencesQueries extends GenericQueries{
 	

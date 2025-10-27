@@ -2,12 +2,12 @@ package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.classification.Classification;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -27,7 +27,7 @@ import java.util.List;
 @Repository()
 public class ClassificationRepository extends RdfService {
 
-    private ClassificationNoteService classificationNoteService;
+    private final ClassificationNoteService classificationNoteService;
 
     public ClassificationRepository(ClassificationNoteService classificationNoteService) {
         this.classificationNoteService = classificationNoteService;

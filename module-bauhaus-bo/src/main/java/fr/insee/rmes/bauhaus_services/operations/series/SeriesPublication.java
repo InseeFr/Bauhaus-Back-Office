@@ -1,16 +1,16 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.DCTERMS;
+import fr.insee.rmes.graphdb.ontologies.DCTERMS;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.Model;
@@ -130,14 +130,12 @@ public class SeriesPublication {
         JSONArray operations = repoGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
         JSONUtils.stream(operations)
                 .map(operation -> operation.getString("operation"))
-                .forEach(iri -> {
-                    model.add(
-                            publicationUtils.tranformBaseURIToPublish(resource),
-                            DCTERMS.HAS_PART,
-                            publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
-                            RdfUtils.operationsGraph()
-                    );
-                });
+                .forEach(iri -> model.add(
+                        publicationUtils.tranformBaseURIToPublish(resource),
+                        DCTERMS.HAS_PART,
+                        publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
+                        RdfUtils.operationsGraph()
+                ));
     }
 
     public void addStatementsToModel(Model model, RepositoryResult<Statement> statements) {

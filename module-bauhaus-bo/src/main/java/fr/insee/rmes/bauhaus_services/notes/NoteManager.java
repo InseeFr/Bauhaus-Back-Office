@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
@@ -26,8 +26,6 @@ public class NoteManager {
 	}
 
 	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
-		// TODO : see extreme cases to close notes
-
 		List<VersionableNote> versionableNotes = concept.getVersionableNotes();
 		List<DatableNote> datableNotes = concept.getDatableNotes();
 		

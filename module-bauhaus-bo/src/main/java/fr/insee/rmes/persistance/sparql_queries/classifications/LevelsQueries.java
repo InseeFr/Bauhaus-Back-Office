@@ -1,8 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.GenericQueries;
 
 import java.util.HashMap;
 
@@ -46,7 +46,6 @@ public class LevelsQueries extends GenericQueries{
 					+ "OPTIONAL {?previousLevel skos:prefLabel ?broaderLg2 . \n"
 					+ "FILTER (lang(?broaderLg2) = '" + config.getLg2() + "') } \n"
 				+ "BIND(STRAFTER(STRAFTER(STR(?previousLevel),'/codes/'), '/') AS ?idBroader) } \n"
-			+ ""
 			+ "} \n"
 			+ "} \n";	
 	}

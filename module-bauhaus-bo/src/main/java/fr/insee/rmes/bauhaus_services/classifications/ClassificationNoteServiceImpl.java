@@ -1,10 +1,10 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.EVOC;
-import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ontologies.EVOC;
+import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ClassificationNoteServiceImpl implements ClassificationNoteService {
-    private RepositoryGestion repositoryGestion;
+    private final RepositoryGestion repositoryGestion;
 
     public ClassificationNoteServiceImpl(RepositoryGestion repositoryGestion) {
         this.repositoryGestion = repositoryGestion;

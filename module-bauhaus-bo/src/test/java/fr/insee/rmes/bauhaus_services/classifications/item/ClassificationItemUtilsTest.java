@@ -1,10 +1,10 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import org.junit.jupiter.api.Test;
@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ClassificationItemUtilsTest {
+
     @Mock
     Config config;
 
@@ -63,7 +64,9 @@ class ClassificationItemUtilsTest {
 
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
+
         when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
+
         RdfUtils.setConfig(config);
         ItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();

@@ -1,9 +1,9 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.GenericQueries;
 import org.eclipse.rdf4j.model.IRI;
 
 import java.util.ArrayList;
