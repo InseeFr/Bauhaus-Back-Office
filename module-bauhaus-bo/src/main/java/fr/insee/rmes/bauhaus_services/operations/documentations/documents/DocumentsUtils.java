@@ -2,18 +2,21 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.documentations.Document;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.PAV;
-import fr.insee.rmes.persistance.ontologies.SCHEMA;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.PAV;
+import fr.insee.rmes.graphdb.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.UriUtils;
@@ -247,7 +250,7 @@ public class DocumentsUtils extends RdfService {
 
         try {
             URI.create(url).toURL();
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException _) {
             logger.debug("The Link {} is not valid", id);
             throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);
         }
@@ -308,8 +311,7 @@ public class DocumentsUtils extends RdfService {
 
     public JSONArray getDocumentsUriAndUrlForSims(String id) throws RmesException {
         logger.debug("Querrying the list of uri and url for all documents for the SIMS {}", id);
-        JSONArray documents = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
-        return documents;
+        return repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
     }
 
     /**
@@ -326,7 +328,7 @@ public class DocumentsUtils extends RdfService {
         JSONObject jsonDocs = new JSONObject();
         try {
             jsonDocs = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentQuery(id, isLink));
-        } catch (RmesException e) {
+        } catch (RmesException _) {
             logger.error("Error when querrying the database for the document/link {}", id);
         }
 
@@ -620,9 +622,9 @@ public class DocumentsUtils extends RdfService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new ByteArrayResource(data));
-        }catch (NoSuchFileException e){
+        }catch (NoSuchFileException _){
             throw new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), filePath+" not found", filePath+" not found");
-        }catch (IOException e) {
+        }catch (IOException _) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }
     }

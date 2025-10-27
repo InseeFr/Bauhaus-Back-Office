@@ -1,7 +1,7 @@
 package fr.insee.rmes.config.auth.security;
 
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Optional;
 
-import static fr.insee.rmes.config.PropertiesKeys.CORS_ALLOWED_ORIGIN;
+import static fr.insee.rmes.PropertiesKeys.CORS_ALLOWED_ORIGIN;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
@@ -63,7 +63,7 @@ public class CommonSecurityConfiguration {
         return principal -> {
             try {
                 return userDecoder.fromPrincipal(principal).map(User::stamp);
-            } catch (RmesException e) {
+            } catch (RmesException _) {
                 return Optional.empty();
             }
         };

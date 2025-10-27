@@ -1,13 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.FileSystemOperation;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
+import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DocumentationsRubricsUtilsTest {
@@ -16,7 +18,7 @@ class DocumentationsRubricsUtilsTest {
     void shouldBuildRubricFromJsonReturnNotNullObject() {
 
         ParentUtils parentUtils = new ParentUtils();
-        FileSystemOperation fileSystemOperation = new FileSystemOperation();
+        FileSystemOperation fileSystemOperation = new FileSystemOperation(new ConfigStub());
 
         DocumentationsRubricsUtils documentationsRubricsUtils = new DocumentationsRubricsUtils();
         DocumentsUtils docUtils = new DocumentsUtils(parentUtils,fileSystemOperation);

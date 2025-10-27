@@ -1,10 +1,10 @@
 package fr.insee.rmes.onion.infrastructure.webservice.operations;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.PartialOperation;
 import fr.insee.rmes.rbac.HasAccess;

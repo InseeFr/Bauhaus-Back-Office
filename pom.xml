@@ -31,11 +31,11 @@
     </developer>
   </developers>
   <properties>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
     <springdoc.version>2.8.3</springdoc.version>
     <rdf4j.version>5.1.0</rdf4j.version>
     <xdocreport.version>2.1.0</xdocreport.version>
-    <jacoco.version>0.8.12</jacoco.version>
+    <jacoco.version>0.8.13</jacoco.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java-jwt.version>4.5.0</java-jwt.version>
     <json.version>20250107</json.version>
@@ -45,7 +45,7 @@
     <saxon.version>12.5</saxon.version>
     <minio.version>8.5.17</minio.version>
     <record.builder.version>44</record.builder.version>
-    <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
+    <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
     <!-- SONAR -->
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -55,6 +55,14 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-hateoas</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-rest-hal-explorer</artifactId>
     </dependency>
     <dependency>
       <groupId>io.minio</groupId>
@@ -239,9 +247,7 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
         <executions>
-          <!-- Prepare the property pointing to the JaCoCo runtime agent which is
-                         passed as VM argument when the Maven Surefire plugin is executed. -->
-          <execution>
+      <execution>
             <id>pre-unit-test</id>
             <goals>
               <goal>prepare-agent</goal>
@@ -252,24 +258,6 @@
             <phase>test</phase>
             <goals>
               <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.rudikershaw.gitbuildhook</groupId>
-        <artifactId>git-build-hook-maven-plugin</artifactId>
-        <version>3.4.1</version>
-        <configuration>
-          <installHooks>
-            <pre-commit>hooks/pre-commit</pre-commit>
-          </installHooks>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>install</goal>
-              <goal>initialize</goal>
             </goals>
           </execution>
         </executions>
@@ -285,7 +273,9 @@
   </repositories>
   <modules>
     <module>module-domain</module>
+    <module>module-sparql-orm</module>
     <module>module-infrastructure</module>
+    <module>module-testcontainer-graphdb</module>
     <module>module-bauhaus-bo</module>
   </modules>
 </project>

@@ -12,7 +12,7 @@ import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;

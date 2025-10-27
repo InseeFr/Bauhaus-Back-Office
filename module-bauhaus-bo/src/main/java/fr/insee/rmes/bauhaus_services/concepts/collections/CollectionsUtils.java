@@ -2,11 +2,9 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.utils.IdGenerator;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -24,18 +22,13 @@ public class CollectionsUtils  {
 	static final Logger logger = LoggerFactory.getLogger(CollectionsUtils.class);
 	
 	private final ConceptsPublication conceptsPublication;
-	private final IdGenerator idGenerator;
 	private final RepositoryGestion repositoryGestion;
-	private final CollectionRepository collectionRepository;
 
 	public CollectionsUtils(ConceptsPublication conceptsPublication,
-                            IdGenerator idGenerator,
-                            RepositoryGestion repositoryGestion, CollectionRepository collectionRepository
+							RepositoryGestion repositoryGestion
     ) {
         this.conceptsPublication = conceptsPublication;
-        this.idGenerator = idGenerator;
         this.repositoryGestion = repositoryGestion;
-        this.collectionRepository = collectionRepository;
     }
 
 

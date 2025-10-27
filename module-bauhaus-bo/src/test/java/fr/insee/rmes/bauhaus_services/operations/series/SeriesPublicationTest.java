@@ -1,15 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -308,7 +308,7 @@ class SeriesPublicationTest {
 
             mockedQueries.when(() -> OpSeriesQueries.getPublishedOperationsForSeries(anyString()))
                     .thenReturn("SELECT * WHERE { }");
-                    
+
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))
                     .thenReturn(java.util.stream.Stream.empty());
 

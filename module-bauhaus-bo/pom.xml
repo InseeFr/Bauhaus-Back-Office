@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.13.0</version>
+  <version>4.14.0</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -16,6 +16,17 @@
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-domain</artifactId>
       <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-infrastructure</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-testcontainer-graphdb</artifactId>
+      <version>1.0.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

@@ -1,12 +1,12 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.*;
@@ -102,7 +102,7 @@ public class DocumentsPublication  extends RdfService{
                     renameAndAddTripleToModel(model, st, subject);
                 }
             }
-        } catch (RepositoryException | RmesException e) {
+        } catch (RepositoryException | RmesException _) {
             model = getModelWithErrorToPublish(documentId, filename);
         } finally {
             if (documentStatements != null) {
@@ -156,7 +156,7 @@ public class DocumentsPublication  extends RdfService{
 					object = RdfUtils.toURI(objectString);
 					object = publicationUtils.tranformBaseURIToPublish((Resource) object);
 
-				}catch(IllegalArgumentException iAe) {
+				}catch(IllegalArgumentException _) {
 					object = RdfUtils.setLiteralString(objectString);
 				}
 			}

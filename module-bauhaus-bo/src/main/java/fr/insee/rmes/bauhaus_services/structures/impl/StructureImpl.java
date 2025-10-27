@@ -1,14 +1,14 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
-import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -56,7 +56,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 		JSONObject structure = repoGestion.getResponseAsObject(StructureQueries.getStructureById(id));
 
 		IRI iri = RdfUtils.structureIRI(id);
-		getMultipleTripletsForObject(structure, "contributor", StructureQueries.getStructureContributors(iri), "contributor");
+		this.repoGestion.getMultipleTripletsForObject(structure, "contributor", StructureQueries.getStructureContributors(iri), "contributor");
 
 		return structureUtils.formatStructure(structure, id).toString();
 	}

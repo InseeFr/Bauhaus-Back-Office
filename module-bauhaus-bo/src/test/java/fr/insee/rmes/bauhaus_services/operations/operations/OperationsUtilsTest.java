@@ -2,11 +2,11 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;

@@ -1,8 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.GenericQueries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +87,6 @@ public class ConceptsQueries extends GenericQueries {
 		params.put("ID_CONCEPT", idConcept);
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptLinksById.ftlh", params);		
-		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
 	
 
@@ -103,20 +102,6 @@ public class ConceptsQueries extends GenericQueries {
 		return buildConceptRequest("hasBroader.ftlh", params);
 	}
 	
-
-	public static String getOwner(String uri) throws RmesException {
-		Map<String, Object> params = new HashMap<>();
-		String cleanedUri = uri.replaceAll("[<>]", "");
-		params.put("URI", cleanedUri);
-		return buildConceptRequest("getOwner.ftlh", params);
-	}
-	
-	public static String getManager(String uri) {
-		return "SELECT ?manager { \n"
-				+ "?concept dc:contributor ?manager . \n" 
-				+ "VALUES ?concept { " + uri + " } \n"
-				+ "}";
-	}
 
 	/**
 	 * @param uriConcept
@@ -139,17 +124,6 @@ public class ConceptsQueries extends GenericQueries {
 		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getLinkedConceptsQuery.ftlh", params);	
 	}
-	
-	/**
-	 * @param idConcept
-	 * @return String
-	 * @throws RmesException
-	 */
-	public static String getConceptUriByIDQuery(String idConcept)  throws RmesException {
-		Map<String, Object> params = initParams();
-		params.put("idConcept", idConcept);
-		return buildConceptRequest("getUriFromIdQuery.ftlh", params);	
-	}
 
 	/**
 	 * @param uriConcept, uriGraph
@@ -170,16 +144,7 @@ public class ConceptsQueries extends GenericQueries {
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}
 	
-	/**
-	 * @param uriConcept
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getConceptVersions(String uriConcept) throws RmesException {
-		Map<String, Object> params = initParams();
-		params.put(URI_CONCEPT, uriConcept);
-		return buildConceptRequest("getConceptVersionsQuery.ftlh", params);
-	}
+
 	
 	private static Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();

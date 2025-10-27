@@ -4,14 +4,14 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.onion.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.*;
-import fr.insee.rmes.persistance.ontologies.ADMS;
-import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -163,17 +163,17 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("themes", themes);
         dataset.remove(THEME);
 
-        getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
-        getMultipleTripletsForObject(dataset, "wasGeneratedIRIs", DatasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
+        this.repoGestion.getMultipleTripletsForObject(dataset, "wasGeneratedIRIs", DatasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
-        getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
-        getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
-        getMultipleTripletsForObject(dataset, "linkedDocuments", DatasetQueries.getLinkedDocuments(id, getDatasetsGraph()), "linkedDocument");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "linkedDocuments", DatasetQueries.getLinkedDocuments(id, getDatasetsGraph()), "linkedDocument");
         addKeywordsToDataset(id, dataset);
 
 
         JSONObject catalogRecord = new JSONObject();
-        getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
+        this.repoGestion.getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
 
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
