@@ -9,7 +9,15 @@ import fr.insee.rmes.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.domain.port.clientside.DDIService;
 import fr.insee.rmes.webservice.response.ddi.PartialPhysicalInstanceResponse;
+import fr.insee.rmes.webservice.response.ddi.ValidationResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +27,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -93,9 +106,65 @@ public class DdiResources {
 
     @PostMapping("/convert/ddi3-to-ddi4")
     public ResponseEntity<Ddi4Response> convertDdi3ToDdi4(@RequestBody Ddi3Response ddi3) {
-        Ddi4Response ddi4 = ddi3toDdi4ConverterService.convertDdi3ToDdi4(ddi3);
+        String schemaUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/ddi/schema")
+                .toUriString();
+        Ddi4Response ddi4 = ddi3toDdi4ConverterService.convertDdi3ToDdi4(ddi3, schemaUrl);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(ddi4);
+    }
+
+    @GetMapping("/schema")
+    public ResponseEntity<String> getDdiSchema() throws IOException {
+        ClassPathResource resource = new ClassPathResource("ddi-schema.json");
+        String schema = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        // Remove BOM if present
+        if (schema.startsWith("\uFEFF")) {
+            schema = schema.substring(1);
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(schema);
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<ValidationResponse> validateDdi4(@RequestBody String jsonData) {
+        try {
+            // Load schema
+            ClassPathResource resource = new ClassPathResource("ddi-schema.json");
+            String schemaContent = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            // Remove BOM if present
+            if (schemaContent.startsWith("\uFEFF")) {
+                schemaContent = schemaContent.substring(1);
+            }
+
+            // Create schema factory and parse schema
+            JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode schemaNode = mapper.readTree(schemaContent);
+            JsonSchema schema = factory.getSchema(schemaNode);
+
+            // Parse and validate JSON data
+            JsonNode jsonNode = mapper.readTree(jsonData);
+            Set<ValidationMessage> validationMessages = schema.validate(jsonNode);
+
+            if (validationMessages.isEmpty()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(ValidationResponse.success());
+            } else {
+                List<String> errors = validationMessages.stream()
+                        .map(ValidationMessage::getMessage)
+                        .collect(Collectors.toList());
+                return ResponseEntity.badRequest()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(ValidationResponse.failure(errors));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(ValidationResponse.failure(List.of("Invalid JSON: " + e.getMessage())));
+        }
     }
 }

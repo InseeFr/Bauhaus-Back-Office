@@ -16,6 +16,7 @@ import fr.insee.rmes.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.domain.port.clientside.DDIService;
 import fr.insee.rmes.webservice.response.ddi.PartialPhysicalInstanceResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,12 +25,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,6 +57,21 @@ class DdiResourcesTest {
     @BeforeEach
     void setUp() {
         ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService);
+
+        // Setup mock request context for ServletUriComponentsBuilder
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setScheme("http");
+        request.setServerName("localhost");
+        request.setServerPort(8080);
+        request.setContextPath("");
+        ServletRequestAttributes attrs = new ServletRequestAttributes(request);
+        RequestContextHolder.setRequestAttributes(attrs);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // Clean up request context
+        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -73,14 +95,14 @@ class DdiResourcesTest {
         assertEquals("Physical Instance 1", result.getFirst().getLabel());
         assertNotNull(result.getFirst().getLinks());
         assertEquals(1, result.getFirst().getLinks().toList().size());
-        assertEquals("/ddi/physical-instance/pi-1", result.getFirst().getRequiredLink("self").getHref());
-        
+        assertEquals("http://localhost:8080/ddi/physical-instance/pi-1", result.getFirst().getRequiredLink("self").getHref());
+
         // Verify second instance data and links
         assertEquals("pi-2", result.get(1).getId());
         assertEquals("Physical Instance 2", result.get(1).getLabel());
         assertNotNull(result.get(1).getLinks());
         assertEquals(1, result.get(1).getLinks().toList().size());
-        assertEquals("/ddi/physical-instance/pi-2", result.get(1).getRequiredLink("self").getHref());
+        assertEquals("http://localhost:8080/ddi/physical-instance/pi-2", result.get(1).getRequiredLink("self").getHref());
         
         verify(ddiService).getPhysicalInstances();
     }
@@ -195,7 +217,7 @@ class DdiResourcesTest {
         // Given
         Ddi3Response ddi3Request = createMockDdi3Response();
         Ddi4Response expectedDdi4Response = createMockDdi4Response();
-        when(ddi3toDdi4ConverterService.convertDdi3ToDdi4(ddi3Request)).thenReturn(expectedDdi4Response);
+        when(ddi3toDdi4ConverterService.convertDdi3ToDdi4(eq(ddi3Request), anyString())).thenReturn(expectedDdi4Response);
 
         // When
         ResponseEntity<Ddi4Response> result = ddiResources.convertDdi3ToDdi4(ddi3Request);
@@ -215,7 +237,7 @@ class DdiResourcesTest {
         assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", physicalInstance.id());
         assertEquals("fr.insee", physicalInstance.agency());
 
-        verify(ddi3toDdi4ConverterService).convertDdi3ToDdi4(ddi3Request);
+        verify(ddi3toDdi4ConverterService).convertDdi3ToDdi4(eq(ddi3Request), anyString());
     }
 
     @Test
@@ -257,7 +279,7 @@ class DdiResourcesTest {
             "file:/jsonSchema.json",
             null, null, null, null, null, null
         );
-        when(ddi3toDdi4ConverterService.convertDdi3ToDdi4(emptyDdi3)).thenReturn(emptyDdi4);
+        when(ddi3toDdi4ConverterService.convertDdi3ToDdi4(eq(emptyDdi3), anyString())).thenReturn(emptyDdi4);
 
         // When
         ResponseEntity<Ddi4Response> result = ddiResources.convertDdi3ToDdi4(emptyDdi3);
@@ -270,7 +292,7 @@ class DdiResourcesTest {
         assertNotNull(responseBody);
         assertEquals("file:/jsonSchema.json", responseBody.schema());
 
-        verify(ddi3toDdi4ConverterService).convertDdi3ToDdi4(emptyDdi3);
+        verify(ddi3toDdi4ConverterService).convertDdi3ToDdi4(eq(emptyDdi3), anyString());
     }
 
     private Ddi4Response createMockDdi4Response() {
@@ -354,4 +376,5 @@ class DdiResourcesTest {
             List.of(item)
         );
     }
+
 }

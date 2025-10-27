@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DDI3toDDI4ConverterServiceImplTest {
 
+    private static final String SCHEMA_URL = "http://localhost:8080/ddi/schema";
     private DDI3toDDI4ConverterServiceImpl converter;
 
     @BeforeEach
@@ -21,13 +22,14 @@ class DDI3toDDI4ConverterServiceImplTest {
     void shouldConvertCompleteDdi3ResponseToDdi4() {
         // Given - DDI3 Response with all types
         Ddi3Response ddi3 = createCompleteDdi3Response();
+        String schemaUrl = "http://localhost:8080/ddi/schema";
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, schemaUrl);
 
         // Then
         assertNotNull(result);
-        assertEquals("file:/jsonSchema.json", result.schema());
+        assertEquals(schemaUrl, result.schema());
 
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
@@ -89,7 +91,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
@@ -169,7 +171,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
@@ -247,7 +249,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
@@ -326,7 +328,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
@@ -408,7 +410,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
@@ -475,7 +477,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
@@ -503,11 +505,11 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When
-        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3);
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
 
         // Then
         assertNotNull(result);
-        assertEquals("file:/jsonSchema.json", result.schema());
+        assertEquals(SCHEMA_URL, result.schema());
         assertNull(result.topLevelReference());
         assertNull(result.physicalInstance());
         assertNull(result.dataRelationship());
@@ -537,7 +539,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         );
 
         // When & Then
-        assertThrows(RuntimeException.class, () -> converter.convertDdi3ToDdi4(ddi3));
+        assertThrows(RuntimeException.class, () -> converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL));
     }
 
     private Ddi3Response createCompleteDdi3Response() {
