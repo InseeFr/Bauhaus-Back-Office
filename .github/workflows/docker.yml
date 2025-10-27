@@ -40,14 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-#      - name: Check if on main branch
-#        run: |
-#          if [[ "${{ github.ref_name }}" != "main" ]]; then
-#            echo "Error: Docker release is only allowed on main branch"
-#            exit 1
-#          fi
-
       - name: Publish to Docker Hub
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:
