@@ -1,6 +1,7 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.OrganisationOption;
 import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,5 +41,11 @@ public class StampResources {
     @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
     public ResponseEntity<List<String>> getStamps() throws RmesException {
         return ResponseEntity.ok(organisationService.getStamps());
+    }
+
+    @GetMapping(value = "/v2/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationOption.class)))})
+    public ResponseEntity<List<OrganisationOption>> getOrganisationOptions() throws RmesException {
+        return ResponseEntity.ok(organisationService.getOrganisations());
     }
 }
