@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.config.auth.security.JwtProperties;
-import fr.insee.rmes.infrastructure.rbac.Roles;
+import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;

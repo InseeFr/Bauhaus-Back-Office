@@ -1,5 +1,6 @@
 package fr.insee.rmes.config.auth.security;
 
+import fr.insee.rmes.domain.port.serverside.UserDecoder;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.Optional;
