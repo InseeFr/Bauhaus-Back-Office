@@ -1,10 +1,10 @@
 package fr.insee.rmes.onion.infrastructure.webservice;
 
-import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.domain.port.clientside.UserService;
+import fr.insee.rmes.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.domain.auth.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Stamp;
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import fr.insee.rmes.rbac.ModuleAccessPrivileges;
 import fr.insee.rmes.rbac.RbacFetcher;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,13 +38,13 @@ import java.util.Set;
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class UserResources {
 
-    private final StampsService stampsService;
+    private final UserService userService;
     private final RbacFetcher rbacService;
     private final UserDecoder userDecoder;
 
 
-    public UserResources(StampsService stampsService, RbacFetcher rbacService, UserDecoder userDecoder) {
-        this.stampsService = stampsService;
+    public UserResources(UserService userService, RbacFetcher rbacService, UserDecoder userDecoder) {
+        this.userService = userService;
         this.rbacService = rbacService;
         this.userDecoder = userDecoder;
     }
@@ -67,6 +67,6 @@ public class UserResources {
     @GetMapping(value = "/stamp", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
     public Stamp getStamp(@AuthenticationPrincipal Object principal) throws RmesException {
-        return stampsService.findStampFrom(principal);
+        return userService.findStampFrom(principal);
     }
 }

@@ -1,8 +1,8 @@
 package fr.insee.rmes.rbac;
 
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.domain.auth.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.stamps.*;
 import org.springframework.core.env.Environment;
