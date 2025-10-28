@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.auth.user;
+package fr.insee.rmes.domain.auth;
 
 public enum Source {
     PROCONNECT("proconnect"),

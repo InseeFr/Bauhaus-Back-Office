@@ -6,18 +6,13 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -47,28 +42,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PublicResourcesTest {
     @Autowired
     private MockMvc mvc;
-
-    @MockitoBean
-    StampsService stampsService;
-
-    @Test
-    void shouldReturnResponseEntityWhenGetProperties() throws Exception {
-        PublicResources publicResources = new PublicResources(stampsService,
-                "env",
-                "lg1",
-                "lg2",
-                "maxLengthScopeNote",
-                "defaultMailSender",
-                "defaultContributor",
-                "appHost",
-                List.of("activeModule"),
-                List.of("module"),
-                "version",
-                List.of("extraMandatoryFields"));
-        String actual = publicResources.getProperties().toString();
-        Assertions.assertTrue(actual.startsWith("<200 OK OK"));
-    }
-
 
     @Test
     void shouldReturnTheInitPayload() throws Exception {

@@ -1,7 +1,7 @@
-package fr.insee.rmes.config.auth.user;
+package fr.insee.rmes.domain.auth;
 
 import fr.insee.rmes.domain.model.Stamp;
-import fr.insee.rmes.infrastructure.rbac.Roles;
+import fr.insee.rmes.domain.Roles;
 
 import java.util.List;
 
