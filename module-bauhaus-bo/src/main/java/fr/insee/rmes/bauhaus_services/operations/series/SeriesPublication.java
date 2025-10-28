@@ -11,7 +11,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ontologies.DCTERMS;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -127,7 +127,7 @@ public class SeriesPublication {
 
 
     private void addOperationsWhoHavePartWithToModel(Resource resource, Model model) throws RmesException {
-        JSONArray operations = repoGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
+        JSONArray operations = repoGestion.getResponseAsArray(OperationSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
         JSONUtils.stream(operations)
                 .map(operation -> operation.getString("operation"))
                 .forEach(iri -> model.add(

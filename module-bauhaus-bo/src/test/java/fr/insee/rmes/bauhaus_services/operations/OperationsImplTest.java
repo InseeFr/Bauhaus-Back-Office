@@ -4,9 +4,9 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,8 +38,8 @@ class OperationsImplTest {
     @Test
     void shouldGetSeriesList() throws RmesException {
 
-        try (MockedStatic<OpSeriesQueries> mockedFactory = Mockito.mockStatic(OpSeriesQueries.class)) {
-            mockedFactory.when(OpSeriesQueries::seriesQuery).thenReturn("query");
+        try (MockedStatic<OperationSeriesQueries> mockedFactory = Mockito.mockStatic(OperationSeriesQueries.class)) {
+            mockedFactory.when(OperationSeriesQueries::seriesQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -74,8 +74,8 @@ class OperationsImplTest {
     @Test
     void shouldGetOperationsList() throws RmesException {
 
-        try (MockedStatic<OperationsQueries> mockedFactory = Mockito.mockStatic(OperationsQueries.class)) {
-            mockedFactory.when(OperationsQueries::operationsQuery).thenReturn("query");
+        try (MockedStatic<OperationsOperationQueries> mockedFactory = Mockito.mockStatic(OperationsOperationQueries.class)) {
+            mockedFactory.when(OperationsOperationQueries::operationsQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -112,8 +112,8 @@ class OperationsImplTest {
     @Test
     void shouldGetIndicatorsList() throws RmesException {
 
-        try (MockedStatic<IndicatorsQueries> mockedFactory = Mockito.mockStatic(IndicatorsQueries.class)) {
-            mockedFactory.when(IndicatorsQueries::indicatorsQuery).thenReturn("query");
+        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
+            mockedFactory.when(OperationIndicatorsQueries::indicatorsQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -146,7 +146,7 @@ class OperationsImplTest {
 
     @Test
     void shouldGetSeriesWithSims() throws RmesException {
-        when(repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery())).thenReturn( new JSONArray().put("mockedExample"));
+        when(repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithSimsQuery())).thenReturn( new JSONArray().put("mockedExample"));
         String actual = operationsImpl.getSeriesWithSims();
         assertEquals("[\"mockedExample\"]",actual);
     }
@@ -156,7 +156,7 @@ class OperationsImplTest {
         JSONObject firstJsonObject = new JSONObject().put("firstExample","mockedFirstExample");
         JSONObject secondJsonObject = new JSONObject().put("secondExample","mockedSecondExample");
         JSONArray jsonArrayTwoElements = new JSONArray().put(firstJsonObject).put(secondJsonObject);
-        when(repoGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery("2025"))).thenReturn(jsonArrayTwoElements);
+        when(repoGestion.getResponseAsArray(OperationsOperationQueries.operationsWithoutSimsQuery("2025"))).thenReturn(jsonArrayTwoElements);
         assertEquals("[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",operationsImpl.getOperationsWithoutReport("2025"));
     }
 }

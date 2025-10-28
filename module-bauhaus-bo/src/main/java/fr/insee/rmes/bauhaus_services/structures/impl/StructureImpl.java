@@ -9,8 +9,8 @@ import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
 import fr.insee.rmes.graphdb.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.StructureQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
@@ -110,7 +110,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 
 			if(!component.isNull(Constants.CONCEPT)){
 				try {
-					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
+					JSONObject concept = repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
 					component.put(Constants.CONCEPT, concept);
 				} catch (RmesException e) {
 					logger.error("Cannot fetch concept of the structure " +id, e);

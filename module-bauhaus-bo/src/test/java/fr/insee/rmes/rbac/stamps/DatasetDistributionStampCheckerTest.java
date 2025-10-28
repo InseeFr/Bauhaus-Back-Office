@@ -1,6 +1,6 @@
 package fr.insee.rmes.rbac.stamps;
 
-import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -47,7 +47,7 @@ class DatasetDistributionStampCheckerTest {
         array.put(obj1);
         array.put(obj2);
 
-        String expectedQuery = DistributionQueries.getContributorsByDistributionUri("http://distribution/123");
+        String expectedQuery = DatasetDistributionQueries.getContributorsByDistributionUri("http://distribution/123");
         when(repositoryGestion.getResponseAsArray(expectedQuery)).thenReturn(array);
 
         List<String> result = checker.getStamps("123");
@@ -61,7 +61,7 @@ class DatasetDistributionStampCheckerTest {
     void testGetStamps_withEmptyContributors() throws Exception {
         JSONArray array = new JSONArray();
 
-        String expectedQuery = DistributionQueries.getContributorsByDistributionUri("http://distribution/456");
+        String expectedQuery = DatasetDistributionQueries.getContributorsByDistributionUri("http://distribution/456");
         when(repositoryGestion.getResponseAsArray(expectedQuery)).thenReturn(array);
 
         List<String> result = checker.getStamps("456");
@@ -71,7 +71,7 @@ class DatasetDistributionStampCheckerTest {
 
     @Test
     void testGetStamps_withException() throws Exception {
-        String expectedQuery = DistributionQueries.getContributorsByDistributionUri("http://distribution/789");
+        String expectedQuery = DatasetDistributionQueries.getContributorsByDistributionUri("http://distribution/789");
         when(repositoryGestion.getResponseAsArray(expectedQuery)).thenThrow(new RmesException("500", new Exception("Message")));
 
         List<String> result = checker.getStamps("789");

@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.datasets;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

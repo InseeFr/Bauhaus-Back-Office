@@ -11,10 +11,10 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
-import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.EncodingType;
 import org.json.JSONArray;
@@ -61,7 +61,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public List<PartialOperationSeries> getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		var series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery());
+		var series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series,
 				PartialOperationSeries[].class,
@@ -76,14 +76,14 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray seriesArray = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery());
+		JSONArray seriesArray = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithSimsQuery());
 		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
 	}
 
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims based on a stamp");
-		JSONArray series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithStampQuery(stamp, this.authorizeMethodDecider.isAdmin()));
+		JSONArray series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithStampQuery(stamp, this.authorizeMethodDecider.isAdmin()));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));
@@ -123,14 +123,14 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String getOperationsWithoutReport(String idSeries) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries));
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsOperationQueries.operationsWithoutSimsQuery(idSeries));
 		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
 	@Override
 	public String getOperationsWithReport(String idSeries) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsWithSimsQuery(idSeries));
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsOperationQueries.operationsWithSimsQuery(idSeries));
 		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -154,7 +154,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public List<PartialOperation> getOperations() throws RmesException  {
 		logger.info("Starting to get operations list");
-		var operations = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery());
+		var operations = repoGestion.getResponseAsArray(OperationsOperationQueries.operationsQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(operations,
 				PartialOperation[].class,
@@ -197,7 +197,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public String getFamiliesForSearch() throws RmesException {
 		logger.info("Starting to get families list for search");
-		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesSearchQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OperationFamilyQueries.familiesSearchQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -218,7 +218,7 @@ public class OperationsImpl  implements OperationsService {
 	}
 
 	public String getSeriesWithReport(String idFamily) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.seriesWithSimsQuery(idFamily));
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsOperationQueries.seriesWithSimsQuery(idFamily));
 		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -233,7 +233,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public List<PartialOperationIndicator> getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
-		var indicators = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery());
+		var indicators = repoGestion.getResponseAsArray(OperationIndicatorsQueries.indicatorsQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(indicators,
 				PartialOperationIndicator[].class,
@@ -243,7 +243,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public String getIndicatorsWithSims() throws RmesException {
 		logger.info("Starting to get indicators list with sims");
-		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsWithSimsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OperationIndicatorsQueries.indicatorsWithSimsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 

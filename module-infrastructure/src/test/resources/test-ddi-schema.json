@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8080/ddi/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "topLevelReference": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "agency": { "type": "string" },
+          "id": { "type": "string" },
+          "version": { "type": "string" },
+          "typeOfObject": { "type": "string" }
+        },
+        "required": ["agency", "id", "version", "typeOfObject"]
+      }
+    },
+    "physicalInstance": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false
+}

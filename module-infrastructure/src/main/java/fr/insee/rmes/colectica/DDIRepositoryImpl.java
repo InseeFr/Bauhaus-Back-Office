@@ -133,8 +133,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public void updatePhysicalInstance(String id, UpdatePhysicalInstanceRequest request) {
-        logger.info("Updating Physical Instance with id: {} and request: {}", id, request);
-        // Update cached data if it exists
         if (cachedDdi4Response != null) {
             logger.info("Updating cached DDI4 Physical Instance data");
             

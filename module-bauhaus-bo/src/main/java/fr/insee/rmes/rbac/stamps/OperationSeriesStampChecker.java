@@ -4,7 +4,7 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +26,7 @@ public class OperationSeriesStampChecker implements  ObjectStampChecker {
 
         IRI seriesIRI = RdfUtils.objectIRI(ObjectType.SERIES, id);
         try {
-            JSONArray contributors = this.repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsBySeriesUri(seriesIRI.toString()));
+            JSONArray contributors = this.repositoryGestion.getResponseAsArray(OperationSeriesQueries.getCreatorsBySeriesUri(seriesIRI.toString()));
             List<String> stamps = new ArrayList<>();
             for (int i = 0; i < contributors.length(); i++) {
                 JSONObject obj = contributors.getJSONObject(i);

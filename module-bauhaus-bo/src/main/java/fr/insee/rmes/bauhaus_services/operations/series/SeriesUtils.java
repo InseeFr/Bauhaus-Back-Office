@@ -24,7 +24,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Series;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -134,7 +134,7 @@ public class SeriesUtils {
 
 
     public JSONObject getSeriesJsonById(String id, EncodingType encode) throws RmesException {
-        JSONObject series = repositoryGestion.getResponseAsObject(OpSeriesQueries.oneSeriesQuery(id, seriesRichTextNexStructure));
+        JSONObject series = repositoryGestion.getResponseAsObject(OperationSeriesQueries.oneSeriesQuery(id, seriesRichTextNexStructure));
         // check that the series exist
         if (JSONUtils.isEmpty(series)) {
             throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found",
@@ -154,7 +154,7 @@ public class SeriesUtils {
 
 
     public String getSeriesForSearch(String stamp) throws RmesException {
-        JSONArray resQuery = repositoryGestion.getResponseAsArray(OpSeriesQueries.getSeriesForSearch(stamp));
+        JSONArray resQuery = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getSeriesForSearch(stamp));
         JSONArray result = new JSONArray();
         Map<String, List<String>> creators = getAllSeriesCreators();
         Map<String, JSONArray> contribs = getOneTypeOfLink(DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
@@ -186,14 +186,14 @@ public class SeriesUtils {
     }
 
     private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
-        JSONArray operations = repositoryGestion.getResponseAsArray(OpSeriesQueries.getOperations(idSeries));
+        JSONArray operations = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getOperations(idSeries));
         if (!operations.isEmpty()) {
             series.put(Constants.OPERATIONS, operations);
         }
     }
 
     private void addGeneratedWith(String idSeries, JSONObject series) throws RmesException {
-        JSONArray generated = repositoryGestion.getResponseAsArray(OpSeriesQueries.getGeneratedWith(idSeries));
+        JSONArray generated = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getGeneratedWith(idSeries));
         if (!generated.isEmpty()) {
             generated = QueryUtils.transformRdfTypeInString(generated);
             series.put("generate", generated);
@@ -201,7 +201,7 @@ public class SeriesUtils {
     }
 
     private void addSeriesFamily(String idSeries, JSONObject series) throws RmesException {
-        JSONObject family = repositoryGestion.getResponseAsObject(OpSeriesQueries.getFamily(idSeries));
+        JSONObject family = repositoryGestion.getResponseAsObject(OperationSeriesQueries.getFamily(idSeries));
         series.put(Constants.FAMILY, family);
     }
 
@@ -227,7 +227,7 @@ public class SeriesUtils {
      */
     private void addOneTypeOfLink(String id, JSONObject series, IRI predicate, String resultType) throws RmesException {
 
-        JSONArray links = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesLinks(id, predicate, resultType));
+        JSONArray links = repositoryGestion.getResponseAsArray(OperationSeriesQueries.seriesLinks(id, predicate, resultType));
         if (!links.isEmpty()) {
             links = QueryUtils.transformRdfTypeInString(links);
         }
@@ -235,7 +235,7 @@ public class SeriesUtils {
     }
 
     private Map<String, JSONArray> getOneTypeOfLink(IRI predicate, String resultType) throws RmesException {
-        JSONArray links = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesLinks("", predicate, resultType));
+        JSONArray links = repositoryGestion.getResponseAsArray(OperationSeriesQueries.seriesLinks("", predicate, resultType));
         Map<String, JSONArray> map = new HashMap<>();
 
         if (!links.isEmpty()) {
@@ -260,13 +260,13 @@ public class SeriesUtils {
     }
 
     private void addSeriesCreators(String id, JSONObject series) throws RmesException {
-        JSONArray creators = repositoryGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsById(id));
+        JSONArray creators = repositoryGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsById(id));
         series.put(Constants.CREATORS, creators);
     }
 
     private Map<String, List<String>> getAllSeriesCreators() throws RmesException {
         Map<String, List<String>> map = new HashMap<>();
-        JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsById(""));
+        JSONArray creators = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getCreatorsById(""));
         if (!creators.isEmpty()) {
             for (int i = 0; i < creators.length(); i++) {
                 JSONObject crea = creators.getJSONObject(i);
@@ -495,7 +495,7 @@ public class SeriesUtils {
     }
 
     public boolean isSeriesAndOperationsExist(List<String> iris) throws RmesException {
-        var length = repositoryGestion.getResponseAsArray(OpSeriesQueries.checkIfSeriesExists(iris)).length();
+        var length = repositoryGestion.getResponseAsArray(OperationSeriesQueries.checkIfSeriesExists(iris)).length();
         return length == iris.size();
     }
 

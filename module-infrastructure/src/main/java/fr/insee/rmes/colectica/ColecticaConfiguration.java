@@ -8,6 +8,8 @@ import java.util.List;
 public record ColecticaConfiguration(
         boolean mockServerEnabled,
         String baseURI,
-        List<String> itemTypes
+        List<String> itemTypes,
+        String versionResponsibility,
+        String itemFormat
 ) {
 }

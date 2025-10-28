@@ -6,7 +6,7 @@ import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
-import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationItemsQueries;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,7 +47,7 @@ class ClassificationItemUtilsTest {
 
     @Test
     void shouldThrowExceptionIfPrefLabelLg2Null() {
-        ItemsQueries.setConfig(config);
+        ClassificationItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
         item.setPrefLabelLg1("label1");
@@ -68,7 +68,7 @@ class ClassificationItemUtilsTest {
         when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
 
         RdfUtils.setConfig(config);
-        ItemsQueries.setConfig(config);
+        ClassificationItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
         item.setPrefLabelLg1("label1");

@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.distribution;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -56,8 +57,8 @@ class DistributionServiceImplTest {
         array.put(new JSONObject().put("id", "1").put("labelLg1", "label"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.getDistributions(any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.getDistributions(any())).thenReturn("query");
             var distributions = distributionService.getDistributions();
             Assertions.assertEquals("1", distributions.getFirst().id());
             Assertions.assertEquals("label", distributions.getFirst().labelLg1());
@@ -84,8 +85,8 @@ class DistributionServiceImplTest {
                 .put("updated", "updated"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.getDistributionsForSearch(any(), any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.getDistributionsForSearch(any(), any())).thenReturn("query");
             var distributions = distributionService.getDistributionsForSearch();
             Assertions.assertEquals("id", distributions.getFirst().distributionId());
             Assertions.assertEquals("labelLg1", distributions.getFirst().distributionLabelLg1());
@@ -98,8 +99,8 @@ class DistributionServiceImplTest {
         object.put("id", "1");
 
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(object);
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.getDistribution(eq("1"), any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.getDistribution(eq("1"), any())).thenReturn("query");
             Distribution distribution = distributionService.getDistributionByID("1");
             Assertions.assertEquals("1", distribution.getId());
         }
@@ -107,8 +108,8 @@ class DistributionServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfIdDatasetNotDefinedWhenCreating() throws RmesException, JSONException {
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
 
 
@@ -124,8 +125,8 @@ class DistributionServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException {
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("idDataset", "idDataset");
 
@@ -141,8 +142,8 @@ class DistributionServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException, JSONException {
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
+        try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
+            mockedFactory.when(() -> DatasetDistributionQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("idDataset", "idDataset");
             body.put("labelLg1", "labelLg1");
@@ -165,7 +166,7 @@ class DistributionServiceImplTest {
     private void createANewDistribution(String nextId) throws RmesException {
         JSONObject mockJSON = new JSONObject(DISTRIB);
         try (
-                MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
+                MockedStatic<DatasetDistributionQueries> datasetQueriesMock = Mockito.mockStatic(DatasetDistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
@@ -174,8 +175,8 @@ class DistributionServiceImplTest {
 
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
 
-            datasetQueriesMock.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
-            datasetQueriesMock.when(() -> DistributionQueries.getDistribution(eq(nextId), any())).thenReturn("query " + nextId);
+            datasetQueriesMock.when(() -> DatasetDistributionQueries.lastDatasetId(any())).thenReturn("query");
+            datasetQueriesMock.when(() -> DatasetDistributionQueries.getDistribution(eq(nextId), any())).thenReturn("query " + nextId);
             when(repositoryGestion.getResponseAsObject("query " + nextId)).thenReturn(mockJSON);
 
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
@@ -223,12 +224,12 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/d1001");
 
         try (
-                MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
+                MockedStatic<DatasetDistributionQueries> datasetQueriesMock = Mockito.mockStatic(DatasetDistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
-            datasetQueriesMock.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
-            datasetQueriesMock.when(() -> DistributionQueries.getDistribution(eq("d1001"), any())).thenReturn("query d1001");
+            datasetQueriesMock.when(() -> DatasetDistributionQueries.lastDatasetId(any())).thenReturn("query");
+            datasetQueriesMock.when(() -> DatasetDistributionQueries.getDistribution(eq("d1001"), any())).thenReturn("query d1001");
 
             if (!withDataSetRemoval) {
                 JSONObject mockJSON = new JSONObject(DISTRIB);
@@ -352,11 +353,11 @@ class DistributionServiceImplTest {
         String stringDistributionIri = "http://bauhaus/catalogues/distribution/idtest";
         IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
         try(
-                MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
+                MockedStatic<DatasetDistributionQueries> distributionQueriesMock = Mockito.mockStatic(DatasetDistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class)
                 )
         {
-            distributionQueriesMock.when(() -> DistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");
+            distributionQueriesMock.when(() -> DatasetDistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");
             when(repositoryGestion.getResponseAsObject("query1 ")).thenReturn(mockJSON);
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(distributionUri);
             rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(distributionUri);
