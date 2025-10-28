@@ -1,6 +1,7 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.OrganisationOption;
 import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,35 @@ class StampResourcesTest {
         when(organisationService.getStamps()).thenReturn(expectedStamps);
 
         ResponseEntity<List<String>> response = stampResources.getStamps();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void shouldReturnOrganisationOptionsWhenGetOrganisationOptions() throws RmesException {
+        List<OrganisationOption> expectedOptions = List.of(
+                new OrganisationOption("DG75-A001", "Direction Générale 75 - Service A001"),
+                new OrganisationOption("DR13-DIR", "Direction Régionale 13 - Direction")
+        );
+        when(organisationService.getOrganisations()).thenReturn(expectedOptions);
+
+        ResponseEntity<List<OrganisationOption>> response = stampResources.getOrganisationOptions();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody().get(0).stamp()).isEqualTo("DG75-A001");
+        assertThat(response.getBody().get(0).label()).isEqualTo("Direction Générale 75 - Service A001");
+        assertThat(response.getBody().get(1).stamp()).isEqualTo("DR13-DIR");
+        assertThat(response.getBody().get(1).label()).isEqualTo("Direction Régionale 13 - Direction");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoOrganisations() throws RmesException {
+        List<OrganisationOption> expectedOptions = List.of();
+        when(organisationService.getOrganisations()).thenReturn(expectedOptions);
+
+        ResponseEntity<List<OrganisationOption>> response = stampResources.getOrganisationOptions();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEmpty();
