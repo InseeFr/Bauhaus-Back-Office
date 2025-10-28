@@ -9,6 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check if on main branch
+        run: |
+          if [[ "${{ github.ref_name }}" =~ ^v\d\d?.\d\d.\d\d-rc$ ]]; then
+          echo "Le nom de la référence correspond au motif."
+          else
+            echo "Le nom de la référence ne correspond PAS au motif."
+            exit 1
+          fi
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
