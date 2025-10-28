@@ -1,11 +1,20 @@
 package fr.insee.rmes.domain.services;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.OrganisationOption;
 import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.domain.port.serverside.OrganisationRepository;
 
 import java.util.List;
 
 public class OrganisationServiceImpl implements OrganisationService {
+
+    private final OrganisationRepository organisationRepository;
+
+    public OrganisationServiceImpl(OrganisationRepository organisationRepository) {
+        this.organisationRepository = organisationRepository;
+    }
+
     public static final List<String> stamps = List.of(
             "DG33-C990",
             "DG57-C003",
@@ -280,5 +289,10 @@ public class OrganisationServiceImpl implements OrganisationService {
     @Override
     public List<String> getStamps() throws RmesException {
         return stamps;
+    }
+
+    @Override
+    public List<OrganisationOption> getOrganisations() throws RmesException {
+        return organisationRepository.getOrganisations();
     }
 }
