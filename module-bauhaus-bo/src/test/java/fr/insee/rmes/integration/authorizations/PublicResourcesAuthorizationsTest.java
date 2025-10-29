@@ -1,6 +1,6 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
+import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,7 +38,7 @@ class PublicResourcesAuthorizationsTest extends AbstractResourcesEnvProd {
     private MockMvc mvc;
 
     @MockitoBean
-    private StampsService stampsService;
+    private OrganisationService organisationService;
 
     public static Stream<Arguments> endpointsProvider() {
         return Stream.of(PUBLIC_RESOURCES_ANT_PATTERNS).map(Arguments::of);

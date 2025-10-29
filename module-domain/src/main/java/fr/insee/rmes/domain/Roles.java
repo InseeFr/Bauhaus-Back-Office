@@ -1,4 +1,4 @@
-package fr.insee.rmes.infrastructure.rbac;
+package fr.insee.rmes.domain;
 
 public class Roles {
 

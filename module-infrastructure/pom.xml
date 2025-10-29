@@ -23,6 +23,11 @@
       <artifactId>module-sparql-orm</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-infrastructure-graphdb</artifactId>
+      <version>1.0.0</version>
+    </dependency>
 
     <!-- RDF4J dependencies for tests -->
     <dependency>

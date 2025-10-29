@@ -2,12 +2,12 @@ package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.infrastructure.rbac.Roles;
+import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
-import fr.insee.rmes.onion.infrastructure.stamps.RmesStampsImpl;
+import fr.insee.rmes.domain.services.UserServiceImpl;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
 import fr.insee.rmes.rbac.RbacFetcher;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
-        RmesStampsImpl.class,
+        UserServiceImpl.class,
         FakeUserConfiguration.class})
 class UserResourcesEnvHorsProdTest {
 

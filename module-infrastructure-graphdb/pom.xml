@@ -7,31 +7,21 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>module-testcontainer-graphdb</artifactId>
+  <artifactId>module-infrastructure-graphdb</artifactId>
   <version>1.0.0</version>
 
-  <name>module-testcontainer-graphdb</name>
+  <name>module-infrastructure-graphdb</name>
 
   <dependencies>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
-      <artifactId>module-infrastructure-graphdb</artifactId>
+      <artifactId>module-domain</artifactId>
       <version>1.0.0</version>
     </dependency>
 
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
     </dependency>
   </dependencies>
 

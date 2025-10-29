@@ -11,7 +11,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
-import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.domain.auth.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

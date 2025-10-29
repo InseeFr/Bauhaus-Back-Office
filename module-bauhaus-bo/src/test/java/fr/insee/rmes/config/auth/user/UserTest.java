@@ -1,5 +1,6 @@
 package fr.insee.rmes.config.auth.user;
 
+import fr.insee.rmes.domain.auth.User;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Objects;

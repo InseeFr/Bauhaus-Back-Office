@@ -3,8 +3,9 @@ package fr.insee.rmes.config.auth.security;
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
-import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.domain.auth.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.port.serverside.UserDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +42,7 @@ public class OpenIDConnectSecurityContext {
 
     public static final String TIMBRE_ANONYME = "bauhausGuest_STAMP";
     public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
-    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/stamps", "/disseminationStatus"};
+    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/disseminationStatus"};
 
     private final String stampClaim;
 

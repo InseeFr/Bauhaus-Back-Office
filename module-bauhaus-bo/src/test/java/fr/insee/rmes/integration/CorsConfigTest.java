@@ -2,8 +2,8 @@ package fr.insee.rmes.integration;
 
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
-import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
+import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.webservice.StampResources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = PublicResources.class, properties = {
+@WebMvcTest(controllers = StampResources.class, properties = {
         "fr.insee.rmes.bauhaus.cors.allowedOrigin=http://localhost:80",
         "fr.insee.rmes.bauhaus.appHost=http://myfront:80",
         "logging.level.org.springframework.web=debug"})
@@ -29,7 +29,7 @@ class CorsConfigTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private StampsService stampsService;
+    private OrganisationService organisationService;
 
     @ValueSource(strings = {
             "http://bauhaus",
