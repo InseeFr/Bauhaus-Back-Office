@@ -75,6 +75,7 @@ public class OpenIDConnectSecurityContext {
                                 .requestMatchers("/openapi.json").permitAll()
                                 .requestMatchers("/documents/document/*/file").permitAll()
                                 .requestMatchers("/operations/operation/codebook").permitAll()
+                                .requestMatchers("/api/colectica/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
                                 .anyRequest().authenticated()
                 );
