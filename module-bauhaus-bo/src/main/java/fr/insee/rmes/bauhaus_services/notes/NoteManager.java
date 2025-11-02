@@ -28,17 +28,19 @@ public class NoteManager {
 	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
 		List<VersionableNote> versionableNotes = concept.getVersionableNotes();
 		List<DatableNote> datableNotes = concept.getDatableNotes();
-		
+
 		String conceptId = concept.getId();
 		String conceptVersion = noteUtils.getConceptVersion(concept);
 
 		List<IRI> notesToDelete = new ArrayList<>();
 		List<IRI> notesToUpdate = new ArrayList<>();
-		
+
 		Set<String> versionableNoteTypesInConcept = new HashSet<>();
 
-		setVersionableNotes(concept, model, versionableNotes, conceptId, conceptVersion, notesToDelete,
-				versionableNoteTypesInConcept);
+		if (versionableNotes != null) {
+			setVersionableNotes(concept, model, versionableNotes, conceptId, conceptVersion, notesToDelete,
+					versionableNoteTypesInConcept);
+		}
 		
 		Set<String> versionableNoteTypes = new HashSet<>();
 		for (ConceptsVersionnedNoteTypes c : ConceptsVersionnedNoteTypes.values()) {
@@ -46,8 +48,10 @@ public class NoteManager {
 		}
 		versionableNoteTypes.removeAll(versionableNoteTypesInConcept);
 		setVersionableNoteTypes(concept, model, conceptId, conceptVersion, versionableNoteTypes);
-		
-		setDatableNotes(concept, model, datableNotes, conceptId, notesToDelete);
+
+		if (datableNotes != null) {
+			setDatableNotes(concept, model, datableNotes, conceptId, notesToDelete);
+		}
 		
 		// Keep historical notes
 		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);
