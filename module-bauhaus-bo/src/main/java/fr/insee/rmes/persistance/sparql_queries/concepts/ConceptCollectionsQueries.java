@@ -19,34 +19,16 @@ public class ConceptCollectionsQueries extends GenericQueries{
 		return  buildRequest("getCollections.ftlh", params);
 	}
 	
-	public static String collectionsDashboardQuery() {
-		return "SELECT ?id ?label ?created ?modified ?isValidated ?creator \n"
-			+ "(count(?member) AS ?nbMembers) \n"
-			+ "WHERE { \n"
-			+ "?collection rdf:type skos:Collection . \n"
-			+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
-			+ "?collection dcterms:title ?label . \n"
-			+ "?collection dcterms:created ?created . \n"
-			+ "OPTIONAL {?collection dcterms:modified ?modified} . \n"
-			+ "?collection insee:isValidated ?isValidated \n"
-			+ "OPTIONAL {?collection dc:creator ?creator} . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "')"
-			+ "?collection skos:member ?member . \n"
-			+ " } \n"
-			+ "GROUP BY ?id ?label ?created ?modified ?isValidated ?creator \n"
-			+ "ORDER BY ?label";	
+	public static String collectionsDashboardQuery() throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		return buildRequest("getCollectionsDashboard.ftlh", params);
 	}
 	
-	public static String collectionsToValidateQuery() {
-		return "SELECT DISTINCT ?id ?label ?creator \n"
-			+ "WHERE { \n"
-			+ "?collection rdf:type skos:Collection . \n"
-			+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
-			+ "?collection dcterms:title ?label . \n"
-			+ "?collection dc:creator ?creator . \n"
-			+ "?collection insee:isValidated 'false'^^xsd:boolean . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') } \n"
-			+ "ORDER BY ?label ";	
+	public static String collectionsToValidateQuery() throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		return buildRequest("getCollectionsToValidate.ftlh", params);
 	}
 	
 	public static String collectionQuery(String id) throws RmesException {
@@ -75,11 +57,10 @@ public class ConceptCollectionsQueries extends GenericQueries{
 		return  buildRequest("getCollectionConcepts.ftlh", params);
 	}
 
-	public static String isCollectionExist(String id) {
-		return "ASK { \n"
-				+ "?collection ?b ?c . \n"
-				+ "FILTER(STRENDS(STR(?collection),'/concepts/definitions/" + id + "')) . \n"
-				+ "}";
+	public static String isCollectionExist(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		return buildRequest("isCollectionExist.ftlh", params);
 	}
 	
 	  private ConceptCollectionsQueries() {

@@ -153,7 +153,7 @@ public class ConceptsUtils extends RdfService {
 		model.add(conceptURI, DC.CREATOR, RdfUtils.setLiteralString(concept.getCreator()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(concept.getContributor()), RdfUtils.conceptGraph());
 		model.add(conceptURI, INSEE.DISSEMINATIONSTATUS, RdfUtils.toURI(concept.getDisseminationStatus()), RdfUtils.conceptGraph());
-		model.add(conceptURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(concept.getCreated()), RdfUtils.conceptGraph());
+		RdfUtils.addTripleDateTime(conceptURI, DCTERMS.CREATED, concept.getCreated(), model, RdfUtils.conceptGraph());
 		/*Optional*/
 		RdfUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.conceptGraph());
 		List<String> altLabelsLg1 = concept.getAltLabelLg1();

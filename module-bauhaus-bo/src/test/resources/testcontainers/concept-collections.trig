@@ -1,0 +1,170 @@
+<http://rdf.insee.fr/graphes/concepts/> {
+    # Collection 1: Agriculture
+    <http://bauhaus/concepts/definitions/c1000>
+            a       <http://www.w3.org/2004/02/skos/core#Collection> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c1000" ;
+            <http://purl.org/dc/terms/title>
+                    "Collection Agriculture"@fr , "Agriculture Collection"@en ;
+            <http://purl.org/dc/terms/created>
+                    "2020-01-15T10:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://purl.org/dc/terms/modified>
+                    "2023-06-20T14:30:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://rdf.insee.fr/def/base#isValidated>
+                    "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    "DG75-L201" ;
+            <http://purl.org/dc/elements/1.1/contributor>
+                    "DG75-L201" ;
+            <http://www.w3.org/2004/02/skos/core#member>
+                    <http://bauhaus/concepts/definition/c1> ,
+                    <http://bauhaus/concepts/definition/c2> ,
+                    <http://bauhaus/concepts/definition/c3> .
+
+    # Collection 2: Commerce
+    <http://bauhaus/concepts/definitions/c2000>
+            a       <http://www.w3.org/2004/02/skos/core#Collection> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c2000" ;
+            <http://purl.org/dc/terms/title>
+                    "Collection Commerce"@fr , "Trade Collection"@en ;
+            <http://purl.org/dc/terms/created>
+                    "2021-03-10T09:15:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://purl.org/dc/terms/modified>
+                    "2023-09-05T11:45:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://rdf.insee.fr/def/base#isValidated>
+                    "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    "DG75-L202" ;
+            <http://purl.org/dc/elements/1.1/contributor>
+                    "DG75-L202" ;
+            <http://www.w3.org/2004/02/skos/core#member>
+                    <http://bauhaus/concepts/definition/c4> ,
+                    <http://bauhaus/concepts/definition/c5> .
+
+    # Collection 3: Emploi
+    <http://bauhaus/concepts/definitions/c3000>
+            a       <http://www.w3.org/2004/02/skos/core#Collection> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c3000" ;
+            <http://purl.org/dc/terms/title>
+                    "Collection Emploi et marché du travail"@fr , "Employment and Labour Market Collection"@en ;
+            <http://purl.org/dc/terms/created>
+                    "2019-11-22T08:30:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://rdf.insee.fr/def/base#isValidated>
+                    "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    "DG75-L203" ;
+            <http://purl.org/dc/elements/1.1/contributor>
+                    "DG75-L203" ;
+            <http://www.w3.org/2004/02/skos/core#member>
+                    <http://bauhaus/concepts/definition/c6> ,
+                    <http://bauhaus/concepts/definition/c7> ,
+                    <http://bauhaus/concepts/definition/c8> ,
+                    <http://bauhaus/concepts/definition/c9> .
+
+    # Collection 4: Démographie (non validée)
+    <http://bauhaus/concepts/definitions/c4000>
+            a       <http://www.w3.org/2004/02/skos/core#Collection> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c4000" ;
+            <http://purl.org/dc/terms/title>
+                    "Collection Démographie"@fr , "Demographics Collection"@en ;
+            <http://purl.org/dc/terms/created>
+                    "2024-01-10T13:20:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://rdf.insee.fr/def/base#isValidated>
+                    "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    "DG75-L204" ;
+            <http://purl.org/dc/elements/1.1/contributor>
+                    "DG75-L204" ;
+            <http://www.w3.org/2004/02/skos/core#member>
+                    <http://bauhaus/concepts/definition/c10> .
+
+    # Collection 5: Sans membres
+    <http://bauhaus/concepts/definitions/c5000>
+            a       <http://www.w3.org/2004/02/skos/core#Collection> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c5000" ;
+            <http://purl.org/dc/terms/title>
+                    "Collection Vide"@fr , "Empty Collection"@en ;
+            <http://purl.org/dc/terms/created>
+                    "2024-02-01T10:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://rdf.insee.fr/def/base#isValidated>
+                    "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    "DG75-L205" ;
+            <http://purl.org/dc/elements/1.1/contributor>
+                    "DG75-L205" .
+
+    # Concepts membres
+    <http://bauhaus/concepts/definition/c1>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Exploitation agricole"@fr , "Farm"@en .
+
+    <http://bauhaus/concepts/definition/c2>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Surface agricole"@fr , "Agricultural area"@en .
+
+    <http://bauhaus/concepts/definition/c3>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Production agricole"@fr , "Agricultural production"@en .
+
+    <http://bauhaus/concepts/definition/c4>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Commerce de détail"@fr , "Retail trade"@en .
+
+    <http://bauhaus/concepts/definition/c5>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c5" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Commerce de gros"@fr , "Wholesale trade"@en .
+
+    <http://bauhaus/concepts/definition/c6>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c6" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Taux de chômage"@fr , "Unemployment rate"@en .
+
+    <http://bauhaus/concepts/definition/c7>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c7" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Population active"@fr , "Labour force"@en .
+
+    <http://bauhaus/concepts/definition/c8>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c8" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Contrat de travail"@fr , "Employment contract"@en .
+
+    <http://bauhaus/concepts/definition/c9>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c9" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Salaire minimum"@fr , "Minimum wage"@en .
+
+    <http://bauhaus/concepts/definition/c10>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c10" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Population totale"@fr , "Total population"@en .
+}

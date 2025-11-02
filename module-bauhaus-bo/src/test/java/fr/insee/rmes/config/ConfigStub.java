@@ -69,4 +69,19 @@ public class ConfigStub extends Config {
     public String getConceptsGraph() {
         return "http://rdf.insee.fr/graphes/concepts/";
     }
+
+    @Override
+    public String getBaseUriGestion() {
+        return "http://bauhaus/";
+    }
+
+    @Override
+    public String getConceptsScheme() {
+        return "concepts/definitions/scheme";
+    }
+
+    @Override
+    public String getBaseGraph() {
+        return "http://rdf.insee.fr/graphes/";
+    }
 }
