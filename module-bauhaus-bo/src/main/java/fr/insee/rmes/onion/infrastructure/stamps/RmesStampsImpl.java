@@ -7,14 +7,16 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Stamp;
 import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import org.springframework.stereotype.Service;
+import fr.insee.rmes.config.auth.security.JwtProperties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public record RmesStampsImpl(UserDecoder userDecoder) implements StampsService {
+public record RmesStampsImpl(UserDecoder userDecoder, JwtProperties jwtProperties) implements StampsService {
 
 
-	public static final List<String> stamps = List.of(
+	private static final List<String> BASE_STAMPS = List.of(
 			"DG33-C990",
 			"DG57-C003",
 			"DG57-C060",
@@ -282,14 +284,12 @@ public record RmesStampsImpl(UserDecoder userDecoder) implements StampsService {
 			"SSM-DSED",
 			"SSM-DESSI",
 			"SSM-SIES",
-			"SSM-DEPS",
-			OpenIDConnectSecurityContext.TIMBRE_ANONYME
+			"SSM-DEPS"
 	);
-
 
 	@Override
 	public List<String> getStamps() {
-		return stamps;
+		return new ArrayList<>(BASE_STAMPS);
 	}
 
 	@Override

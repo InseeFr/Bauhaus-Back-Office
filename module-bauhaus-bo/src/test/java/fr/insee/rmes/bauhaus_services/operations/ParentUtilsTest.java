@@ -107,13 +107,13 @@ class ParentUtilsTest {
         try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class);
              MockedStatic<ParentQueries> mockedParentQueries = Mockito.mockStatic(ParentQueries.class);
              MockedStatic<OperationSeriesQueries> mockedOpSeriesQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
-            
+
             mockedRdfUtils.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, testId)).thenReturn(seriesIRI);
             mockedRdfUtils.when(() -> RdfUtils.toString(seriesIRI)).thenReturn(uriParent);
             
             mockedParentQueries.when(() -> ParentQueries.checkIfExists(uriParent)).thenReturn("mock-parent-query");
             mockedOpSeriesQueries.when(() -> OperationSeriesQueries.checkIfSeriesHasOperation(uriParent)).thenReturn("mock-operation-query");
-            
+
             when(repoGestion.getResponseAsBoolean("mock-parent-query")).thenReturn(true);
             when(repoGestion.getResponseAsBoolean("mock-operation-query")).thenReturn(true);
             
