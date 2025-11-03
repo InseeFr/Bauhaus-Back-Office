@@ -8,9 +8,12 @@ import fr.insee.rmes.domain.model.ddi.*;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,7 +23,6 @@ import java.util.Map;
 @Repository
 public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
-    private static final String DDI_API_BASE_URL = "https://poc-ddi-insee.netlify.app/.netlify/functions/api";
 
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration colecticaConfiguration;
@@ -99,14 +101,21 @@ public class DDIRepositoryImpl implements DDIRepository {
             return cachedDdi4Response;
         }
 
-        logger.info("Fetching DDI4 Physical Instance from external API");
-        String jsonResponse = restTemplate.getForObject(DDI_API_BASE_URL, String.class);
+        logger.info("Loading DDI4 Physical Instance from static JSON file");
 
         Ddi4Response response = null;
         try {
+            ClassPathResource resource = new ClassPathResource("sample-ddi4-data.json");
+            String jsonResponse = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+            // Remove BOM if present
+            if (jsonResponse.startsWith("\uFEFF")) {
+                jsonResponse = jsonResponse.substring(1);
+            }
+
             response = objectMapper.readValue(jsonResponse, Ddi4Response.class);
-        } catch (Exception e) {
-            logger.error("Error parsing JSON response from external API", e);
+        } catch (IOException e) {
+            logger.error("Error loading or parsing JSON from static file", e);
             return null;
         }
 
