@@ -15,7 +15,7 @@ import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -68,7 +68,7 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public String createID() throws RmesException {
-		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
+		JSONObject json = repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID());
 		if (json != null && !json.isEmpty()) {
 			String notation = json.getString(Constants.NOTATION);
 			int id = Integer.parseInt(notation.substring(1))+1;
@@ -81,9 +81,9 @@ public class ConceptsUtils extends RdfService {
 		if (!checkIfConceptExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
 		}
-		JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
-		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg1()));
-		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg2()));
+		JSONObject concept = repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptQuery(id));
+		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptConceptsQueries.altLabel(id, config.getLg1()));
+		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptConceptsQueries.altLabel(id, config.getLg2()));
 		if(!altLabelLg1.isEmpty()) {
 			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
 		}
@@ -153,7 +153,7 @@ public class ConceptsUtils extends RdfService {
 		model.add(conceptURI, DC.CREATOR, RdfUtils.setLiteralString(concept.getCreator()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(concept.getContributor()), RdfUtils.conceptGraph());
 		model.add(conceptURI, INSEE.DISSEMINATIONSTATUS, RdfUtils.toURI(concept.getDisseminationStatus()), RdfUtils.conceptGraph());
-		model.add(conceptURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(concept.getCreated()), RdfUtils.conceptGraph());
+		RdfUtils.addTripleDateTime(conceptURI, DCTERMS.CREATED, concept.getCreated(), model, RdfUtils.conceptGraph());
 		/*Optional*/
 		RdfUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.conceptGraph());
 		List<String> altLabelsLg1 = concept.getAltLabelLg1();
@@ -195,23 +195,23 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public JSONArray getGraphsWithConcept(String id) throws RmesException {
-		return repoGestion.getResponseAsArray(ConceptsQueries.getGraphWithConceptQuery(id));
+		return repoGestion.getResponseAsArray(ConceptConceptsQueries.getGraphWithConceptQuery(id));
 	}
 
 	public JSONArray getRelatedConcepts(String id)  throws RmesException{
-		return repoGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
+		return repoGestion.getResponseAsArray(ConceptConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
 	public HttpStatus deleteConcept(String id) throws RmesException{
-		HttpStatus result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+		HttpStatus result =  repoGestion.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		if (result.equals(HttpStatus.OK)) {
-			result = repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+			result = repositoryPublication.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		}
 		return result;
 	}
 
 	public boolean checkIfConceptExists(String id) throws RmesException {
-		return repoGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists(id));
+		return repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id));
 	}
 
 

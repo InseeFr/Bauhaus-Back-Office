@@ -17,7 +17,7 @@ import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.model.structures.Structure;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.persistance.sparql_queries.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;

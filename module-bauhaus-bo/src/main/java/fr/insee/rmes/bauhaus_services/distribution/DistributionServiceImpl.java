@@ -9,6 +9,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.*;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -78,7 +79,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public List<PartialDistribution> getDistributions() throws RmesException {
-        var distributions =  this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph()));
+        var distributions =  this.repoGestion.getResponseAsArray(DatasetDistributionQueries.getDistributions(getDistributionGraph()));
         return DiacriticSorter.sort(distributions,
                 PartialDistribution[].class,
                 PartialDistribution::labelLg1);
@@ -86,7 +87,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
-        var distributions = this.repoGestion.getResponseAsArray(DistributionQueries.getDistributionsForSearch(getDistributionGraph(), getAdmsGraph()));
+        var distributions = this.repoGestion.getResponseAsArray(DatasetDistributionQueries.getDistributionsForSearch(getDistributionGraph(), getAdmsGraph()));
         return DiacriticSorter.sort(distributions,
                 DistributionsForSearch[].class,
                 DistributionsForSearch::labelLg1);
@@ -94,7 +95,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public Distribution getDistributionByID(String id) throws RmesException {
-        JSONObject distributionRaw = repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
+        JSONObject distributionRaw = repoGestion.getResponseAsObject(DatasetDistributionQueries.getDistribution(id, getDistributionGraph()));
 
         if (distributionRaw.isEmpty()){
             throw new RmesNotFoundException("This distribution does not exist");

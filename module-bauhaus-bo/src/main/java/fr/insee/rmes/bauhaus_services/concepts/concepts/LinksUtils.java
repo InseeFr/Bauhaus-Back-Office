@@ -14,6 +14,9 @@ public class LinksUtils {
 	public void createRdfLinks(IRI conceptURI, List<Link> links, Model model) {
 
 		// Create links
+		if (links == null) {
+			return;
+		}
 		links.forEach(link -> {
 			if (link.getTypeOfLink().equals("narrower")) {
 				addTripleNarrower(conceptURI, link.getIds(), model);
