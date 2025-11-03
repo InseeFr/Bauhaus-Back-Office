@@ -31,11 +31,11 @@ jobs:
           java-version: '25'
           distribution: 'corretto'
       - name: Run unit tests
-        run: mvn -B clean test -DexcludedGroups="integration"
+        run: mvn -T 1C clean -B clean test -DexcludedGroups="integration"
       - name: Run TestContainer
-        run: mvn -B clean test -Dgroups="integration"
+        run: mvn -T 1C clean -B clean test -Dgroups="integration"
       - name: Run Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pcoverage
+        run: mvn -T 1C clean -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pcoverage
