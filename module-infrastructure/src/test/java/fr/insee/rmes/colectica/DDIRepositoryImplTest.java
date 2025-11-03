@@ -133,12 +133,20 @@ class DDIRepositoryImplTest {
     void shouldGetPhysicalInstanceById() throws Exception {
         // Given
         String instanceId = "pi-123";
-        String expectedUrl = "https://poc-ddi-insee.netlify.app/.netlify/functions/api";
-        String jsonResponse = "{\"physicalInstance\":[],\"dataRelationship\":[]}";
-        
-        when(restTemplate.getForObject(expectedUrl, String.class)).thenReturn(jsonResponse);
-        when(objectMapper.readValue(jsonResponse, Ddi4Response.class))
-                .thenReturn(new Ddi4Response(null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of()));
+
+        // Mock the ObjectMapper to return a simple Ddi4Response without loading the actual file
+        Ddi4Response mockResponse = new Ddi4Response(
+            null,
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of()
+        );
+
+        when(objectMapper.readValue(any(String.class), eq(Ddi4Response.class)))
+                .thenReturn(mockResponse);
 
         // When
         Ddi4Response result = ddiRepository.getPhysicalInstance(instanceId);
@@ -147,7 +155,8 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertNotNull(result.dataRelationship());
-        
-        verify(restTemplate).getForObject(expectedUrl, String.class);
+
+        // Verify ObjectMapper was called
+        verify(objectMapper).readValue(any(String.class), eq(Ddi4Response.class));
     }
 }
