@@ -283,6 +283,7 @@
     <module>module-sparql-orm</module>
     <module>module-infrastructure</module>
     <module>module-testcontainer-graphdb</module>
+    <module>module-infrastructure-graphdb</module>
     <module>module-bauhaus-bo</module>
   </modules>
 </project>
