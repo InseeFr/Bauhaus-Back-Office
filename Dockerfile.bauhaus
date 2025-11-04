@@ -13,6 +13,8 @@ COPY ./module-sparql-orm/ ./module-sparql-orm
 COPY ./module-testcontainer-graphdb/ ./module-testcontainer-graphdb
 
 RUN chmod +x mvnw
+RUN apt update && apt install dos2unix
+RUN dos2unix .mvnw
 RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X
 
 FROM eclipse-temurin:25-jre-jammy
