@@ -10,7 +10,10 @@ import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.OrganisationOption;
+import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.MSD;
@@ -57,7 +60,9 @@ public class DocumentationExport {
 	final CodesListExport codeListServiceImpl;
 	
 	final OrganizationsService organizationsServiceImpl;
-	
+
+	final OrganisationService organisationService;
+
 	final DocumentationsUtils documentationsUtils;
 	final DocumentsUtils documentsUtils;
 	static final String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
@@ -74,7 +79,7 @@ public class DocumentationExport {
 			ExportUtils exportUtils,
 			SeriesUtils seriesUtils,
 			OperationsUtils operationsUtils,
-			IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, DocumentationsUtils documentationsUtils) {
+			IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
 		this.seriesUtils = seriesUtils;
 		this.operationsUtils = operationsUtils;
@@ -82,6 +87,7 @@ public class DocumentationExport {
 		this.parentUtils = parentUtils;
 		this.codeListServiceImpl = codeListServiceImpl;
 		this.organizationsServiceImpl = organizationsServiceImpl;
+		this.organisationService = organisationService;
 		this.documentationsUtils = documentationsUtils;
 		this.documentsUtils = documentsUtils;
 		this.maxLength = maxLength;
@@ -248,6 +254,7 @@ public class DocumentationExport {
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
 			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
+			transformCreatorsStampsToLabels(series);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -255,8 +262,9 @@ public class DocumentationExport {
 
 
 		if (targetType.equals(Constants.INDICATOR_UP)) {
-			indicatorXML=XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase,true));
+			Indicator indicator = indicatorsUtils.getIndicatorById(idDatabase,true);
+			transformIndicatorCreatorsStampsToLabels(indicator);
+			indicatorXML=XMLUtils.produceXMLResponse(indicator);
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries = XMLUtils.getTagValues(
@@ -265,6 +273,7 @@ public class DocumentationExport {
 							Constants.WASGENERATEDBY).getFirst(),
 					Constants.ID).getFirst();
 			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
+			transformCreatorsStampsToLabels(series);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -272,8 +281,9 @@ public class DocumentationExport {
 
 
 		if (targetType.equals(Constants.SERIES_UP)) {
-			seriesXML=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase,EncodingType.XML));
+			series = seriesUtils.getSeriesById(idDatabase,EncodingType.XML);
+			transformCreatorsStampsToLabels(series);
+			seriesXML=XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
@@ -308,6 +318,91 @@ public class DocumentationExport {
 	private String buildShellSims() throws RmesException {
 		MSD msd= documentationsUtils.getMSD();
 		return XMLUtils.produceXMLResponse(msd);
+	}
+
+	/**
+	 * Transforms organization stamps to organization labels using batch retrieval for better performance
+	 * @param stamps List of organization stamps to transform
+	 * @return List of organization labels (never null, returns empty list if input is null or empty)
+	 * @throws RmesException if organization retrieval fails
+	 */
+	private List<String> transformStampsToLabels(List<String> stamps) throws RmesException {
+		// Null safety - return empty list instead of null
+		if (stamps == null || stamps.isEmpty()) {
+			return stamps != null ? stamps : Collections.emptyList();
+		}
+
+		// Validation - filter out null or blank stamps
+		List<String> validStamps = stamps.stream()
+				.filter(stamp -> stamp != null && !stamp.isBlank())
+				.distinct()
+				.collect(Collectors.toList());
+
+		if (validStamps.isEmpty()) {
+			logger.debug("No valid stamps to transform");
+			return Collections.emptyList();
+		}
+
+		logger.debug("Transforming {} organization stamps to labels (batch mode)", validStamps.size());
+
+		// Batch retrieval for better performance
+		Map<String, OrganisationOption> organisationsMap;
+		try {
+			organisationsMap = organisationService.getOrganisationsMap(validStamps);
+		} catch (Exception e) {
+			logger.error("Failed to batch retrieve organizations, falling back to original stamps: {}", e.getMessage());
+			return stamps;
+		}
+
+		int successCount = 0;
+		int notFoundCount = 0;
+
+		List<String> transformedCreators = new ArrayList<>();
+		for (String stamp : stamps) {
+			// Handle null or blank stamps
+			if (stamp == null || stamp.isBlank()) {
+				logger.debug("Skipping null or blank stamp");
+				continue;
+			}
+
+			OrganisationOption organisation = organisationsMap.get(stamp);
+			if (organisation != null && organisation.label() != null && !organisation.label().isEmpty()) {
+				transformedCreators.add(organisation.label());
+				successCount++;
+			} else {
+				// If organization not found or has no label, keep the stamp
+				transformedCreators.add(stamp);
+				notFoundCount++;
+				if (organisation == null) {
+					logger.debug("Organization not found for stamp: {}", stamp);
+				} else {
+					logger.debug("Organization found but has no label for stamp: {}", stamp);
+				}
+			}
+		}
+
+		logger.debug("Transformation complete: {} succeeded, {} not found (kept original stamps)",
+				successCount, notFoundCount);
+
+		return transformedCreators;
+	}
+
+	/**
+	 * Transforms organization stamps in series creators to organization labels
+	 * @param series The series object to transform
+	 * @throws RmesException if organization retrieval fails
+	 */
+	private void transformCreatorsStampsToLabels(Series series) throws RmesException {
+		series.setCreators(transformStampsToLabels(series.getCreators()));
+	}
+
+	/**
+	 * Transforms organization stamps in indicator creators to organization labels
+	 * @param indicator The indicator object to transform
+	 * @throws RmesException if organization retrieval fails
+	 */
+	private void transformIndicatorCreatorsStampsToLabels(Indicator indicator) throws RmesException {
+		indicator.setCreators(transformStampsToLabels(indicator.getCreators()));
 	}
 
 	private interface Exporter{

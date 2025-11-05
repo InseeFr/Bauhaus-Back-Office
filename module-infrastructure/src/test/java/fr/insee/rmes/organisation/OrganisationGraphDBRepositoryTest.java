@@ -97,4 +97,62 @@ class OrganisationGraphDBRepositoryTest {
         assertThat(query).contains("adms:identifier");
         assertThat(query).contains("skos:prefLabel");
     }
+
+    @Test
+    void shouldReturnOrganisationByIdentifier() throws RmesException {
+        // Given
+        String identifier = "DG75-A001";
+        JSONArray mockResponse = new JSONArray();
+        JSONObject org = new JSONObject();
+        org.put("stamp", "DG75-A001");
+        org.put("label", "Direction Générale 75 - Service A001");
+        mockResponse.put(org);
+
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        // When
+        OrganisationOption result = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.stamp()).isEqualTo("DG75-A001");
+        assertThat(result.label()).isEqualTo("Direction Générale 75 - Service A001");
+    }
+
+    @Test
+    void shouldReturnNullWhenOrganisationNotFound() throws RmesException {
+        // Given
+        String identifier = "UNKNOWN";
+        JSONArray emptyResponse = new JSONArray();
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(emptyResponse);
+
+        // When
+        OrganisationOption result = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldBuildQueryWithIdentifierParameter() throws RmesException {
+        // Given
+        String identifier = "DG75-A001";
+        JSONArray mockResponse = new JSONArray();
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+
+        // When
+        repository.getOrganisation(identifier);
+
+        // Then
+        verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
+        String query = queryCaptor.getValue();
+
+        assertThat(query).contains("http://rdf.insee.fr/graphes/organisations/insee");
+        assertThat(query).contains("'fr'");
+        assertThat(query).contains("adms:identifier");
+        assertThat(query).contains("skos:prefLabel");
+        assertThat(query).contains("\"DG75-A001\"");
+    }
 }

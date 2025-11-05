@@ -51,4 +51,49 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
 
         return organisations;
     }
+
+    @Override
+    public OrganisationOption getOrganisation(String identifier) throws RmesException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("ORGANIZATIONS_GRAPH", organizationsGraph);
+        params.put("LANG", language);
+        params.put("IDENTIFIER", identifier);
+
+        String query = FreeMarkerUtils.buildRequest("organisations/", "getOrganisation.ftlh", params);
+        JSONArray results = repositoryGestion.getResponseAsArray(query);
+
+        if (results.isEmpty()) {
+            return null;
+        }
+
+        JSONObject org = results.getJSONObject(0);
+        String stamp = org.getString("stamp");
+        String label = org.getString("label");
+        return new OrganisationOption(stamp, label);
+    }
+
+    @Override
+    public Map<String, OrganisationOption> getOrganisationsMap(List<String> identifiers) throws RmesException {
+        if (identifiers == null || identifiers.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ORGANIZATIONS_GRAPH", organizationsGraph);
+        params.put("LANG", language);
+        params.put("IDENTIFIERS", identifiers);
+
+        String query = FreeMarkerUtils.buildRequest("organisations/", "getOrganisationsMap.ftlh", params);
+        JSONArray results = repositoryGestion.getResponseAsArray(query);
+
+        Map<String, OrganisationOption> organisationsMap = new HashMap<>();
+        for (int i = 0; i < results.length(); i++) {
+            JSONObject org = results.getJSONObject(i);
+            String stamp = org.getString("stamp");
+            String label = org.getString("label");
+            organisationsMap.put(stamp, new OrganisationOption(stamp, label));
+        }
+
+        return organisationsMap;
+    }
 }

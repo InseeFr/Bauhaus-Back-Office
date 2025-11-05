@@ -13,13 +13,7 @@
     <name>module-infrastructure-graphdb</name>
 
     <dependencies>
-        <dependency>
-            <groupId>fr.insee.rmes</groupId>
-            <artifactId>module-domain</artifactId>
-            <version>1.0.0</version>
-        </dependency>
 
-  <dependencies>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-domain</artifactId>

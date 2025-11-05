@@ -4,13 +4,7 @@ WORKDIR /opt/app
 COPY .mvn/ .mvn
 COPY mvnw mvnw
 
-COPY ./pom.xml ./
-COPY ./module-bauhaus-bo/ ./module-bauhaus-bo
-COPY ./module-domain/ ./module-domain
-COPY ./module-infrastructure/ ./module-infrastructure
-COPY ./module-sparql-orm/ ./module-sparql-orm
-COPY ./module-testcontainer-graphdb/ ./module-testcontainer-graphdb
-COPY ./module-infrastructure-graphdb/ ./module-infrastructure-graphdb
+COPY . .
 
 RUN chmod +x mvnw
 RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X
