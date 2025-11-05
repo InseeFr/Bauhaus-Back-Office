@@ -93,4 +93,61 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         // but we verify that we get results which implies the FILTER worked)
         assertThat(organisations.size()).isGreaterThan(0);
     }
+
+    @Test
+    void shouldReturnOrganisationByIdentifier() throws RmesException {
+        // Given
+        String identifier = "HIE2000069";
+
+        // When
+        OrganisationOption organisation = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(organisation).isNotNull();
+        assertThat(organisation.stamp()).isEqualTo("HIE2000069");
+        assertThat(organisation.label()).isNotBlank();
+        assertThat(organisation.label()).contains("Direction");
+    }
+
+    @Test
+    void shouldReturnNullWhenOrganisationNotFoundByIdentifier() throws RmesException {
+        // Given
+        String identifier = "UNKNOWN_IDENTIFIER";
+
+        // When
+        OrganisationOption organisation = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(organisation).isNull();
+    }
+
+    @Test
+    void shouldReturnOrganisationWithFrenchLabelByIdentifier() throws RmesException {
+        // Given
+        String identifier = "HIE2000076";
+
+        // When
+        OrganisationOption organisation = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(organisation).isNotNull();
+        assertThat(organisation.stamp()).isEqualTo("HIE2000076");
+        assertThat(organisation.label()).isNotBlank();
+    }
+
+    @Test
+    void shouldReturnDifferentOrganisationsByDifferentIdentifiers() throws RmesException {
+        // Given
+        String identifier1 = "HIE2000069";
+        String identifier2 = "HIE2000076";
+
+        // When
+        OrganisationOption organisation1 = repository.getOrganisation(identifier1);
+        OrganisationOption organisation2 = repository.getOrganisation(identifier2);
+
+        // Then
+        assertThat(organisation1).isNotNull();
+        assertThat(organisation2).isNotNull();
+        assertThat(organisation1.stamp()).isNotEqualTo(organisation2.stamp());
+    }
 }

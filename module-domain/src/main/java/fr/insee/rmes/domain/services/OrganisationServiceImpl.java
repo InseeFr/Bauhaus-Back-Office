@@ -295,4 +295,14 @@ public class OrganisationServiceImpl implements OrganisationService {
     public List<OrganisationOption> getOrganisations() throws RmesException {
         return organisationRepository.getOrganisations();
     }
+
+    @Override
+    public OrganisationOption getOrganisation(String identifier) throws RmesException {
+        return organisationRepository.getOrganisation(identifier);
+    }
+
+    @Override
+    public java.util.Map<String, OrganisationOption> getOrganisationsMap(java.util.List<String> identifiers) throws RmesException {
+        return organisationRepository.getOrganisationsMap(identifiers);
+    }
 }
