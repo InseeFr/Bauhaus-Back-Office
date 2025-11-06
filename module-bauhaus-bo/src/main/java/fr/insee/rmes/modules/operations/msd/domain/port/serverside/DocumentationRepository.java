@@ -1,9 +1,9 @@
-package fr.insee.rmes.onion.domain.port.serverside;
+package fr.insee.rmes.modules.operations.msd.domain.port.serverside;
 
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
-import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;
-import fr.insee.rmes.onion.domain.exceptions.operations.NotFoundAttributeException;
-import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRubricWithoutRangeException;
+import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
+import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
+import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 
 import java.util.List;
 

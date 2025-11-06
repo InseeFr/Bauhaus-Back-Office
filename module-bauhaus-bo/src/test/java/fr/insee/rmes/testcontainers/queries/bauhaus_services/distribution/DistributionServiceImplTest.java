@@ -4,7 +4,7 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.ValidationStatus;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.Tag;

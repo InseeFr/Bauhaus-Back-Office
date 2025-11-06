@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.ValidationStatus;
 import jakarta.validation.constraints.NotNull;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;

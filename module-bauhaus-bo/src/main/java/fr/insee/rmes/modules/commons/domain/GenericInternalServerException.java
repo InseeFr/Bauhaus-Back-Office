@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.domain.exceptions;
+package fr.insee.rmes.modules.commons.domain;
 
 public class GenericInternalServerException extends Exception {
 

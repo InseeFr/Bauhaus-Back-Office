@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.domain.exceptions.operations;
+package fr.insee.rmes.modules.operations.msd.domain;
 
 public class OperationDocumentationRubricWithoutRangeException extends Exception {
     private final String id;
