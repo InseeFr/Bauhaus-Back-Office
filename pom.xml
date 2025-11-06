@@ -235,7 +235,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <annotationProcessorPaths>
+           <annotationProcessorPaths>
             <path>
               <groupId>io.soabase.record-builder</groupId>
               <artifactId>record-builder-processor</artifactId>
