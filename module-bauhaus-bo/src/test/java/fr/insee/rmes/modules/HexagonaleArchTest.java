@@ -1,8 +1,6 @@
 package fr.insee.rmes.modules;
 
 import com.tngtech.archunit.core.domain.JavaClass;
-import com.tngtech.archunit.core.domain.JavaClasses;
-import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -11,7 +9,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
-import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -103,4 +101,39 @@ public class HexagonaleArchTest {
             .and().areInterfaces()
             .should(beImplementedIn(".infrastructure.", null))
             .because("All serverside ports defined in domain should be implemented in infrastructure package");
+
+    @ArchTest
+    public static final ArchRule repositoryNaming = classes()
+            .that().resideInAPackage("..serverside..")
+            .and().areInterfaces()
+            .should().haveSimpleNameEndingWith("Repository")
+            .because("Serverside ports should be named with 'Repository' suffix");
+
+    @ArchTest
+    public static final ArchRule serviceNaming = classes()
+            .that().resideInAPackage("..clientside..")
+            .and().areInterfaces()
+            .should().haveSimpleNameEndingWith("Service")
+            .because("Clientside ports should be named with 'Service' suffix");
+
+    @ArchTest
+    public static final ArchRule exceptionNaming = classes()
+            .that().resideInAPackage("..domain..")
+            .and().areAssignableTo(Exception.class)
+            .should().haveSimpleNameEndingWith("Exception")
+            .because("Domain exceptions should be named with 'Exception' suffix");
+
+    @ArchTest
+    public static final ArchRule configurationNaming = classes()
+            .that().areAnnotatedWith(Configuration.class)
+            .should().haveSimpleNameEndingWith("Configuration")
+            .because("Spring configuration classes should be named with 'Configuration' suffix");
+
+    // Port structure
+
+    @ArchTest
+    public static final ArchRule portsShouldBeInterfaces = classes()
+            .that().resideInAPackage("..port..")
+            .should().beInterfaces()
+            .because("All ports should be interfaces to define contracts");
 }
