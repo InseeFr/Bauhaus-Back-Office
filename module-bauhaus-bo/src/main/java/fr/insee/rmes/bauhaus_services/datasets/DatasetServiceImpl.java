@@ -9,7 +9,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.ValidationStatus;
 import fr.insee.rmes.model.dataset.*;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;

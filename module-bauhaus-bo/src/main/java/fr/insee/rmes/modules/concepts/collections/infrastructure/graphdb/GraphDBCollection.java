@@ -40,7 +40,6 @@ public record GraphDBCollection(
                 Objects.isNull(modified) ? null : LocalDateTime.parse(modified),
                 isValidated
         );
-
     }
 
     private Map<Lang, String> toLocalisedDescriptions() {
