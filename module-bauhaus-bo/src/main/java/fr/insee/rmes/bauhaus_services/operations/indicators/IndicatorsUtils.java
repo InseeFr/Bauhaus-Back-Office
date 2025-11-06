@@ -20,7 +20,7 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
