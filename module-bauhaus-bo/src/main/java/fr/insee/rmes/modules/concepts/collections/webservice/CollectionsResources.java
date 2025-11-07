@@ -1,17 +1,13 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
-import fr.insee.rmes.modules.concepts.collections.domain.CollectionsFetchException;
-import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
-import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection;
-import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionService;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
+import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,8 +17,8 @@ import java.util.List;
 @Tag(name = "ConceptsCollections", description = "Concept Collections API")
 @ConditionalOnModule("concepts")
 public class CollectionsResources {
-    private final CollectionService service;
-    public CollectionsResources(CollectionService service) {
+    private final CollectionsService service;
+    public CollectionsResources(CollectionsService service) {
         this.service = service;
     }
 
@@ -39,11 +35,16 @@ public class CollectionsResources {
     @GetMapping("/{id}")
     ResponseEntity<CollectionResponse> getConceptsCollectionById(@PathVariable String id){
         try {
-            return this.service.getCollection(id).map(
+            return this.service.getCollection(new CollectionId(id)).map(
                     collection ->  ResponseEntity.ok().body(CollectionResponse.fromDomain(collection))
             ).orElse(ResponseEntity.notFound().build());
         } catch (CollectionsFetchException e) {
             return  ResponseEntity.internalServerError().build();
         }
+    }
+
+    @PostMapping
+    ResponseEntity<String> createConcept( String id){
+        return null;
     }
 }

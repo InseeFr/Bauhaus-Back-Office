@@ -1,9 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
-import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
-import fr.insee.rmes.modules.concepts.collections.domain.model.Lang;
-import fr.insee.rmes.modules.concepts.collections.domain.model.LocalisedLabel;
-import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.*;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
@@ -26,7 +23,7 @@ public record GraphDBCollection(
 ) {
     Collection toDomain(){
         var partialCollection = new PartialCollection(
-                id,
+                new CollectionId(id),
                 new LocalisedLabel(prefLabelLg1, Lang.defaultLanguage())
         );
 
