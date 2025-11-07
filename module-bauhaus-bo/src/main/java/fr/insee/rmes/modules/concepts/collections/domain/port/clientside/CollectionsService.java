@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.concepts.collections.domain.port.serverside;
+package fr.insee.rmes.modules.concepts.collections.domain.port.clientside;
 
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
@@ -9,8 +9,8 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCo
 import java.util.List;
 import java.util.Optional;
 
-public interface CollectionsRepository {
-    List<PartialCollection> getCollections() throws CollectionsFetchException;
+public interface CollectionsService {
+    List<PartialCollection> getAllCollections() throws CollectionsFetchException;
     Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException;
-    CollectionId save(CreateCollectionCommand collection);
+    CollectionId createCollection(CreateCollectionCommand collectionCommand);
 }

@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
-import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
-import fr.insee.rmes.modules.concepts.collections.domain.model.Lang;
-import fr.insee.rmes.modules.concepts.collections.domain.model.LocalisedLabel;
-import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
+import fr.insee.rmes.modules.concepts.collections.domain.model.*;
+import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,11 +16,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class DomainCollectionsServiceTest {
 
-    static final String ID = "1";
+    static final CollectionId ID = new CollectionId("1");
     static final PartialCollection PARTIAL_COLLECTION = new PartialCollection(ID, new LocalisedLabel("fr", Lang.FR));
     static final Collection COLLECTION = new Collection(
             PARTIAL_COLLECTION,
@@ -35,7 +36,7 @@ class DomainCollectionsServiceTest {
 
     static final PartialCollection[] PARTIAL_COLLECTIONS = {
            PARTIAL_COLLECTION,
-            new PartialCollection("2", new LocalisedLabel("en", Lang.EN))
+            new PartialCollection(new CollectionId("2"), new LocalisedLabel("en", Lang.EN))
     };
 
     CollectionsRepository collectionsRepository;
@@ -66,6 +67,26 @@ class DomainCollectionsServiceTest {
         Optional<Collection> actualCollection = domainCollectionsService.getCollection(ID);
         //Then
         assertThat(actualCollection).contains(COLLECTION);
+    }
+
+    @Test
+    void collectionIdShouldBeReturnedWhenCollectionisCreated() throws CollectionsFetchException, InvalidCreateCollectionCommandException {
+        CreateCollectionCommand command = new CreateCollectionCommand(
+                new LocalisedLabel("label", Lang.defaultLanguage()),
+                null,
+                Collections.emptyMap(),
+                "HIE0010",
+                null,
+                Collections.emptyList()
+        );
+        //Given
+        when(collectionsRepository.save(command)).thenReturn(ID);
+        //When
+        CollectionId collectionId = domainCollectionsService.createCollection(command);
+        verify(collectionsRepository, times(1)).save(command);
+
+        //Then
+        assertThat(collectionId).isEqualTo(ID);
     }
 
 }
