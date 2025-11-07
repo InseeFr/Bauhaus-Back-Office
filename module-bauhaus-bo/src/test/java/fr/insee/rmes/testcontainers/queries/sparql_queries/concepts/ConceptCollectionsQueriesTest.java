@@ -40,7 +40,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         for (int i = 0; i < result.length(); i++) {
             JSONObject collection = result.getJSONObject(i);
             assertTrue(collection.has("id"), "Collection should have an id");
-            assertTrue(collection.has("label"), "Collection should have a label");
+            assertTrue(collection.has("value"), "Collection should have a value");
         }
     }
 
@@ -57,7 +57,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         JSONObject agricultureCollection = findCollectionById(result, "c1000");
         assertNotNull(agricultureCollection, "Agriculture collection should exist");
         assertEquals("3", agricultureCollection.getString("nbMembers"), "Agriculture collection should have 3 members");
-        assertEquals("Collection Agriculture", agricultureCollection.getString("label"));
+        assertEquals("Collection Agriculture", agricultureCollection.getString("value"));
         assertEquals("true", agricultureCollection.getString("isValidated"));
         assertEquals("DG75-L201", agricultureCollection.getString("creator"));
 
@@ -92,13 +92,13 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         // Verify Commerce collection
         JSONObject commerceCollection = findCollectionById(result, "c2000");
         assertNotNull(commerceCollection);
-        assertEquals("Collection Commerce", commerceCollection.getString("label"));
+        assertEquals("Collection Commerce", commerceCollection.getString("value"));
         assertEquals("DG75-L202", commerceCollection.getString("creator"));
 
         // Verify Démographie collection
         JSONObject demoCollection = findCollectionById(result, "c4000");
         assertNotNull(demoCollection);
-        assertEquals("Collection Démographie", demoCollection.getString("label"));
+        assertEquals("Collection Démographie", demoCollection.getString("value"));
         assertEquals("DG75-L204", demoCollection.getString("creator"));
     }
 
@@ -157,7 +157,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
             JSONObject concept = result.getJSONObject(i);
             if (concept.has("id") && concept.getString("id").equals("c1")) {
                 foundC1 = true;
-                assertTrue(concept.has("prefLabelLg1") || concept.has("label"));
+                assertTrue(concept.has("prefLabelLg1") || concept.has("value"));
             }
         }
         assertTrue(foundC1, "Should find concept c1 which is used as dimension");

@@ -72,12 +72,12 @@ class OperationFamilyQueriesTest {
     void shouldHandleNullValuesInCheckPrefLabelUnicity() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
-                    .thenReturn("ASK { ?s skos:prefLabel ?label }");
+                    .thenReturn("ASK { ?s skos:prefLabel ?value }");
 
             String result = OperationFamilyQueries.checkPrefLabelUnicity(null, null, null);
 
             assertNotNull(result);
-            assertEquals("ASK { ?s skos:prefLabel ?label }", result);
+            assertEquals("ASK { ?s skos:prefLabel ?value }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
