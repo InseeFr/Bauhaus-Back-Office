@@ -62,6 +62,6 @@ class ColecticaMockControllerIntegrationTest {
         var instance = controller.getPhysicalInstance("test-id");
         assertNotNull(instance);
         assertEquals("test-id", instance.get("id"));
-        assertEquals("Physical Instance test-id", instance.get("label"));
+        assertEquals("Physical Instance test-id", instance.get("value"));
     }
 }

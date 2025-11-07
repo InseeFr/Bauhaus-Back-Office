@@ -33,6 +33,6 @@ public class ColecticaMockResources {
 
     @GetMapping("/physical-instances/{id}")
     public Map<String, String> getPhysicalInstance(@PathVariable String id) {
-        return Map.of("id", id, "label", "Physical Instance " + id);
+        return Map.of("id", id, "value", "Physical Instance " + id);
     }
 }

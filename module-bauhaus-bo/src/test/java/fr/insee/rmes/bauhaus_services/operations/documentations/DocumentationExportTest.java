@@ -388,7 +388,7 @@ class DocumentationExportTest {
         assertThat(indicatorFile).contains("<id>DG75-L002</id>");
         assertThat(indicatorFile).contains("<labelLg1>Administration du comité du Label</labelLg1>");
 
-        // Verify creators (should contain organization label instead of stamp)
+        // Verify creators (should contain organization value instead of stamp)
         assertThat(indicatorFile).contains("<creators>");
         assertThat(indicatorFile).contains("<creators>Organisation HIE2004993</creators>");
 

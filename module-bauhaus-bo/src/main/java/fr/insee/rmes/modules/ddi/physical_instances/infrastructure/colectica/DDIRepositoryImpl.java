@@ -67,13 +67,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
     
     private String extractLabelFromItem(ColecticaItem item) {
-        // Extract label from ItemName or Label (both can have language variants)
+        // Extract value from ItemName or Label (both can have language variants)
         String label = extractLabelFromLanguageMap(item.itemName());
         if (label == null || label.trim().isEmpty()) {
             label = extractLabelFromLanguageMap(item.label());
         }
         if (label == null || label.trim().isEmpty()) {
-            label = item.identifier(); // Fallback to ID if no label found
+            label = item.identifier(); // Fallback to ID if no value found
         }
         return label;
     }
@@ -148,7 +148,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             var physicalInstances = cachedDdi4Response.physicalInstance();
             var dataRelationships = cachedDdi4Response.dataRelationship();
             
-            // Update Physical Instance label if present
+            // Update Physical Instance value if present
             if (physicalInstances != null && !physicalInstances.isEmpty() && request.physicalInstanceLabel() != null) {
                 var currentPI = physicalInstances.get(0);
                 var updatedTitle = new Title(

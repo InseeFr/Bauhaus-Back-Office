@@ -66,14 +66,14 @@ class DatasetServiceImplTest {
     @Test
     void shouldReturnDatasets() throws RmesException {
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label"));
+        array.put(new JSONObject().put("id", "1").put("value", "value"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
             var datasets = datasetService.getDatasets();
             Assertions.assertEquals("1", datasets.getFirst().id());
-            Assertions.assertEquals("label", datasets.getFirst().label());
+            Assertions.assertEquals("value", datasets.getFirst().label());
         }
     }
 
@@ -103,14 +103,14 @@ class DatasetServiceImplTest {
     @Test
     void getDatasetsForDistributionCreationWithStamp() throws RmesException {
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label"));
+        array.put(new JSONObject().put("id", "1").put("value", "value"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
             var datasets = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
             Assertions.assertEquals("1", datasets.getFirst().id());
-            Assertions.assertEquals("label", datasets.getFirst().label());
+            Assertions.assertEquals("value", datasets.getFirst().label());
         }
     }
 

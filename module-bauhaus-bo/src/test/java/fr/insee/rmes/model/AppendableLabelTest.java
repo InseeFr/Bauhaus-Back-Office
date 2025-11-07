@@ -12,7 +12,7 @@ class AppendableLabelTest {
     @Test
     void appendLabel_shouldAppendRight() {
         String id = "1";
-        String label = "label";
+        String label = "value";
         String altLabel1 = "alt 1";
         String altLabel2 = "alt 2";
         PartialConcept partialConcept = new PartialConcept(id, label, altLabel1);
@@ -27,7 +27,7 @@ class AppendableLabelTest {
     @Test
     void appendLabelWithBadRecord_shouldRaiseException() {
         String id = "1";
-        String label = "label";
+        String label = "value";
 
         BadRecord badRecord = new BadRecord(id, label);
         BadRecord other = new BadRecord(id, label);
@@ -39,7 +39,7 @@ class AppendableLabelTest {
     @Test
     void appendLabelWithBadRecord_shouldRaiseExceptionForBadTypeBecauseNull() {
         String id = "1";
-        String label = "label";
+        String label = "value";
         String expectedMessage = "Method 'public class fr.insee.rmes.model.AppendableLabelTest$AgainAnOtherBadRecord withAltLabels(String)' for '" + AgainAnOtherBadRecord.class + "' should return a type of " + AgainAnOtherBadRecord.class + " instead of null";
 
         AgainAnOtherBadRecord badRecord = new AgainAnOtherBadRecord(id, label);
