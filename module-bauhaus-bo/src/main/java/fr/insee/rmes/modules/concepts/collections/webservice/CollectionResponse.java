@@ -20,7 +20,7 @@ public record CollectionResponse(
 ) {
     static CollectionResponse fromDomain(Collection collection){
         return new CollectionResponse(
-            collection.partialCollection().id(),
+            collection.partialCollection().id().value(),
                 collection.partialCollection().prefLabel().label(),
                 collection.secondLabel().map(LocalisedLabel::label).orElse(""),
                 collection.created(),
@@ -28,8 +28,8 @@ public record CollectionResponse(
                 collection.descriptions().getOrDefault(Lang.defaultLanguage(), ""),
                 collection.descriptions().getOrDefault(Lang.alternativeLanguage(), ""),
                 collection.isValidated(),
-                collection.creator().orElse(null),
-                collection.contributor()
+                collection.creator(),
+                collection.contributor().orElse(null)
         );
     }
 }
