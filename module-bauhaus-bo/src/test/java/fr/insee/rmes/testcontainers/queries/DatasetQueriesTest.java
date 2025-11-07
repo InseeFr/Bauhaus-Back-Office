@@ -39,7 +39,7 @@ class DatasetQueriesTest extends WithGraphDBContainer {
     void should_return_all_archival_units() throws Exception {
         DatasetQueries.setConfig(new ConfigStub());
         JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getArchivageUnits());
-        assertEquals("diffusion Insee.fr", result.getJSONObject(0).getString("label"));
+        assertEquals("diffusion Insee.fr", result.getJSONObject(0).getString("value"));
         assertEquals("http://bauhaus/identifierSchemes/uniteArchivageNamingScheme/identifier/UA1", result.getJSONObject(0).getString("value"));
         assertEquals(1, result.length());
     }

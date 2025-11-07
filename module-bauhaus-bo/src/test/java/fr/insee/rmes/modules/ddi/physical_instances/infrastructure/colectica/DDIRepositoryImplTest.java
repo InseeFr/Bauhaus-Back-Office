@@ -64,7 +64,7 @@ class DDIRepositoryImplTest {
         ColecticaItem item1 = new ColecticaItem(
             null, // summary
             Map.of("fr-FR", "Instance Physique 1", "en", "Physical Instance 1"), // itemName
-            Map.of("fr-FR", "Label 1", "en", "Label 1"), // label
+            Map.of("fr-FR", "Label 1", "en", "Label 1"), // value
             null, // description
             null, // versionRationale
             0, // metadataRank
@@ -90,7 +90,7 @@ class DDIRepositoryImplTest {
         ColecticaItem item2 = new ColecticaItem(
             null, // summary
             Map.of("fr-FR", "Instance Physique 2", "en", "Physical Instance 2"), // itemName
-            Map.of("fr-FR", "Label 2", "en", "Label 2"), // label
+            Map.of("fr-FR", "Label 2", "en", "Label 2"), // value
             null, // description
             null, // versionRationale
             0, // metadataRank

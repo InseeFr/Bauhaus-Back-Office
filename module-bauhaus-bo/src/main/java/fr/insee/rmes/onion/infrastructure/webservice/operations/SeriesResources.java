@@ -82,7 +82,7 @@ public class SeriesResources  {
 	
 	/**
 	 * Get series where stamp is the creator
-	 * If only id, label, altlabel are needed, prefere /series/seriesWithStamp/{stamp}
+	 * If only id, value, altlabel are needed, prefere /series/seriesWithStamp/{stamp}
 	 */
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/advanced-search/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -161,7 +161,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 
-		//We check the unicity of the label
+		//We check the unicity of the value
 		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(GeographyQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
 		if(checkUnicityTerritory.has("territory") && !checkUnicityTerritory.getString("territory").equalsIgnoreCase(geoFeature.getUri())){
 			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The labelLg1 already exists");

@@ -30,7 +30,7 @@ class DatasetResourcesTest {
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
         List<PartialDataset> datasets = new ArrayList<>();
-        datasets.add(new PartialDataset("1", "label"));
+        datasets.add(new PartialDataset("1", "value"));
 
         when(datasetService.getDatasets()).thenReturn(datasets);
         Assertions.assertEquals(1, datasetResources.getDatasets().size());

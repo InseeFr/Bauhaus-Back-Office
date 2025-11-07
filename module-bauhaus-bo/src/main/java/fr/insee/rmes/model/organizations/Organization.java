@@ -18,7 +18,7 @@ public class Organization {
 	@Schema(description = "Label lg2")
 	public String labelLg2;
 
-	@Schema(description = "Alternative label")
+	@Schema(description = "Alternative value")
 	public String altLabel;
 
 	@Schema(description = "Uri of Type")

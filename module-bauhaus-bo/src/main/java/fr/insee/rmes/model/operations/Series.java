@@ -20,10 +20,10 @@ public class Series {
 	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-	@Schema(description = "Alternative label Lg1")
+	@Schema(description = "Alternative value Lg1")
 	public String altLabelLg1;
 
-	@Schema(description = "Alternative label Lg2")
+	@Schema(description = "Alternative value Lg2")
 	public String altLabelLg2;
 
 	@Schema(description = "Abstract Lg1")

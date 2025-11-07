@@ -126,10 +126,10 @@ class ClassificationsImplTest {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1"));
+        array.put(new JSONObject().put("id", "1").put("value", "value 1"));
+        array.put(new JSONObject().put("id", "2").put("value", "elabel 1"));
+        array.put(new JSONObject().put("id", "3").put("value", "alabel 1"));
+        array.put(new JSONObject().put("id", "4").put("value", "élabel 1"));
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
         var families = classificationImpl.getFamilies().stream().toList();
 
@@ -145,7 +145,7 @@ class ClassificationsImplTest {
         assertEquals("élabel 1", families.get(2).label());
 
         assertEquals("1", families.get(3).id());
-        assertEquals("label 1", families.get(3).label());
+        assertEquals("value 1", families.get(3).label());
     }
 
     @Test
@@ -153,11 +153,11 @@ class ClassificationsImplTest {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label 2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabels", "label"));
+        array.put(new JSONObject().put("id", "1").put("value", "value 1").put("altLabels", "value"));
+        array.put(new JSONObject().put("id", "1").put("value", "value 1").put("altLabels", "value 2"));
+        array.put(new JSONObject().put("id", "2").put("value", "elabel 1").put("altLabels", "value"));
+        array.put(new JSONObject().put("id", "3").put("value", "alabel 1").put("altLabels", "value"));
+        array.put(new JSONObject().put("id", "4").put("value", "élabel 1").put("altLabels", "value"));
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
         var series = classificationImpl.getSeries().stream().toList();
 
@@ -165,19 +165,19 @@ class ClassificationsImplTest {
 
         assertEquals("3", series.getFirst().id());
         assertEquals("alabel 1", series.get(0).label());
-        assertEquals("label", series.get(0).altLabels());
+        assertEquals("value", series.get(0).altLabels());
 
         assertEquals("2", series.get(1).id());
         assertEquals("elabel 1", series.get(1).label());
-        assertEquals("label", series.get(1).altLabels());
+        assertEquals("value", series.get(1).altLabels());
 
         assertEquals("4", series.get(2).id());
         assertEquals("élabel 1", series.get(2).label());
-        assertEquals("label", series.get(2).altLabels());
+        assertEquals("value", series.get(2).altLabels());
 
         assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("label || label 2", series.get(3).altLabels());
+        assertEquals("value 1", series.get(3).label());
+        assertEquals("value || value 2", series.get(3).altLabels());
     }
 
     @Test
@@ -185,11 +185,11 @@ class ClassificationsImplTest {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label 2"));
-        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabels", "label"));
+        array.put(new JSONObject().put("id", "1").put("value", "value 1").put("altLabels", "value"));
+        array.put(new JSONObject().put("id", "1").put("value", "value 1").put("altLabels", "value 2"));
+        array.put(new JSONObject().put("id", "2").put("value", "elabel 1").put("altLabels", "value"));
+        array.put(new JSONObject().put("id", "3").put("value", "alabel 1").put("altLabels", "value"));
+        array.put(new JSONObject().put("id", "4").put("value", "élabel 1").put("altLabels", "value"));
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
         var series = classificationImpl.getClassifications().stream().toList();
 
@@ -197,19 +197,19 @@ class ClassificationsImplTest {
 
         assertEquals("3", series.getFirst().id());
         assertEquals("alabel 1", series.get(0).label());
-        assertEquals("label", series.get(0).altLabels());
+        assertEquals("value", series.get(0).altLabels());
 
         assertEquals("2", series.get(1).id());
         assertEquals("elabel 1", series.get(1).label());
-        assertEquals("label", series.get(1).altLabels());
+        assertEquals("value", series.get(1).altLabels());
 
         assertEquals("4", series.get(2).id());
         assertEquals("élabel 1", series.get(2).label());
-        assertEquals("label", series.get(2).altLabels());
+        assertEquals("value", series.get(2).altLabels());
 
         assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("label || label 2", series.get(3).altLabels());
+        assertEquals("value 1", series.get(3).label());
+        assertEquals("value || value 2", series.get(3).altLabels());
     }
 
     @Test

@@ -36,10 +36,10 @@ class FamilyResourcesE2ETest extends BaseE2ETest {
             JsonNode firstFamily = jsonArray.get(0);
 
             Assertions.assertTrue(firstFamily.has("id"));
-            Assertions.assertTrue(firstFamily.has("label"));
+            Assertions.assertTrue(firstFamily.has("value"));
 
             String firstFamilyId = firstFamily.get("id").asText();
-            String firstFamilyLabel = firstFamily.get("label").asText();
+            String firstFamilyLabel = firstFamily.get("value").asText();
 
             var firstSeriesHref = firstFamily.get("_links").get("self").get("href").asText();
             Assertions.assertTrue(firstSeriesHref.contains("/api/operations/family/" + firstFamilyId));

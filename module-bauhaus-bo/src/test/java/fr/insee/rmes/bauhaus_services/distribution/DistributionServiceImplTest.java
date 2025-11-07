@@ -54,14 +54,14 @@ class DistributionServiceImplTest {
     @Test
     void shouldReturnDistributions() throws RmesException {
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("labelLg1", "label"));
+        array.put(new JSONObject().put("id", "1").put("labelLg1", "value"));
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetDistributionQueries> mockedFactory = Mockito.mockStatic(DatasetDistributionQueries.class)) {
             mockedFactory.when(() -> DatasetDistributionQueries.getDistributions(any())).thenReturn("query");
             var distributions = distributionService.getDistributions();
             Assertions.assertEquals("1", distributions.getFirst().id());
-            Assertions.assertEquals("label", distributions.getFirst().labelLg1());
+            Assertions.assertEquals("value", distributions.getFirst().labelLg1());
         }
     }
 

@@ -116,5 +116,6 @@ class ColecticaMockControllerIntegrationTest {
         AuthenticationRequest nullPassword = new AuthenticationRequest("username", null);
         ResponseEntity<AuthenticationResponse> response3 = controller.createToken(nullPassword);
         assertEquals(HttpStatus.UNAUTHORIZED, response3.getStatusCode());
+
     }
 }
