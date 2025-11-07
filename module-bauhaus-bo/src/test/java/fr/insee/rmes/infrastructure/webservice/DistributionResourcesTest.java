@@ -98,7 +98,7 @@ class DistributionResourcesTest {
         List<PartialDataset> datasets = new ArrayList<>();
         datasets.add(new PartialDataset(
                 "1",
-                "label"
+                "value"
         ));
 
         when(datasetService.getDatasets()).thenReturn(datasets);
@@ -111,7 +111,7 @@ class DistributionResourcesTest {
         List<PartialDataset> datasets = new ArrayList<>();
         datasets.add(new PartialDataset(
                 "1",
-                "label"
+                "value"
         ));
 
         when(datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf")).thenReturn(datasets);

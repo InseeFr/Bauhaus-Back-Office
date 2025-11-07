@@ -37,7 +37,7 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_false_if_label_does_not_exist() throws Exception {
         OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean result = repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkPrefLabelUnicity("1", "label", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkPrefLabelUnicity("1", "value", "fr"));
         assertFalse(result);
     }
 
