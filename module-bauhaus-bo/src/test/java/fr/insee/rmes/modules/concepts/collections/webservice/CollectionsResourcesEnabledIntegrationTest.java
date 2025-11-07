@@ -1,9 +1,12 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
@@ -19,6 +22,9 @@ class CollectionsResourcesEnabledIntegrationTest {
     @Import(CollectionsResources.class)
     static class TestConfiguration {
     }
+
+    @MockBean
+    private CollectionsService collectionsService;
 
     @Autowired
     private CollectionsResources collectionsResources;

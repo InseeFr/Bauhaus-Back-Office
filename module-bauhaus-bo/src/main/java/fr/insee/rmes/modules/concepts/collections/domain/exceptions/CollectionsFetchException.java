@@ -1,6 +1,4 @@
-package fr.insee.rmes.modules.concepts.collections.domain;
-
-import fr.insee.rmes.domain.exceptions.RmesException;
+package fr.insee.rmes.modules.concepts.collections.domain.exceptions;
 
 public class CollectionsFetchException extends Throwable {
     public CollectionsFetchException(Exception e) {

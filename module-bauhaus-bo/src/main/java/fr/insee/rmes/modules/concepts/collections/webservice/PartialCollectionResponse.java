@@ -4,6 +4,6 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection
 
 public record PartialCollectionResponse(String id, String label) {
     static PartialCollectionResponse fromDomain(PartialCollection collection){
-        return new PartialCollectionResponse(collection.id(), collection.prefLabel().label());
+        return new PartialCollectionResponse(collection.id().value(), collection.prefLabel().label());
     }
 }

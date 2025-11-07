@@ -1,14 +1,17 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection;
-import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionService;
+import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
+import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public class DomainCollectionsService implements CollectionService {
+public class DomainCollectionsService implements CollectionsService {
 
     private final CollectionsRepository repository;
 
@@ -22,7 +25,12 @@ public class DomainCollectionsService implements CollectionService {
     }
 
     @Override
-    public Optional<Collection> getCollection(String id) throws CollectionsFetchException {
+    public Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException {
         return this.repository.getCollection(id);
+    }
+
+    @Override
+    public CollectionId createCollection(CreateCollectionCommand collectionCommand) {
+        return this.repository.save(collectionCommand);
     }
 }
