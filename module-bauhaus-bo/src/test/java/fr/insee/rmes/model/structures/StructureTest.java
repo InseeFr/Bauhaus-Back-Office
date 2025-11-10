@@ -1,6 +1,8 @@
 package fr.insee.rmes.model.structures;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.structures.structures.domain.model.ComponentDefinition;
+import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Objects;

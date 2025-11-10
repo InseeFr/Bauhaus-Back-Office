@@ -4,7 +4,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.structures.PartialStructureComponent;
+import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;

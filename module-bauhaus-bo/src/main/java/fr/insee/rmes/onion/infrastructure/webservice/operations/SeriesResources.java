@@ -8,7 +8,7 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.PartialOperationSeries;
-import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;

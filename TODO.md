@@ -12,8 +12,7 @@
 "creator": "HIE2004879",
 "isValidated": "false",
 "contributor": "DG75-L201",
-"prefLabelLg1": "dfg",
-"prefLabelLg2": "dfg",
+
 "created": "2025-11-07T09:36:29.712314",
 "id": "c1d368b6-9313-4203-8889-5a433bff46c4",
 "concepts": [

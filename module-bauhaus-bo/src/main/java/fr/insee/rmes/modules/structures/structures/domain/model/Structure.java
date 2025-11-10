@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.structures;
+package fr.insee.rmes.modules.structures.structures.domain.model;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 
