@@ -1,15 +1,17 @@
 package fr.insee.rmes.colectica;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.colectica.dto.ColecticaItem;
-import fr.insee.rmes.colectica.dto.ColecticaResponse;
-import fr.insee.rmes.colectica.dto.QueryRequest;
+import fr.insee.rmes.colectica.dto.*;
 import fr.insee.rmes.domain.model.ddi.*;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Repository
 public class DDIRepositoryImpl implements DDIRepository {
@@ -28,6 +31,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaConfiguration colecticaConfiguration;
     private final ObjectMapper objectMapper;
     private Ddi4Response cachedDdi4Response;
+    private String cachedAuthToken;
 
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
@@ -39,31 +43,109 @@ public class DDIRepositoryImpl implements DDIRepository {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Retrieves authentication token from cache or fetches a new one
+     * @param forceRefresh if true, forces a new token request even if cache is available
+     * @return the authentication token
+     */
+    private String getAuthToken(boolean forceRefresh) {
+        if (!forceRefresh && cachedAuthToken != null) {
+            logger.debug("Using cached authentication token");
+            return cachedAuthToken;
+        }
+
+        logger.info("Authenticating to Colectica API");
+
+        String tokenUrl = colecticaConfiguration.baseServerUrl() + "/token/createtoken";
+
+        AuthenticationRequest authRequest = new AuthenticationRequest(
+            colecticaConfiguration.username(),
+            colecticaConfiguration.password()
+        );
+
+        // Create headers with Content-Type for authentication request
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+        // Create HTTP entity with headers and body
+        HttpEntity<AuthenticationRequest> requestEntity = new HttpEntity<>(authRequest, headers);
+
+        AuthenticationResponse authResponse = restTemplate.postForObject(
+            tokenUrl,
+            requestEntity,
+            AuthenticationResponse.class
+        );
+
+        if (authResponse == null || authResponse.accessToken() == null) {
+            logger.error("Failed to retrieve authentication token");
+            throw new RuntimeException("Authentication failed: unable to retrieve access token");
+        }
+
+        cachedAuthToken = authResponse.accessToken();
+        return cachedAuthToken;
+    }
+
+    /**
+     * Generic method to execute API calls with authentication and automatic retry on auth failure
+     * @param apiCall Function that takes a token and performs the API call
+     * @param <T> Return type of the API call
+     * @return Result of the API call
+     */
+    private <T> T executeWithAuth(Function<String, T> apiCall) {
+        try {
+            // Try with cached or new token
+            String token = getAuthToken(false);
+            return apiCall.apply(token);
+        } catch (HttpClientErrorException e) {
+            // If authentication failed (401 Unauthorized or 403 Forbidden), refresh token and retry once
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
+                logger.warn("Authentication failed with cached token, refreshing and retrying...");
+                cachedAuthToken = null; // Invalidate cache
+                String newToken = getAuthToken(true);
+                return apiCall.apply(newToken);
+            }
+            // Re-throw if it's not an authentication error
+            throw e;
+        }
+    }
+
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
-        logger.info("Getting physical instances from Colectica mock via HTTP");
-        
-        String url = colecticaConfiguration.baseURI() + "/_query";
-        
-        // Create request body with itemTypes from configuration
-        QueryRequest requestBody = new QueryRequest(colecticaConfiguration.itemTypes());
-        
-        ColecticaResponse response = restTemplate.postForObject(url, requestBody, ColecticaResponse.class);
+        logger.info("Getting physical instances from Colectica API via HTTP");
 
-        return response.results().stream()
-                .map(item -> {
-                    String id = item.identifier();
-                    String label = extractLabelFromItem(item);
-                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                    Date date = null;
-                    try {
-                        date = formatter.parse(item.versionDate());
-                    } catch (ParseException | NullPointerException _) {
-                        logger.debug("Impossible to parse {}", item.versionDate());
-                    }
-                    return new PartialPhysicalInstance(id, label, date);
-                })
-                .toList();
+        return executeWithAuth(token -> {
+            // Set up the request with authorization header
+            String url = colecticaConfiguration.baseApiUrl() + "_query";
+
+            // Create request body with itemTypes from configuration
+            QueryRequest requestBody = new QueryRequest(colecticaConfiguration.itemTypes());
+
+            // Create headers with Bearer token and Content-Type
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Create HTTP entity with headers and body
+            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // Make the request with authentication
+            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+
+            return response.results().stream()
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        return new PartialPhysicalInstance(id, label, date);
+                    })
+                    .toList();
+        });
     }
     
     private String extractLabelFromItem(ColecticaItem item) {
