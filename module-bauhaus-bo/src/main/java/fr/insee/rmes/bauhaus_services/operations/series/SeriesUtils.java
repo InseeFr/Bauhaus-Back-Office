@@ -23,7 +23,7 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.commons.domain.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
-import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.*;
 import org.apache.commons.lang3.StringUtils;
