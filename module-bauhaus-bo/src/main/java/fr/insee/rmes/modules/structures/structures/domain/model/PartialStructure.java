@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.structures;
+package fr.insee.rmes.modules.structures.structures.domain.model;
 public record PartialStructure(
         String iri,
         String id,

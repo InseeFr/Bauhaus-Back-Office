@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.structures.PartialStructureComponent;
+import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
 import fr.insee.rmes.persistance.sparql_queries.StructureQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import org.json.JSONArray;

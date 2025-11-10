@@ -15,7 +15,7 @@ import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.*;
 import org.json.JSONArray;

@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.operations;
+package fr.insee.rmes.modules.operations.series.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;

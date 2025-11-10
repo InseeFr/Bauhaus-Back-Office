@@ -1,6 +1,7 @@
-package fr.insee.rmes.model.structures;
+package fr.insee.rmes.modules.structures.structures.domain.model;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.structures.components.domain.model.MutualizedComponent;
 
 public class ComponentDefinition {
 
