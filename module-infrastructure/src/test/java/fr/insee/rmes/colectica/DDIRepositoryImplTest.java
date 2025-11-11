@@ -1,23 +1,16 @@
 package fr.insee.rmes.colectica;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.colectica.dto.AuthenticationRequest;
-import fr.insee.rmes.colectica.dto.AuthenticationResponse;
-import fr.insee.rmes.colectica.dto.ColecticaItem;
-import fr.insee.rmes.colectica.dto.ColecticaResponse;
-import fr.insee.rmes.colectica.dto.QueryRequest;
-import fr.insee.rmes.domain.model.ddi.Ddi4Response;
-import fr.insee.rmes.domain.model.ddi.PartialPhysicalInstance;
+import fr.insee.rmes.colectica.dto.*;
+import fr.insee.rmes.domain.model.ddi.*;
+import fr.insee.rmes.domain.port.clientside.DDI3toDDI4ConverterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -43,11 +36,14 @@ class DDIRepositoryImplTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private DDI3toDDI4ConverterService ddi3ToDdi4Converter;
+
     private DDIRepositoryImpl ddiRepository;
 
     @BeforeEach
     void setUp() {
-        ddiRepository = new DDIRepositoryImpl(restTemplate, colecticaConfiguration, objectMapper);
+        ddiRepository = new DDIRepositoryImpl(restTemplate, colecticaConfiguration, objectMapper, ddi3ToDdi4Converter);
     }
 
     @Test
@@ -250,23 +246,94 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void shouldGetPhysicalInstanceById() throws Exception {
+    void shouldGetPhysicalInstanceById() {
         // Given
-        String instanceId = "pi-123";
+        String instanceId = "2514afe4-7b08-4500-be25-7a852a10fd8c";
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String agencyId = "fr.inserm.constances";
+        int version = 1;
 
-        // Mock the ObjectMapper to return a simple Ddi4Response without loading the actual file
-        Ddi4Response mockResponse = new Ddi4Response(
-            null,
-            List.of(),
-            List.of(),
-            List.of(),
-            List.of(),
-            List.of(),
-            List.of()
+        // Mock configuration
+        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(colecticaConfiguration.username()).thenReturn(username);
+        when(colecticaConfiguration.password()).thenReturn(password);
+        when(colecticaConfiguration.itemTypes()).thenReturn(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
+
+        // Mock authentication
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        when(restTemplate.postForObject(
+                eq(baseServerUrl + "/token/createtoken"),
+                any(HttpEntity.class),
+                eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock query response
+        ColecticaItem queryItem = new ColecticaItem(
+                null, Map.of("fr-FR", "Radon et gamma"),
+                Map.of(), null, null, 0, "test-repo", true, List.of(),
+                "PhysicalInstance", agencyId, version, instanceId,
+                null, null, "2025-10-23T12:28:43.615773Z", null,
+                true, false, false, "DDI", 0L, 0
+        );
+        ColecticaResponse queryResponse = new ColecticaResponse(List.of(queryItem));
+        when(restTemplate.postForObject(
+                eq(baseApiUrl + "_query"),
+                any(HttpEntity.class),
+                eq(ColecticaResponse.class)))
+                .thenReturn(queryResponse);
+
+        // Mock item details response with DDI3 XML
+        String ddi3Xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "  <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.615773Z\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
+                "    <r:URN>urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1</r:URN>\n" +
+                "    <r:Agency>fr.inserm.constances</r:Agency>\n" +
+                "    <r:ID>2514afe4-7b08-4500-be25-7a852a10fd8c</r:ID>\n" +
+                "    <r:Version>1</r:Version>\n" +
+                "    <r:Citation>\n" +
+                "      <r:Title>\n" +
+                "        <r:String xml:lang=\"fr-FR\">Radon et gamma</r:String>\n" +
+                "      </r:Title>\n" +
+                "    </r:Citation>\n" +
+                "  </PhysicalInstance>\n" +
+                "</Fragment>";
+
+        ColecticaItemResponse itemDetailsResponse = new ColecticaItemResponse(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                agencyId, version, instanceId, ddi3Xml,
+                "2025-10-23T12:28:44.537174", "test@example.com",
+                false, false, false, "dc337820-af3a-4c0b-82f9-cf02535cde83"
         );
 
-        when(objectMapper.readValue(any(String.class), eq(Ddi4Response.class)))
-                .thenReturn(mockResponse);
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "item/" + agencyId + "/" + instanceId + "/" + version),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)))
+                .thenReturn(ResponseEntity.ok(itemDetailsResponse));
+
+        // Mock DDI3 to DDI4 conversion
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-10-23T12:28:43.615773Z",
+                "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
+                agencyId, instanceId, "1",
+                new Citation(new Title(new StringValue("fr-FR", "Radon et gamma"))),
+                null
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(), List.of(), List.of(), List.of()
+        );
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
 
         // When
         Ddi4Response result = ddiRepository.getPhysicalInstance(instanceId);
@@ -274,10 +341,31 @@ class DDIRepositoryImplTest {
         // Then
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
-        assertNotNull(result.dataRelationship());
+        assertEquals(1, result.physicalInstance().size());
+        assertEquals(instanceId, result.physicalInstance().get(0).id());
+        assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().string().text());
 
-        // Verify ObjectMapper was called
-        verify(objectMapper).readValue(any(String.class), eq(Ddi4Response.class));
+        // Verify authentication was called
+        verify(restTemplate).postForObject(
+                eq(baseServerUrl + "/token/createtoken"),
+                any(HttpEntity.class),
+                eq(AuthenticationResponse.class));
+
+        // Verify query was called
+        verify(restTemplate).postForObject(
+                eq(baseApiUrl + "_query"),
+                any(HttpEntity.class),
+                eq(ColecticaResponse.class));
+
+        // Verify item details was called
+        verify(restTemplate).exchange(
+                eq(baseApiUrl + "item/" + agencyId + "/" + instanceId + "/" + version),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class));
+
+        // Verify converter was called
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
     }
 
     @Test

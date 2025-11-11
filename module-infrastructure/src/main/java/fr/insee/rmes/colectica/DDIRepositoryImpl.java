@@ -6,16 +6,12 @@ import fr.insee.rmes.domain.model.ddi.*;
 import fr.insee.rmes.domain.port.serverside.DDIRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,17 +26,20 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration colecticaConfiguration;
     private final ObjectMapper objectMapper;
+    private final fr.insee.rmes.domain.port.clientside.DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private Ddi4Response cachedDdi4Response;
     private String cachedAuthToken;
 
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
             ColecticaConfiguration colecticaConfiguration,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            fr.insee.rmes.domain.port.clientside.DDI3toDDI4ConverterService ddi3ToDdi4Converter
             ) {
         this.restTemplate = restTemplate;
         this.colecticaConfiguration = colecticaConfiguration;
         this.objectMapper = objectMapper;
+        this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
     }
 
     /**
@@ -164,7 +163,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (languageMap == null) {
             return null;
         }
-        
+
         // Try French first, then English, then first available
         String label = languageMap.get("fr-FR");
         if (label == null || label.trim().isEmpty()) {
@@ -178,48 +177,115 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String id) {
-        if (cachedDdi4Response != null) {
-            logger.info("Returning cached DDI4 Physical Instance");
+        if (cachedDdi4Response != null && cachedDdi4Response.physicalInstance() != null
+                && !cachedDdi4Response.physicalInstance().isEmpty()
+                && cachedDdi4Response.physicalInstance().get(0).id().equals(id)) {
+            logger.info("Returning cached DDI4 Physical Instance for id: {}", id);
             return cachedDdi4Response;
         }
 
-        logger.info("Loading DDI4 Physical Instance from static JSON file");
+        logger.info("Fetching DDI4 Physical Instance from Colectica API for id: {}", id);
 
-        Ddi4Response response = null;
-        try {
-            ClassPathResource resource = new ClassPathResource("sample-ddi4-data.json");
-            String jsonResponse = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        return executeWithAuth(token -> {
+            try {
+                // First, query all Physical Instances to find the one with matching ID
+                String queryUrl = colecticaConfiguration.baseApiUrl() + "_query";
 
-            // Remove BOM if present
-            if (jsonResponse.startsWith("\uFEFF")) {
-                jsonResponse = jsonResponse.substring(1);
+                // Create query request with item types
+                QueryRequest requestBody = new QueryRequest(colecticaConfiguration.itemTypes());
+
+                // Create headers with Bearer token
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(token);
+
+                // Create HTTP entity with headers and body
+                HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+                // Make the POST request to query Physical Instances
+                ColecticaResponse colecticaResponse = restTemplate.postForObject(
+                        queryUrl,
+                        requestEntity,
+                        ColecticaResponse.class
+                );
+
+                if (colecticaResponse == null || colecticaResponse.results() == null || colecticaResponse.results().isEmpty()) {
+                    logger.error("No Physical Instances found in Colectica");
+                    return null;
+                }
+
+                // Find the item with matching identifier
+                ColecticaItem matchingItem = colecticaResponse.results().stream()
+                        .filter(item -> id.equals(item.identifier()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (matchingItem == null) {
+                    logger.error("No Physical Instance found with id: {}", id);
+                    return null;
+                }
+
+                logger.info("Found Physical Instance with id: {}, agencyId: {}, version: {}",
+                        matchingItem.identifier(), matchingItem.agencyId(), matchingItem.version());
+
+                // Now fetch the full DDI4 item details using the item endpoint
+                // Format: /api/v1/item/{agencyId}/{identifier}/{version}
+                String itemUrl = colecticaConfiguration.baseApiUrl() + "item/"
+                        + matchingItem.agencyId() + "/"
+                        + matchingItem.identifier() + "/"
+                        + matchingItem.version();
+
+                logger.info("Fetching full item details from: {}", itemUrl);
+
+                HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
+
+                // The response from Colectica contains XML in the "Item" field
+                ColecticaItemResponse itemResponse = restTemplate.exchange(
+                        itemUrl,
+                        HttpMethod.GET,
+                        getRequestEntity,
+                        ColecticaItemResponse.class
+                ).getBody();
+
+                if (itemResponse == null || itemResponse.item() == null || itemResponse.item().isEmpty()) {
+                    logger.error("Received empty response from Colectica API for item URL: {}", itemUrl);
+                    return null;
+                }
+
+                logger.debug("Received DDI3 XML from Colectica for Physical Instance");
+
+                // Create a Ddi3Response from the Colectica response
+                Ddi3Response.Ddi3Item ddi3Item = new Ddi3Response.Ddi3Item(
+                    itemResponse.itemType(),
+                    itemResponse.agencyId(),
+                    String.valueOf(itemResponse.version()),
+                    itemResponse.identifier(),
+                    itemResponse.item(),  // XML content
+                    itemResponse.versionDate(),
+                    itemResponse.versionResponsibility(),
+                    itemResponse.isPublished(),
+                    itemResponse.isDeprecated(),
+                    itemResponse.isProvisional(),
+                    itemResponse.itemFormat()
+                );
+
+                Ddi3Response ddi3Response = new Ddi3Response(
+                    null,  // options
+                    List.of(ddi3Item)
+                );
+
+                // Use the converter service to convert DDI3 to DDI4
+                logger.info("Converting DDI3 to DDI4 using converter service");
+                cachedDdi4Response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
+
+                logger.info("Successfully converted Physical Instance to DDI4 format");
+                return cachedDdi4Response;
+
+            } catch (Exception e) {
+                logger.error("Error processing Colectica API response for id: {}", id, e);
+                throw new RuntimeException("Failed to process DDI response", e);
             }
-
-            response = objectMapper.readValue(jsonResponse, Ddi4Response.class);
-        } catch (IOException e) {
-            logger.error("Error loading or parsing JSON from static file", e);
-            return null;
-        }
-
-        if (response != null) {
-            // Keep only the first Physical Instance and DataRelationship
-            var physicalInstances = response.physicalInstance();
-            var dataRelationships = response.dataRelationship();
-
-            cachedDdi4Response = new Ddi4Response(
-                    response.schema(),
-                    response.topLevelReference(),
-                    physicalInstances != null && !physicalInstances.isEmpty() ?
-                            List.of(physicalInstances.get(0)) : List.of(),
-                    dataRelationships != null && !dataRelationships.isEmpty() ?
-                            List.of(dataRelationships.get(0)) : List.of(),
-                    response.variable(),
-                    response.codeList(),
-                    response.category()
-            );
-        }
-
-        return cachedDdi4Response;
+        });
     }
 
     @Override
