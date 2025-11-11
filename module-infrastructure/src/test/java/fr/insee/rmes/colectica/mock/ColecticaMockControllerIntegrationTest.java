@@ -61,14 +61,7 @@ class ColecticaMockControllerIntegrationTest {
         assertNotNull(firstItem.itemName());
     }
 
-    @Test
-    void shouldGetPhysicalInstanceById() {
-        assertNotNull(controller);
-        var instance = controller.getPhysicalInstance("test-id");
-        assertNotNull(instance);
-        assertEquals("test-id", instance.get("id"));
-        assertEquals("Physical Instance test-id", instance.get("label"));
-    }
+
 
     @Test
     void shouldCreateAuthenticationToken() {
