@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.webservice.datasets;
+package fr.insee.rmes.modules.datasets.distributions.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
@@ -7,6 +7,8 @@ import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.*;
+import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
+import fr.insee.rmes.modules.operations.series.webservice.PartialSeriesReponse;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -50,8 +54,18 @@ public class DistributionResources {
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
     @Operation(summary = "List of distributions",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
-    public List<PartialDistribution> getDistributions() throws RmesException {
-        return this.distributionService.getDistributions();
+    public ResponseEntity<List<PartialDistributionResponse>> getDistributions() throws RmesException {
+        List<PartialDistributionResponse> responses = this.distributionService.getDistributions().stream()
+                .map(distribution -> {
+                    var response = PartialDistributionResponse.fromDomain(distribution);
+                    response.add(linkTo(DistributionResources.class).slash(distribution.id()).withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(MediaTypes.HAL_JSON)
+                .body(responses);
     }
 
     @GetMapping("/{id}")

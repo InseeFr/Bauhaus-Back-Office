@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.infrastructure.webservice.datasets.DistributionResources;
+import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
