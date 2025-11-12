@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.sparql_queries;
+package fr.insee.rmes.modules.structures.infrastructure.graphdb;
 
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;

@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.webservice.operations;
+package fr.insee.rmes.modules.operations.series.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
@@ -7,7 +7,7 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.PartialOperationSeries;
+import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
@@ -19,12 +19,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @Qualifier("Series")
@@ -47,8 +50,18 @@ public class SeriesResources  {
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(summary = "List of series", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public List<PartialOperationSeries> getSeries() throws RmesException {
-		return operationsService.getSeries();
+	public ResponseEntity<List<PartialSeriesReponse>> getSeries() throws RmesException {
+        List<PartialSeriesReponse> responses = operationsService.getSeries().stream()
+                .map(series -> {
+                    var response = PartialSeriesReponse.fromDomain(series);
+                    response.add(linkTo(FamilyResources.class).slash("series").slash(series.id()).withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(MediaTypes.HAL_JSON)
+                .body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
