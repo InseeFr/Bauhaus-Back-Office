@@ -9,7 +9,6 @@ import fr.insee.rmes.modules.concepts.collection.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collection.domain.model.PartialCollection;
 import fr.insee.rmes.modules.concepts.collection.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collection.domain.port.serverside.CollectionsRepository;
-import fr.insee.rmes.modules.concepts.collection.domain.port.serverside.RandomIdGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

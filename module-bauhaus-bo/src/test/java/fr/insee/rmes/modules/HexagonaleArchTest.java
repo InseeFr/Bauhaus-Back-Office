@@ -9,21 +9,22 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-@AnalyzeClasses(packages = "fr.insee.rmes.modules.concepts.collections", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = "fr.insee.rmes.modules.concepts.collection", importOptions = ImportOption.DoNotIncludeTests.class)
 public class HexagonaleArchTest {
 
-    private static ArchCondition<JavaClass> beImplementedIn(String targetPackage, String prefix) {
+    private static ArchCondition<JavaClass> beImplementedIn(String targetPackage, @Nullable String prefix) {
         String description = prefix != null
                 ? "be implemented in " + targetPackage + " package with prefix '" + prefix + "'"
                 : "be implemented in " + targetPackage + " package";
 
-        return new ArchCondition<JavaClass>(description) {
+        return new ArchCondition<>(description) {
             @Override
             public void check(JavaClass javaClass, ConditionEvents events) {
                 var implementations = javaClass.getAllSubclasses().stream()
@@ -31,7 +32,7 @@ public class HexagonaleArchTest {
                             String packageName = subClass.getPackage().getName();
                             // Check if package contains targetPackage or ends with it
                             return packageName.contains(targetPackage) ||
-                                   packageName.endsWith(targetPackage.replace(".", ""));
+                                    packageName.endsWith(targetPackage.replace(".", ""));
                         })
                         .toList();
 
