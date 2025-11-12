@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.webservice.operations;
+package fr.insee.rmes.modules.operations.families.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
@@ -8,6 +8,7 @@ import fr.insee.rmes.domain.model.operations.families.PartialOperationFamily;
 import fr.insee.rmes.domain.port.clientside.FamilyService;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.webservice.response.operations.OperationFamilyResponse;

@@ -9,7 +9,7 @@ import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
-import fr.insee.rmes.onion.infrastructure.webservice.operations.MetadataReportResources;
+import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
 import org.junit.jupiter.api.Test;

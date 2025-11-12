@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.webservice.structures;
+package fr.insee.rmes.modules.structures.components.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;

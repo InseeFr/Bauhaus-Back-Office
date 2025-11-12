@@ -7,7 +7,7 @@ import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.StructureQueries;
+import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

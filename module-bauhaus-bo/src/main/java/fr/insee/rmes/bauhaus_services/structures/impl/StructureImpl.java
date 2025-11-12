@@ -10,7 +10,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructure;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
-import fr.insee.rmes.persistance.sparql_queries.StructureQueries;
+import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;

@@ -3,7 +3,7 @@ package fr.insee.rmes.infrastructure.webservice;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.onion.infrastructure.webservice.operations.DocumentsResources;
+import fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

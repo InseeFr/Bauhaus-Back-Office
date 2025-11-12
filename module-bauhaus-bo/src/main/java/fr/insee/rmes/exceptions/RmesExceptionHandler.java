@@ -1,16 +1,21 @@
 package fr.insee.rmes.exceptions;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources;
+import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
+import fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources;
+import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
+import fr.insee.rmes.modules.operations.operations.webservice.OperationsResources;
+import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
 import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.codes_lists.CodeListsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
-import fr.insee.rmes.onion.infrastructure.webservice.datasets.DatasetResources;
-import fr.insee.rmes.onion.infrastructure.webservice.datasets.DistributionResources;
-import fr.insee.rmes.onion.infrastructure.webservice.operations.*;
-import fr.insee.rmes.onion.infrastructure.webservice.structures.StructureResources;
+import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
+import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
+import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

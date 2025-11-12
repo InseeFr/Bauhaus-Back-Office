@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.webservice.operations;
+package fr.insee.rmes.modules.operations.documents.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
