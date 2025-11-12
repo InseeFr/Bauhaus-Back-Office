@@ -18,7 +18,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -111,6 +113,12 @@ public class ComponentResources {
     public ResponseEntity<Object> createComponent(
     		@Parameter(description = "Component", required = true) @RequestBody String body) throws RmesException {
         String id = structureComponentService.createComponent(body);
-        return ResponseEntity.status(HttpStatus.SC_CREATED).body(id);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(id);
     }
 }

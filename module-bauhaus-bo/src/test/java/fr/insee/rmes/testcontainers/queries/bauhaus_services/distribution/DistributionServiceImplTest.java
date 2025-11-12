@@ -29,8 +29,8 @@ class DistributionServiceImplTest extends WithGraphDBContainer  {
     }
 
     private void assertDistribution(Distribution distribution){
-        assertEquals("value lg1", distribution.getLabelLg1());
-        assertEquals("value lg2", distribution.getLabelLg2());
+        assertEquals("label lg1", distribution.getLabelLg1());
+        assertEquals("label lg2", distribution.getLabelLg2());
         assertEquals(ValidationStatus.UNPUBLISHED.toString(), distribution.getValidationState());
         assertNotNull(distribution.getCreated());
         assertNotNull(distribution.getUpdated());
@@ -40,8 +40,8 @@ class DistributionServiceImplTest extends WithGraphDBContainer  {
     void should_create_get_update_distribution() throws Exception {
         String id = distributionService.create("""
                 {
-                    "labelLg1": "value lg1",
-                    "labelLg2": "value lg2",
+                    "labelLg1": "label lg1",
+                    "labelLg2": "label lg2",
                     "idDataset": "1"
                 }
                 """);
@@ -52,16 +52,16 @@ class DistributionServiceImplTest extends WithGraphDBContainer  {
 
         distributionService.update(id, """
                 {
-                    "labelLg1": "value lg1 updated",
-                    "labelLg2": "value lg2 updated",
+                    "labelLg1": "label lg1 updated",
+                    "labelLg2": "label lg2 updated",
                     "idDataset": "1"
                 }
                 """);
 
         Distribution distribution2 = distributionService.getDistributionByID(id);
 
-        assertEquals("value lg1 updated", distribution2.getLabelLg1());
-        assertEquals("value lg2 updated", distribution2.getLabelLg2());
+        assertEquals("label lg1 updated", distribution2.getLabelLg1());
+        assertEquals("label lg2 updated", distribution2.getLabelLg2());
 
         assertThrows(RmesBadRequestException.class, () -> distributionService.deleteDistributionId(id));
     }
@@ -70,8 +70,8 @@ class DistributionServiceImplTest extends WithGraphDBContainer  {
     void should_create_get_delete_distribution() throws Exception {
         String id = distributionService.create("""
                 {
-                    "labelLg1": "value lg1",
-                    "labelLg2": "value lg2",
+                    "labelLg1": "label lg1",
+                    "labelLg2": "label lg2",
                     "idDataset": "1"
                 }
                 """);

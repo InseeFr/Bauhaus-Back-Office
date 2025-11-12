@@ -47,13 +47,13 @@ public record GraphDBCollection(
 
     Collection toDomain() {
         var partialCollection = new PartialCollection(
-                new CollectionId(UUID.fromString(id)),
-                new LocalisedLabel(prefLabelLg1, Lang.valueOf(lg1.toUpperCase()))
+                new CollectionId(id),
+                new LocalisedLabel(prefLabelLg1, lg1 == null ? Lang.defaultLanguage() : Lang.valueOf(lg1.toUpperCase()))
         );
 
         return new Collection(
                 partialCollection,
-                Objects.isNull(prefLabelLg2) ? null : new LocalisedLabel(prefLabelLg2, Lang.valueOf(lg2.toUpperCase())),
+                Objects.isNull(prefLabelLg2) ? null : new LocalisedLabel(prefLabelLg2, lg2 == null ? Lang.defaultLanguage() : Lang.valueOf(lg2.toUpperCase())),
                 creator,
                 contributor,
                 toLocalisedDescriptions(),

@@ -96,13 +96,7 @@ class ConceptsResourcesTest {
         Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
     }
 
-    @Test
-    void shouldReturnResponseWhenGetCollectionByID()  throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        when(conceptsCollectionService.getCollectionByID("id mocked")).thenReturn("mocked result");
-        String actual = conceptsResources.getCollectionByID("id mocked").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
+
 
     @Test
     void shouldReturnResponseWhenGetCollectionMembersByID()  throws RmesException {
@@ -175,14 +169,7 @@ class ConceptsResourcesTest {
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
-    @Test
-    void shouldReturnResponseWhenGetCollection()  throws RmesException {
-        when(conceptsCollectionService.getCollectionByID("1")).thenReturn("{\"id\": \"1\"}");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
-        var response = conceptsResources.getCollectionByID( "1");
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertEquals("{\"id\": \"1\"}", response.getBody());
-    }
+
 
     @Test
     void shouldReturnResponseWhenSetCollectionsValidation()  throws RmesException {

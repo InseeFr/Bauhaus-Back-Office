@@ -36,7 +36,7 @@ public class CollectionsResources {
     @GetMapping("/{id}")
     ResponseEntity<CollectionResponse> getConceptsCollectionById(@PathVariable String id){
         try {
-            return this.service.getCollection(new CollectionId(UUID.fromString(id))).map(
+            return this.service.getCollection(new CollectionId(id)).map(
                     collection ->  ResponseEntity.ok().body(CollectionResponse.fromDomain(collection))
             ).orElse(ResponseEntity.notFound().build());
         } catch (CollectionsFetchException e) {

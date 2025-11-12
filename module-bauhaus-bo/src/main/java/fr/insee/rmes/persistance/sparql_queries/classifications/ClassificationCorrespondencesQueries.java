@@ -5,14 +5,14 @@ import fr.insee.rmes.graphdb.GenericQueries;
 public class ClassificationCorrespondencesQueries extends GenericQueries{
 	
 	public static String correspondencesQuery() {
-		return "SELECT DISTINCT ?id ?value \n"
+		return "SELECT DISTINCT ?id ?label \n"
 				+ "WHERE { \n"
 				+ "?correspondence rdf:type xkos:Correspondence . \n"
-				+ "?correspondence skos:prefLabel ?value . \n"
-				+ "FILTER (lang(?value) = '" + config.getLg1() + "') \n"
+				+ "?correspondence skos:prefLabel ?label . \n"
+				+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
 				+ "BIND(STRAFTER(STR(?correspondence),'/codes/') AS ?id) \n"
 				+ "} \n"
-				+ "ORDER BY ?value ";
+				+ "ORDER BY ?label ";
 	}
 	
 	public static String correspondenceQuery(String id) {

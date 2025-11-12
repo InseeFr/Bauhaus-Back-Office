@@ -70,8 +70,8 @@ class GraphDBOperationFamilyRepositoryTest {
     @Test
     void getFamilies_returnsSortedList_whenFamiliesExist() throws RmesException {
         JSONArray familiesArray = new JSONArray()
-                .put(new JSONObject().put("id", "fam1").put("value", "Family 1"))
-                .put(new JSONObject().put("id", "fam2").put("value", "Family 2"));
+                .put(new JSONObject().put("id", "fam1").put("label", "Family 1"))
+                .put(new JSONObject().put("id", "fam2").put("label", "Family 2"));
 
         List<PartialOperationFamily> expectedFamilies = List.of(
                 new PartialOperationFamily("fam1", "Family 1"),
