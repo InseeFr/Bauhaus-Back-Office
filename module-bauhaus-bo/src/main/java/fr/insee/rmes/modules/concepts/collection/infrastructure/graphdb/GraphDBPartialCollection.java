@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public record GraphDBPartialCollection(String id, String label) {
     PartialCollection toDomain(){
-        return new PartialCollection(new CollectionId(UUID.fromString(id)), LocalisedLabel.ofDefaultLanguage(label));
+        return new PartialCollection(new CollectionId(id), LocalisedLabel.ofDefaultLanguage(label));
     }
 }

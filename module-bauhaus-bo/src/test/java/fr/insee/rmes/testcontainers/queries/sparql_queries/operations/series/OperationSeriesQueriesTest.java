@@ -41,7 +41,7 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_false_series_if_label_does_not_exist() throws Exception {
         OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean result = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkPrefLabelUnicity("1", "value", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkPrefLabelUnicity("1", "label", "fr"));
         assertFalse(result);
     }
 

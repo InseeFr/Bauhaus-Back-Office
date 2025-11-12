@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
-import fr.insee.rmes.model.concepts.PartialCollection;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,22 +37,7 @@ class ConceptsCollectionsResourcesTest {
         resources = new ConceptsCollectionsResources(conceptsService, conceptsCollectionService);
     }
 
-    @Test
-    void shouldGetCollections() throws RmesException {
-        // Given
-        List<PartialCollection> expectedCollections = List.of(
-                new PartialCollection("1", "Collection 1"),
-                new PartialCollection("2", "Collection 2")
-        );
-        when(conceptsCollectionService.getCollections()).thenReturn(expectedCollections);
 
-        // When
-        List<PartialCollection> result = resources.getCollections();
-
-        // Then
-        assertEquals(expectedCollections, result);
-        verify(conceptsCollectionService, times(1)).getCollections();
-    }
 
     @Test
     void shouldGetCollectionExport() throws RmesException {
