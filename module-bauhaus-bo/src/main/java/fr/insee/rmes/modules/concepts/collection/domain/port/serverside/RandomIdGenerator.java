@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public class RandomIdGenerator {
     public CollectionId generateCollectionId() {
-        return new CollectionId(UUID.randomUUID());
+        return new CollectionId(UUID.randomUUID().toString());
     }
 }

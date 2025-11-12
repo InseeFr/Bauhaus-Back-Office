@@ -24,7 +24,7 @@ class DomainCollectionsServiceTest {
 
     static final UUID uuid1 = UUID.fromString("bb2328d8-230e-4a23-9cb5-a5c483b79378");
     static final UUID uuid2 = UUID.fromString("6c55b4db-e7f3-40ac-bb71-5f3864bef088");
-    static final CollectionId ID = new CollectionId(uuid1);
+    static final CollectionId ID = new CollectionId(uuid1.toString());
     static final PartialCollection PARTIAL_COLLECTION = new PartialCollection(ID, LocalisedLabel.ofDefaultLanguage("fr"));
     static final Collection COLLECTION = new Collection(
             PARTIAL_COLLECTION,
@@ -39,7 +39,7 @@ class DomainCollectionsServiceTest {
 
     static final PartialCollection[] PARTIAL_COLLECTIONS = {
            PARTIAL_COLLECTION,
-            new PartialCollection(new CollectionId(uuid2), LocalisedLabel.ofAlternativeLanguage("en"))
+            new PartialCollection(new CollectionId(uuid2.toString()), LocalisedLabel.ofAlternativeLanguage("en"))
     };
 
     CollectionsRepository collectionsRepository;

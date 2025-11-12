@@ -81,8 +81,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
                 Arguments.of("/concepts/collection/"+id+"/members"),
                 Arguments.of("/concepts/collection/export/"+id),
                 Arguments.of("/concepts/advanced-search"),
-                Arguments.of("/concepts/concept/"+id),
-                Arguments.of("/concepts/collection/"+id)
+                Arguments.of("/concepts/concept/"+id)
         );
     }
 

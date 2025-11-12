@@ -34,7 +34,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             RestTemplate restTemplate,
             ColecticaConfiguration colecticaConfiguration,
             ObjectMapper objectMapper,
-            fr.insee.rmes.domain.port.clientside.DDI3toDDI4ConverterService ddi3ToDdi4Converter
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter
             ) {
         this.restTemplate = restTemplate;
         this.colecticaConfiguration = colecticaConfiguration;

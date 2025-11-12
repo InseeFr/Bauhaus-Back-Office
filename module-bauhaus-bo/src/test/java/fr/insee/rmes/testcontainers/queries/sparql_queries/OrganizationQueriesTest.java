@@ -50,7 +50,7 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
         assertNotNull(hieOrg);
         assertNotNull(hieOrg.getString("iri"));
         assertEquals("HIE2000069", hieOrg.getString("id"));
-        assertNotNull(hieOrg.getString("value"));
+        assertNotNull(hieOrg.getString("label"));
 
     }
 

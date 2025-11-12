@@ -154,15 +154,6 @@ public class ConceptsResources  {
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Get a collection by its identifier",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
-	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) throws RmesException {
-		String collection = conceptsCollectionService.getCollectionByID(id);
-		return ResponseEntity.status(HttpStatus.OK).body(collection);
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "List of collection member concepts",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
