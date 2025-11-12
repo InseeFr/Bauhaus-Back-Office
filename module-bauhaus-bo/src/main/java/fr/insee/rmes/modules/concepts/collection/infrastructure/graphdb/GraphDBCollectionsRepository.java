@@ -61,7 +61,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
 
             var graphDBCollection = Deserializer.deserializeJSONObject(collection, GraphDBCollection.class);
             var concepts = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
-            var graphDBCollectionWithConcepts = graphDBCollection.withConcepts(Deserializer.deserializeJSONArray(concepts, GraphDBConcept[].class));
+            var graphDBCollectionWithConcepts = graphDBCollection.withConceptIds(Deserializer.deserializeJSONArray(concepts, GraphDBConcept[].class));
 
             return Optional.of(graphDBCollectionWithConcepts.toDomain());
 

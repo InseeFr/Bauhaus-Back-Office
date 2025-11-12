@@ -11,7 +11,8 @@ import org.jspecify.annotations.Nullable;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public record GraphDBCollection(
+@RecordBuilder
+public record GraphDBCollection (
         String id,
         String lg1,
         String lg2,
@@ -25,7 +26,7 @@ public record GraphDBCollection(
         String creator,
         String contributor,
         List<String> conceptIds
-) {
+) implements GraphDBCollectionBuilder.With {
 
     static GraphDBCollection fromDomain(Collection collection) {
         return new GraphDBCollection(
@@ -77,20 +78,10 @@ public record GraphDBCollection(
         return list;
     }
 
-    public GraphDBCollection withConcepts(GraphDBConcept[] graphDBConcepts) {
-        return new GraphDBCollection(id,
-                lg1,
-                lg2,
-                prefLabelLg1,
-                prefLabelLg2,
-                created,
-                modified,
-                descriptionLg1,
-                descriptionLg2,
-                isValidated,
-                creator,
-                contributor,
-                Arrays.stream(graphDBConcepts).map(GraphDBConcept::id).toList()
+    public GraphDBCollection withConceptIds(GraphDBConcept[] graphDBConcepts) {
+        return withConceptIds(Arrays.stream(graphDBConcepts)
+                .map(GraphDBConcept::id)
+                .toList()
         );
     }
 }
