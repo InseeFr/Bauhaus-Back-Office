@@ -12,7 +12,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.modules.commons.domain.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.utils.ObjectPublication;

@@ -12,7 +12,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.commons.domain.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
