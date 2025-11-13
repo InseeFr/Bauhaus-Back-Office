@@ -19,12 +19,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @Qualifier("Indicator")
@@ -46,8 +49,18 @@ public class IndicatorsResources {
 	@GetMapping(value="/indicators", produces=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getIndicators", summary = "List of indicators",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public List<PartialOperationIndicator> getIndicators() throws RmesException {
-		return operationsService.getIndicators();
+	public ResponseEntity<List<PartialOperationIndicatorResponse>> getIndicators() throws RmesException {
+		List<PartialOperationIndicatorResponse> responses = this.operationsService.getIndicators().stream()
+				.map(indicator -> {
+					var response = PartialOperationIndicatorResponse.fromDomain(indicator);
+					response.add(linkTo(IndicatorsResources.class).slash("indicator").slash(indicator.id()).withSelfRel());
+					return response;
+				})
+				.toList();
+
+		return ResponseEntity.ok()
+				.contentType(MediaTypes.HAL_JSON)
+				.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)

@@ -4,13 +4,16 @@ import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.components.webservice.ComponentResources;
+import fr.insee.rmes.modules.structures.components.webservice.PartialStructureComponentResponse;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -84,11 +87,55 @@ class ComponentResourcesTest {
         when(structureComponentService.getComponents()).thenReturn(expectedComponents);
 
         // When
-        List<PartialStructureComponent> result = componentResources.getComponents();
+        ResponseEntity<List<PartialStructureComponentResponse>> result = componentResources.getComponents();
 
         // Then
-        assertEquals(expectedComponents, result);
-        assertEquals(2, result.size());
+        Assertions.assertNotNull(result);
+        assertEquals(200, result.getStatusCode().value());
+        assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
+        Assertions.assertNotNull(result.getBody());
+        assertEquals(2, result.getBody().size());
+        verify(structureComponentService, times(1)).getComponents();
+    }
+
+    @Test
+    void should_get_components_with_hateoas_links() throws RmesException {
+        // Given
+        PartialStructureComponent component1 = new PartialStructureComponent(
+                "http://example.com/component1", "c1", "comp1", "Label 1",
+                "concept1", "type1", "codeList1", "Validated", "creator1", "range1"
+        );
+        List<PartialStructureComponent> expectedComponents = List.of(component1);
+        when(structureComponentService.getComponents()).thenReturn(expectedComponents);
+
+        // When
+        ResponseEntity<List<PartialStructureComponentResponse>> result = componentResources.getComponents();
+
+        // Then
+        Assertions.assertNotNull(result);
+        Assertions.assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().size());
+
+        PartialStructureComponentResponse componentResponse = result.getBody().get(0);
+        Assertions.assertTrue(componentResponse.hasLinks());
+        Assertions.assertTrue(componentResponse.getLink("self").isPresent());
+        verify(structureComponentService, times(1)).getComponents();
+    }
+
+    @Test
+    void should_return_empty_list_when_no_components() throws RmesException {
+        // Given
+        when(structureComponentService.getComponents()).thenReturn(List.of());
+
+        // When
+        ResponseEntity<List<PartialStructureComponentResponse>> result = componentResources.getComponents();
+
+        // Then
+        Assertions.assertNotNull(result);
+        assertEquals(200, result.getStatusCode().value());
+        assertEquals(MediaTypes.HAL_JSON, result.getHeaders().getContentType());
+        Assertions.assertNotNull(result.getBody());
+        assertEquals(0, result.getBody().size());
         verify(structureComponentService, times(1)).getComponents();
     }
 
