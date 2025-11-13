@@ -4,6 +4,8 @@ import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModu
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
+import fr.insee.rmes.rbac.HasAccess;
+import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ public class CollectionsResources {
     }
 
     @GetMapping
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     ResponseEntity<List<PartialCollectionResponse>> getAllConceptsCollections(){
         try {
             var collections =  this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
@@ -33,6 +36,7 @@ public class CollectionsResources {
     }
 
     @GetMapping("/{id}")
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     ResponseEntity<CollectionResponse> getConceptsCollectionById(@PathVariable String id){
         try {
             return this.service.getCollection(new CollectionId(id)).map(
@@ -44,6 +48,7 @@ public class CollectionsResources {
     }
 
     @PostMapping
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
     ResponseEntity<String> createConcept( String id){
         return null;
     }

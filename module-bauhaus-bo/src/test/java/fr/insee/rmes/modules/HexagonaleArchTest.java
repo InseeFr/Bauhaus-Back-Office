@@ -9,10 +9,16 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
+import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
+import fr.insee.rmes.rbac.HasAccess;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @AnalyzeClasses(packages = "fr.insee.rmes.modules.concepts.collections", importOptions = ImportOption.DoNotIncludeTests.class)
@@ -136,4 +142,40 @@ public class HexagonaleArchTest {
             .that().resideInAPackage("..port..")
             .should().beInterfaces()
             .because("All ports should be interfaces to define contracts"));
+
+    // RestController annotations
+
+    @ArchTest
+    public static final ArchRule restControllerShouldHaveSecurityRequirement = classes()
+            .that().areAnnotatedWith(RestController.class)
+            .should().beAnnotatedWith(SecurityRequirement.class)
+            .because("All RestController classes should be annotated with @SecurityRequirement for security documentation");
+
+    @ArchTest
+    public static final ArchRule restControllerShouldHaveConditionalOnExpression = classes()
+            .that().areAnnotatedWith(RestController.class)
+            .should().beAnnotatedWith(ConditionalOnModule.class)
+            .because("All RestController classes should be annotated with @ConditionalOnExpression to enable/disable modules");
+
+    // HTTP methods annotations
+
+    @ArchTest
+    public static final ArchRule httpMethodsShouldHaveHasAccess = methods()
+            .that().areAnnotatedWith(PostMapping.class)
+            .or().areAnnotatedWith(GetMapping.class)
+            .or().areAnnotatedWith(PutMapping.class)
+            .or().areAnnotatedWith(PatchMapping.class)
+            .or().areAnnotatedWith(DeleteMapping.class)
+            .should().beAnnotatedWith(HasAccess.class)
+            .because("All HTTP endpoint methods should be annotated with @HasAccess for authorization control");
+
+    @ArchTest
+    public static final ArchRule httpMethodsShouldReturnResponseEntity = methods()
+            .that().areAnnotatedWith(PostMapping.class)
+            .or().areAnnotatedWith(GetMapping.class)
+            .or().areAnnotatedWith(PutMapping.class)
+            .or().areAnnotatedWith(PatchMapping.class)
+            .or().areAnnotatedWith(DeleteMapping.class)
+            .should().haveRawReturnType(ResponseEntity.class)
+            .because("All HTTP endpoint methods should return ResponseEntity for consistent error handling and status codes");
 }
