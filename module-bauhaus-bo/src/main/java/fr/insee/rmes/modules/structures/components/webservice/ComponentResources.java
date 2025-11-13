@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/structures/components")
@@ -71,8 +74,18 @@ public class ComponentResources {
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get all mutualized components")
-    public List<PartialStructureComponent> getComponents() throws RmesException {
-        return structureComponentService.getComponents();
+    public ResponseEntity<List<PartialStructureComponentResponse>> getComponents() throws RmesException {
+        List<PartialStructureComponentResponse> responses = this.structureComponentService.getComponents().stream()
+                .map(component -> {
+                    var response = PartialStructureComponentResponse.fromDomain(component);
+                    response.add(linkTo(ComponentResources.class).slash(component.id()).withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(MediaTypes.HAL_JSON)
+                .body(responses);
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_COMPONENT, privilege = RBAC.Privilege.READ)
