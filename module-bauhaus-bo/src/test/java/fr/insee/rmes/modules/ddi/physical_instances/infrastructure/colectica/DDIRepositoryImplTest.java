@@ -31,7 +31,7 @@ class DDIRepositoryImplTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private ColecticaConfiguration colecticaConfiguration;
+    private ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -43,7 +43,7 @@ class DDIRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        ddiRepository = new DDIRepositoryImpl(restTemplate, colecticaConfiguration, objectMapper, ddi3ToDdi4Converter);
+        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter);
     }
 
     @Test
@@ -116,11 +116,11 @@ class DDIRepositoryImplTest {
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2));
 
         // Mock configuration
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
 
         // Mock authentication call
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
@@ -173,11 +173,11 @@ class DDIRepositoryImplTest {
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
         ColecticaResponse mockResponse = new ColecticaResponse(List.of());
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
                 .thenReturn(authResponse);
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
@@ -209,9 +209,9 @@ class DDIRepositoryImplTest {
         String password = "test-password";
         String tokenUrl = baseServerUrl + "/token/createtoken";
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
                 .thenReturn(null);
 
@@ -231,9 +231,9 @@ class DDIRepositoryImplTest {
         String password = "test-password";
         String tokenUrl = baseServerUrl + "/token/createtoken";
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
                 .thenReturn(new AuthenticationResponse(null));
 
@@ -258,11 +258,11 @@ class DDIRepositoryImplTest {
         int version = 1;
 
         // Mock configuration
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
 
         // Mock authentication
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
@@ -409,11 +409,11 @@ class DDIRepositoryImplTest {
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
         ColecticaResponse mockResponse = new ColecticaResponse(List.of());
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
                 .thenReturn(authResponse);
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
@@ -446,11 +446,11 @@ class DDIRepositoryImplTest {
         AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
         ColecticaResponse mockResponse = new ColecticaResponse(List.of());
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
 
         // First auth returns first token, second auth returns new token
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
@@ -490,11 +490,11 @@ class DDIRepositoryImplTest {
         AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
         ColecticaResponse mockResponse = new ColecticaResponse(List.of());
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
 
         // First auth returns first token, second auth returns new token
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
@@ -531,11 +531,11 @@ class DDIRepositoryImplTest {
 
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
-        when(colecticaConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(colecticaConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(colecticaConfiguration.username()).thenReturn(username);
-        when(colecticaConfiguration.password()).thenReturn(password);
-        when(colecticaConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
         when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
                 .thenReturn(authResponse);
 

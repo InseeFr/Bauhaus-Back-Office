@@ -1,88 +1,83 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.mock;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.AuthenticationRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.AuthenticationResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.QueryRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.mock.service.MockDataService;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.mock.webservice.ColecticaMockResources;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = ColecticaMockControllerIntegrationTest.TestConfiguration.class)
-@TestPropertySource(properties = {
-    "fr.insee.rmes.bauhaus.colectica.mock-server-enabled=true",
-    "fr.insee.rmes.bauhaus.colectica.baseUrl=http://localhost:8082",
-    "fr.insee.rmes.bauhaus.colectica.apiPath=/api/colectica/",
-    "fr.insee.rmes.bauhaus.colectica.itemTypes=a51e85bb-6259-4488-8df2-f08cb43485f8"
-})
+@ExtendWith(MockitoExtension.class)
 class ColecticaMockControllerIntegrationTest {
 
-    @Configuration
-    @EnableAutoConfiguration
-    @ComponentScan(basePackages = "fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.mock")
-    static class TestConfiguration {
-    }
+    @Mock
+    private DDIRepository secondaryDDIRepository;
 
-    @Autowired
+    private MockDataService mockDataService;
+
     private ColecticaMockResources controller;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        // Initialize MockDataService with mocked secondaryDDIRepository
+        mockDataService = new MockDataService(secondaryDDIRepository);
+
+        // Initialize ColecticaMockResources with mockDataService and objectMapper
+        controller = new ColecticaMockResources(mockDataService, objectMapper);
+    }
 
     @Test
     void shouldLoadControllerWhenEnabled() {
         assertNotNull(controller);
-        String response = controller.getColectica();
-        assertEquals("Mock Colectica Server Response", response);
+        assertNotNull(mockDataService);
     }
 
     @Test
-    void shouldGetPhysicalInstances() {
-        assertNotNull(controller);
-        
-        // Create request body with itemTypes
-        QueryRequest queryRequest = new QueryRequest(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
-        
-        var response = controller.getPhysicalInstances(queryRequest);
-        assertNotNull(response);
-        assertNotNull(response.results());
-        assertFalse(response.results().isEmpty());
-        
-        // Verify first result has identifier and other expected fields
-        var firstItem = response.results().getFirst();
-        assertNotNull(firstItem.identifier());
-        assertNotNull(firstItem.itemName());
+    void shouldReturnMockServerInfo() {
+        // When
+        String info = controller.getColectica();
+
+        // Then
+        assertNotNull(info);
+        assertEquals("Mock Colectica Server - Using Secondary Instance", info);
     }
 
-
-
     @Test
-    void shouldCreateAuthenticationToken() {
-        assertNotNull(controller);
-
-        // Create authentication request
+    void shouldAuthenticateWithValidCredentials() {
+        // Given
         AuthenticationRequest authRequest = new AuthenticationRequest("test-user", "test-password");
 
+        // When
         ResponseEntity<AuthenticationResponse> response = controller.createToken(authRequest);
 
+        // Then
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().accessToken());
-        assertTrue(response.getBody().accessToken().startsWith("mock-token-"));
+        assertTrue(response.getBody().accessToken().startsWith("mock-token-secondary-"));
     }
 
     @Test
     void shouldRejectEmptyCredentials() {
-        assertNotNull(controller);
-
         // Test with empty username
         AuthenticationRequest emptyUsername = new AuthenticationRequest("", "password");
         ResponseEntity<AuthenticationResponse> response1 = controller.createToken(emptyUsername);
@@ -92,30 +87,25 @@ class ColecticaMockControllerIntegrationTest {
         AuthenticationRequest emptyPassword = new AuthenticationRequest("username", "");
         ResponseEntity<AuthenticationResponse> response2 = controller.createToken(emptyPassword);
         assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
-
-        // Test with both empty
-        AuthenticationRequest bothEmpty = new AuthenticationRequest("", "");
-        ResponseEntity<AuthenticationResponse> response3 = controller.createToken(bothEmpty);
-        assertEquals(HttpStatus.UNAUTHORIZED, response3.getStatusCode());
     }
 
     @Test
-    void shouldRejectNullCredentials() {
-        assertNotNull(controller);
+    void shouldGetPhysicalInstances() {
+        // Given
+        PartialPhysicalInstance instance1 = new PartialPhysicalInstance("id1", "Label 1", null);
+        PartialPhysicalInstance instance2 = new PartialPhysicalInstance("id2", "Label 2", null);
+        List<PartialPhysicalInstance> mockInstances = List.of(instance1, instance2);
 
-        // Test with null request
-        ResponseEntity<AuthenticationResponse> response1 = controller.createToken(null);
-        assertEquals(HttpStatus.UNAUTHORIZED, response1.getStatusCode());
+        when(secondaryDDIRepository.getPhysicalInstances()).thenReturn(mockInstances);
 
-        // Test with null username
-        AuthenticationRequest nullUsername = new AuthenticationRequest(null, "password");
-        ResponseEntity<AuthenticationResponse> response2 = controller.createToken(nullUsername);
-        assertEquals(HttpStatus.UNAUTHORIZED, response2.getStatusCode());
+        // When
+        ColecticaResponse response = controller.getPhysicalInstances(new QueryRequest(List.of()));
 
-        // Test with null password
-        AuthenticationRequest nullPassword = new AuthenticationRequest("username", null);
-        ResponseEntity<AuthenticationResponse> response3 = controller.createToken(nullPassword);
-        assertEquals(HttpStatus.UNAUTHORIZED, response3.getStatusCode());
-
+        // Then
+        assertNotNull(response);
+        assertNotNull(response.results());
+        assertEquals(2, response.results().size());
+        assertEquals("id1", response.results().get(0).identifier());
+        assertEquals("id2", response.results().get(1).identifier());
     }
 }

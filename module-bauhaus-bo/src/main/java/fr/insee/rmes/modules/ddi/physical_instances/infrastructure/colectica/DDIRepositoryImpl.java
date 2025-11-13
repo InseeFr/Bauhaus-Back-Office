@@ -19,12 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-@Repository
 public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
 
     private final RestTemplate restTemplate;
-    private final ColecticaConfiguration colecticaConfiguration;
+    private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private Ddi4Response cachedDdi4Response;
@@ -32,12 +31,12 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
-            ColecticaConfiguration colecticaConfiguration,
+            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ObjectMapper objectMapper,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter
             ) {
         this.restTemplate = restTemplate;
-        this.colecticaConfiguration = colecticaConfiguration;
+        this.instanceConfiguration = instanceConfiguration;
         this.objectMapper = objectMapper;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
     }
@@ -55,11 +54,11 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         logger.info("Authenticating to Colectica API");
 
-        String tokenUrl = colecticaConfiguration.baseServerUrl() + "/token/createtoken";
+        String tokenUrl = instanceConfiguration.baseServerUrl() + "/token/createtoken";
 
         AuthenticationRequest authRequest = new AuthenticationRequest(
-            colecticaConfiguration.username(),
-            colecticaConfiguration.password()
+            instanceConfiguration.username(),
+            instanceConfiguration.password()
         );
 
         // Create headers with Content-Type for authentication request
@@ -110,14 +109,14 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
-        logger.info("Getting physical instances from Colectica API via HTTP");
+        logger.info("Getting physical instances from Colectica API via HTTP (primary instance)");
 
         return executeWithAuth(token -> {
             // Set up the request with authorization header
-            String url = colecticaConfiguration.baseApiUrl() + "_query";
+            String url = instanceConfiguration.baseApiUrl() + "_query";
 
             // Create request body with itemTypes from configuration
-            QueryRequest requestBody = new QueryRequest(colecticaConfiguration.itemTypes());
+            QueryRequest requestBody = new QueryRequest(instanceConfiguration.itemTypes());
 
             // Create headers with Bearer token and Content-Type
             HttpHeaders headers = new HttpHeaders();
@@ -189,10 +188,10 @@ public class DDIRepositoryImpl implements DDIRepository {
         return executeWithAuth(token -> {
             try {
                 // First, query all Physical Instances to find the one with matching ID
-                String queryUrl = colecticaConfiguration.baseApiUrl() + "_query";
+                String queryUrl = instanceConfiguration.baseApiUrl() + "_query";
 
                 // Create query request with item types
-                QueryRequest requestBody = new QueryRequest(colecticaConfiguration.itemTypes());
+                QueryRequest requestBody = new QueryRequest(instanceConfiguration.itemTypes());
 
                 // Create headers with Bearer token
                 HttpHeaders headers = new HttpHeaders();
@@ -210,7 +209,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 );
 
                 if (colecticaResponse == null || colecticaResponse.results() == null || colecticaResponse.results().isEmpty()) {
-                    logger.error("No Physical Instances found in Colectica");
+                    logger.error("No Physical Instances found in Colectica (primary instance)");
                     return null;
                 }
 
@@ -221,16 +220,16 @@ public class DDIRepositoryImpl implements DDIRepository {
                         .orElse(null);
 
                 if (matchingItem == null) {
-                    logger.error("No Physical Instance found with id: {}", id);
+                    logger.error("No Physical Instance found with id: {} (primary instance)", id);
                     return null;
                 }
 
-                logger.info("Found Physical Instance with id: {}, agencyId: {}, version: {}",
+                logger.info("Found Physical Instance with id: {}, agencyId: {}, version: {} (primary instance)",
                         matchingItem.identifier(), matchingItem.agencyId(), matchingItem.version());
 
                 // Now fetch the full DDI4 item details using the item endpoint
                 // Format: /api/v1/item/{agencyId}/{identifier}/{version}
-                String itemUrl = colecticaConfiguration.baseApiUrl() + "item/"
+                String itemUrl = instanceConfiguration.baseApiUrl() + "item/"
                         + matchingItem.agencyId() + "/"
                         + matchingItem.identifier() + "/"
                         + matchingItem.version();
