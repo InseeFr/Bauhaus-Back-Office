@@ -7,26 +7,34 @@ import java.util.List;
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.colectica")
 public record ColecticaConfiguration(
         boolean mockServerEnabled,
-        String baseUrl,
-        String apiPath,
-        List<String> itemTypes,
-        String versionResponsibility,
-        String itemFormat,
-        String username,
-        String password
+        ColecticaInstanceConfiguration primary,
+        ColecticaInstanceConfiguration secondary
 ) {
-    public ColecticaConfiguration {
-        // Set default apiPath if not provided
-        if (apiPath == null || apiPath.isBlank()) {
-            apiPath = "/api/v1/";
+    /**
+     * Configuration for a single Colectica instance
+     */
+    public record ColecticaInstanceConfiguration(
+            String baseUrl,
+            String apiPath,
+            List<String> itemTypes,
+            String versionResponsibility,
+            String itemFormat,
+            String username,
+            String password
+    ) {
+        public ColecticaInstanceConfiguration {
+            // Set default apiPath if not provided
+            if (apiPath == null || apiPath.isBlank()) {
+                apiPath = "/api/v1/";
+            }
         }
-    }
 
-    public String baseServerUrl() {
-        return baseUrl;
-    }
+        public String baseServerUrl() {
+            return baseUrl;
+        }
 
-    public String baseApiUrl() {
-        return baseUrl + apiPath;
+        public String baseApiUrl() {
+            return baseUrl + apiPath;
+        }
     }
 }
