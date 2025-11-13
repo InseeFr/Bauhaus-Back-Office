@@ -3,7 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.code_list;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
+import fr.insee.rmes.modules.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

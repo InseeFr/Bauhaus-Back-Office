@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.onion.infrastructure.webservice.GeographyResources;
+import fr.insee.rmes.modules.geographies.webservice.GeographyResources;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

@@ -7,7 +7,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
+import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.*;
 import org.apache.http.HttpStatus;

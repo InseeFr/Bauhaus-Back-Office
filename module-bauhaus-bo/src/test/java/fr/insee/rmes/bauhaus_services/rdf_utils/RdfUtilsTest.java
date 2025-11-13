@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.modules.commons.domain.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;

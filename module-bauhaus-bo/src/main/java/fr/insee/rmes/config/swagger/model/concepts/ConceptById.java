@@ -1,6 +1,6 @@
 package fr.insee.rmes.config.swagger.model.concepts;
 
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
+import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class ConceptById {
