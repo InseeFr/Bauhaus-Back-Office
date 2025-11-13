@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
-import fr.insee.rmes.model.classification.Classification;
+import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;

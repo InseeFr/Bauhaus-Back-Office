@@ -13,9 +13,10 @@ import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
+import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
-import fr.insee.rmes.modules.codeslists.infrastructure.graphdb.CodeListsQueries;
+import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
@@ -441,11 +442,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<fr.insee.rmes.model.codeslists.PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+	public List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
 		var codeslists = repoGestion.getResponseAsArray(CodeListsQueries.getAllCodesLists(partial));
 		return DiacriticSorter.sort(codeslists,
-				fr.insee.rmes.model.codeslists.PartialCodesList[].class,
-				fr.insee.rmes.model.codeslists.PartialCodesList::labelLg1);
+				PartialCodesList[].class,
+				PartialCodesList::labelLg1);
 	}
 
 	@Override

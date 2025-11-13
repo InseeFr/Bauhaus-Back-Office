@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.application;
+package fr.insee.rmes.modules.codeslists;
 
 import fr.insee.rmes.domain.codeslist.CodesListRepository;
 import fr.insee.rmes.domain.codeslist.CodesListService;
