@@ -1,6 +1,6 @@
 package fr.insee.rmes.model;
 
-import fr.insee.rmes.modules.commons.domain.ValidationStatus;
+import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
 import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;

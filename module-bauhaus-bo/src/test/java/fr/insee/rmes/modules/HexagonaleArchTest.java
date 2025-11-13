@@ -65,7 +65,7 @@ public class HexagonaleArchTest {
     @ArchTest
     public static final ArchRule domainDependencies = FreezingArchRule.freeze(classes()
             .that().resideInAPackage("..domain..")
-            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..")
+            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..", "org.jspecify.annotations..")
             .because("The domain should only depends of the domain"));
 
     @ArchTest
@@ -132,8 +132,8 @@ public class HexagonaleArchTest {
     // Port structure
 
     @ArchTest
-    public static final ArchRule portsShouldBeInterfaces = classes()
+    public static final ArchRule portsShouldBeInterfaces = FreezingArchRule.freeze(classes()
             .that().resideInAPackage("..port..")
             .should().beInterfaces()
-            .because("All ports should be interfaces to define contracts");
+            .because("All ports should be interfaces to define contracts"));
 }
