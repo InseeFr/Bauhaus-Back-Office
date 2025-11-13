@@ -1,7 +1,7 @@
 package fr.insee.rmes.config.auth.user;
 
 
-import fr.insee.rmes.onion.domain.model.Stamp;
+import fr.insee.rmes.modules.commons.domain.model.Stamp;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

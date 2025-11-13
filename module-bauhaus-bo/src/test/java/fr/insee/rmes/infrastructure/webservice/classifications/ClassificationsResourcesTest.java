@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
