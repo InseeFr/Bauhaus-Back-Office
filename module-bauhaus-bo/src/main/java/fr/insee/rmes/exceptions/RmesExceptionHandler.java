@@ -9,8 +9,8 @@ import fr.insee.rmes.modules.operations.operations.webservice.OperationsResource
 import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
-import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
-import fr.insee.rmes.onion.infrastructure.webservice.codes_lists.CodeListsResources;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
+import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeListsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;

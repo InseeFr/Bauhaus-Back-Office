@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.classification;
+package fr.insee.rmes.modules.classifications.nomenclatures.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

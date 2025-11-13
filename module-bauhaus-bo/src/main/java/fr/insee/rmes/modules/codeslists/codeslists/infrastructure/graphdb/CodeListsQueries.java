@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.codeslists.infrastructure.graphdb;
+package fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb;
 
 
 import fr.insee.rmes.freemarker.FreeMarkerUtils;

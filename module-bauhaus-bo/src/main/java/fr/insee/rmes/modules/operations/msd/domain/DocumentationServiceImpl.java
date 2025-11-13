@@ -1,9 +1,7 @@
-package fr.insee.rmes.onion.domain.services.operations;
+package fr.insee.rmes.modules.operations.msd.domain;
 
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
-import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
-import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
 

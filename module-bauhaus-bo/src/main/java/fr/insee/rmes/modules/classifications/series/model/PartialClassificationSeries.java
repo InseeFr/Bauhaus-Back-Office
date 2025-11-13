@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.classification;
+package fr.insee.rmes.modules.classifications.series.model;
 
 import fr.insee.rmes.utils.DiacriticSorter;
 import io.soabase.recordbuilder.core.RecordBuilder;

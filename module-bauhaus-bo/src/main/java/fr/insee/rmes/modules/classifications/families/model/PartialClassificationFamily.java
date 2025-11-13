@@ -1,4 +1,4 @@
-package fr.insee.rmes.model.classification;
+package fr.insee.rmes.modules.classifications.families.model;
 
 public record PartialClassificationFamily(String id, String label) {
 }

@@ -12,7 +12,7 @@ import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.structures.components.domain.model.MutualizedComponent;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.QB;
-import fr.insee.rmes.modules.codeslists.infrastructure.graphdb.CodeListsQueries;
+import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    List<fr.insee.rmes.model.codeslists.PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
+    List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
 
     String getCodesListByIRI(String iri) throws RmesException;
 
