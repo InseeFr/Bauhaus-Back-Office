@@ -28,12 +28,13 @@ class OrganisationGraphDBRepositoryTest {
     private OrganisationGraphDBRepository repository;
 
     private static final String BASE_GRAPH = "http://rdf.insee.fr/graphes/";
+    private static final String ORGANISATIONS_GRAPH = "organisations";
     private static final String INSEE_GRAPH = "organisations/insee";
     private static final String LANGUAGE = "fr";
 
     @BeforeEach
     void setUp() {
-        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, INSEE_GRAPH, LANGUAGE);
+        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, ORGANISATIONS_GRAPH, INSEE_GRAPH, LANGUAGE);
     }
 
     @Test

@@ -33,6 +33,7 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         repository = new OrganisationGraphDBRepository(
                 repositoryGestion,
                 "http://rdf.insee.fr/graphes/",
+                "organisations",
                 "organisations/insee",
                 "fr"
         );
