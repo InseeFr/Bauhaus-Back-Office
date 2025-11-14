@@ -59,6 +59,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
     private void assertThatFileExists(String file) throws IOException, InterruptedException {
         Container.ExecResult lsResult = execInContainer("ls", "-al", DOCKER_ENTRYPOINT_INITDB);
         String stdout = lsResult.getStdout();
-        assertThat(stdout).contains(file).withFailMessage("Expecting file %1$s to be in folder %2$s of container", file, DOCKER_ENTRYPOINT_INITDB);
+        assertThat(stdout).withFailMessage("Expecting file %1$s to be in folder %2$s of container", file, DOCKER_ENTRYPOINT_INITDB)
+                .contains(file);
     }
 }

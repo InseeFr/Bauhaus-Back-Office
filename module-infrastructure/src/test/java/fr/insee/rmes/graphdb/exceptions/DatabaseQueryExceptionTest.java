@@ -39,7 +39,7 @@ class DatabaseQueryExceptionTest {
         String errorMessage = "Connection failed";
         MalformedQueryException rdf4jException = new MalformedQueryException(errorMessage);
 
-        new DatabaseQueryException(rdf4jException, query);
+        var unused = new DatabaseQueryException(rdf4jException, query);
 
         List<ILoggingEvent> logsList = listAppender.list;
         assertEquals(1, logsList.size());

@@ -100,7 +100,7 @@ public class ConceptDateChecker implements RuleChecker  {
             return false;
         }
         try {
-            Instant.parse(dateString.trim()).atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            var unused = Instant.parse(dateString.trim()).atZone(java.time.ZoneId.systemDefault()).toLocalDate();
             return true;
         } catch (DateTimeParseException _){
             return false;

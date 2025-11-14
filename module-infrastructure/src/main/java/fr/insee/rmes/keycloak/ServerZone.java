@@ -13,22 +13,22 @@ public class ServerZone {
 
     public ServerZone(){ }
 
-    public void setZone(String zone) {
-        this.zone = Arrays.stream(Zone.values())
-                .filter(z->zone.toUpperCase().equals(z.name()))
-                .findFirst()
-                .orElseGet(()->{
-                    logger.warn(String.format("No zone found for value {0} : this is serverZone set to default zone"), zone);
-                    return Zone.defaultZone();
-                });
-    }
-
     public ServerZone(String zone) {
         this.zone = Arrays.stream(Zone.values())
                 .filter(z->zone.toUpperCase().equals(z.name()))
                 .findFirst()
                 .orElseGet(()->{
-                    logger.warn(String.format("No zone found for value {0} : this is serverZone set to default zone", zone));
+                    logger.warn("No zone found for value {} : this is serverZone set to default zone", zone);
+                    return Zone.defaultZone();
+                });
+    }
+
+    public void setZone(String zone) {
+        this.zone = Arrays.stream(Zone.values())
+                .filter(z->zone.toUpperCase().equals(z.name()))
+                .findFirst()
+                .orElseGet(()->{
+                    logger.warn("No zone found for value {} : this is serverZone set to default zone", zone);
                     return Zone.defaultZone();
                 });
     }

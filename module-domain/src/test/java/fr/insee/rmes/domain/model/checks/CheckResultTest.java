@@ -120,7 +120,7 @@ class CheckResultTest {
         CheckResult result = new CheckResult("name", "value");
 
         // When & Then
-        assertThat(result).isEqualTo(result);
+        assertThat(result.equals(result)).isTrue();
     }
 
     @Test
