@@ -1,4 +1,4 @@
-package fr.insee.rmes.onion.infrastructure.webservice.concepts;
+package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
@@ -10,6 +10,8 @@ import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
+import fr.insee.rmes.modules.concepts.concept.webservice.response.ConceptForAdvancedSearchResponse;
+import fr.insee.rmes.modules.concepts.concept.webservice.response.PartialConceptResponse;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
@@ -34,6 +36,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/concepts")
@@ -65,11 +69,23 @@ public class ConceptsResources  {
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@Operation(summary = "List of concepts",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
-	public List<PartialConcept> getConcepts() throws RmesException {
-		return conceptsService.getConcepts();
+	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialConceptResponse.class))))})
+	public ResponseEntity<List<PartialConceptResponse>> getConcepts() throws RmesException {
+		List<PartialConcept> concepts = conceptsService.getConcepts();
+
+		List<PartialConceptResponse> responses = concepts.stream()
+			.map(concept -> {
+				var response = PartialConceptResponse.fromDomain(concept);
+				response.add(linkTo(ConceptsResources.class).slash("concept").slash(concept.id()).withSelfRel());
+				return response;
+			})
+			.toList();
+
+		return ResponseEntity.ok()
+			.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+			.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
@@ -91,11 +107,23 @@ public class ConceptsResources  {
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/advanced-search", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@Operation(summary = "Rich list of concepts",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsSearch.class))))})																 
-	public List<ConceptForAdvancedSearch> getConceptsSearch() throws RmesException {
-		return  conceptsService.getConceptsSearch();
+	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptForAdvancedSearchResponse.class))))})
+	public ResponseEntity<List<ConceptForAdvancedSearchResponse>> getConceptsSearch() throws RmesException {
+		List<ConceptForAdvancedSearch> concepts = conceptsService.getConceptsSearch();
+
+		List<ConceptForAdvancedSearchResponse> responses = concepts.stream()
+			.map(concept -> {
+				var response = ConceptForAdvancedSearchResponse.fromDomain(concept);
+				response.add(linkTo(ConceptsResources.class).slash("concept").slash(concept.id()).withSelfRel());
+				return response;
+			})
+			.toList();
+
+		return ResponseEntity.ok()
+			.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+			.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
@@ -168,7 +196,14 @@ public class ConceptsResources  {
 	public ResponseEntity<Object> setConcept(
 			@Parameter(description = "Concept", required = true) @RequestBody String body) throws RmesException {
 		String id = conceptsService.setConcept(body);
-		return ResponseEntity.status(HttpStatus.OK).body(id);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+
+		return ResponseEntity.created(location).body(id);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.UPDATE)

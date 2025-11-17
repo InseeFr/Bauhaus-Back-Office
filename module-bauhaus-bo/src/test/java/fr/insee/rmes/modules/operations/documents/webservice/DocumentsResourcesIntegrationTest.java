@@ -1,9 +1,8 @@
-package fr.insee.rmes.infrastructure.webservice;
+package fr.insee.rmes.modules.operations.documents.webservice;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(value = DocumentsResources.class)
 @Import(BaseConfigForMvcTests.class)
-class DocumentsResourcesTest {
+class DocumentsResourcesIntegrationTest {
 
     @MockitoBean
     private DocumentsService documentsService;

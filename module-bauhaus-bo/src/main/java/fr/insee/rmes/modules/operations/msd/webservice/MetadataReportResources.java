@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
+import fr.insee.rmes.modules.operations.msd.webservice.response.DocumentationAttributeResponse;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @Qualifier("Report")
@@ -93,11 +96,23 @@ public class MetadataReportResources {
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/metadataAttributes", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/metadataAttributes", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@Operation(summary = "Metadata attributes specification and property",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type="array",implementation = Attribute.class)))})
-	public List<DocumentationAttribute> getMetadataAttributes() throws RmesException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
-		return documentationService.getMetadataAttributes();
+	public ResponseEntity<List<DocumentationAttributeResponse>> getMetadataAttributes() throws RmesException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
+		List<DocumentationAttribute> attributes = documentationService.getMetadataAttributes();
+
+		List<DocumentationAttributeResponse> responses = attributes.stream()
+			.map(attribute -> {
+				var response = DocumentationAttributeResponse.fromDomain(attribute);
+				response.add(linkTo(MetadataReportResources.class).slash("metadataAttribute").slash(attribute.id()).withSelfRel());
+				return response;
+			})
+			.toList();
+
+		return ResponseEntity.ok()
+			.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+			.body(responses);
 	}
 
 
