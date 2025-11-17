@@ -1,10 +1,9 @@
-package fr.insee.rmes.infrastructure.webservice.operations;
+package fr.insee.rmes.modules.operations.documents.webservice;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +11,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.io.IOException;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +79,41 @@ class DocumentsResourcesTest {
         when(documentsService.setLink(id, " mocked body")).thenReturn("mocked result");
         String actual =documentsResources.setLink(documentId," mocked body").toString();
         Assertions.assertTrue(actual.startsWith("<200 OK OK,"));
+    }
+
+    @Test
+    void shouldReturn201WithLocationHeaderWhenCreateDocument() throws RmesException, IOException {
+        // Given
+        MockHttpServletRequest req = new MockHttpServletRequest("POST", "/documents/document");
+        req.setServerName("localhost");
+        req.setServerPort(80);
+        req.setScheme("http");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
+
+        DocumentsResources documentsResources = new DocumentsResources(documentsService);
+        String expectedId = "document123";
+        String documentBody = "{\"labelLg1\": \"Test Document\"}";
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-document.pdf",
+                "application/pdf",
+                "test content".getBytes()
+        );
+
+        when(documentsService.createDocument(eq(documentBody), any(), eq("test-document.pdf")))
+                .thenReturn(expectedId);
+
+        // When
+        ResponseEntity<String> response = documentsResources.setDocument(documentBody, file);
+
+        // Then
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(expectedId, response.getBody());
+        assertEquals(
+                "/documents/document/" + expectedId,
+                Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
+        );
     }
 
 }

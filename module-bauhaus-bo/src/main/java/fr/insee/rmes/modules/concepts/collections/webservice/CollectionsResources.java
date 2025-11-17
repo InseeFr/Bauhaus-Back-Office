@@ -26,7 +26,7 @@ public class CollectionsResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<List<PartialCollectionResponse>> getAllConceptsCollections(){
+    ResponseEntity<List<PartialCollectionResponse>> getAll(){
         try {
             var collections =  this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
             return ResponseEntity.ok().body(collections);
@@ -37,7 +37,7 @@ public class CollectionsResources {
 
     @GetMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<CollectionResponse> getConceptsCollectionById(@PathVariable String id){
+    ResponseEntity<CollectionResponse> getById(@PathVariable String id){
         try {
             return this.service.getCollection(new CollectionId(id)).map(
                     collection ->  ResponseEntity.ok().body(CollectionResponse.fromDomain(collection))
@@ -49,7 +49,31 @@ public class CollectionsResources {
 
     @PostMapping
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-    ResponseEntity<String> createConcept( String id){
+    ResponseEntity<String> create(@RequestBody String body){
+        return null;
+    }
+
+    @PutMapping("/{id}")
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
+    ResponseEntity<String> update(@PathVariable String id, @RequestBody String body){
+        return null;
+    }
+
+    @DeleteMapping("/{id}")
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.DELETE)
+    ResponseEntity<String> delete(@PathVariable String id){
+        return null;
+    }
+
+    @GetMapping("/search")
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    ResponseEntity<String> search(){
+        return null;
+    }
+
+    @PutMapping("/{id}/validate")
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
+    ResponseEntity<String> publish(@PathVariable String id){
         return null;
     }
 }

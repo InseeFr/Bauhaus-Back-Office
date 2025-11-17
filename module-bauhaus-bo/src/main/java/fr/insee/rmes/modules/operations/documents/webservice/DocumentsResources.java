@@ -26,7 +26,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 
 @RestController
@@ -98,7 +101,13 @@ public class DocumentsResources {
         String id;
         String documentName = documentFile.getOriginalFilename();
         id = documentsService.createDocument(body, documentFile.getInputStream(), documentName);
-        return ResponseEntity.status(HttpStatus.OK).body(id);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(id);
     }
 
     @PutMapping("/document/{id}")

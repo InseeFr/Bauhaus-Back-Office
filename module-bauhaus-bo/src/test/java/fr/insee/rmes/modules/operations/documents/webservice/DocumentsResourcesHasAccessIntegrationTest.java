@@ -1,9 +1,8 @@
-package fr.insee.rmes.integration.authorizations;
+package fr.insee.rmes.modules.operations.documents.webservice;
 
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -43,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "fr.insee.rmes.bauhaus.activeModules=operations"}
 )
 @Import(JwtProperties.class)
-class TestDocumentsResourcesEnvProd extends AbstractResourcesEnvProd {
+class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
@@ -157,7 +156,7 @@ class TestDocumentsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     private static Stream<Arguments> provideDataForDocumentPostEndpoints() {
         return Stream.of(
-                Arguments.of(200, true, true),
+                Arguments.of(201, true, true),
                 Arguments.of(403, true, false),
                 Arguments.of(401, false, true)
         );

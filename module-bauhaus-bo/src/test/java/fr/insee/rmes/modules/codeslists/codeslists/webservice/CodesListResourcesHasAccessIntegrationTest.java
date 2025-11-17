@@ -1,10 +1,9 @@
-package fr.insee.rmes.integration.authorizations;
+package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeListsResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = CodeListsResources.class,
+@WebMvcTest(controllers = CodesListsResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
                 "jwt.stampClaim=" + STAMP_CLAIM,
                 "jwt.roleClaim=" + ROLE_CLAIM,
@@ -38,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "fr.insee.rmes.bauhaus.activeModules=codelists"}
 )
 @Import(JwtProperties.class)
-class TestCodeListsResourcesEnvProd extends AbstractResourcesEnvProd {
+class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
@@ -65,7 +64,7 @@ class TestCodeListsResourcesEnvProd extends AbstractResourcesEnvProd {
         mvc.perform(request).andExpect(status().is(code));
     }
 
-    @MethodSource("provideCodeListData")
+    @MethodSource("providePostCodeListData")
     @ParameterizedTest
     void postCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
@@ -80,7 +79,15 @@ class TestCodeListsResourcesEnvProd extends AbstractResourcesEnvProd {
         mvc.perform(request).andExpect(status().is(code));
     }
 
+    private static Stream<Arguments> providePostCodeListData() {
+        return Stream.of(
+                Arguments.of(201, true, true),
 
+                Arguments.of(403, true, false),
+
+                Arguments.of(401, false, true)
+        );
+    }
 
     private static Stream<Arguments> provideCodeListData() {
         return Stream.of(
