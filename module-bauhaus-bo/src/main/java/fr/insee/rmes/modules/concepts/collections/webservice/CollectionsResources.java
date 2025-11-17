@@ -2,6 +2,9 @@ package fr.insee.rmes.modules.concepts.collections.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedLocalisedLabelException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.rbac.HasAccess;
@@ -10,7 +13,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -49,8 +54,22 @@ public class CollectionsResources {
 
     @PostMapping
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-    ResponseEntity<String> create(@RequestBody String body){
-        return null;
+    ResponseEntity<String> create(@RequestBody CreateCollectionRequest collection){
+        try {
+            var collectionId = this.service.createCollection(collection.toCommand());
+
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentRequest()
+                    .path("/{id}")
+                    .buildAndExpand(collectionId.value())
+                    .toUri();
+
+            return ResponseEntity.created(location).body(collectionId.value());
+        } catch (InvalidCreateCollectionCommandException | MalformedLocalisedLabelException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (CollectionsSaveException e) {
+            return  ResponseEntity.internalServerError().build();
+        }
     }
 
     @PutMapping("/{id}")

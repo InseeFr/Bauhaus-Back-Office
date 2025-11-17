@@ -4,7 +4,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsF
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
-import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
@@ -24,7 +24,7 @@ public class DomainCollectionsService implements CollectionsService {
     }
 
     @Override
-    public List<PartialCollection> getAllCollections() throws CollectionsFetchException {
+    public List<CompactCollection> getAllCollections() throws CollectionsFetchException {
         return this.repository.getCollections();
     }
 
@@ -35,8 +35,10 @@ public class DomainCollectionsService implements CollectionsService {
 
     @Override
     public CollectionId createCollection(CreateCollectionCommand collectionCommand) throws CollectionsSaveException {
+        // TODO ajouter verication si les conceptsIdentifiers existent bien
+
         Collection newCollection = Collection.create(collectionCommand, randomIdGenerator.generateCollectionId());
         this.repository.save(newCollection);
-        return newCollection.partialCollection().id();
+        return newCollection.id();
     }
 }

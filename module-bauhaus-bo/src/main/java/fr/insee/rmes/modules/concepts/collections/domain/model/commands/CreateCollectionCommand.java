@@ -9,17 +9,21 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-//TODO RENAME alternativeLabel into secondLabel everywhere
 
 public class CreateCollectionCommand {
-    private final LocalisedLabel defaultLabel;
-    private final @Nullable LocalisedLabel alternativeLabel;
-    private final Map<Lang, String> descriptions;
+    private final List<LocalisedLabel> labels;
+    private final List<LocalisedLabel> descriptions;
     private final String creator;
     private final @Nullable String contributor;
     private final List<String> conceptsIdentifiers;
 
-    public CreateCollectionCommand(LocalisedLabel defaultLabel, @Nullable LocalisedLabel alternativeLabel, Map<Lang, String> descriptions, String creator, @Nullable String contributor, List<String> conceptsIdentifiers) throws InvalidCreateCollectionCommandException {
+    public CreateCollectionCommand(List<LocalisedLabel> labels, List<LocalisedLabel> descriptions, String creator, @Nullable String contributor, List<String> conceptsIdentifiers) throws InvalidCreateCollectionCommandException {
+        if(labels.isEmpty()){
+            throw new InvalidCreateCollectionCommandException("There are no labels");
+        }
+        if(labels.stream().noneMatch(l -> l.lang().equals(Lang.defaultLanguage()))){
+            throw new InvalidCreateCollectionCommandException("The default label is not provided");
+        }
         if(StringUtils.isAllBlank(creator)){
             throw new InvalidCreateCollectionCommandException("The creator is blank");
         }
@@ -27,23 +31,18 @@ public class CreateCollectionCommand {
             throw new InvalidCreateCollectionCommandException("At least one concept is blank");
         }
 
-        this.defaultLabel = defaultLabel;
-        this.alternativeLabel = alternativeLabel;
+        this.labels = labels;
         this.descriptions = descriptions;
         this.creator = creator;
         this.contributor = contributor;
         this.conceptsIdentifiers = conceptsIdentifiers;
     }
 
-    public LocalisedLabel defaultLabel() {
-        return defaultLabel;
+    public List<LocalisedLabel> labels() {
+        return labels;
     }
 
-    public Optional<LocalisedLabel> alternativeLabel() {
-        return Optional.ofNullable(alternativeLabel);
-    }
-
-    public Map<Lang, String> descriptions() {
+    public List<LocalisedLabel> descriptions() {
         return descriptions;
     }
 

@@ -2,37 +2,43 @@ package fr.insee.rmes.modules.concepts.collections.domain.model;
 
 import fr.insee.rmes.modules.commons.domain.model.Lang;
 import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedCollectionException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-public class Collection {
+public class Collection extends CompactCollection {
 
     private static final boolean DEFAULT_VALIDATION_STATE = false;
-    //TODO Utiliser un héritage
-    private final PartialCollection partialCollection;
-    private final @Nullable LocalisedLabel secondLabel;
+    private final @Nullable List<LocalisedLabel> alternativeLabels;
     private final String creator;
     private final @Nullable String contributor;
-    //TODO revoir la modélisation des descriptions (faire analogue à preflabel ?)
-    private final Map<Lang, String> descriptions;
+    private final List<LocalisedLabel> descriptions;
     private final LocalDateTime created;
     private final @Nullable LocalDateTime modified;
     private final boolean isValidated;
     private final List<ConceptId> conceptIds;
 
-    public Collection(PartialCollection partialCollection,
-                      @Nullable LocalisedLabel secondLabel, String creator,
-                      @Nullable String contributor, Map<Lang, String> descriptions,
-                      LocalDateTime created, @Nullable LocalDateTime modified,
-                      boolean isValidated, List<ConceptId> conceptIds) {
-        this.partialCollection = partialCollection;
-        this.secondLabel = secondLabel;
+    public Collection(CollectionId id,
+                      List<LocalisedLabel> labels,
+                      String creator,
+                      @Nullable String contributor,
+                      List<LocalisedLabel> descriptions,
+                      LocalDateTime created,
+                      @Nullable LocalDateTime modified,
+                      boolean isValidated,
+                      List<ConceptId> conceptIds) {
+        var prefLabel = labels.stream().filter(l -> l.lang().equals(Lang.defaultLanguage())).findFirst();
+        var alternativeLabels = labels.stream().filter(l -> !l.lang().equals(Lang.defaultLanguage())).toList();
+
+
+
+        super(id, prefLabel.orElseThrow(() -> new MalformedCollectionException("There is not label for default language")));
+        this.alternativeLabels = alternativeLabels;
         this.creator = creator;
         this.contributor = contributor;
         this.descriptions = descriptions;
@@ -43,8 +49,11 @@ public class Collection {
     }
 
     public static Collection create(CreateCollectionCommand createCollection, CollectionId collectionId) {
-        return new Collection(new PartialCollection(collectionId, createCollection.defaultLabel()),
-                createCollection.alternativeLabel().orElse(null),
+
+
+        return new Collection(
+                collectionId,
+                createCollection.labels(),
                 createCollection.creator(),
                 createCollection.contributor().orElse(null),
                 createCollection.descriptions(),
@@ -57,12 +66,8 @@ public class Collection {
         );
     }
 
-    public PartialCollection partialCollection() {
-        return partialCollection;
-    }
-
-    public Optional<LocalisedLabel> secondLabel() {
-        return Optional.ofNullable(secondLabel);
+    public List<LocalisedLabel> alternativeLabels() {
+        return alternativeLabels;
     }
 
     public String creator() {
@@ -73,7 +78,7 @@ public class Collection {
         return Optional.ofNullable(contributor);
     }
 
-    public Map<Lang, String> descriptions() {
+    public List<LocalisedLabel> descriptions() {
         return descriptions;
     }
 

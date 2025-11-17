@@ -3,6 +3,8 @@ package fr.insee.rmes.modules.concepts.collections.webservice;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.rbac.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -83,13 +85,13 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         mvc.perform(request).andExpect(status().is(code == 200 ? 404 : code));
     }
 
-    @MethodSource("provideCollectionData")
+    @MethodSource("providePostCollectionData")
     @ParameterizedTest
-    void createCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void createCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsSaveException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-
-        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
+        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
 
         if (withBearer) {
             request.header("Authorization", "Bearer toto");
@@ -156,6 +158,14 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         }
 
         mvc.perform(request).andExpect(status().is(code));
+    }
+
+    private static Stream<Arguments> providePostCollectionData() {
+        return Stream.of(
+                Arguments.of(201, true, true),
+                Arguments.of(403, true, false),
+                Arguments.of(401, false, true)
+        );
     }
 
     private static Stream<Arguments> provideCollectionData() {
