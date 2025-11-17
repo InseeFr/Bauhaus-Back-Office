@@ -7,7 +7,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsF
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
-import fr.insee.rmes.modules.concepts.collections.domain.model.PartialCollection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -34,7 +34,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     }
 
     @Override
-    public List<PartialCollection> getCollections() throws CollectionsFetchException {
+    public List<CompactCollection> getCollections() throws CollectionsFetchException {
 
 
         try {
@@ -60,6 +60,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
             }
 
             var graphDBCollection = Deserializer.deserializeJSONObject(collection, GraphDBCollection.class);
+
             var concepts = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
             var graphDBCollectionWithConcepts = graphDBCollection.withConcepts(Deserializer.deserializeJSONArray(concepts, GraphDBConcept[].class));
 
@@ -78,15 +79,15 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, RdfUtils.conceptGraph());
         model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(graphDBCollection.isValidated()), RdfUtils.conceptGraph());
         model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(graphDBCollection.prefLabelLg1(),
-                graphDBCollection.lg1()), RdfUtils.conceptGraph());
+                graphDBCollection.prefLabelLg1_lg()), RdfUtils.conceptGraph());
         model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(graphDBCollection.created()), RdfUtils.conceptGraph());
         model.add(collectionURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(graphDBCollection.contributor()), RdfUtils.conceptGraph());
         model.add(collectionURI, DC.CREATOR, RdfUtils.setLiteralString(graphDBCollection.creator()), RdfUtils.conceptGraph());
         /*Optional*/
         RdfUtils.addTripleDateTime(collectionURI, DCTERMS.MODIFIED, graphDBCollection.modified(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleString(collectionURI, DCTERMS.TITLE, graphDBCollection.prefLabelLg2(), graphDBCollection.lg2(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleString(collectionURI, DCTERMS.DESCRIPTION, graphDBCollection.descriptionLg1(), graphDBCollection.lg1(), model, RdfUtils.conceptGraph());
-        RdfUtils.addTripleString(collectionURI, DCTERMS.DESCRIPTION, graphDBCollection.descriptionLg2(), graphDBCollection.lg2(), model, RdfUtils.conceptGraph());
+        RdfUtils.addTripleString(collectionURI, DCTERMS.TITLE, graphDBCollection.prefLabelLg2(), graphDBCollection.prefLabelLg2_lg(), model, RdfUtils.conceptGraph());
+        RdfUtils.addTripleString(collectionURI, DCTERMS.DESCRIPTION, graphDBCollection.descriptionLg1(), graphDBCollection.descriptionLg1_lg(), model, RdfUtils.conceptGraph());
+        RdfUtils.addTripleString(collectionURI, DCTERMS.DESCRIPTION, graphDBCollection.descriptionLg2(), graphDBCollection.descriptionLg2_lg(), model, RdfUtils.conceptGraph());
 
         /*Members*/
         graphDBCollection.conceptIds().forEach(conceptId->{

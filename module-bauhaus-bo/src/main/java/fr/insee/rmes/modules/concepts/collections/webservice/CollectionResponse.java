@@ -5,28 +5,30 @@ import fr.insee.rmes.modules.commons.domain.model.Lang;
 import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public record CollectionResponse(
         String id,
-        String prefLabelLg1,
-        String prefLabelLg2,
+        List<LocalisedLabelResponse> prefLabels,
         LocalDateTime created,
         LocalDateTime modified,
-        String descriptionLg1,
-        String descriptionLg2,
+        List<LocalisedLabelResponse> descriptions,
         boolean isValidated,
         String creator,
         String contributor
 ) {
     static CollectionResponse fromDomain(Collection collection){
+        var labels = new ArrayList<LocalisedLabel>();
+        labels.add(collection.prefLabel());
+        labels.addAll(collection.alternativeLabels());
+
         return new CollectionResponse(
-            collection.partialCollection().id().value().toString(),
-                collection.partialCollection().prefLabel().value(),
-                collection.secondLabel().map(LocalisedLabel::value).orElse(""),
+            collection.id().value().toString(),
+                labels.stream().map(LocalisedLabelResponse::fromDomain).toList(),
                 collection.created(),
                 collection.modified().orElse(null),
-                collection.descriptions().getOrDefault(Lang.defaultLanguage(), ""),
-                collection.descriptions().getOrDefault(Lang.alternativeLanguage(), ""),
+                collection.descriptions().stream().map(LocalisedLabelResponse::fromDomain).toList(),
                 collection.isValidated(),
                 collection.creator(),
                 collection.contributor().orElse(null)
