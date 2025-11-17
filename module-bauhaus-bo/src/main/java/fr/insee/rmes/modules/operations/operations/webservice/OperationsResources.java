@@ -16,12 +16,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Qualifier("Operation")
 @RestController
@@ -44,8 +47,18 @@ public class OperationsResources  {
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(summary = "List of operations", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
-	public List<PartialOperation> getOperations() throws RmesException {
-		return operationsService.getOperations();
+	public ResponseEntity<List<PartialOperationResponse>> getOperations() throws RmesException {
+		List<PartialOperationResponse> responses = this.operationsService.getOperations().stream()
+				.map(operation -> {
+					var response = PartialOperationResponse.fromDomain(operation);
+					response.add(linkTo(OperationsResources.class).slash("operation").slash(operation.id()).withSelfRel());
+					return response;
+				})
+				.toList();
+
+		return ResponseEntity.ok()
+				.contentType(MediaTypes.HAL_JSON)
+				.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.READ)

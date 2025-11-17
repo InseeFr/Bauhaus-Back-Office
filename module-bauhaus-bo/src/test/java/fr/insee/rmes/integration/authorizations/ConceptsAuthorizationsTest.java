@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
 import fr.insee.rmes.rbac.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

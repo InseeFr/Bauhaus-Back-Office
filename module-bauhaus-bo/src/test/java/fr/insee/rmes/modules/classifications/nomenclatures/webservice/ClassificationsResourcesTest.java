@@ -1,16 +1,21 @@
-package fr.insee.rmes.infrastructure.webservice.classifications;
+package fr.insee.rmes.modules.classifications.nomenclatures.webservice;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
+import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
+import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
+import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.List;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -27,7 +32,58 @@ class ClassificationsResourcesTest {
     final Id id = new Id("mocked Id");
 
     @Test
-    void shouldReturnResponseWhenGetFamilies() throws RmesException {
+    void shouldReturnFamiliesWithHateoasLinks() throws RmesException {
+        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService, classificationItemService);
+
+        PartialClassificationFamily family1 = new PartialClassificationFamily("family-1", "Family 1");
+        PartialClassificationFamily family2 = new PartialClassificationFamily("family-2", "Family 2");
+        List<PartialClassificationFamily> families = List.of(family1, family2);
+
+        when(classificationsService.getFamilies()).thenReturn(families);
+
+        var response = classificationsResources.getFamilies();
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        Assertions.assertEquals(2, response.getBody().size());
+    }
+
+    @Test
+    void shouldReturnSeriesWithHateoasLinks() throws RmesException {
+        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService, classificationItemService);
+
+        PartialClassificationSeries series1 = new PartialClassificationSeries("series-1", "Series 1", "altLabels");
+        PartialClassificationSeries series2 = new PartialClassificationSeries("series-2", "Series 2", "altLabels");
+        List<PartialClassificationSeries> series = List.of(series1, series2);
+
+        when(classificationsService.getSeries()).thenReturn(series);
+
+        var response = classificationsResources.getSeries();
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        Assertions.assertEquals(2, response.getBody().size());
+    }
+
+    @Test
+    void shouldReturnClassificationsWithHateoasLinks() throws RmesException {
+        ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService, classificationItemService);
+
+        PartialClassification classification1 = new PartialClassification("class-1", "Classification 1", "altLabels");
+        PartialClassification classification2 = new PartialClassification("class-2", "Classification 2", "altLabels");
+        List<PartialClassification> classifications = List.of(classification1, classification2);
+
+        when(classificationsService.getClassifications()).thenReturn(classifications);
+
+        var response = classificationsResources.getClassifications();
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        Assertions.assertEquals(2, response.getBody().size());
+    }
+
+    @Test
+    void shouldReturnResponseWhenGetFamily() throws RmesException {
         ClassificationsResources classificationsResources = new ClassificationsResources(classificationsService,classificationItemService);
         when(classificationsService.getFamily(id.identifier())).thenReturn("mocked result");
         String actual = classificationsResources.getFamily(id.identifier()).toString();

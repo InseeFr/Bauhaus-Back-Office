@@ -10,9 +10,9 @@ import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
-import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeListsResources;
+import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources;
 import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsCollectionsResources;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
 import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
@@ -28,7 +28,7 @@ import java.nio.file.NoSuchFileException;
 @ControllerAdvice(assignableTypes = {
         PublicResources.class,
 
-        CodeListsResources.class,
+        CodesListsResources.class,
         MetadataReportResources.class,
         UserResources.class,
         ConceptsResources.class,

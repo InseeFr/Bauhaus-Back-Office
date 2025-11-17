@@ -13,6 +13,9 @@ import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
 import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationFamilyResponse;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationSeriesResponse;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationResponse;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +34,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @RestController
@@ -62,11 +67,23 @@ public class ClassificationsResources {
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/families", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/families", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@Operation(summary = "List of classification families",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public List<PartialClassificationFamily> getFamilies() throws RmesException {
-		return classificationsService.getFamilies();
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialClassificationFamilyResponse.class))))})
+	public ResponseEntity<List<PartialClassificationFamilyResponse>> getFamilies() throws RmesException {
+		List<PartialClassificationFamily> families = classificationsService.getFamilies();
+
+		List<PartialClassificationFamilyResponse> responses = families.stream()
+			.map(family -> {
+				var response = PartialClassificationFamilyResponse.fromDomain(family);
+				response.add(linkTo(ClassificationsResources.class).slash("family").slash(family.id()).withSelfRel());
+				return response;
+			})
+			.toList();
+
+		return ResponseEntity.ok()
+			.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+			.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
@@ -88,11 +105,23 @@ public class ClassificationsResources {
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
-	@GetMapping(value="/series", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="/series", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@Operation(summary = "List of classification series",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public List<PartialClassificationSeries> getSeries() throws RmesException {
-		return classificationsService.getSeries();
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialClassificationSeriesResponse.class))))})
+	public ResponseEntity<List<PartialClassificationSeriesResponse>> getSeries() throws RmesException {
+		List<PartialClassificationSeries> series = classificationsService.getSeries();
+
+		List<PartialClassificationSeriesResponse> responses = series.stream()
+			.map(s -> {
+				var response = PartialClassificationSeriesResponse.fromDomain(s);
+				response.add(linkTo(ClassificationsResources.class).slash("series").slash(s.id()).withSelfRel());
+				return response;
+			})
+			.toList();
+
+		return ResponseEntity.ok()
+			.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+			.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
@@ -112,11 +141,23 @@ public class ClassificationsResources {
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
-	@GetMapping(value="",produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="",produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@Operation(summary = "List of classifications",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public List<PartialClassification> getClassifications() throws RmesException {
-		return classificationsService.getClassifications();
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialClassificationResponse.class))))})
+	public ResponseEntity<List<PartialClassificationResponse>> getClassifications() throws RmesException {
+		List<PartialClassification> classifications = classificationsService.getClassifications();
+
+		List<PartialClassificationResponse> responses = classifications.stream()
+			.map(classification -> {
+				var response = PartialClassificationResponse.fromDomain(classification);
+				response.add(linkTo(ClassificationsResources.class).slash("classification").slash(classification.id()).withSelfRel());
+				return response;
+			})
+			.toList();
+
+		return ResponseEntity.ok()
+			.contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+			.body(responses);
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)

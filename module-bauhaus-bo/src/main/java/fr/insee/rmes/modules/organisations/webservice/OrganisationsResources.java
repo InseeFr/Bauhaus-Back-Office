@@ -34,14 +34,14 @@ import org.springframework.web.bind.annotation.*;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class OrganizationsResources {
+public class OrganisationsResources {
 
 
-	static final Logger logger = LoggerFactory.getLogger(OrganizationsResources.class);
+	static final Logger logger = LoggerFactory.getLogger(OrganisationsResources.class);
 
 	final OrganizationsService organizationsService;
 
-	public OrganizationsResources(OrganizationsService organizationsService) {
+	public OrganisationsResources(OrganizationsService organizationsService) {
 		this.organizationsService = organizationsService;
 	}
 

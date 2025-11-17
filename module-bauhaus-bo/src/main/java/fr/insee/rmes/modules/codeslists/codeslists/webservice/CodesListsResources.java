@@ -28,7 +28,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -36,11 +38,11 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Code lists", description = "Code list API")
 @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"), @ApiResponse(responseCode = "204", description = "No Content"), @ApiResponse(responseCode = "400", description = "Bad Request"), @ApiResponse(responseCode = "401", description = "Unauthorized"), @ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not found"), @ApiResponse(responseCode = "406", description = "Not Acceptable"), @ApiResponse(responseCode = "500", description = "Internal server error")})
-public class CodeListsResources extends GenericResources {
+public class CodesListsResources extends GenericResources {
 
     private final CodeListService codeListService;
 
-    public CodeListsResources(CodeListService codeListService) {
+    public CodesListsResources(CodeListService codeListService) {
         this.codeListService = codeListService;
     }
 
@@ -49,8 +51,13 @@ public class CodeListsResources extends GenericResources {
     @Operation(summary = "Create a code list")
     public ResponseEntity<String> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
         String id = codeListService.setCodesList(body, false);
-        return ResponseEntity.status(HttpStatus.OK).body(id);
 
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(id);
     }
 
 

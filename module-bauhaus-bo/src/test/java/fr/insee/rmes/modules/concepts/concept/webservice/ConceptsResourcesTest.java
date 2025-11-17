@@ -1,11 +1,12 @@
-package fr.insee.rmes.infrastructure.webservice.concepts;
+package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.onion.infrastructure.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
+import fr.insee.rmes.model.concepts.PartialConcept;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.List;
 import java.util.Objects;
 
 import static org.mockito.Mockito.doNothing;
@@ -32,7 +34,41 @@ class ConceptsResourcesTest {
     ConceptsCollectionService conceptsCollectionService;
 
     @Test
-    void shouldReturnResponseWhenGetConcepts() throws RmesException {
+    void shouldReturnConceptsWithHateoasLinks() throws RmesException {
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
+
+        PartialConcept concept1 = new PartialConcept("concept-1", "Concept 1", "altLabel1");
+        PartialConcept concept2 = new PartialConcept("concept-2", "Concept 2", "altLabel2");
+        List<PartialConcept> concepts = List.of(concept1, concept2);
+
+        when(conceptsService.getConcepts()).thenReturn(concepts);
+
+        var response = conceptsResources.getConcepts();
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        Assertions.assertEquals(2, response.getBody().size());
+    }
+
+    @Test
+    void shouldReturnConceptsSearchWithHateoasLinks() throws RmesException {
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
+
+        ConceptForAdvancedSearch concept1 = new ConceptForAdvancedSearch("search-1", "Search Concept 1", "altLabel1", "owner1", "disseminationStatus1", "validationStatus1", "definition1", "2024-01-01", "2024-01-02", "true", "");
+        ConceptForAdvancedSearch concept2 = new ConceptForAdvancedSearch("search-2", "Search Concept 2", "altLabel2", "owner2", "disseminationStatus2", "validationStatus2", "definition2", "2024-02-01", "2024-02-02", "false", "");
+        List<ConceptForAdvancedSearch> concepts = List.of(concept1, concept2);
+
+        when(conceptsService.getConceptsSearch()).thenReturn(concepts);
+
+        var response = conceptsResources.getConceptsSearch();
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        Assertions.assertEquals(2, response.getBody().size());
+    }
+
+    @Test
+    void shouldReturnResponseWhenGetRelatedConcepts() throws RmesException {
         ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
         when(conceptsService.getRelatedConcepts("id mocked")).thenReturn("mocked result");
         String actual = conceptsResources.getRelatedConcepts("id mocked").toString();
@@ -107,11 +143,24 @@ class ConceptsResourcesTest {
     }
 
     @Test
-    void shouldReturnResponseWhenSetConcept()  throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        when(conceptsService.setConcept("mocked body")).thenReturn("mocked result");
-        String actual = conceptsResources.setConcept("mocked body").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+    void shouldReturnLocationHeaderWhenCreateConcept() throws RmesException {
+        MockHttpServletRequest req = new MockHttpServletRequest("POST", "/concepts/concept");
+        req.setServerName("localhost");
+        req.setServerPort(80);
+        req.setScheme("http");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
+
+        when(conceptsService.setConcept("mocked body")).thenReturn("test-concept-123");
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
+
+        var response = conceptsResources.setConcept("mocked body");
+
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals("test-concept-123", response.getBody());
+        Assertions.assertEquals(
+            "/concepts/concept/test-concept-123",
+            Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
+        );
     }
 
     @Test

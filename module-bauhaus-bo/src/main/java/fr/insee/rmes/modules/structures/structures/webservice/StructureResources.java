@@ -21,11 +21,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/structures")
@@ -59,8 +62,18 @@ public class StructureResources {
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List of structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
-    public List<PartialStructure> getStructures() throws RmesException {
-        return structureService.getStructures();
+    public ResponseEntity<List<PartialStructureResponse>> getStructures() throws RmesException {
+        List<PartialStructureResponse> responses = this.structureService.getStructures().stream()
+                .map(structure -> {
+                    var response = PartialStructureResponse.fromDomain(structure);
+                    response.add(linkTo(StructureResources.class).slash("structure").slash(structure.id()).withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(MediaTypes.HAL_JSON)
+                .body(responses);
     }
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
