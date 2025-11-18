@@ -67,8 +67,8 @@ class DdiResourcesTest {
     @Test
     void shouldGetPhysicalInstances() {
         List<PartialPhysicalInstance> expectedInstances = new ArrayList<>();
-        expectedInstances.add(new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date()));
-        expectedInstances.add(new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date()));
+        expectedInstances.add(new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee"));
+        expectedInstances.add(new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date(), "fr.insee"));
         when(ddiService.getPhysicalInstances()).thenReturn(expectedInstances);
 
         ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
@@ -84,14 +84,14 @@ class DdiResourcesTest {
         assertEquals("Physical Instance 1", result.getFirst().getLabel());
         assertNotNull(result.getFirst().getLinks());
         assertEquals(1, result.getFirst().getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/physical-instance/pi-1", result.getFirst().getRequiredLink("self").getHref());
+        assertEquals("http://localhost:8080/ddi/physical-instance/fr.insee/pi-1", result.getFirst().getRequiredLink("self").getHref());
 
         // Verify second instance data and links
         assertEquals("pi-2", result.get(1).getId());
         assertEquals("Physical Instance 2", result.get(1).getLabel());
         assertNotNull(result.get(1).getLinks());
         assertEquals(1, result.get(1).getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/physical-instance/pi-2", result.get(1).getRequiredLink("self").getHref());
+        assertEquals("http://localhost:8080/ddi/physical-instance/fr.insee/pi-2", result.get(1).getRequiredLink("self").getHref());
         
         verify(ddiService).getPhysicalInstances();
     }
@@ -99,77 +99,81 @@ class DdiResourcesTest {
     @Test
     void shouldGetDdi4PhysicalInstance() {
         // Given
+        String agencyId = "fr.insee";
+        String id = "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd";
         Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.getDdi4PhysicalInstance("1")).thenReturn(expectedResponse);
+        when(ddiService.getDdi4PhysicalInstance(agencyId, id)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.getDdi4PhysicalInstance("1");
+        ResponseEntity<Ddi4Response> result = ddiResources.getDdi4PhysicalInstance(agencyId, id);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-        
+
         Ddi4Response responseBody = result.getBody();
         assertNotNull(responseBody);
         assertEquals("test-schema", responseBody.schema());
         assertEquals(1, responseBody.physicalInstance().size());
         assertEquals(1, responseBody.dataRelationship().size());
         assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", responseBody.physicalInstance().get(0).id());
-        
-        verify(ddiService).getDdi4PhysicalInstance("1");
+
+        verify(ddiService).getDdi4PhysicalInstance(agencyId, id);
     }
 
     @Test
     void shouldUpdatePhysicalInstance() {
         // Given
+        String agencyId = "fr.insee";
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Physical Instance Label",
             "Updated DataRelationship Name"
         );
         Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.updatePhysicalInstance(instanceId, request)).thenReturn(expectedResponse);
+        when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(instanceId, request);
+        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(agencyId, instanceId, request);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-        
+
         Ddi4Response responseBody = result.getBody();
         assertNotNull(responseBody);
         assertEquals("test-schema", responseBody.schema());
-        
-        verify(ddiService).updatePhysicalInstance(instanceId, request);
+
+        verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
     }
 
     @Test
     void shouldUpdatePhysicalInstanceWithPartialData() {
         // Given
+        String agencyId = "fr.insee";
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Label Only",
             null
         );
         Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.updatePhysicalInstance(instanceId, request)).thenReturn(expectedResponse);
+        when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(instanceId, request);
+        ResponseEntity<Ddi4Response> result = ddiResources.updatePhysicalInstance(agencyId, instanceId, request);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-        
+
         Ddi4Response responseBody = result.getBody();
         assertNotNull(responseBody);
         assertEquals("test-schema", responseBody.schema());
-        
-        verify(ddiService).updatePhysicalInstance(instanceId, request);
+
+        verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
     }
 
     @Test

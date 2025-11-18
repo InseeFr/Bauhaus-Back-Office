@@ -52,24 +52,27 @@ public class MockDataService {
 
     /**
      * Get a specific physical instance by ID from the secondary Colectica instance
-     * Uses cache based on ID to avoid repeated calls to the secondary repository
+     * Uses cache based on agencyId and ID to avoid repeated calls to the secondary repository
+     * @param agencyId the agency identifier
      * @param id the physical instance identifier
      * @return DDI4 response containing the physical instance details
      */
-    public Ddi4Response getPhysicalInstanceById(String id) {
+    public Ddi4Response getPhysicalInstanceById(String agencyId, String id) {
+        String cacheKey = agencyId + ":" + id;
+
         // Check cache first
-        if (physicalInstanceByIdCache.containsKey(id)) {
-            logger.debug("Mock service: Returning physical instance with id {} from cache", id);
-            return physicalInstanceByIdCache.get(id);
+        if (physicalInstanceByIdCache.containsKey(cacheKey)) {
+            logger.debug("Mock service: Returning physical instance with agencyId {} and id {} from cache", agencyId, id);
+            return physicalInstanceByIdCache.get(cacheKey);
         }
 
-        logger.info("Mock service: Getting physical instance with id {} from secondary repository (cache miss)", id);
-        Ddi4Response response = secondaryDDIRepository.getPhysicalInstance(id);
+        logger.info("Mock service: Getting physical instance with agencyId {} and id {} from secondary repository (cache miss)", agencyId, id);
+        Ddi4Response response = secondaryDDIRepository.getPhysicalInstance(agencyId, id);
 
         // Store in cache if not null
         if (response != null) {
-            physicalInstanceByIdCache.put(id, response);
-            logger.info("Mock service: Cached physical instance with id {}", id);
+            physicalInstanceByIdCache.put(cacheKey, response);
+            logger.info("Mock service: Cached physical instance with agencyId {} and id {}", agencyId, id);
         }
 
         return response;
@@ -99,6 +102,20 @@ public class MockDataService {
     public void clearPhysicalInstanceByIdCache(String id) {
         logger.info("Mock service: Clearing cache for physical instance with id {}", id);
         physicalInstanceByIdCache.remove(id);
+    }
+
+    /**
+     * Get DDI set XML from the secondary Colectica instance
+     * This is a proxy that calls the secondary repository's getPhysicalInstance
+     * which internally calls the /ddiset endpoint and returns the converted data
+     * @param agencyId the agency identifier
+     * @param id the physical instance identifier
+     * @return DDI4 response from secondary instance (which retrieves the full DDI set)
+     */
+    public Ddi4Response getDdiSetFromSecondary(String agencyId, String id) {
+        // This reuses the existing cache and repository infrastructure
+        // The secondary repository will call /ddiset/{agencyId}/{id} internally
+        return getPhysicalInstanceById(agencyId, id);
     }
 
     /**

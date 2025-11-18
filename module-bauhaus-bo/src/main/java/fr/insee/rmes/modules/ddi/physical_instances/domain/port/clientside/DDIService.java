@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
-    Ddi4Response getDdi4PhysicalInstance(String id);
-    Ddi4Response updatePhysicalInstance(String id, UpdatePhysicalInstanceRequest request);
+    Ddi4Response getDdi4PhysicalInstance(String agencyId, String id);
+    Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
 }

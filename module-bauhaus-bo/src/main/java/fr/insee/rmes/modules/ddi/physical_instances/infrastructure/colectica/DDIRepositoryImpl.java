@@ -140,7 +140,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                         } catch (ParseException | NullPointerException _) {
                             logger.debug("Impossible to parse {}", item.versionDate());
                         }
-                        return new PartialPhysicalInstance(id, label, date);
+                        String agency = item.agencyId();
+                        return new PartialPhysicalInstance(id, label, date, agency);
                     })
                     .toList();
         });
@@ -175,66 +176,31 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public Ddi4Response getPhysicalInstance(String id) {
+    public Ddi4Response getPhysicalInstance(String agencyId, String id) {
         if (cachedDdi4Response != null && cachedDdi4Response.physicalInstance() != null
                 && !cachedDdi4Response.physicalInstance().isEmpty()
-                && cachedDdi4Response.physicalInstance().get(0).id().equals(id)) {
-            logger.info("Returning cached DDI4 Physical Instance for id: {}", id);
+                && cachedDdi4Response.physicalInstance().get(0).id().equals(id)
+                && cachedDdi4Response.physicalInstance().get(0).agency().equals(agencyId)) {
+            logger.info("Returning cached DDI4 Physical Instance for agencyId: {}, id: {}", agencyId, id);
             return cachedDdi4Response;
         }
 
-        logger.info("Fetching DDI4 Physical Instance from Colectica API for id: {}", id);
+        logger.info("Fetching DDI4 Physical Instance from Colectica API for agencyId: {}, id: {}", agencyId, id);
 
         return executeWithAuth(token -> {
             try {
-                // First, query all Physical Instances to find the one with matching ID
-                String queryUrl = instanceConfiguration.baseApiUrl() + "_query";
+                // Fetch the full DDI4 item details using the item endpoint without version
+                // Format: /api/v1/item/{agencyId}/{identifier}
+                String itemUrl = instanceConfiguration.baseApiUrl() + "item/"
+                        + agencyId + "/"
+                        + id;
 
-                // Create query request with item types
-                QueryRequest requestBody = new QueryRequest(instanceConfiguration.itemTypes());
+                logger.info("Fetching full item details from: {}", itemUrl);
 
                 // Create headers with Bearer token
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.setBearerAuth(token);
-
-                // Create HTTP entity with headers and body
-                HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-
-                // Make the POST request to query Physical Instances
-                ColecticaResponse colecticaResponse = restTemplate.postForObject(
-                        queryUrl,
-                        requestEntity,
-                        ColecticaResponse.class
-                );
-
-                if (colecticaResponse == null || colecticaResponse.results() == null || colecticaResponse.results().isEmpty()) {
-                    logger.error("No Physical Instances found in Colectica (primary instance)");
-                    return null;
-                }
-
-                // Find the item with matching identifier
-                ColecticaItem matchingItem = colecticaResponse.results().stream()
-                        .filter(item -> id.equals(item.identifier()))
-                        .findFirst()
-                        .orElse(null);
-
-                if (matchingItem == null) {
-                    logger.error("No Physical Instance found with id: {} (primary instance)", id);
-                    return null;
-                }
-
-                logger.info("Found Physical Instance with id: {}, agencyId: {}, version: {} (primary instance)",
-                        matchingItem.identifier(), matchingItem.agencyId(), matchingItem.version());
-
-                // Now fetch the full DDI4 item details using the item endpoint
-                // Format: /api/v1/item/{agencyId}/{identifier}/{version}
-                String itemUrl = instanceConfiguration.baseApiUrl() + "item/"
-                        + matchingItem.agencyId() + "/"
-                        + matchingItem.identifier() + "/"
-                        + matchingItem.version();
-
-                logger.info("Fetching full item details from: {}", itemUrl);
 
                 HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
 
@@ -281,7 +247,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 return cachedDdi4Response;
 
             } catch (Exception e) {
-                logger.error("Error processing Colectica API response for id: {}", id, e);
+                logger.error("Error processing Colectica API response for agencyId: {}, id: {}", agencyId, id, e);
                 throw new RuntimeException("Failed to process DDI response", e);
             }
         });

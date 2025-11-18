@@ -36,9 +36,9 @@ class DDIServiceImplTest {
     void shouldGetPhysicalInstances() {
         // Given
         List<PartialPhysicalInstance> expectedInstances = List.of(
-                new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date()),
-                new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date()),
-                new PartialPhysicalInstance("pi-3", "Physical Instance 3", new Date())
+                new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee"),
+                new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date(), "fr.insee"),
+                new PartialPhysicalInstance("pi-3", "Physical Instance 3", new Date(), "fr.insee")
         );
         when(ddiRepository.getPhysicalInstances()).thenReturn(expectedInstances);
 
@@ -61,6 +61,7 @@ class DDIServiceImplTest {
     @Test
     void shouldGetDdi4PhysicalInstance() {
         // Given
+        String agencyId = "fr.insee";
         String instanceId = "pi-test";
         Ddi4Response expectedResponse = new Ddi4Response(
             "test-schema",
@@ -71,21 +72,22 @@ class DDIServiceImplTest {
             List.of(),
             List.of()
         );
-        when(ddiRepository.getPhysicalInstance(instanceId)).thenReturn(expectedResponse);
+        when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(expectedResponse);
 
         // When
-        Ddi4Response result = ddiService.getDdi4PhysicalInstance(instanceId);
+        Ddi4Response result = ddiService.getDdi4PhysicalInstance(agencyId, instanceId);
 
         // Then
         assertNotNull(result);
         assertEquals("test-schema", result.schema());
-        
-        verify(ddiRepository).getPhysicalInstance(instanceId);
+
+        verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
     }
 
     @Test
     void shouldUpdatePhysicalInstance() {
         // Given
+        String agencyId = "fr.insee";
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Physical Instance Label",
@@ -100,16 +102,16 @@ class DDIServiceImplTest {
             List.of(),
             List.of()
         );
-        when(ddiRepository.getPhysicalInstance(instanceId)).thenReturn(expectedResponse);
+        when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(expectedResponse);
 
         // When
-        Ddi4Response result = ddiService.updatePhysicalInstance(instanceId, request);
+        Ddi4Response result = ddiService.updatePhysicalInstance(agencyId, instanceId, request);
 
         // Then
         assertNotNull(result);
         assertEquals("updated-schema", result.schema());
         verify(ddiRepository).updatePhysicalInstance(instanceId, request);
-        verify(ddiRepository).getPhysicalInstance(instanceId);
+        verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
     }
 
 

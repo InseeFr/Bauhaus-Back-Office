@@ -138,11 +138,13 @@ class DDIRepositoryImplTest {
         assertEquals(2, result.size());
         assertEquals("pi-1", result.get(0).id());
         assertEquals("Instance Physique 1", result.get(0).label());
+        assertEquals("agency1", result.get(0).agency());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         assertEquals("2025-01-01 00:00:00", sdf.format(result.get(0).versionDate()));
         assertEquals("pi-2", result.get(1).id());
         assertEquals("Instance Physique 2", result.get(1).label());
+        assertEquals("agency2", result.get(1).agency());
         assertNull(result.get(1).versionDate());
 
         // Verify authentication was called
@@ -262,7 +264,6 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
         when(instanceConfiguration.username()).thenReturn(username);
         when(instanceConfiguration.password()).thenReturn(password);
-        when(instanceConfiguration.itemTypes()).thenReturn(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
 
         // Mock authentication
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
@@ -272,49 +273,54 @@ class DDIRepositoryImplTest {
                 eq(AuthenticationResponse.class)))
                 .thenReturn(authResponse);
 
-        // Mock query response
-        ColecticaItem queryItem = new ColecticaItem(
-                null, Map.of("fr-FR", "Radon et gamma"),
-                Map.of(), null, null, 0, "test-repo", true, List.of(),
-                "PhysicalInstance", agencyId, version, instanceId,
-                null, null, "2025-10-23T12:28:43.615773Z", null,
-                true, false, false, "DDI", 0L, 0
-        );
-        ColecticaResponse queryResponse = new ColecticaResponse(List.of(queryItem));
-        when(restTemplate.postForObject(
-                eq(baseApiUrl + "_query"),
-                any(HttpEntity.class),
-                eq(ColecticaResponse.class)))
-                .thenReturn(queryResponse);
+        // Mock DDI set response with complete FragmentInstance XML
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
+                "    <ddi:TopLevelReference>\n" +
+                "        <r:Agency>fr.inserm.constances</r:Agency>\n" +
+                "        <r:ID>2514afe4-7b08-4500-be25-7a852a10fd8c</r:ID>\n" +
+                "        <r:Version>1</r:Version>\n" +
+                "        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>\n" +
+                "    </ddi:TopLevelReference>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.615878Z\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1</r:URN>\n" +
+                "            <r:Agency>fr.inserm.constances</r:Agency>\n" +
+                "            <r:ID>2514afe4-7b08-4500-be25-7a852a10fd8c</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">Radon et gamma</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "            <r:DataRelationshipReference>\n" +
+                "                <r:Agency>fr.inserm.constances</r:Agency>\n" +
+                "                <r:ID>dr-123</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <r:TypeOfObject>DataRelationship</r:TypeOfObject>\n" +
+                "            </r:DataRelationshipReference>\n" +
+                "        </PhysicalInstance>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.608394Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.inserm.constances:dr-123:1</r:URN>\n" +
+                "            <r:Agency>fr.inserm.constances</r:Agency>\n" +
+                "            <r:ID>dr-123</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <DataRelationshipName>\n" +
+                "                <r:String xml:lang=\"en-US\">DataRelationshipName</r:String>\n" +
+                "            </DataRelationshipName>\n" +
+                "        </DataRelationship>\n" +
+                "    </Fragment>\n" +
+                "</ddi:FragmentInstance>";
 
-        // Mock item details response with DDI3 XML
-        String ddi3Xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "  <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.615773Z\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
-                "    <r:URN>urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1</r:URN>\n" +
-                "    <r:Agency>fr.inserm.constances</r:Agency>\n" +
-                "    <r:ID>2514afe4-7b08-4500-be25-7a852a10fd8c</r:ID>\n" +
-                "    <r:Version>1</r:Version>\n" +
-                "    <r:Citation>\n" +
-                "      <r:Title>\n" +
-                "        <r:String xml:lang=\"fr-FR\">Radon et gamma</r:String>\n" +
-                "      </r:Title>\n" +
-                "    </r:Citation>\n" +
-                "  </PhysicalInstance>\n" +
-                "</Fragment>";
-
-        ColecticaItemResponse itemDetailsResponse = new ColecticaItemResponse(
-                "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                agencyId, version, instanceId, ddi3Xml,
-                "2025-10-23T12:28:44.537174", "test@example.com",
-                false, false, false, "dc337820-af3a-4c0b-82f9-cf02535cde83"
-        );
-
+        // Mock the direct call to /ddiset/{agencyId}/{identifier}
         when(restTemplate.exchange(
-                eq(baseApiUrl + "item/" + agencyId + "/" + instanceId + "/" + version),
+                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)))
-                .thenReturn(ResponseEntity.ok(itemDetailsResponse));
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
 
         // Mock DDI3 to DDI4 conversion
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
@@ -336,13 +342,14 @@ class DDIRepositoryImplTest {
                 .thenReturn(mockDdi4Response);
 
         // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(instanceId);
+        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
 
         // Then
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
         assertEquals(instanceId, result.physicalInstance().get(0).id());
+        assertEquals(agencyId, result.physicalInstance().get(0).agency());
         assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().string().text());
 
         // Verify authentication was called
@@ -351,18 +358,12 @@ class DDIRepositoryImplTest {
                 any(HttpEntity.class),
                 eq(AuthenticationResponse.class));
 
-        // Verify query was called
-        verify(restTemplate).postForObject(
-                eq(baseApiUrl + "_query"),
-                any(HttpEntity.class),
-                eq(ColecticaResponse.class));
-
-        // Verify item details was called
+        // Verify ddiset endpoint was called
         verify(restTemplate).exchange(
-                eq(baseApiUrl + "item/" + agencyId + "/" + instanceId + "/" + version),
+                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(ColecticaItemResponse.class));
+                eq(String.class));
 
         // Verify converter was called
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
