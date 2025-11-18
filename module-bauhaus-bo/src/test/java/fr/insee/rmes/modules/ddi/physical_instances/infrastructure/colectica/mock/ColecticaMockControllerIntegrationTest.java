@@ -92,8 +92,8 @@ class ColecticaMockControllerIntegrationTest {
     @Test
     void shouldGetPhysicalInstances() {
         // Given
-        PartialPhysicalInstance instance1 = new PartialPhysicalInstance("id1", "Label 1", null);
-        PartialPhysicalInstance instance2 = new PartialPhysicalInstance("id2", "Label 2", null);
+        PartialPhysicalInstance instance1 = new PartialPhysicalInstance("id1", "Label 1", null, "fr.insee");
+        PartialPhysicalInstance instance2 = new PartialPhysicalInstance("id2", "Label 2", null, "fr.insee");
         List<PartialPhysicalInstance> mockInstances = List.of(instance1, instance2);
 
         when(secondaryDDIRepository.getPhysicalInstances()).thenReturn(mockInstances);

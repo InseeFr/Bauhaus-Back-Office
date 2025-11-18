@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
-    Ddi4Response getPhysicalInstance(String id);
+    Ddi4Response getPhysicalInstance(String agencyId, String id);
     void updatePhysicalInstance(String id, UpdatePhysicalInstanceRequest request);
 }

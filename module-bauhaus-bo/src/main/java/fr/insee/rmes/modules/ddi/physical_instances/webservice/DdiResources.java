@@ -68,7 +68,11 @@ public class DdiResources {
         List<PartialPhysicalInstanceResponse> responses = instances.stream()
                 .map(instance -> {
                     var response = PartialPhysicalInstanceResponse.fromDomain(instance);
-                    response.add(linkTo(DdiResources.class).slash("physical-instance").slash(instance.id()).withSelfRel());
+                    response.add(linkTo(DdiResources.class)
+                            .slash("physical-instance")
+                            .slash(instance.agency())
+                            .slash(instance.id())
+                            .withSelfRel());
                     return response;
                 })
                 .toList();
@@ -79,19 +83,22 @@ public class DdiResources {
     }
 
 
-    @GetMapping("/physical-instance/{id}")
-    public ResponseEntity<Ddi4Response> getDdi4PhysicalInstance(@PathVariable(Constants.ID) String id) {
-        Ddi4Response response = ddiService.getDdi4PhysicalInstance(id);
+    @GetMapping("/physical-instance/{agencyId}/{id}")
+    public ResponseEntity<Ddi4Response> getDdi4PhysicalInstance(
+            @PathVariable String agencyId,
+            @PathVariable(Constants.ID) String id) {
+        Ddi4Response response = ddiService.getDdi4PhysicalInstance(agencyId, id);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
     }
 
-    @PatchMapping("/physical-instance/{id}")
+    @PatchMapping("/physical-instance/{agencyId}/{id}")
     public ResponseEntity<Ddi4Response> updatePhysicalInstance(
+            @PathVariable String agencyId,
             @PathVariable String id,
             @RequestBody UpdatePhysicalInstanceRequest request) {
-        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(id, request);
+        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(updatedInstance);

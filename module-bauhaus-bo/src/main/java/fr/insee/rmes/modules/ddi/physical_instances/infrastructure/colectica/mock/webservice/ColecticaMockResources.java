@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,7 +95,7 @@ public class ColecticaMockResources {
                             false, // IsAuthoritative
                             List.of(), // Tags
                             "a51e85bb-6259-4488-8df2-f08cb43485f8", // ItemType (PhysicalInstance type UUID)
-                            "fr.insee", // AgencyId
+                            instance.agency(), // AgencyId
                             1, // Version
                             instance.id(), // Identifier
                             null, // Item
@@ -116,11 +117,22 @@ public class ColecticaMockResources {
     }
 
     /**
+     * Get specific item by agencyId and identifier (without version)
+     * Delegates to MockDataService (secondary repository)
+     */
+    @GetMapping("/api/v1/item/{agencyId}/{identifier}")
+    public ResponseEntity<ColecticaItemResponse> getItem(
+            @PathVariable String agencyId,
+            @PathVariable String identifier) {
+        return getItemWithVersion(agencyId, identifier, 1);
+    }
+
+    /**
      * Get specific item by agencyId, identifier and version
      * Delegates to MockDataService (secondary repository)
      */
     @GetMapping("/api/v1/item/{agencyId}/{identifier}/{version}")
-    public ResponseEntity<ColecticaItemResponse> getItem(
+    public ResponseEntity<ColecticaItemResponse> getItemWithVersion(
             @PathVariable String agencyId,
             @PathVariable String identifier,
             @PathVariable int version) {
@@ -128,10 +140,10 @@ public class ColecticaMockResources {
         logger.info("Mock secondary instance: Getting item {}/{}/{}", agencyId, identifier, version);
 
         // Get the physical instance from secondary repository
-        Ddi4Response ddi4Response = mockDataService.getPhysicalInstanceById(identifier);
+        Ddi4Response ddi4Response = mockDataService.getPhysicalInstanceById(agencyId, identifier);
 
         if (ddi4Response == null) {
-            logger.warn("Physical instance not found with id: {}", identifier);
+            logger.warn("Physical instance not found with agencyId: {}, id: {}", agencyId, identifier);
             return ResponseEntity.notFound().build();
         }
 
@@ -154,6 +166,7 @@ public class ColecticaMockResources {
 
         return ResponseEntity.ok(response);
     }
+
 
     /**
      * Convert DDI4 response to DDI3 XML format (simplified for mock)
@@ -182,6 +195,84 @@ public class ColecticaMockResources {
                 agencyId, identifier, version,
                 agencyId, identifier, version, ddi4Response.physicalInstance().get(0).citation().title().string().text(),
                 agencyId, UUID.randomUUID(), version
+        );
+    }
+
+    /**
+     * Convert DDI4 response to DDI set XML (FragmentInstance with PhysicalInstance, DataRelationship, and Variables)
+     */
+    private String convertDdi4ToDdiSetXml(Ddi4Response ddi4Response, String agencyId, String identifier, int version) {
+        String title = ddi4Response.physicalInstance() != null && !ddi4Response.physicalInstance().isEmpty()
+                ? ddi4Response.physicalInstance().get(0).citation().title().string().text()
+                : "Mock Physical Instance";
+
+        String dataRelationshipId = ddi4Response.dataRelationship() != null && !ddi4Response.dataRelationship().isEmpty()
+                ? ddi4Response.dataRelationship().get(0).id()
+                : UUID.randomUUID().toString();
+
+        String dataRelationshipName = ddi4Response.dataRelationship() != null && !ddi4Response.dataRelationship().isEmpty()
+                ? ddi4Response.dataRelationship().get(0).dataRelationshipName().string().text()
+                : "DataRelationshipName";
+
+        return """
+                <?xml version="1.0" encoding="utf-8"?>
+                <ddi:FragmentInstance xmlns:r="ddi:reusable:3_3" xmlns:ddi="ddi:instance:3_3">
+                    <ddi:TopLevelReference>
+                        <r:Agency>%s</r:Agency>
+                        <r:ID>%s</r:ID>
+                        <r:Version>%d</r:Version>
+                        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
+                    </ddi:TopLevelReference>
+                    <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+                        <PhysicalInstance isUniversallyUnique="true" versionDate="2025-10-23T12:28:43.615878Z" xmlns="ddi:physicalinstance:3_3">
+                            <r:URN>urn:ddi:%s:%s:%d</r:URN>
+                            <r:Agency>%s</r:Agency>
+                            <r:ID>%s</r:ID>
+                            <r:Version>%d</r:Version>
+                            <r:Citation>
+                                <r:Title>
+                                    <r:String xml:lang="fr-FR">%s</r:String>
+                                </r:Title>
+                            </r:Citation>
+                            <r:DataRelationshipReference>
+                                <r:Agency>%s</r:Agency>
+                                <r:ID>%s</r:ID>
+                                <r:Version>%d</r:Version>
+                                <r:TypeOfObject>DataRelationship</r:TypeOfObject>
+                            </r:DataRelationshipReference>
+                        </PhysicalInstance>
+                    </Fragment>
+                    <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+                        <DataRelationship isUniversallyUnique="true" versionDate="2025-10-23T12:28:43.608394Z" xmlns="ddi:logicalproduct:3_3">
+                            <r:URN>urn:ddi:%s:%s:%d</r:URN>
+                            <r:Agency>%s</r:Agency>
+                            <r:ID>%s</r:ID>
+                            <r:Version>%d</r:Version>
+                            <DataRelationshipName>
+                                <r:String xml:lang="en-US">%s</r:String>
+                            </DataRelationshipName>
+                            <LogicalRecord isUniversallyUnique="true">
+                                <r:URN>urn:ddi:%s:logicalrecord-1:%d</r:URN>
+                                <r:Agency>%s</r:Agency>
+                                <r:ID>logicalrecord-1</r:ID>
+                                <r:Version>%d</r:Version>
+                                <LogicalRecordName>
+                                    <r:String xml:lang="fr">%s</r:String>
+                                </LogicalRecordName>
+                            </LogicalRecord>
+                        </DataRelationship>
+                    </Fragment>
+                </ddi:FragmentInstance>""".formatted(
+                // TopLevelReference
+                agencyId, identifier, version,
+                // PhysicalInstance
+                agencyId, identifier, version,
+                agencyId, identifier, version, title,
+                agencyId, dataRelationshipId, version,
+                // DataRelationship
+                agencyId, dataRelationshipId, version,
+                agencyId, dataRelationshipId, version, dataRelationshipName,
+                agencyId, version, agencyId, version, title
         );
     }
 }

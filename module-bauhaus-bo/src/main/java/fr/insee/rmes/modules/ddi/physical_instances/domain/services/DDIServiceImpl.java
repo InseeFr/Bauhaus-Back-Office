@@ -28,13 +28,13 @@ public class DDIServiceImpl implements DDIService {
 
 
     @Override
-    public Ddi4Response getDdi4PhysicalInstance(String id) {
-        return this.ddiRepository.getPhysicalInstance(id);
+    public Ddi4Response getDdi4PhysicalInstance(String agencyId, String id) {
+        return this.ddiRepository.getPhysicalInstance(agencyId, id);
     }
 
     @Override
-    public Ddi4Response updatePhysicalInstance(String id, UpdatePhysicalInstanceRequest request) {
+    public Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
         ddiRepository.updatePhysicalInstance(id, request);
-        return ddiRepository.getPhysicalInstance(id);
+        return ddiRepository.getPhysicalInstance(agencyId, id);
     }
 }
