@@ -12,12 +12,26 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
@@ -175,6 +189,102 @@ public class DDIRepositoryImpl implements DDIRepository {
         return label;
     }
 
+    /**
+     * Parse FragmentInstance XML and extract each Fragment as a separate Ddi3Item
+     * The FragmentInstance contains multiple Fragment elements (PhysicalInstance, DataRelationship, etc.)
+     */
+    private List<Ddi3Response.Ddi3Item> parseFragmentInstanceToItems(String fragmentInstanceXml, String agencyId, String id) {
+        try {
+            // Parse the XML
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new InputSource(new StringReader(fragmentInstanceXml)));
+
+            List<Ddi3Response.Ddi3Item> items = new ArrayList<>();
+
+            // Get all Fragment elements
+            NodeList fragmentNodes = doc.getElementsByTagNameNS("ddi:instance:3_3", "Fragment");
+
+            logger.debug("Found {} Fragment elements in FragmentInstance", fragmentNodes.getLength());
+
+            for (int i = 0; i < fragmentNodes.getLength(); i++) {
+                Element fragmentElement = (Element) fragmentNodes.item(i);
+
+                // Determine the item type based on the content of the Fragment
+                String itemType = determineItemType(fragmentElement);
+
+                // Skip fragments with unsupported types (e.g., CodeList, Category)
+                if (itemType == null) {
+                    logger.debug("Skipping Fragment {} - unsupported type", i);
+                    continue;
+                }
+
+                logger.debug("Processing Fragment {} with itemType: {}", i, itemType);
+
+                // Convert this Fragment element back to XML string
+                String fragmentXml = elementToString(fragmentElement);
+
+                // Create a Ddi3Item for this Fragment
+                Ddi3Response.Ddi3Item ddi3Item = new Ddi3Response.Ddi3Item(
+                    itemType,
+                    agencyId,
+                    "1", // version
+                    id,
+                    fragmentXml,
+                    null, // versionDate
+                    null, // versionResponsibility
+                    false, // isPublished
+                    false, // isDeprecated
+                    false, // isProvisional
+                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // itemFormat
+                );
+
+                items.add(ddi3Item);
+            }
+
+            return items;
+        } catch (Exception e) {
+            logger.error("Error parsing FragmentInstance XML", e);
+            throw new RuntimeException("Failed to parse FragmentInstance XML", e);
+        }
+    }
+
+    /**
+     * Determine the item type based on the content of a Fragment element
+     * Returns null if the Fragment type is not supported
+     */
+    private String determineItemType(Element fragmentElement) {
+        // Check for PhysicalInstance
+        if (fragmentElement.getElementsByTagNameNS("ddi:physicalinstance:3_3", "PhysicalInstance").getLength() > 0) {
+            return "a51e85bb-6259-4488-8df2-f08cb43485f8"; // PhysicalInstance type UUID
+        }
+        // Check for DataRelationship
+        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "DataRelationship").getLength() > 0) {
+            return "f39ff278-8500-45fe-a850-3906da2d242b"; // DataRelationship type UUID
+        }
+        // Check for Variable
+        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
+            return "683889c6-f74b-4d5e-92ed-908c0a42bb2d"; // Variable type UUID
+        }
+        // Return null for unsupported types (CodeList, Category, etc.)
+        // These will be skipped during processing
+        return null;
+    }
+
+    /**
+     * Convert a DOM Element to XML String
+     */
+    private String elementToString(Element element) throws Exception {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(element), new StreamResult(writer));
+        return writer.toString();
+    }
+
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
         if (cachedDdi4Response != null && cachedDdi4Response.physicalInstance() != null
@@ -189,13 +299,13 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return executeWithAuth(token -> {
             try {
-                // Fetch the full DDI4 item details using the item endpoint without version
-                // Format: /api/v1/item/{agencyId}/{identifier}
-                String itemUrl = instanceConfiguration.baseApiUrl() + "item/"
+                // Fetch the full DDI set (PhysicalInstance + DataRelationship) using the ddiset endpoint
+                // Format: /api/v1/ddiset/{agencyId}/{identifier}
+                String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
                         + agencyId + "/"
                         + id;
 
-                logger.info("Fetching full item details from: {}", itemUrl);
+                logger.info("Fetching full DDI set from: {}", ddisetUrl);
 
                 // Create headers with Bearer token
                 HttpHeaders headers = new HttpHeaders();
@@ -204,39 +314,56 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
 
-                // The response from Colectica contains XML in the "Item" field
-                ColecticaItemResponse itemResponse = restTemplate.exchange(
-                        itemUrl,
+                // The response from Colectica ddiset endpoint contains XML with PhysicalInstance and DataRelationship
+                String ddisetXml = restTemplate.exchange(
+                        ddisetUrl,
                         HttpMethod.GET,
                         getRequestEntity,
-                        ColecticaItemResponse.class
+                        String.class
                 ).getBody();
 
-                if (itemResponse == null || itemResponse.item() == null || itemResponse.item().isEmpty()) {
-                    logger.error("Received empty response from Colectica API for item URL: {}", itemUrl);
+                if (ddisetXml == null || ddisetXml.isEmpty()) {
+                    logger.error("Received empty response from Colectica API for ddiset URL: {}", ddisetUrl);
                     return null;
                 }
 
-                logger.debug("Received DDI3 XML from Colectica for Physical Instance");
+                logger.info("Received response from ddiset endpoint. Length: {}, First 200 chars: {}",
+                    ddisetXml.length(),
+                    ddisetXml.substring(0, Math.min(200, ddisetXml.length())));
 
-                // Create a Ddi3Response from the Colectica response
-                Ddi3Response.Ddi3Item ddi3Item = new Ddi3Response.Ddi3Item(
-                    itemResponse.itemType(),
-                    itemResponse.agencyId(),
-                    String.valueOf(itemResponse.version()),
-                    itemResponse.identifier(),
-                    itemResponse.item(),  // XML content
-                    itemResponse.versionDate(),
-                    itemResponse.versionResponsibility(),
-                    itemResponse.isPublished(),
-                    itemResponse.isDeprecated(),
-                    itemResponse.isProvisional(),
-                    itemResponse.itemFormat()
-                );
+                // Clean the XML - remove all leading invisible/control characters until we hit '<'
+                // This handles BOM, zero-width spaces, and other invisible characters
+                int startIndex = 0;
+                while (startIndex < ddisetXml.length() && ddisetXml.charAt(startIndex) != '<') {
+                    char c = ddisetXml.charAt(startIndex);
+                    if (c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c) || !Character.isDefined(c)) {
+                        startIndex++;
+                    } else {
+                        // Found a non-whitespace, non-control character that's not '<'
+                        logger.warn("Unexpected character at position {}: {} (code: {})", startIndex, c, (int)c);
+                        startIndex++;
+                    }
+                }
+
+                if (startIndex > 0) {
+                    logger.info("Removed {} leading characters from XML (BOM, whitespace, or control characters)", startIndex);
+                    ddisetXml = ddisetXml.substring(startIndex);
+                }
+
+                // Final trim for any trailing whitespace
+                ddisetXml = ddisetXml.trim();
+
+                logger.debug("Cleaned XML starts with: {}", ddisetXml.substring(0, Math.min(100, ddisetXml.length())));
+
+                logger.debug("Received DDI set XML from Colectica for Physical Instance and DataRelationship");
+
+                // Parse the FragmentInstance XML and extract each Fragment
+                // The ddiset endpoint returns a FragmentInstance containing multiple Fragment elements
+                List<Ddi3Response.Ddi3Item> ddi3Items = parseFragmentInstanceToItems(ddisetXml, agencyId, id);
 
                 Ddi3Response ddi3Response = new Ddi3Response(
                     null,  // options
-                    List.of(ddi3Item)
+                    ddi3Items
                 );
 
                 // Use the converter service to convert DDI3 to DDI4

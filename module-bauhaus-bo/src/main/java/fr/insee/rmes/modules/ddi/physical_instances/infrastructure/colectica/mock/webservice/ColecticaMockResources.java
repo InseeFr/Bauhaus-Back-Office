@@ -167,6 +167,34 @@ public class ColecticaMockResources {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Get DDI set (FragmentInstance with PhysicalInstance and DataRelationship) by agencyId and identifier
+     * Delegates to MockDataService which calls the secondary Colectica server's ddiset endpoint
+     */
+    @GetMapping(value = "/api/v1/ddiset/{agencyId}/{identifier}", produces = MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<String> getDdiSet(
+            @PathVariable String agencyId,
+            @PathVariable String identifier) {
+
+        logger.info("Mock secondary instance: Getting DDI set for {}/{}", agencyId, identifier);
+
+        // Get the DDI set from secondary repository via MockDataService
+        // This will call the secondary Colectica server's /api/v1/ddiset endpoint
+        Ddi4Response ddi4Response = mockDataService.getDdiSetFromSecondary(agencyId, identifier);
+
+        if (ddi4Response == null) {
+            logger.warn("DDI set not found with agencyId: {}, id: {}", agencyId, identifier);
+            return ResponseEntity.notFound().build();
+        }
+
+        // Convert Ddi4Response to DDI set XML format (FragmentInstance with PhysicalInstance and DataRelationship)
+        String ddisetXml = convertDdi4ToDdiSetXml(ddi4Response, agencyId, identifier, 1);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .body(ddisetXml);
+    }
+
 
     /**
      * Convert DDI4 response to DDI3 XML format (simplified for mock)
