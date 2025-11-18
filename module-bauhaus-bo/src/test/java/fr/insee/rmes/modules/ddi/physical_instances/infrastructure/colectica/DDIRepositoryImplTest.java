@@ -273,7 +273,7 @@ class DDIRepositoryImplTest {
                 eq(AuthenticationResponse.class)))
                 .thenReturn(authResponse);
 
-        // Mock DDI set response with complete FragmentInstance XML
+        // Mock DDI set response with complete FragmentInstance XML (including Variables)
         String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                 "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
                 "    <ddi:TopLevelReference>\n" +
@@ -300,6 +300,20 @@ class DDIRepositoryImplTest {
                 "                <r:TypeOfObject>DataRelationship</r:TypeOfObject>\n" +
                 "            </r:DataRelationshipReference>\n" +
                 "        </PhysicalInstance>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <Variable isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.608412Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.inserm.constances:var-1:1</r:URN>\n" +
+                "            <r:Agency>fr.inserm.constances</r:Agency>\n" +
+                "            <r:ID>var-1</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <VariableName>\n" +
+                "                <r:String xml:lang=\"fr\">TEST_VAR</r:String>\n" +
+                "            </VariableName>\n" +
+                "            <VariableRepresentation>\n" +
+                "                <r:TextRepresentation blankIsMissingValue=\"false\" />\n" +
+                "            </VariableRepresentation>\n" +
+                "        </Variable>\n" +
                 "    </Fragment>\n" +
                 "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
                 "        <DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.608394Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
