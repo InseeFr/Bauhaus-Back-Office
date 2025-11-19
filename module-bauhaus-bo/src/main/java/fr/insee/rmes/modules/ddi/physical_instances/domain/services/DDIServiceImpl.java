@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -34,7 +35,13 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
-        ddiRepository.updatePhysicalInstance(id, request);
+        ddiRepository.updatePhysicalInstance(agencyId, id, request);
         return ddiRepository.getPhysicalInstance(agencyId, id);
+    }
+
+    @Override
+    public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
+        logger.info("Creating new physical instance with label: {}", request.physicalInstanceLabel());
+        return ddiRepository.createPhysicalInstance(request);
     }
 }

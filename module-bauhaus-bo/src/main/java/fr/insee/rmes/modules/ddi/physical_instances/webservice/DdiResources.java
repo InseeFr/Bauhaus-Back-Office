@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -83,6 +85,15 @@ public class DdiResources {
     }
 
 
+    @PostMapping("/physical-instance")
+    public ResponseEntity<Ddi4Response> createPhysicalInstance(
+            @RequestBody CreatePhysicalInstanceRequest request) {
+        Ddi4Response response = ddiService.createPhysicalInstance(request);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
     @GetMapping("/physical-instance/{agencyId}/{id}")
     public ResponseEntity<Ddi4Response> getDdi4PhysicalInstance(
             @PathVariable String agencyId,
@@ -95,6 +106,17 @@ public class DdiResources {
 
     @PatchMapping("/physical-instance/{agencyId}/{id}")
     public ResponseEntity<Ddi4Response> updatePhysicalInstance(
+            @PathVariable String agencyId,
+            @PathVariable String id,
+            @RequestBody UpdatePhysicalInstanceRequest request) {
+        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(updatedInstance);
+    }
+
+    @PutMapping("/physical-instance/{agencyId}/{id}")
+    public ResponseEntity<Ddi4Response> replacePhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable String id,
             @RequestBody UpdatePhysicalInstanceRequest request) {
