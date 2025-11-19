@@ -10,7 +10,7 @@ import fr.insee.rmes.graphdb.ontologies.EVOC;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.PAV;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
-import fr.insee.rmes.persistance.sparql_queries.notes.NotesQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptNotesQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -43,9 +43,9 @@ public class NotesUtils  extends RdfService {
 	
 	public void closeRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
 		IRI noteURIPreviousVersion = RdfUtils.previousVersionableNoteIRI(conceptId, versionableNote);
-		Boolean isNoteExist = repoGestion.getResponseAsBoolean(NotesQueries.isExist(noteURIPreviousVersion));
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(ConceptNotesQueries.isExist(noteURIPreviousVersion));
 		if (Boolean.TRUE.equals(isNoteExist)) {
-			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(NotesQueries.isClosed(noteURIPreviousVersion));
+			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(ConceptNotesQueries.isClosed(noteURIPreviousVersion));
 			if (Boolean.FALSE.equals(isNoteClosed)) {
 				model.add(noteURIPreviousVersion, INSEE.VALIDUNTIL, RdfUtils.setLiteralDateTime(LocalDateTime.now().toString()), RdfUtils.conceptGraph());
 			}
@@ -55,7 +55,7 @@ public class NotesUtils  extends RdfService {
 	public void keepNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
 		IRI conceptURI = RdfUtils.conceptIRI(conceptId);
 		IRI noteURI = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
-		Boolean isNoteExist = repoGestion.getResponseAsBoolean(NotesQueries.isExist(noteURI));
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(ConceptNotesQueries.isExist(noteURI));
 		if (Boolean.TRUE.equals(isNoteExist)) {
 			model.add(conceptURI, versionableNote.getPredicat(), noteURI, RdfUtils.conceptGraph());
 		}
@@ -63,7 +63,7 @@ public class NotesUtils  extends RdfService {
 	
 	public void keepHistoricalNotes(String conceptId, String conceptVersion, Model model)  throws RmesException{
 		JSONArray notes = repoGestion.getResponseAsArray(
-				NotesQueries.getHistoricalNotes(conceptId, conceptVersion));
+				ConceptNotesQueries.getHistoricalNotes(conceptId, conceptVersion));
 		for (int i = 0; i < notes.length(); i++) {
 			JSONObject note = (JSONObject) notes.get(i);
 			IRI predicat = RdfUtils.toURI(note.getString("predicat"));
@@ -74,9 +74,9 @@ public class NotesUtils  extends RdfService {
 	
 	public void updateNoteConceptVersion(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
 		IRI noteURI = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
-		Boolean isNoteExist = repoGestion.getResponseAsBoolean(NotesQueries.isExist(noteURI));
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(ConceptNotesQueries.isExist(noteURI));
 		if (Boolean.TRUE.equals(isNoteExist)) {
-			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(NotesQueries.isClosed(noteURI));
+			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(ConceptNotesQueries.isClosed(noteURI));
 			if (Boolean.FALSE.equals(isNoteClosed)) {
 				String newConceptVersion = String.valueOf(Integer.parseInt(versionableNote.getConceptVersion()) + 1);
 				model.add(noteURI, INSEE.CONCEPT_VERSION, RdfUtils.setLiteralInt(newConceptVersion), RdfUtils.conceptGraph());
@@ -96,7 +96,7 @@ public class NotesUtils  extends RdfService {
 	}
 	
 	public void deleteDatableNote(String conceptId, DatableNote datableNote, List<IRI> notesToDelete)  throws RmesException{
-		JSONObject noteToDelete = repoGestion.getResponseAsObject(NotesQueries.getChangeNoteToDelete(conceptId, datableNote));
+		JSONObject noteToDelete = repoGestion.getResponseAsObject(ConceptNotesQueries.getChangeNoteToDelete(conceptId, datableNote));
 		if (!noteToDelete.isEmpty()) {
 			notesToDelete.add(RdfUtils.toURI(noteToDelete.getString("changeNoteURI")));
 		}
@@ -119,7 +119,7 @@ public class NotesUtils  extends RdfService {
 			return ONE;
 		} else {
 			JSONObject jsonVersion = repoGestion.getResponseAsObject(
-					NotesQueries.getLastVersionnableNoteVersion(concept.getId(), note.getPredicat()));
+					ConceptNotesQueries.getLastVersionnableNoteVersion(concept.getId(), note.getPredicat()));
 			if (jsonVersion.isEmpty()) {
 				return defaultVersion;
 			}
@@ -129,7 +129,7 @@ public class NotesUtils  extends RdfService {
 	
 	public String getConceptVersion(Concept concept)  throws RmesException{
 		String conceptVersion = ONE;
-		JSONObject jsonConceptVersion = repoGestion.getResponseAsObject(NotesQueries.getConceptVersion(concept.getId()));
+		JSONObject jsonConceptVersion = repoGestion.getResponseAsObject(ConceptNotesQueries.getConceptVersion(concept.getId()));
 		if (jsonConceptVersion.isEmpty()) {
 			return conceptVersion;
 		}

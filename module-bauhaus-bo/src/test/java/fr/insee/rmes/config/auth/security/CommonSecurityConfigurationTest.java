@@ -1,5 +1,6 @@
 package fr.insee.rmes.config.auth.security;
 
+import fr.insee.rmes.domain.port.serverside.UserDecoder;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.Optional;
@@ -18,7 +19,14 @@ class CommonSecurityConfigurationTest {
 
     @Test
     void shouldReturnStampFromPrincipal(){
-        OpenIDConnectSecurityContext openIDConnectSecurityContext = new OpenIDConnectSecurityContext("stampClaim", "roleClaimKey", "idClaim", true,"keyForRolesInRoleClaim");
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setStampClaim("stampClaim");
+        jwtProperties.setRoleClaim("roleClaimKey");
+        jwtProperties.setIdClaim("idClaim");
+        jwtProperties.setSourceClaim("sourceClaim");
+        jwtProperties.getRoleClaimConfig().setRoles("keyForRolesInRoleClaim");
+        
+        OpenIDConnectSecurityContext openIDConnectSecurityContext = new OpenIDConnectSecurityContext(jwtProperties, true);
         UserDecoder user = openIDConnectSecurityContext.userDecoder();
         commonSecurityConfiguration.stampFromPrincipal(user);
         StampFromPrincipal stampFromPrincipal = commonSecurityConfiguration.stampFromPrincipal(user);

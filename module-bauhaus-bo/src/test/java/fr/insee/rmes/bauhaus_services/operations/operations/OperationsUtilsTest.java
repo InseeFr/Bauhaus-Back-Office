@@ -7,7 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -51,7 +51,7 @@ class OperationsUtilsTest {
         when(parentUtils.checkIfSeriesHasSims(anyString())).thenReturn(false);
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class);
-             MockedStatic<OperationsQueries> operationsQueriesMockedStatic = Mockito.mockStatic(OperationsQueries.class)
+             MockedStatic<OperationsOperationQueries> operationsQueriesMockedStatic = Mockito.mockStatic(OperationsOperationQueries.class)
         ) {
             SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
             IRI operationIRI = valueFactory.createIRI("http://operation/2");
@@ -66,8 +66,8 @@ class OperationsUtilsTest {
             mockedFactory.when(RdfUtils::operationsGraph).thenReturn(valueFactory.createIRI("http://operations-graph/"));
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2"))).thenReturn(valueFactory.createIRI("http://series/2"));
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.OPERATION), eq("1"))).thenReturn(operationIRI);
-            operationsQueriesMockedStatic.when(() -> OperationsQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg1"), eq("fr"))).thenReturn("unicity-labelLg1");
-            operationsQueriesMockedStatic.when(() -> OperationsQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg2"), eq("en"))).thenReturn("unicity-labelLg2");
+            operationsQueriesMockedStatic.when(() -> OperationsOperationQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg1"), eq("fr"))).thenReturn("unicity-labelLg1");
+            operationsQueriesMockedStatic.when(() -> OperationsOperationQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg2"), eq("en"))).thenReturn("unicity-labelLg2");
 
             JSONObject operation = new JSONObject();
             JSONObject series = new JSONObject()
