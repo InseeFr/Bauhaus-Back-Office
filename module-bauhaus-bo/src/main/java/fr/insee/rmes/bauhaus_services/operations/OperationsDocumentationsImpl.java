@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExp
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.onion.domain.port.serverside.DocumentationRepository;
+import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;

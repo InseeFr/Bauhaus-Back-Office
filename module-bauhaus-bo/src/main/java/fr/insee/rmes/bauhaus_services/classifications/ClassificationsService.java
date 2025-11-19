@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.classification.PartialClassification;
-import fr.insee.rmes.model.classification.PartialClassificationFamily;
-import fr.insee.rmes.model.classification.PartialClassificationSeries;
+import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
+import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
+import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
 
 import java.util.List;
 

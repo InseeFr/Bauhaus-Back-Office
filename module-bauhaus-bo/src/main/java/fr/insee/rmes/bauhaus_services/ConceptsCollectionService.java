@@ -2,18 +2,11 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
-import fr.insee.rmes.model.concepts.PartialCollection;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
 public interface ConceptsCollectionService {
-    List<PartialCollection> getCollections() throws RmesException;
-
     String getCollectionsDashboard() throws RmesException;
-
-    String getCollectionByID(String id) throws RmesException;
 
     String getCollectionMembersByID(String id) throws RmesException;
 

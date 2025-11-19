@@ -1,8 +1,8 @@
 package fr.insee.rmes.model.concepts;
 
 import fr.insee.rmes.model.links.Link;
-import fr.insee.rmes.model.notes.DatableNote;
-import fr.insee.rmes.model.notes.VersionableNote;
+import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
+import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
 
 import java.time.LocalDateTime;
 import java.util.List;

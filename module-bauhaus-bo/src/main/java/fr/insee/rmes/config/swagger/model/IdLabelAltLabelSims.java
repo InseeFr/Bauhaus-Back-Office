@@ -10,7 +10,7 @@ public class IdLabelAltLabelSims {
 		@Schema(description = "Label", requiredMode = Schema.RequiredMode.REQUIRED)
 		public String label;
 		
-		@Schema(description = "Alternative label")
+		@Schema(description = "Alternative value")
 		public String altLabel;
 
 		@Schema(description = "Documentation")

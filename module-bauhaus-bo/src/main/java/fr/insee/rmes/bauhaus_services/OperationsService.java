@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 
 import java.util.List;
 

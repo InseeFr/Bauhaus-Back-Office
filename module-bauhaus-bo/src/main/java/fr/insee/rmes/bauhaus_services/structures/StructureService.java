@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.structures;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.structures.PartialStructure;
+import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructure;
 
 import java.util.List;
 

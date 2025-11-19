@@ -1,0 +1,3 @@
+#
+#Thu Nov 06 09:32:10 GMT 2025
+classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=751b0b78-09e3-431b-ae60-4d4addfd0b5d

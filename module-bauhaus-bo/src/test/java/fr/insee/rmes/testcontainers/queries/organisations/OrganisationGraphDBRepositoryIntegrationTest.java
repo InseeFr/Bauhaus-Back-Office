@@ -60,12 +60,12 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         // Then
         assertThat(organisations).isNotEmpty();
 
-        // Verify that organisations are ordered by label
+        // Verify that organisations are ordered by value
         for (int i = 0; i < organisations.size() - 1; i++) {
             String currentLabel = organisations.get(i).label();
             String nextLabel = organisations.get(i + 1).label();
             assertThat(currentLabel.compareTo(nextLabel))
-                    .as("Organisations should be ordered by label")
+                    .as("Organisations should be ordered by value")
                     .isLessThanOrEqualTo(0);
         }
     }
