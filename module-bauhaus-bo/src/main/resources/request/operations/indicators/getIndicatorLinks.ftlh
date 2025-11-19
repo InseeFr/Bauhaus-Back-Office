@@ -1,4 +1,6 @@
 SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2
+FROM <${OPERATIONS_GRAPH}>
+FROM <${PRODUCTS_GRAPH}>
 WHERE {
 ?indic <${LINKPREDICATE}> ?uriLinked .
 ?uriLinked skos:prefLabel ?labelLg1 .

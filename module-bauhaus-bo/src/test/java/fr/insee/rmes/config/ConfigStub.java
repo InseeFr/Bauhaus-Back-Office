@@ -29,6 +29,10 @@ public class ConfigStub extends Config {
         return "http://rdf.insee.fr/graphes/produits";
     }
 
+    @Override
+    public String getProductsBaseUri() {
+        return "produits/indicateur";
+    }
 
     @Override
     public String getOrgInseeGraph() {
@@ -68,5 +72,20 @@ public class ConfigStub extends Config {
     @Override
     public String getConceptsGraph() {
         return "http://rdf.insee.fr/graphes/concepts/";
+    }
+
+    @Override
+    public String getBaseUriGestion() {
+        return "http://bauhaus/";
+    }
+
+    @Override
+    public String getConceptsScheme() {
+        return "concepts/definitions/scheme";
+    }
+
+    @Override
+    public String getBaseGraph() {
+        return "http://rdf.insee.fr/graphes/";
     }
 }

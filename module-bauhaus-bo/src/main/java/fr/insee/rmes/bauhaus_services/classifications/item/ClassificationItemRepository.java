@@ -7,7 +7,7 @@ import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
-import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationItemsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -36,7 +36,7 @@ public class ClassificationItemRepository {
     public void updateClassificationItem(ClassificationItem item, String itemUri, String classificationId) throws RmesException {
         this.validate(item);
 
-        JSONObject previousItem = repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, item.getId()));
+        JSONObject previousItem = repoGestion.getResponseAsObject(ClassificationItemsQueries.itemQuery(classificationId, item.getId()));
 
         Model model = new LinkedHashModel();
 

@@ -20,6 +20,11 @@
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
+      <artifactId>module-infrastructure-graphdb</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>fr.insee.rmes</groupId>
       <artifactId>module-sparql-orm</artifactId>
       <version>1.0.0</version>
     </dependency>
@@ -36,6 +41,13 @@
       <artifactId>rdf4j-sail-memory</artifactId>
       <version>${rdf4j.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <!-- JSON Schema Validator -->
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>1.5.1</version>
     </dependency>
 
   </dependencies>

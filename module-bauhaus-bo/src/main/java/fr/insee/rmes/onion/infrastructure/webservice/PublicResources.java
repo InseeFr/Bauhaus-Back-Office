@@ -7,7 +7,6 @@ import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
-import fr.insee.rmes.onion.domain.port.serverside.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,7 +45,6 @@ public class PublicResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
 
-    private final StampsService stampsService;
     private final String env;
     private final String lg2;
     private final String lg1;
@@ -59,7 +57,7 @@ public class PublicResources {
     private final String version;
     private final List<String> extraMandatoryFields;
 
-    public PublicResources(StampsService stampsService,
+    public PublicResources(
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
                            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
                            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
@@ -71,7 +69,6 @@ public class PublicResources {
                            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
                            @Value("${fr.insee.rmes.bauhaus.version}") String version,
                            @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) {
-        this.stampsService = stampsService;
         this.env = env;
         this.lg2 = lg2;
         this.lg1 = lg1;
@@ -106,12 +103,6 @@ public class PublicResources {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
         }
         return ResponseEntity.ok(props.toString());
-    }
-
-    @GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-    public ResponseEntity<List<String>> getStamps() throws RmesException {
-        return ResponseEntity.ok(stampsService.getStamps());
     }
 
     @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)

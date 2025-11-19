@@ -3,8 +3,10 @@ package fr.insee.rmes.config.auth.security;
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
-import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.domain.exceptions.MissingStampException;
+import fr.insee.rmes.domain.auth.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.port.serverside.UserDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,8 @@ import java.util.stream.StreamSupport;
 
 import static fr.insee.rmes.config.auth.security.CommonSecurityConfiguration.DEFAULT_ROLE_PREFIX;
 import static java.util.Optional.*;
+
+import java.util.Optional;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -39,25 +43,17 @@ public class OpenIDConnectSecurityContext {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
 
-    public static final String TIMBRE_ANONYME = "bauhausGuest_STAMP";
     public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
-    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/stamps", "/disseminationStatus"};
+    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/disseminationStatus"};
 
-    private final String stampClaim;
-
-    private final String roleClaimKey;
-
-    private final String idClaim;
-
+    private final JwtProperties jwtProperties;
     private final boolean requiresSsl;
-    private final String keyForRolesInRoleClaim;
 
-    public OpenIDConnectSecurityContext(@Value("${jwt.stamp-claim}") String stampClaim, @Value("${jwt.role-claim}") String roleClaimKey, @Value("${jwt.id-claim}") String idClaim, @Value("${fr.insee.rmes.bauhaus.force.ssl}") boolean requiresSsl, @Value("${jwt.role-claim.roles}") String keyForRolesInRoleClaim) {
-        this.stampClaim = stampClaim;
-        this.roleClaimKey = roleClaimKey;
-        this.idClaim = idClaim;
+    public OpenIDConnectSecurityContext(
+            JwtProperties jwtProperties,
+            @Value("${fr.insee.rmes.bauhaus.force.ssl}") boolean requiresSsl) {
+        this.jwtProperties = jwtProperties;
         this.requiresSsl = requiresSsl;
-        this.keyForRolesInRoleClaim = keyForRolesInRoleClaim;
     }
 
     @Bean
@@ -97,7 +93,7 @@ public class OpenIDConnectSecurityContext {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         var jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(this::extractAuthoritiesFromJwt);
-        jwtAuthenticationConverter.setPrincipalClaimName(idClaim);
+        jwtAuthenticationConverter.setPrincipalClaimName(jwtProperties.getIdClaim());
         return jwtAuthenticationConverter;
     }
 
@@ -112,16 +108,18 @@ public class OpenIDConnectSecurityContext {
         if (claims.isEmpty()) {
             throw new RmesException(HttpStatus.UNAUTHORIZED, "Must be authentified", "empty claims for JWT");
         }
-        var id = (String) claims.get(idClaim);
-        var stamp = ofNullable((String) claims.get(stampClaim));
-        if (stamp.isEmpty()) {
-            logger.info(LOG_INFO_DEFAULT_STAMP, id);
-            stamp = of(TIMBRE_ANONYME);
+        var id = (String) claims.get(jwtProperties.getIdClaim());
+        var stamp = extractStamp(claims, id);
+
+        if(stamp.isEmpty()){
+            throw new MissingStampException("The User " + id + " does not have a stamp");
         }
+
+        var source = (String) claims.get(jwtProperties.getSourceClaim());
         var roles = extractRoles(claims).toList();
 
-        logger.debug("Current User is {}, {} with roles {}", id, stamp, roles);
-        return new User(id, roles, stamp.get());
+        logger.debug("Current User is {}, {} with roles {} from source {}", id, stamp, roles, source);
+        return new User(id, roles, stamp.get(), source);
     }
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
@@ -130,15 +128,15 @@ public class OpenIDConnectSecurityContext {
     }
 
     private Stream<String> extractRoles(Map<String, Object> claims) {
-        RoleClaim roleClaim=roleClaimFrom(claims);
+        RoleClaim roleClaim = roleClaimFrom(claims);
         ArrayOfRoles arrayOfRoles=roleClaim.arrayOfRoles();
         return arrayOfRoles.stream();
     }
 
     private RoleClaim roleClaimFrom(Map<String, Object> claims) {
-        var valueForRoleClaim=switch (claims.get(roleClaimKey)) {
-            case JsonObject objectForRoles -> objectForRoles.getAsJsonArray(keyForRolesInRoleClaim);
-            case Map < ?, ?> mapForRoles -> mapForRoles.get(keyForRolesInRoleClaim);
+        var valueForRoleClaim=switch (claims.get(jwtProperties.getRoleClaim())) {
+            case JsonObject objectForRoles -> objectForRoles.getAsJsonArray(jwtProperties.getRoleClaimConfig().getRoles());
+            case Map < ?, ?> mapForRoles -> mapForRoles.get(jwtProperties.getRoleClaimConfig().getRoles());
             default -> empty();
         };
         return roleClaimFrom(valueForRoleClaim);
@@ -162,6 +160,47 @@ public class OpenIDConnectSecurityContext {
     private Stream<String> jsonArrayToStream(JsonArray jsonArray) {
         return StreamSupport.stream(Spliterators.spliterator(jsonArray.iterator(), jsonArray.size(), 0), false)
                 .map(JsonElement::getAsString);
+    }
+
+    private Optional<String> extractStamp(Map<String, Object> claims, String userId) {
+        logger.debug("Extracting stamp for user {}", userId);
+        
+        var stamp = ofNullable((String) claims.get(jwtProperties.getStampClaim()));
+
+        if (stamp.isPresent()) {
+            logger.debug("Found stamp in stampClaim '{}' for user {}: {}", jwtProperties.getStampClaim(), userId, stamp.get());
+            return stamp;
+        } else {
+            logger.debug("No stamp found in stampClaim '{}' for user {}, checking inseeGroupClaim", jwtProperties.getStampClaim(), userId);
+            
+            var inseeGroups = claims.get(jwtProperties.getInseeGroupClaim());
+            stamp = extractStampFromInseeGroups(inseeGroups);
+            
+            if (stamp.isPresent()) {
+                logger.debug("Found stamp in inseeGroupClaim '{}' for user {}: {}", jwtProperties.getInseeGroupClaim(), userId, stamp.get());
+                return stamp;
+            } else {
+                logger.debug("No stamp found in inseeGroupClaim '{}' for user {}, using anonymous stamp", jwtProperties.getInseeGroupClaim(), userId);
+                logger.info(LOG_INFO_DEFAULT_STAMP, userId);
+                return empty();
+            }
+        }
+    }
+
+    private Optional<String> extractStampFromInseeGroups(Object inseeGroups) {
+        if (inseeGroups == null) {
+            return empty();
+        }
+        
+        String suffix = "_" + jwtProperties.getHieApplicationPrefix();
+        
+        return switch (inseeGroups) {
+            case List<?> list -> list.stream()
+                    .map(this::JsonElementOrElseToString)
+                    .filter(group -> group.endsWith(suffix))
+                    .findFirst();
+            default -> empty();
+        };
     }
 
     private interface RoleClaim{

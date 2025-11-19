@@ -6,7 +6,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ class OperationSeriesStampCheckerTest {
         uriUtils = mock(UriUtils.class);
         config = mock(Config.class);
 
-        OpSeriesQueries.setConfig(config);
+        OperationSeriesQueries.setConfig(config);
         when(config.getOperationsGraph()).thenReturn("graph");
 
         when(uriUtils.getBaseUriGestion(ObjectType.SERIES)).thenReturn("http://series");
@@ -54,7 +54,7 @@ class OperationSeriesStampCheckerTest {
         array.put(obj1);
         array.put(obj2);
 
-        String expectedQuery = OpSeriesQueries.getCreatorsBySeriesUri("http://series/123");
+        String expectedQuery = OperationSeriesQueries.getCreatorsBySeriesUri("http://series/123");
         when(repositoryGestion.getResponseAsArray(expectedQuery)).thenReturn(array);
 
         List<String> result = checker.getStamps("123");
@@ -68,7 +68,7 @@ class OperationSeriesStampCheckerTest {
     void testGetStamps_withEmptyContributors() throws Exception {
         JSONArray array = new JSONArray();
 
-        String expectedQuery = OpSeriesQueries.getCreatorsBySeriesUri("http://series/456");
+        String expectedQuery = OperationSeriesQueries.getCreatorsBySeriesUri("http://series/456");
         when(repositoryGestion.getResponseAsArray(expectedQuery)).thenReturn(array);
 
         List<String> result = checker.getStamps("456");
@@ -78,7 +78,7 @@ class OperationSeriesStampCheckerTest {
 
     @Test
     void testGetStamps_withException() throws Exception {
-        String expectedQuery = OpSeriesQueries.getCreatorsBySeriesUri("http://series/789");
+        String expectedQuery = OperationSeriesQueries.getCreatorsBySeriesUri("http://series/789");
         when(repositoryGestion.getResponseAsArray(expectedQuery)).thenThrow(new RmesException("500", new Exception("Message")));
 
         List<String> result = checker.getStamps("789");

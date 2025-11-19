@@ -9,7 +9,7 @@ import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
@@ -54,8 +54,8 @@ public class CollectionExportBuilder extends RdfService {
 
 	public CollectionForExport getCollectionData(String id) throws RmesException {
 		CollectionForExport collection;
-		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
-		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionConceptsQuery(id));
+		JSONObject json = repoGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery(id));
+		JSONArray members = repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionConceptsQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
 		for (int i = 0; i < members.length(); i++) {
@@ -194,8 +194,8 @@ public class CollectionExportBuilder extends RdfService {
 
 	public CollectionForExportOld getCollectionDataOld(String id) throws RmesException {
 		CollectionForExportOld collection;
-		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
-		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
+		JSONObject json = repoGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery(id));
+		JSONArray members = repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
 		for (int i = 0; i < members.length(); i++) {

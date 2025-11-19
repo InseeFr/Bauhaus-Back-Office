@@ -2,6 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
 import fr.insee.rmes.onion.infrastructure.webservice.operations.IndicatorsResources;
@@ -10,6 +11,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,14 +28,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = IndicatorsResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
-                "jwt.stamp-claim=" + STAMP_CLAIM,
-                "jwt.role-claim=" + ROLE_CLAIM,
-                "jwt.id-claim=" + ID_CLAIM,
-                "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "jwt.stampClaim=" + STAMP_CLAIM,
+                "jwt.roleClaim=" + ROLE_CLAIM,
+                "jwt.idClaim=" + ID_CLAIM,
+                "jwt.roleClaimConfig.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "jwt.sourceClaim=source",
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE"}
 )
+@Import(JwtProperties.class)
 class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvProd {
 
     @Autowired

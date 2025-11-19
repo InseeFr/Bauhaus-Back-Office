@@ -8,7 +8,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.json.JSONArray;
@@ -43,8 +43,8 @@ class CodeListServiceImplTest {
 
     @Test
     void getAllCodesLists() throws RmesException, JsonProcessingException {
-        try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.getAllCodesLists(false)).thenReturn("query");
+        try (MockedStatic<CodeListsQueries> mockedFactory = Mockito.mockStatic(CodeListsQueries.class)) {
+            mockedFactory.when(() -> CodeListsQueries.getAllCodesLists(false)).thenReturn("query");
 
             JSONArray response = new JSONArray();
             response.put(new JSONObject()
@@ -81,9 +81,9 @@ class CodeListServiceImplTest {
     }
     @Test
     void getCodesJson() throws RmesException {
-        try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", null)).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
+        try (MockedStatic<CodeListsQueries> mockedFactory = Mockito.mockStatic(CodeListsQueries.class)) {
+            mockedFactory.when(() -> CodeListsQueries.countCodesForCodeList("notation", null)).thenReturn("query");
+            mockedFactory.when(() -> CodeListsQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
@@ -102,10 +102,10 @@ class CodeListServiceImplTest {
 
     @Test
     void getCodesForCodeList() throws RmesException, JsonProcessingException {
-        try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
-            mockedFactory.when(() -> CodeListQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
+        try (MockedStatic<CodeListsQueries> mockedFactory = Mockito.mockStatic(CodeListsQueries.class)) {
+            mockedFactory.when(() -> CodeListsQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
+            mockedFactory.when(() -> CodeListsQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
+            mockedFactory.when(() -> CodeListsQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);

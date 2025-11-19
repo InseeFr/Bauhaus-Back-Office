@@ -2,12 +2,13 @@ package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.infrastructure.rbac.Roles;
+import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
-import fr.insee.rmes.onion.infrastructure.stamps.RmesStampsImpl;
+import fr.insee.rmes.domain.services.UserServiceImpl;
 import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
 import fr.insee.rmes.rbac.RbacFetcher;
 import org.junit.jupiter.api.Test;
@@ -28,10 +29,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = UserResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=HORSPROD",
-                "jwt.stamp-claim=" + STAMP_CLAIM,
-                "jwt.role-claim=" + ROLE_CLAIM,
-                "jwt.id-claim=" + ID_CLAIM,
-                "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "jwt.stampClaim=" + STAMP_CLAIM,
+                "jwt.roleClaim=" + ROLE_CLAIM,
+                "jwt.idClaim=" + ID_CLAIM,
+                "jwt.roleClaimConfig.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "jwt.sourceClaim=source",
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE"}
@@ -41,7 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
-        RmesStampsImpl.class,
+        FakeUserConfiguration.class,
+        JwtProperties.class,
+        UserServiceImpl.class,
         FakeUserConfiguration.class})
 class UserResourcesEnvHorsProdTest {
 

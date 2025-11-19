@@ -80,10 +80,17 @@
       <type>jar</type>
     </dependency>
     <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>${jaxb.version}</version>
-      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-oxm</artifactId>
     </dependency>
     <dependency>
       <groupId>jakarta.validation</groupId>
@@ -276,6 +283,7 @@
     <module>module-sparql-orm</module>
     <module>module-infrastructure</module>
     <module>module-testcontainer-graphdb</module>
+    <module>module-infrastructure-graphdb</module>
     <module>module-bauhaus-bo</module>
   </modules>
 </project>

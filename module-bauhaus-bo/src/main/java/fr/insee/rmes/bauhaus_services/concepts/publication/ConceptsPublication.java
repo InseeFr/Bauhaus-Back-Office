@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -127,10 +127,10 @@ public class ConceptsPublication extends RdfService{
 
 
 	private void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
-		JSONArray conceptsToCheck = repositoryPublication.getResponseAsArray(ConceptsQueries.getNarrowers(conceptId));
+		JSONArray conceptsToCheck = repositoryPublication.getResponseAsArray(ConceptConceptsQueries.getNarrowers(conceptId));
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
-			if (!repoGestion.getResponseAsBoolean(ConceptsQueries.hasBroader(id))) {
+			if (!repoGestion.getResponseAsBoolean(ConceptConceptsQueries.hasBroader(id))) {
 				model.add(publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
 						SKOS.TOP_CONCEPT_OF, publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
 						RdfUtils.conceptGraph());
