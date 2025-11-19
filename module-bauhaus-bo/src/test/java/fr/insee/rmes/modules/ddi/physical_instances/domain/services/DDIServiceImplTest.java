@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -54,7 +55,7 @@ class DDIServiceImplTest {
         assertEquals("Physical Instance 2", result.get(1).label());
         assertEquals("pi-3", result.get(2).id());
         assertEquals("Physical Instance 3", result.get(2).label());
-        
+
         verify(ddiRepository).getPhysicalInstances();
     }
 
@@ -110,14 +111,34 @@ class DDIServiceImplTest {
         // Then
         assertNotNull(result);
         assertEquals("updated-schema", result.schema());
-        verify(ddiRepository).updatePhysicalInstance(instanceId, request);
+        verify(ddiRepository).updatePhysicalInstance(agencyId, instanceId, request);
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
     }
 
+    @Test
+    void shouldCreatePhysicalInstance() {
+        // Given
+        CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
+            "New Physical Instance Label",
+            "New DataRelationship Name"
+        );
+        Ddi4Response expectedResponse = new Ddi4Response(
+            "new-schema",
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of()
+        );
+        when(ddiRepository.createPhysicalInstance(request)).thenReturn(expectedResponse);
 
+        // When
+        Ddi4Response result = ddiService.createPhysicalInstance(request);
 
-
-
-
-
+        // Then
+        assertNotNull(result);
+        assertEquals("new-schema", result.schema());
+        verify(ddiRepository).createPhysicalInstance(request);
+    }
 }
