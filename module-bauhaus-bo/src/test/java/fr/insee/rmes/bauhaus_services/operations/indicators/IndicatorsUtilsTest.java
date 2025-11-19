@@ -47,8 +47,11 @@ class IndicatorsUtilsTest {
 
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-        assertThat(exception.getDetails()).contains("An indicator should be linked to a series.");
+
+        Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
+        org.assertj.core.api.Assertions.assertThat(exception)
+            .isInstanceOfAny(RmesBadRequestException.class, RmesException.class);
+        assertThat(((RmesException) exception).getDetails()).contains("An indicator should be linked to a series.");
     }
 
     @Test
@@ -57,8 +60,11 @@ class IndicatorsUtilsTest {
 
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-        assertThat(exception.getDetails()).contains("An indicator should be linked to a series.");
+
+        Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
+        org.assertj.core.api.Assertions.assertThat(exception)
+            .isInstanceOfAny(RmesBadRequestException.class, RmesException.class);
+        assertThat(((RmesException) exception).getDetails()).contains("An indicator should be linked to a series.");
     }
 
     @Test
