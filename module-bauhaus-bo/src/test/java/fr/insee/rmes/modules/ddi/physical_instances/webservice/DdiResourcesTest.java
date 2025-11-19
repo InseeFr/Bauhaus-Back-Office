@@ -177,6 +177,60 @@ class DdiResourcesTest {
     }
 
     @Test
+    void shouldReplacePhysicalInstance() {
+        // Given
+        String agencyId = "fr.insee";
+        String instanceId = "test-id";
+        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
+            "Replaced Physical Instance Label",
+            "Replaced DataRelationship Name"
+        );
+        Ddi4Response expectedResponse = createMockDdi4Response();
+        when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4Response> result = ddiResources.replacePhysicalInstance(agencyId, instanceId, request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+
+        Ddi4Response responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+
+        verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
+    }
+
+    @Test
+    void shouldCreatePhysicalInstance() {
+        // Given
+        CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
+            "New Physical Instance Label",
+            "New DataRelationship Name"
+        );
+        Ddi4Response expectedResponse = createMockDdi4Response();
+        when(ddiService.createPhysicalInstance(request)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4Response> result = ddiResources.createPhysicalInstance(request);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+
+        Ddi4Response responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        assertNotNull(responseBody.physicalInstance());
+        assertEquals(1, responseBody.physicalInstance().size());
+
+        verify(ddiService).createPhysicalInstance(request);
+    }
+
+    @Test
     void shouldConvertDdi4ToDdi3() {
         // Given
         Ddi4Response ddi4Request = createMockDdi4Response();
