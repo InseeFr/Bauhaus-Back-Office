@@ -2,10 +2,9 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.modules.commons.domain.model.Lang;
 import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
-import fr.insee.rmes.modules.concepts.collections.domain.model.*;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
@@ -32,11 +31,9 @@ public record GraphDBCollection(
 ) {
 
     private static Optional<LocalisedLabel> getDescriptionByIndex(List<LocalisedLabel> localisedLabels, int i) {
-        if(localisedLabels.size() < i){
+        if (localisedLabels.size() <= i) {
             return Optional.empty();
         }
-
-
         return Optional.of(localisedLabels.get(i));
     }
 
