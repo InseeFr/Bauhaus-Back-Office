@@ -1,12 +1,13 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -55,7 +56,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getAllCollections(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsFetchException {
+    void getAllCollections(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getAllCollections()).thenReturn(Collections.emptyList());
@@ -71,7 +72,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void getCollectionById(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsFetchException {
+    void getCollectionById(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.getCollection(any())).thenReturn(java.util.Optional.empty());
@@ -87,7 +88,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("providePostCollectionData")
     @ParameterizedTest
-    void createCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsSaveException {
+    void createCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, CollectionsSaveException, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
@@ -102,7 +103,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void updateCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -117,7 +118,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void deleteCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -132,7 +133,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void publishCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void publishCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -147,7 +148,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void searchCollections(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void searchCollections(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 

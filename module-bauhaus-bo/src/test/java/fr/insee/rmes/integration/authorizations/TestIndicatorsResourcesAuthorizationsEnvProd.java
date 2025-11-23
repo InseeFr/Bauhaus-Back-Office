@@ -2,9 +2,10 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -76,7 +77,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
 
     @MethodSource("provideIndicatorDataGet")
     @ParameterizedTest
-    void getIndicator(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getIndicator(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -101,7 +102,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
 
     @MethodSource("provideIndicatorData")
     @ParameterizedTest
-    void postIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void postIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -116,7 +117,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
 
     @MethodSource("provideIndicatorData")
     @ParameterizedTest
-    void putIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void putIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -130,7 +131,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
     }
     @MethodSource("provideIndicatorData")
     @ParameterizedTest
-    void validateIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void validateIndicator(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_INDICATOR.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 

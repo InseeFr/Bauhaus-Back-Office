@@ -1,5 +1,6 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.junit.Test;
 import java.util.HashSet;
 import java.util.List;

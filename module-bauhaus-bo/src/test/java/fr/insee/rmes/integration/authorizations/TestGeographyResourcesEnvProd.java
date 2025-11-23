@@ -1,9 +1,10 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.GeographyService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.geographies.webservice.GeographyResources;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -66,7 +67,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.GEOGRAPHY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         when(geographyService.getGeoFeatureById(any())).thenReturn(new JSONObject());
         when(geographyService.getGeoFeatures()).thenReturn("[]");
@@ -94,7 +95,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
-    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.GEOGRAPHY.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         when(geographyService.createFeature(any())).thenReturn("http://bauhaus/geo/territory/test-id");
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -124,7 +125,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.GEOGRAPHY.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/geo/territory/1")

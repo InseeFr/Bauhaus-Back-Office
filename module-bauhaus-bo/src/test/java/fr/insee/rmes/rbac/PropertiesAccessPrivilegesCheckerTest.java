@@ -1,10 +1,12 @@
 package fr.insee.rmes.rbac;
 
-import fr.insee.rmes.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.domain.auth.User;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.ModuleAccessPrivileges.Privilege;
-import fr.insee.rmes.rbac.RBAC.Module;
+import fr.insee.rmes.modules.users.domain.model.RBAC.Module;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +35,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnFalseWhenUserNotPresent() throws RmesException {
+    void shouldReturnFalseWhenUserNotPresent() throws RmesException, MissingUserInformationException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.empty());
 
         boolean result = checker.hasAccess("MODULE_1", "READ", "","principal");
@@ -43,7 +45,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
     @Test
 
-    void shouldReturnTrueWhenGetWithMissingRole() throws RmesException {
+    void shouldReturnTrueWhenGetWithMissingRole() throws RmesException, MissingUserInformationException {
         var user = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
 
@@ -53,7 +55,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnTrueWhenGetWithUnknownRole() throws RmesException {
+    void shouldReturnTrueWhenGetWithUnknownRole() throws RmesException, MissingUserInformationException {
         var user = new User("jane.doe", List.of("unknown"), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
 
@@ -63,7 +65,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnTrueWhenUpdateWithMissingRole() throws RmesException {
+    void shouldReturnTrueWhenUpdateWithMissingRole() throws RmesException, MissingUserInformationException {
         var user = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(user));
 
@@ -73,7 +75,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnTrueWhenStrategyIsAll() throws RmesException {
+    void shouldReturnTrueWhenStrategyIsAll() throws RmesException, MissingUserInformationException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
@@ -87,7 +89,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnFalseWhenStrategyIsNone() throws RmesException {
+    void shouldReturnFalseWhenStrategyIsNone() throws RmesException, MissingUserInformationException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
@@ -101,7 +103,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObject() throws RmesException {
+    void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObject() throws RmesException, MissingUserInformationException {
         User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithDifferentStamp));
         when(fetcher.computePrivileges(userWithDifferentStamp.roles())).thenReturn(Set.of(
@@ -117,7 +119,7 @@ class PropertiesAccessPrivilegesCheckerTest {
 
 
     @Test
-    void shouldReturnFalseWhenPrivilegeNotFound() throws RmesException {
+    void shouldReturnFalseWhenPrivilegeNotFound() throws RmesException, MissingUserInformationException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
         when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of())
@@ -129,7 +131,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldReturnTrueWhenReadOperationAndInseeSource() throws RmesException {
+    void shouldReturnTrueWhenReadOperationAndInseeSource() throws RmesException, MissingUserInformationException {
         // User with insee source should always have READ access regardless of RBAC configuration
         var inseeUser = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(inseeUser));
@@ -146,7 +148,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldNotReturnTrueWhenUpdateOperationAndInseeSource() throws RmesException {
+    void shouldNotReturnTrueWhenUpdateOperationAndInseeSource() throws RmesException, MissingUserInformationException {
         // INSEE source should not bypass RBAC for non-READ operations
         var inseeUser = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(inseeUser));
@@ -162,7 +164,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldNotReturnTrueWhenReadOperationAndNonInseeSource() throws RmesException {
+    void shouldNotReturnTrueWhenReadOperationAndNonInseeSource() throws RmesException, MissingUserInformationException {
         // Non-INSEE source should not bypass RBAC even for READ operations
         var nonInseeUser = new User("jane.doe", List.of(), "unknownStamp", "proconnect");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(nonInseeUser));

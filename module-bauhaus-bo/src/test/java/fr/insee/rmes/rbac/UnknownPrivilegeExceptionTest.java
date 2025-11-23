@@ -1,9 +1,10 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownPrivilegeException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import static fr.insee.rmes.rbac.RBAC.Module.CONCEPT_CONCEPT;
-import static fr.insee.rmes.rbac.RBAC.Privilege.CREATE;
+import static fr.insee.rmes.modules.users.domain.model.RBAC.Module.CONCEPT_CONCEPT;
+import static fr.insee.rmes.modules.users.domain.model.RBAC.Privilege.CREATE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UnknownPrivilegeExceptionTest {

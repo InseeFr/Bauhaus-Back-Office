@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.config.swagger.model.Id;
-import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -16,8 +15,8 @@ import fr.insee.rmes.modules.classifications.series.model.PartialClassificationS
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationFamilyResponse;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationSeriesResponse;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationResponse;
-import fr.insee.rmes.rbac.HasAccess;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

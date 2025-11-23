@@ -1,8 +1,9 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import static fr.insee.rmes.rbac.RBAC.Module.CONCEPT_CONCEPT;
+import static fr.insee.rmes.modules.users.domain.model.RBAC.Module.CONCEPT_CONCEPT;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UnknownApplicationExceptionTest {

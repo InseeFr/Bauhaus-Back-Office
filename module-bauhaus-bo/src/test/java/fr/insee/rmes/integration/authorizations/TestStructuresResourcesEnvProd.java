@@ -3,9 +3,10 @@ package fr.insee.rmes.integration.authorizations;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.structures.components.webservice.ComponentResources;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -69,7 +70,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideStructureData")
     @ParameterizedTest
-    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.STRUCTURE_STRUCTURE.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -84,7 +85,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideStructureData")
     @ParameterizedTest
-    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.STRUCTURE_STRUCTURE.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -99,7 +100,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideStructureData")
     @ParameterizedTest
-    void deleteStructure(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteStructure(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.STRUCTURE_STRUCTURE.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -126,7 +127,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideComponentDataPut")
     @ParameterizedTest
-    void updateComponent(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateComponent(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.STRUCTURE_COMPONENT.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -151,7 +152,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideComponentDataPost")
     @ParameterizedTest
-    void createComponent(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void createComponent(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.STRUCTURE_COMPONENT.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -175,7 +176,7 @@ class TestStructuresResourcesEnvProd extends AbstractResourcesEnvProd  {
     }
     @MethodSource("provideComponentDataDelete")
     @ParameterizedTest
-    void deleteComponent(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteComponent(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.STRUCTURE_COMPONENT.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 

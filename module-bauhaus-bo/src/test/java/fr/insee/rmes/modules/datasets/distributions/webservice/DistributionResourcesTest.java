@@ -6,8 +6,9 @@ import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.domain.Roles;
-import fr.insee.rmes.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.domain.auth.User;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
@@ -87,7 +88,7 @@ class DistributionResourcesTest {
     }
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException, MissingUserInformationException {
         List<PartialDataset> datasets = new ArrayList<>();
         datasets.add(new PartialDataset(
                 "1",
@@ -100,7 +101,7 @@ class DistributionResourcesTest {
     }
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException, MissingUserInformationException {
         List<PartialDataset> datasets = new ArrayList<>();
         datasets.add(new PartialDataset(
                 "1",

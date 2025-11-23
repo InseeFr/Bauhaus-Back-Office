@@ -3,9 +3,10 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -71,7 +72,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DISTRIBUTION.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -99,7 +100,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
-    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DISTRIBUTION.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -130,7 +131,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DISTRIBUTION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -159,7 +160,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPublishEndpoints")
     @ParameterizedTest
-    void publish(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void publish(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DISTRIBUTION.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -189,7 +190,7 @@ class TestDistributionsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForDeleteEndpoints")
     @ParameterizedTest
-    void deleteDistribution(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteDistribution(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DISTRIBUTION.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 

@@ -6,12 +6,13 @@ import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
 import fr.insee.rmes.domain.port.clientside.FamilyService;
 import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -97,7 +98,7 @@ class TestFamiliesResourcesEnvProd {
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getData(String url, Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getData(String url, Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
         when(familyService.getFamily(anyString())).thenReturn(new OperationFamily(
@@ -131,7 +132,7 @@ class TestFamiliesResourcesEnvProd {
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void setFamilyById(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void setFamilyById(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.UPDATE.toString()), anyString(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
         var request = put("/operations/family/1")
@@ -157,7 +158,7 @@ class TestFamiliesResourcesEnvProd {
 
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
-    void createFamily(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void createFamily(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
         var request = post("/operations/family")
@@ -183,7 +184,7 @@ class TestFamiliesResourcesEnvProd {
 
     @MethodSource("provideDataForPublishEndpoints")
     @ParameterizedTest
-    void setFamilyValidation(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void setFamilyValidation(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.PUBLISH.toString()), anyString(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
         var request = put("/operations/family/1/validate")

@@ -1,6 +1,6 @@
 package fr.insee.rmes.config.auth.user;
 
-import fr.insee.rmes.domain.auth.User;
+import fr.insee.rmes.modules.users.domain.model.User;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Objects;
@@ -14,12 +14,10 @@ class UserTest {
         boolean roleActualCorrespondToRoleExpected = user.hasRole("lastMockedRole");
         boolean roleActualDoesntCorrespondToRoleExpected = !user.hasRole("mocked");
         boolean stampActualCorrespondToStampExpected = Objects.equals(user.getStamp(), "mockedStamp");
-        boolean staticAttributesAreNotEquals= !Objects.equals(User.FAKE_USER.getStamp(), User.EMPTY_USER.getStamp());
 
         assertTrue(roleActualCorrespondToRoleExpected &&
         roleActualDoesntCorrespondToRoleExpected &&
-        stampActualCorrespondToStampExpected &&
-        staticAttributesAreNotEquals);
+        stampActualCorrespondToStampExpected );
     }
 
 }

@@ -1,5 +1,7 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.model.AllModuleAccessPrivileges;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.*;

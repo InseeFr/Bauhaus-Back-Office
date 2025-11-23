@@ -7,8 +7,8 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreat
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedLocalisedLabelException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
-import fr.insee.rmes.rbac.HasAccess;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;

@@ -40,7 +40,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
 
     @Test
     @DisplayName("Fetch all collections then add another one then check it is well added")
-    void okWhenCollectionAddedTest() {
+    void ok_when_collection_added_test() {
 
         String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections/";
         RestClient restClient = RestClient.create(collectionsEndpoint);
