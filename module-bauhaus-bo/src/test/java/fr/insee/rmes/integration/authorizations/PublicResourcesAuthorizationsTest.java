@@ -1,9 +1,9 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.onion.infrastructure.webservice.PublicResources;
+import fr.insee.rmes.modules.commons.webservice.PublicResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

@@ -1,9 +1,10 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -51,7 +52,7 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideCodeListData")
     @ParameterizedTest
-    void updateCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws MissingUserInformationException, Exception {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -66,7 +67,7 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("providePostCodeListData")
     @ParameterizedTest
-    void postCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void postCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -101,7 +102,7 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideCodeListData")
     @ParameterizedTest
-    void deleteCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteCodeList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -126,7 +127,7 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideCodeData")
     @ParameterizedTest
-    void postCode(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void postCode(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -142,7 +143,7 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideCodeListData")
     @ParameterizedTest
-    void putCode(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void putCode(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -157,7 +158,7 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideCodeListData")
     @ParameterizedTest
-    void putCodesList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void putCodesList(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CODESLIST_CODESLIST.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 

@@ -3,10 +3,7 @@ package fr.insee.rmes.config.auth.security;
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
-import fr.insee.rmes.domain.exceptions.MissingStampException;
-import fr.insee.rmes.domain.auth.User;
-import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +11,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
@@ -43,7 +39,6 @@ public class OpenIDConnectSecurityContext {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
 
-    public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
     public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/disseminationStatus"};
 
     private final JwtProperties jwtProperties;
@@ -97,30 +92,7 @@ public class OpenIDConnectSecurityContext {
         return jwtAuthenticationConverter;
     }
 
-    @Bean
-    public UserDecoder userDecoder() {
-        return principal -> "anonymousUser".equals(principal) ?
-                empty() :
-                of(buildUserFromToken(((Jwt) principal).getClaims()));
-    }
 
-    protected User buildUserFromToken(Map<String, Object> claims) throws RmesException {
-        if (claims.isEmpty()) {
-            throw new RmesException(HttpStatus.UNAUTHORIZED, "Must be authentified", "empty claims for JWT");
-        }
-        var id = (String) claims.get(jwtProperties.getIdClaim());
-        var stamp = extractStamp(claims, id);
-
-        if(stamp.isEmpty()){
-            throw new MissingStampException("The User " + id + " does not have a stamp");
-        }
-
-        var source = (String) claims.get(jwtProperties.getSourceClaim());
-        var roles = extractRoles(claims).toList();
-
-        logger.debug("Current User is {}, {} with roles {} from source {}", id, stamp, roles, source);
-        return new User(id, roles, stamp.get(), source);
-    }
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
         return extractRoles(jwt.getClaims()).map(SimpleGrantedAuthority::new)
@@ -162,46 +134,9 @@ public class OpenIDConnectSecurityContext {
                 .map(JsonElement::getAsString);
     }
 
-    private Optional<String> extractStamp(Map<String, Object> claims, String userId) {
-        logger.debug("Extracting stamp for user {}", userId);
-        
-        var stamp = ofNullable((String) claims.get(jwtProperties.getStampClaim()));
 
-        if (stamp.isPresent()) {
-            logger.debug("Found stamp in stampClaim '{}' for user {}: {}", jwtProperties.getStampClaim(), userId, stamp.get());
-            return stamp;
-        } else {
-            logger.debug("No stamp found in stampClaim '{}' for user {}, checking inseeGroupClaim", jwtProperties.getStampClaim(), userId);
-            
-            var inseeGroups = claims.get(jwtProperties.getInseeGroupClaim());
-            stamp = extractStampFromInseeGroups(inseeGroups);
-            
-            if (stamp.isPresent()) {
-                logger.debug("Found stamp in inseeGroupClaim '{}' for user {}: {}", jwtProperties.getInseeGroupClaim(), userId, stamp.get());
-                return stamp;
-            } else {
-                logger.debug("No stamp found in inseeGroupClaim '{}' for user {}, using anonymous stamp", jwtProperties.getInseeGroupClaim(), userId);
-                logger.info(LOG_INFO_DEFAULT_STAMP, userId);
-                return empty();
-            }
-        }
-    }
 
-    private Optional<String> extractStampFromInseeGroups(Object inseeGroups) {
-        if (inseeGroups == null) {
-            return empty();
-        }
-        
-        String suffix = "_" + jwtProperties.getHieApplicationPrefix();
-        
-        return switch (inseeGroups) {
-            case List<?> list -> list.stream()
-                    .map(this::JsonElementOrElseToString)
-                    .filter(group -> group.endsWith(suffix))
-                    .findFirst();
-            default -> empty();
-        };
-    }
+
 
     private interface RoleClaim{
         ArrayOfRoles arrayOfRoles();

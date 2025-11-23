@@ -1,7 +1,7 @@
 package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
-import fr.insee.rmes.onion.infrastructure.webservice.RmesRuntimeExceptionHandler;
+import fr.insee.rmes.modules.commons.webservice.RmesRuntimeExceptionHandler;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

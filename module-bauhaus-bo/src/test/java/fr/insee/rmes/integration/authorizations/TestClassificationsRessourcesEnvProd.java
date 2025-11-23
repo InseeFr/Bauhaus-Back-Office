@@ -2,9 +2,10 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -64,7 +65,7 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("testClassificationFamiliesGetEndpoint")
-    void getClassificationsFamilies(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getClassificationsFamilies(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -96,7 +97,7 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("testClassificationSeriesGetEndpoint")
-    void getClassificationsSeries(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getClassificationsSeries(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_SERIES.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -127,7 +128,7 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("testClassificationGetEndpoint")
-    void getClassifications(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getClassifications(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_CLASSIFICATION.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -199,7 +200,7 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForPublishClassification")
-    void publishClassification(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void publishClassification(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_CLASSIFICATION.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -224,7 +225,7 @@ class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForUploadClassification")
-    void updateClassificationItemWhenAnyRole(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateClassificationItemWhenAnyRole(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CLASSIFICATION_CLASSIFICATION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());

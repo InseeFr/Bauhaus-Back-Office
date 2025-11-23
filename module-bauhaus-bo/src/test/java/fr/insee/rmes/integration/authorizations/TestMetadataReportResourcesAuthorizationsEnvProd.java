@@ -3,14 +3,15 @@ package fr.insee.rmes.integration.authorizations;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -70,7 +71,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
 
     @Test
-    void testGetMSDJson() throws Exception {
+    void testGetMSDJson() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -87,7 +88,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetMSDXml() throws Exception {
+    void testGetMSDXml() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -108,7 +109,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetMSDJsonRmesException() throws Exception {
+    void testGetMSDJsonRmesException() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -121,7 +122,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetMSDXmlRmesException() throws Exception {
+    void testGetMSDXmlRmesException() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -137,7 +138,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
 
     @Test
-    void testGetMetadataReport() throws Exception {
+    void testGetMetadataReport() throws Exception, MissingUserInformationException {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
@@ -155,7 +156,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetMetadataReportRmesException() throws Exception {
+    void testGetMetadataReportRmesException() throws Exception, MissingUserInformationException {
         String id = "1234";
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -169,7 +170,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
                 .andExpect(status().isInternalServerError());
     }
     @Test
-    void testGetMetadataReportDefaultValue() throws Exception {
+    void testGetMetadataReportDefaultValue() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -186,7 +187,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetFullSimsJson() throws Exception {
+    void testGetFullSimsJson() throws Exception, MissingUserInformationException {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
@@ -204,7 +205,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetFullSimsXml() throws Exception {
+    void testGetFullSimsXml() throws Exception, MissingUserInformationException {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
@@ -226,7 +227,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetFullSimsJsonRmesException() throws Exception {
+    void testGetFullSimsJsonRmesException() throws Exception, MissingUserInformationException {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
@@ -240,7 +241,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetFullSimsXmlRmesException() throws Exception {
+    void testGetFullSimsXmlRmesException() throws Exception, MissingUserInformationException {
         String id = "1234";
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -255,7 +256,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetSimsExport() throws Exception {
+    void testGetSimsExport() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -282,7 +283,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void testGetSimsExport_DefaultValues() throws Exception {
+    void testGetSimsExport_DefaultValues() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(true);
 
@@ -301,7 +302,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     }
 
     @Test
-    void postMetadataReportAdmin_OK() throws Exception {
+    void postMetadataReportAdmin_OK() throws Exception, MissingUserInformationException {
         when(documentationsService.createMetadataReport(anyString())).thenReturn("{}");
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(true);
 
@@ -329,7 +330,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
 
     @Test
-    void postMetadataReportContributor_OK() throws Exception {
+    void postMetadataReportContributor_OK() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_indicateur_RMESGNCS"));
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SIMS.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(true);
 

@@ -1,7 +1,8 @@
 package fr.insee.rmes.config;
 
 import fr.insee.rmes.config.auth.UserProvider;
-import fr.insee.rmes.domain.auth.User;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +53,7 @@ public class LogRequestFilter extends AbstractRequestLoggingFilter {
         Optional<User> currentUser;
         try {
             currentUser = userProvider.findUser();
-        } catch (RmesException e) {
+        } catch (RmesException | MissingUserInformationException e) {
             logger.error("while authenticating user", e);
             currentUser = empty();
         }

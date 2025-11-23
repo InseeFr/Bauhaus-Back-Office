@@ -1,6 +1,9 @@
 package fr.insee.rmes.rbac;
 
 import fr.insee.rmes.AppSpringBootTest;
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownRoleException;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

@@ -1,9 +1,10 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -69,7 +70,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DATASET.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -95,7 +96,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
-    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DATASET.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = post("/datasets")
@@ -124,7 +125,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void update(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DATASET.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/datasets/1")
@@ -153,7 +154,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPublishEndpoints")
     @ParameterizedTest
-    void publish(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void publish(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DATASET.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/datasets/1/validate")
@@ -181,7 +182,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForDeleteEndpoints")
     @ParameterizedTest
-    void deleteDataset(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteDataset(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DATASET.toString()), eq(RBAC.Privilege.DELETE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = delete("/datasets/1")
@@ -209,7 +210,7 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
     @MethodSource("provideDataForPatchEndpoints")
     @ParameterizedTest
-    void patchDataset(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void patchDataset(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.DATASET_DATASET.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = patch("/datasets/1")

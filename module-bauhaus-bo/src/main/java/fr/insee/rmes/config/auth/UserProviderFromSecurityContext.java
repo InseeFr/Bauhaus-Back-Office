@@ -1,8 +1,8 @@
 package fr.insee.rmes.config.auth;
 
-import fr.insee.rmes.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.domain.auth.User;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.users.domain.model.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 public record UserProviderFromSecurityContext(UserDecoder userDecoder) implements UserProvider{
 
     @Override
-    public Optional<User> findUser() throws RmesException {
+    public Optional<User> findUser() throws MissingUserInformationException {
         return this.userDecoder.fromPrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 

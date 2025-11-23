@@ -1,9 +1,11 @@
 package fr.insee.rmes.rbac;
 
 import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.domain.auth.User;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rbac.stamps.*;
 import org.springframework.core.env.Environment;
@@ -28,7 +30,7 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     }
 
     @Override
-    public boolean hasAccess(String module, String privilege, String id, Object principal) throws RmesException {
+    public boolean hasAccess(String module, String privilege, String id, Object principal) throws RmesException, MissingUserInformationException {
         var user = this.decoder.fromPrincipal(principal);
         return user.map(u -> hasAcccess(module, privilege, id, u)).orElse(false);
 

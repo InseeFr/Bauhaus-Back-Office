@@ -1,8 +1,9 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -76,7 +77,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(documentsService.getDocument("1")).thenReturn(new JSONObject());
         when(documentsService.getLink("1")).thenReturn(new JSONObject());
 
@@ -107,7 +108,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void updateDocumentOrLink(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateDocumentOrLink(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_DOCUMENT.toString()), eq(RBAC.Privilege.UPDATE.toString()), anyString(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put(url)
@@ -137,7 +138,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideDataForDeleteEndpoints")
     @ParameterizedTest
-    void deleteDocumentOrLink(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void deleteDocumentOrLink(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(documentsService.deleteDocument(anyString())).thenReturn(HttpStatus.OK);
         when(documentsService.deleteLink(anyString())).thenReturn(HttpStatus.OK);
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_DOCUMENT.toString()), eq(RBAC.Privilege.DELETE.toString()), anyString(), any())).thenReturn(hasAccessReturn);
@@ -164,7 +165,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideDataForDocumentPostEndpoints")
     @ParameterizedTest
-    void postDocument(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void postDocument(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_DOCUMENT.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         //
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -201,7 +202,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideDataForLinkPostEndpoints")
     @ParameterizedTest
-    void postLink(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void postLink(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_DOCUMENT.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
@@ -231,7 +232,7 @@ class DocumentsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
 
     @MethodSource("provideDataForLinkUpdateFileEndpoints")
     @ParameterizedTest
-    void updateFile(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateFile(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_DOCUMENT.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());

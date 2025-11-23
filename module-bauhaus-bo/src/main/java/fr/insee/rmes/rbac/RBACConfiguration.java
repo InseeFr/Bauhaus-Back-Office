@@ -1,5 +1,7 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.model.AllModuleAccessPrivileges;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 

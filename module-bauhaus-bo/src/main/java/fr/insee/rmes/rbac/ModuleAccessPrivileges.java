@@ -1,5 +1,7 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+
 import java.util.Set;
 
 public record ModuleAccessPrivileges(RBAC.Module application, Set<Privilege> privileges) {

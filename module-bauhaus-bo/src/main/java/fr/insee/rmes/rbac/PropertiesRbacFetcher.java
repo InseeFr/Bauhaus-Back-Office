@@ -1,5 +1,10 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownPrivilegeException;
+import fr.insee.rmes.modules.users.domain.exceptions.UnknownRoleException;
+import fr.insee.rmes.modules.users.domain.model.AllModuleAccessPrivileges;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

@@ -2,9 +2,10 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -86,7 +87,7 @@ class TestSeriesResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getSeries(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void getSeries(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SERIES.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
@@ -110,7 +111,7 @@ class TestSeriesResourcesEnvProd extends AbstractResourcesEnvProd  {
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void updateSeries(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateSeries(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.OPERATION_SERIES.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 

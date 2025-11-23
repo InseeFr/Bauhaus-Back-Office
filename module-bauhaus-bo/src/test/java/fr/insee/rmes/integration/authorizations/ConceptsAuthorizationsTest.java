@@ -2,10 +2,11 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -59,7 +60,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("TestGetEndpointsOkWhenAnyRole")
-    void getObjectWithAnyRole(String url) throws Exception {
+    void getObjectWithAnyRole(String url) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(anyString(), anyString(), any(), any())).thenReturn(true);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
@@ -87,7 +88,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForUpdateCollection")
-    void updateCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void updateCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/concepts/collection/1").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
@@ -106,7 +107,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForPublishConcept")
-    void publishConcept(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
+    void publishConcept(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/concepts/c1116/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");

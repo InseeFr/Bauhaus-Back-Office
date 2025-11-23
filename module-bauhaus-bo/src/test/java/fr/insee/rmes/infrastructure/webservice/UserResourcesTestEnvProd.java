@@ -2,13 +2,13 @@ package fr.insee.rmes.infrastructure.webservice;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.JwtProperties;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.domain.services.UserServiceImpl;
-import fr.insee.rmes.onion.infrastructure.webservice.UserResources;
+import fr.insee.rmes.modules.users.domain.DomainUserService;
+import fr.insee.rmes.modules.users.webservice.UserResources;
 import fr.insee.rmes.rbac.RbacFetcher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         JwtProperties.class,
-        UserServiceImpl.class})
+        DomainUserService.class})
 class UserResourcesEnvProdTest {
 
     @Autowired
