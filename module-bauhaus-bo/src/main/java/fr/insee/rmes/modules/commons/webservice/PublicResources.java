@@ -2,9 +2,8 @@ package fr.insee.rmes.modules.commons.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.config.auth.AuthType;
-import fr.insee.rmes.config.swagger.model.LabelUrl;
-import fr.insee.rmes.config.swagger.model.application.Init;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.LabelUrl;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.application.Init;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -93,7 +92,7 @@ public class PublicResources {
             props.put("maxLengthScopeNote", this.maxLengthScopeNote);
             props.put("lg1", this.lg1);
             props.put("lg2", this.lg2);
-            props.put("authType", AuthType.getAuthType(this.env));
+            props.put("authType", this.getAuthType(this.env));
             props.put("activeModules", this.activeModules);
             props.put("modules", this.modules);
             props.put("version", this.version);
@@ -103,6 +102,11 @@ public class PublicResources {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
         }
         return ResponseEntity.ok(props.toString());
+    }
+
+    private String getAuthType(String env) {
+        if (env.equals("pre-prod") || env.equals("prod") || env.equals("PROD")) return "OpenIDConnectAuth";
+        else return "NoAuthImpl";
     }
 
     @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)

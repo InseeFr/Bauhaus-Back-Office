@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
-import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;

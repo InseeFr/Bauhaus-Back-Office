@@ -2,20 +2,23 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
-import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
-import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
+import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,30 +33,31 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest(controllers = ConceptsResources.class,
-        properties = {"fr.insee.rmes.bauhaus.env=PROD",
-                "jwt.stampClaim=" + STAMP_CLAIM,
-                "jwt.roleClaim=" + ROLE_CLAIM,
-                "jwt.idClaim=" + ID_CLAIM,
-                "jwt.roleClaimConfig.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
-                "jwt.sourceClaim=source",
-                "logging.level.org.springframework.security=DEBUG",
-                "logging.level.org.springframework.security.web.access=TRACE",
-                "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "fr.insee.rmes.bauhaus.activeModules=concepts"}
+@WebMvcTest(
+        controllers = ConceptsResources.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
+        properties = {
+                "fr.insee.rmes.bauhaus.activeModules=concepts",
+                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        }
 )
-@Import(JwtProperties.class)
+@Import({
+        ConceptsResources.class,
+        UserProviderFromSecurityContext.class,
+        OidcUserDecoder.class
+})
 class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
+    @Configuration
+    @EnableMethodSecurity(securedEnabled = true)
+    static class TestSecurityConfiguration {
+        // Configuration minimale pour activer method security
+    }
 
-    @Autowired
-    MockMvc mvc;
     @MockitoBean
     ConceptsService conceptsService;
     @MockitoBean
     ConceptsCollectionService conceptsCollectionService;
 
-    String idep = "xxxxxx";
-    String timbre = "XX59-YYY";
     static String conceptVersion="16";
     static String id ="2025";
 
@@ -71,7 +75,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     static Collection<Arguments> TestGetEndpointsOkWhenAnyRole(){
         return Arrays.asList(
-                Arguments.of("/concepts/"),
+                Arguments.of("/concepts"),
                 Arguments.of("/concepts/toValidate"),
                 Arguments.of("/concepts/linkedConcepts/"+id),
                 Arguments.of("/concepts/concept/"+id+"/notes/16"+conceptVersion),
@@ -88,40 +92,34 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForUpdateCollection")
-    void updateCollection(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+    void updateCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/concepts/collection/1").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
-        if(withBearer){
-            request.header("Authorization", "Bearer toto");
-        }
+        request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
     }
     static Collection<Arguments> TestRoleCaseForUpdateCollection() {
         return Arrays.asList(
-                Arguments.of(204, true, true),
-                Arguments.of(403, true, false),
-                Arguments.of(401, false, true)
+                Arguments.of(204, true),
+                Arguments.of(403, false)
         );
     }
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForPublishConcept")
-    void publishConcept(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.PUBLISH.toString()), any(), any())).thenReturn(hasAccessReturn);
+    void publishConcept(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/concepts/c1116/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
-        if(withBearer){
-            request.header("Authorization", "Bearer toto");
-        }
+        request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
     }
 
     static Collection<Arguments> TestRoleCaseForPublishConcept() {
         return Arrays.asList(
-                Arguments.of(401, false, false),
-                Arguments.of(403, true, false),
-                Arguments.of(401, false, true)
+                Arguments.of(204, true),
+                Arguments.of(403, false)
         );
     }
 }

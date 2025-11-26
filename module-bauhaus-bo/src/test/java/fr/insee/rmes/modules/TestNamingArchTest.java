@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 
-@AnalyzeClasses(packages = "fr.insee.rmes.modules.concepts.collections")
+@AnalyzeClasses(packages = {"fr.insee.rmes.modules.concepts.collections", "fr.insee.rmes.modules.users"})
 public class TestNamingArchTest {
 
     @ArchTest

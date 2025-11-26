@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.model.Organization;
 import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganizationQueries;

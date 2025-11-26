@@ -4,8 +4,7 @@ import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationExcep
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
-import fr.insee.rmes.rbac.ModuleAccessPrivileges;
-import fr.insee.rmes.rbac.RbacFetcher;
+import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,12 +39,10 @@ import java.util.Set;
 public class UserResources {
 
     private final UserService userService;
-    private final RbacFetcher rbacService;
 
 
-    public UserResources(UserService userService, RbacFetcher rbacService) {
+    public UserResources(UserService userService) {
         this.userService = userService;
-        this.rbacService = rbacService;
     }
 
     @GetMapping(
@@ -61,8 +58,7 @@ public class UserResources {
     public Set<ModuleAccessPrivileges> getUserInformation(@AuthenticationPrincipal Object principal) {
         User user = null;
         try {
-            user = this.userService.getUser(principal);
-            return rbacService.computePrivileges(user.roles());
+            return userService.computePrivileges(principal);
         } catch (MissingUserInformationException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage(), e);
         }

@@ -1,6 +1,6 @@
 package fr.insee.rmes.model.operations;
 
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.util.ObjectUtils;
 

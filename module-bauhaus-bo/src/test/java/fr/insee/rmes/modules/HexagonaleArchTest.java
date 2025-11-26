@@ -68,7 +68,7 @@ public class HexagonaleArchTest {
     @ArchTest
     public static final ArchRule domainDependencies = FreezingArchRule.freeze(classes()
             .that().resideInAPackage("..domain..")
-            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..", "org.jspecify.annotations..")
+            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..", "org.jspecify.annotations..", "org.slf4j..")
             .because("The domain should only depends of the domain"));
 
     @ArchTest

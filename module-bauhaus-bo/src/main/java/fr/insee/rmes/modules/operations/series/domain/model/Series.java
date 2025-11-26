@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.operations.series.domain.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
 
