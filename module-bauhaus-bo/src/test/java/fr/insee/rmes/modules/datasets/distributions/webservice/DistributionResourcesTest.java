@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.datasets.distributions.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
@@ -19,8 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -192,10 +194,11 @@ class DistributionResourcesTest {
 }
 
 
-@WebMvcTest(value = DistributionResources.class, properties = {
-        "fr.insee.rmes.bauhaus.force.ssl = false"
-})
-@Import({UserProviderFromSecurityContext.class})
+@WebMvcTest(
+    value = DistributionResources.class,
+    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class)
+)
+@AutoConfigureMockMvc(addFilters = false)
 class DistributionResourcesWebTest {
 
     @MockitoBean

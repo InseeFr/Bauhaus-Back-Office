@@ -8,6 +8,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,7 +68,14 @@ class HasAccessTest {
             }
         }
 
-        Method method = TestController.class.getDeclaredMethods()[0];
+        Method[] methods = TestController.class.getDeclaredMethods();
+
+        // Filter out Jacoco synthetic methods
+        Method[] nonSyntheticMethods = Arrays.stream(methods)
+            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+            .toArray(Method[]::new);
+
+        Method method = nonSyntheticMethods[0];
         HasAccess annotation = method.getAnnotation(HasAccess.class);
 
         assertThat(annotation).isNotNull();
@@ -103,8 +111,13 @@ class HasAccessTest {
 
         Method[] methods = TestController.class.getDeclaredMethods();
 
-        assertThat(methods).hasSize(3);
-        for (Method method : methods) {
+        // Filter out Jacoco synthetic methods
+        Method[] nonSyntheticMethods = Arrays.stream(methods)
+            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+            .toArray(Method[]::new);
+
+        assertThat(nonSyntheticMethods).hasSize(3);
+        for (Method method : nonSyntheticMethods) {
             HasAccess annotation = method.getAnnotation(HasAccess.class);
             assertThat(annotation).isNotNull();
             assertThat(annotation.module()).isNotNull();
@@ -136,8 +149,13 @@ class HasAccessTest {
 
         Method[] methods = TestController.class.getDeclaredMethods();
 
-        assertThat(methods).hasSize(6);
-        for (Method method : methods) {
+        // Filter out Jacoco synthetic methods
+        Method[] nonSyntheticMethods = Arrays.stream(methods)
+            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+            .toArray(Method[]::new);
+
+        assertThat(nonSyntheticMethods).hasSize(6);
+        for (Method method : nonSyntheticMethods) {
             HasAccess annotation = method.getAnnotation(HasAccess.class);
             assertThat(annotation).isNotNull();
             assertThat(annotation.privilege()).isIn(
@@ -168,7 +186,14 @@ class HasAccessTest {
             public void method4() {}
         }
 
-        for (Method method : TestController.class.getDeclaredMethods()) {
+        Method[] methods = TestController.class.getDeclaredMethods();
+
+        // Filter out Jacoco synthetic methods
+        Method[] nonSyntheticMethods = Arrays.stream(methods)
+            .filter(m -> !m.isSynthetic() && !m.getName().startsWith("$"))
+            .toArray(Method[]::new);
+
+        for (Method method : nonSyntheticMethods) {
             HasAccess annotation = method.getAnnotation(HasAccess.class);
             assertThat(annotation).isNotNull();
             assertThat(annotation.module()).isInstanceOf(RBAC.Module.class);
