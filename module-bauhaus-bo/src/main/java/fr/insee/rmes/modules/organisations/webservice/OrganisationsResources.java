@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabel;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.organizations.Organization;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,10 +40,12 @@ public class OrganisationsResources {
 
 	static final Logger logger = LoggerFactory.getLogger(OrganisationsResources.class);
 
+    final OrganisationsService organisationsService;
 	final OrganizationsService organizationsService;
 
-	public OrganisationsResources(OrganizationsService organizationsService) {
-		this.organizationsService = organizationsService;
+	public OrganisationsResources(OrganisationsService organisationsService, OrganizationsService organizationsService) {
+        this.organisationsService = organisationsService;
+        this.organizationsService = organizationsService;
 	}
 
 	@GetMapping(value = "/organization/{identifier}", 
@@ -72,7 +75,8 @@ public class OrganisationsResources {
 	public ResponseEntity<Object> getOrganizations(
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
 		String resultat;
-		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
+
+        if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
 				resultat=XMLUtils.produceXMLResponse(organizationsService.getOrganizations());
 			} catch (RmesException e) {

@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.organisations.model;
+package fr.insee.rmes.modules.organisations.domain.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
