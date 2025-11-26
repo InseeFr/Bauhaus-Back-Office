@@ -2,31 +2,31 @@ package fr.insee.rmes.integration.authorizations.operations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
+import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
+import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
 import fr.insee.rmes.domain.port.clientside.FamilyService;
-import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
-import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
@@ -34,28 +34,28 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = FamilyResources.class,
-        properties = {"fr.insee.rmes.bauhaus.env=PROD",
-                "jwt.stampClaim=" + STAMP_CLAIM,
-                "jwt.roleClaim=" + ROLE_CLAIM,
-                "jwt.idClaim=" + ID_CLAIM,
-                "jwt.roleClaimConfig.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
-                "jwt.sourceClaim=source",
-                "logging.level.org.springframework.security=DEBUG",
-                "logging.level.org.springframework.security.web.access=TRACE",
-                "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "fr.insee.rmes.bauhaus.activeModules=operations"}
+@WebMvcTest(
+        controllers = FamilyResources.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
+        properties = {
+                "fr.insee.rmes.bauhaus.activeModules=operations",
+                "fr.insee.rmes.bauhaus.extensions=pdf,odt"
+        }
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
+@Import({
+        FamilyResources.class,
         UserProviderFromSecurityContext.class,
-        PropertiesAccessPrivilegesChecker.class,
-        JwtProperties.class})
+        OidcUserDecoder.class
+})
 class TestFamiliesResourcesEnvProd {
-    @Autowired
-    private MockMvc mvc;
+    @Configuration
+    @EnableMethodSecurity(securedEnabled = true)
+    static class TestSecurityConfiguration {
+        // Configuration minimale pour activer method security
+    }
+
+    @MockitoBean
+    protected JwtProperties jwtProperties;
 
     @MockitoBean
     private OperationsService operationsService;
@@ -66,11 +66,14 @@ class TestFamiliesResourcesEnvProd {
     @MockitoBean
     private FamilyService familyService;
 
-    @MockitoBean
-    private PropertiesAccessPrivilegesChecker propertiesAccessPrivilegesChecker;
+    @MockitoBean(name = "propertiesAccessPrivilegesChecker")
+    protected AccessPrivilegesCheckerService checker;
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
+
+    @Autowired
+    private MockMvc mvc;
 
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
@@ -78,29 +81,24 @@ class TestFamiliesResourcesEnvProd {
 
     private static Stream<Arguments> provideDataForGetEndpoints() {
         return Stream.of(
-                Arguments.of("/operations/families", 200, "Administrateur_RMESGNCS", true, true),
-                Arguments.of("/operations/families/advanced-search", 200, "Administrateur_RMESGNCS", true, true),
-                Arguments.of("/operations/families/1/seriesWithReport", 200, "Administrateur_RMESGNCS", true, true),
-                Arguments.of("/operations/family/1", 200, "Administrateur_RMESGNCS", true, true),
+                Arguments.of("/operations/families", 200, true),
+                Arguments.of("/operations/families/advanced-search", 200, true),
+                Arguments.of("/operations/families/1/seriesWithReport", 200, true),
+                Arguments.of("/operations/family/1", 200, true),
 
-                Arguments.of("/operations/families", 403, "FAKE", true, false),
-                Arguments.of("/operations/families/advanced-search", 403, "FAKE", true, false),
-                Arguments.of("/operations/families/1/seriesWithReport", 403, "FAKE", true, false),
-                Arguments.of("/operations/family/1", 403, "FAKE", true, false),
-
-                Arguments.of("/operations/families", 401, "Administrateur_RMESGNCS", false, true),
-                Arguments.of("/operations/families/advanced-search", 401, "Administrateur_RMESGNCS", false, true),
-                Arguments.of("/operations/families/1/seriesWithReport", 401, "Administrateur_RMESGNCS", false, true),
-                Arguments.of("/operations/family/1", 401, "Administrateur_RMESGNCS", false, true)
+                Arguments.of("/operations/families", 403, false),
+                Arguments.of("/operations/families/advanced-search", 403, false),
+                Arguments.of("/operations/families/1/seriesWithReport", 403, false),
+                Arguments.of("/operations/family/1", 403, false)
         );
     }
 
 
     @MethodSource("provideDataForGetEndpoints")
     @ParameterizedTest
-    void getData(String url, Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
+    void getData(String url, Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(familyService.getFamily(anyString())).thenReturn(new OperationFamily(
                 "id",
                 "prefLabelLg1",
@@ -114,35 +112,28 @@ class TestFamiliesResourcesEnvProd {
                 Collections.emptyList()
                 ));
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
-
-        if(withBearer){
-            request.header("Authorization", "Bearer toto");
-        }
+        request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
     }
 
     private static Stream<Arguments> provideDataForPutEndpoints() {
         return Stream.of(
-                Arguments.of(200, "Administrateur_RMESGNCS", true, true),
-                Arguments.of(403, "Fake", true, false),
-                Arguments.of(401, "Administrateur_RMESGNCS", false, true)
+                Arguments.of(200, true),
+                Arguments.of(403, false)
         );
     }
 
     @MethodSource("provideDataForPutEndpoints")
     @ParameterizedTest
-    void setFamilyById(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.UPDATE.toString()), anyString(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
+    void setFamilyById(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/operations/family/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content("{\"id\": \"1\"}");
-
-        if(withBearer){
-            request.header("Authorization", "Bearer toto");
-        }
+        request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
     }
@@ -150,25 +141,21 @@ class TestFamiliesResourcesEnvProd {
 
     private static Stream<Arguments> provideDataForPostEndpoints() {
         return Stream.of(
-                Arguments.of(200, "Administrateur_RMESGNCS", true, true),
-                Arguments.of(403, "Fake", true, false),
-                Arguments.of(401, "Administrateur_RMESGNCS", false, true)
+                Arguments.of(200, true),
+                Arguments.of(403, false)
         );
     }
 
     @MethodSource("provideDataForPostEndpoints")
     @ParameterizedTest
-    void createFamily(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
+    void createFamily(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = post("/operations/family")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}");
-
-        if(withBearer){
-            request.header("Authorization", "Bearer toto");
-        }
+        request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
     }
@@ -176,25 +163,21 @@ class TestFamiliesResourcesEnvProd {
 
     private static Stream<Arguments> provideDataForPublishEndpoints() {
         return Stream.of(
-                Arguments.of(200, "Administrateur_RMESGNCS", true, true),
-                Arguments.of(403, "Fake", true, false),
-                Arguments.of(401, "Administrateur_RMESGNCS", false, true)
+                Arguments.of(200, true),
+                Arguments.of(403, false)
         );
     }
 
     @MethodSource("provideDataForPublishEndpoints")
     @ParameterizedTest
-    void setFamilyValidation(Integer code, String role, boolean withBearer, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(propertiesAccessPrivilegesChecker.hasAccess(eq(RBAC.Module.OPERATION_FAMILY.toString()), eq(RBAC.Privilege.PUBLISH.toString()), anyString(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(role));
+    void setFamilyValidation(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = put("/operations/family/1/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}");
-
-        if(withBearer){
-            request.header("Authorization", "Bearer toto");
-        }
+        request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
     }

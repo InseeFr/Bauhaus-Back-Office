@@ -28,4 +28,14 @@ public record User(String id, List<String> roles, Stamp stamp, Source source) {
     public String getStamp(){
         return stamp.stamp();
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", roles=" + roles +
+                ", stamp=" + stamp +
+                ", source=" + source +
+                '}';
+    }
 }

@@ -34,9 +34,12 @@ public class OidcUserDecoder implements UserDecoder {
 
     @Override
     public Optional<User> fromPrincipal(Object principal) throws MissingUserInformationException {
-        return "anonymousUser".equals(principal) ?
-                empty() :
-                of(buildUserFromToken(((Jwt) principal).getClaims()));
+        return switch (principal) {
+            case String s when "anonymousUser".equals(s) -> empty();
+            case User user -> of(user); // Support pour le mode DEV où le principal est déjà un User
+            case Jwt jwt -> of(buildUserFromToken(jwt.getClaims()));
+            default -> empty();
+        };
     }
 
     protected User buildUserFromToken(Map<String, Object> claims) throws MissingUserInformationException {
@@ -100,7 +103,8 @@ public class OidcUserDecoder implements UserDecoder {
 
     //TODO dupplicate dans OpenidConnectSecurityContext
     private Stream<String> extractRoles(Map<String, Object> claims) {
-        RoleClaim roleClaim = roleClaimFrom(claims);
+        Object roleClaimValue = claims.get(jwtProperties.getRoleClaim());
+        RoleClaim roleClaim = roleClaimFrom(roleClaimValue);
         ArrayOfRoles arrayOfRoles=roleClaim.arrayOfRoles();
         return arrayOfRoles.stream();
     }

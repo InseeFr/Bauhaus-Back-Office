@@ -1,0 +1,16 @@
+package fr.insee.rmes.modules.commons.configuration.swagger.model;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public class IdLabelAltLabel {
+
+	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
+	public String id;
+	
+	@Schema(description = "Label", requiredMode = Schema.RequiredMode.REQUIRED)
+	public String label;
+	
+	@Schema(description = "Alternative value")
+	public String altLabel;
+	
+}

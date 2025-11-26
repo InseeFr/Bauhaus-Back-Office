@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;

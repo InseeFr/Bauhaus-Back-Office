@@ -287,7 +287,7 @@ class DocumentationExportTest {
         series.setCreated("2023-11-28T09:18:46.114042714");
 
         // Set family
-        fr.insee.rmes.config.swagger.model.IdLabelTwoLangs family = new fr.insee.rmes.config.swagger.model.IdLabelTwoLangs();
+        fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs family = new fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs();
         family.setId("s30");
         family.setLabelLg1("Comptes nationaux");
         family.setLabelLg2("National accounts");

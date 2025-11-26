@@ -1,6 +1,6 @@
 package fr.insee.rmes;
 
-import fr.insee.rmes.config.PropertiesLogger;
+import fr.insee.rmes.modules.commons.configuration.PropertiesLogger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;

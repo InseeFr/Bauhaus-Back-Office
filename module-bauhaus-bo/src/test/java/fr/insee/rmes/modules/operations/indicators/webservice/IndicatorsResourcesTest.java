@@ -2,9 +2,7 @@ package fr.insee.rmes.modules.operations.indicators.webservice;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
+import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
 import org.junit.jupiter.api.Assertions;
@@ -114,7 +112,7 @@ class IndicatorsResourcesTest {
 @WebMvcTest(value = IndicatorsResources.class, properties = {
         "fr.insee.rmes.bauhaus.force.ssl = false"
 })
-@Import({UserProviderFromSecurityContext.class, DefaultSecurityContext.class})
+@Import({UserProviderFromSecurityContext.class})
 class IndicatorsResourcesWebTest {
 
     @MockitoBean
@@ -123,8 +121,6 @@ class IndicatorsResourcesWebTest {
     @MockitoBean
     protected OperationsDocumentationsService documentationsService;
 
-    @MockitoBean
-    FakeUserConfiguration fakeUserConfiguration;
 
     @Autowired
     MockMvc mockMvc;

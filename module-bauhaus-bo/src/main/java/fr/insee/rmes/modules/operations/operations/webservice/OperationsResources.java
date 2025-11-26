@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.operations.operations.webservice;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.users.webservice.HasAccess;

@@ -2,9 +2,7 @@ package fr.insee.rmes.modules.datasets.distributions.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
+import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
 import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
@@ -197,7 +195,7 @@ class DistributionResourcesTest {
 @WebMvcTest(value = DistributionResources.class, properties = {
         "fr.insee.rmes.bauhaus.force.ssl = false"
 })
-@Import({UserProviderFromSecurityContext.class, DefaultSecurityContext.class})
+@Import({UserProviderFromSecurityContext.class})
 class DistributionResourcesWebTest {
 
     @MockitoBean
@@ -208,9 +206,6 @@ class DistributionResourcesWebTest {
 
     @MockitoBean
     protected UserDecoder userDecoder;
-
-    @MockitoBean
-    FakeUserConfiguration fakeUserConfiguration;
 
     @Autowired
     MockMvc mockMvc;
