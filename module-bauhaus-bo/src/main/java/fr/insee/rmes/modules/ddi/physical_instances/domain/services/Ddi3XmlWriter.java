@@ -376,4 +376,72 @@ public class Ddi3XmlWriter {
             writer.writeEndElement();
         }
     }
+
+    /**
+     * Builds a complete DDI 3.3 FragmentInstance XML document from a Ddi3Response.
+     * This method creates the root FragmentInstance element, TopLevelReference, and all Fragment elements.
+     *
+     * @param ddi3Response The DDI3 response containing all items to include
+     * @return Complete XML document as String with XML declaration
+     */
+    public String buildFragmentInstanceDocument(Ddi3Response ddi3Response) {
+        if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+            throw new IllegalArgumentException("Ddi3Response must contain at least one item");
+        }
+
+        StringBuilder xml = new StringBuilder();
+
+        // Write XML declaration
+        xml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+
+        // Start FragmentInstance root element
+        xml.append("<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n");
+
+        // Write TopLevelReference based on first Physical Instance item
+        // Find the first PhysicalInstance (type a51e85bb-6259-4488-8df2-f08cb43485f8)
+        Ddi3Response.Ddi3Item firstPhysicalInstance = ddi3Response.items().stream()
+                .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
+                .findFirst()
+                .orElse(ddi3Response.items().get(0)); // Fallback to first item if no PhysicalInstance found
+
+        xml.append("  <ddi:TopLevelReference>\n");
+        xml.append("    <r:Agency>").append(escapeXml(firstPhysicalInstance.agencyId())).append("</r:Agency>\n");
+        xml.append("    <r:ID>").append(escapeXml(firstPhysicalInstance.identifier())).append("</r:ID>\n");
+        xml.append("    <r:Version>").append(escapeXml(firstPhysicalInstance.version())).append("</r:Version>\n");
+        xml.append("    <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>\n");
+        xml.append("  </ddi:TopLevelReference>\n");
+
+        // Write all fragments
+        // Each item.item() already contains a complete <Fragment>...</Fragment> element
+        // We prepend "ddi:" to Fragment and adjust the namespaces
+        for (Ddi3Response.Ddi3Item item : ddi3Response.items()) {
+            if (item.item() != null && !item.item().isEmpty()) {
+                // The item.item() contains <Fragment>...</Fragment>
+                // We need to convert it to <ddi:Fragment>...</ddi:Fragment>
+                String fragment = item.item();
+                fragment = fragment.replace("<Fragment", "<ddi:Fragment");
+                fragment = fragment.replace("</Fragment>", "</ddi:Fragment>");
+                xml.append("  ").append(fragment).append("\n");
+            }
+        }
+
+        // Close FragmentInstance
+        xml.append("</ddi:FragmentInstance>");
+
+        return xml.toString();
+    }
+
+    /**
+     * Escapes special XML characters
+     */
+    private String escapeXml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&apos;");
+    }
 }

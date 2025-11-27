@@ -150,11 +150,11 @@ public class DdiResources {
     }
 
     @PostMapping("/convert/ddi4-to-ddi3")
-    public ResponseEntity<Ddi3Response> convertDdi4ToDdi3(@RequestBody Ddi4Response ddi4) {
-        Ddi3Response ddi3 = ddi4toDdi3ConverterService.convertDdi4ToDdi3(ddi4);
+    public ResponseEntity<String> convertDdi4ToDdi3(@RequestBody Ddi4Response ddi4) {
+        String ddi3Xml = ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(ddi4);
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ddi3);
+                .contentType(MediaType.APPLICATION_XML)
+                .body(ddi3Xml);
     }
 
     @PostMapping("/convert/ddi3-to-ddi4")
