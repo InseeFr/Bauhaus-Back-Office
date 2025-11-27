@@ -391,6 +391,102 @@ class DDI4toDDI3ConverterServiceImplTest {
         assertTrue(xml.contains("Integer"));
     }
 
+    @Test
+    void shouldConvertDdi4ToDdi3Xml() {
+        // Given
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                "true",
+                "2025-01-21T13:48:46.363",
+                "urn:ddi:fr.insee:PhysicalInstance.test:1",
+                "fr.insee",
+                "test-id",
+                "1",
+                new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
+                new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                List.of(pi),
+                null,
+                null,
+                null,
+                null
+        );
+
+        // When
+        String xml = converter.convertDdi4ToDdi3Xml(ddi4);
+
+        // Then
+        assertNotNull(xml);
+
+        // Verify XML declaration
+        assertTrue(xml.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+
+        // Verify FragmentInstance structure
+        assertTrue(xml.contains("<ddi:FragmentInstance"));
+        assertTrue(xml.contains("xmlns:r=\"ddi:reusable:3_3\""));
+        assertTrue(xml.contains("xmlns:ddi=\"ddi:instance:3_3\""));
+
+        // Verify TopLevelReference
+        assertTrue(xml.contains("<ddi:TopLevelReference>"));
+        assertTrue(xml.contains("<r:Agency>fr.insee</r:Agency>"));
+        assertTrue(xml.contains("<r:ID>test-id</r:ID>"));
+        assertTrue(xml.contains("<r:Version>1</r:Version>"));
+        assertTrue(xml.contains("<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"));
+        assertTrue(xml.contains("</ddi:TopLevelReference>"));
+
+        // Verify Fragment
+        assertTrue(xml.contains("<ddi:Fragment"));
+        assertTrue(xml.contains("</ddi:Fragment>"));
+
+        // Verify PhysicalInstance content
+        assertTrue(xml.contains("<PhysicalInstance"));
+        assertTrue(xml.contains("Test Instance"));
+
+        // Verify closing tag
+        assertTrue(xml.contains("</ddi:FragmentInstance>"));
+    }
+
+    @Test
+    void shouldConvertCompleteDdi4ResponseToXml() {
+        // Given
+        Ddi4Response ddi4 = createCompleteDdi4Response();
+
+        // When
+        String xml = converter.convertDdi4ToDdi3Xml(ddi4);
+
+        // Then
+        assertNotNull(xml);
+
+        // Verify XML structure
+        assertTrue(xml.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+        assertTrue(xml.contains("<ddi:FragmentInstance"));
+        assertTrue(xml.contains("<ddi:TopLevelReference>"));
+        assertTrue(xml.contains("</ddi:FragmentInstance>"));
+
+        // Verify multiple fragments exist (7 items: 1 PI, 1 DR, 2 Variables, 1 CodeList, 2 Categories)
+        int fragmentCount = countOccurrences(xml, "<ddi:Fragment");
+        assertEquals(8, fragmentCount);
+
+        // Verify different element types
+        assertTrue(xml.contains("<PhysicalInstance"));
+        assertTrue(xml.contains("<DataRelationship"));
+        assertTrue(xml.contains("<Variable"));
+        assertTrue(xml.contains("<CodeList"));
+        assertTrue(xml.contains("<Category"));
+    }
+
+    private int countOccurrences(String str, String substring) {
+        int count = 0;
+        int index = 0;
+        while ((index = str.indexOf(substring, index)) != -1) {
+            count++;
+            index += substring.length();
+        }
+        return count;
+    }
+
     private Ddi4Response createCompleteDdi4Response() {
         return new Ddi4Response(
                 "file:/jsonSchema.json",

@@ -9,3 +9,5 @@ node_modules
 *.iml
 .properties
 .run/
+# Local Netlify folder
+.netlify

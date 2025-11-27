@@ -17,6 +17,7 @@ public class WithGraphDBContainer {
 
     @Container
     public static final GraphDBContainer container = new GraphDBContainer(getDockerImageName());
+    public static final String BAUHAUS_TEST_REPOSITORY = "bauhaus-test";
 
     private static String getDockerImageName() {
         Path filePath = Paths.get(System.getProperty("user.dir"), "compose.yaml");
@@ -53,7 +54,7 @@ public class WithGraphDBContainer {
 
             @Override
             public String repositoryId() {
-                return "bauhaus-test";
+                return BAUHAUS_TEST_REPOSITORY;
             }
         };
     }

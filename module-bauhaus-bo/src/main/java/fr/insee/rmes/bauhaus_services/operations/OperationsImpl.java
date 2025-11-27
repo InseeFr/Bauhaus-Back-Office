@@ -6,16 +6,18 @@ import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
-import fr.insee.rmes.graphdb.QueryUtils;
-import fr.insee.rmes.modules.operations.series.domain.model.Series;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
+import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.EncodingType;
 import org.json.JSONArray;
@@ -23,6 +25,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -38,9 +41,6 @@ public class OperationsImpl  implements OperationsService {
 	RepositoryGestion repoGestion;
 
 	@Autowired
-	AuthorizeMethodDecider authorizeMethodDecider;
-
-	@Autowired
 	SeriesUtils seriesUtils;
 
 	@Autowired
@@ -51,6 +51,9 @@ public class OperationsImpl  implements OperationsService {
 
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
+
+    @Autowired
+    UserDecoder userDecoder;
 
 
 	/***************************************************************************************************
@@ -84,7 +87,19 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims based on a stamp");
-		JSONArray series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithStampQuery(stamp, this.authorizeMethodDecider.isAdmin()));
+
+        //TODO a revoir ceci
+        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var isAdmin = false;
+        try {
+            var user = userDecoder.fromPrincipal(principal);
+            isAdmin = user.get().hasRole(Roles.ADMIN);
+        } catch (MissingUserInformationException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        JSONArray series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithStampQuery(stamp, isAdmin));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));

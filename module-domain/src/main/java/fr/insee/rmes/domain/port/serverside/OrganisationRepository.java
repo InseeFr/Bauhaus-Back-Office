@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface OrganisationRepository {
+
     List<OrganisationOption> getOrganisations() throws RmesException;
 
     OrganisationOption getOrganisation(String identifier) throws RmesException;

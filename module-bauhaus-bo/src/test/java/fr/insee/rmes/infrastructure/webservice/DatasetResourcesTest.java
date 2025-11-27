@@ -12,10 +12,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -71,8 +78,27 @@ class DatasetResourcesTest {
 
     @Test
     void shouldReturn201IfRmesExceptionWhenPostingADataset() throws RmesException {
-        when(datasetService.create(anyString())).thenReturn("result");
-        Assertions.assertEquals("result", datasetResources.setDataset(""));
+        // Given
+        MockHttpServletRequest req = new MockHttpServletRequest("POST", "/datasets");
+        req.setServerName("localhost");
+        req.setServerPort(80);
+        req.setScheme("http");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
+
+        DatasetResources myDatasetResources = new DatasetResources(datasetService);
+        String expectedId = "mocked-result";
+        when(datasetService.create("mocked body")).thenReturn(expectedId);
+
+        // When
+        ResponseEntity<String> response = myDatasetResources.setDataset("mocked body");
+
+        // Then
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(expectedId, response.getBody());
+        assertEquals(
+                "/datasets/" + expectedId,
+                Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
+        );
     }
 
     @Test

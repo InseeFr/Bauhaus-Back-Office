@@ -2,9 +2,7 @@ package fr.insee.rmes.modules.operations.indicators.webservice;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
 import org.junit.jupiter.api.Assertions;
@@ -14,8 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -111,10 +111,11 @@ class IndicatorsResourcesTest {
 }
 
 
-@WebMvcTest(value = IndicatorsResources.class, properties = {
-        "fr.insee.rmes.bauhaus.force.ssl = false"
-})
-@Import({UserProviderFromSecurityContext.class, DefaultSecurityContext.class})
+@WebMvcTest(
+    value = IndicatorsResources.class,
+    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class)
+)
+@AutoConfigureMockMvc(addFilters = false)
 class IndicatorsResourcesWebTest {
 
     @MockitoBean
@@ -122,9 +123,6 @@ class IndicatorsResourcesWebTest {
 
     @MockitoBean
     protected OperationsDocumentationsService documentationsService;
-
-    @MockitoBean
-    FakeUserConfiguration fakeUserConfiguration;
 
     @Autowired
     MockMvc mockMvc;

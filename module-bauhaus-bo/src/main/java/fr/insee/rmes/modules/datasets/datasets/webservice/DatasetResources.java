@@ -8,8 +8,8 @@ import fr.insee.rmes.modules.datasets.datasets.model.DatasetsForSearch;
 import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
-import fr.insee.rmes.rbac.HasAccess;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -23,7 +23,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -77,10 +79,16 @@ public class DatasetResources {
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.CREATE)
     @Operation(summary = "Create a dataset")
-    @ResponseStatus(HttpStatus.CREATED)
-    public String setDataset(
+    public ResponseEntity<String> setDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
-        return this.datasetService.create(body);
+        String id = this.datasetService.create(body);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri();
+        return ResponseEntity.created(location).body(id);
     }
 
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)

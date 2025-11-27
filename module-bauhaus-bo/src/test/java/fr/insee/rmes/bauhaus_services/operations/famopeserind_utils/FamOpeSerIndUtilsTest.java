@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;

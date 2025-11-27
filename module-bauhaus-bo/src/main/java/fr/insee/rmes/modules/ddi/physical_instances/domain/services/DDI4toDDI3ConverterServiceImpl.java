@@ -131,4 +131,15 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
 
         return new Ddi3Response(options, items);
     }
+
+    @Override
+    public String convertDdi4ToDdi3Xml(Ddi4Response ddi4) {
+        logger.info("Converting DDI4 to DDI3 XML");
+
+        // First convert to Ddi3Response using the existing method
+        Ddi3Response ddi3Response = convertDdi4ToDdi3(ddi4);
+
+        // Then build the complete FragmentInstance XML document
+        return xmlWriter.buildFragmentInstanceDocument(ddi3Response);
+    }
 }

@@ -1,35 +1,30 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.rbac.AccessPrivilegesChecker;
-import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
-import org.springframework.context.annotation.Import;
+import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
+import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@Import({
-    Config.class,
-    OpenIDConnectSecurityContext.class,
-    DefaultSecurityContext.class,
-    CommonSecurityConfiguration.class,
-    UserProviderFromSecurityContext.class,
-    BauhausMethodSecurityExpressionHandler.class,
-    PropertiesAccessPrivilegesChecker.class
-})
 public abstract class AbstractResourcesEnvProd {
 
     @MockitoBean
     protected JwtDecoder jwtDecoder;
+
     @MockitoBean
     protected DocumentsService documentsService;
 
+    @MockitoBean(name = "propertiesAccessPrivilegesChecker")
+    protected AccessPrivilegesCheckerService checker;
+
+    @Autowired
+    protected MockMvc mvc;
 
     @MockitoBean
-    protected AccessPrivilegesChecker checker;
+    protected JwtProperties jwtProperties;
+
+    protected final String idep = "xxxxxx";
+    protected final String timbre = "XX59-YYY";
 }

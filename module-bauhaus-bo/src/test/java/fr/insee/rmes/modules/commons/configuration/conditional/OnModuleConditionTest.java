@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.commons.configuration.conditional;
 
-import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
-import fr.insee.rmes.modules.commons.configuration.conditional.OnModuleCondition;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.OnModuleCondition;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.context.annotation.ConditionContext;

@@ -39,11 +39,17 @@ class DDIRepositoryImplTest {
     @Mock
     private DDI3toDDI4ConverterService ddi3ToDdi4Converter;
 
+    @Mock
+    private ColecticaConfiguration colecticaConfiguration;
+
     private DDIRepositoryImpl ddiRepository;
 
     @BeforeEach
     void setUp() {
-        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter);
+        // By default, mock returns null for codeListDenyList (no filtering)
+        // Use lenient() since not all tests use this stubbing
+        lenient().when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
+        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter, colecticaConfiguration);
     }
 
     @Test
@@ -567,5 +573,610 @@ class DDIRepositoryImplTest {
         verify(restTemplate, times(1)).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
         // Query should only be called once (no retry)
         verify(restTemplate, times(1)).postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class));
+    }
+
+    @Test
+    void shouldGetCodesLists() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String queryUrl = baseApiUrl + "_query";
+
+        // Mock authentication response
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+
+        ColecticaItem codeList1 = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Liste de codes 1", "en", "Code List 1"), // itemName
+            Map.of("fr-FR", "LC1", "en", "LC1"), // value
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "CodeList", // itemType
+            "agency1", // agencyId
+            1, // version
+            "cl-1", // identifier
+            null, // item
+            null, // notes
+            "2025-01-01T00:00:00", // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            1L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaItem codeList2 = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Liste de codes 2", "en", "Code List 2"), // itemName
+            Map.of("fr-FR", "LC2", "en", "LC2"), // value
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "CodeList", // itemType
+            "agency2", // agencyId
+            1, // version
+            "cl-2", // identifier
+            null, // item
+            null, // notes
+            "2025-01-02T00:00:00", // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            2L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2));
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication call
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock query call - should query for CodeList itemType (8b108ef8-b642-4484-9c49-f88e4bf7cf1d)
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("cl-1", result.get(0).id());
+        assertEquals("Liste de codes 1", result.get(0).label());
+        assertEquals("agency1", result.get(0).agency());
+        assertNotNull(result.get(0).versionDate());
+        assertEquals("cl-2", result.get(1).id());
+        assertEquals("Liste de codes 2", result.get(1).label());
+        assertEquals("agency2", result.get(1).agency());
+
+        // Verify authentication was called
+        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
+
+        // Verify query was called with CodeList itemType
+        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
+
+        HttpEntity<?> capturedEntity = entityCaptor.getValue();
+        QueryRequest queryRequest = (QueryRequest) capturedEntity.getBody();
+        assertNotNull(queryRequest);
+        assertEquals(1, queryRequest.itemTypes().size());
+        assertEquals("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", queryRequest.itemTypes().get(0)); // CodeList UUID
+    }
+
+    @Test
+    void shouldCreatePhysicalInstance() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String itemUrl = baseApiUrl + "item";
+
+        String physicalInstanceLabel = "Test Physical Instance";
+        String dataRelationshipName = "Test Data Relationship";
+        CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
+                physicalInstanceLabel,
+                dataRelationshipName
+        );
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock item creation (POST /item)
+        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+                .thenReturn("{}");
+
+        // Mock ddiset response for getPhysicalInstance call after creation
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <PhysicalInstance isUniversallyUnique=\"true\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">" + physicalInstanceLabel + "</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "        </PhysicalInstance>\n" +
+                "    </Fragment>\n" +
+                "</ddi:FragmentInstance>";
+
+        when(restTemplate.exchange(
+                any(String.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+
+        // Mock converter
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:test-id:1",
+                "fr.insee", "test-id", "1",
+                new Citation(new Title(new StringValue("fr-FR", physicalInstanceLabel))),
+                null
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference("fr.insee", "test-id", "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(), List.of(), List.of(), List.of()
+        );
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        // When
+        Ddi4Response result = ddiRepository.createPhysicalInstance(request);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.physicalInstance());
+        assertEquals(1, result.physicalInstance().size());
+        assertEquals(physicalInstanceLabel, result.physicalInstance().get(0).citation().title().string().text());
+
+        // Verify authentication was called
+        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
+
+        // Verify item creation endpoint was called
+        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
+
+        HttpEntity<?> capturedEntity = entityCaptor.getValue();
+        ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) capturedEntity.getBody();
+        assertNotNull(createRequest);
+        assertEquals(2, createRequest.items().size()); // PhysicalInstance + DataRelationship
+
+        // Verify first item is PhysicalInstance
+        ColecticaItemResponse piItem = createRequest.items().get(0);
+        assertEquals("a51e85bb-6259-4488-8df2-f08cb43485f8", piItem.itemType()); // PhysicalInstance UUID
+        assertTrue(piItem.item().contains(physicalInstanceLabel));
+
+        // Verify second item is DataRelationship
+        ColecticaItemResponse drItem = createRequest.items().get(1);
+        assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
+        assertTrue(drItem.item().contains(dataRelationshipName));
+    }
+
+    @Test
+    void shouldUpdatePhysicalInstance() {
+        // Given
+        String instanceId = "test-pi-id";
+        String agencyId = "fr.insee";
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String itemUrl = baseApiUrl + "item";
+
+        String newLabel = "Updated Physical Instance Label";
+        String newDataRelationshipName = "Updated Data Relationship Name";
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
+                newLabel,
+                newDataRelationshipName
+        );
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock existing instance (for getPhysicalInstance call)
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <PhysicalInstance isUniversallyUnique=\"true\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>" + instanceId + "</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">Old Label</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "            <r:DataRelationshipReference>\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>dr-123</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "            </r:DataRelationshipReference>\n" +
+                "        </PhysicalInstance>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <DataRelationship isUniversallyUnique=\"true\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>dr-123</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <DataRelationshipName>\n" +
+                "                <r:String xml:lang=\"en-US\">Old DR Name</r:String>\n" +
+                "            </DataRelationshipName>\n" +
+                "            <LogicalRecord isUniversallyUnique=\"true\">\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>lr-123</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <LogicalRecordName>\n" +
+                "                    <r:String xml:lang=\"fr\">Old LR Name</r:String>\n" +
+                "                </LogicalRecordName>\n" +
+                "            </LogicalRecord>\n" +
+                "        </DataRelationship>\n" +
+                "    </Fragment>\n" +
+                "</ddi:FragmentInstance>";
+
+        when(restTemplate.exchange(
+                any(String.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+
+        // Mock converter
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId, instanceId, "1",
+                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+        );
+
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId, "dr-123", "1",
+                new DataRelationshipName(new StringValue("en-US", "Old DR Name")),
+                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        new LogicalRecordName(new StringValue("fr", "Old LR Name")), null)
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship), List.of(), List.of(), List.of()
+        );
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        // Mock item update (POST /item)
+        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+                .thenReturn("{}");
+
+        // When
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Then
+        // Verify authentication was called
+        verify(restTemplate, atLeastOnce()).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
+
+        // Verify item update endpoint was called
+        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
+
+        HttpEntity<?> capturedEntity = entityCaptor.getValue();
+        ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) capturedEntity.getBody();
+        assertNotNull(createRequest);
+        assertEquals(2, createRequest.items().size()); // PhysicalInstance + DataRelationship
+
+        // Verify first item is PhysicalInstance with updated label
+        ColecticaItemResponse piItem = createRequest.items().get(0);
+        assertEquals("a51e85bb-6259-4488-8df2-f08cb43485f8", piItem.itemType()); // PhysicalInstance UUID
+        assertEquals(2, piItem.version()); // Version incremented
+        assertTrue(piItem.item().contains(newLabel));
+
+        // Verify second item is DataRelationship with updated name
+        ColecticaItemResponse drItem = createRequest.items().get(1);
+        assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
+        assertEquals(2, drItem.version()); // Version incremented
+        assertTrue(drItem.item().contains(newDataRelationshipName));
+    }
+
+    @Test
+    void shouldFilterCodeListsInDenyList() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String queryUrl = baseApiUrl + "_query";
+
+        // Mock authentication response
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+
+        // Create code lists - one should be filtered, one should pass
+        ColecticaItem codeListToFilter = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Liste des statuts professionnels", "en", "Professional Status List"), // itemName
+            Map.of("fr-FR", "Statuts", "en", "Status"), // value
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "CodeList", // itemType
+            "fr.insee", // agencyId
+            1, // version
+            "2a22ba00-a977-4a61-a582-99025c6b0582", // identifier - IN DENY LIST
+            null, // item
+            null, // notes
+            "2023-07-04T08:19:29", // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            1L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaItem codeListToKeep = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Liste de codes à garder", "en", "Code List to Keep"), // itemName
+            Map.of("fr-FR", "À garder", "en", "To Keep"), // value
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "CodeList", // itemType
+            "fr.insee", // agencyId
+            1, // version
+            "other-id-to-keep", // identifier - NOT IN DENY LIST
+            null, // item
+            null, // notes
+            "2023-07-04T08:19:29", // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            2L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeListToFilter, codeListToKeep));
+
+        // Configure deny list
+        List<ColecticaConfiguration.CodeListDenyEntry> denyList = List.of(
+            new ColecticaConfiguration.CodeListDenyEntry("fr.insee", "2a22ba00-a977-4a61-a582-99025c6b0582")
+        );
+        when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication call
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock query call
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size()); // Only one code list should remain
+        assertEquals("other-id-to-keep", result.get(0).id());
+        assertEquals("Liste de codes à garder", result.get(0).label());
+        assertEquals("fr.insee", result.get(0).agency());
+
+        // Verify the filtered code list is not in the results
+        assertFalse(result.stream().anyMatch(cl -> cl.id().equals("2a22ba00-a977-4a61-a582-99025c6b0582")));
+    }
+
+    @Test
+    void shouldNotFilterWhenDenyListIsEmpty() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String queryUrl = baseApiUrl + "_query";
+
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+
+        ColecticaItem codeList = new ColecticaItem(
+            null, Map.of("fr-FR", "Liste de codes"), Map.of("fr-FR", "LC"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList",
+            "fr.insee", 1, "some-id", null, null, "2023-07-04T08:19:29",
+            null, true, false, false, "DDI", 1L, 0
+        );
+
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList));
+
+        // Configure empty deny list
+        when(colecticaConfiguration.codeListDenyList()).thenReturn(List.of());
+
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size()); // Code list should not be filtered
+        assertEquals("some-id", result.get(0).id());
+    }
+
+    @Test
+    void shouldNotFilterWhenDenyListIsNull() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String queryUrl = baseApiUrl + "_query";
+
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+
+        ColecticaItem codeList = new ColecticaItem(
+            null, Map.of("fr-FR", "Liste de codes"), Map.of("fr-FR", "LC"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList",
+            "fr.insee", 1, "some-id", null, null, "2023-07-04T08:19:29",
+            null, true, false, false, "DDI", 1L, 0
+        );
+
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList));
+
+        // Configure null deny list (default behavior)
+        when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
+
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size()); // Code list should not be filtered
+        assertEquals("some-id", result.get(0).id());
+    }
+
+    @Test
+    void shouldFilterMultipleCodeListsInDenyList() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String queryUrl = baseApiUrl + "_query";
+
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+
+        ColecticaItem codeList1 = new ColecticaItem(
+            null, Map.of("fr-FR", "Code List 1"), Map.of("fr-FR", "CL1"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList",
+            "fr.insee", 1, "id-to-filter-1", null, null, "2023-07-04T08:19:29",
+            null, true, false, false, "DDI", 1L, 0
+        );
+
+        ColecticaItem codeList2 = new ColecticaItem(
+            null, Map.of("fr-FR", "Code List 2"), Map.of("fr-FR", "CL2"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList",
+            "fr.insee", 1, "id-to-keep", null, null, "2023-07-04T08:19:29",
+            null, true, false, false, "DDI", 2L, 0
+        );
+
+        ColecticaItem codeList3 = new ColecticaItem(
+            null, Map.of("fr-FR", "Code List 3"), Map.of("fr-FR", "CL3"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList",
+            "other.agency", 1, "id-to-filter-2", null, null, "2023-07-04T08:19:29",
+            null, true, false, false, "DDI", 3L, 0
+        );
+
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2, codeList3));
+
+        // Configure deny list with multiple entries
+        List<ColecticaConfiguration.CodeListDenyEntry> denyList = List.of(
+            new ColecticaConfiguration.CodeListDenyEntry("fr.insee", "id-to-filter-1"),
+            new ColecticaConfiguration.CodeListDenyEntry("other.agency", "id-to-filter-2")
+        );
+        when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
+
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size()); // Only one code list should remain
+        assertEquals("id-to-keep", result.get(0).id());
+        assertEquals("Code List 2", result.get(0).label());
     }
 }
