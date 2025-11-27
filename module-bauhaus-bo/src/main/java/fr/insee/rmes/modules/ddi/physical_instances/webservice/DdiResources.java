@@ -5,12 +5,14 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodesListResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,7 +68,7 @@ public class DdiResources {
     @GetMapping("/physical-instance")
     public ResponseEntity<List<PartialPhysicalInstanceResponse>> getPhysicalInstances() {
         List<PartialPhysicalInstance> instances = ddiService.getPhysicalInstances();
-        
+
         List<PartialPhysicalInstanceResponse> responses = instances.stream()
                 .map(instance -> {
                     var response = PartialPhysicalInstanceResponse.fromDomain(instance);
@@ -78,7 +80,28 @@ public class DdiResources {
                     return response;
                 })
                 .toList();
-        
+
+        return ResponseEntity.ok()
+                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+                .body(responses);
+    }
+
+    @GetMapping("/codes-list")
+    public ResponseEntity<List<PartialCodesListResponse>> getCodesLists() {
+        List<PartialCodesList> codesLists = ddiService.getCodesLists();
+
+        List<PartialCodesListResponse> responses = codesLists.stream()
+                .map(codesList -> {
+                    var response = PartialCodesListResponse.fromDomain(codesList);
+                    response.add(linkTo(DdiResources.class)
+                            .slash("codes-list")
+                            .slash(codesList.agency())
+                            .slash(codesList.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
+
         return ResponseEntity.ok()
                 .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
                 .body(responses);
