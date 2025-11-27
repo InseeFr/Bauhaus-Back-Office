@@ -25,6 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -234,29 +235,49 @@ class DdiResourcesTest {
     void shouldConvertDdi4ToDdi3() {
         // Given
         Ddi4Response ddi4Request = createMockDdi4Response();
-        Ddi3Response expectedDdi3Response = createMockDdi3Response();
-        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3(ddi4Request)).thenReturn(expectedDdi3Response);
+        String expectedXml = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <ddi:FragmentInstance xmlns:r="ddi:reusable:3_3" xmlns:ddi="ddi:instance:3_3">
+              <ddi:TopLevelReference>
+                <r:Agency>fr.insee</r:Agency>
+                <r:ID>test-id</r:ID>
+                <r:Version>1</r:Version>
+                <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
+              </ddi:TopLevelReference>
+              <ddi:Fragment xmlns:r="ddi:reusable:3_3">
+                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2024-06-03T14:29:23.4049817Z">
+                  <r:URN>urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1</r:URN>
+                  <r:Agency>fr.insee</r:Agency>
+                  <r:ID>test-id</r:ID>
+                  <r:Version>1</r:Version>
+                </PhysicalInstance>
+              </ddi:Fragment>
+            </ddi:FragmentInstance>
+            """;
+        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(ddi4Request)).thenReturn(expectedXml);
 
         // When
-        ResponseEntity<Ddi3Response> result = ddiResources.convertDdi4ToDdi3(ddi4Request);
+        ResponseEntity<String> result = ddiResources.convertDdi4ToDdi3(ddi4Request);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
 
-        Ddi3Response responseBody = result.getBody();
+        String responseBody = result.getBody();
         assertNotNull(responseBody);
-        assertNotNull(responseBody.items());
-        assertEquals(1, responseBody.items().size());
 
-        Ddi3Response.Ddi3Item item = responseBody.items().get(0);
-        assertEquals("a51e85bb-6259-4488-8df2-f08cb43485f8", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("test-id", item.identifier());
-        assertEquals("1", item.version());
+        // Verify XML structure
+        assertTrue(responseBody.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+        assertTrue(responseBody.contains("<ddi:FragmentInstance"));
+        assertTrue(responseBody.contains("<ddi:TopLevelReference>"));
+        assertTrue(responseBody.contains("<r:Agency>fr.insee</r:Agency>"));
+        assertTrue(responseBody.contains("<r:ID>test-id</r:ID>"));
+        assertTrue(responseBody.contains("<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"));
+        assertTrue(responseBody.contains("<ddi:Fragment"));
+        assertTrue(responseBody.contains("</ddi:FragmentInstance>"));
 
-        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3(ddi4Request);
+        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3Xml(ddi4Request);
     }
 
     @Test
@@ -294,25 +315,22 @@ class DdiResourcesTest {
             "file:/jsonSchema.json",
             null, null, null, null, null, null
         );
-        Ddi3Response emptyDdi3 = new Ddi3Response(
-            new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-            List.of()
-        );
-        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3(emptyDdi4)).thenReturn(emptyDdi3);
+        String emptyXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\"/>";
+        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(emptyDdi4)).thenReturn(emptyXml);
 
         // When
-        ResponseEntity<Ddi3Response> result = ddiResources.convertDdi4ToDdi3(emptyDdi4);
+        ResponseEntity<String> result = ddiResources.convertDdi4ToDdi3(emptyDdi4);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
 
-        Ddi3Response responseBody = result.getBody();
+        String responseBody = result.getBody();
         assertNotNull(responseBody);
-        assertNotNull(responseBody.items());
-        assertEquals(0, responseBody.items().size());
+        assertTrue(responseBody.contains("<ddi:FragmentInstance"));
 
-        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3(emptyDdi4);
+        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3Xml(emptyDdi4);
     }
 
     @Test
