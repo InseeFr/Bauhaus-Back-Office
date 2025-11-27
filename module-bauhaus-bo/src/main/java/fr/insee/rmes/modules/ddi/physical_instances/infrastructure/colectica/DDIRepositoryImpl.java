@@ -20,10 +20,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -41,21 +44,25 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
+    private final ColecticaConfiguration colecticaConfiguration;
     private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private Ddi4Response cachedDdi4Response;
     private String cachedAuthToken;
+    private Set<String> denyListCache;
 
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ObjectMapper objectMapper,
-            DDI3toDDI4ConverterService ddi3ToDdi4Converter
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            ColecticaConfiguration colecticaConfiguration
             ) {
         this.restTemplate = restTemplate;
         this.instanceConfiguration = instanceConfiguration;
         this.objectMapper = objectMapper;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
+        this.colecticaConfiguration = colecticaConfiguration;
     }
 
     /**
@@ -163,6 +170,60 @@ public class DDIRepositoryImpl implements DDIRepository {
                     .toList();
         });
     }
+
+    @Override
+    public List<PartialCodesList> getCodesLists() {
+        logger.info("Getting codes lists from Colectica API via HTTP");
+
+        return executeWithAuth(token -> {
+            // Set up the request with authorization header
+            String url = instanceConfiguration.baseApiUrl() + "_query";
+
+            // Create request body with CodeList itemType
+            QueryRequest requestBody = new QueryRequest(List.of("8b108ef8-b642-4484-9c49-f88e4bf7cf1d"));
+
+            // Create headers with Bearer token and Content-Type
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Create HTTP entity with headers and body
+            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // Make the request with authentication
+            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+
+            int totalCount = response.results().size();
+            logger.debug("Received {} code lists from Colectica API", totalCount);
+
+            List<PartialCodesList> result = response.results().stream()
+                    .filter(item -> !isCodeListInDenyList(item.agencyId(), item.identifier()))
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialCodesList(id, label, date, agency);
+                    })
+                    .toList();
+
+            int filteredCount = totalCount - result.size();
+            if (filteredCount > 0) {
+                logger.info("Filtered {} code list(s) from {} total using deny list (returned {} code lists)",
+                        filteredCount, totalCount, result.size());
+            } else {
+                logger.debug("No code lists filtered, returning all {} code lists", result.size());
+            }
+
+            return result;
+        });
+    }
     
     private String extractLabelFromItem(ColecticaItem item) {
         // Extract value from ItemName or Label (both can have language variants)
@@ -190,6 +251,61 @@ public class DDIRepositoryImpl implements DDIRepository {
             label = languageMap.values().stream().findFirst().orElse(null);
         }
         return label;
+    }
+
+    /**
+     * Check if a code list is in the deny list.
+     *
+     * <p>This method uses a cached HashSet for O(1) lookup performance.
+     * The cache is lazily initialized on first access.
+     *
+     * <p>Code lists matching entries in the deny list (based on agencyId and id)
+     * will be excluded from the results. This is useful for filtering out
+     * deprecated, test, or otherwise unwanted code lists from the Colectica repository.
+     *
+     * <p>Configuration example in properties file:
+     * <pre>
+     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].agency-id = fr.insee
+     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].id = 2a22ba00-a977-4a61-a582-99025c6b0582
+     * </pre>
+     *
+     * @param agencyId The agency ID of the code list to check
+     * @param id The ID of the code list to check
+     * @return true if the code list should be filtered out, false otherwise
+     * @see ColecticaConfiguration.CodeListDenyEntry
+     */
+    private boolean isCodeListInDenyList(String agencyId, String id) {
+        if (colecticaConfiguration == null || colecticaConfiguration.codeListDenyList() == null) {
+            return false;
+        }
+
+        // Lazy initialization of cache for O(1) lookups
+        if (denyListCache == null) {
+            denyListCache = colecticaConfiguration.codeListDenyList().stream()
+                    .map(entry -> createDenyListKey(entry.agencyId(), entry.id()))
+                    .collect(Collectors.toSet());
+            logger.info("Initialized code list deny list cache with {} entries", denyListCache.size());
+        }
+
+        String key = createDenyListKey(agencyId, id);
+        boolean isDenied = denyListCache.contains(key);
+
+        if (isDenied) {
+            logger.debug("Filtering out code list: agencyId={}, id={}", agencyId, id);
+        }
+
+        return isDenied;
+    }
+
+    /**
+     * Creates a unique key for deny list lookups by combining agencyId and id.
+     *
+     * @param agencyId The agency ID
+     * @param id The code list ID
+     * @return A unique key string in format "agencyId:id"
+     */
+    private String createDenyListKey(String agencyId, String id) {
+        return agencyId + ":" + id;
     }
 
     /**

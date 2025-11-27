@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -25,6 +26,12 @@ public class DDIServiceImpl implements DDIService {
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Starting to get physical instances list");
         return ddiRepository.getPhysicalInstances();
+    }
+
+    @Override
+    public List<PartialCodesList> getCodesLists() {
+        logger.info("Starting to get codes lists");
+        return ddiRepository.getCodesLists();
     }
 
 
