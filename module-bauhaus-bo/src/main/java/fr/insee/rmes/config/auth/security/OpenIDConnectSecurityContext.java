@@ -3,7 +3,6 @@ package fr.insee.rmes.config.auth.security;
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
-import fr.insee.rmes.domain.exceptions.MissingStampException;
 import fr.insee.rmes.domain.auth.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.port.serverside.UserDecoder;
@@ -111,15 +110,11 @@ public class OpenIDConnectSecurityContext {
         var id = (String) claims.get(jwtProperties.getIdClaim());
         var stamp = extractStamp(claims, id);
 
-        if(stamp.isEmpty()){
-            throw new MissingStampException("The User " + id + " does not have a stamp");
-        }
-
         var source = (String) claims.get(jwtProperties.getSourceClaim());
         var roles = extractRoles(claims).toList();
 
         logger.debug("Current User is {}, {} with roles {} from source {}", id, stamp, roles, source);
-        return new User(id, roles, stamp.get(), source);
+        return new User(id, roles, stamp.orElseGet(null), source);
     }
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {

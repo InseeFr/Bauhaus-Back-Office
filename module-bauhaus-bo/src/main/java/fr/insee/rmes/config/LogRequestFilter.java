@@ -56,7 +56,7 @@ public class LogRequestFilter extends AbstractRequestLoggingFilter {
             logger.error("while authenticating user", e);
             currentUser = empty();
         }
-        return currentUser.map(user -> user.id() + " " + user.getStamp()).orElse("No authentication needed");
+        return currentUser.map(user -> user.id() + " " + user.stamp().stamp()).orElse("No authentication needed");
     }
 
 }

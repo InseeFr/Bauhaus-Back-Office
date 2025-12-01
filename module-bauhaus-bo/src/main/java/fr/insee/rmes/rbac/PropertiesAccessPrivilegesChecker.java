@@ -53,8 +53,12 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
         return privilegeAndStrategy.map(value -> switch (value.strategy()) {
             case ALL -> true;
             case STAMP -> {
+                if(user.stamp() == null){
+                    yield false;
+                }
+
                 var stamps = getObjectStampChecker(module).getStamps(id);
-                yield stamps.isEmpty() || stamps.contains(user.getStamp());
+                yield stamps.isEmpty() || stamps.contains(user.stamp().stamp());
             }
             case NONE -> false;
         }).orElse(false);
