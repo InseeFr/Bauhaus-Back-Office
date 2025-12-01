@@ -114,7 +114,11 @@ public class OpenIDConnectSecurityContext {
         var roles = extractRoles(claims).toList();
 
         logger.debug("Current User is {}, {} with roles {} from source {}", id, stamp, roles, source);
-        return new User(id, roles, stamp.orElseGet(null), source);
+
+        if(stamp.isEmpty()){
+            return new User(id, roles, null, source);
+        }
+        return new User(id, roles, stamp.get(), source);
     }
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
