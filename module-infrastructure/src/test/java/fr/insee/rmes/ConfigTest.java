@@ -27,8 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
         "fr.insee.rmes.bauhaus.links.baseURI=http://test.links/",
         "fr.insee.rmes.bauhaus.documents.graph=/documents",
         "fr.insee.rmes.bauhaus.storage.document.gestion=/storage/gestion",
-        "fr.insee.rmes.bauhaus.storage.document.publication=/storage/pub",
-        "fr.insee.rmes.bauhaus.storage.document.publication.interne=/storage/int",
         "fr.insee.web4g.baseURL=http://web4g.test/",
         "fr.insee.rmes.bauhaus.products.graph=/products",
         "fr.insee.rmes.bauhaus.products.baseURI=http://test.products/",

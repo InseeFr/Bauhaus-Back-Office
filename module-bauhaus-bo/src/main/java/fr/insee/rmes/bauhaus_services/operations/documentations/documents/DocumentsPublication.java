@@ -1,13 +1,16 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.FilesOperations;
+import fr.insee.rmes.modules.commons.configuration.StorageProperties;
+import fr.insee.rmes.modules.commons.domain.model.Document;
+import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.modules.commons.infrastructure.minio.MinioConfig;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -32,10 +35,16 @@ public class DocumentsPublication  extends RdfService{
     private final FilesOperations filesOperations;
 
 	static final Logger logger = LoggerFactory.getLogger(DocumentsPublication.class);
+    private final StorageProperties storageProperties;
 
-    public DocumentsPublication(DocumentsUtils docUtils, FilesOperations filesOperations) {
+    public DocumentsPublication(
+            DocumentsUtils docUtils,
+            FilesOperations filesOperations,
+            StorageProperties storageProperties
+    ) {
         this.docUtils = docUtils;
         this.filesOperations = filesOperations;
+        this.storageProperties = storageProperties;
     }
 
     public void publishAllDocumentsInSims(String idSims) throws RmesException {
@@ -51,8 +60,10 @@ public class DocumentsPublication  extends RdfService{
 			String originalPath = doc.getValue();
 			String filename = DocumentsUtils.getDocumentNameFromUrl(originalPath);
 			// Publish the physical files
-			copyFileInPublicationFolders(originalPath);
-			// Change url in document (getModelToPublish) and publish the RDF
+
+            filesOperations.copy(new Document(this.storageProperties.directoryGestion(), filename), new Document(this.storageProperties.directoryPublication(), filename));
+
+            // Change url in document (getModelToPublish) and publish the RDF
 			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
 			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.labelType());
 		}
@@ -67,10 +78,7 @@ public class DocumentsPublication  extends RdfService{
 
 	}
 
-	private void copyFileInPublicationFolders(String originalPath){
-        String documentsStoragePublicationExterne = config.getDocumentsStoragePublicationExterne();
-        filesOperations.copyFromGestionToPublication(originalPath, documentsStoragePublicationExterne);
-	}
+
 
 
 

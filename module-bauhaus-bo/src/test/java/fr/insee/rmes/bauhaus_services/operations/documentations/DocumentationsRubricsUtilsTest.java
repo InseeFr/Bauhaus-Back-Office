@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.FileSystemOperation;
+import fr.insee.rmes.modules.commons.infrastructure.filessystem.FileSystemOperation;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.config.ConfigStub;
