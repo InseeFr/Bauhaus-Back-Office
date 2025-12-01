@@ -1,6 +1,6 @@
 package fr.insee.rmes.testcontainers.minio;
 
-import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
+import fr.insee.rmes.modules.commons.infrastructure.minio.MinioFilesOperation;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.StatObjectArgs;
@@ -46,16 +46,16 @@ class TestMinioFilesOperation {
 
         Path absolutePathInGestion = Path.of("/mnt/applishare/rmes/data/storage/documents").resolve(nomFichier);
         String contenuFichier = "Test";
-        minioFilesOperation.writeToDirectoryGestion(new ByteArrayInputStream(contenuFichier.getBytes()), absolutePathInGestion);
+        minioFilesOperation.write(new ByteArrayInputStream(contenuFichier.getBytes()), absolutePathInGestion);
         assertThat(minioFilesOperation.dirExists(Path.of(minioFilesOperation.directoryGestion()))).isTrue();
-        assertThat(minioFilesOperation.existsInStorageGestion(nomFichier)).isTrue();
+        assertThat(minioFilesOperation.exists(nomFichier)).isTrue();
 
         minioFilesOperation.copyFromGestionToPublication(String.valueOf(absolutePathInGestion), "/mnt/applishare/rmes/data/storage/documents/tempPub1");
         assertThat(minioFilesOperation.dirExists(Path.of(minioFilesOperation.directoryPublication()))).isTrue();
         assertThat(fileExistsInPublication(minioClient, minioFilesOperation, nomFichier)
         ).isTrue();
 
-        assertThat(new String(minioFilesOperation.readInDirectoryGestion(nomFichier).readAllBytes())).isEqualTo(contenuFichier);
+        assertThat(new String(minioFilesOperation.read(nomFichier).readAllBytes())).isEqualTo(contenuFichier);
     }
 
 

@@ -1,0 +1,22 @@
+{
+  "name": "bauhaus-colectica-proxy",
+  "version": "1.0.0",
+  "description": "Netlify proxy for Colectica API",
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "netlify build",
+    "deploy": "netlify deploy",
+    "deploy:prod": "netlify deploy --prod",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@netlify/functions": "^2.4.1",
+    "fast-xml-parser": "^4.3.4",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.10.1"
+  }
+}

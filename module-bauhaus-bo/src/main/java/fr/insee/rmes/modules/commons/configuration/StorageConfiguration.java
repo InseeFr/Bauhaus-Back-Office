@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.commons.configuration;
 
-import fr.insee.rmes.Config;
-import fr.insee.rmes.bauhaus_services.FileSystemOperation;
-import fr.insee.rmes.bauhaus_services.FilesOperations;
-import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
+import fr.insee.rmes.modules.commons.infrastructure.filessystem.FileSystemOperation;
+import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
+import fr.insee.rmes.modules.commons.infrastructure.minio.MinioFilesOperation;
+import fr.insee.rmes.modules.commons.infrastructure.minio.MinioConfig;
 import io.minio.MinioClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +13,15 @@ import org.springframework.context.annotation.Profile;
 public class StorageConfiguration {
 
     @Bean
+    @Profile("! s3")
+    public FilesOperations filesSytemOperations() {
+        return new FileSystemOperation();
+    }
+
+    @Bean
     @Profile("s3")
     public FilesOperations filesMinioOperations(MinioConfig minioConfig) {
-        return new MinioFilesOperation(minioClient(minioConfig), minioConfig.bucketName(),minioConfig.directoryGestion(),minioConfig.directoryPublication());
+        return new MinioFilesOperation(minioClient(minioConfig), minioConfig.bucketName());
     }
 
     private MinioClient minioClient(MinioConfig minioConfig) {
@@ -24,12 +30,4 @@ public class StorageConfiguration {
                 .credentials(minioConfig.accessName(), minioConfig.secretKey())
                 .build();
     }
-
-
-    @Bean
-    @Profile("! s3")
-    public FilesOperations filesSytemOperations(Config config) {
-        return new FileSystemOperation(config);
-    }
-
 }
