@@ -43,7 +43,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldDecodeJwtWithAllClaims() throws MissingUserInformationException {
+    void should_decode_jwt_with_all_claims() throws MissingUserInformationException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
@@ -61,14 +61,14 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldReturnEmptyForAnonymousUser() throws MissingUserInformationException {
+    void should_return_empty_for_anonymous_user() throws MissingUserInformationException {
         Optional<User> result = userDecoder.fromPrincipal("anonymousUser");
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    void shouldReturnUserWhenPrincipalIsAlreadyUser() throws MissingUserInformationException {
+    void should_return_user_when_principal_is_already_user() throws MissingUserInformationException {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
 
         Optional<User> result = userDecoder.fromPrincipal(user);
@@ -78,14 +78,14 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldReturnEmptyForUnknownPrincipalType() throws MissingUserInformationException {
+    void should_return_empty_for_unknown_principal_type() throws MissingUserInformationException {
         Optional<User> result = userDecoder.fromPrincipal(new Object());
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    void shouldThrowExceptionWhenClaimsAreEmpty() {
+    void should_throw_exception_when_claims_are_empty() {
         when(jwt.getClaims()).thenReturn(Map.of());
 
         assertThatThrownBy(() -> userDecoder.fromPrincipal(jwt))
@@ -93,7 +93,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenStampIsMissing() {
+    void should_throw_exception_when_stamp_is_missing() {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("source", "insee");
@@ -108,7 +108,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldExtractStampFromInseeGroups() throws MissingUserInformationException {
+    void should_extract_stamp_from_insee_groups() throws MissingUserInformationException {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
         when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
 
@@ -128,7 +128,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldPreferStampClaimOverInseeGroups() throws MissingUserInformationException {
+    void should_prefer_stamp_claim_over_insee_groups() throws MissingUserInformationException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-DIRECT");
@@ -145,7 +145,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldHandleEmptyRoles() throws MissingUserInformationException {
+    void should_handle_empty_roles() throws MissingUserInformationException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
@@ -161,7 +161,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldHandleNullSource() throws MissingUserInformationException {
+    void should_handle_null_source() throws MissingUserInformationException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
@@ -177,7 +177,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldExtractMultipleRoles() throws MissingUserInformationException {
+    void should_extract_multiple_roles() throws MissingUserInformationException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
@@ -193,7 +193,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldHandleInseeGroupsWithNoMatchingSuffix() {
+    void should_handle_insee_groups_with_no_matching_suffix() {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
         when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
 
@@ -211,7 +211,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldHandleNullInseeGroups() {
+    void should_handle_null_insee_groups() {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
 
         Map<String, Object> claims = new HashMap<>();
@@ -227,7 +227,7 @@ class OidcUserDecoderTest {
     }
 
     @Test
-    void shouldExtractFirstMatchingGroupFromInseeGroups() throws MissingUserInformationException {
+    void should_extract_first_matching_group_from_insee_groups() throws MissingUserInformationException {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
         when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
 

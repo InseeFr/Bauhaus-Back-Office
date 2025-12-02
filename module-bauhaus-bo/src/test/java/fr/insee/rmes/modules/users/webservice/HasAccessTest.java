@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HasAccessTest {
 
     @Test
-    void shouldHaveCorrectRetentionPolicy() {
+    void should_have_correct_retention_policy() {
         Retention retention = HasAccess.class.getAnnotation(Retention.class);
 
         assertThat(retention).isNotNull();
@@ -23,7 +23,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldBeApplicableToMethodsAndTypes() {
+    void should_be_applicable_to_methods_and_types() {
         var target = HasAccess.class.getAnnotation(java.lang.annotation.Target.class);
 
         assertThat(target).isNotNull();
@@ -31,7 +31,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldBeAnnotatedWithPreAuthorize() {
+    void should_be_annotated_with_pre_authorize() {
         PreAuthorize preAuthorize = HasAccess.class.getAnnotation(PreAuthorize.class);
 
         assertThat(preAuthorize).isNotNull();
@@ -44,7 +44,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldHaveModuleAttribute() throws NoSuchMethodException {
+    void should_have_module_attribute() throws NoSuchMethodException {
         Method moduleMethod = HasAccess.class.getMethod("module");
 
         assertThat(moduleMethod).isNotNull();
@@ -52,7 +52,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldHavePrivilegeAttribute() throws NoSuchMethodException {
+    void should_have_privilege_attribute() throws NoSuchMethodException {
         Method privilegeMethod = HasAccess.class.getMethod("privilege");
 
         assertThat(privilegeMethod).isNotNull();
@@ -60,7 +60,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldBeUsableOnMethod() {
+    void should_be_usable_on_method() {
         // Create a test class with the annotation
         class TestController {
             @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
@@ -84,7 +84,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldBeUsableOnType() {
+    void should_be_usable_on_type() {
         @HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
         class TestController {
         }
@@ -97,7 +97,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldSupportDifferentModules() {
+    void should_support_different_modules() {
         class TestController {
             @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
             public void datasetMethod() {}
@@ -126,7 +126,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldSupportAllPrivilegeTypes() {
+    void should_support_all_privilege_types() {
         class TestController {
             @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.CREATE)
             public void createMethod() {}
@@ -170,7 +170,7 @@ class HasAccessTest {
     }
 
     @Test
-    void shouldAllowCombinationOfAllModulesAndPrivileges() {
+    void should_allow_combination_of_all_modules_and_privileges() {
         // Test a representative sample of module/privilege combinations
         class TestController {
             @HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.CREATE)

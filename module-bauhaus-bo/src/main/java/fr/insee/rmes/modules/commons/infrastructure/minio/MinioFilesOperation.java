@@ -101,9 +101,9 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
 
      @Override
     public void delete(Document document) {
-        String objectName = document.name();
+        String objectName = document.getFullPath();
 
-        logger.debug("Delete file with path {} as object {} in bucket {}", document.getFullPath(), objectName, bucketName);
+        logger.debug("Delete file with path {} in bucket {}", objectName, bucketName);
 
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()

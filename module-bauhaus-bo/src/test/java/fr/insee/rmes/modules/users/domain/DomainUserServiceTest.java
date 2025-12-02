@@ -41,7 +41,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldFindStampFromPrincipal() throws MissingUserInformationException {
+    void should_find_stamp_from_principal() throws MissingUserInformationException {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
         Object principal = "somePrincipal";
 
@@ -55,7 +55,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldReturnNullStampWhenUserNotFound() throws MissingUserInformationException {
+    void should_return_null_stamp_when_user_not_found() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
@@ -67,7 +67,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldGetUser() throws MissingUserInformationException {
+    void should_get_user() throws MissingUserInformationException {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
         Object principal = "somePrincipal";
 
@@ -82,7 +82,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenGetUserFails() throws MissingUserInformationException {
+    void should_throw_exception_when_get_user_fails() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
@@ -92,7 +92,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldComputePrivileges() throws MissingUserInformationException {
+    void should_compute_privileges() throws MissingUserInformationException {
         var user = new User("user123", List.of("ADMIN", "USER"), "STAMP-01", "insee");
         Object principal = "somePrincipal";
 
@@ -112,7 +112,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldComputePrivilegesWithMultipleModules() throws MissingUserInformationException {
+    void should_compute_privileges_with_multiple_modules() throws MissingUserInformationException {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
         Object principal = "somePrincipal";
 
@@ -135,7 +135,7 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void shouldHandleEmptyRoles() throws MissingUserInformationException {
+    void should_handle_empty_roles() throws MissingUserInformationException {
         var user = new User("user123", List.of(), "STAMP-01", "insee");
         Object principal = "somePrincipal";
 

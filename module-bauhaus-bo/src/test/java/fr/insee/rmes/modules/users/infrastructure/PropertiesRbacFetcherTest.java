@@ -39,7 +39,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldGetPrivilegesByRole() {
+    void should_get_privileges_by_role() {
         var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var createPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
 
@@ -61,7 +61,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenRoleNotFound() {
+    void should_throw_exception_when_role_not_found() {
         when(rbacConfiguration.allModulesAccessPrivileges()).thenReturn(Set.of());
         createRbacFetcher();
 
@@ -71,7 +71,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldGetApplicationPrivilegesByRole() {
+    void should_get_application_privileges_by_role() {
         var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var createPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
 
@@ -98,7 +98,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenApplicationNotFound() {
+    void should_throw_exception_when_application_not_found() {
         var conceptPrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of());
         var adminRole = new AllModuleAccessPrivileges(
             new AllModuleAccessPrivileges.RoleName("ADMIN"),
@@ -113,7 +113,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldGetApplicationActionStrategyByRole() {
+    void should_get_application_action_strategy_by_role() {
         var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var conceptPrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(readPrivilege));
         var adminRole = new AllModuleAccessPrivileges(
@@ -134,7 +134,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldReturnNoneStrategyWhenRoleNotFoundInGetApplicationActionStrategyByRole() {
+    void should_return_none_strategy_when_role_not_found_in_get_application_action_strategy_by_role() {
         when(rbacConfiguration.allModulesAccessPrivileges()).thenReturn(Set.of());
         createRbacFetcher();
 
@@ -148,7 +148,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldReturnMinStrategyWhenMultipleRoles() {
+    void should_return_min_strategy_when_multiple_roles() {
         var readAllPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var readStampPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
 
@@ -178,7 +178,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldComputePrivileges() {
+    void should_compute_privileges() {
         var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var createPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
 
@@ -205,7 +205,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldComputePrivilegesForMultipleRoles() {
+    void should_compute_privileges_for_multiple_roles() {
         var readAllPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var readStampPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
         var createPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
@@ -244,7 +244,7 @@ class PropertiesRbacFetcherTest {
     }
 
     @Test
-    void shouldFallbackToDefaultRoleWhenNoRolesMatch() {
+    void should_fallback_to_default_role_when_no_roles_match() {
         var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
         var conceptPrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(readPrivilege));
 
