@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.graphdb.ObjectType;
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
 import fr.insee.rmes.graphdb.ontologies.EVOC;

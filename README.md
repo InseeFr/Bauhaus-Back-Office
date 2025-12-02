@@ -14,10 +14,8 @@ We have set up Gitleaks on the project with a Git `pre-commit` hook.
 To make it effective, you need to run `mvn install -DskipTests` beforehand.
 
 Roadmap
+- Supprimer le repertoire swagger/model
 - Revoir les propriete et utiliser des @ConfigurationProperties et des @Values si pas besoin de beaucoup de choses
-- Minimiser au maximum le commons -
-  - shared-kernel -> domain commun a toute l'application : model, les ports
-  - commons - pour les webservice "technique", et les infrastructure
 - Demander a l'equipe si le swagger est encore utile ? 
   - Si non, on vire et on migre vers des endpoints Insomnia
   - Si ouim mettre les @ApiResponse locallement a la methode

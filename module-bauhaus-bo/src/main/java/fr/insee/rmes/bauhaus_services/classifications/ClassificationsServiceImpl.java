@@ -8,7 +8,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
 import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
