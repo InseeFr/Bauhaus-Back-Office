@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.commons.domain.model;
+package fr.insee.rmes.modules.shared_kernel.domain.model;
 
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedLocalisedLabelException;
 import org.apache.commons.lang3.StringUtils;

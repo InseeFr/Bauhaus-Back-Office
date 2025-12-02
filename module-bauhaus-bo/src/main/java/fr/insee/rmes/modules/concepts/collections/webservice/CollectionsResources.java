@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/concepts/collections")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "ConceptsCollections", description = "Concept Collections API")
+@Tag(name = "Collections V2", description = "Concept Collections API")
 @ConditionalOnModule("concepts")
 public class CollectionsResources {
     private final CollectionsService service;

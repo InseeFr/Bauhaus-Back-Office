@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.organisations.domain;
 
-import fr.insee.rmes.modules.commons.domain.model.Lang;
-import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;

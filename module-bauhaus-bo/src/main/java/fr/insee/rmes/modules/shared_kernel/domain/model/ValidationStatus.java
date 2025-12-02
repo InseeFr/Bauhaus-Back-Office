@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.commons.domain.model;
+package fr.insee.rmes.modules.shared_kernel.domain.model;
 
 public enum ValidationStatus {
 	MODIFIED ("Modified"),

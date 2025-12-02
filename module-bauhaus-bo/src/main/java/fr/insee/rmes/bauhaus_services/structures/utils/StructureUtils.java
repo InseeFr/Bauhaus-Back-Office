@@ -11,7 +11,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.structures.structures.domain.model.ComponentDefinition;
 import fr.insee.rmes.modules.structures.components.domain.model.MutualizedComponent;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;

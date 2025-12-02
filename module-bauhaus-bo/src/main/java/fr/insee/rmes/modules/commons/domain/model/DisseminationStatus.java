@@ -16,21 +16,9 @@ public enum DisseminationStatus {
         this.url = url;
     }
 
-	public String getLabel() {
-		return label;
-	}
-	public String getUrl() {
-		return url;
-	}
-	public static String getEnumUrl(String label) {
-		for (DisseminationStatus ds : DisseminationStatus.values()){
-            if(label.equals(ds.getLabel())) return ds.getUrl();
-        }
-        return null;
-	}
 	public static String getEnumLabel(String url) {
 		for (DisseminationStatus ds : DisseminationStatus.values()){
-            if(url.equals(ds.getUrl())) return ds.getLabel();
+            if(url.equals(ds.url)) return ds.label;
         }
         return null;
 	}

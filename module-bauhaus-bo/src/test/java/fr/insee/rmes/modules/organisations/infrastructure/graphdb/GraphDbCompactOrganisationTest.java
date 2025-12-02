@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
-import fr.insee.rmes.modules.commons.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.jupiter.api.Test;
