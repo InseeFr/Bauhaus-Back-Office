@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.concepts.collections.domain.port.serverside;
+package fr.insee.rmes.modules.concepts.collections.domain;
 
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 

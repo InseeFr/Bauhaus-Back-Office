@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.commons.infrastructure.minio;
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import io.minio.*;
 import io.minio.errors.*;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+@ServerSideAdaptor
 public record MinioFilesOperation(MinioClient minioClient, String bucketName) implements FilesOperations {
 
     /**

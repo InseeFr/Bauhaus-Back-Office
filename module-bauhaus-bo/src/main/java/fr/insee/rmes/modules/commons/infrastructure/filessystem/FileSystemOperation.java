@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.commons.infrastructure.filessystem;
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.nio.file.StandardCopyOption;
 
 import static java.util.Objects.requireNonNull;
 
+@ServerSideAdaptor
 public class FileSystemOperation implements FilesOperations {
 
     @Override

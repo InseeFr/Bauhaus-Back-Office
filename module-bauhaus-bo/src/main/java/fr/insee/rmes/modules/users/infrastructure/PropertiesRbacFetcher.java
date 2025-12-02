@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownPrivilegeException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownRoleException;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@ServerSideAdaptor
 @Service
 public class PropertiesRbacFetcher implements RbacFetcher {
 

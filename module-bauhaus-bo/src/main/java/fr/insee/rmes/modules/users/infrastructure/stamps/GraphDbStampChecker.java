@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.users.infrastructure.stamps;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.graphdb.ontologies.QB;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
+@ServerSideAdaptor
 @Repository
 public class GraphDbStampChecker implements StampChecker {
     private final RepositoryGestion repositoryGestion;

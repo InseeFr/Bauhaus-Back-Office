@@ -15,4 +15,6 @@ public class TestNamingArchTest {
             .that().areAnnotatedWith(Test.class).or().areAnnotatedWith(ArchTest.class)
             .should().haveNameMatching("^[a-z][a-z0-9]*(_[a-z0-9]+)*$")
             .because("Test methods should use snake_case naming convention (e.g., ma_methode_test) instead of PascalCase (e.g., MaMethodeTest)");
+
+
 }
