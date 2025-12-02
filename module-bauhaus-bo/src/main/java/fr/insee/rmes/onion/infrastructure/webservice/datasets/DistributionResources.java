@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -80,7 +81,12 @@ public class DistributionResources {
         if (user.hasRole(Roles.ADMIN)) {
             return this.datasetService.getDatasets();
         }
-        return this.datasetService.getDatasetsForDistributionCreation(user.getStamp());
+
+        if(user.stamp() == null){
+            return Collections.emptyList();
+        }
+
+        return this.datasetService.getDatasetsForDistributionCreation(user.stamp().stamp());
     }
 
     @GetMapping(value = "/search", produces = "application/json")

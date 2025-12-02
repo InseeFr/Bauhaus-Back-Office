@@ -26,7 +26,4 @@ public record User(String id, List<String> roles, Stamp stamp, Source source) {
         return roles.contains(role);
     }
 
-    public String getStamp(){
-        return stamp.stamp();
-    }
 }
