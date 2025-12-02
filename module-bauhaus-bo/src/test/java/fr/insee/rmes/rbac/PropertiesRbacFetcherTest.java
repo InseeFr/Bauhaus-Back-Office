@@ -32,7 +32,7 @@ class PropertiesRbacFetcherTest {
 
     @Test
     void shouldReturnEmptySetIfEmptyRolesList(){
-        assertThat(rbacFetcher.computePrivileges(Collections.emptyList())).hasSize(18);
+        assertThat(rbacFetcher.computePrivileges(Collections.emptyList())).hasSize(0);
     }
 
     @Test

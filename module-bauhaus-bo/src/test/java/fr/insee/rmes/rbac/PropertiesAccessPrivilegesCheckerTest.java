@@ -176,4 +176,122 @@ class PropertiesAccessPrivilegesCheckerTest {
 
         assertFalse(result);
     }
+
+    @Test
+    void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForCreate() throws RmesException {
+        var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
+        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "CREATE", "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForUpdate() throws RmesException {
+        var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
+        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "UPDATE", "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForDelete() throws RmesException {
+        var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
+        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.DELETE, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "DELETE", "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForPublish() throws RmesException {
+        var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
+        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.PUBLISH, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "PUBLISH", "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForAdministration() throws RmesException {
+        var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
+        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.ADMINISTRATION, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "ADMINISTRATION", "","principal");
+
+        assertFalse(result);
+    }
+
+    @Test
+    void shouldReturnTrueWhenStrategyIsAllAndUserHasNullStampForRead() throws RmesException {
+        var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
+        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "READ", "","principal");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void shouldReturnTrueWhenStrategyIsAllAndUserHasStampForCreate() throws RmesException {
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
+        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "CREATE", "","principal");
+
+        assertTrue(result);
+    }
+
+    @Test
+    void shouldReturnTrueWhenStrategyIsAllAndUserHasStampForUpdate() throws RmesException {
+        when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
+        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+                new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
+                        new Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.ALL)
+                ))
+        ));
+
+        boolean result = checker.hasAccess("OPERATION_FAMILY", "UPDATE", "","principal");
+
+        assertTrue(result);
+    }
 }
