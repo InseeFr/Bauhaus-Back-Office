@@ -51,7 +51,19 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
 
     private boolean authorizeFromStrategy(RBAC.Module module, Optional<ModuleAccessPrivileges.Privilege> privilegeAndStrategy, String id, User user) {
         return privilegeAndStrategy.map(value -> switch (value.strategy()) {
-            case ALL -> true;
+            case ALL -> {
+                var privilege = privilegeAndStrategy.map(ModuleAccessPrivileges.Privilege::privilege).get();
+;                if ((user.stamp() == null || user.stamp().stamp() == null) && (
+                    privilege.equals(RBAC.Privilege.CREATE) ||
+                    privilege.equals(RBAC.Privilege.UPDATE) ||
+                    privilege.equals(RBAC.Privilege.DELETE) ||
+                    privilege.equals(RBAC.Privilege.PUBLISH) ||
+                    privilege.equals(RBAC.Privilege.ADMINISTRATION)
+                )) {
+                    yield false;
+                }
+                yield true;
+            }
             case STAMP -> {
                 if(user.stamp() == null){
                     yield false;
