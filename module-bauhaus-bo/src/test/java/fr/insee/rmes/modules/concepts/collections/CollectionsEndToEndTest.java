@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -56,8 +57,12 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
                 .toEntity(String.class);
+
         assertThat(entityResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
         String uuid = entityResponse.getBody();
+
+        assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION)).containsExactly("http://localhost:" + serverPort + "/api/concepts/collections/" + uuid);
         //TODO check uuid regexp
         assertThat(uuid).isNotNull();
 

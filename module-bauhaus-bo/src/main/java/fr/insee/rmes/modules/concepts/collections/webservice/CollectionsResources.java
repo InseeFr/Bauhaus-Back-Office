@@ -11,8 +11,12 @@ import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -31,30 +35,27 @@ public class CollectionsResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<List<PartialCollectionResponse>> getAll(){
+    List<PartialCollectionResponse> getAll(){
         try {
-            var collections =  this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
-            return ResponseEntity.ok().body(collections);
+            return this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
         } catch (CollectionsFetchException e) {
-            return  ResponseEntity.internalServerError().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
     @GetMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    ResponseEntity<CollectionResponse> getById(@PathVariable String id){
+    CollectionResponse getById(@PathVariable String id){
         try {
-            return this.service.getCollection(new CollectionId(id)).map(
-                    collection ->  ResponseEntity.ok().body(CollectionResponse.fromDomain(collection))
-            ).orElse(ResponseEntity.notFound().build());
+            return this.service.getCollection(new CollectionId(id)).map(CollectionResponse::fromDomain).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection %s not found".formatted(id)));
         } catch (CollectionsFetchException e) {
-            return  ResponseEntity.internalServerError().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
     @PostMapping
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-    ResponseEntity<String> create(@RequestBody CreateCollectionRequest collection){
+    String create(@RequestBody CreateCollectionRequest collection, HttpServletResponse response){
         try {
             var collectionId = this.service.createCollection(collection.toCommand());
 
@@ -64,11 +65,14 @@ public class CollectionsResources {
                     .buildAndExpand(collectionId.value())
                     .toUri();
 
-            return ResponseEntity.created(location).body(collectionId.value());
+            response.setStatus(HttpStatus.CREATED.value());
+            response.setHeader(HttpHeaders.LOCATION, location.toString());
+
+            return collectionId.value();
         } catch (InvalidCreateCollectionCommandException | MalformedLocalisedLabelException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (CollectionsSaveException e) {
-            return  ResponseEntity.internalServerError().build();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 
