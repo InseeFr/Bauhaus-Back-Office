@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.users.infrastructure;
 
 import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingStampException;
 import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
@@ -20,6 +21,7 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Optional.*;
 
+@ServerSideAdaptor
 public class OidcUserDecoder implements UserDecoder {
     private static final Logger logger = LoggerFactory.getLogger(OidcUserDecoder.class);
     public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";

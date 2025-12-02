@@ -1,5 +1,6 @@
 #
-#Mon Nov 24 15:19:49 GMT 2025
+#Tue Dec 02 13:12:15 GMT 2025
+classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..',\ 'org.slf4j..',\ 'fr.insee.rmes.modules.commons.hexagonal..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=841fd553-aa09-49eb-83ad-dea39c70ea48
 classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..',\ 'org.slf4j..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=f77dab40-c8c2-4aa7-b50e-9eaec47a57ff
 classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=570ba0df-f577-4880-997f-51aa91a71191
 classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=de2165c2-c750-4544-ac2c-16e6684201d9

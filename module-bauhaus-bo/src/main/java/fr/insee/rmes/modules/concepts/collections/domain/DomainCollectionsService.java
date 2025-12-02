@@ -8,7 +8,6 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
-import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.RandomIdGenerator;
 
 import java.util.List;
 import java.util.Optional;

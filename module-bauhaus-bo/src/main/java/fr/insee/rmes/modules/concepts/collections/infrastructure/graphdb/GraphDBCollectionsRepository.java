@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+@ServerSideAdaptor
 @Repository
 public class GraphDBCollectionsRepository implements CollectionsRepository  {
     private final RepositoryGestion repositoryGestion;

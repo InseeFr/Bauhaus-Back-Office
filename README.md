@@ -14,10 +14,8 @@ We have set up Gitleaks on the project with a Git `pre-commit` hook.
 To make it effective, you need to run `mvn install -DskipTests` beforehand.
 
 Roadmap
-- Revoir les exceptions de CollectionsResources pour utiliser throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage(), e);
 - Ajouter un tests dans ArchUnit pour Interdire les @ControllerAdvice ? 
   - garder que des throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage(), e);
-- Creer les annotations @ClientSide, ...
 - Revoir les propriete et utiliser des @ConfigurationProperties et des @Values si pas besoin de beaucoup de choses
 - Minimiser au maximum le commons -
   - shared-kernel -> domain commun a toute l'application : model, les ports
