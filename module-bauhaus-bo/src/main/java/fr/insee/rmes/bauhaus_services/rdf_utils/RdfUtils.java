@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+@Deprecated(forRemoval = true, since = "2025-12-02")
 public class RdfUtils {
 
 	private RdfUtils(){}
