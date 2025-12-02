@@ -45,7 +45,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldGrantAccessForInseeUserWithReadPrivilege() throws MissingUserInformationException {
+    void should_grant_access_for_insee_user_with_read_privilege() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "insee");
         Object principal = "somePrincipal";
 
@@ -57,7 +57,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWhenUserNotFound() throws MissingUserInformationException {
+    void should_deny_access_when_user_not_found() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
@@ -68,7 +68,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldGrantAccessWithAllStrategy() throws MissingUserInformationException {
+    void should_grant_access_with_all_strategy() throws MissingUserInformationException {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -84,7 +84,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWithNoneStrategy() throws MissingUserInformationException {
+    void should_deny_access_with_none_strategy() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -100,7 +100,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldGrantAccessWithStampStrategy_whenStampMatches() throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+    void should_grant_access_with_stamp_strategy_when_stamp_matches() throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -119,7 +119,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWithStampStrategy_whenStampDoesNotMatch() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+    void should_deny_access_with_stamp_strategy_when_stamp_does_not_match() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         var user = new User("user123", List.of("USER"), "STAMP-03", "ssm");
         Object principal = "somePrincipal";
 
@@ -137,7 +137,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldGrantAccessWithStampStrategy_whenNoStampsRequired() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+    void should_grant_access_with_stamp_strategy_when_no_stamps_required() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -155,7 +155,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWhenStampFetchFails() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+    void should_deny_access_when_stamp_fetch_fails() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -173,7 +173,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldHandleDatasetDistributionModule() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+    void should_handle_dataset_distribution_module() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -192,7 +192,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldHandleStructureModule() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+    void should_handle_structure_module() throws Exception, MissingUserInformationException, StampFetchException, UnsupportedModuleException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -210,7 +210,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWhenNoMatchingPrivilege() throws MissingUserInformationException {
+    void should_deny_access_when_no_matching_privilege() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -226,7 +226,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWhenNoMatchingModule() throws MissingUserInformationException {
+    void should_deny_access_when_no_matching_module() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -242,7 +242,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWhenPrivilegeIdentifierIsInvalid() throws MissingUserInformationException {
+    void should_deny_access_when_privilege_identifier_is_invalid() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -254,7 +254,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldDenyAccessWhenModuleIdentifierIsInvalid() throws MissingUserInformationException {
+    void should_deny_access_when_module_identifier_is_invalid() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", "ssm");
         Object principal = "somePrincipal";
 
@@ -266,7 +266,7 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
-    void shouldHandleNullSourceForInseeCheck() throws MissingUserInformationException {
+    void should_handle_null_source_for_insee_check() throws MissingUserInformationException {
         var user = new User("user123", List.of("USER"), "STAMP-01", null);
         Object principal = "somePrincipal";
 

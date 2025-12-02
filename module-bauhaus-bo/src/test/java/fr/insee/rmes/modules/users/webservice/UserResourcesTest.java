@@ -35,7 +35,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldGetUserInformation() throws MissingUserInformationException {
+    void should_get_user_information() throws MissingUserInformationException {
         Object principal = "somePrincipal";
         var privilege1 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
         var privilege2 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
@@ -56,7 +56,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldReturnEmptySetWhenUserHasNoPrivileges() throws MissingUserInformationException {
+    void should_return_empty_set_when_user_has_no_privileges() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userService.computePrivileges(principal)).thenReturn(Set.of());
@@ -68,7 +68,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldThrowUnauthorizedExceptionWhenUserInformationIsMissing() throws MissingUserInformationException {
+    void should_throw_unauthorized_exception_when_user_information_is_missing() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userService.computePrivileges(principal))
@@ -81,7 +81,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldGetStamp() throws MissingUserInformationException {
+    void should_get_stamp() throws MissingUserInformationException {
         Object principal = "somePrincipal";
         Stamp expectedStamp = new Stamp("STAMP-01");
 
@@ -95,7 +95,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldReturnNullStampWhenNotFound() throws MissingUserInformationException {
+    void should_return_null_stamp_when_not_found() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userService.findStampFrom(principal)).thenReturn(null);
@@ -107,7 +107,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldThrowUnauthorizedExceptionWhenStampCannotBeRetrieved() throws MissingUserInformationException {
+    void should_throw_unauthorized_exception_when_stamp_cannot_be_retrieved() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userService.findStampFrom(principal))
@@ -120,7 +120,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldHandleMultipleModulePrivileges() throws MissingUserInformationException {
+    void should_handle_multiple_module_privileges() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
@@ -146,7 +146,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldHandleStampWithEmptyValue() throws MissingUserInformationException {
+    void should_handle_stamp_with_empty_value() throws MissingUserInformationException {
         Object principal = "somePrincipal";
         Stamp emptyStamp = new Stamp("");
 
@@ -159,7 +159,7 @@ class UserResourcesTest {
     }
 
     @Test
-    void shouldHandleDifferentPrincipalTypes() throws MissingUserInformationException {
+    void should_handle_different_principal_types() throws MissingUserInformationException {
         // Test with String principal
         String stringPrincipal = "stringPrincipal";
         Stamp stamp1 = new Stamp("STAMP-01");

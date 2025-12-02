@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ModuleAccessPrivilegesTest {
 
     @Test
-    void shouldCreateModuleAccessPrivileges() {
+    void should_create_module_access_privileges() {
         var privilege1 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL);
         var privilege2 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
 
@@ -24,7 +24,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldCreateEmptyPrivileges() {
+    void should_create_empty_privileges() {
         var modulePrivileges = new ModuleAccessPrivileges(
             RBAC.Module.OPERATION_SERIES,
             Set.of()
@@ -35,7 +35,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldCreatePrivilegeWithAllStrategy() {
+    void should_create_privilege_with_all_strategy() {
         var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.PUBLISH, RBAC.Strategy.ALL);
 
         assertThat(privilege.privilege()).isEqualTo(RBAC.Privilege.PUBLISH);
@@ -43,7 +43,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldCreatePrivilegeWithStampStrategy() {
+    void should_create_privilege_with_stamp_strategy() {
         var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
 
         assertThat(privilege.privilege()).isEqualTo(RBAC.Privilege.UPDATE);
@@ -51,7 +51,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldCreatePrivilegeWithNoneStrategy() {
+    void should_create_privilege_with_none_strategy() {
         var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.DELETE, RBAC.Strategy.NONE);
 
         assertThat(privilege.privilege()).isEqualTo(RBAC.Privilege.DELETE);
@@ -59,7 +59,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldSupportAllModules() {
+    void should_support_all_modules() {
         assertThat(RBAC.Module.CONCEPT_CONCEPT).isNotNull();
         assertThat(RBAC.Module.OPERATION_SERIES).isNotNull();
         assertThat(RBAC.Module.DATASET_DATASET).isNotNull();
@@ -67,7 +67,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldSupportAllPrivileges() {
+    void should_support_all_privileges() {
         assertThat(RBAC.Privilege.CREATE).isNotNull();
         assertThat(RBAC.Privilege.READ).isNotNull();
         assertThat(RBAC.Privilege.UPDATE).isNotNull();
@@ -77,7 +77,7 @@ class ModuleAccessPrivilegesTest {
     }
 
     @Test
-    void shouldSupportAllStrategies() {
+    void should_support_all_strategies() {
         assertThat(RBAC.Strategy.ALL).isNotNull();
         assertThat(RBAC.Strategy.STAMP).isNotNull();
         assertThat(RBAC.Strategy.NONE).isNotNull();

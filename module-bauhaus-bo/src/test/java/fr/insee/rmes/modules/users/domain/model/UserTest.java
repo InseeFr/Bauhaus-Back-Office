@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserTest {
 
     @Test
-    void shouldCreateUserWithAllParameters() {
+    void should_create_user_with_all_parameters() {
         var user = new User("user123", List.of("ADMIN", "USER"), "STAMP-01", "insee");
 
         assertThat(user.id()).isEqualTo("user123");
@@ -20,7 +20,7 @@ class UserTest {
     }
 
     @Test
-    void shouldCreateUserWithoutSource() {
+    void should_create_user_without_source() {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01");
 
         assertThat(user.id()).isEqualTo("user123");
@@ -30,7 +30,7 @@ class UserTest {
     }
 
     @Test
-    void shouldCreateUserWithStampObject() {
+    void should_create_user_with_stamp_object() {
         var stamp = new Stamp("STAMP-02");
         var user = new User("user456", List.of("USER"), stamp, Source.SSM);
 
@@ -42,7 +42,7 @@ class UserTest {
     }
 
     @Test
-    void shouldCreateEmptyUser() {
+    void should_create_empty_user() {
         var emptyUser = User.EMPTY_USER;
 
         assertThat(emptyUser.id()).isNull();
@@ -52,7 +52,7 @@ class UserTest {
     }
 
     @Test
-    void shouldCheckIfUserHasRole_whenRoleExists() {
+    void should_check_if_user_has_role_when_role_exists() {
         var user = new User("user123", List.of("ADMIN", "USER", "MODERATOR"), "STAMP-01");
 
         assertThat(user.hasRole("ADMIN")).isTrue();
@@ -61,7 +61,7 @@ class UserTest {
     }
 
     @Test
-    void shouldCheckIfUserHasRole_whenRoleDoesNotExist() {
+    void should_check_if_user_has_role_when_role_does_not_exist() {
         var user = new User("user123", List.of("USER"), "STAMP-01");
 
         assertThat(user.hasRole("ADMIN")).isFalse();
@@ -69,14 +69,14 @@ class UserTest {
     }
 
     @Test
-    void shouldCheckIfUserHasRole_whenNoRoles() {
+    void should_check_if_user_has_role_when_no_roles() {
         var user = new User("user123", List.of(), "STAMP-01");
 
         assertThat(user.hasRole("ADMIN")).isFalse();
     }
 
     @Test
-    void shouldGenerateToString() {
+    void should_generate_to_string() {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
 
         String result = user.toString();
@@ -88,14 +88,14 @@ class UserTest {
     }
 
     @Test
-    void shouldHandleNullSource() {
+    void should_handle_null_source() {
         var user = new User("user123", List.of("ADMIN"), "STAMP-01", null);
 
         assertThat(user.source()).isNull();
     }
 
     @Test
-    void shouldParseSourceFromString() {
+    void should_parse_source_from_string() {
         var userInsee = new User("user1", List.of("ADMIN"), "STAMP-01", "insee");
         var userSsm = new User("user2", List.of("USER"), "STAMP-02", "ssm");
         var userProconnect = new User("user3", List.of("USER"), "STAMP-03", "proconnect");
