@@ -1,5 +1,5 @@
 #
-#Tue Dec 02 13:12:15 GMT 2025
+#Tue Dec 02 13:40:45 GMT 2025
 classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..',\ 'org.slf4j..',\ 'fr.insee.rmes.modules.commons.hexagonal..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=841fd553-aa09-49eb-83ad-dea39c70ea48
 classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..',\ 'org.slf4j..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=f77dab40-c8c2-4aa7-b50e-9eaec47a57ff
 classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=570ba0df-f577-4880-997f-51aa91a71191
@@ -9,3 +9,4 @@ classes\ that\ reside\ in\ a\ package\ '..port..'\ should\ be\ interfaces,\ beca
 classes\ that\ reside\ in\ a\ package\ '..webservice..'\ should\ only\ depend\ on\ classes\ that\ reside\ outside\ of\ packages\ ['..serverside..',\ '..infrastructure..'],\ because\ The\ webservices\ should\ not\ depends\ of\ the\ serverside\ port\ and\ the\ infrastructure\ =f9a41db8-432e-484a-bf3d-30d5bb49fe35
 classes\ that\ reside\ in\ a\ package\ '..webservice..'\ should\ only\ depend\ on\ classes\ that\ reside\ outside\ of\ packages\ ['..serverside..',\ 'infrastructure'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=817ea150-d9bf-4c66-b31a-6642e370c388
 classes\ that\ reside\ in\ a\ package\ '..webservice..'\ should\ only\ depend\ on\ classes\ that\ reside\ outside\ of\ packages\ ['..serverside..',\ 'infrastructure'],\ because\ The\ webservices\ should\ not\ depends\ of\ the\ serverside\ port\ and\ the\ infrastructure\ =e0ec2322-ce34-4fcc-ba48-22464505c223
+no\ classes\ should\ be\ annotated\ with\ @ControllerAdvice,\ because\ The\ exception\ handler\ should\ be\ managed\ by\ the\ controller\ with\ a\ ResponseStatusException\ exception=980f53e3-2c8b-4c1a-9e48-647f26f3fb67
