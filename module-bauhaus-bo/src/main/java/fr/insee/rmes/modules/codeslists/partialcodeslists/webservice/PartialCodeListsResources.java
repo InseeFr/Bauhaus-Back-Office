@@ -46,16 +46,14 @@ public class PartialCodeListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Partial List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
+    @Operation(summary = "Partial List of codes")
     public List<PartialCodesList> getAllPartialCodesLists() throws JsonProcessingException, RmesException {
         return codeListService.getAllCodesLists(true);
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get a partial list of code",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "Get a partial list of code")
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation (@PathVariable("notation") String notation) throws RmesException {
         String body = codeListService.getDetailedPartialCodesList(notation);
         return ResponseEntity.status(HttpStatus.OK).body(body);
@@ -63,8 +61,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/parent/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get partials by Parent IRI",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
+    @Operation(summary = "Get partials by Parent IRI")
     public ResponseEntity<Object> getPartialsByParent(@PathVariable("parentCode") String parentIri) {
         try {
             String codesLists = codeListService.getPartialCodeListByParent(parentIri);
@@ -89,8 +86,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Return all lists for Advanced Search",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "Return all lists for Advanced Search")
     public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
             List<CodeList> body = codeListService.getDetailedCodesListForSearch(true);

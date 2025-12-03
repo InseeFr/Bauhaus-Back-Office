@@ -38,13 +38,13 @@ public class StampResources {
     }
 
     @GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
+    @Operation(summary = "List of stamps")
     public ResponseEntity<List<String>> getStamps() throws RmesException {
         return ResponseEntity.ok(organisationService.getStamps());
     }
 
     @GetMapping(value = "/v2/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of stamps", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationOption.class)))})
+    @Operation(summary = "List of stamps")
     public ResponseEntity<List<OrganisationOption>> getOrganisationOptions() throws RmesException {
         return ResponseEntity.ok(organisationService.getOrganisations());
     }

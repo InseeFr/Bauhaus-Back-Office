@@ -80,7 +80,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = PartialCodesList.class)))})
+    @Operation(summary = "Get all code lists")
     public ResponseEntity<List<PartialCodesList>> getAllCodesLists() throws RmesException, JsonProcessingException {
         List<PartialCodesList> result = codeListService.getAllCodesLists(false);
         return ResponseEntity.status(HttpStatus.OK)
@@ -93,7 +93,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "Return all lists for Advanced Search")
     public ResponseEntity<List<CodeList>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
         List<CodeList> listCodeList = codeListService.getDetailedCodesListForSearch(false);
         return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
@@ -102,7 +102,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "Get a code list")
     public ResponseEntity<CodeList> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
         CodeList codeListResponse = codeListService.getDetailedCodesList(notation);
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
@@ -110,11 +110,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/detailed/{notation}/codes")
-    @Operation(
-            summary = "List of codes",
-            responses = {
-                    @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))
-            })
+    @Operation(summary = "List of codes")
     public ResponseEntity<Page> getPaginatedCodesForCodeList(
             @PathVariable("notation") String notation,
             @RequestParam(value = "search", required = false) List<String> search,
@@ -127,7 +123,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "List of codes")
     public ResponseEntity<Void> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
         codeListService.deleteCodeFromCodeList(notation, code);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -136,7 +132,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/detailed/{id}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListItem.class)))})
+    @Operation(summary = "List of codes")
     public ResponseEntity<CodeListItem> updateCodeForCodeList(@PathVariable("id") String id, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
         String response = codeListService.updateCodeFromCodeList(id, code, body);
         CodeListItem idCodeListItem = new CodeListItem(response);
@@ -146,7 +142,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/detailed/{id}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "List of codes")
     public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("id") String id, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
         String response = codeListService.addCodeFromCodeList(id, body);
         CodeListItem idCodeListItem = new CodeListItem(response);
@@ -155,7 +151,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(summary = "Get a code list")
     public ResponseEntity<CodeList> getCodeListByNotation(@PathVariable("notation") String notation) throws RmesException {
             String codeListJson = codeListService.getCodeListJson(notation);
             CodeList codeList=Deserializer.deserializeJsonString(codeListJson, CodeList.class);
@@ -164,7 +160,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))})
+    @Operation(summary = "List of codes")
     public ResponseEntity<Page> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
         String codeListCodesJson = codeListService.getCodesJson(notation, page, perPage);
         Page codeListCodes=Deserializer.deserializeJsonString(codeListCodesJson, Page.class);
@@ -174,7 +170,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Code, labels and code list's notation", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
+    @Operation(summary = "Code, labels and code list's notation")
     public ResponseEntity<CodeLabelList> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
         String codeLabelListJson = codeListService.getCode(notation, code);
         CodeLabelList codeLabelList=Deserializer.deserializeJsonString(codeLabelListJson, CodeLabelList.class);
