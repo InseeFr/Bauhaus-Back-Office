@@ -8,8 +8,6 @@ import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -27,15 +25,6 @@ import java.util.Set;
 @RequestMapping("/users")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "User", description = "User Management")
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Success"),
-        @ApiResponse(responseCode = "204", description = "No Content"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden"),
-        @ApiResponse(responseCode = "404", description = "Not found"),
-        @ApiResponse(responseCode = "406", description = "Not Acceptable"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class UserResources {
 
     private final UserService userService;
@@ -50,10 +39,7 @@ public class UserResources {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "Get information about the logged-in user",
-            responses = {
-                    @ApiResponse(content = @Content(mediaType = "application/json"))
-            }
+            summary = "Get information about the logged-in user"
     )
     public Set<ModuleAccessPrivileges> getUserInformation(@AuthenticationPrincipal Object principal) {
         User user = null;
@@ -65,7 +51,7 @@ public class UserResources {
     }
 
     @GetMapping(value = "/stamp", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
+    @Operation(summary = "User's stamp")
     public Stamp getStamp(@AuthenticationPrincipal Object principal) {
         try {
             return userService.findStampFrom(principal);

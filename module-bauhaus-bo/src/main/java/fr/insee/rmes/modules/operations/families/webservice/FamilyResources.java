@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -60,8 +59,7 @@ public class FamilyResources  {
 
 	@GetMapping("/families")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
-	@io.swagger.v3.oas.annotations.Operation(summary = "List of families",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialOperationFamilyResponse.class))))})
+	@io.swagger.v3.oas.annotations.Operation(summary = "List of families")
 	public ResponseEntity<List<PartialOperationFamilyResponse>> getFamilies() throws RmesException {
 		List<PartialOperationFamily> families = familyService.getFamilies();
 
@@ -80,9 +78,7 @@ public class FamilyResources  {
 
 	@GetMapping("/family/{id}")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Get a family",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = OperationFamilyResponse.class)))}
-	)
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get a family")
 	public OperationFamilyResponse getFamilyByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		var family =  familyService.getFamily(id);
         return OperationFamilyResponse.fromDomain(
@@ -99,8 +95,7 @@ public class FamilyResources  {
 
 	@GetMapping("/families/advanced-search")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
-	@io.swagger.v3.oas.annotations.Operation(summary = "List of families for search",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
+	@io.swagger.v3.oas.annotations.Operation(summary = "List of families for search")
 	public ResponseEntity<Object> getFamiliesForSearch() throws RmesException {
 		String families = operationsService.getFamiliesForSearch();
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(families);
@@ -108,7 +103,7 @@ public class FamilyResources  {
 
 	@GetMapping("/families/{id}/seriesWithReport")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Series with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= Operation.class)))})
+	@io.swagger.v3.oas.annotations.Operation(summary = "Series with metadataReport")
 	public ResponseEntity<Object> getSeriesWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
 		String series = operationsService.getSeriesWithReport(id);
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(series);

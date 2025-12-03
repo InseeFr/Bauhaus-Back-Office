@@ -3,8 +3,6 @@ package fr.insee.rmes.modules.commons.webservice;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.StringJoiner;
 
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Opération réussie"),
-        @ApiResponse(responseCode = "400", description = "La syntaxe de la requête est incorrecte"),
-        @ApiResponse(responseCode = "401", description = "Une authentification est nécessaire pour accéder à la ressource"),
-        @ApiResponse(responseCode = "404", description = "Ressource non trouvée"),
-        @ApiResponse(responseCode = "406", description = "L'en-tête HTTP 'Accept' contient une valeur non acceptée"),
-        @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
-})
 @RestController
 @RequestMapping("healthcheck")
 public class HealthcheckResources extends GenericResources {

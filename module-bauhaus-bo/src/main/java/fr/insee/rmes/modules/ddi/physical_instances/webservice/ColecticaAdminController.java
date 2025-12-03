@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,11 +59,6 @@ public class ColecticaAdminController {
             summary = "Get deny list configuration",
             description = "Returns all configured deny list entries for code lists"
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved deny list",
-                    content = @Content(schema = @Schema(implementation = ColecticaConfiguration.CodeListDenyEntry.class))),
-            @ApiResponse(responseCode = "404", description = "Deny list not configured")
-    })
     public ResponseEntity<List<ColecticaConfiguration.CodeListDenyEntry>> getDenyList() {
         List<ColecticaConfiguration.CodeListDenyEntry> denyList = configuration.codeListDenyList();
 
@@ -88,10 +81,6 @@ public class ColecticaAdminController {
             summary = "Check if item is in deny list",
             description = "Verifies whether a specific agencyId/id combination is configured in the deny list"
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully performed check"),
-            @ApiResponse(responseCode = "400", description = "Invalid parameters")
-    })
     public ResponseEntity<Map<String, Object>> isInDenyList(
             @Parameter(description = "Agency ID of the code list", required = true)
             @RequestParam String agencyId,
@@ -123,7 +112,6 @@ public class ColecticaAdminController {
             summary = "Get deny list statistics",
             description = "Returns information about the deny list cache size and configuration"
     )
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved statistics")
     public ResponseEntity<Map<String, Object>> getDenyListStats() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -149,7 +137,6 @@ public class ColecticaAdminController {
             summary = "Health check for deny list",
             description = "Returns health status of the deny list configuration"
     )
-    @ApiResponse(responseCode = "200", description = "Service is healthy")
     public ResponseEntity<Map<String, Object>> getDenyListHealth() {
         Map<String, Object> health = new HashMap<>();
 

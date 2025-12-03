@@ -19,8 +19,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,17 +41,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @SecurityRequirement(name = "bearerAuth")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('concepts')")
 @Tag(name="Concepts", description="Concept API")
-@ApiResponses(value = { 
-		@ApiResponse(responseCode = "200", description = "Success"), 
-		@ApiResponse(responseCode = "204", description = "No Content"),
-		@ApiResponse(responseCode = "400", description = "Bad Request"), 
-		@ApiResponse(responseCode = "401", description = "Unauthorized"),
-		@ApiResponse(responseCode = "403", description = "Forbidden"), 
-		@ApiResponse(responseCode = "404", description = "Not found"),
-		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
-		@ApiResponse(responseCode = "500", description = "Internal server error") })
-
-
 public class ConceptsResources  {
 	
 	static final Logger logger = LoggerFactory.getLogger(ConceptsResources.class);
@@ -69,8 +56,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
-	@Operation(summary = "List of concepts",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialConceptResponse.class))))})
+	@Operation(summary = "List of concepts")
 	public ResponseEntity<List<PartialConceptResponse>> getConcepts() throws RmesException {
 		List<PartialConcept> concepts = conceptsService.getConcepts();
 
@@ -89,8 +75,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/linkedConcepts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of concepts",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})																 
+	@Operation(summary = "List of concepts")
 	public ResponseEntity<Object> getRelatedConcepts(@PathVariable(Constants.ID) String id) throws RmesException {
 		String concepts = conceptsService.getRelatedConcepts(id);
 		return ResponseEntity.status(HttpStatus.OK).body(concepts);
@@ -107,8 +92,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/advanced-search", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
-	@Operation(summary = "Rich list of concepts",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptForAdvancedSearchResponse.class))))})
+	@Operation(summary = "Rich list of concepts")
 	public ResponseEntity<List<ConceptForAdvancedSearchResponse>> getConceptsSearch() throws RmesException {
 		List<ConceptForAdvancedSearch> concepts = conceptsService.getConceptsSearch();
 
@@ -127,8 +111,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Get a concept",
-		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
+	@Operation(summary = "Get a concept")
 	public ResponseEntity<Object> getConceptByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		String concept = conceptsService.getConceptByID(id);
 		return ResponseEntity.status(HttpStatus.OK).body(concept);
@@ -136,8 +119,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of concepts to validate",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsToValidate.class))))})
+	@Operation(summary = "List of concepts to validate")
 	public ResponseEntity<Object> getConceptsToValidate() throws RmesException {
 		String concepts = conceptsService.getConceptsToValidate();
 		return ResponseEntity.status(HttpStatus.OK).body(concepts);
@@ -145,8 +127,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/{id}/links", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of linked concepts",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
+	@Operation(summary = "List of linked concepts")
 	public ResponseEntity<Object> getConceptLinksByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		String conceptLinks = conceptsService.getConceptLinksByID(id);
 		return ResponseEntity.status(HttpStatus.OK).body(conceptLinks);
@@ -154,8 +135,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/concept/{id}/notes/{conceptVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Last notes of the concept",
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
+	@Operation(summary = "Last notes of the concept")
 	public ResponseEntity<Object> getConceptNotesByID(@PathVariable(Constants.ID) String id, @PathVariable("conceptVersion") int conceptVersion) throws RmesException {
 		String notes = conceptsService.getConceptNotesByID(id, conceptVersion);
 		return ResponseEntity.status(HttpStatus.OK).body(notes);
@@ -164,8 +144,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collections/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Rich list of collections",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
+	@Operation(summary = "Rich list of collections")
 	public ResponseEntity<Object> getCollectionsDashboard() throws RmesException {
 		String collections = conceptsCollectionService.getCollectionsDashboard();
 		return ResponseEntity.status(HttpStatus.OK).body(collections);
@@ -173,8 +152,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collections/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of collections to validate",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionsToValidate.class))))})
+	@Operation(summary = "List of collections to validate")
 	public ResponseEntity<Object> getCollectionsToValidate() throws RmesException {
 		String collections = conceptsService.getCollectionsToValidate();
 		return ResponseEntity.status(HttpStatus.OK).body(collections);
@@ -182,8 +160,7 @@ public class ConceptsResources  {
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of collection member concepts",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
+	@Operation(summary = "List of collection member concepts")
 	public ResponseEntity<Object> getCollectionMembersByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		String collectionMembers = conceptsCollectionService.getCollectionMembersByID(id);
 		return ResponseEntity.status(HttpStatus.OK).body(collectionMembers);

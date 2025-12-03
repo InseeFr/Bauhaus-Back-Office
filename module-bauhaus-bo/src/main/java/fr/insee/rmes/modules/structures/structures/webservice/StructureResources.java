@@ -14,8 +14,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
@@ -34,15 +32,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Data structure definitions", description = "Structure API")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('structures')")
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Success"),
-        @ApiResponse(responseCode = "204", description = "No Content"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden"),
-        @ApiResponse(responseCode = "404", description = "Not found"),
-        @ApiResponse(responseCode = "406", description = "Not Acceptable"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class StructureResources {
 
 
@@ -59,8 +48,7 @@ public class StructureResources {
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of structures",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
+    @Operation(summary = "List of structures")
     public ResponseEntity<List<PartialStructureResponse>> getStructures() throws RmesException {
         List<PartialStructureResponse> responses = this.structureService.getStructures().stream()
                 .map(structure -> {
@@ -77,8 +65,7 @@ public class StructureResources {
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of structures for advanced search",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
+    @Operation(summary = "List of structures for advanced search")
     public ResponseEntity<Object> getStructuresForSearch() throws RmesException {
         String structures = structureService.getStructuresForSearch();
         return ResponseEntity.status(HttpStatus.SC_OK).body(structures);
@@ -87,10 +74,7 @@ public class StructureResources {
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/structure/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            summary = "Get a structure",
-            responses = {
-                    @ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))
-            }
+            summary = "Get a structure"
     )
     public ResponseEntity<Object> getStructureById(@PathVariable(Constants.ID) String id) throws RmesException {
         String structure = structureService.getStructureById(id);
@@ -107,8 +91,7 @@ public class StructureResources {
 
     @HasAccess(module = RBAC.Module.STRUCTURE_STRUCTURE, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all details of a structure",
-            responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
+    @Operation(summary = "Get all details of a structure")
     public ResponseEntity<Object> getStructureByIdDetails(@PathVariable(Constants.ID) String id) throws RmesException {
         String structure = structureService.getStructureByIdWithDetails(id);
         return ResponseEntity.status(HttpStatus.SC_OK).body(structure);

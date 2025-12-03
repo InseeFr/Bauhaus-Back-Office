@@ -37,10 +37,7 @@ public class V2CodeListsResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-        summary = "Get all code lists", 
-        responses = {
-            @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodesList.class)))
-        }
+        summary = "Get all code lists"
     )
     public List<CodesListDomain> getAllCodesLists(
         @Parameter(description = "Filter by partial code lists (skos:Collection) vs complete code lists (skos:ConceptScheme)")
