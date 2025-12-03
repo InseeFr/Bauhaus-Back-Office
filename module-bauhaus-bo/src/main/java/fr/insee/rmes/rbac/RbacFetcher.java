@@ -1,5 +1,7 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.domain.auth.User;
+
 import java.util.List;
 import java.util.Set;
 
@@ -11,5 +13,5 @@ public interface RbacFetcher {
 
     RBAC.Strategy getApplicationActionStrategyByRole(List<String> roles, RBAC.Module application, RBAC.Privilege privilege);
 
-    Set<ModuleAccessPrivileges> computePrivileges(List<String> roles);
+    Set<ModuleAccessPrivileges> computePrivileges(User roles);
 }

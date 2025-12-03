@@ -81,7 +81,7 @@ public class PropertiesAccessPrivilegesChecker implements AccessPrivilegesChecke
     }
 
     private Optional<ModuleAccessPrivileges> findModuleAccessPrivileges(User user, RBAC.Module module) {
-        var privileges = fetcher.computePrivileges(user.roles());
+        var privileges = fetcher.computePrivileges(user);
         return privileges.stream().filter(p -> p.application().equals(module)).findFirst();
     }
 

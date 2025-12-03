@@ -1,5 +1,7 @@
 package fr.insee.rmes.rbac;
 
+import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.domain.auth.User;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -57,9 +59,21 @@ public class PropertiesRbacFetcher implements RbacFetcher {
     }
 
     @Override
-    public Set<ModuleAccessPrivileges> computePrivileges(List<String> roles) {
+    public Set<ModuleAccessPrivileges> computePrivileges(User user) {
+        var roles = user.roles();
+        var source = user.source();
+
         Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result = new HashMap<>();
 
+        if (Source.INSEE.equals(source)) {
+            for (RBAC.Module module : RBAC.Module.values()) {
+                if (module != RBAC.Module.UNKNOWN) {
+                    result
+                        .computeIfAbsent(module, k -> new HashMap<>())
+                        .put(RBAC.Privilege.READ, RBAC.Strategy.ALL);
+                }
+            }
+        }
 
         for (String role : roles) {
             try {
