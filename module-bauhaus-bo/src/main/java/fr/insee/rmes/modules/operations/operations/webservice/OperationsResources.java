@@ -11,7 +11,6 @@ import fr.insee.rmes.modules.users.domain.model.RBAC;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -44,8 +43,7 @@ public class OperationsResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_OPERATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "List of operations", responses = {
-			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
+	@io.swagger.v3.oas.annotations.Operation(summary = "List of operations")
 	public ResponseEntity<List<PartialOperationResponse>> getOperations() throws RmesException {
 		List<PartialOperationResponse> responses = this.operationsService.getOperations().stream()
 				.map(operation -> {
@@ -68,8 +66,7 @@ public class OperationsResources  {
 				MediaType.APPLICATION_XML_VALUE
 			}
 	)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Get an operation", responses = {
-			@ApiResponse(content = @Content(schema = @Schema(implementation = Operation.class))) })
+	@io.swagger.v3.oas.annotations.Operation(summary = "Get an operation")
 	public ResponseEntity<Operation> getOperationByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationById(id));
 	}

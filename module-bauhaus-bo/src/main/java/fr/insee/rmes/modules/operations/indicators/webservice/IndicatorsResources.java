@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -46,8 +45,7 @@ public class IndicatorsResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicators", produces=MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getIndicators", summary = "List of indicators",
-	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
+	@Operation(operationId = "getIndicators", summary = "List of indicators")
 	public ResponseEntity<List<PartialOperationIndicatorResponse>> getIndicators() throws RmesException {
 		List<PartialOperationIndicatorResponse> responses = this.operationsService.getIndicators().stream()
 				.map(indicator -> {
@@ -64,7 +62,7 @@ public class IndicatorsResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicators/withSims",produces= MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
+	@Operation(operationId = "annotations", summary = "List of series with related sims")
 	public ResponseEntity<Object> getIndicatorsWIthSims() throws RmesException {
 		String indicators = operationsService.getIndicatorsWithSims();
 		return ResponseEntity.status(HttpStatus.OK).body(indicators);
@@ -72,8 +70,7 @@ public class IndicatorsResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicators/advanced-search", produces=MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of indicators for search",
-	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
+	@Operation(summary = "List of indicators for search")
 	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
 		String indicators = operationsService.getIndicatorsForSearch();
 		return ResponseEntity.status(HttpStatus.OK).body(indicators);
@@ -82,8 +79,7 @@ public class IndicatorsResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicator/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@Operation(summary = "Get an indicator",
-	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Indicator.class)))})
+	@Operation(summary = "Get an indicator")
 	public ResponseEntity<Object> getIndicatorByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true)@RequestHeader(required=false) String accept) throws RmesException {
 
@@ -118,8 +114,7 @@ public class IndicatorsResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value="/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Create indicator",
-	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
+	@Operation(summary = "Create indicator")
 	public ResponseEntity<Object> setIndicator(
 			@Parameter(description = "Indicator to create", required = true,
 

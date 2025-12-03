@@ -19,8 +19,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -55,8 +53,7 @@ public class DistributionResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "List of distributions",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    @Operation(summary = "List of distributions")
     public ResponseEntity<List<PartialDistributionResponse>> getDistributions() throws RmesException {
         List<PartialDistributionResponse> responses = this.distributionService.getDistributions().stream()
                 .map(distribution -> {
@@ -73,24 +70,21 @@ public class DistributionResources {
 
     @GetMapping("/{id}")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "Get a distribution",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    @Operation(summary = "Get a distribution")
     public Distribution getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
     }
 
     @PutMapping(value = "/{id}/validate")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.PUBLISH)
-    @Operation(summary = "Publish a distribution",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    @Operation(summary = "Publish a distribution")
     public void publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         this.distributionService.publishDistribution(id);
     }
 
     @GetMapping("/datasets")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "List of datasets",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
+    @Operation(summary = "List of datasets")
     public List<PartialDataset> getDatasetsForDistributionCreation(@AuthenticationPrincipal Object principal) throws RmesException, MissingUserInformationException {
         var user = userDecoder.fromPrincipal(principal).get();
 
@@ -102,8 +96,7 @@ public class DistributionResources {
 
     @GetMapping(value = "/search", produces = "application/json")
     @HasAccess(module = RBAC.Module.DATASET_DISTRIBUTION, privilege = RBAC.Privilege.READ)
-    @Operation(operationId = "getDistributionsForSearch", summary = "List of distributions for advanced search",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    @Operation(operationId = "getDistributionsForSearch", summary = "List of distributions for advanced search")
     public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
         return this.distributionService.getDistributionsForSearch();
     }
@@ -132,12 +125,6 @@ public class DistributionResources {
     @Operation(
             summary = "Delete a distribution"
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "The distribution has been  deleted"),
-            @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
-            @ApiResponse(responseCode = "400", description = "Bad request"),
-            @ApiResponse(responseCode = "404", description = "This distribution does not exist")
-    })
     public ResponseEntity<Void> deleteDistribution(
             @PathVariable(Constants.ID) String id) throws RmesException{
         distributionService.deleteDistributionId(id);

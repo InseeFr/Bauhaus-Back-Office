@@ -12,8 +12,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -37,15 +35,6 @@ import java.util.Arrays;
 @SecurityRequirement(name = "bearerAuth")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
 @Tag(name = Constants.DOCUMENT, description = "Document API")
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Success"),
-        @ApiResponse(responseCode = "204", description = "No Content"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden"),
-        @ApiResponse(responseCode = "404", description = "Not found"),
-        @ApiResponse(responseCode = "406", description = "Not Acceptable"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class DocumentsResources {
 
     static final Logger logger = LoggerFactory.getLogger(DocumentsResources.class);
@@ -61,8 +50,7 @@ public class DocumentsResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "List of documents and links",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Document.class))))})
+    @Operation(summary = "List of documents and links")
     public ResponseEntity<String> getDocuments() throws RmesException {
         String documents = documentsService.getDocuments();
         return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(documents);
@@ -71,8 +59,7 @@ public class DocumentsResources {
 
     @GetMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "Get a Document",
-            responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = Document.class)))})
+    @Operation(summary = "Get a Document")
     public ResponseEntity<String> getDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -169,8 +156,7 @@ public class DocumentsResources {
 
     @GetMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "Get a Link",
-            responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = Document.class)))})
+    @Operation(summary = "Get a Link")
     public ResponseEntity<String> getLink(@PathVariable(Constants.ID) String id) throws RmesException {
 
         return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(documentsService.getLink(id).toString());

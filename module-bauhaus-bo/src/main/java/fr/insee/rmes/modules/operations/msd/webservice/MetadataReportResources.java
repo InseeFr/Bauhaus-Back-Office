@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -65,10 +64,7 @@ public class MetadataReportResources {
 			}
 	)
 	@Operation(
-			summary = "Metadata structure definition",
-			responses = {
-					@ApiResponse(content = @Content(schema = @Schema(implementation = MAS.class)))
-			}
+			summary = "Metadata structure definition"
 	)
 	public ResponseEntity<Object> getMSD(
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept
@@ -89,16 +85,14 @@ public class MetadataReportResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataAttribute/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Metadata attribute specification and property",
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Attribute.class)))})
+	@Operation(summary = "Metadata attribute specification and property")
 	public DocumentationAttribute getMetadataAttribute(@PathVariable(Constants.ID) String id) throws RmesException, NotFoundAttributeException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
 		return documentationService.getMetadataAttribute(id);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataAttributes", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
-	@Operation(summary = "Metadata attributes specification and property",
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type="array",implementation = Attribute.class)))})
+	@Operation(summary = "Metadata attributes specification and property")
 	public ResponseEntity<List<DocumentationAttributeResponse>> getMetadataAttributes() throws RmesException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
 		List<DocumentationAttribute> attributes = documentationService.getMetadataAttributes();
 
@@ -118,9 +112,7 @@ public class MetadataReportResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Metadata report for an id",
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-			))})
+	@Operation(summary = "Metadata report for an id")
 	public ResponseEntity<Object> getMetadataReport(@PathVariable(Constants.ID) String id) throws RmesException {
 		String metadataReport = documentationsService.getMetadataReport(id);
 		return ResponseEntity.ok(metadataReport);
@@ -128,18 +120,14 @@ public class MetadataReportResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/default", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Get default value for metadata report",
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-			))})
+	@Operation(summary = "Get default value for metadata report")
 	public ResponseEntity<Object> getMetadataReportDefaultValue() throws IOException {
 		return ResponseEntity.ok(documentationsService.getMetadataReportDefaultValue());
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/fullSims/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@Operation(summary = "Full sims for an id",
-	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Documentation.class)
-			))})
+	@Operation(summary = "Full sims for an id")
 	public ResponseEntity<Object> getFullSims(
 			@Parameter(
 					description = "Identifiant de la documentation (format : [0-9]{4})",
@@ -163,9 +151,7 @@ public class MetadataReportResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/Owner/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Owner stamp for a Metadata report's id",
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-			))})
+	@Operation(summary = "Owner stamp for a Metadata report's id")
 	public ResponseEntity<Object> getMetadataReportOwner(@PathVariable(Constants.ID) String id) throws RmesException {
 		String metadataReportOwner = documentationsService.getMetadataReportOwner(id);
 		return ResponseEntity.status(HttpStatus.OK).body(metadataReportOwner);
@@ -173,8 +159,7 @@ public class MetadataReportResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Create metadata report",
-	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
+	@Operation(summary = "Create metadata report")
 	public ResponseEntity<Object> setMetadataReport(
 			@Parameter(description = "Metadata report to create", required = true,
 	content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) throws RmesException {

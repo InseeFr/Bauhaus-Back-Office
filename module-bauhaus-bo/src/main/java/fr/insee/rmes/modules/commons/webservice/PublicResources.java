@@ -10,8 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
@@ -30,16 +28,6 @@ import java.util.TreeSet;
 @RestController
 @RequestMapping("/")
 @Tag(name = "Application", description = "Application API")
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Success"),
-        @ApiResponse(responseCode = "204", description = "No Content"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden"),
-        @ApiResponse(responseCode = "404", description = "Not found"),
-        @ApiResponse(responseCode = "406", description = "Not Acceptable"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")})
-
 public class PublicResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
@@ -82,7 +70,7 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
+    @Operation(summary = "Initial properties")
     public ResponseEntity<String> getProperties() throws RmesException {
         JSONObject props = new JSONObject();
         try {
@@ -110,7 +98,7 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of dissemination status", responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = LabelUrl.class))))})
+    @Operation(summary = "List of dissemination status")
     public ResponseEntity<String> getDisseminationStatus() {
         TreeSet<String> dsList = new TreeSet<>();
         for (DisseminationStatus ds : DisseminationStatus.values()) {
