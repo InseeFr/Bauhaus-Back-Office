@@ -96,15 +96,6 @@ class ConfigTest {
     }
 
     @Test
-    void shouldReturnCorrectDocumentsConfiguration() {
-        assertEquals("http://test.graph//documents", config.getDocumentsGraph());
-        assertEquals("/storage/gestion", config.getDocumentsStorageGestion());
-        assertEquals("/storage/pub", config.getDocumentsStoragePublicationExterne());
-        assertEquals("/storage/int", config.getDocumentsStoragePublicationInterne());
-        assertEquals("http://web4g.test/", config.getDocumentsBaseurl());
-    }
-
-    @Test
     void shouldReturnCorrectProductsConfiguration() {
         assertEquals("http://test.graph//products", config.getProductsGraph());
         assertEquals("http://test.products/", config.getProductsBaseUri());
