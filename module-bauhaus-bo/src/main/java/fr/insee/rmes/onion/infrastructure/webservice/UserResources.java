@@ -61,7 +61,7 @@ public class UserResources {
     )
     public Set<ModuleAccessPrivileges> getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
         User user = this.userDecoder.fromPrincipal(principal).get();
-        return rbacService.computePrivileges(user.roles());
+        return rbacService.computePrivileges(user);
     }
 
     @GetMapping(value = "/stamp", produces = MediaType.APPLICATION_JSON_VALUE)

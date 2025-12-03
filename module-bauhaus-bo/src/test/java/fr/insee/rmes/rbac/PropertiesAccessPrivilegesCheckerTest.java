@@ -75,7 +75,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     @Test
     void shouldReturnTrueWhenStrategyIsAll() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(mockUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL)
                 ))
@@ -89,7 +89,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     @Test
     void shouldReturnFalseWhenStrategyIsNone() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(mockUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.NONE)
                 ))
@@ -104,7 +104,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnTrueWhenStrategyIsStampAndNotAppliedToObject() throws RmesException {
         User userWithDifferentStamp = new User("jane.doe", List.of("ROLE_USER"), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithDifferentStamp));
-        when(fetcher.computePrivileges(userWithDifferentStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithDifferentStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP)
                 ))
@@ -119,7 +119,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     @Test
     void shouldReturnFalseWhenPrivilegeNotFound() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(mockUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of())
         ));
 
@@ -134,7 +134,7 @@ class PropertiesAccessPrivilegesCheckerTest {
         var inseeUser = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(inseeUser));
         // Even with no privileges configured or NONE strategy, should return true for READ + insee
-        when(fetcher.computePrivileges(inseeUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(inseeUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.NONE)
                 ))
@@ -150,7 +150,7 @@ class PropertiesAccessPrivilegesCheckerTest {
         // INSEE source should not bypass RBAC for non-READ operations
         var inseeUser = new User("jane.doe", List.of(), "unknownStamp", "insee");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(inseeUser));
-        when(fetcher.computePrivileges(inseeUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(inseeUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.NONE)
                 ))
@@ -166,7 +166,7 @@ class PropertiesAccessPrivilegesCheckerTest {
         // Non-INSEE source should not bypass RBAC even for READ operations
         var nonInseeUser = new User("jane.doe", List.of(), "unknownStamp", "proconnect");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(nonInseeUser));
-        when(fetcher.computePrivileges(nonInseeUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(nonInseeUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.NONE)
                 ))
@@ -181,7 +181,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForCreate() throws RmesException {
         var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
-        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithNullStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL)
                 ))
@@ -196,7 +196,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForUpdate() throws RmesException {
         var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
-        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithNullStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.ALL)
                 ))
@@ -211,7 +211,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForDelete() throws RmesException {
         var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
-        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithNullStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.DELETE, RBAC.Strategy.ALL)
                 ))
@@ -226,7 +226,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForPublish() throws RmesException {
         var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
-        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithNullStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.PUBLISH, RBAC.Strategy.ALL)
                 ))
@@ -241,7 +241,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnFalseWhenStrategyIsAllAndUserHasNullStampForAdministration() throws RmesException {
         var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
-        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithNullStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.ADMINISTRATION, RBAC.Strategy.ALL)
                 ))
@@ -256,7 +256,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     void shouldReturnTrueWhenStrategyIsAllAndUserHasNullStampForRead() throws RmesException {
         var userWithNullStamp = new User("jane.doe", List.of("ROLE_USER"), null, "ssm");
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(userWithNullStamp));
-        when(fetcher.computePrivileges(userWithNullStamp.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(userWithNullStamp)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL)
                 ))
@@ -270,7 +270,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     @Test
     void shouldReturnTrueWhenStrategyIsAllAndUserHasStampForCreate() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(mockUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL)
                 ))
@@ -284,7 +284,7 @@ class PropertiesAccessPrivilegesCheckerTest {
     @Test
     void shouldReturnTrueWhenStrategyIsAllAndUserHasStampForUpdate() throws RmesException {
         when(decoder.fromPrincipal("principal")).thenReturn(Optional.of(mockUser));
-        when(fetcher.computePrivileges(mockUser.roles())).thenReturn(Set.of(
+        when(fetcher.computePrivileges(mockUser)).thenReturn(Set.of(
                 new ModuleAccessPrivileges(Module.OPERATION_FAMILY, Set.of(
                         new Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.ALL)
                 ))
