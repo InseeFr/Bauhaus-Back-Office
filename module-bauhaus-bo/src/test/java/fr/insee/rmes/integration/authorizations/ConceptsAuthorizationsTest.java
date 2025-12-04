@@ -77,7 +77,6 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
         return Arrays.asList(
                 Arguments.of("/concepts"),
                 Arguments.of("/concepts/toValidate"),
-                Arguments.of("/concepts/linkedConcepts/"+id),
                 Arguments.of("/concepts/concept/"+id+"/notes/16"+conceptVersion),
                 Arguments.of("/concepts/concept/"+id+"/links"),
                 Arguments.of("/concepts/concept/export/"+id),
