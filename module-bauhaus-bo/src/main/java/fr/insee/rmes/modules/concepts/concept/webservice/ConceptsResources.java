@@ -73,15 +73,6 @@ public class ConceptsResources  {
 			.body(responses);
 	}
 
-	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/linkedConcepts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "List of concepts")
-	public ResponseEntity<Object> getRelatedConcepts(@PathVariable(Constants.ID) String id) throws RmesException {
-		String concepts = conceptsService.getRelatedConcepts(id);
-		return ResponseEntity.status(HttpStatus.OK).body(concepts);
-	}
-
-
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.DELETE)
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(summary = "Delete a concept")
