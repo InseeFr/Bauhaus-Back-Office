@@ -260,16 +260,21 @@ public class Ddi3XmlReader {
 
     private VariableRepresentation parseVariableRepresentation(Element parent) {
         Element vrElement = xmlHelper.getChildElement(parent, "VariableRepresentation");
-        if (vrElement == null) return new VariableRepresentation(null, null, null);
+        if (vrElement == null) return new VariableRepresentation(null, null, null, null, null);
 
         String role = xmlHelper.getElementText(vrElement, "VariableRole");
         CodeRepresentation codeRep = parseCodeRepresentation(vrElement);
         NumericRepresentation numRep = parseNumericRepresentation(vrElement);
+        // TODO: Add parsing for DateTimeRepresentation and TextRepresentation when needed for DDI3 to DDI4 conversion
+        DateTimeRepresentation dateTimeRep = null;
+        TextRepresentation textRep = null;
 
         return new VariableRepresentation(
             role.isEmpty() ? null : role,
             codeRep,
-            numRep
+            numRep,
+            dateTimeRep,
+            textRep
         );
     }
 

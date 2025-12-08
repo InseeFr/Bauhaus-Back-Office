@@ -171,6 +171,9 @@ public class Ddi3XmlWriter {
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
         writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, var.isUniversallyUnique());
         writer.writeAttribute(VERSION_DATE, var.versionDate());
+        if (var.isGeographic() != null && !var.isGeographic().isEmpty()) {
+            writer.writeAttribute("isGeographic", var.isGeographic());
+        }
 
         writeElement(writer, DDI_REUSABLE_NS, URN, var.urn());
         writeElement(writer, DDI_REUSABLE_NS, AGENCY, var.agency());
@@ -255,6 +258,44 @@ public class Ddi3XmlWriter {
                 }
 
                 writer.writeEndElement(); // CodeRepresentation
+            }
+
+            if (var.variableRepresentation().dateTimeRepresentation() != null) {
+                DateTimeRepresentation dateTimeRep = var.variableRepresentation().dateTimeRepresentation();
+                writer.writeStartElement(DDI_REUSABLE_NS, "DateTimeRepresentation");
+
+                if (dateTimeRep.dateTypeCode() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "DateTypeCode", dateTimeRep.dateTypeCode());
+                }
+
+                if (dateTimeRep.dateFieldFormat() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "DateFieldFormat", dateTimeRep.dateFieldFormat());
+                }
+
+                writer.writeEndElement(); // DateTimeRepresentation
+            }
+
+            if (var.variableRepresentation().textRepresentation() != null) {
+                TextRepresentation textRep = var.variableRepresentation().textRepresentation();
+                writer.writeStartElement(DDI_REUSABLE_NS, "TextRepresentation");
+
+                if (textRep.blankIsMissingValue() != null) {
+                    writer.writeAttribute("blankIsMissingValue", textRep.blankIsMissingValue());
+                }
+
+                if (textRep.maxLength() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "MaxLength", String.valueOf(textRep.maxLength()));
+                }
+
+                if (textRep.minLength() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "MinLength", String.valueOf(textRep.minLength()));
+                }
+
+                if (textRep.regExp() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "RegExp", textRep.regExp());
+                }
+
+                writer.writeEndElement(); // TextRepresentation
             }
         }
 

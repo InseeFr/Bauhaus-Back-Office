@@ -183,6 +183,8 @@ class DDI4toDDI3ConverterServiceImplTest {
                                 "false",
                                 new CodeListReference("fr.insee", "CL_AGEMEN8", "1", "CodeList")
                         ),
+                        null,
+                        null,
                         null
                 ),
                 null
@@ -362,7 +364,9 @@ class DDI4toDDI3ConverterServiceImplTest {
                                         new RangeValue("true", "0"),
                                         new RangeValue("true", "120")
                                 )
-                        )
+                        ),
+                        null,
+                        null
                 ),
                 null
         );
@@ -389,6 +393,151 @@ class DDI4toDDI3ConverterServiceImplTest {
         assertTrue(xml.contains("<r:Low"));
         assertTrue(xml.contains("<r:High"));
         assertTrue(xml.contains("Integer"));
+    }
+
+    @Test
+    void shouldConvertDateTimeVariable() {
+        // Given
+        Ddi4Variable var = new Ddi4Variable(
+                "true",
+                "2025-12-04T10:35:54.610Z",
+                "urn:ddi:fr.insee:local-1764843880960:1",
+                "fr.insee",
+                "local-1764843880960",
+                "1",
+                new VariableName(new StringValue("fr-FR", "qq")),
+                new Label(new Content("fr-FR", "bc")),
+                null,
+                new VariableRepresentation(
+                        "Mesure",
+                        null,
+                        null,
+                        new DateTimeRepresentation("Date", null),
+                        null
+                ),
+                null
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                null,
+                null,
+                List.of(var),
+                null,
+                null
+        );
+
+        // When
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+
+        String xml = result.items().get(0).item();
+        // Verify DateTimeRepresentation elements are present
+        assertTrue(xml.contains("<r:DateTimeRepresentation"));
+        assertTrue(xml.contains("<r:DateTypeCode>Date</r:DateTypeCode>"));
+        assertTrue(xml.contains("</r:DateTimeRepresentation>"));
+        assertTrue(xml.contains("<VariableRole>Mesure</VariableRole>"));
+    }
+
+    @Test
+    void shouldConvertGeographicVariable() {
+        // Given
+        Ddi4Variable var = new Ddi4Variable(
+                "true",
+                "2025-12-04T11:15:00.000Z",
+                "urn:ddi:fr.insee:local-geographic-var:1",
+                "fr.insee",
+                "local-geographic-var",
+                "1",
+                new VariableName(new StringValue("fr-FR", "GEO_VAR")),
+                new Label(new Content("fr-FR", "Geographic Variable")),
+                new Description(new Content("fr-FR", "A geographic variable")),
+                new VariableRepresentation(
+                        "Geographic",
+                        new CodeRepresentation(
+                                "false",
+                                new CodeListReference("fr.insee", "CL_GEO", "1", "CodeList")
+                        ),
+                        null,
+                        null,
+                        null
+                ),
+                "true"
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                null,
+                null,
+                List.of(var),
+                null,
+                null
+        );
+
+        // When
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+
+        String xml = result.items().get(0).item();
+        // Verify isGeographic attribute is present
+        assertTrue(xml.contains("isGeographic=\"true\""));
+        assertTrue(xml.contains("<VariableRole>Geographic</VariableRole>"));
+        assertTrue(xml.contains("GEO_VAR"));
+    }
+
+    @Test
+    void shouldConvertTextVariable() {
+        // Given
+        Ddi4Variable var = new Ddi4Variable(
+                "true",
+                "2025-12-04T10:35:54.610Z",
+                "urn:ddi:fr.insee:local-text-var:1",
+                "fr.insee",
+                "local-text-var",
+                "1",
+                new VariableName(new StringValue("fr-FR", "TEXT_VAR")),
+                new Label(new Content("fr-FR", "Text Variable")),
+                null,
+                new VariableRepresentation(
+                        "Description",
+                        null,
+                        null,
+                        null,
+                        new TextRepresentation(100, 10, "[A-Za-z0-9]+", "false")
+                ),
+                null
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                null,
+                null,
+                List.of(var),
+                null,
+                null
+        );
+
+        // When
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+
+        String xml = result.items().get(0).item();
+        // Verify TextRepresentation elements are present
+        assertTrue(xml.contains("<r:TextRepresentation"));
+        assertTrue(xml.contains("<r:MaxLength>100</r:MaxLength>"));
+        assertTrue(xml.contains("<r:MinLength>10</r:MinLength>"));
+        assertTrue(xml.contains("<r:RegExp>[A-Za-z0-9]+</r:RegExp>"));
+        assertTrue(xml.contains("blankIsMissingValue=\"false\""));
+        assertTrue(xml.contains("</r:TextRepresentation>"));
     }
 
     @Test
