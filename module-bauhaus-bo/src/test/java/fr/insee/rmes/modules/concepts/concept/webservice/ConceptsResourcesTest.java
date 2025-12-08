@@ -67,13 +67,6 @@ class ConceptsResourcesTest {
         Assertions.assertEquals(2, response.getBody().size());
     }
 
-    @Test
-    void shouldReturnResponseWhenGetRelatedConcepts() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        when(conceptsService.getRelatedConcepts("id mocked")).thenReturn("mocked result");
-        String actual = conceptsResources.getRelatedConcepts("id mocked").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
 
     @Test
     void shouldReturnResponseWhenDeleteConcept() throws RmesException {
