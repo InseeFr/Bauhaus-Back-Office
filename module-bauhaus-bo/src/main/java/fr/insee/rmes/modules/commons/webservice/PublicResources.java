@@ -2,15 +2,8 @@ package fr.insee.rmes.modules.commons.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.LabelUrl;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.application.Init;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -27,7 +20,6 @@ import java.util.TreeSet;
 
 @RestController
 @RequestMapping("/")
-@Tag(name = "Application", description = "Application API")
 public class PublicResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
@@ -70,7 +62,6 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Initial properties")
     public ResponseEntity<String> getProperties() throws RmesException {
         JSONObject props = new JSONObject();
         try {
@@ -98,7 +89,6 @@ public class PublicResources {
     }
 
     @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of dissemination status")
     public ResponseEntity<String> getDisseminationStatus() {
         TreeSet<String> dsList = new TreeSet<>();
         for (DisseminationStatus ds : DisseminationStatus.values()) {

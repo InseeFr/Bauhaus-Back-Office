@@ -29,6 +29,18 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                  "conceptsIdentifiers": ["c00001"]
              }
             """;
+
+    final static String UPDATE_COLLECTION_REQUEST_JSON = """
+            {   
+                "id": "%s",
+                 "labels": [{"value": "label fr v2", "lang": "fr"}],
+                 "descriptions": [],
+                 "creator" : "HIE000001",
+                 "contributor" : "HIE000002",
+                 "conceptsIdentifiers": ["c00001"]
+             }
+            """;
+
     @LocalServerPort
     int serverPort;
 
@@ -99,6 +111,38 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat((new JSONObject(fetchedCollections)).getString("created")).matches(ISO_8601_DATE_TIME_PATTERN);
         assertThat((new JSONObject(fetchedCollections)).has("modified")).isTrue();
         assertThat((new JSONObject(fetchedCollections)).isNull("modified")).isTrue();
+
+        var updateResponseKo = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve()
+                .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+
+        var updateResponseOk = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve()
+                .toEntity(Void.class);
+
+        assertThat(updateResponseOk.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        fetchedCollections = restClient
+                .get().uri(uuid)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        JSONAssert.assertEquals("""
+                {
+                  "id" : "%s",
+                   "labels": [{"value": "label fr v2", "lang": "FR"}],
+                   "descriptions": [],
+                   "creator" : "HIE000001",
+                   "contributor" : "HIE000002",
+                   "isValidated": false,
+                }
+                """.formatted(uuid), fetchedCollections, false);
+
     }
 
 }

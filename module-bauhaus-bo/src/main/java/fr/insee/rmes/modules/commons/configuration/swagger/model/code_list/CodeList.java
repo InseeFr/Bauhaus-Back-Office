@@ -1,23 +1,18 @@
 package fr.insee.rmes.modules.commons.configuration.swagger.model.code_list;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeList {
 
-	@Schema(description="Code list notation")
 	public String notation;
 
-	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String labelLg1;
 
-	@Schema(description = "Label lg2")
 	public String labelLg2;
 
-	@Schema(description = "List of codes")
 	public List<CodeLabelTwoLangs> codes;
 
 	public String range;

@@ -7,13 +7,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,9 +25,7 @@ import java.util.Arrays;
 
 @RestController
 @RequestMapping("/documents")
-@SecurityRequirement(name = "bearerAuth")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
-@Tag(name = Constants.DOCUMENT, description = "Document API")
 public class DocumentsResources {
 
     static final Logger logger = LoggerFactory.getLogger(DocumentsResources.class);
@@ -50,7 +41,6 @@ public class DocumentsResources {
 
     @GetMapping
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "List of documents and links")
     public ResponseEntity<String> getDocuments() throws RmesException {
         String documents = documentsService.getDocuments();
         return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(documents);
@@ -59,7 +49,6 @@ public class DocumentsResources {
 
     @GetMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "Get a Document")
     public ResponseEntity<String> getDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -67,7 +56,6 @@ public class DocumentsResources {
     }
 
     @GetMapping(value = "/document/{id}/file", produces = "*/*")
-    @Operation(summary = "Download the Document file")
     public ResponseEntity<Resource> downloadDocument(@PathVariable(Constants.ID) String id) throws RmesException {
         return documentsService.downloadDocument(id);
     }
@@ -78,11 +66,8 @@ public class DocumentsResources {
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
-    @Operation(summary = "Create document")
     public ResponseEntity<String> setDocument(
-            @Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation = Document.class))
             @RequestParam(value = "body") String body,
-            @Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
             @RequestParam(value = "file") MultipartFile documentFile
     ) throws RmesException, IOException {
         String id;
@@ -99,19 +84,8 @@ public class DocumentsResources {
 
     @PutMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
-    @Operation(summary = "Update document ")
     public ResponseEntity<String> setDocument(
-            @Parameter(
-                    description = "Id",
-                    required = true,
-                    schema = @Schema (type=Constants.TYPE_STRING)
-            )
             @PathVariable(Constants.ID) DocumentId id,
-            @Parameter(
-                    description = Constants.DOCUMENT,
-                    required = true,
-                    schema = @Schema(implementation = Document.class)
-            )
             @RequestBody String body) throws RmesException {
         String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
         documentsService.setDocument(documentIdString, body);
@@ -120,7 +94,6 @@ public class DocumentsResources {
     }
 
 
-    @Operation(summary = "Change document file")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/document/{id}/file",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -128,9 +101,8 @@ public class DocumentsResources {
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> changeDocument(
-            @Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
             @RequestParam(value = "file") MultipartFile documentFile,
-            @Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
+            @PathVariable(Constants.ID) String id
     ) throws RmesException, IOException {
         String documentName = documentFile.getOriginalFilename();
         verifyExtension(documentName);
@@ -141,12 +113,7 @@ public class DocumentsResources {
 
     @DeleteMapping("/document/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.DELETE)
-    @Operation(summary = "Delete a document")
     public ResponseEntity<Object> deleteDocument(
-            @Parameter(
-                    required = true,
-                    schema = @Schema (type=Constants.TYPE_STRING)
-            )
             @PathVariable(Constants.ID) DocumentId id)
             throws RmesException {
         String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
@@ -156,7 +123,6 @@ public class DocumentsResources {
 
     @GetMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.READ)
-    @Operation(summary = "Get a Link")
     public ResponseEntity<String> getLink(@PathVariable(Constants.ID) String id) throws RmesException {
 
         return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(documentsService.getLink(id).toString());
@@ -169,9 +135,7 @@ public class DocumentsResources {
                     "application/vnd.oasis.opendocument.text",
                     MediaType.APPLICATION_JSON_VALUE})
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.CREATE)
-    @Operation(summary = "Create link")
     public ResponseEntity<Object> setLink(
-            @Parameter(description = "Link", required = true, schema = @Schema(implementation = Document.class))
             @RequestParam(value = "body") String body
     ) throws RmesException, IOException {
         return ResponseEntity.status(HttpStatus.OK).body(documentsService.setLink(body));
@@ -179,18 +143,8 @@ public class DocumentsResources {
 
     @PutMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.UPDATE)
-    @Operation(summary = "Update link")
     public ResponseEntity<Object> setLink(
-            @Parameter(
-                    description = "Id",
-                    required = true,
-                    schema = @Schema (type=Constants.TYPE_STRING)
-            )
             @PathVariable(Constants.ID) DocumentId id,
-            @Parameter(
-                    required = true,
-                    schema = @Schema(implementation = Document.class)
-            )
             @RequestBody String body
     )
             throws RmesException {
@@ -200,12 +154,7 @@ public class DocumentsResources {
 
     @DeleteMapping("/link/{id}")
     @HasAccess(module = RBAC.Module.OPERATION_DOCUMENT, privilege = RBAC.Privilege.DELETE)
-    @Operation(summary = "Delete a link")
     public ResponseEntity<Object> deleteLink(
-            @Parameter(
-                    required = true,
-                    schema = @Schema (type=Constants.TYPE_STRING)
-            )
             @PathVariable(Constants.ID) DocumentId id
     ) throws RmesException {
         String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;

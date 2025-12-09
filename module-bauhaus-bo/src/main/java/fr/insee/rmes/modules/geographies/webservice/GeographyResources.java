@@ -10,13 +10,6 @@ import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.geographies.webservice.response.TerritoryResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +24,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/geo")
-@SecurityRequirement(name = "bearerAuth")
-@Tag(name="Geography", description="Geography API")
 public class GeographyResources {
 
 	final GeographyService geoService;
@@ -49,7 +40,6 @@ public class GeographyResources {
 	 ******************************************************************************************************/
 	@GetMapping(value = "/territories", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
-	@Operation(summary = "List of geofeatures")
 	public ResponseEntity<List<TerritoryResponse>> getGeoFeatures() throws RmesException, JsonProcessingException {
 		String jsonResultat = geoService.getGeoFeatures();
 
@@ -77,7 +67,6 @@ public class GeographyResources {
 	
 	@GetMapping(value = "/territory/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
-	@Operation(summary = "Geofeature")
 	public ResponseEntity<Object> getGeoFeature(@PathVariable(Constants.ID) String id) throws RmesException {
 		String jsonResultat = geoService.getGeoFeatureById(id).toString();
 		return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
@@ -86,10 +75,7 @@ public class GeographyResources {
 
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Create feature")
-	public ResponseEntity<String> createGeography(
-			@Parameter(description = "Geo Feature to create", required = true,
-            content = @Content(schema = @Schema(implementation = GeoFeature.class))) @RequestBody String body) {
+	public ResponseEntity<String> createGeography(@RequestBody String body) {
 		try {
 			String iri = geoService.createFeature(body);
 
@@ -115,10 +101,9 @@ public class GeographyResources {
 
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Geo Feature to update", required = true, schema = @Schema(implementation= GeoFeature.class)) @RequestBody String body) {
+			@PathVariable(Constants.ID) String id,
+			@RequestBody String body) {
 		try {
 			geoService.updateFeature(id, body);
 			return ResponseEntity.ok(HttpStatus.SC_OK);

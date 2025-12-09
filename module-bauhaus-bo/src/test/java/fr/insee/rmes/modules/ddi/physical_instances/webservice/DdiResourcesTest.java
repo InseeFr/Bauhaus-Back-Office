@@ -182,12 +182,9 @@ class DdiResourcesTest {
         // Given
         String agencyId = "fr.insee";
         String instanceId = "test-id";
-        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
-            "Replaced Physical Instance Label",
-            "Replaced DataRelationship Name"
-        );
+        Ddi4Response request = createMockDdi4Response(); // Use full Ddi4Response for PUT
         Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
+        when(ddiService.updateFullPhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
         // When
         ResponseEntity<Ddi4Response> result = ddiResources.replacePhysicalInstance(agencyId, instanceId, request);
@@ -201,7 +198,7 @@ class DdiResourcesTest {
         assertNotNull(responseBody);
         assertEquals("test-schema", responseBody.schema());
 
-        verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
+        verify(ddiService).updateFullPhysicalInstance(agencyId, instanceId, request);
     }
 
     @Test

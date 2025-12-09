@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaConfiguration colecticaConfiguration;
     private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
-    private Ddi4Response cachedDdi4Response;
+    private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private String cachedAuthToken;
     private Set<String> denyListCache;
 
@@ -56,12 +57,14 @@ public class DDIRepositoryImpl implements DDIRepository {
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ObjectMapper objectMapper,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaConfiguration colecticaConfiguration
             ) {
         this.restTemplate = restTemplate;
         this.instanceConfiguration = instanceConfiguration;
         this.objectMapper = objectMapper;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
+        this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
     }
 
@@ -406,13 +409,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
-        if (cachedDdi4Response != null && cachedDdi4Response.physicalInstance() != null
-                && !cachedDdi4Response.physicalInstance().isEmpty()
-                && cachedDdi4Response.physicalInstance().get(0).id().equals(id)
-                && cachedDdi4Response.physicalInstance().get(0).agency().equals(agencyId)) {
-            logger.info("Returning cached DDI4 Physical Instance for agencyId: {}, id: {}", agencyId, id);
-            return cachedDdi4Response;
-        }
 
         logger.info("Fetching DDI4 Physical Instance from Colectica API for agencyId: {}, id: {}", agencyId, id);
 
@@ -487,10 +483,10 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 // Use the converter service to convert DDI3 to DDI4
                 logger.info("Converting DDI3 to DDI4 using converter service");
-                cachedDdi4Response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
+                var response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
 
                 logger.info("Successfully converted Physical Instance to DDI4 format");
-                return cachedDdi4Response;
+                return response;
 
             } catch (Exception e) {
                 logger.error("Error processing Colectica API response for agencyId: {}, id: {}", agencyId, id, e);
@@ -618,7 +614,59 @@ public class DDIRepositoryImpl implements DDIRepository {
             logger.info("Successfully updated physical instance with id: {}", id);
 
             // Clear cache to force refresh on next read
-            cachedDdi4Response = null;
+
+            return null;
+        });
+    }
+
+    @Override
+    public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
+        logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
+
+        executeWithAuth(token -> {
+            // Convert DDI4 to DDI3
+            Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
+
+            if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+                throw new RuntimeException("No items to save in DDI4 response");
+            }
+
+            // Convert each Ddi3Item to ColecticaItemResponse
+            List<ColecticaItemResponse> colecticaItems = ddi3Response.items().stream()
+                .map(ddi3Item -> new ColecticaItemResponse(
+                    ddi3Item.itemType(),
+                    ddi3Item.agencyId(),
+                    Integer.parseInt(ddi3Item.version()),
+                    ddi3Item.identifier(),
+                    ddi3Item.item(),
+                    ddi3Item.versionDate(),
+                    ddi3Item.versionResponsibility(),
+                    ddi3Item.isPublished(),
+                    ddi3Item.isDeprecated(),
+                    ddi3Item.isProvisional(),
+                    ddi3Item.itemFormat()
+                ))
+                .toList();
+
+            // Create request with all items
+            ColecticaCreateItemRequest updateRequest = new ColecticaCreateItemRequest(colecticaItems);
+
+            // Send to Colectica
+            String url = instanceConfiguration.baseApiUrl() + "item";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(updateRequest, headers);
+
+            logger.info("Sending full update request to Colectica with {} items: {}", colecticaItems.size(), url);
+
+            // POST to Colectica
+            restTemplate.postForObject(url, requestEntity, String.class);
+
+            logger.info("Successfully updated full physical instance with id: {} ({} items saved)", id, colecticaItems.size());
+
 
             return null;
         });

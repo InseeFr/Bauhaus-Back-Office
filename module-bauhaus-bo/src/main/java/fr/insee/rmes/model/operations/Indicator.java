@@ -5,82 +5,56 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 import java.util.Objects;
 
 public class Indicator {
 
-
-
-	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 
-	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String prefLabelLg1;
 
-	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-	@Schema(description = "Alternative value Lg1")
 	public String altLabelLg1;
 
-	@Schema(description = "Alternative value Lg2")
 	public String altLabelLg2;
 
-	@Schema(description = "Abstract Lg1")
 	public String abstractLg1;
 
-	@Schema(description = "Abstract lg2")
 	public String abstractLg2;
 
-	@Schema(description = "History note Lg1")
 	public String historyNoteLg1;
 
-	@Schema(description = "History note lg2")
 	public String historyNoteLg2;
 	
-	@Schema(description = "Frequency's notation")
 	public String accrualPeriodicityCode;
 
-	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	//@JsonFormat(shape = Shape.ARRAY)
-	@Schema(description = "Identifier of publishers")
 	public List<OperationsLink> publishers;
 
-	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
 	
-	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
 	public List<String> creators;
 
-	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
 
-	@Schema(description = "List of resources that replaces the series")
 	public List<OperationsLink> replaces;
 	
-	@Schema(description = "List of resources replaced by the series")
 	public List<OperationsLink> isReplacedBy;
 	
-	@Schema(description = "List of resources which generate the indicator")
 	public List<OperationsLink> wasGeneratedBy;
 	
-	@Schema(description="Id of Sims documentation")
 	public String idSims;
 
-	@Schema(description =  "Creation date")
 	private String created;
 
-	@Schema(description =  "Update date")
 	@JsonAlias({"updated","modified"})
 	private String updated;
 
-  @Schema(description = "validationState")
 	public String validationState;
 
 	public Indicator(String id) {

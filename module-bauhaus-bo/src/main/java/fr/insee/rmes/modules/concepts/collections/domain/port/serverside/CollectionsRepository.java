@@ -15,4 +15,5 @@ public interface CollectionsRepository {
     List<CompactCollection> getCollections() throws CollectionsFetchException;
     Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException;
     void save(Collection collection) throws CollectionsSaveException;
+    void update(Collection collection) throws CollectionsSaveException;
 }

@@ -132,12 +132,7 @@
       <artifactId>xmlunit-core</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- SWAGGER -->
-    <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>${springdoc.version}</version>
-    </dependency>
+
     <!-- RDF -->
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>

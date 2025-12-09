@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class DDIRepositoryImplTest {
     private DDI3toDDI4ConverterService ddi3ToDdi4Converter;
 
     @Mock
+    private DDI4toDDI3ConverterService ddi4ToDdi3Converter;
+
+    @Mock
     private ColecticaConfiguration colecticaConfiguration;
 
     private DDIRepositoryImpl ddiRepository;
@@ -49,7 +53,7 @@ class DDIRepositoryImplTest {
         // By default, mock returns null for codeListDenyList (no filtering)
         // Use lenient() since not all tests use this stubbing
         lenient().when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
-        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter, colecticaConfiguration);
+        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration);
     }
 
     @Test

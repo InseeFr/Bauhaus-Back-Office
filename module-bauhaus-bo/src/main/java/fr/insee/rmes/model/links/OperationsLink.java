@@ -1,7 +1,6 @@
 package fr.insee.rmes.model.links;
 
 import fr.opensagres.xdocreport.core.utils.StringUtils;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Objects;
 
@@ -9,16 +8,12 @@ public class OperationsLink {
 
 	public static final String CLASS_NAME = "fr.insee.rmes.model.links.OperationsLink";
 
-	@Schema(description = "Id of the resource linked", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 	
-	@Schema(description = "Type of object")
 	public String type;
 
-	@Schema(description = "Label lg1")
 	public String labelLg1;
 
-	@Schema(description = "Label lg2")
 	public String labelLg2;
 
 	public String getId() {
