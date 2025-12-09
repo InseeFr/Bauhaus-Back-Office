@@ -1,0 +1,47 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Bauhaus Back Office
+meta:
+  id: wrk_d53690ed485847b18a9b2f1317d22114
+  created: 1765280315428
+  modified: 1765280315428
+  description: ""
+collection:
+  - url: "{{ _.API_URL }}/init"
+    name: New Request
+    meta:
+      id: req_5d749450e6ca440bae9817be6a8ed6c0
+      created: 1765280321408
+      modified: 1765280526642
+      isPrivate: false
+      description: ""
+      sortKey: -1765280321408
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/12.1.0
+        description: ""
+        disabled: false
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_135626b2583aa1c6bcdb92d2901ebc8d8f1f8e44
+    created: 1765280315444
+    modified: 1765280315444
+environments:
+  name: Base Environment
+  meta:
+    id: env_135626b2583aa1c6bcdb92d2901ebc8d8f1f8e44
+    created: 1765280315442
+    modified: 1765280510547
+    isPrivate: false
+  data:
+    API_URL: http://localhost:8080/api
