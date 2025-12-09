@@ -2,11 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.DenyListFilter;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +25,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/admin/colectica")
-@Tag(name = "Colectica Administration", description = "Administrative endpoints for Colectica configuration")
 public class ColecticaAdminController {
 
     private final ColecticaConfiguration configuration;
@@ -55,10 +49,6 @@ public class ColecticaAdminController {
      * @return The list of deny list entries
      */
     @GetMapping(value = "/deny-list", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Get deny list configuration",
-            description = "Returns all configured deny list entries for code lists"
-    )
     public ResponseEntity<List<ColecticaConfiguration.CodeListDenyEntry>> getDenyList() {
         List<ColecticaConfiguration.CodeListDenyEntry> denyList = configuration.codeListDenyList();
 
@@ -77,14 +67,8 @@ public class ColecticaAdminController {
      * @return A map containing the check result and details
      */
     @GetMapping(value = "/deny-list/check", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Check if item is in deny list",
-            description = "Verifies whether a specific agencyId/id combination is configured in the deny list"
-    )
     public ResponseEntity<Map<String, Object>> isInDenyList(
-            @Parameter(description = "Agency ID of the code list", required = true)
             @RequestParam String agencyId,
-            @Parameter(description = "ID of the code list", required = true)
             @RequestParam String id) {
 
         if (agencyId == null || agencyId.isBlank() || id == null || id.isBlank()) {
@@ -108,10 +92,6 @@ public class ColecticaAdminController {
      * @return A map containing cache statistics
      */
     @GetMapping(value = "/deny-list/stats", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Get deny list statistics",
-            description = "Returns information about the deny list cache size and configuration"
-    )
     public ResponseEntity<Map<String, Object>> getDenyListStats() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -133,10 +113,6 @@ public class ColecticaAdminController {
      * @return Health status information
      */
     @GetMapping(value = "/deny-list/health", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Health check for deny list",
-            description = "Returns health status of the deny list configuration"
-    )
     public ResponseEntity<Map<String, Object>> getDenyListHealth() {
         Map<String, Object> health = new HashMap<>();
 

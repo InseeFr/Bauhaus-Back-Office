@@ -1,7 +1,6 @@
 package fr.insee.rmes.model.operations.documentations;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -14,10 +13,8 @@ public class Documentation {
 	private String idSeries;
 	private String idIndicator;
 
-	@Schema(description =  "Creation date")
 	private String created;
 
-	@Schema(description =  "Update date")
 	private String updated;
 
 	private String labelLg1;

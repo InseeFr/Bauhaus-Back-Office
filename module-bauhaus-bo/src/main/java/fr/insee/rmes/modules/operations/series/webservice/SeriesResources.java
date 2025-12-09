@@ -3,8 +3,6 @@ package fr.insee.rmes.modules.operations.series.webservice;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelAltLabel;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
@@ -12,10 +10,6 @@ import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.utils.XMLUtils;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.hateoas.MediaTypes;
@@ -31,7 +25,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Qualifier("Series")
 @RestController
-@SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
 public class SeriesResources  {
@@ -48,7 +41,6 @@ public class SeriesResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "List of series")
 	public ResponseEntity<List<PartialSeriesReponse>> getSeries() throws RmesException {
         List<PartialSeriesReponse> responses = operationsService.getSeries().stream()
                 .map(series -> {
@@ -65,7 +57,6 @@ public class SeriesResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/withSims", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "List of series with related sims")
 	public ResponseEntity<Object> getSeriesWIthSims() throws RmesException {
 		String series = operationsService.getSeriesWithSims();
 		return ResponseEntity.status(HttpStatus.OK).body(series);
@@ -73,10 +64,8 @@ public class SeriesResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@io.swagger.v3.oas.annotations.Operation(
-	summary = "Get a series")
 	public ResponseEntity<Object> getSeriesByID(@PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @RequestHeader(required=false) String accept) throws RmesException {
+			@RequestHeader(required=false) String accept) throws RmesException {
 		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
 			return ResponseEntity.status(HttpStatus.OK).body(XMLUtils.produceXMLResponse(operationsService.getSeriesByID(id)));
 		} else {
@@ -86,7 +75,6 @@ public class SeriesResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Series")
 	public ResponseEntity<Object> getSeriesForSearch() throws RmesException {
 		String series = operationsService.getSeriesForSearch();
 		return ResponseEntity.status(HttpStatus.OK).body(series);
@@ -98,11 +86,7 @@ public class SeriesResources  {
 	 */
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/advanced-search/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Series")
-	public ResponseEntity<Object> getSeriesForSearchWithStamps(@Parameter(
-			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
-			required = true,
-			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathVariable(Constants.STAMP) String stamp
+	public ResponseEntity<Object> getSeriesForSearchWithStamps(@PathVariable(Constants.STAMP) String stamp
 			) throws RmesException {
 		String series = operationsService.getSeriesForSearchWithStamp(stamp);
 		return ResponseEntity.status(HttpStatus.OK).body(series);
@@ -111,18 +95,15 @@ public class SeriesResources  {
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/series/{id}",
 		consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Update a series")
 	public ResponseEntity<Object> setSeriesById(
 			@PathVariable(Constants.ID) String id,
-			@Parameter(description = "Series to update", required = true,
-			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) throws RmesException {
+			@RequestBody String body) throws RmesException {
 		operationsService.setSeries(id, body);
 		return ResponseEntity.ok(id);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/{id}/operationsWithoutReport", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Operations without metadataReport")
 	public ResponseEntity<Object> getOperationsWithoutReport(@PathVariable(Constants.ID) String id) throws RmesException {
 		String operations  = operationsService.getOperationsWithoutReport(id);
 		return ResponseEntity.status(HttpStatus.OK).body(operations);
@@ -130,7 +111,6 @@ public class SeriesResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series/{id}/operationsWithReport", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Operations with metadataReport")
 	public ResponseEntity<Object> getOperationsWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
 		String operations  = operationsService.getOperationsWithReport(id);
 		return ResponseEntity.status(HttpStatus.OK).body(operations);
@@ -140,10 +120,7 @@ public class SeriesResources  {
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/series",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Create series")
-	public ResponseEntity<Object> createSeries(
-			@Parameter(description = "Series to create", required = true, 
-			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) throws RmesException {
+	public ResponseEntity<Object> createSeries(@RequestBody String body) throws RmesException {
 		String id = operationsService.createSeries(body);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -151,7 +128,6 @@ public class SeriesResources  {
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value = "/series/{id}/validate",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Series validation")
 	public ResponseEntity<Object> setSeriesValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		operationsService.setSeriesValidation(id);
@@ -162,11 +138,7 @@ public class SeriesResources  {
 
 	@GetMapping(value = "/series/seriesWithStamp/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	@io.swagger.v3.oas.annotations.Operation(summary = "Series with given stamp as creator")
-	public ResponseEntity<Object> getSeriesWithStamp(@Parameter(
-			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
-			required = true,
-			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathVariable(Constants.STAMP) String stamp
+	public ResponseEntity<Object> getSeriesWithStamp(@PathVariable(Constants.STAMP) String stamp
 			) throws RmesException {
 		String series = operationsService.getSeriesWithStamp(stamp);
 		return ResponseEntity.status(HttpStatus.OK).body(series);

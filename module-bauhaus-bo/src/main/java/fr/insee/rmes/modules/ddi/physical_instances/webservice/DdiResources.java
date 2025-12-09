@@ -142,8 +142,8 @@ public class DdiResources {
     public ResponseEntity<Ddi4Response> replacePhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable String id,
-            @RequestBody UpdatePhysicalInstanceRequest request) {
-        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
+            @RequestBody Ddi4Response ddi4Response) {
+        Ddi4Response updatedInstance = ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(updatedInstance);

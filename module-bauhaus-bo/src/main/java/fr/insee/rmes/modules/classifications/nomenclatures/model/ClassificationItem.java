@@ -1,107 +1,73 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.model;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 public class ClassificationItem {
-    @Schema(description = "Id")
     public String id;
 
-    @Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
     public String prefLabelLg1;
 
-    @Schema(description = "Label lg2", requiredMode = Schema.RequiredMode.REQUIRED)
     public String prefLabelLg2;
 
-    @Schema(description = "idBroader")
     public String idBroader;
 
-    @Schema(description = "altLabelLg1")
     public String altLabelLg1;
 
-    @Schema(description = "altLabelLg2")
     public String altLabelLg2;
 
-    @Schema(description = "altLabels")
     public List<ClassificationItemShortLabel>  altLabels;
 
-    @Schema(description = "narrowers")
     public List<Narrower>  narrowers;
 
-    @Schema(description = "broader URI")
     public String broaderURI;
 
-    @Schema()
     public String definitionLg1Uri;
 
-    @Schema()
     public String definitionLg1;
 
-    @Schema()
     public String definitionLg2Uri;
 
-    @Schema()
     public String definitionLg2;
 
-    @Schema()
     public String scopeNoteLg1Uri;
 
-    @Schema()
     public String scopeNoteLg1;
 
-    @Schema()
     public String scopeNoteLg2Uri;
 
-    @Schema()
     public String scopeNoteLg2;
 
-    @Schema()
     public String coreContentNoteLg1Uri;
 
-    @Schema()
     public String coreContentNoteLg1;
 
-    @Schema()
     public String coreContentNoteLg2Uri;
 
-    @Schema()
     public String coreContentNoteLg2;
 
-    @Schema()
     public String additionalContentNoteLg1Uri;
 
-    @Schema()
     public String additionalContentNoteLg1;
 
-    @Schema()
     public String additionalContentNoteLg2Uri;
 
-    @Schema()
     public String additionalContentNoteLg2;
 
-    @Schema()
     public String exclusionNoteLg1Uri;
 
-    @Schema()
     public String exclusionNoteLg1;
 
-    @Schema()
     public String exclusionNoteLg2Uri;
 
-    @Schema()
     public String exclusionNoteLg2;
 
-    @Schema()
     public String changeNoteLg1Uri;
 
-    @Schema()
     public String changeNoteLg1;
 
-    @Schema()
     public String changeNoteLg2Uri;
 
-    @Schema()
     public String changeNoteLg2;
 
     public String getId() {

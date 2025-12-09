@@ -84,7 +84,7 @@ public class Ddi3XmlReader {
             parseLabel(varElement),
             parseDescription(varElement),
             parseVariableRepresentation(varElement),
-            null
+            xmlHelper.getAttribute(varElement, "isGeographic")
         );
     }
 
@@ -265,9 +265,8 @@ public class Ddi3XmlReader {
         String role = xmlHelper.getElementText(vrElement, "VariableRole");
         CodeRepresentation codeRep = parseCodeRepresentation(vrElement);
         NumericRepresentation numRep = parseNumericRepresentation(vrElement);
-        // TODO: Add parsing for DateTimeRepresentation and TextRepresentation when needed for DDI3 to DDI4 conversion
-        DateTimeRepresentation dateTimeRep = null;
-        TextRepresentation textRep = null;
+        DateTimeRepresentation dateTimeRep = parseDateTimeRepresentation(vrElement);
+        TextRepresentation textRep = parseTextRepresentation(vrElement);
 
         return new VariableRepresentation(
             role.isEmpty() ? null : role,
@@ -333,6 +332,55 @@ public class Ddi3XmlReader {
         }
 
         return new CodeRepresentation(blankIsMissing, codeListRef);
+    }
+
+    private TextRepresentation parseTextRepresentation(Element parent) {
+        Element textRepElement = xmlHelper.getChildElement(parent, "TextRepresentation");
+        if (textRepElement == null) return null;
+
+        String blankIsMissing = xmlHelper.getAttribute(textRepElement, "blankIsMissingValue");
+        String minLengthStr = xmlHelper.getElementText(textRepElement, "MinLength");
+        String maxLengthStr = xmlHelper.getElementText(textRepElement, "MaxLength");
+        String regExp = xmlHelper.getElementText(textRepElement, "RegExp");
+
+        Integer minLength = null;
+        Integer maxLength = null;
+
+        if (minLengthStr != null && !minLengthStr.isEmpty()) {
+            try {
+                minLength = Integer.parseInt(minLengthStr);
+            } catch (NumberFormatException e) {
+                // Ignore invalid numbers
+            }
+        }
+
+        if (maxLengthStr != null && !maxLengthStr.isEmpty()) {
+            try {
+                maxLength = Integer.parseInt(maxLengthStr);
+            } catch (NumberFormatException e) {
+                // Ignore invalid numbers
+            }
+        }
+
+        return new TextRepresentation(
+            maxLength,
+            minLength,
+            regExp.isEmpty() ? null : regExp,
+            blankIsMissing
+        );
+    }
+
+    private DateTimeRepresentation parseDateTimeRepresentation(Element parent) {
+        Element dateTimeRepElement = xmlHelper.getChildElement(parent, "DateTimeRepresentation");
+        if (dateTimeRepElement == null) return null;
+
+        String dateTypeCode = xmlHelper.getElementText(dateTimeRepElement, "DateTypeCode");
+        String dateFieldFormat = xmlHelper.getElementText(dateTimeRepElement, "DateFieldFormat");
+
+        return new DateTimeRepresentation(
+            dateTypeCode.isEmpty() ? null : dateTypeCode,
+            dateFieldFormat.isEmpty() ? null : dateFieldFormat
+        );
     }
 
     private List<Code> parseCodes(Element parent) {

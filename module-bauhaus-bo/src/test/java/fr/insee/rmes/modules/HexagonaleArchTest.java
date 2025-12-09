@@ -119,7 +119,7 @@ public class HexagonaleArchTest {
     public static final ArchRule onlyClientSideInterfaceInsideClientSidePackage = classes()
             .that().resideInAPackage("..clientside..")
             .should().beAnnotatedWith(ClientSidePort.class)
-            .because("The package clientside should only container Client Side port");
+            .because("The package clientside should only contain Client Side port");
 
     @ArchTest
     public static final ArchRule serversidePortsImplementedInInfrastructure = classes()
@@ -133,7 +133,7 @@ public class HexagonaleArchTest {
     public static final ArchRule onlyServerSidePortInsideServerSidePackage = classes()
             .that().resideInAPackage("..serverside..")
             .should().beAnnotatedWith(ServerSidePort.class)
-            .because("The package serverside should only container Server Side port");
+            .because("The package serverside should only contain Server Side port");
 
 
 

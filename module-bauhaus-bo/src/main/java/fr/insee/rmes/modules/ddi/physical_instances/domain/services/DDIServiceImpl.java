@@ -47,6 +47,13 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
+        logger.info("Updating full physical instance with agencyId: {} and id: {}", agencyId, id);
+        ddiRepository.updateFullPhysicalInstance(agencyId, id, ddi4Response);
+        return ddiRepository.getPhysicalInstance(agencyId, id);
+    }
+
+    @Override
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
         logger.info("Creating new physical instance with label: {}", request.physicalInstanceLabel());
         return ddiRepository.createPhysicalInstance(request);

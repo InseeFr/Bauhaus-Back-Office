@@ -114,4 +114,9 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
             throw new CollectionsSaveException(e);
         }
     }
+
+    @Override
+    public void update(Collection collection) throws CollectionsSaveException {
+        this.save(collection);
+    }
 }

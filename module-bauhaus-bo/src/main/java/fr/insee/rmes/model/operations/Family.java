@@ -1,39 +1,26 @@
 package fr.insee.rmes.model.operations;
 
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 public class Family {
 
-	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 
-	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String prefLabelLg1;
 
-	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-
-	@Schema(description = "Abstract lg1, description")
 	public String abstractLg1;
 
-
-	@Schema(description = "Abstract lg2")
 	public String abstractLg2;
-
-	@Schema(description = "Subjects, Topics")
 	public List<IdLabelTwoLangs> subjects;
 
-	@Schema(description = "Series")
 	public List<IdLabelTwoLangs> series;
 
-	@Schema(description =  "Creation date")
 	private String created;
 
-	@Schema(description =  "Update date")
 	private String updated;
 
 

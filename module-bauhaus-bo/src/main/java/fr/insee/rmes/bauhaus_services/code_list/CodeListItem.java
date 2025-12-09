@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -10,16 +9,12 @@ public class CodeListItem {
 
 	private static final String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
 
-	@Schema(description = "Iri", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String iri;
 
-	@Schema(description = "Code", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String code;
 	
-	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String labelLg1;
 	
-	@Schema(description = "Label lg2")
 	private String labelLg2;
 
 	private String descriptionLg1;

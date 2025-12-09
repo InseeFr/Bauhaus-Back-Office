@@ -1,16 +1,11 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedLocalisedLabelException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.*;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,8 +19,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/concepts/collections")
-@SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Collections V2", description = "Concept Collections API")
 @ConditionalOnModule("concepts")
 public class CollectionsResources {
     private final CollectionsService service;
@@ -50,6 +43,8 @@ public class CollectionsResources {
             return this.service.getCollection(new CollectionId(id)).map(CollectionResponse::fromDomain).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection %s not found".formatted(id)));
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        } catch (InvalidCollectionIdException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
@@ -57,7 +52,7 @@ public class CollectionsResources {
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
     String create(@RequestBody CreateCollectionRequest collection, HttpServletResponse response){
         try {
-            var collectionId = this.service.createCollection(collection.toCommand());
+            var collectionId = this.service.createCollection(collection.toCreateCommand());
 
             URI location = ServletUriComponentsBuilder
                     .fromCurrentRequest()
@@ -78,8 +73,19 @@ public class CollectionsResources {
 
     @PutMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
-    ResponseEntity<String> update(@PathVariable String id, @RequestBody String body){
-        return null;
+    void update(@PathVariable String id, @RequestBody UpdateCollectionRequest collection){
+        try {
+
+            if(!id.equalsIgnoreCase(collection.id())){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The identifiers are not equal");
+            }
+
+            this.service.update(collection.toUpdateCommand());
+        } catch (InvalidCreateCollectionCommandException | InvalidCollectionIdException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (CollectionsSaveException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
     }
 
     @DeleteMapping("/{id}")
