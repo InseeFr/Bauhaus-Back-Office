@@ -8,6 +8,8 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public record GraphDBCollection(
@@ -92,12 +94,20 @@ public record GraphDBCollection(
                 creator,
                 contributor,
                 toLocalisedDescriptions(),
-                LocalDateTime.parse(created),
-                Objects.isNull(modified) ? null : LocalDateTime.parse(modified),
+                parseDateTime(created),
+                Objects.isNull(modified) ? null : parseDateTime(modified),
                 isValidated,
                 conceptIds.stream()
                         .map(ConceptId::new)
                         .toList());
+    }
+
+    private static LocalDateTime parseDateTime(String dateTimeStr) {
+        try {
+            return LocalDateTime.parse(dateTimeStr);
+        } catch (DateTimeParseException e) {
+            return OffsetDateTime.parse(dateTimeStr).toLocalDateTime();
+        }
     }
 
     private List<LocalisedLabel> generateLabels() {
