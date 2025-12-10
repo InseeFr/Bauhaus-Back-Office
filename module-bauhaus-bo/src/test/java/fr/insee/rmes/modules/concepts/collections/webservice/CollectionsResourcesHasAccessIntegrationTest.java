@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -98,11 +99,16 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("provideCollectionData")
     @ParameterizedTest
-    void updateCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+    void updateCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException, CollectionsSaveException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-
-        var request = put("/concepts/collections/" + collectionId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        doNothing().when(collectionsService).update(any());
+        var request = put("/concepts/collections/" + collectionId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"id": "%s", "labels": [{"value":"value", "lang": "fr"}], "descriptions": [], "creator": "HIE", "conceptsIdentifiers": []}
+                        """.formatted(collectionId));
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

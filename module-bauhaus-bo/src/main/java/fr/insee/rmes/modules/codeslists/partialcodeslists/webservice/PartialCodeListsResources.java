@@ -63,8 +63,7 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
-            List<CodeList> body = codeListService.getDetailedCodesListForSearch(true);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
+            return ResponseEntity.status(HttpStatus.OK).body(codeListService.getDetailedCodesListForSearch(true));
         } catch (RmesException e) {
             return returnRmesException(e);
         }
