@@ -37,19 +37,13 @@ public class FilesUtils {
 	}
 
 	public static String getExtension(String acceptHeader) {
-		if (acceptHeader == null) {
-			return FilesUtils.ODT_EXTENSION;
-		} else if (acceptHeader.equals("application/octet-stream")) {
-			return PDF_EXTENSION;
-		} else if (acceptHeader.equals("flatODT")) {
-			return FODT_EXTENSION;
-		} else if (acceptHeader.equals("XML")) {
-			return XML_EXTENSION;
-		} else if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
-			return ODT_EXTENSION;
-		} else {
-			return ODT_EXTENSION;
-		}
+        return switch (acceptHeader) {
+            case null -> FilesUtils.ODT_EXTENSION;
+            case "application/octet-stream" -> PDF_EXTENSION;
+            case "flatODT" -> FODT_EXTENSION;
+            case "XML" -> XML_EXTENSION;
+            default -> ODT_EXTENSION;
+        };
 	}
 
 	public static String generateFinalFileNameWithExtension(String fileName, int maxLength){
