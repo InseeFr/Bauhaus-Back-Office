@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.concepts.concept.webservice;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.concepts.*;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;

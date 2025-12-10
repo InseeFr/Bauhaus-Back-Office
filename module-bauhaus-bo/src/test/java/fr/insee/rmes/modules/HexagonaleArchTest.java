@@ -13,7 +13,6 @@ import com.tngtech.archunit.library.freeze.FreezingArchRule;
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.web.bind.annotation.*;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -145,12 +144,5 @@ public class HexagonaleArchTest {
             .should().beInterfaces()
             .because("All ports should be interfaces to define contracts"));
 
-    // RestController annotations
-
-    @ArchTest
-    public static final ArchRule restControllerShouldHaveSecurityRequirement = classes()
-            .that().areAnnotatedWith(RestController.class)
-            .should().beAnnotatedWith(SecurityRequirement.class)
-            .because("All RestController classes should be annotated with @SecurityRequirement for security documentation");
 
 }

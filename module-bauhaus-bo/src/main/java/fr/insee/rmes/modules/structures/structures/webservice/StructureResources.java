@@ -4,6 +4,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
