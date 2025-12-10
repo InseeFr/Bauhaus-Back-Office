@@ -389,8 +389,15 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
             return "683889c6-f74b-4d5e-92ed-908c0a42bb2d"; // Variable type UUID
         }
-        // Return null for unsupported types (CodeList, Category, etc.)
-        // These will be skipped during processing
+        // Check for CodeList
+        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "CodeList").getLength() > 0) {
+            return "8b108ef8-b642-4484-9c49-f88e4bf7cf1d"; // CodeList type UUID
+        }
+        // Check for Category
+        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Category").getLength() > 0) {
+            return "7e47c269-bcab-40f7-a778-af7bbc4e3d00"; // Category type UUID
+        }
+        // Return null for unsupported types
         return null;
     }
 
@@ -624,6 +631,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
 
         executeWithAuth(token -> {
+
             // Convert DDI4 to DDI3
             Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
 
