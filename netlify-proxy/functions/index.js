@@ -1,15 +1,18 @@
 /**
  * Firebase Functions mock for Colectica API
- * Mocked implementation with in-memory storage
+ * Implementation with Firestore persistence
  */
 import { onRequest } from 'firebase-functions/v2/https';
 import { XMLParser } from 'fast-xml-parser';
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
-/**
- * In-memory storage for items (Physical Instances and Data Relationships)
- * Structure: Map<identifier, item>
- */
-const itemsStore = new Map();
+// Initialize Firebase Admin
+initializeApp();
+const db = getFirestore();
+
+// Collection name for items
+const ITEMS_COLLECTION = 'items';
 
 /**
  * Default data to populate the store on initialization
@@ -58,16 +61,35 @@ const defaultItems = [
 
 /**
  * Initialize the items store with default data
+ * This function is now async and checks if items already exist in Firestore
  */
-function initializeDefaultItems() {
-  defaultItems.forEach(item => {
-    itemsStore.set(item.Identifier, item);
-  });
-  console.log(`Initialized itemsStore with ${defaultItems.length} default items`);
+async function initializeDefaultItems() {
+  try {
+    const itemsCollection = db.collection(ITEMS_COLLECTION);
+    const snapshot = await itemsCollection.limit(1).get();
+
+    // Only initialize if collection is empty
+    if (snapshot.empty) {
+      console.log('Initializing Firestore with default items...');
+      const batch = db.batch();
+
+      defaultItems.forEach(item => {
+        const docRef = itemsCollection.doc(item.Identifier);
+        batch.set(docRef, item);
+      });
+
+      await batch.commit();
+      console.log(`Initialized Firestore with ${defaultItems.length} default items`);
+    } else {
+      console.log('Firestore already contains items, skipping initialization');
+    }
+  } catch (error) {
+    console.error('Error initializing default items:', error);
+  }
 }
 
-// Initialize the store on module load
-initializeDefaultItems();
+// Note: Initialization is now handled on-demand when the first request comes in
+// to avoid cold start delays
 
 /**
  * In-memory storage for valid tokens
@@ -224,6 +246,8 @@ export const proxy = onRequest(async (req, res) => {
       await handleQuery(req, res);
     } else if (path === '/api/v1/item') {
       await handleItem(req, res);
+    } else if (path === '/api/v1/items') {
+      await handleResetItems(req, res);
     } else if (path.startsWith('/api/v1/ddiset/')) {
       await handleDdiset(req, res, path);
     } else {
@@ -234,6 +258,7 @@ export const proxy = onRequest(async (req, res) => {
           'POST /token/createtoken',
           'POST /api/v1/_query',
           'POST /api/v1/item',
+          'DELETE /api/v1/items',
           'GET /api/v1/ddiset/{agencyId}/{identifier}'
         ]
       });
@@ -300,16 +325,19 @@ async function handleQuery(req, res) {
   // Extract query parameters
   const itemTypes = queryBody.itemTypes || queryBody.ItemTypes || [];
 
-  // Get all items from store
-  let results = Array.from(itemsStore.values());
+  // Initialize default items if needed
+  await initializeDefaultItems();
+
+  // Get all items from Firestore
+  let query = db.collection(ITEMS_COLLECTION);
 
   // Filter by ItemType if specified
   if (itemTypes.length > 0) {
-    results = results.filter(item => {
-      const itemType = item.ItemType;
-      return itemTypes.includes(itemType);
-    });
+    query = query.where('ItemType', 'in', itemTypes);
   }
+
+  const snapshot = await query.get();
+  const results = snapshot.docs.map(doc => doc.data());
 
   // Transform items to match expected response format
   const transformedResults = results.map(item => {
@@ -398,6 +426,18 @@ async function handleItem(req, res) {
   const requestBody = req.body;
   console.log('Processing item create/update request');
 
+  // Save requestBody to debug collection for debugging
+  try {
+    await db.collection('debug').add({
+      timestamp: new Date().toISOString(),
+      endpoint: 'handleItem',
+      requestBody: requestBody
+    });
+    console.log('Saved requestBody to debug collection');
+  } catch (debugError) {
+    console.error('Error saving to debug collection:', debugError);
+  }
+
   // Validate request structure
   if (!requestBody.Items || !Array.isArray(requestBody.Items)) {
     res.status(400).json({
@@ -410,6 +450,9 @@ async function handleItem(req, res) {
   const results = [];
   let successCount = 0;
   let errorCount = 0;
+
+  // Initialize default items if needed
+  await initializeDefaultItems();
 
   // Process each item
   for (const item of items) {
@@ -427,9 +470,11 @@ async function handleItem(req, res) {
 
       // Store the item using Identifier as key
       const identifier = item.Identifier;
-      const isUpdate = itemsStore.has(identifier);
+      const docRef = db.collection(ITEMS_COLLECTION).doc(identifier);
+      const doc = await docRef.get();
+      const isUpdate = doc.exists;
 
-      itemsStore.set(identifier, item);
+      await docRef.set(item);
 
       results.push({
         success: true,
@@ -452,7 +497,11 @@ async function handleItem(req, res) {
     }
   }
 
-  console.log(`Total items in store: ${itemsStore.size}`);
+  // Get total count from Firestore
+  const snapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const totalItems = snapshot.data().count;
+
+  console.log(`Total items in store: ${totalItems}`);
   console.log(`Processed: ${successCount} successful, ${errorCount} failed`);
 
   // Return summary response
@@ -467,6 +516,61 @@ async function handleItem(req, res) {
     errorCount: errorCount,
     results: results
   });
+}
+
+/**
+ * Handle items store reset (MOCKED)
+ * DELETE /api/v1/items
+ * Clears all items and reinitializes with default data
+ */
+async function handleResetItems(req, res) {
+  if (req.method !== 'DELETE') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  // Validate token
+  if (!validateToken(req.headers.authorization)) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  console.log('Resetting items store...');
+
+  // Get current size before clearing
+  const countSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const previousSize = countSnapshot.data().count;
+
+  // Clear all items using batch delete
+  const snapshot = await db.collection(ITEMS_COLLECTION).get();
+  const batch = db.batch();
+  snapshot.docs.forEach(doc => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+
+  // Reinitialize with default items
+  await initializeDefaultItems();
+
+  // Get new count
+  const newCountSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const currentSize = newCountSnapshot.data().count;
+
+  const response = {
+    success: true,
+    message: 'Items store has been reset',
+    previousItemCount: previousSize,
+    currentItemCount: currentSize,
+    defaultItemsRestored: defaultItems.length
+  };
+
+  console.log('Items store reset complete:', response);
+
+  res.set({
+    'Content-Type': 'application/json',
+    ...corsHeaders
+  });
+  res.status(200).json(response);
 }
 
 /**
@@ -501,11 +605,25 @@ async function handleDdiset(req, res, path) {
 
   console.log(`Retrieving DDI set for: ${agencyId}/${identifier}`);
 
+  // Initialize default items if needed
+  await initializeDefaultItems();
+
   try {
     // Find the PhysicalInstance by identifier
-    const physicalInstance = itemsStore.get(identifier);
+    const piDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
 
-    if (!physicalInstance || physicalInstance.ItemType !== 'a51e85bb-6259-4488-8df2-f08cb43485f8') {
+    if (!piDoc.exists) {
+      res.status(404).json({
+        error: 'PhysicalInstance not found',
+        agencyId: agencyId,
+        identifier: identifier
+      });
+      return;
+    }
+
+    const physicalInstance = piDoc.data();
+
+    if (physicalInstance.ItemType !== 'a51e85bb-6259-4488-8df2-f08cb43485f8') {
       res.status(404).json({
         error: 'PhysicalInstance not found',
         agencyId: agencyId,
@@ -521,14 +639,19 @@ async function handleDdiset(req, res, path) {
 
     let dataRelationship = null;
     let variables = [];
+    let codeLists = [];
+    let categories = [];
+    const codeListIds = new Set();
+    const categoryIds = new Set();
 
     if (dataRelationshipRef) {
       const drId = dataRelationshipRef['r:ID'];
 
       // Find the DataRelationship
-      dataRelationship = itemsStore.get(drId);
+      const drDoc = await db.collection(ITEMS_COLLECTION).doc(drId).get();
+      if (drDoc.exists) {
+        dataRelationship = drDoc.data();
 
-      if (dataRelationship) {
         // Parse DataRelationship XML to extract Variable references
         const drParsed = xmlParser.parse(dataRelationship.Item);
         const drFragment = drParsed.Fragment?.DataRelationship;
@@ -547,17 +670,87 @@ async function handleDdiset(req, res, path) {
           // Find all variables
           for (const varRef of varRefs) {
             const varId = varRef['r:ID'];
-            const variable = itemsStore.get(varId);
-            if (variable) {
+            const varDoc = await db.collection(ITEMS_COLLECTION).doc(varId).get();
+            if (varDoc.exists) {
+              const variable = varDoc.data();
               variables.push(variable);
+
+              // Parse variable to extract CodeList references
+              const varParsed = xmlParser.parse(variable.Item);
+              const varFragment = varParsed.Fragment?.Variable;
+              const varRepresentation = varFragment?.VariableRepresentation;
+              const codeRepresentation = varRepresentation?.['r:CodeRepresentation'];
+
+              if (codeRepresentation) {
+                const codeListRef = codeRepresentation['r:CodeListReference'];
+                if (codeListRef) {
+                  const codeListId = codeListRef['r:ID'];
+                  if (codeListId) {
+                    codeListIds.add(codeListId);
+                  }
+                }
+              }
             }
           }
         }
       }
     }
 
+    // Fetch all referenced CodeLists
+    for (const codeListId of codeListIds) {
+      const clDoc = await db.collection(ITEMS_COLLECTION).doc(codeListId).get();
+      if (clDoc.exists) {
+        const codeList = clDoc.data();
+        codeLists.push(codeList);
+
+        // Parse CodeList to extract Category references
+        const clParsed = xmlParser.parse(codeList.Item);
+        const clFragment = clParsed.Fragment?.CodeList;
+        const codes = clFragment?.Code;
+
+        if (codes) {
+          const codeArray = Array.isArray(codes) ? codes : [codes];
+          for (const code of codeArray) {
+            const categoryRef = code['r:CategoryReference'];
+            if (categoryRef) {
+              const categoryId = categoryRef['r:ID'];
+              if (categoryId) {
+                categoryIds.add(categoryId);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Fetch all referenced Categories
+    for (const categoryId of categoryIds) {
+      const catDoc = await db.collection(ITEMS_COLLECTION).doc(categoryId).get();
+      if (catDoc.exists) {
+        categories.push(catDoc.data());
+      }
+    }
+
+    // Also find all variables with the same agencyId that are not already in the list
+    // This is a fallback to ensure all variables are returned even if not referenced
+    const variableType = '683889c6-f74b-4d5e-92ed-908c0a42bb2d';
+    const variableIds = new Set(variables.map(v => v.Identifier));
+
+    const allItemsSnapshot = await db.collection(ITEMS_COLLECTION)
+      .where('ItemType', '==', variableType)
+      .where('AgencyId', '==', agencyId)
+      .get();
+
+    allItemsSnapshot.docs.forEach(doc => {
+      const item = doc.data();
+      if (!variableIds.has(item.Identifier)) {
+        //variables.push(item);
+        console.log(`Added unreferenced variable: ${item.Identifier}`);
+      }
+    });
+
     // Generate DDI FragmentInstance XML
-    const xmlResponse = generateDDIFragmentInstance(physicalInstance, dataRelationship, variables);
+    const xmlResponse = generateDDIFragmentInstance(physicalInstance, dataRelationship, variables, codeLists, categories);
 
     res.set({
       'Content-Type': 'application/xml',
@@ -576,7 +769,7 @@ async function handleDdiset(req, res, path) {
 /**
  * Generate DDI FragmentInstance XML by assembling fragments
  */
-function generateDDIFragmentInstance(physicalInstance, dataRelationship, variables) {
+function generateDDIFragmentInstance(physicalInstance, dataRelationship, variables, codeLists, categories) {
   const agency = physicalInstance.AgencyId;
   const id = physicalInstance.Identifier;
   const version = physicalInstance.Version;
@@ -605,6 +798,22 @@ function generateDDIFragmentInstance(physicalInstance, dataRelationship, variabl
   if (dataRelationship) {
     xml += `
     ${dataRelationship.Item}`;
+  }
+
+  // Add CodeList fragments
+  if (codeLists && codeLists.length > 0) {
+    for (const codeList of codeLists) {
+      xml += `
+    ${codeList.Item}`;
+    }
+  }
+
+  // Add Category fragments
+  if (categories && categories.length > 0) {
+    for (const category of categories) {
+      xml += `
+    ${category.Item}`;
+    }
   }
 
   xml += `

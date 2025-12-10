@@ -1183,4 +1183,275 @@ class DDIRepositoryImplTest {
         assertEquals("id-to-keep", result.get(0).id());
         assertEquals("Code List 2", result.get(0).label());
     }
+
+    @Test
+    void shouldGetPhysicalInstanceWithCodeListsAndCategories() {
+        // Given
+        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String agencyId = "fr.insee";
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        when(restTemplate.postForObject(
+                eq(baseServerUrl + "/token/createtoken"),
+                any(HttpEntity.class),
+                eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock DDI set response with complete FragmentInstance XML (including Variables, CodeLists, Categories)
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
+                "    <ddi:TopLevelReference>\n" +
+                "        <r:Agency>fr.insee</r:Agency>\n" +
+                "        <r:ID>32799021-0663-41cd-aca6-3ad8dbdae3e3</r:ID>\n" +
+                "        <r:Version>1</r:Version>\n" +
+                "        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>\n" +
+                "    </ddi:TopLevelReference>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:14.251595Z\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>32799021-0663-41cd-aca6-3ad8dbdae3e3</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">test</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "            <r:DataRelationshipReference>\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>795aa4b8-acec-4ef8-8f08-3a200c7bdb10</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <r:TypeOfObject>DataRelationship</r:TypeOfObject>\n" +
+                "            </r:DataRelationshipReference>\n" +
+                "        </PhysicalInstance>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <Variable isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:33.138Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <VariableName>\n" +
+                "                <r:String xml:lang=\"fr-FR\">name</r:String>\n" +
+                "            </VariableName>\n" +
+                "            <r:Label>\n" +
+                "                <r:Content xml:lang=\"fr-FR\">Test Label</r:Content>\n" +
+                "            </r:Label>\n" +
+                "            <VariableRepresentation>\n" +
+                "                <r:CodeRepresentation blankIsMissingValue=\"false\">\n" +
+                "                    <r:CodeListReference>\n" +
+                "                        <r:Agency>fr.insee</r:Agency>\n" +
+                "                        <r:ID>2f70f505-4a9e-4abe-82d4-c4ddfed25d52</r:ID>\n" +
+                "                        <r:Version>1</r:Version>\n" +
+                "                        <r:TypeOfObject>CodeList</r:TypeOfObject>\n" +
+                "                    </r:CodeListReference>\n" +
+                "                </r:CodeRepresentation>\n" +
+                "            </VariableRepresentation>\n" +
+                "        </Variable>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:14.251595Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>795aa4b8-acec-4ef8-8f08-3a200c7bdb10</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <DataRelationshipName>\n" +
+                "                <r:String xml:lang=\"en-US\">DataRelationShip Name:test</r:String>\n" +
+                "            </DataRelationshipName>\n" +
+                "            <LogicalRecord isUniversallyUnique=\"true\">\n" +
+                "                <r:URN>urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1</r:URN>\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>8585972f-2dc2-4125-87b2-60fd3f243cf3</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <LogicalRecordName>\n" +
+                "                    <r:String xml:lang=\"fr\">test</r:String>\n" +
+                "                </LogicalRecordName>\n" +
+                "                <VariablesInRecord>\n" +
+                "                    <VariableUsedReference>\n" +
+                "                        <r:Agency>fr.insee</r:Agency>\n" +
+                "                        <r:ID>2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d</r:ID>\n" +
+                "                        <r:Version>1</r:Version>\n" +
+                "                        <r:TypeOfObject>Variable</r:TypeOfObject>\n" +
+                "                    </VariableUsedReference>\n" +
+                "                </VariablesInRecord>\n" +
+                "            </LogicalRecord>\n" +
+                "        </DataRelationship>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <CodeList isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:28.140Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>2f70f505-4a9e-4abe-82d4-c4ddfed25d52</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Label>\n" +
+                "                <r:Content xml:lang=\"fr-FR\">cl</r:Content>\n" +
+                "            </r:Label>\n" +
+                "            <Code isUniversallyUnique=\"true\">\n" +
+                "                <r:URN>urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1</r:URN>\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>6a290143-b9f6-43d3-92ac-70c3b2f516c1</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <r:CategoryReference>\n" +
+                "                    <r:Agency>fr.insee</r:Agency>\n" +
+                "                    <r:ID>d363a730-14d4-4c54-9464-982312cf9330</r:ID>\n" +
+                "                    <r:Version>1</r:Version>\n" +
+                "                    <r:TypeOfObject>Category</r:TypeOfObject>\n" +
+                "                </r:CategoryReference>\n" +
+                "                <r:Value>a</r:Value>\n" +
+                "            </Code>\n" +
+                "        </CodeList>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <Category isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:28.140Z\" isMissing=\"false\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>d363a730-14d4-4c54-9464-982312cf9330</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Label>\n" +
+                "                <r:Content xml:lang=\"fr-FR\">aq</r:Content>\n" +
+                "            </r:Label>\n" +
+                "        </Category>\n" +
+                "    </Fragment>\n" +
+                "</ddi:FragmentInstance>";
+
+        // Mock the direct call to /ddiset/{agencyId}/{identifier}
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+
+        // Mock DDI3 to DDI4 conversion with CodeLists and Categories
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-12-10T11:55:14.251595Z",
+                "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
+                agencyId, instanceId, "1",
+                new Citation(new Title(new StringValue("fr-FR", "test"))),
+                new DataRelationshipReference(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship")
+        );
+
+        Ddi4Variable mockVariable = new Ddi4Variable(
+                "true",
+                "2025-12-10T11:55:33.138Z",
+                "urn:ddi:fr.insee:2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d:1",
+                agencyId,
+                "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
+                "1",
+                new VariableName(new StringValue("fr-FR", "name")),
+                new Label(new Content("fr-FR", "Test Label")),
+                null,
+                new VariableRepresentation(null,
+                    new CodeRepresentation("false",
+                        new CodeListReference(agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1", "CodeList")),
+                    null, null, null),
+                ""
+        );
+
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                "true", "2025-12-10T11:55:14.251595Z",
+                "urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1",
+                agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
+                new DataRelationshipName(new StringValue("en-US", "DataRelationShip Name:test")),
+                new LogicalRecord("true", "urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
+                        agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
+                        new LogicalRecordName(new StringValue("fr", "test")),
+                        new VariablesInRecord(List.of(
+                                new VariableUsedReference(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable")
+                        )))
+        );
+
+        Ddi4CodeList mockCodeList = new Ddi4CodeList(
+                "true", "2025-12-10T11:55:28.140Z",
+                "urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1",
+                agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1",
+                new Label(new Content("fr-FR", "cl")),
+                List.of(new Code("true",
+                        "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
+                        agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
+                        new CategoryReference(agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1", "Category"),
+                        "a"))
+        );
+
+        Ddi4Category mockCategory = new Ddi4Category(
+                "true", "2025-12-10T11:55:28.140Z",
+                "urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1",
+                agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1",
+                new Label(new Content("fr-FR", "aq"))
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship),
+                List.of(mockVariable),
+                List.of(mockCodeList),
+                List.of(mockCategory)
+        );
+
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        // When
+        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.physicalInstance());
+        assertEquals(1, result.physicalInstance().size());
+        assertEquals(instanceId, result.physicalInstance().get(0).id());
+        assertEquals("test", result.physicalInstance().get(0).citation().title().string().text());
+
+        // Verify Variables are present
+        assertNotNull(result.variable());
+        assertEquals(1, result.variable().size());
+        assertEquals("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", result.variable().get(0).id());
+        assertEquals("name", result.variable().get(0).variableName().string().text());
+
+        // Verify CodeLists are present
+        assertNotNull(result.codeList());
+        assertEquals(1, result.codeList().size());
+        assertEquals("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", result.codeList().get(0).id());
+        assertEquals("cl", result.codeList().get(0).label().content().text());
+
+        // Verify Categories are present
+        assertNotNull(result.category());
+        assertEquals(1, result.category().size());
+        assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
+        assertEquals("aq", result.category().get(0).label().content().text());
+
+        // Verify authentication was called
+        verify(restTemplate).postForObject(
+                eq(baseServerUrl + "/token/createtoken"),
+                any(HttpEntity.class),
+                eq(AuthenticationResponse.class));
+
+        // Verify ddiset endpoint was called
+        verify(restTemplate).exchange(
+                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(String.class));
+
+        // Verify converter was called with all item types
+        ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
+
+        Ddi3Response capturedDdi3 = ddi3Captor.getValue();
+        assertNotNull(capturedDdi3.items());
+        assertEquals(5, capturedDdi3.items().size()); // PI + Variable + DR + CodeList + Category
+    }
 }
