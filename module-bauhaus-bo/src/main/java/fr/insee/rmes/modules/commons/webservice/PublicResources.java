@@ -28,7 +28,6 @@ public class PublicResources {
     private final String lg2;
     private final String lg1;
     private final String maxLengthScopeNote;
-    private final String defaultMailSender;
     private final String defaultContributor;
     private final String appHost;
     private final List<String> activeModules;
@@ -41,7 +40,6 @@ public class PublicResources {
                            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
                            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
                            @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
-                           @Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}") String defaultMailSender,
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
                            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
@@ -52,7 +50,6 @@ public class PublicResources {
         this.lg2 = lg2;
         this.lg1 = lg1;
         this.maxLengthScopeNote = maxLengthScopeNote;
-        this.defaultMailSender = defaultMailSender;
         this.defaultContributor = defaultContributor;
         this.appHost = appHost;
         this.activeModules = activeModules;
@@ -67,7 +64,6 @@ public class PublicResources {
         try {
             props.put("appHost", this.appHost);
             props.put("defaultContributor", this.defaultContributor);
-            props.put("defaultMailSender", this.defaultMailSender);
             props.put("maxLengthScopeNote", this.maxLengthScopeNote);
             props.put("lg1", this.lg1);
             props.put("lg2", this.lg2);

@@ -250,7 +250,7 @@ class GraphDBCollectionTest {
     }
 
     @Test
-    void should_replace_concepts_with_withConcepts_method() {
+    void should_replace_concepts_with_with_concepts_method() {
         // Given
         var originalGraphDBCollection = new GraphDBCollection(
                 "c1000",
