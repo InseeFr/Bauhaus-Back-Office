@@ -1,16 +1,16 @@
 package fr.insee.rmes.modules.operations.documents.webservice;
 
+import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
 import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
-import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.stream.Stream;
 
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.configureJwtDecoderMock;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;

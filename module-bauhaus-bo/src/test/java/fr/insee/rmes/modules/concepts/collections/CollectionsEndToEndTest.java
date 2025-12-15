@@ -5,8 +5,9 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,7 +42,12 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
              }
             """;
 
-    @LocalServerPort
+    public static final String UUID_PATTERN = "^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$";
+
+    @Autowired
+    TestRestTemplate restTemplate;
+
+    //TODO replace with TestRestClient
     int serverPort;
 
     @DynamicPropertySource
@@ -54,9 +60,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @Test
     @DisplayName("Fetch all collections then add another one then check it is well added")
     void ok_when_collection_added_test() {
-
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections/";
-        RestClient restClient = RestClient.create(collectionsEndpoint);
+        RestClient restClient = RestClient.create(restTemplate.getRootUri() + "concepts/collections/");
         var fetchedCollections = restClient
                 .get()
                 .accept(MediaType.APPLICATION_JSON)
@@ -64,7 +68,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .body(String.class);
         JSONAssert.assertEquals("[]", fetchedCollections, true);
 
-        var entityResponse = restClient.post().body(CREATE_COLLECTION_REQUEST_JSON)
+        var entityResponse = restClient.post()
+                .body(CREATE_COLLECTION_REQUEST_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -75,8 +80,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         String uuid = entityResponse.getBody();
 
         assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION)).containsExactly("http://localhost:" + serverPort + "/api/concepts/collections/" + uuid);
-        //TODO check uuid regexp
-        assertThat(uuid).isNotNull();
+        assertThat(uuid).matches(UUID_PATTERN);
 
         fetchedCollections = restClient
                 .get()
@@ -108,9 +112,10 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 }
                 """.formatted(uuid), fetchedCollections, false);
         System.out.println(fetchedCollections);
-        assertThat((new JSONObject(fetchedCollections)).getString("created")).matches(ISO_8601_DATE_TIME_PATTERN);
-        assertThat((new JSONObject(fetchedCollections)).has("modified")).isTrue();
-        assertThat((new JSONObject(fetchedCollections)).isNull("modified")).isTrue();
+        assertThat(new JSONObject(fetchedCollections))
+                .matches(json -> json.getString("created").matches(ISO_8601_DATE_TIME_PATTERN), "`created` doesn't match ISO_8601_DATE_TIME_PATTERN")
+                .matches(json -> json.has("modified"), "json has not key `modified` ")
+                .matches(json -> json.isNull("modified"), "`modified` has not null value");
 
         var updateResponseKo = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
                 .contentType(MediaType.APPLICATION_JSON)

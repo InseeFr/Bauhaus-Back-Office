@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.5</version>
+    <version>4.0.0</version>
     <relativePath/>
     <!-- lookup parent from repository -->
   </parent>
@@ -32,7 +32,6 @@
   </developers>
   <properties>
     <java.version>25</java.version>
-    <springdoc.version>2.8.3</springdoc.version>
     <rdf4j.version>5.1.0</rdf4j.version>
     <xdocreport.version>2.1.0</xdocreport.version>
     <jacoco.version>0.8.13</jacoco.version>
@@ -50,11 +49,12 @@
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
+    <archunit-junit5.version>1.4.1</archunit-junit5.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -113,7 +113,7 @@
     <!-- test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <exclusions>
         <exclusion>
           <groupId>com.vaadin.external.google</groupId>
@@ -202,24 +202,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>minio</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.tngtech.archunit</groupId>
       <artifactId>archunit-junit5</artifactId>
-      <version>1.4.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <version>${archunit-junit5.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -230,37 +215,12 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-<!--           <compilerArgs>-->
-<!--               <arg>-XDcompilePolicy=simple</arg>-->
-<!--               <arg>&#45;&#45;should-stop=ifError=FLOW</arg>-->
-<!--               <arg>-Xplugin:ErrorProne -Xep:NullAway:ERROR -XepOpt:NullAway:OnlyNullMarked</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>-->
-<!--               <arg>-J&#45;&#45;add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>-->
-<!--           </compilerArgs>-->
            <annotationProcessorPaths>
             <path>
               <groupId>io.soabase.record-builder</groupId>
               <artifactId>record-builder-processor</artifactId>
               <version>${record.builder.version}</version>
             </path>
-<!--               <path>-->
-<!--                   <groupId>com.google.errorprone</groupId>-->
-<!--                   <artifactId>error_prone_core</artifactId>-->
-<!--                   <version>2.43.0</version>-->
-<!--               </path>-->
-<!--               <path>-->
-<!--                   <groupId>com.uber.nullaway</groupId>-->
-<!--                   <artifactId>nullaway</artifactId>-->
-<!--                   <version>0.12.12</version>-->
-<!--               </path>-->
           </annotationProcessorPaths>
         </configuration>
       </plugin>

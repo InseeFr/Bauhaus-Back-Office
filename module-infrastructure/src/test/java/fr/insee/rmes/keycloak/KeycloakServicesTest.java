@@ -3,7 +3,6 @@ package fr.insee.rmes.keycloak;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,6 +17,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {KeycloakServicesStub.class, KeycloakServerZoneConfiguration.class})
@@ -35,7 +35,6 @@ import static org.mockito.Mockito.when;
 })
 class KeycloakServicesTest {
 
-    @Mock
     private RestTemplate testRestTemplate;
 
     @Autowired
@@ -63,6 +62,7 @@ class KeycloakServicesTest {
                 return "token";
             }
         };
+        this.testRestTemplate = mock(RestTemplate.class);
         when(this.testRestTemplate.postForObject(anyString(), any(HttpEntity.class), eq(Token.class))).thenReturn(token);
         this.keycloakServices.setRestTemplate(this.testRestTemplate);
     }
