@@ -106,7 +106,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"id": "%s", "labels": [{"value":"value", "lang": "fr"}], "descriptions": [], "creator": "HIE", "conceptsIdentifiers": []}
+                        {"id": "%s", "labels": [{"value":"value", "lang": "fr"}], "descriptions": [], "creator": "HIE", "created" : "2025-12-16T11:19:15.773257992", "conceptsIdentifiers": []}
                         """.formatted(collectionId));
         request.header("Authorization", "Bearer toto");
 
