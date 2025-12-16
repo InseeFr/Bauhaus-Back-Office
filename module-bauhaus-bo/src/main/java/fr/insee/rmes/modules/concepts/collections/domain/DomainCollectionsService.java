@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCo
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +45,7 @@ public class DomainCollectionsService implements CollectionsService {
 
     @Override
     public void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException {
-        Collection collection = Collection.create(updateCommand, updateCommand.id());
+        Collection collection = Collection.modify(updateCommand);
         this.repository.update(collection);
     }
 }

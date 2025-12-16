@@ -1,5 +1,7 @@
 package fr.insee.rmes.domain.codeslist.model;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Pure domain model for codes list.
  * No dependencies on infrastructure or framework classes.
@@ -14,7 +16,7 @@ public class CodesListDomain {
     private final String descriptionLg1;
     private final String descriptionLg2;
     private final String lastCodeUriSegment;
-    private final String created;
+    @Nullable private final String created;
     private final String creator;
     private final String validationState;
     private final String disseminationStatus;
@@ -111,6 +113,7 @@ public class CodesListDomain {
 
     @Override
     public String toString() {
+        var i=created.length();
         return "CodesListDomain{" +
                 "id='" + id + '\'' +
                 ", uri='" + uri + '\'' +

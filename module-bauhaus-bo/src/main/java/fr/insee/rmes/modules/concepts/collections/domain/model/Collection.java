@@ -1,11 +1,11 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model;
 
-import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedCollectionException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
+import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
@@ -60,6 +60,22 @@ public class Collection extends CompactCollection {
                 null,
                 DEFAULT_VALIDATION_STATE,
                 createCollection.conceptsIdendifiers().stream()
+                        .map(ConceptId::new)
+                        .toList()
+        );
+    }
+
+    public static Collection modify(UpdateCollectionCommand updateCommand) {
+        return new Collection(
+                updateCommand.id(),
+                updateCommand.labels(),
+                updateCommand.creator(),
+                updateCommand.contributor().orElse(null),
+                updateCommand.descriptions(),
+                updateCommand.created(),
+                LocalDateTime.now(),
+                DEFAULT_VALIDATION_STATE,
+                updateCommand.conceptsIdendifiers().stream()
                         .map(ConceptId::new)
                         .toList()
         );
