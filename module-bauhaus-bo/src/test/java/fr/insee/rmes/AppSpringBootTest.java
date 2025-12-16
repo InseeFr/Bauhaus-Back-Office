@@ -1,6 +1,7 @@
 package fr.insee.rmes;
 
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
@@ -31,4 +32,5 @@ import java.lang.annotation.Target;
         }
 )
 @Import(GraphDBDocumentationRepository.class)
+@AutoConfigureRestTestClient
 public @interface AppSpringBootTest {}

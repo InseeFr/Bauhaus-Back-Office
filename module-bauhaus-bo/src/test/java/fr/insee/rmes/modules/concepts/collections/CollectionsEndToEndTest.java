@@ -1,27 +1,23 @@
 package fr.insee.rmes.modules.concepts.collections;
 
-import fr.insee.rmes.testcontainers.WithGraphDBContainer;
-import org.json.JSONObject;
+import fr.insee.rmes.testcontainers.e2e.BaseE2ETest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.TestRestTemplate;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.web.client.RestClient;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.json.JsonCompareMode;
+
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class CollectionsEndToEndTest extends WithGraphDBContainer {
+@TestPropertySource(properties = "fr.insee.rmes.bauhaus.activeModules=concepts")
+class CollectionsEndToEndTest extends BaseE2ETest {
 
     public static final String ISO_8601_DATE_TIME_PATTERN = "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$";
-    final static String CREATE_COLLECTION_REQUEST_JSON = """
+    static final String CREATE_COLLECTION_REQUEST_JSON = """
             {
                  "labels": [{"value": "label fr", "lang": "fr"}],
                  "descriptions": [],
@@ -31,24 +27,19 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
              }
             """;
 
-    final static String UPDATE_COLLECTION_REQUEST_JSON = """
-            {   
-                "id": "%s",
-                 "labels": [{"value": "label fr v2", "lang": "fr"}],
-                 "descriptions": [],
-                 "creator" : "HIE000001",
-                 "contributor" : "HIE000002",
-                 "conceptsIdentifiers": ["c00001"]
-             }
+    static final String UPDATE_COLLECTION_REQUEST_JSON = """
+            {
+               "id": "%s",
+               "labels": [{"value": "label fr v2", "lang": "fr"}],
+               "descriptions": [],
+               "creator" : "HIE000001",
+               "contributor" : "HIE000002",
+               "conceptsIdentifiers": ["c00001"],
+               "created": %s
+            }
             """;
 
     public static final String UUID_PATTERN = "^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$";
-
-    @Autowired
-    TestRestTemplate restTemplate;
-
-    //TODO replace with TestRestClient
-    int serverPort;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -60,93 +51,108 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @Test
     @DisplayName("Fetch all collections then add another one then check it is well added")
     void ok_when_collection_added_test() {
-        RestClient restClient = RestClient.create(restTemplate.getRootUri() + "concepts/collections/");
-        var fetchedCollections = restClient
+
+        restTestClient
                 .get()
+                .uri("/concepts/collections")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
-        JSONAssert.assertEquals("[]", fetchedCollections, true);
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().json("[]");
 
-        var entityResponse = restClient.post()
+
+        var response = restTestClient.post()
+                .uri("/concepts/collections")
                 .body(CREATE_COLLECTION_REQUEST_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toEntity(String.class);
-
-        assertThat(entityResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        String uuid = entityResponse.getBody();
-
-        assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION)).containsExactly("http://localhost:" + serverPort + "/api/concepts/collections/" + uuid);
+                .headers(h -> h.setContentType(MediaType.APPLICATION_JSON))
+                .exchange();
+        URI requestUrl = response.returnResult().getUrl();
+        String uuid = response.returnResult(String.class).getResponseBody();
+        response.expectStatus().isCreated()
+                .expectHeader().location(requestUrl.resolve("/api/concepts/collections/"+uuid).toString());
         assertThat(uuid).matches(UUID_PATTERN);
 
-        fetchedCollections = restClient
+        restTestClient
                 .get()
+                .uri("/concepts/collections")
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
-        JSONAssert.assertEquals("""
-                [
-                  {
-                    "id" : "%s",
-                    "label": {"value": "label fr", "lang": "FR"}
-                  }
-                ]
-                """.formatted(uuid), fetchedCollections, true);
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().json("""
+                        [
+                          {
+                            "id" : "%s",
+                            "label": {"value": "label fr", "lang": "FR"}
+                          }
+                        ]
+                        """.formatted(uuid));
 
-        fetchedCollections = restClient
-                .get().uri(uuid)
+        var captureCreated = new Object(){
+            String value;
+        };
+        restTestClient
+                .get()
+                .uri("/concepts/collections/" + uuid)
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
-        JSONAssert.assertEquals("""
-                {
-                  "id" : "%s",
-                   "labels": [{"value": "label fr", "lang": "FR"}],
-                   "descriptions": [],
-                   "creator" : "HIE000000",
-                   "contributor" : "HIE000000",
-                   "isValidated": false,
-                }
-                """.formatted(uuid), fetchedCollections, false);
-        System.out.println(fetchedCollections);
-        assertThat(new JSONObject(fetchedCollections))
-                .matches(json -> json.getString("created").matches(ISO_8601_DATE_TIME_PATTERN), "`created` doesn't match ISO_8601_DATE_TIME_PATTERN")
-                .matches(json -> json.has("modified"), "json has not key `modified` ")
-                .matches(json -> json.isNull("modified"), "`modified` has not null value");
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().json("""
+                        {
+                          "id" : "%s",
+                           "labels": [{"value": "label fr", "lang": "FR"}],
+                           "descriptions": [],
+                           "creator" : "HIE000000",
+                           "contributor" : "HIE000000",
+                           "isValidated": false,
+                        }
+                        """.formatted(uuid), JsonCompareMode.LENIENT)
+                .jsonPath("$.created").value(String.class, v -> {
+                    captureCreated.value = v;
+                    assertThat(captureCreated.value).matches(ISO_8601_DATE_TIME_PATTERN);
+                })
+                .jsonPath("$.modified").isEmpty();
 
-        var updateResponseKo = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
-                .contentType(MediaType.APPLICATION_JSON)
+
+        restTestClient
+                .put()
+                .uri("/concepts/collections/" + uuid)
+                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1", ""))
+                .headers(h -> h.setContentType(MediaType.APPLICATION_JSON))
                 .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+                .exchange()
+                .expectStatus().isBadRequest();
 
-        var updateResponseOk = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
-                .contentType(MediaType.APPLICATION_JSON)
+        restTestClient
+                .put()
+                .uri("/concepts/collections/" + uuid)
+                .body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid, "\""+captureCreated.value+"\""))
+                .headers(h -> h.setContentType(MediaType.APPLICATION_JSON))
                 .accept(MediaType.TEXT_PLAIN)
-                .retrieve()
-                .toEntity(Void.class);
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody().isEmpty();
 
-        assertThat(updateResponseOk.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        fetchedCollections = restClient
-                .get().uri(uuid)
+        response = restTestClient
+                .get()
+                .uri("/concepts/collections/" + uuid)
                 .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
-
-        JSONAssert.assertEquals("""
-                {
-                  "id" : "%s",
-                   "labels": [{"value": "label fr v2", "lang": "FR"}],
-                   "descriptions": [],
-                   "creator" : "HIE000001",
-                   "contributor" : "HIE000002",
-                   "isValidated": false,
-                }
-                """.formatted(uuid), fetchedCollections, false);
+                .exchange();
+        System.out.println(response.returnResult(String.class).getResponseBody());
+        response
+                .expectStatus().isOk()
+                .expectBody().json("""
+                        {
+                          "id" : "%s",
+                           "labels": [{"value": "label fr v2", "lang": "FR"}],
+                           "descriptions": [],
+                           "creator" : "HIE000001",
+                           "contributor" : "HIE000002",
+                           "isValidated": false,
+                        }
+                        """.formatted(uuid), JsonCompareMode.LENIENT)
+                .jsonPath("$.created").isEqualTo(captureCreated.value)
+                .jsonPath("$.modified").value(String.class, v -> assertThat(v).matches(ISO_8601_DATE_TIME_PATTERN));
 
     }
 

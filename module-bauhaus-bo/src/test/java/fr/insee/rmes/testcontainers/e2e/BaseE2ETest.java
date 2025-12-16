@@ -10,16 +10,14 @@ import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 @Tag("integration")
 @AppSpringBootTest
 public abstract class BaseE2ETest extends WithGraphDBContainer {
 
-    @LocalServerPort
-    protected int port;
-
     @Autowired
-    protected TestRestTemplate restTemplate;
+    protected RestTestClient restTestClient;
     
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
