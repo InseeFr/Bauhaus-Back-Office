@@ -1,9 +1,6 @@
 package fr.insee.rmes.modules.commons.webservice;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -16,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.TreeSet;
 
 @RestController
 @RequestMapping("/")
@@ -84,16 +80,5 @@ public class PublicResources {
         else return "NoAuthImpl";
     }
 
-    @GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getDisseminationStatus() {
-        TreeSet<String> dsList = new TreeSet<>();
-        for (DisseminationStatus ds : DisseminationStatus.values()) {
-            try {
-                dsList.add(new ObjectMapper().writeValueAsString(ds));
-            } catch (JsonProcessingException e) {
-                return ResponseEntity.status(500).body(e.getMessage());
-            }
-        }
-        return ResponseEntity.ok().body(dsList.toString());
-    }
+
 }

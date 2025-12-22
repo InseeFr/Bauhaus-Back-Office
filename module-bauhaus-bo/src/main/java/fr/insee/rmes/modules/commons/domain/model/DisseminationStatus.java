@@ -1,8 +1,5 @@
 package fr.insee.rmes.modules.commons.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum DisseminationStatus {
     PRIVATE("Privé","http://id.insee.fr/codes/base/statutDiffusion/Prive"),
     PUBLIC_GENERIC("Public générique","http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique"),
@@ -15,6 +12,14 @@ public enum DisseminationStatus {
         this.label = label;
         this.url = url;
     }
+
+	public String getLabel() {
+		return label;
+	}
+
+	public String getUrl() {
+		return url;
+	}
 
 	public static String getEnumLabel(String url) {
 		for (DisseminationStatus ds : DisseminationStatus.values()){
