@@ -84,4 +84,9 @@ public class ConfigStub extends Config {
     public String getBaseGraph() {
         return "http://rdf.insee.fr/graphes/";
     }
+
+    @Override
+    public String getDocumentsGraph() {
+        return "http://rdf.insee.fr/graphes/qualite/documents";
+    }
 }

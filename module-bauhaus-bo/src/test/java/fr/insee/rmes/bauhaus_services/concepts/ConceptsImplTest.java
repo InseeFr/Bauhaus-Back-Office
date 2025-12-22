@@ -10,10 +10,17 @@ import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
+import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,6 +70,9 @@ class ConceptsImplTest {
 
     @Mock
     CollectionRepository collectionRepository;
+
+    @Mock
+    OrganisationsService organisationsService;
 
     @BeforeAll
     static void initGenericQueries(){
@@ -173,13 +183,13 @@ class ConceptsImplTest {
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
     }
     @Test
-    void exportConceptTest() throws RmesException, IOException, URISyntaxException {
+    void exportConceptTest() throws RmesException, IOException, URISyntaxException, OrganisationFetchException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, new ExportUtils(200, null));
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, organisationsService, new ExportUtils(200, null));
 
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, null, 10);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, null,10);
 
         JSONObject jsonConcept = new JSONObject("""
                 {
@@ -196,7 +206,15 @@ class ConceptsImplTest {
                     "conceptVersion": "2"
                 }
                 """);
+        SimpleValueFactory factory = SimpleValueFactory.getInstance();
+        IRI iri1 = factory.createIRI("http://example.org/organisation/SSM-SDES");
+        IRI iri2 = factory.createIRI("http://example.org/organisation/DG75-L201");
+        CompactOrganisation org1 = new CompactOrganisation(iri1, "SSM-SDES", new LocalisedLabel("SSM-SDES", Lang.FR));
+        CompactOrganisation org2 = new CompactOrganisation(iri2, "DG75-L201", new LocalisedLabel("DG75-L201", Lang.FR));
+
         when(conceptsUtils.getConceptById(idConcept)).thenReturn(jsonConcept);
+        when(organisationsService.getCompactOrganisation("SSM-SDES")).thenReturn(org1);
+        when(organisationsService.getCompactOrganisation("DG75-L201")).thenReturn(org2);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(
         """
