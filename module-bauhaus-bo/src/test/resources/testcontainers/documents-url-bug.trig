@@ -1,0 +1,31 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+<http://rdf.insee.fr/graphes/qualite/documents> {
+    # Document 1 - URL de base
+    <http://bauhaus/documents/document/1>
+            a                        foaf:Document ;
+            rdfs:label               "Document de base"@fr ;
+            dc:language              "fr" ;
+            schema:url               <http://example.org/document.pdf> .
+
+    # Document 2 - URL qui commence par la meme chose que Document 1
+    # Le bug fait que si on cherche "http://example.org/document.pdf",
+    # le REGEX va aussi matcher ce document car "http://example.org/document.pdf"
+    # est contenu dans "http://example.org/document.pdf.backup"
+    <http://bauhaus/documents/document/2>
+            a                        foaf:Document ;
+            rdfs:label               "Document backup"@fr ;
+            dc:language              "fr" ;
+            schema:url               <http://example.org/document.pdf.backup> .
+
+    # Document 3 - URL completement differente (ne devrait jamais etre retourne)
+    <http://bauhaus/documents/document/3>
+            a                        foaf:Document ;
+            rdfs:label               "Autre document"@fr ;
+            dc:language              "fr" ;
+            schema:url               <http://example.org/autre-fichier.pdf> .
+}
