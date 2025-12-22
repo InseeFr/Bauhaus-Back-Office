@@ -139,7 +139,12 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         // First convert to Ddi3Response using the existing method
         Ddi3Response ddi3Response = convertDdi4ToDdi3(ddi4);
 
+        // Extract the first topLevelReference if present
+        var topLevelReference = (ddi4.topLevelReference() != null && !ddi4.topLevelReference().isEmpty())
+                ? ddi4.topLevelReference().get(0)
+                : null;
+
         // Then build the complete FragmentInstance XML document
-        return xmlWriter.buildFragmentInstanceDocument(ddi3Response);
+        return xmlWriter.buildFragmentInstanceDocument(ddi3Response, topLevelReference);
     }
 }
