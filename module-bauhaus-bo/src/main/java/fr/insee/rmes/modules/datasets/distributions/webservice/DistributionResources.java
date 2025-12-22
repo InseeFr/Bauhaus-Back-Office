@@ -78,7 +78,7 @@ public class DistributionResources {
         if (user.hasRole(Roles.ADMIN)) {
             return this.datasetService.getDatasets();
         }
-        return this.datasetService.getDatasetsForDistributionCreation(user.getStamp());
+        return this.datasetService.getDatasetsForDistributionCreation(user.getStamps());
     }
 
     @GetMapping(value = "/search", produces = "application/json")

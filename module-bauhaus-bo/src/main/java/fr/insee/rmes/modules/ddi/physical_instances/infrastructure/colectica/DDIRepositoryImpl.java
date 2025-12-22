@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -161,6 +162,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                         String id = item.identifier();
                         String label = extractLabelFromItem(item);
                         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
                         Date date = null;
                         try {
                             date = formatter.parse(item.versionDate());
@@ -205,6 +207,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                         String id = item.identifier();
                         String label = extractLabelFromItem(item);
                         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
                         Date date = null;
                         try {
                             date = formatter.parse(item.versionDate());

@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -30,7 +31,7 @@ class DatasetQueriesTest {
                 put("DATASET_GRAPH", "datasets-graph");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasets.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetQueries.getDatasets("datasets-graph", null);
+            String query = DatasetQueries.getDatasets("datasets-graph", Set.of());
             Assertions.assertEquals("request", query);
         }
     }
@@ -41,10 +42,10 @@ class DatasetQueriesTest {
             Map<String, Object> map = new HashMap<>() {{
                 put("LG1", "fr");
                 put("DATASET_GRAPH", "datasets-graph");
-                put("STAMP", "stamp");
+                put("STAMP", Set.of("stamp"));
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasets.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetQueries.getDatasets("datasets-graph", "stamp");
+            String query = DatasetQueries.getDatasets("datasets-graph", Set.of("stamp"));
             Assertions.assertEquals("request", query);
         }
     }

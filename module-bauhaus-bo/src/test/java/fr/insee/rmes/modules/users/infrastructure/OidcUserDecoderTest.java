@@ -11,10 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,7 +53,7 @@ class OidcUserDecoderTest {
 
         assertThat(result).isPresent();
         assertThat(result.get().id()).isEqualTo("user123");
-        assertThat(result.get().getStamp()).isEqualTo("STAMP-01");
+        assertThat(result.get().getStamps()).containsExactly("STAMP-01");
         assertThat(result.get().roles()).containsExactly("ADMIN", "USER");
     }
 
@@ -69,7 +66,7 @@ class OidcUserDecoderTest {
 
     @Test
     void should_return_user_when_principal_is_already_user() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
+        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
 
         Optional<User> result = userDecoder.fromPrincipal(user);
 
@@ -124,7 +121,7 @@ class OidcUserDecoderTest {
         Optional<User> result = userDecoder.fromPrincipal(jwt);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getStamp()).isEqualTo("STAMP-02_APP");
+        assertThat(result.get().getStamps()).containsExactly("STAMP-02_APP");
     }
 
     @Test
@@ -141,7 +138,7 @@ class OidcUserDecoderTest {
         Optional<User> result = userDecoder.fromPrincipal(jwt);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getStamp()).isEqualTo("STAMP-DIRECT");
+        assertThat(result.get().getStamps()).containsExactly("STAMP-DIRECT");
     }
 
     @Test
@@ -243,6 +240,6 @@ class OidcUserDecoderTest {
 
         assertThat(result).isPresent();
         // Should extract the first matching group
-        assertThat(result.get().getStamp()).isIn("STAMP-FIRST_APP", "STAMP-SECOND_APP");
+        assertThat(result.get().getStamps()).containsAnyOf("STAMP-FIRST_APP", "STAMP-SECOND_APP");
     }
 }

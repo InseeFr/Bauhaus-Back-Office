@@ -78,7 +78,7 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
                     logger.error("Could not fetch stamp for %s on the resource %s inside the module %s. So, this user is not allowed to do this action %s".formatted(user, id, module, privilegeAndStrategy.privilege()), e);
                     yield false;
                 }
-                yield stamps.isEmpty() || stamps.contains(user.getStamp());
+                yield stamps.isEmpty() || stamps.stream().anyMatch(user.getStamps()::contains);
             }
             case NONE -> false;
         };

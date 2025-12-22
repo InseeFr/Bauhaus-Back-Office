@@ -17,7 +17,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,42 +80,42 @@ class UserResourcesTest {
     }
 
     @Test
-    void should_get_stamp() throws MissingUserInformationException {
+    void should_get_stamps() throws MissingUserInformationException {
         Object principal = "somePrincipal";
-        Stamp expectedStamp = new Stamp("STAMP-01");
+        var expectedStamps = Set.of(new Stamp("STAMP-01"));
 
-        when(userService.findStampFrom(principal)).thenReturn(expectedStamp);
+        when(userService.findStampsFrom(principal)).thenReturn(expectedStamps);
 
-        Stamp result = userResources.getStamp(principal);
+        var result = userResources.getStamps(principal);
 
-        assertThat(result).isEqualTo(expectedStamp);
-        assertThat(result.stamp()).isEqualTo("STAMP-01");
-        verify(userService).findStampFrom(principal);
+        assertThat(result).isEqualTo(expectedStamps);
+        assertThat(result).extracting(Stamp::stamp).containsExactly("STAMP-01");
+        verify(userService).findStampsFrom(principal);
     }
 
     @Test
-    void should_return_null_stamp_when_not_found() throws MissingUserInformationException {
+    void should_return_empty_set_when_stamps_not_found() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
-        when(userService.findStampFrom(principal)).thenReturn(null);
+        when(userService.findStampsFrom(principal)).thenReturn(Set.of());
 
-        Stamp result = userResources.getStamp(principal);
+        Set<Stamp> result = userResources.getStamps(principal);
 
-        assertThat(result).isNull();
-        verify(userService).findStampFrom(principal);
+        assertThat(result).isEmpty();
+        verify(userService).findStampsFrom(principal);
     }
 
     @Test
-    void should_throw_unauthorized_exception_when_stamp_cannot_be_retrieved() throws MissingUserInformationException {
+    void should_throw_unauthorized_exception_when_stamps_cannot_be_retrieved() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
-        when(userService.findStampFrom(principal))
-            .thenThrow(new MissingUserInformationException("Cannot retrieve stamp"));
+        when(userService.findStampsFrom(principal))
+            .thenThrow(new MissingUserInformationException("Cannot retrieve stamps"));
 
-        assertThatThrownBy(() -> userResources.getStamp(principal))
+        assertThatThrownBy(() -> userResources.getStamps(principal))
             .isInstanceOf(ResponseStatusException.class)
             .hasFieldOrPropertyWithValue("statusCode", HttpStatus.UNAUTHORIZED)
-            .hasMessageContaining("Cannot retrieve stamp");
+            .hasMessageContaining("Cannot retrieve stamps");
     }
 
     @Test
@@ -146,34 +145,34 @@ class UserResourcesTest {
     }
 
     @Test
-    void should_handle_stamp_with_empty_value() throws MissingUserInformationException {
+    void should_handle_stamps_with_empty_value() throws MissingUserInformationException {
         Object principal = "somePrincipal";
-        Stamp emptyStamp = new Stamp("");
+        Set<Stamp> emptyStamps = Set.of(new Stamp(""));
 
-        when(userService.findStampFrom(principal)).thenReturn(emptyStamp);
+        when(userService.findStampsFrom(principal)).thenReturn(emptyStamps);
 
-        Stamp result = userResources.getStamp(principal);
+        Set<Stamp> result = userResources.getStamps(principal);
 
-        assertThat(result).isEqualTo(emptyStamp);
-        assertThat(result.stamp()).isEmpty();
+        assertThat(result).isEqualTo(emptyStamps);
+        assertThat(result.iterator().next().stamp()).isEmpty();
     }
 
     @Test
     void should_handle_different_principal_types() throws MissingUserInformationException {
         // Test with String principal
         String stringPrincipal = "stringPrincipal";
-        Stamp stamp1 = new Stamp("STAMP-01");
-        when(userService.findStampFrom(stringPrincipal)).thenReturn(stamp1);
+        Set<Stamp> stamps1 = Set.of(new Stamp("STAMP-01"));
+        when(userService.findStampsFrom(stringPrincipal)).thenReturn(stamps1);
 
-        Stamp result1 = userResources.getStamp(stringPrincipal);
-        assertThat(result1).isEqualTo(stamp1);
+        Set<Stamp> result1 = userResources.getStamps(stringPrincipal);
+        assertThat(result1).isEqualTo(stamps1);
 
         // Test with Object principal
         Object objectPrincipal = new Object();
-        Stamp stamp2 = new Stamp("STAMP-02");
-        when(userService.findStampFrom(objectPrincipal)).thenReturn(stamp2);
+        Set<Stamp> stamps2 = Set.of(new Stamp("STAMP-02"));
+        when(userService.findStampsFrom(objectPrincipal)).thenReturn(stamps2);
 
-        Stamp result2 = userResources.getStamp(objectPrincipal);
-        assertThat(result2).isEqualTo(stamp2);
+        Set<Stamp> result2 = userResources.getStamps(objectPrincipal);
+        assertThat(result2).isEqualTo(stamps2);
     }
 }

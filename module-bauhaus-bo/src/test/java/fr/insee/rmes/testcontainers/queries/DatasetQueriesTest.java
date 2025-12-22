@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 class DatasetQueriesTest extends WithGraphDBContainer {
@@ -24,14 +26,14 @@ class DatasetQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_all_datasets() throws Exception {
         DatasetQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getDatasets("http://rdf.insee.fr/graphes/catalogue", null));
+        JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getDatasets("http://rdf.insee.fr/graphes/catalogue", Set.of()));
         assertEquals(3, result.length());
     }
 
     @Test
     void should_return_all_datasets_based_on_stamp() throws Exception {
         DatasetQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getDatasets("http://rdf.insee.fr/graphes/catalogue", "DG75-L001"));
+        JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getDatasets("http://rdf.insee.fr/graphes/catalogue", Set.of("DG75-L001")));
         assertEquals(1, result.length());
     }
 

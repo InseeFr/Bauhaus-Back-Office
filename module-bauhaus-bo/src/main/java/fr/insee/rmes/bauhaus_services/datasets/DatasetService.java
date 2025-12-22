@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
 
 import java.util.List;
+import java.util.Set;
 
 public interface DatasetService {
 
@@ -26,7 +27,7 @@ public interface DatasetService {
 
     void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException;
 
-    List<PartialDataset> getDatasetsForDistributionCreation(String stamp) throws RmesException;
+    List<PartialDataset> getDatasetsForDistributionCreation(Set<String> stamp) throws RmesException;
 
     String publishDataset(String id) throws RmesException;
 
