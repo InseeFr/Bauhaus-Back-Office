@@ -5,17 +5,17 @@ import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuild
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.graphdb.ObjectType;
-import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
@@ -48,19 +48,18 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	private final CollectionsUtils collectionsUtils;
 
 	private final ConceptsExportBuilder conceptsExport;
-
 	private final CollectionExportBuilder collectionExport;
 	private final CollectionRepository collectionRepository;
 
 	private final int maxLength;
 
     public ConceptsImpl(
-			ConceptsUtils conceptsUtils,
-			CollectionsUtils collectionsUtils,
-			ConceptsExportBuilder conceptsExport,
-			CollectionExportBuilder collectionExport,
-			CollectionRepository collectionRepository,
-			@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
+            ConceptsUtils conceptsUtils,
+            CollectionsUtils collectionsUtils,
+            ConceptsExportBuilder conceptsExport,
+            CollectionExportBuilder collectionExport,
+            CollectionRepository collectionRepository,
+            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
         this.conceptsUtils = conceptsUtils;
         this.collectionsUtils = collectionsUtils;
         this.conceptsExport = conceptsExport;
@@ -331,7 +330,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 
-	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
+	private Map<String, String> convertConceptInXml(ConceptForExport concept) throws RmesException {
 		String conceptXml = XMLUtils.produceXMLResponse(concept);
 		Map<String,String> xmlContent = new HashMap<>();
 		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
