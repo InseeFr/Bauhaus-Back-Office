@@ -636,6 +636,59 @@ class DDI4toDDI3ConverterServiceImplTest {
         return count;
     }
 
+    @Test
+    void shouldUseVariableInTopLevelReferenceWhenVariableIsRoot() {
+        // Given - DDI4 Response with a Variable as root object
+        Ddi4Variable var = new Ddi4Variable(
+                "true",
+                "2025-01-21T13:48:46.363",
+                "urn:ddi:fr.insee:Variable.AGEMEN8:1",
+                "test-agency",
+                "0755bbcb-3356-43fc-997d-76fdf015e1a4",
+                "1",
+                new VariableName(new StringValue("fr-FR", "AGEMEN8")),
+                new Label(new Content("fr-FR", "Âge détaillé")),
+                null,
+                null,
+                null
+        );
+
+        TopLevelReference topLevelRef = new TopLevelReference(
+                "test-agency",
+                "0755bbcb-3356-43fc-997d-76fdf015e1a4",
+                "1",
+                "Variable"
+        );
+
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                List.of(topLevelRef),
+                null,
+                null,
+                List.of(var),
+                null,
+                null
+        );
+
+        // When
+        String xml = converter.convertDdi4ToDdi3Xml(ddi4);
+
+        // Then
+        assertNotNull(xml);
+
+        // Verify TopLevelReference uses Variable's ID and Agency
+        assertTrue(xml.contains("<ddi:TopLevelReference>"));
+        assertTrue(xml.contains("<r:Agency>test-agency</r:Agency>"));
+        assertTrue(xml.contains("<r:ID>0755bbcb-3356-43fc-997d-76fdf015e1a4</r:ID>"));
+        assertTrue(xml.contains("<r:Version>1</r:Version>"));
+        assertTrue(xml.contains("<r:TypeOfObject>Variable</r:TypeOfObject>"));
+        assertTrue(xml.contains("</ddi:TopLevelReference>"));
+
+        // Verify Variable content is also present
+        assertTrue(xml.contains("<Variable"));
+        assertTrue(xml.contains("AGEMEN8"));
+    }
+
     private Ddi4Response createCompleteDdi4Response() {
         return new Ddi4Response(
                 "file:/jsonSchema.json",

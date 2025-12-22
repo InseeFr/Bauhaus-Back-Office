@@ -1,10 +1,11 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.StringWriter;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 
 /**
  * Helper class to generate DDI3 XML fragments using StAX XMLStreamWriter
@@ -426,6 +427,18 @@ public class Ddi3XmlWriter {
      * @return Complete XML document as String with XML declaration
      */
     public String buildFragmentInstanceDocument(Ddi3Response ddi3Response) {
+        return buildFragmentInstanceDocument(ddi3Response, null);
+    }
+
+    /**
+     * Builds a complete DDI 3.3 FragmentInstance XML document from a Ddi3Response.
+     * This method creates the root FragmentInstance element, TopLevelReference, and all Fragment elements.
+     *
+     * @param ddi3Response The DDI3 response containing all items to include
+     * @param topLevelReference Optional TopLevelReference to use; if null, will determine from items
+     * @return Complete XML document as String with XML declaration
+     */
+    public String buildFragmentInstanceDocument(Ddi3Response ddi3Response, TopLevelReference topLevelReference) {
         if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
             throw new IllegalArgumentException("Ddi3Response must contain at least one item");
         }
@@ -438,18 +451,37 @@ public class Ddi3XmlWriter {
         // Start FragmentInstance root element
         xml.append("<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n");
 
-        // Write TopLevelReference based on first Physical Instance item
-        // Find the first PhysicalInstance (type a51e85bb-6259-4488-8df2-f08cb43485f8)
-        Ddi3Response.Ddi3Item firstPhysicalInstance = ddi3Response.items().stream()
-                .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
-                .findFirst()
-                .orElse(ddi3Response.items().get(0)); // Fallback to first item if no PhysicalInstance found
+        // Determine which item to use for TopLevelReference
+        Ddi3Response.Ddi3Item topLevelItem;
+        String typeOfObject;
+
+        if (topLevelReference != null) {
+            // Use the provided topLevelReference to find the matching item
+            final String tlrId = topLevelReference.id();
+            final String tlrAgency = topLevelReference.agency();
+
+            topLevelItem = ddi3Response.items().stream()
+                    .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
+                    .findFirst()
+                    .orElse(ddi3Response.items().get(0));
+
+            typeOfObject = topLevelReference.typeOfObject();
+        } else {
+            // Fallback behavior: find first PhysicalInstance or use first item
+            topLevelItem = ddi3Response.items().stream()
+                    .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
+                    .findFirst()
+                    .orElse(ddi3Response.items().get(0));
+
+            // Determine TypeOfObject from itemType
+            typeOfObject = getTypeOfObjectFromItemType(topLevelItem.itemType());
+        }
 
         xml.append("  <ddi:TopLevelReference>\n");
-        xml.append("    <r:Agency>").append(escapeXml(firstPhysicalInstance.agencyId())).append("</r:Agency>\n");
-        xml.append("    <r:ID>").append(escapeXml(firstPhysicalInstance.identifier())).append("</r:ID>\n");
-        xml.append("    <r:Version>").append(escapeXml(firstPhysicalInstance.version())).append("</r:Version>\n");
-        xml.append("    <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>\n");
+        xml.append("    <r:Agency>").append(escapeXml(topLevelItem.agencyId())).append("</r:Agency>\n");
+        xml.append("    <r:ID>").append(escapeXml(topLevelItem.identifier())).append("</r:ID>\n");
+        xml.append("    <r:Version>").append(escapeXml(topLevelItem.version())).append("</r:Version>\n");
+        xml.append("    <r:TypeOfObject>").append(escapeXml(typeOfObject)).append("</r:TypeOfObject>\n");
         xml.append("  </ddi:TopLevelReference>\n");
 
         // Write all fragments
@@ -470,6 +502,20 @@ public class Ddi3XmlWriter {
         xml.append("</ddi:FragmentInstance>");
 
         return xml.toString();
+    }
+
+    /**
+     * Maps DDI 3.3 Item Type UUID to TypeOfObject string
+     */
+    private String getTypeOfObjectFromItemType(String itemType) {
+        return switch (itemType) {
+            case "a51e85bb-6259-4488-8df2-f08cb43485f8" -> "PhysicalInstance";
+            case "f39ff278-8500-45fe-a850-3906da2d242b" -> "DataRelationship";
+            case "683889c6-f74b-4d5e-92ed-908c0a42bb2d" -> "Variable";
+            case "8b108ef8-b642-4484-9c49-f88e4bf7cf1d" -> "CodeList";
+            case "7e47c269-bcab-40f7-a778-af7bbc4e3d00" -> "Category";
+            default -> "PhysicalInstance"; // Default fallback
+        };
     }
 
     /**
