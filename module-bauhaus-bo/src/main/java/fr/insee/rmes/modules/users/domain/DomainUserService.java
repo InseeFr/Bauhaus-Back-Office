@@ -20,8 +20,8 @@ public class DomainUserService implements UserService {
     }
 
     @Override
-    public Stamp findStampFrom(Object principal) throws MissingUserInformationException {
-        return this.userDecoder.fromPrincipal(principal).map(User::stamp).orElse(null);
+    public Set<Stamp> findStampsFrom(Object principal) throws MissingUserInformationException {
+        return this.userDecoder.fromPrincipal(principal).map(User::stamps).orElse(Set.of());
     }
 
     @Override

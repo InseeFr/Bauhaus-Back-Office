@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -96,7 +97,7 @@ class DistributionResourcesTest {
         ));
 
         when(datasetService.getDatasets()).thenReturn(datasets);
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), "fakeStampForDvAndQf")));
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), Set.of("fakeStampForDvAndQf"))));
         Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
     }
 
@@ -108,8 +109,8 @@ class DistributionResourcesTest {
                 "label"
         ));
 
-        when(datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf")).thenReturn(datasets);
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), "fakeStampForDvAndQf")));
+        when(datasetService.getDatasetsForDistributionCreation(Set.of("fakeStampForDvAndQf"))).thenReturn(datasets);
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), Set.of("fakeStampForDvAndQf"))));
         Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
     }
 

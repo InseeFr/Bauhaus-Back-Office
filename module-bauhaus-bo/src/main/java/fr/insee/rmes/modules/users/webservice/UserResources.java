@@ -41,9 +41,9 @@ public class UserResources {
     }
 
     @GetMapping(value = "/stamp", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Stamp getStamp(@AuthenticationPrincipal Object principal) {
+    public Set<Stamp> getStamps(@AuthenticationPrincipal Object principal) {
         try {
-            return userService.findStampFrom(principal);
+            return userService.findStampsFrom(principal);
         } catch (MissingUserInformationException e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage(), e);
         }

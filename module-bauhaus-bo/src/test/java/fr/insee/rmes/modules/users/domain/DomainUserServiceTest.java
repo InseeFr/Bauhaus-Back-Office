@@ -19,7 +19,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,34 +40,34 @@ class DomainUserServiceTest {
     }
 
     @Test
-    void should_find_stamp_from_principal() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
+    void should_find_stamps_from_principal() throws MissingUserInformationException {
+        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
 
-        Stamp result = userService.findStampFrom(principal);
+        Set<Stamp> result = userService.findStampsFrom(principal);
 
         assertThat(result).isNotNull();
-        assertThat(result.stamp()).isEqualTo("STAMP-01");
+        assertThat(result).extracting(Stamp::stamp).containsExactly("STAMP-01");
         verify(userDecoder).fromPrincipal(principal);
     }
 
     @Test
-    void should_return_null_stamp_when_user_not_found() throws MissingUserInformationException {
+    void should_return_empty_stamps_when_user_not_found() throws MissingUserInformationException {
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.empty());
 
-        Stamp result = userService.findStampFrom(principal);
+        Set<Stamp> result = userService.findStampsFrom(principal);
 
-        assertThat(result).isNull();
+        assertThat(result).isEmpty();
         verify(userDecoder).fromPrincipal(principal);
     }
 
     @Test
     void should_get_user() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
+        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
@@ -93,7 +92,7 @@ class DomainUserServiceTest {
 
     @Test
     void should_compute_privileges() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN", "USER"), "STAMP-01", "insee");
+        var user = new User("user123", List.of("ADMIN", "USER"), Set.of("STAMP-01"), "insee");
         Object principal = "somePrincipal";
 
         var privilege1 = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.ALL);
@@ -113,7 +112,7 @@ class DomainUserServiceTest {
 
     @Test
     void should_compute_privileges_with_multiple_modules() throws MissingUserInformationException {
-        var user = new User("user123", List.of("ADMIN"), "STAMP-01", "insee");
+        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01"), "insee");
         Object principal = "somePrincipal";
 
         var conceptPrivileges = new ModuleAccessPrivileges(
@@ -136,7 +135,7 @@ class DomainUserServiceTest {
 
     @Test
     void should_handle_empty_roles() throws MissingUserInformationException {
-        var user = new User("user123", List.of(), "STAMP-01", "insee");
+        var user = new User("user123", List.of(), Set.of("STAMP-01"), "insee");
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
@@ -146,5 +145,18 @@ class DomainUserServiceTest {
 
         assertThat(result).isEmpty();
         verify(rbacFetcher).computePrivileges(List.of());
+    }
+
+    @Test
+    void should_find_multiple_stamps_from_principal() throws MissingUserInformationException {
+        var user = new User("user123", List.of("ADMIN"), Set.of("STAMP-01", "STAMP-02", "STAMP-03"), "insee");
+        Object principal = "somePrincipal";
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+
+        Set<Stamp> result = userService.findStampsFrom(principal);
+
+        assertThat(result).hasSize(3);
+        assertThat(result).extracting(Stamp::stamp).containsExactlyInAnyOrder("STAMP-01", "STAMP-02", "STAMP-03");
     }
 }

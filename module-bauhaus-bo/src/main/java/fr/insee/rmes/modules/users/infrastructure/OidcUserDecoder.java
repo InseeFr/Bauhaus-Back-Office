@@ -12,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -49,27 +46,28 @@ public class OidcUserDecoder implements UserDecoder {
             throw new EmptyUserInformationException();
         }
         var id = (String) claims.get(jwtProperties.getIdClaim());
-        var stamp = extractStamp(claims, id);
+        var stamps = extractStamp(claims, id);
 
-        if(stamp.isEmpty()){
+        if(stamps.isEmpty()){
             throw new MissingStampException(id);
         }
 
         var source = (String) claims.get(jwtProperties.getSourceClaim());
         var roles = extractRoles(claims).toList();
 
-        logger.debug("Current User is {}, {} with roles {} from source {}", id, stamp, roles, source);
-        return new User(id, roles, stamp.get(), source);
+        logger.debug("Current User is {}, {} with roles {} from source {}", id, stamps, roles, source);
+        return new User(id, roles, stamps, source);
     }
 
-    private Optional<String> extractStamp(Map<String, Object> claims, String userId) {
+    private Set<String> extractStamp(Map<String, Object> claims, String userId) {
         logger.debug("Extracting stamp for user {}", userId);
+        Set<String> stamps = new HashSet<>();
 
         var stamp = ofNullable((String) claims.get(jwtProperties.getStampClaim()));
 
         if (stamp.isPresent()) {
             logger.debug("Found stamp in stampClaim '{}' for user {}: {}", jwtProperties.getStampClaim(), userId, stamp.get());
-            return stamp;
+            stamps.add(stamp.get());
         } else {
             logger.debug("No stamp found in stampClaim '{}' for user {}, checking inseeGroupClaim", jwtProperties.getStampClaim(), userId);
 
@@ -78,13 +76,14 @@ public class OidcUserDecoder implements UserDecoder {
 
             if (stamp.isPresent()) {
                 logger.debug("Found stamp in inseeGroupClaim '{}' for user {}: {}", jwtProperties.getInseeGroupClaim(), userId, stamp.get());
-                return stamp;
+                stamps.add(stamp.get());
             } else {
                 logger.debug("No stamp found in inseeGroupClaim '{}' for user {}, using anonymous stamp", jwtProperties.getInseeGroupClaim(), userId);
                 logger.info(LOG_INFO_DEFAULT_STAMP, userId);
-                return empty();
             }
         }
+
+        return stamps;
     }
 
     private Optional<String> extractStampFromInseeGroups(Object inseeGroups) {

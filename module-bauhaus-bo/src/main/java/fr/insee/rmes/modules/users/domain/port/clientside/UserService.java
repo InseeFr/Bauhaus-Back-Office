@@ -11,7 +11,7 @@ import java.util.Set;
 
 @ClientSidePort
 public interface UserService {
-    Stamp findStampFrom(Object principal) throws MissingUserInformationException;
+    Set<Stamp> findStampsFrom(Object principal) throws MissingUserInformationException;
 
     User getUser(Object principal) throws MissingUserInformationException;
 
