@@ -71,6 +71,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "saphir-rp99-sas",
                 "1",
+                null,
                 new Citation(new Title(new StringValue("fr-FR", "SAPHIR - Fichier Individus RP99 (.sas7bdat)"))),
                 new DataRelationshipReference("fr.insee", "saphir-rp99-sas", "1", "DataRelationship")
         );
@@ -122,6 +123,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "saphir-rp99-sas",
                 "1",
+                null,
                 new DataRelationshipName(new StringValue("fr-FR", "SAPHIR - RP99")),
                 new LogicalRecord(
                         "true",
@@ -174,6 +176,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "AGEMEN8",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "AGEMEN8")),
                 new Label(new Content("fr-FR", "Âge détaillé")),
                 new Description(new Content("fr-FR", "Âge de l'individu en années révolues")),
@@ -352,6 +355,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "AGE",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "AGE")),
                 new Label(new Content("fr-FR", "Âge")),
                 null,
@@ -405,6 +409,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "local-1764843880960",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "qq")),
                 new Label(new Content("fr-FR", "bc")),
                 null,
@@ -452,6 +457,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "local-geographic-var",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "GEO_VAR")),
                 new Label(new Content("fr-FR", "Geographic Variable")),
                 new Description(new Content("fr-FR", "A geographic variable")),
@@ -501,6 +507,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "local-text-var",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "TEXT_VAR")),
                 new Label(new Content("fr-FR", "Text Variable")),
                 null,
@@ -550,6 +557,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee",
                 "test-id",
                 "1",
+                null,
                 new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
                 new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
         );
@@ -637,6 +645,158 @@ class DDI4toDDI3ConverterServiceImplTest {
     }
 
     @Test
+    void shouldConvertPhysicalInstanceWithBasedOnObject() {
+        // Given - PhysicalInstance with BasedOnObject
+        BasedOnReference basedOnRef = new BasedOnReference(
+                "fr.insee",
+                "original-pi-id",
+                "1",
+                "PhysicalInstance"
+        );
+        BasedOnObject basedOnObject = new BasedOnObject(basedOnRef);
+
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                "true",
+                "2025-01-21T13:48:46.363",
+                "urn:ddi:fr.insee:PhysicalInstance.copy:1",
+                "fr.insee",
+                "copy-id",
+                "1",
+                basedOnObject,
+                new Citation(new Title(new StringValue("fr-FR", "Copy of Original"))),
+                new DataRelationshipReference("fr.insee", "dr-id", "1", "DataRelationship")
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                List.of(pi),
+                null,
+                null,
+                null,
+                null
+        );
+
+        // When
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+
+        String xml = result.items().get(0).item();
+        // Verify BasedOnObject structure is present
+        assertTrue(xml.contains("<r:BasedOnObject>"));
+        assertTrue(xml.contains("<r:BasedOnReference>"));
+        assertTrue(xml.contains("<r:Agency>fr.insee</r:Agency>"));
+        assertTrue(xml.contains("<r:ID>original-pi-id</r:ID>"));
+        assertTrue(xml.contains("<r:Version>1</r:Version>"));
+        assertTrue(xml.contains("<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"));
+        assertTrue(xml.contains("</r:BasedOnReference>"));
+        assertTrue(xml.contains("</r:BasedOnObject>"));
+    }
+
+    @Test
+    void shouldConvertDataRelationshipWithBasedOnObject() {
+        // Given - DataRelationship with BasedOnObject
+        BasedOnReference basedOnRef = new BasedOnReference(
+                "fr.insee",
+                "original-dr-id",
+                "1",
+                "DataRelationship"
+        );
+        BasedOnObject basedOnObject = new BasedOnObject(basedOnRef);
+
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-01-21T13:48:46.363",
+                "urn:ddi:fr.insee:DataRelationship.copy:1",
+                "fr.insee",
+                "copy-dr-id",
+                "1",
+                basedOnObject,
+                new DataRelationshipName(new StringValue("fr-FR", "Copy DR")),
+                null
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                null,
+                List.of(dr),
+                null,
+                null,
+                null
+        );
+
+        // When
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+
+        String xml = result.items().get(0).item();
+        // Verify BasedOnObject structure is present
+        assertTrue(xml.contains("<r:BasedOnObject>"));
+        assertTrue(xml.contains("<r:BasedOnReference>"));
+        assertTrue(xml.contains("<r:ID>original-dr-id</r:ID>"));
+        assertTrue(xml.contains("<r:TypeOfObject>DataRelationship</r:TypeOfObject>"));
+        assertTrue(xml.contains("</r:BasedOnReference>"));
+        assertTrue(xml.contains("</r:BasedOnObject>"));
+    }
+
+    @Test
+    void shouldConvertVariableWithBasedOnObject() {
+        // Given - Variable with BasedOnObject
+        BasedOnReference basedOnRef = new BasedOnReference(
+                "fr.insee",
+                "original-var-id",
+                "1",
+                "Variable"
+        );
+        BasedOnObject basedOnObject = new BasedOnObject(basedOnRef);
+
+        Ddi4Variable var = new Ddi4Variable(
+                "true",
+                "2025-01-21T13:48:46.363",
+                "urn:ddi:fr.insee:Variable.copy:1",
+                "fr.insee",
+                "copy-var-id",
+                "1",
+                basedOnObject,
+                new VariableName(new StringValue("fr-FR", "COPY_VAR")),
+                new Label(new Content("fr-FR", "Copy Variable")),
+                null,
+                null,
+                null
+        );
+        Ddi4Response ddi4 = new Ddi4Response(
+                "file:/jsonSchema.json",
+                null,
+                null,
+                null,
+                List.of(var),
+                null,
+                null
+        );
+
+        // When
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.items().size());
+
+        String xml = result.items().get(0).item();
+        // Verify BasedOnObject structure is present
+        assertTrue(xml.contains("<r:BasedOnObject>"));
+        assertTrue(xml.contains("<r:BasedOnReference>"));
+        assertTrue(xml.contains("<r:ID>original-var-id</r:ID>"));
+        assertTrue(xml.contains("<r:TypeOfObject>Variable</r:TypeOfObject>"));
+        assertTrue(xml.contains("</r:BasedOnReference>"));
+        assertTrue(xml.contains("</r:BasedOnObject>"));
+    }
+
+    @Test
     void shouldUseVariableInTopLevelReferenceWhenVariableIsRoot() {
         // Given - DDI4 Response with a Variable as root object
         Ddi4Variable var = new Ddi4Variable(
@@ -646,6 +806,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "test-agency",
                 "0755bbcb-3356-43fc-997d-76fdf015e1a4",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "AGEMEN8")),
                 new Label(new Content("fr-FR", "Âge détaillé")),
                 null,
@@ -700,6 +861,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                         "fr.insee",
                         "test",
                         "1",
+                        null,
                         new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
                         new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
                 )),
@@ -710,6 +872,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                         "fr.insee",
                         "test",
                         "1",
+                        null,
                         new DataRelationshipName(new StringValue("fr-FR", "Test")),
                         null
                 )),
@@ -721,6 +884,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                                 "fr.insee",
                                 "VAR1",
                                 "1",
+                                null,
                                 new VariableName(new StringValue("fr-FR", "VAR1")),
                                 new Label(new Content("fr-FR", "Variable 1")),
                                 null,
@@ -734,6 +898,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                                 "fr.insee",
                                 "VAR2",
                                 "1",
+                                null,
                                 new VariableName(new StringValue("fr-FR", "VAR2")),
                                 new Label(new Content("fr-FR", "Variable 2")),
                                 null,

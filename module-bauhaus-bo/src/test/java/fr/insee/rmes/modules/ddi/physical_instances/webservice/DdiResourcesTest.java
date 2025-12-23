@@ -371,7 +371,7 @@ class DdiResourcesTest {
             "true", "2024-06-03T14:29:23.4049817Z",
             "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
             "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1",
-            citation, dataRelRef
+            null, citation, dataRelRef
         );
 
         StringValue drNameStringValue = new StringValue("fr-FR", "Dessin de fichier thl-CASD");
@@ -381,7 +381,7 @@ class DdiResourcesTest {
             "true", "2024-06-03T14:29:23.4049817Z",
             "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
-            drName, null
+            null, drName, null
         );
 
         TopLevelReference topLevelRef = new TopLevelReference(

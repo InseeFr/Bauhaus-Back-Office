@@ -123,7 +123,7 @@ class DDIRepositoryImplTest {
             0 // versionCreationType
         );
 
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2));
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2), 2, 2, null, null, null);
 
         // Mock configuration
         when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
@@ -183,7 +183,7 @@ class DDIRepositoryImplTest {
         List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
 
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of());
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
 
         when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
@@ -351,6 +351,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-10-23T12:28:43.615773Z",
                 "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
                 agencyId, instanceId, "1",
+                null,
                 new Citation(new Title(new StringValue("fr-FR", "Radon et gamma"))),
                 null
         );
@@ -432,7 +433,7 @@ class DDIRepositoryImplTest {
         List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
 
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of());
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
 
         when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
@@ -469,7 +470,7 @@ class DDIRepositoryImplTest {
 
         AuthenticationResponse firstAuthResponse = new AuthenticationResponse(firstToken);
         AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of());
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
 
         when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
@@ -513,7 +514,7 @@ class DDIRepositoryImplTest {
 
         AuthenticationResponse firstAuthResponse = new AuthenticationResponse(firstToken);
         AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of());
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
 
         when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
@@ -645,7 +646,7 @@ class DDIRepositoryImplTest {
             0 // versionCreationType
         );
 
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2));
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2), 2, 2, null, null, null);
 
         // Mock configuration
         when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
@@ -748,6 +749,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:test-id:1",
                 "fr.insee", "test-id", "1",
+                null,
                 new Citation(new Title(new StringValue("fr-FR", physicalInstanceLabel))),
                 null
         );
@@ -877,6 +879,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
+                null,
                 new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
                 new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
         );
@@ -885,6 +888,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
+                null,
                 new DataRelationshipName(new StringValue("en-US", "Old DR Name")),
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
                         new LogicalRecordName(new StringValue("fr", "Old LR Name")), null)
@@ -1000,7 +1004,7 @@ class DDIRepositoryImplTest {
             0 // versionCreationType
         );
 
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeListToFilter, codeListToKeep));
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeListToFilter, codeListToKeep), 2, 2, null, null, null);
 
         // Configure deny list
         List<ColecticaConfiguration.CodeListDenyEntry> denyList = List.of(
@@ -1056,7 +1060,7 @@ class DDIRepositoryImplTest {
             null, true, false, false, "DDI", 1L, 0
         );
 
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList));
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList), 1, 1, null, null, null);
 
         // Configure empty deny list
         when(colecticaConfiguration.codeListDenyList()).thenReturn(List.of());
@@ -1099,7 +1103,7 @@ class DDIRepositoryImplTest {
             null, true, false, false, "DDI", 1L, 0
         );
 
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList));
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList), 1, 1, null, null, null);
 
         // Configure null deny list (default behavior)
         when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
@@ -1156,7 +1160,7 @@ class DDIRepositoryImplTest {
             null, true, false, false, "DDI", 3L, 0
         );
 
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2, codeList3));
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2, codeList3), 3, 3, null, null, null);
 
         // Configure deny list with multiple entries
         List<ColecticaConfiguration.CodeListDenyEntry> denyList = List.of(
@@ -1339,6 +1343,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
                 agencyId, instanceId, "1",
+                null,
                 new Citation(new Title(new StringValue("fr-FR", "test"))),
                 new DataRelationshipReference(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship")
         );
@@ -1350,6 +1355,7 @@ class DDIRepositoryImplTest {
                 agencyId,
                 "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
                 "1",
+                null,
                 new VariableName(new StringValue("fr-FR", "name")),
                 new Label(new Content("fr-FR", "Test Label")),
                 null,
@@ -1364,6 +1370,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1",
                 agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
+                null,
                 new DataRelationshipName(new StringValue("en-US", "DataRelationShip Name:test")),
                 new LogicalRecord("true", "urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
                         agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
