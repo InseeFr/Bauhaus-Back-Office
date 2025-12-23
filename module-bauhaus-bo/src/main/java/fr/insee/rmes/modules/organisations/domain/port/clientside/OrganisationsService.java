@@ -3,7 +3,9 @@ package fr.insee.rmes.modules.organisations.domain.port.clientside;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Client-side port for organization services in the organisations module.
@@ -78,4 +80,8 @@ public interface OrganisationsService {
      *         invalid IRI format, query execution error)
      */
     boolean checkIfOrganisationExists(String iri) throws OrganisationFetchException;
+
+    Optional<String> getDctermsIdentifier(String admsIdentifier) throws OrganisationFetchException;
+
+    Optional<String> getAdmsIdentifier(String dctermsIdentifier) throws OrganisationFetchException;
 }

@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.infrastructure.DevAuthenticationFilter;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
@@ -173,8 +174,8 @@ public class UserConfiguration {
     }
 
     @Bean
-    public UserDecoder getProdUserProvider(JwtProperties jwtProperties) {
-        return new OidcUserDecoder(jwtProperties);
+    public UserDecoder getProdUserProvider(OrganisationsService organisationsService, JwtProperties jwtProperties) {
+        return new OidcUserDecoder(organisationsService, jwtProperties);
     }
 
     @Bean

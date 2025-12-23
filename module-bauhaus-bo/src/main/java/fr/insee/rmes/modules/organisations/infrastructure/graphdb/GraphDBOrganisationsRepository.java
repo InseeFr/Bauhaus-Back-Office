@@ -1,17 +1,21 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class GraphDBOrganisationsRepository implements OrganisationsRepository {
@@ -57,6 +61,37 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
         try {
             return this.repositoryGestion.getResponseAsBoolean(OrganizationQueries.checkIfOrganisationExistsQuery(iri));
         } catch (Exception e) {
+            throw new OrganisationFetchException();
+        }
+    }
+
+    @Override
+    public Optional<String> getDctermsIdentifier(String admsIdentifier) throws OrganisationFetchException {
+        try {
+            return getOrganisationIdentifier(OrganizationQueries.getOrganizationIdenfier(ADMS.HAS_IDENTIFIER, admsIdentifier, DCTERMS.IDENTIFIER));
+        } catch (RmesException e) {
+            throw new OrganisationFetchException();
+        }
+    }
+
+    private @NonNull Optional<String> getOrganisationIdentifier(String query) throws OrganisationFetchException {
+        try {
+            var organisation = this.repositoryGestion.getResponseAsObject(query);
+            if(organisation.isEmpty()){
+                return Optional.empty();
+            }
+
+            return Optional.of(organisation.getString("value"));
+        } catch (RmesException e) {
+            throw new OrganisationFetchException();
+        }
+    }
+
+    @Override
+    public Optional<String> getAdmsIdentifier(String dctermsIdentifier) throws OrganisationFetchException {
+        try {
+            return getOrganisationIdentifier(OrganizationQueries.getOrganizationIdenfier(DCTERMS.IDENTIFIER, dctermsIdentifier, ADMS.HAS_IDENTIFIER));
+        } catch (RmesException e) {
             throw new OrganisationFetchException();
         }
     }

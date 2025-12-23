@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingStampException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
@@ -15,11 +17,15 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OidcUserDecoderTest {
+
+    @Mock
+    private OrganisationsService organisationsService;
 
     @Mock
     private JwtProperties jwtProperties;
@@ -30,13 +36,16 @@ class OidcUserDecoderTest {
     private OidcUserDecoder userDecoder;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws OrganisationFetchException {
         lenient().when(jwtProperties.getIdClaim()).thenReturn("sub");
         lenient().when(jwtProperties.getStampClaim()).thenReturn("timbre");
         lenient().when(jwtProperties.getSourceClaim()).thenReturn("source");
         lenient().when(jwtProperties.getRoleClaim()).thenReturn("roles");
 
-        userDecoder = new OidcUserDecoder(jwtProperties);
+        lenient().when(organisationsService.getAdmsIdentifier(anyString())).thenReturn(Optional.empty());
+        lenient().when(organisationsService.getDctermsIdentifier(anyString())).thenReturn(Optional.empty());
+
+        userDecoder = new OidcUserDecoder(organisationsService, jwtProperties);
     }
 
     @Test
@@ -241,5 +250,61 @@ class OidcUserDecoderTest {
         assertThat(result).isPresent();
         // Should extract the first matching group
         assertThat(result.get().getStamps()).containsAnyOf("STAMP-FIRST_APP", "STAMP-SECOND_APP");
+    }
+
+    @Test
+    void should_add_adms_identifier_when_stamp_claim_present() throws MissingUserInformationException, OrganisationFetchException {
+        when(organisationsService.getAdmsIdentifier("DG75-F601")).thenReturn(Optional.of("HIE3000165"));
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", "user123");
+        claims.put("timbre", "DG75-F601");
+        claims.put("source", "insee");
+        claims.put("roles", List.of("USER"));
+
+        when(jwt.getClaims()).thenReturn(claims);
+
+        Optional<User> result = userDecoder.fromPrincipal(jwt);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("DG75-F601", "HIE3000165");
+    }
+
+    @Test
+    void should_add_dcterms_identifier_when_insee_group_present() throws MissingUserInformationException, OrganisationFetchException {
+        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
+        when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
+        when(organisationsService.getDctermsIdentifier("HIE3000165_APP")).thenReturn(Optional.of("DG75-F601"));
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", "user123");
+        claims.put("source", "insee");
+        claims.put("roles", List.of("USER"));
+        claims.put("groups", List.of("HIE3000165_APP"));
+
+        when(jwt.getClaims()).thenReturn(claims);
+
+        Optional<User> result = userDecoder.fromPrincipal(jwt);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("HIE3000165_APP", "DG75-F601");
+    }
+
+    @Test
+    void should_handle_organisation_service_exception_gracefully() throws MissingUserInformationException, OrganisationFetchException {
+        when(organisationsService.getAdmsIdentifier("STAMP-01")).thenThrow(new OrganisationFetchException());
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", "user123");
+        claims.put("timbre", "STAMP-01");
+        claims.put("source", "insee");
+        claims.put("roles", List.of("USER"));
+
+        when(jwt.getClaims()).thenReturn(claims);
+
+        Optional<User> result = userDecoder.fromPrincipal(jwt);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getStamps()).containsExactly("STAMP-01");
     }
 }

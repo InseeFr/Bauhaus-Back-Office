@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsS
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public class DomainOrganisationsService implements OrganisationsService {
     private final OrganisationsRepository organisationsRepository;
@@ -27,5 +28,15 @@ public class DomainOrganisationsService implements OrganisationsService {
     @Override
     public boolean checkIfOrganisationExists(String iri) throws OrganisationFetchException {
         return this.organisationsRepository.checkIfOrganisationExists(iri);
+    }
+
+    @Override
+    public Optional<String> getDctermsIdentifier(String admsIdentifier) throws OrganisationFetchException {
+        return this.organisationsRepository.getDctermsIdentifier(admsIdentifier);
+    }
+
+    @Override
+    public Optional<String> getAdmsIdentifier(String dctermsIdentifier) throws OrganisationFetchException {
+        return this.organisationsRepository.getAdmsIdentifier(dctermsIdentifier);
     }
 }
