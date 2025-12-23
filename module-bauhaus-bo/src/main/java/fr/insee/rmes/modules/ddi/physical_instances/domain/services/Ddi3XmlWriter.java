@@ -54,6 +54,9 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, ID, pi.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.version());
 
+        // Write BasedOnObject if present
+        writeBasedOnObject(writer, pi.basedOnObject());
+
         // Write Citation if present
         if (pi.citation() != null && pi.citation().title() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Citation");
@@ -104,6 +107,9 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, AGENCY, dr.agency());
         writeElement(writer, DDI_REUSABLE_NS, ID, dr.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, dr.version());
+
+        // Write BasedOnObject if present
+        writeBasedOnObject(writer, dr.basedOnObject());
 
         // Write DataRelationshipName if present
         if (dr.dataRelationshipName() != null) {
@@ -180,6 +186,9 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, AGENCY, var.agency());
         writeElement(writer, DDI_REUSABLE_NS, ID, var.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, var.version());
+
+        // Write BasedOnObject if present
+        writeBasedOnObject(writer, var.basedOnObject());
 
         if (var.variableName() != null) {
             writer.writeStartElement("VariableName");
@@ -416,6 +425,20 @@ public class Ddi3XmlWriter {
             }
             writer.writeCharacters(value);
             writer.writeEndElement();
+        }
+    }
+
+    private void writeBasedOnObject(XMLStreamWriter writer, BasedOnObject basedOnObject) throws XMLStreamException {
+        if (basedOnObject != null && basedOnObject.basedOnReference() != null) {
+            BasedOnReference ref = basedOnObject.basedOnReference();
+            writer.writeStartElement(DDI_REUSABLE_NS, "BasedOnObject");
+            writer.writeStartElement(DDI_REUSABLE_NS, "BasedOnReference");
+            writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
+            writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
+            writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
+            writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", ref.typeOfObject());
+            writer.writeEndElement(); // BasedOnReference
+            writer.writeEndElement(); // BasedOnObject
         }
     }
 

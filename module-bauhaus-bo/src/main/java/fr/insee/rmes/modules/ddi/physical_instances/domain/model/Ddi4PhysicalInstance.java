@@ -9,6 +9,7 @@ public record Ddi4PhysicalInstance(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
+        @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("Citation") Citation citation,
         @JsonProperty("DataRelationshipReference") DataRelationshipReference dataRelationshipReference
 ) {

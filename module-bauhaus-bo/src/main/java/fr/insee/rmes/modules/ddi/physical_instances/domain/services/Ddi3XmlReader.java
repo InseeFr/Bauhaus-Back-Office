@@ -40,6 +40,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(piElement, AGENCY),
             xmlHelper.getElementText(piElement, ID),
             xmlHelper.getElementText(piElement, VERSION),
+            parseBasedOnObject(piElement),
             parseCitation(piElement),
             parseDataRelationshipReference(piElement)
         );
@@ -60,6 +61,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(drElement, AGENCY),
             xmlHelper.getElementText(drElement, ID),
             xmlHelper.getElementText(drElement, VERSION),
+            parseBasedOnObject(drElement),
             parseDataRelationshipName(drElement),
             parseLogicalRecord(drElement)
         );
@@ -80,6 +82,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(varElement, AGENCY),
             xmlHelper.getElementText(varElement, ID),
             xmlHelper.getElementText(varElement, VERSION),
+            parseBasedOnObject(varElement),
             parseVariableName(varElement),
             parseLabel(varElement),
             parseDescription(varElement),
@@ -155,6 +158,23 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(refElement, VERSION),
             xmlHelper.getElementText(refElement, "TypeOfObject")
         );
+    }
+
+    private BasedOnObject parseBasedOnObject(Element parent) {
+        Element basedOnObjectElement = xmlHelper.getChildElement(parent, "BasedOnObject");
+        if (basedOnObjectElement == null) return null;
+
+        Element refElement = xmlHelper.getChildElement(basedOnObjectElement, "BasedOnReference");
+        if (refElement == null) return null;
+
+        BasedOnReference basedOnReference = new BasedOnReference(
+            xmlHelper.getElementText(refElement, AGENCY),
+            xmlHelper.getElementText(refElement, ID),
+            xmlHelper.getElementText(refElement, VERSION),
+            xmlHelper.getElementText(refElement, "TypeOfObject")
+        );
+
+        return new BasedOnObject(basedOnReference);
     }
 
     private DataRelationshipName parseDataRelationshipName(Element parent) {
