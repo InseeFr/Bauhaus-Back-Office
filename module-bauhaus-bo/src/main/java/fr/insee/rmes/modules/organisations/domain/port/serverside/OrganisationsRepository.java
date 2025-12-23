@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchEx
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Server-side port for compact organization data access.
@@ -104,4 +105,8 @@ public interface OrganisationsRepository {
      *         invalid IRI format, query execution error, boolean response parsing error)
      */
     boolean checkIfOrganisationExists(String iri) throws OrganisationFetchException;
+
+    Optional<String> getDctermsIdentifier(String admsIdentifier) throws OrganisationFetchException;
+
+    Optional<String> getAdmsIdentifier(String dctermsIdentifier) throws OrganisationFetchException;
 }

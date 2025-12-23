@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;
+import org.eclipse.rdf4j.model.IRI;
 
 import java.util.HashMap;
 import java.util.List;
@@ -80,4 +81,13 @@ public class OrganizationQueries extends GenericQueries{
 	}
 
 
+	public static String getOrganizationIdenfier(IRI from, String id, IRI expected) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+		params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put("FROM_PREDICATE", from.toString());
+		params.put("ID", id);
+		params.put("EXPECTED_PREDICATE", expected.toString());
+		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getOrganizationIdentifier.ftlh", params);
+	}
 }

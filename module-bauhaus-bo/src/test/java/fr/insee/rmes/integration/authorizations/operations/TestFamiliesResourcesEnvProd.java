@@ -3,6 +3,7 @@ package fr.insee.rmes.integration.authorizations.operations;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
 import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
@@ -71,6 +72,9 @@ class TestFamiliesResourcesEnvProd {
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    private OrganisationsService organisationsService;
 
     @Autowired
     private MockMvc mvc;

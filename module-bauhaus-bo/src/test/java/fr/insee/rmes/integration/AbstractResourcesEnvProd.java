@@ -1,6 +1,7 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public abstract class AbstractResourcesEnvProd {
 
     @MockitoBean
     protected JwtProperties jwtProperties;
+
+    @MockitoBean
+    protected OrganisationsService organisationsService;
 
     protected final String idep = "xxxxxx";
     protected final String timbre = "XX59-YYY";
