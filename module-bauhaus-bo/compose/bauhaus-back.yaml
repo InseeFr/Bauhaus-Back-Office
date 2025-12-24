@@ -1,0 +1,7 @@
+services:
+  bauhaus-back:
+    build: ../Dockerfile.bauhaus
+    ports:
+      - "8080:8080"
+    environment:
+      - fr.insee.rmes.bauhaus.sesame.gestion.sesameServer=http://graphdb:7200
