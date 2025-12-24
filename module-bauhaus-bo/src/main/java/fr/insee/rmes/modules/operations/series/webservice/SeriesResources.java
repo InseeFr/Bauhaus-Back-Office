@@ -136,11 +136,10 @@ public class SeriesResources  {
 
 
 
-	@GetMapping(value = "/series/seriesWithStamp/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/series/seriesWithStamp", produces = MediaType.APPLICATION_JSON_VALUE)
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
-	public ResponseEntity<Object> getSeriesWithStamp(@PathVariable(Constants.STAMP) String stamp
-			) throws RmesException {
-		String series = operationsService.getSeriesWithStamp(stamp);
+	public ResponseEntity<Object> getSeriesWithStamp() throws RmesException {
+		String series = operationsService.getSeriesWithStamp();
 		return ResponseEntity.status(HttpStatus.OK).body(series);
 	}
 	

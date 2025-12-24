@@ -10,7 +10,7 @@ SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altL
 				?series dc:creator ?creators
 			 }
 <#if !ADMIN>
-			 FILTER (STR(?creators) = "${STAMP}")
+			 FILTER (STR(?creators) IN (<#list STAMP as s>"${s}"<#sep>, </#list>))
 </#if>
 
   			 BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) .

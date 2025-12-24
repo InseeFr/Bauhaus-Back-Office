@@ -1,14 +1,16 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.GenericQueries;
+import fr.insee.rmes.modules.users.domain.model.Stamp;
 import org.eclipse.rdf4j.model.IRI;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class OperationSeriesQueries extends GenericQueries{
@@ -174,9 +176,9 @@ public class OperationSeriesQueries extends GenericQueries{
 	 * @return String
 	 * @throws RmesException
 	 */	
-	public static String seriesWithStampQuery(String stamp, boolean isAdmin) throws RmesException {
+	public static String seriesWithStampQuery(Set<Stamp> stamps, boolean isAdmin) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(STAMP, stamp);
+		params.put(STAMP, stamps);
 		params.put("ADMIN", isAdmin);
 		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);
 	}

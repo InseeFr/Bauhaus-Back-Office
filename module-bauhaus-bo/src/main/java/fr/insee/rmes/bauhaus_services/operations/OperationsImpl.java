@@ -12,6 +12,7 @@ import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
@@ -30,7 +31,9 @@ import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class OperationsImpl  implements OperationsService {
@@ -85,21 +88,23 @@ public class OperationsImpl  implements OperationsService {
 	}
 
 	@Override
-	public String getSeriesWithStamp(String stamp) throws RmesException  {
+	public String getSeriesWithStamp() throws RmesException  {
 		logger.info("Starting to get series list with sims based on a stamp");
 
         //TODO a revoir ceci
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var isAdmin = false;
+		Set<Stamp> stamps = Collections.emptySet();
         try {
-            var user = userDecoder.fromPrincipal(principal);
-            isAdmin = user.get().hasRole(Roles.ADMIN);
+            var user = userDecoder.fromPrincipal(principal).get();
+            isAdmin = user.hasRole(Roles.ADMIN);
+			stamps = user.stamps();
         } catch (MissingUserInformationException e) {
             throw new RuntimeException(e);
         }
 
 
-        JSONArray series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithStampQuery(stamp, isAdmin));
+        JSONArray series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithStampQuery(stamps, isAdmin));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));
