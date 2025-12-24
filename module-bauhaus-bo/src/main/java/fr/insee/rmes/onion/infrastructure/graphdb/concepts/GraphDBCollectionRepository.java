@@ -6,6 +6,7 @@ import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -15,6 +16,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 
 @Repository
 public class GraphDBCollectionRepository implements CollectionRepository  {
@@ -41,6 +44,7 @@ public class GraphDBCollectionRepository implements CollectionRepository  {
         model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(collection.getIsValidated()), RdfUtils.conceptGraph());
         model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(collection.getPrefLabelLg1(), this.lg1), RdfUtils.conceptGraph());
         model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(collection.getCreated()), RdfUtils.conceptGraph());
+        RdfUtils.addTripleDate(collectionURI, DCTERMS.MODIFIED, LocalDateTime.now().toString(), model, RdfUtils.conceptGraph());
         model.add(collectionURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(collection.getContributor()), RdfUtils.conceptGraph());
         model.add(collectionURI, DC.CREATOR, RdfUtils.setLiteralString(collection.getCreator()), RdfUtils.conceptGraph());
         /*Optional*/
