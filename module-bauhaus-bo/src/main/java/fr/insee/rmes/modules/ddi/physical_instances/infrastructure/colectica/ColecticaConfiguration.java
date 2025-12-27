@@ -46,7 +46,8 @@ public record ColecticaConfiguration(
             String versionResponsibility,
             String itemFormat,
             String username,
-            String password
+            String password,
+            String defaultAgencyId
     ) {
         public ColecticaInstanceConfiguration {
             // Set default apiPath if not provided

@@ -692,7 +692,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             String physicalInstanceId = UUID.randomUUID().toString();
             String dataRelationshipId = UUID.randomUUID().toString();
             String logicalRecordId = UUID.randomUUID().toString();
-            String agencyId = "fr.insee";
+            String agencyId = instanceConfiguration.defaultAgencyId();
             int version = 1;
 
             // Get current timestamp in ISO format
