@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import org.jspecify.annotations.Nullable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -92,12 +93,19 @@ public record GraphDBCollection(
                 creator,
                 contributor,
                 toLocalisedDescriptions(),
-                LocalDateTime.parse(created),
-                Objects.isNull(modified) ? null : LocalDateTime.parse(modified),
+                parseDateTime(created),
+                Objects.isNull(modified) ? null : parseDateTime(modified),
                 isValidated,
                 conceptIds.stream()
                         .map(ConceptId::new)
                         .toList());
+    }
+
+    private static LocalDateTime parseDateTime(String dateString) {
+        if (dateString.contains("T")) {
+            return LocalDateTime.parse(dateString);
+        }
+        return LocalDate.parse(dateString).atStartOfDay();
     }
 
     private List<LocalisedLabel> generateLabels() {
