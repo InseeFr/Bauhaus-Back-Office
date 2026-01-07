@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.operations.documents.webservice;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 
 @RestController
 @RequestMapping("/documents")
-@ConditionalOnExpression("operations")
+@ConditionalOnModule("operations")
 public class DocumentsResources {
 
     static final Logger logger = LoggerFactory.getLogger(DocumentsResources.class);

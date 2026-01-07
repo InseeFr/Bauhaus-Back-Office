@@ -16,33 +16,8 @@ import java.nio.file.Paths;
 public class WithGraphDBContainer {
 
     @Container
-    public static final GraphDBContainer container = new GraphDBContainer(getDockerImageName());
+    public static final GraphDBContainer container = new GraphDBContainer("ontotext/graphdb:10.8.4");
     public static final String BAUHAUS_TEST_REPOSITORY = "bauhaus-test";
-
-    private static String getDockerImageName() {
-        Path filePath = Paths.get(System.getProperty("user.dir"), "compose.yaml");
-        File file = filePath.toFile();
-
-        String serviceName = "graphdb";
-
-        YAMLMapper yamlMapper = new YAMLMapper();
-        JsonNode rootNode;
-        try {
-            rootNode = yamlMapper.readTree(file);
-            JsonNode servicesNode = rootNode.get("services");
-            if (servicesNode != null && servicesNode.has(serviceName)) {
-                JsonNode serviceNode = servicesNode.get(serviceName);
-                JsonNode imageNode = serviceNode.get("image");
-                if (imageNode != null) {
-                    return imageNode.asText();
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return "";
-    }
 
 
     protected static RdfConnectionDetails getRdfGestionConnectionDetails() {
