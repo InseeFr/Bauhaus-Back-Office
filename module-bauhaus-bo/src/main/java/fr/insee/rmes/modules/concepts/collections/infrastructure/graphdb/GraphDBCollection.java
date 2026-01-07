@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import org.jspecify.annotations.Nullable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -102,11 +103,14 @@ public record GraphDBCollection(
                         .toList());
     }
 
-    private static LocalDateTime parseDateTime(String dateTimeStr) {
+    private static LocalDateTime parseDateTime(String dateString) {
+        if (!dateString.contains("T")) {
+            return LocalDate.parse(dateString).atStartOfDay();
+        }
         try {
-            return LocalDateTime.parse(dateTimeStr);
+            return LocalDateTime.parse(dateString);
         } catch (DateTimeParseException e) {
-            return OffsetDateTime.parse(dateTimeStr).toLocalDateTime();
+            return OffsetDateTime.parse(dateString).toLocalDateTime();
         }
     }
 
