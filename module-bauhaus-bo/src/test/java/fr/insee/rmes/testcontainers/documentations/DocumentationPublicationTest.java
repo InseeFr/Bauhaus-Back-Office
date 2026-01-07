@@ -46,7 +46,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         config = new ConfigStub();
 
         // Create a simple PropertiesFinder for UriUtils
-        UriUtils.PropertiesFinder propertiesFinder = name -> Optional.of(name);
+        UriUtils.PropertiesFinder propertiesFinder = Optional::of;
 
         UriUtils uriUtils = new UriUtils(
                 "http://publication/",
@@ -91,7 +91,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
                 field.setAccessible(true);
                 field.set(target, value);
                 return;
-            } catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException _) {
                 clazz = clazz.getSuperclass();
             }
         }

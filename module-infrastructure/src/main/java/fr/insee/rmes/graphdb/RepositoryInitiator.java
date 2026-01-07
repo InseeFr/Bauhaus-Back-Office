@@ -11,7 +11,7 @@ public interface RepositoryInitiator {
             };
     }
 
-    default Repository initRepository(String rdfServer, String repositoryID) throws Exception{
+    default Repository initRepository(String rdfServer, String repositoryID) throws Exception {
         Repository repo = new HTTPRepository(rdfServer, repositoryID);
         repo.init();
 
