@@ -153,8 +153,8 @@ class ClassificationsImplTest {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label 2"));
+        array.put(new JSONObject().put("id", "1").put("label", "value 1").put("altLabels", "label"));
+        array.put(new JSONObject().put("id", "1").put("label", "value 1").put("altLabels", "value 2"));
         array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabels", "label"));
         array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabels", "label"));
         array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabels", "label"));
@@ -176,8 +176,8 @@ class ClassificationsImplTest {
         assertEquals("label", series.get(2).altLabels());
 
         assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("label || label 2", series.get(3).altLabels());
+        assertEquals("value 1", series.get(3).label());
+        assertEquals("label || value 2", series.get(3).altLabels());
     }
 
     @Test
@@ -185,8 +185,8 @@ class ClassificationsImplTest {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null);
 
         JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label"));
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "label 2"));
+        array.put(new JSONObject().put("id", "1").put("label", "value 1").put("altLabels", "label"));
+        array.put(new JSONObject().put("id", "1").put("label", "value 1").put("altLabels", "value 2"));
         array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabels", "label"));
         array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabels", "label"));
         array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabels", "label"));
@@ -208,8 +208,8 @@ class ClassificationsImplTest {
         assertEquals("label", series.get(2).altLabels());
 
         assertEquals("1", series.get(3).id());
-        assertEquals("label 1", series.get(3).label());
-        assertEquals("label || label 2", series.get(3).altLabels());
+        assertEquals("value 1", series.get(3).label());
+        assertEquals("label || value 2", series.get(3).altLabels());
     }
 
     @Test

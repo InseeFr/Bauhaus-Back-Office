@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.domain.exceptions.RmesException;

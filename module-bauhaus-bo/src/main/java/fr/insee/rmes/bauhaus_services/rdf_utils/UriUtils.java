@@ -31,7 +31,7 @@ public record UriUtils(  String baseUriPublication, String baseUriGestion, Prope
     }
 
     /**
-     * Get label by URI
+     * Get value by URI
      */
     public String getCompleteUriGestion(String labelType, String id) {
         var enumByLabel=ObjectType.getEnumByLabel(labelType);

@@ -4,7 +4,7 @@ package fr.insee.rmes.integration;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.domain.Roles;
-import fr.insee.rmes.onion.infrastructure.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

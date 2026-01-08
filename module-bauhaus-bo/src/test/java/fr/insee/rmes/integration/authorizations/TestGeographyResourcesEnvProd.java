@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.onion.infrastructure.webservice.GeographyResources;
+import fr.insee.rmes.modules.geographies.webservice.GeographyResources;
 import org.json.JSONObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -69,6 +69,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
     void getData(String url, Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
         when(checker.hasAccess(eq(RBAC.Module.GEOGRAPHY.toString()), eq(RBAC.Privilege.READ.toString()), any(), any())).thenReturn(hasAccessReturn);
         when(geographyService.getGeoFeatureById(any())).thenReturn(new JSONObject());
+        when(geographyService.getGeoFeatures()).thenReturn("[]");
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = get(url).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
@@ -82,7 +83,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
 
     private static Stream<Arguments> provideDataForPostEndpoints() {
         return Stream.of(
-                Arguments.of(200, true, true),
+                Arguments.of(201, true, true),
 
                 Arguments.of(403, true, false),
 
@@ -95,6 +96,7 @@ class TestGeographyResourcesEnvProd extends AbstractResourcesEnvProd {
     @ParameterizedTest
     void create(Integer code, boolean withBearer, boolean hasAccessReturn) throws Exception {
         when(checker.hasAccess(eq(RBAC.Module.GEOGRAPHY.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
+        when(geographyService.createFeature(any())).thenReturn("http://bauhaus/geo/territory/test-id");
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         var request = post("/geo/territory")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.config.auth.security.JwtProperties;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.onion.infrastructure.webservice.datasets.DistributionResources;
+import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

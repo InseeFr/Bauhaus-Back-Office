@@ -1,8 +1,8 @@
 package fr.insee.rmes.onion.application.handler;
 
-import fr.insee.rmes.onion.domain.exceptions.GenericInternalServerException;
-import fr.insee.rmes.onion.domain.exceptions.operations.NotFoundAttributeException;
-import fr.insee.rmes.onion.domain.exceptions.operations.OperationDocumentationRubricWithoutRangeException;
+import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
+import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
+import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

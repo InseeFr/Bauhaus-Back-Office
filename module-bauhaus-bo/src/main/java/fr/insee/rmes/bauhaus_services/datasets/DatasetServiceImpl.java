@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
+import fr.insee.rmes.modules.datasets.datasets.model.*;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
@@ -9,8 +10,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dataset.*;
+import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;

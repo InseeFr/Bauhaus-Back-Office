@@ -12,7 +12,7 @@ import fr.insee.rmes.domain.model.operations.families.OperationFamily;
 import fr.insee.rmes.domain.port.clientside.FamilyService;
 import fr.insee.rmes.rbac.PropertiesAccessPrivilegesChecker;
 import fr.insee.rmes.rbac.RBAC;
-import fr.insee.rmes.onion.infrastructure.webservice.operations.FamilyResources;
+import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

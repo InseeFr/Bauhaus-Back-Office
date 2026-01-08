@@ -1,0 +1,9 @@
+#
+#Thu Nov 13 09:59:07 GMT 2025
+classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..',\ 'org.jspecify.annotations..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=570ba0df-f577-4880-997f-51aa91a71191
+classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..',\ 'org.apache.commons.lang3..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=de2165c2-c750-4544-ac2c-16e6684201d9
+classes\ that\ reside\ in\ a\ package\ '..domain..'\ should\ only\ depend\ on\ classes\ that\ reside\ in\ any\ package\ ['..domain..',\ 'java..'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=a86ec997-1440-42c2-9886-b2889c046854
+classes\ that\ reside\ in\ a\ package\ '..port..'\ should\ be\ interfaces,\ because\ All\ ports\ should\ be\ interfaces\ to\ define\ contracts=1a38a662-3535-44f6-8da3-e760035beb88
+classes\ that\ reside\ in\ a\ package\ '..webservice..'\ should\ only\ depend\ on\ classes\ that\ reside\ outside\ of\ packages\ ['..serverside..',\ '..infrastructure..'],\ because\ The\ webservices\ should\ not\ depends\ of\ the\ serverside\ port\ and\ the\ infrastructure\ =f9a41db8-432e-484a-bf3d-30d5bb49fe35
+classes\ that\ reside\ in\ a\ package\ '..webservice..'\ should\ only\ depend\ on\ classes\ that\ reside\ outside\ of\ packages\ ['..serverside..',\ 'infrastructure'],\ because\ The\ domain\ should\ only\ depends\ of\ the\ domain=817ea150-d9bf-4c66-b31a-6642e370c388
+classes\ that\ reside\ in\ a\ package\ '..webservice..'\ should\ only\ depend\ on\ classes\ that\ reside\ outside\ of\ packages\ ['..serverside..',\ 'infrastructure'],\ because\ The\ webservices\ should\ not\ depends\ of\ the\ serverside\ port\ and\ the\ infrastructure\ =e0ec2322-ce34-4fcc-ba48-22464505c223
