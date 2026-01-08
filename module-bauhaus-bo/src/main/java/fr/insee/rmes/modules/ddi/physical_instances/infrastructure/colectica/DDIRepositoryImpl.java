@@ -319,8 +319,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             try {
 
                 String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
-                String encodedAgenceId = URLEncoder.encode(id, StandardCharsets.UTF_8);
-                URL url = new URL(instanceConfiguration.baseApiUrl() + "ddiset/" + encodedAgenceId + "/" + encodedId);
+                String encodedAgencyId = URLEncoder.encode(agencyId, StandardCharsets.UTF_8);
+                URL url = new URL(instanceConfiguration.baseApiUrl() + "ddiset/" + encodedAgencyId + "/" + encodedId);
 
 
                 // Create headers with Bearer token
