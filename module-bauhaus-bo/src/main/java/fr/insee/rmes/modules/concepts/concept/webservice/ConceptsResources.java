@@ -25,8 +25,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -56,9 +54,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 public class ConceptsResources  {
-	
-	static final Logger logger = LoggerFactory.getLogger(ConceptsResources.class);
-	
+
 	final ConceptsService conceptsService;
 
 	final ConceptsCollectionService conceptsCollectionService;
@@ -213,7 +209,6 @@ public class ConceptsResources  {
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Concept", required = true) @RequestBody String body) throws RmesException {
 		conceptsService.setConcept(id, body);
-		logger.info("Concept updated : {}" , id);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -259,7 +254,6 @@ public class ConceptsResources  {
 	@Operation(summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Collection", required = true) @RequestBody Collection body) throws RmesException {
-		logger.info("Creating concepts collection : {}" , body);
 		String id = conceptsService.createCollection(body);
 		URI location = ServletUriComponentsBuilder
 				.fromCurrentRequest()
@@ -275,7 +269,6 @@ public class ConceptsResources  {
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Collection", required = true) @RequestBody Collection body) throws RmesException {
-		logger.info("Updating concepts collection : {}" , id);
 
 		if (body.getId() != null && !id.equals(body.getId())) {
 			return ResponseEntity.badRequest().build();
@@ -292,7 +285,6 @@ public class ConceptsResources  {
 			@Parameter(description = "Id, put '0' if multiple ids", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Collection id array to validate", required = true) @RequestBody String body) throws RmesException {
 		conceptsService.setCollectionsValidation(body);
-		logger.info("Validated concepts : {}" , body);
 		return ResponseEntity.noContent().build();
 	}
 }

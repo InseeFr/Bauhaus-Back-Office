@@ -112,7 +112,6 @@ public class ColecticaMockResources {
                 })
                 .collect(Collectors.toList());
 
-        logger.info("Returning {} physical instances from secondary repository", colecticaItems.size());
         return new ColecticaResponse(colecticaItems);
     }
 
@@ -137,13 +136,10 @@ public class ColecticaMockResources {
             @PathVariable String identifier,
             @PathVariable int version) {
 
-        logger.info("Mock secondary instance: Getting item {}/{}/{}", agencyId, identifier, version);
-
         // Get the physical instance from secondary repository
         Ddi4Response ddi4Response = mockDataService.getPhysicalInstanceById(agencyId, identifier);
 
         if (ddi4Response == null) {
-            logger.warn("Physical instance not found with agencyId: {}, id: {}", agencyId, identifier);
             return ResponseEntity.notFound().build();
         }
 
@@ -176,14 +172,11 @@ public class ColecticaMockResources {
             @PathVariable String agencyId,
             @PathVariable String identifier) {
 
-        logger.info("Mock secondary instance: Getting DDI set for {}/{}", agencyId, identifier);
-
         // Get the DDI set from secondary repository via MockDataService
         // This will call the secondary Colectica server's /api/v1/ddiset endpoint
         Ddi4Response ddi4Response = mockDataService.getDdiSetFromSecondary(agencyId, identifier);
 
         if (ddi4Response == null) {
-            logger.warn("DDI set not found with agencyId: {}, id: {}", agencyId, identifier);
             return ResponseEntity.notFound().build();
         }
 

@@ -155,7 +155,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                         try {
                             date = formatter.parse(item.versionDate());
                         } catch (ParseException | NullPointerException _) {
-                            logger.debug("Impossible to parse {}", item.versionDate());
+                            logger.debug("Impossible to parse");
                         }
                         String agency = item.agencyId();
                         return new PartialPhysicalInstance(id, label, date, agency);
@@ -209,8 +209,6 @@ public class DDIRepositoryImpl implements DDIRepository {
             // Get all Fragment elements
             NodeList fragmentNodes = doc.getElementsByTagNameNS("ddi:instance:3_3", "Fragment");
 
-            logger.debug("Found {} Fragment elements in FragmentInstance", fragmentNodes.getLength());
-
             for (int i = 0; i < fragmentNodes.getLength(); i++) {
                 Element fragmentElement = (Element) fragmentNodes.item(i);
 
@@ -219,11 +217,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 // Skip fragments with unsupported types (e.g., CodeList, Category)
                 if (itemType == null) {
-                    logger.debug("Skipping Fragment {} - unsupported type", i);
                     continue;
                 }
-
-                logger.debug("Processing Fragment {} with itemType: {}", i, itemType);
 
                 // Convert this Fragment element back to XML string
                 String fragmentXml = elementToString(fragmentElement);
@@ -294,11 +289,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 && !cachedDdi4Response.physicalInstance().isEmpty()
                 && cachedDdi4Response.physicalInstance().get(0).id().equals(id)
                 && cachedDdi4Response.physicalInstance().get(0).agency().equals(agencyId)) {
-            logger.info("Returning cached DDI4 Physical Instance for agencyId: {}, id: {}", agencyId, id);
             return cachedDdi4Response;
         }
-
-        logger.info("Fetching DDI4 Physical Instance from Colectica API for agencyId: {}, id: {}", agencyId, id);
 
         return executeWithAuth(token -> {
             try {
@@ -307,8 +299,6 @@ public class DDIRepositoryImpl implements DDIRepository {
                 String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
                         + agencyId + "/"
                         + id;
-
-                logger.info("Fetching full DDI set from: {}", ddisetUrl);
 
                 // Create headers with Bearer token
                 HttpHeaders headers = new HttpHeaders();
@@ -326,13 +316,9 @@ public class DDIRepositoryImpl implements DDIRepository {
                 ).getBody();
 
                 if (ddisetXml == null || ddisetXml.isEmpty()) {
-                    logger.error("Received empty response from Colectica API for ddiset URL: {}", ddisetUrl);
                     return null;
                 }
 
-                logger.info("Received response from ddiset endpoint. Length: {}, First 200 chars: {}",
-                    ddisetXml.length(),
-                    ddisetXml.substring(0, Math.min(200, ddisetXml.length())));
 
                 // Clean the XML - remove all leading invisible/control characters until we hit '<'
                 // This handles BOM, zero-width spaces, and other invisible characters
@@ -343,20 +329,16 @@ public class DDIRepositoryImpl implements DDIRepository {
                         startIndex++;
                     } else {
                         // Found a non-whitespace, non-control character that's not '<'
-                        logger.warn("Unexpected character at position {}: {} (code: {})", startIndex, c, (int)c);
                         startIndex++;
                     }
                 }
 
                 if (startIndex > 0) {
-                    logger.info("Removed {} leading characters from XML (BOM, whitespace, or control characters)", startIndex);
                     ddisetXml = ddisetXml.substring(startIndex);
                 }
 
                 // Final trim for any trailing whitespace
                 ddisetXml = ddisetXml.trim();
-
-                logger.debug("Cleaned XML starts with: {}", ddisetXml.substring(0, Math.min(100, ddisetXml.length())));
 
                 logger.debug("Received DDI set XML from Colectica for Physical Instance and DataRelationship");
 
@@ -377,7 +359,6 @@ public class DDIRepositoryImpl implements DDIRepository {
                 return cachedDdi4Response;
 
             } catch (Exception e) {
-                logger.error("Error processing Colectica API response for agencyId: {}, id: {}", agencyId, id, e);
                 throw new RuntimeException("Failed to process DDI response", e);
             }
         });
@@ -385,7 +366,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
-        logger.info("Updating physical instance {}/{} in Colectica", agencyId, id);
 
         executeWithAuth(token -> {
             // First, fetch the current instance to get all necessary information
@@ -494,12 +474,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(updateRequest, headers);
 
-            logger.info("Sending update request to Colectica: {}", url);
-
             // POST to Colectica (same endpoint for create and update)
             restTemplate.postForObject(url, requestEntity, String.class);
-
-            logger.info("Successfully updated physical instance with id: {}", id);
 
             // Clear cache to force refresh on next read
             cachedDdi4Response = null;
@@ -510,8 +486,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        logger.info("Creating new physical instance with label: {}", request.physicalInstanceLabel());
-
         return executeWithAuth(token -> {
             // Generate UUIDs for physical instance and data relationship
             String physicalInstanceId = UUID.randomUUID().toString();
@@ -586,12 +560,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(createRequest, headers);
 
-            logger.info("Sending creation request to Colectica: {}", url);
-
             // POST to Colectica
             restTemplate.postForObject(url, requestEntity, String.class);
-
-            logger.info("Successfully created physical instance with id: {}", physicalInstanceId);
 
             // Return the created instance
             return getPhysicalInstance(agencyId, physicalInstanceId);

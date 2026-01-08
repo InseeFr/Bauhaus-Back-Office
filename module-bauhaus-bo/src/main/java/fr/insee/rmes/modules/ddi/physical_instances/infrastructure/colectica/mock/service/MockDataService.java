@@ -39,13 +39,11 @@ public class MockDataService {
      */
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         if (physicalInstancesCache != null) {
-            logger.debug("Mock service: Returning {} physical instances from cache", physicalInstancesCache.size());
             return physicalInstancesCache;
         }
 
         logger.info("Mock service: Getting physical instances from secondary repository (cache miss)");
         physicalInstancesCache = secondaryDDIRepository.getPhysicalInstances();
-        logger.info("Mock service: Cached {} physical instances", physicalInstancesCache.size());
 
         return physicalInstancesCache;
     }
@@ -62,17 +60,14 @@ public class MockDataService {
 
         // Check cache first
         if (physicalInstanceByIdCache.containsKey(cacheKey)) {
-            logger.debug("Mock service: Returning physical instance with agencyId {} and id {} from cache", agencyId, id);
             return physicalInstanceByIdCache.get(cacheKey);
         }
 
-        logger.info("Mock service: Getting physical instance with agencyId {} and id {} from secondary repository (cache miss)", agencyId, id);
         Ddi4Response response = secondaryDDIRepository.getPhysicalInstance(agencyId, id);
 
         // Store in cache if not null
         if (response != null) {
             physicalInstanceByIdCache.put(cacheKey, response);
-            logger.info("Mock service: Cached physical instance with agencyId {} and id {}", agencyId, id);
         }
 
         return response;
@@ -100,7 +95,6 @@ public class MockDataService {
      * @param id the physical instance identifier
      */
     public void clearPhysicalInstanceByIdCache(String id) {
-        logger.info("Mock service: Clearing cache for physical instance with id {}", id);
         physicalInstanceByIdCache.remove(id);
     }
 
