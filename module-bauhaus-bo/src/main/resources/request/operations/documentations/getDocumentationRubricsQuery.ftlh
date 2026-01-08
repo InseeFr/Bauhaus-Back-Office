@@ -22,7 +22,7 @@ WHERE {
 
 		} 
 			
-		<#-- RangeType.RICHTEXT : label, hasDoc -->
+		<#-- RangeType.RICHTEXT : value, hasDoc -->
 		UNION {
 			?reportAttr ?attr ?temp .
 			?temp rdf:type dcmitype:Text .
@@ -51,7 +51,7 @@ WHERE {
 			BIND('${RICHTEXT.jsonType}' AS ?rangeType) .
 		}
 
-		<#-- RangeType.STRING : label -->
+		<#-- RangeType.STRING : value -->
 		UNION {
 			 ?reportAttr ?attr ?labelTemp .
              OPTIONAL{?reportAttr ?attr ?labelLg1 .
@@ -89,7 +89,7 @@ WHERE {
 			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
 		} 
 		
-		<#-- RangeType.GEOGRAPHY : value (uri), label -->
+		<#-- RangeType.GEOGRAPHY : value (uri), value -->
 		UNION {
 			?reportAttr ?attr ?uri . 
 			?uri igeo:nom ?igeoNom .

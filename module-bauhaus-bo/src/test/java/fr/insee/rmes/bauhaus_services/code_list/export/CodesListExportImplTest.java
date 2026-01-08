@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.code_list.export;
 
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
+import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;

@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.15.2</version>
+  <version>4.16.0-rc7</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -20,6 +20,11 @@
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-infrastructure</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
       <version>1.0.0</version>
     </dependency>
     <dependency>

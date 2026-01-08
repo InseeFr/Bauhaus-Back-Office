@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
-import fr.insee.rmes.onion.infrastructure.webservice.operations.DocumentsResources;
+import fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources;
 import fr.insee.rmes.utils.IdGenerator;
 import io.minio.errors.MinioException;
 import org.junit.jupiter.api.Test;

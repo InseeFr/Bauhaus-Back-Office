@@ -272,7 +272,13 @@ public class RepositoryUtils {
 			final JSONObject jsonResults = new JSONObject();
 
 			Set<String> set = json.keySet();
-			set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get("value")));
+			set.forEach(s -> {
+                var jsonObject = (JSONObject) json.get(s);
+                jsonResults.put(s, jsonObject.get("value"));
+                if(jsonObject.has("xml:lang")) {
+                    jsonResults.put(s + "_lg", jsonObject.get("xml:lang"));
+                }
+            });
 			arrayRes.put(jsonResults);
 		}
 		return arrayRes;

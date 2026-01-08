@@ -10,10 +10,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
-import fr.insee.rmes.model.geography.GeoFeature;
+import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.graphdb.ontologies.GEO;
 import fr.insee.rmes.graphdb.ontologies.IGEO;
-import fr.insee.rmes.persistance.sparql_queries.GeographyQueries;
+import fr.insee.rmes.modules.geographies.infrastructure.graphdb.GeographyQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -161,7 +161,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 
-		//We check the unicity of the label
+		//We check the unicity of the value
 		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(GeographyQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
 		if(checkUnicityTerritory.has("territory") && !checkUnicityTerritory.getString("territory").equalsIgnoreCase(geoFeature.getUri())){
 			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The labelLg1 already exists");

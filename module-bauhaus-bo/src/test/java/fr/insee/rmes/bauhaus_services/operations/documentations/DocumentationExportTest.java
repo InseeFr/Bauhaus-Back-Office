@@ -12,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
 import org.json.JSONArray;
@@ -187,7 +188,7 @@ class DocumentationExportTest {
                 .thenReturn(new String[]{Constants.SERIES_UP, idDatabase});
 
         // Mock seriesUtils to return a series
-        fr.insee.rmes.model.operations.Series series = createSeriesForTest();
+        Series series = createSeriesForTest();
         when(seriesUtils.getSeriesById(idDatabase, fr.insee.rmes.utils.EncodingType.XML))
                 .thenReturn(series);
 
@@ -269,8 +270,8 @@ class DocumentationExportTest {
         assertThat(seriesFile).endsWith("</Series>");
     }
 
-    private fr.insee.rmes.model.operations.Series createSeriesForTest() {
-        fr.insee.rmes.model.operations.Series series = new fr.insee.rmes.model.operations.Series();
+    private Series createSeriesForTest() {
+        Series series = new Series();
         series.setId("s2144");
         series.setPrefLabelLg1("Comptes nationaux annuels (base 2020)");
         series.setPrefLabelLg2("Annual national accounts (2020 Base)");
@@ -347,7 +348,7 @@ class DocumentationExportTest {
                 .thenReturn(indicator);
 
         // Mock seriesUtils for the series referenced by the indicator
-        fr.insee.rmes.model.operations.Series series = new fr.insee.rmes.model.operations.Series();
+        Series series = new Series();
         series.setId("s1034");
         series.setPrefLabelLg1("Autres indicateurs");
         series.setPrefLabelLg2("Other indexes");
@@ -388,7 +389,7 @@ class DocumentationExportTest {
         assertThat(indicatorFile).contains("<id>DG75-L002</id>");
         assertThat(indicatorFile).contains("<labelLg1>Administration du comité du Label</labelLg1>");
 
-        // Verify creators (should contain organization label instead of stamp)
+        // Verify creators (should contain organization value instead of stamp)
         assertThat(indicatorFile).contains("<creators>");
         assertThat(indicatorFile).contains("<creators>Organisation HIE2004993</creators>");
 

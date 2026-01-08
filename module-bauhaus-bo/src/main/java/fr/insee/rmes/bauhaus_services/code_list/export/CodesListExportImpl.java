@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.code_list.export;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.CodeListsQueries;
+import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import fr.insee.rmes.utils.Deserializer;
 import org.json.JSONArray;
 import org.json.JSONObject;

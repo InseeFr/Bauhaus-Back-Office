@@ -7,8 +7,8 @@ import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQuer
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.model.dataset.Distribution;
-import fr.insee.rmes.model.dataset.PatchDistribution;
+import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
+import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;

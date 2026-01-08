@@ -15,7 +15,7 @@ import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.*;
 import org.json.JSONArray;
@@ -370,13 +370,13 @@ public class DocumentationExport {
 				transformedCreators.add(organisation.label());
 				successCount++;
 			} else {
-				// If organization not found or has no label, keep the stamp
+				// If organization not found or has no value, keep the stamp
 				transformedCreators.add(stamp);
 				notFoundCount++;
 				if (organisation == null) {
 					logger.debug("Organization not found for stamp: {}", stamp);
 				} else {
-					logger.debug("Organization found but has no label for stamp: {}", stamp);
+					logger.debug("Organization found but has no value for stamp: {}", stamp);
 				}
 			}
 		}

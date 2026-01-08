@@ -5,7 +5,6 @@ import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.concepts.PartialCollection;
 import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,13 +52,6 @@ public class ConceptsCollectionsResources {
 
     private final ConceptsCollectionService conceptsCollectionService;
 
-    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
-    @GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "List of collections",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
-    public List<PartialCollection> getCollections() throws RmesException {
-        return conceptsCollectionService.getCollections();
-    }
 
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/export/{id}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})

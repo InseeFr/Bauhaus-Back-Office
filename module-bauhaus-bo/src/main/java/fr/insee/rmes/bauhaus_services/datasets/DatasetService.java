@@ -1,10 +1,10 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.model.dataset.DatasetsForSearch;
-import fr.insee.rmes.model.dataset.PartialDataset;
-import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.modules.datasets.datasets.model.Dataset;
+import fr.insee.rmes.modules.datasets.datasets.model.DatasetsForSearch;
+import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
+import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
 
 import java.util.List;
 

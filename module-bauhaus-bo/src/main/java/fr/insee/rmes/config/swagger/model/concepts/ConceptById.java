@@ -1,6 +1,6 @@
 package fr.insee.rmes.config.swagger.model.concepts;
 
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
+import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class ConceptById {
@@ -14,10 +14,10 @@ public class ConceptById {
 	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 	
-	@Schema(description = "Alternative label lg1")
+	@Schema(description = "Alternative value lg1")
 	public String altLabelLg1;
 	
-	@Schema(description = "Alternative label lg2")
+	@Schema(description = "Alternative value lg2")
 	public String altLabelLg2;
 	
 	@Schema(description = "Owner", requiredMode = Schema.RequiredMode.REQUIRED)
