@@ -6,17 +6,15 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.operations.families.PartialOperationFamily;
 import fr.insee.rmes.domain.port.clientside.FamilyService;
-import fr.insee.rmes.model.operations.Family;
-import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.webservice.response.operations.OperationFamilyResponse;
 import fr.insee.rmes.webservice.response.operations.OperationFamilySeriesResponse;
 import fr.insee.rmes.webservice.response.operations.OperationFamilySubjectResponse;
 import fr.insee.rmes.webservice.response.operations.PartialOperationFamilyResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +35,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 				MediaType.TEXT_PLAIN_VALUE
 		}
 )
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
+@ConditionalOnModule("operations")
 public class FamilyResources  {
 
 	protected final OperationsService operationsService;

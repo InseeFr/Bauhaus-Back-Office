@@ -1,21 +1,19 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.webservice;
 
-import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
-import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
-import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
-import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationFamilyResponse;
-import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationSeriesResponse;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationResponse;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationSeriesResponse;
+import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +26,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/classifications")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('classifications')")
+@ConditionalOnModule("classifications")
 public class ClassificationsResources {
 
 
