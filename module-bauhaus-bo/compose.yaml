@@ -11,3 +11,11 @@ services:
     extends:
       file: compose/graphdb.yaml
       service: graphdb
+
+  minio:
+    extends:
+      file: compose/minio.yaml
+      service: minio
+
+volumes:
+  minio_data:

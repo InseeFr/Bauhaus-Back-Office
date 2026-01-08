@@ -1,0 +1,99 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix sdmx-mm: <http://www.w3.org/ns/sdmx-mm#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dctype: <http://purl.org/dc/dcmitype/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix schema: <http://schema.org/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# Graph for SIMS test report
+<http://rdf.insee.fr/graphes/qualite/rapport/9999> {
+    <http://bauhaus/qualite/rapport/9999>
+            a                   sdmx-mm:MetadataReport ;
+            rdfs:label          "Rapport qualite test"@fr , "Test quality report"@en ;
+            sdmx-mm:target      <http://bauhaus/operations/operation/s9999> ;
+            insee:validationState "Unpublished" .
+
+    <http://bauhaus/qualite/attribut/9999/S.1.1>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.1      "Contact FR"@fr , "Contact EN"@en ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+
+    <http://bauhaus/qualite/attribut/9999/S.2.1>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.2.1      "2024-01-01"^^xsd:date ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+
+    <http://bauhaus/qualite/attribut/9999/S.10>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.10       <http://bauhaus/qualite/attribut/9999/S.10/texte> ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+
+    <http://bauhaus/qualite/attribut/9999/S.10/texte>
+            a                   dctype:Text ;
+            <http://www.w3.org/1999/02/22-rdf-syntax-ns#value>
+                    "<p>Data description for test</p>"@fr ;
+            dcterms:language    <http://bauhaus/codes/langue/fr> .
+
+    # Document reference in SIMS
+    <http://bauhaus/qualite/attribut/9999/S.7.1>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.7.1      <http://bauhaus/documents/document/9001> ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+
+    # Rubrics that should NOT be published (S.1.3 to S.1.8)
+    <http://bauhaus/qualite/attribut/9999/S.1.3>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.3      "Internal contact info - should not be published"@fr ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+
+    # S.3.7 with organization reference - should be published
+    <http://bauhaus/qualite/attribut/9999/S.3.7>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.3.7      <http://bauhaus/organisations/insee/DG75-F001> ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+}
+
+# Graph for organizations (general)
+<http://rdf.insee.fr/graphes/organisations> {
+    <http://bauhaus/organisations/insee/DG75-F001>
+            a                   <http://www.w3.org/ns/org#Organization> ,
+                                <http://www.w3.org/ns/org#OrganizationalUnit> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Direction des statistiques d'entreprises"@fr .
+}
+
+# Graph for INSEE organizations (detailed)
+<http://rdf.insee.fr/graphes/organisations/insee> {
+    <http://bauhaus/organisations/insee/DG75-F001>
+            a                   <http://www.w3.org/ns/org#Organization> ;
+            <http://www.w3.org/ns/org#unitOf>
+                    <http://bauhaus/organisations/insee> ;
+            <http://rdf.insee.fr/def/base#identifiant>
+                    "DG75-F001" .
+}
+
+# Graph for documents
+<http://rdf.insee.fr/graphes/qualite/documents> {
+    <http://bauhaus/documents/document/9001>
+            a                   foaf:Document ;
+            rdfs:label          "Document de test pour publication"@fr ;
+            dc:language         "fr" ;
+            schema:url          <http://gestion.files/test-document.pdf> .
+
+    <http://bauhaus/documents/document/9002>
+            a                   foaf:Document ;
+            rdfs:label          "Second document test"@fr ;
+            dc:language         "fr" ;
+            schema:url          <http://gestion.files/second-document.pdf> .
+}
+
+# Graph for operations (target of SIMS)
+<http://rdf.insee.fr/graphes/operations> {
+    <http://bauhaus/operations/operation/s9999>
+            a                   <http://bauhaus/operations/Operation> ;
+            rdfs:label          "Operation de test"@fr , "Test operation"@en .
+}

@@ -3,14 +3,13 @@ package fr.insee.rmes.modules.datasets.datasets.webservice;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.datasets.datasets.model.Dataset;
 import fr.insee.rmes.modules.datasets.datasets.model.DatasetsForSearch;
 import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
-import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/datasets")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
+@ConditionalOnModule("datasets")
 public class DatasetResources {
 
     final DatasetService datasetService;

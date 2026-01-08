@@ -18,6 +18,9 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Repository
 public class DocumentationPublication extends RdfService {
 	
@@ -30,6 +33,7 @@ public class DocumentationPublication extends RdfService {
 
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.simsGraph(simsId);
+		Set<Resource> organizations = new HashSet<>();
 
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> metadataReportStatements = repoGestion.getCompleteGraph(con, graph);
@@ -46,6 +50,10 @@ public class DocumentationPublication extends RdfService {
 					// nothing, wouldn't copy this attr
 				} else {
 					transformTripleToPublish(model, st);
+					// Collect organization references
+					if (st.getObject() instanceof Resource resource && isOrganization(resource)) {
+						organizations.add(resource);
+					}
 				}
 			}
 			documentsPublication.publishAllDocumentsInSims(simsId);
@@ -61,12 +69,20 @@ public class DocumentationPublication extends RdfService {
 
 		repositoryPublication.publishContext(graph, model, "sims");
 
+		// Publish referenced organizations
+		for (Resource organization : organizations) {
+			publicationUtils.publishResource(organization, Set.of());
+		}
 	}
 
 	private boolean isTripletForPublication(String predicate) {
 		for(String rubric : rubricsNotForPublication) {
 			if (predicate.endsWith(rubric)) return false;}
 		return true;
+	}
+
+	private boolean isOrganization(Resource resource) {
+		return resource.stringValue().contains("/organisations");
 	}
 
 }

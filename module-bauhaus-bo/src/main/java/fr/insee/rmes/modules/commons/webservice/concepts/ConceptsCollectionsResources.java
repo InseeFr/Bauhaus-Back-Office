@@ -1,22 +1,22 @@
 package fr.insee.rmes.modules.commons.webservice.concepts;
 
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import fr.insee.rmes.domain.model.Language;
 
 @RestController
 @RequestMapping("/concepts-collections")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('concepts')")
+@ConditionalOnModule("concepts")
 public class ConceptsCollectionsResources {
 
     @Autowired

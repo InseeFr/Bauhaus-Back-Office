@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class DevAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final User FAKE_USER = new User("fakeUser", List.of(Roles.ADMIN), Set.of(new Stamp("DG75-L201")), Source.SSM);
+    private static final User FAKE_USER = new User("fakeUser", List.of(Roles.ADMIN), Set.of(new Stamp("DG75-L201")), Source.INSEE);
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
