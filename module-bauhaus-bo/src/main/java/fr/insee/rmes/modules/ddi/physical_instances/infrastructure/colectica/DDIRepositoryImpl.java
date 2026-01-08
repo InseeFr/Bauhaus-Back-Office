@@ -8,22 +8,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -31,10 +22,19 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+
+import static javax.xml.XMLConstants.*;
 
 public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
@@ -198,9 +198,8 @@ public class DDIRepositoryImpl implements DDIRepository {
      */
     private List<Ddi3Response.Ddi3Item> parseFragmentInstanceToItems(String fragmentInstanceXml, String agencyId, String id) {
         try {
-            // Parse the XML
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
+            // Parse the XML with XXE protection
+            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(new InputSource(new StringReader(fragmentInstanceXml)));
 
@@ -271,10 +270,34 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
+     * Creates a secure DocumentBuilderFactory with XXE protection
+     */
+    private DocumentBuilderFactory createSecureDocumentBuilderFactory() throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setFeature(FEATURE_SECURE_PROCESSING, true);
+        factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(ACCESS_EXTERNAL_SCHEMA, "");
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        factory.setNamespaceAware(true);
+        return factory;
+    }
+
+    /**
+     * Creates a secure TransformerFactory with XXE protection
+     */
+    private TransformerFactory createSecureTransformerFactory() throws Exception {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(ACCESS_EXTERNAL_STYLESHEET, "");
+        return factory;
+    }
+
+    /**
      * Convert a DOM Element to XML String
      */
     private String elementToString(Element element) throws Exception {
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        TransformerFactory transformerFactory = createSecureTransformerFactory();
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
@@ -294,11 +317,11 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return executeWithAuth(token -> {
             try {
-                // Fetch the full DDI set (PhysicalInstance + DataRelationship) using the ddiset endpoint
-                // Format: /api/v1/ddiset/{agencyId}/{identifier}
-                String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
-                        + agencyId + "/"
-                        + id;
+
+                String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
+                String encodedAgenceId = URLEncoder.encode(id, StandardCharsets.UTF_8);
+                URL url = new URL(instanceConfiguration.baseApiUrl() + "ddiset/" + encodedAgenceId + "/" + encodedId);
+
 
                 // Create headers with Bearer token
                 HttpHeaders headers = new HttpHeaders();
@@ -309,7 +332,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 // The response from Colectica ddiset endpoint contains XML with PhysicalInstance and DataRelationship
                 String ddisetXml = restTemplate.exchange(
-                        ddisetUrl,
+                        url.toString(),
                         HttpMethod.GET,
                         getRequestEntity,
                         String.class
