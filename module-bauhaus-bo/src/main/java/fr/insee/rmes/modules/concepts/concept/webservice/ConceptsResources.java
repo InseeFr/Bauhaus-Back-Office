@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +32,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequestMapping("/concepts")
 @ConditionalOnModule("concepts")
 public class ConceptsResources  {
-	
-	static final Logger logger = LoggerFactory.getLogger(ConceptsResources.class);
-	
+
 	final ConceptsService conceptsService;
 
 	final ConceptsCollectionService conceptsCollectionService;
@@ -156,7 +155,6 @@ public class ConceptsResources  {
 			String id,
 			@RequestBody String body) throws RmesException {
 		conceptsService.setConcept(id, body);
-		logger.info("Concept updated : {}" , id);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -196,7 +194,6 @@ public class ConceptsResources  {
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> setCollection(@RequestBody Collection body) throws RmesException {
-		logger.info("Creating concepts collection : {}" , body);
 		String id = conceptsService.createCollection(body);
 		URI location = ServletUriComponentsBuilder
 				.fromCurrentRequest()
@@ -211,7 +208,6 @@ public class ConceptsResources  {
 	public ResponseEntity<Object> setCollection(
 			@PathVariable(Constants.ID) String id,
 			@RequestBody Collection body) throws RmesException {
-		logger.info("Updating concepts collection : {}" , id);
 
 		if (body.getId() != null && !id.equals(body.getId())) {
 			return ResponseEntity.badRequest().build();
@@ -227,7 +223,6 @@ public class ConceptsResources  {
 			@PathVariable(Constants.ID) String id,
 			@RequestBody String body) throws RmesException {
 		conceptsService.setCollectionsValidation(body);
-		logger.info("Validated concepts : {}" , body);
 		return ResponseEntity.noContent().build();
 	}
 }
