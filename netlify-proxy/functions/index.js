@@ -18,6 +18,100 @@ const ITEMS_COLLECTION = 'items';
  * Default data to populate the store on initialization
  */
 const defaultItems = [
+  // StudyUnits
+  {
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "89f5e04d-da22-485f-9c08-5fbe452b6c90",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "820a7c14-0ac4-42bc-a8c1-d39f60e304ee",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2022</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "948edb5b-96a5-4823-b45d-3019fcc40227",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:948edb5b-96a5-4823-b45d-3019fcc40227:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2023</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "5bd79348-ea1f-4f3c-8eff-63452147a050",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:5bd79348-ea1f-4f3c-8eff-63452147a050:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2024</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  // Groups
+  {
+    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "10a689ce-7006-429b-8e84-036b7787b422",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "20b789de-8007-530c-9f95-147c75e6cb34",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:20b789de-8007-530c-9f95-147c75e6cb34:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>20b789de-8007-530c-9f95-147c75e6cb34</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population</r:String> </r:Title> </r:Citation> </Group> </Fragment>`,
+    VersionDate: "2025-01-09T10:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "30c890ef-9008-631d-0a06-258d86f7dc45",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:30c890ef-9008-631d-0a06-258d86f7dc45:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>30c890ef-9008-631d-0a06-258d86f7dc45</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu</r:String> </r:Title> </r:Citation> </Group> </Fragment>`,
+    VersionDate: "2025-01-09T11:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  // CodeLists
   {
     ItemType: "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
     AgencyId: "fr.insee",
@@ -213,6 +307,30 @@ function extractLabelFromXml(xmlContent, itemType) {
         if (labelContent) {
           const lang = labelContent['@_xml:lang'] || 'fr-FR';
           const value = labelContent['#text'] || labelContent;
+          labels[lang] = value;
+        }
+      }
+    }
+    // For Group (4bd6eef6-99df-40e6-9b11-5b8f64e5cb23)
+    else if (itemType === '4bd6eef6-99df-40e6-9b11-5b8f64e5cb23') {
+      const group = fragment.Group;
+      if (group && group['r:Citation'] && group['r:Citation']['r:Title']) {
+        const titleString = group['r:Citation']['r:Title']['r:String'];
+        if (titleString) {
+          const lang = titleString['@_xml:lang'] || 'fr-FR';
+          const value = titleString['#text'] || titleString;
+          labels[lang] = value;
+        }
+      }
+    }
+    // For StudyUnit (752a535b-b548-4fbe-97e4-f26a02d9e413)
+    else if (itemType === '752a535b-b548-4fbe-97e4-f26a02d9e413') {
+      const studyUnit = fragment.StudyUnit;
+      if (studyUnit && studyUnit['r:Citation'] && studyUnit['r:Citation']['r:Title']) {
+        const titleString = studyUnit['r:Citation']['r:Title']['r:String'];
+        if (titleString) {
+          const lang = titleString['@_xml:lang'] || 'fr-FR';
+          const value = titleString['#text'] || titleString;
           labels[lang] = value;
         }
       }
@@ -576,6 +694,7 @@ async function handleResetItems(req, res) {
 /**
  * Handle DDI set retrieval (MOCKED)
  * GET /api/v1/ddiset/{agencyId}/{identifier}
+ * Supports both PhysicalInstance and Group items
  */
 async function handleDdiset(req, res, path) {
   if (req.method !== 'GET') {
@@ -609,154 +728,36 @@ async function handleDdiset(req, res, path) {
   await initializeDefaultItems();
 
   try {
-    // Find the PhysicalInstance by identifier
-    const piDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
+    // Find the item by identifier
+    const itemDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
 
-    if (!piDoc.exists) {
+    if (!itemDoc.exists) {
       res.status(404).json({
-        error: 'PhysicalInstance not found',
+        error: 'Item not found',
         agencyId: agencyId,
         identifier: identifier
       });
       return;
     }
 
-    const physicalInstance = piDoc.data();
+    const item = itemDoc.data();
+    const itemType = item.ItemType;
 
-    if (physicalInstance.ItemType !== 'a51e85bb-6259-4488-8df2-f08cb43485f8') {
+    // Handle based on item type
+    if (itemType === 'a51e85bb-6259-4488-8df2-f08cb43485f8') {
+      // PhysicalInstance
+      await handlePhysicalInstanceDdiset(req, res, item, agencyId);
+    } else if (itemType === '4bd6eef6-99df-40e6-9b11-5b8f64e5cb23') {
+      // Group
+      await handleGroupDdiset(req, res, item, agencyId);
+    } else {
       res.status(404).json({
-        error: 'PhysicalInstance not found',
+        error: 'Item type not supported for ddiset',
         agencyId: agencyId,
-        identifier: identifier
+        identifier: identifier,
+        itemType: itemType
       });
-      return;
     }
-
-    // Parse PhysicalInstance XML to extract DataRelationship reference
-    const piParsed = xmlParser.parse(physicalInstance.Item);
-    const piFragment = piParsed.Fragment?.PhysicalInstance;
-    const dataRelationshipRef = piFragment?.['r:DataRelationshipReference'];
-
-    let dataRelationship = null;
-    let variables = [];
-    let codeLists = [];
-    let categories = [];
-    const codeListIds = new Set();
-    const categoryIds = new Set();
-
-    if (dataRelationshipRef) {
-      const drId = dataRelationshipRef['r:ID'];
-
-      // Find the DataRelationship
-      const drDoc = await db.collection(ITEMS_COLLECTION).doc(drId).get();
-      if (drDoc.exists) {
-        dataRelationship = drDoc.data();
-
-        // Parse DataRelationship XML to extract Variable references
-        const drParsed = xmlParser.parse(dataRelationship.Item);
-        const drFragment = drParsed.Fragment?.DataRelationship;
-        const logicalRecord = drFragment?.LogicalRecord;
-        const variablesInRecord = logicalRecord?.VariablesInRecord;
-
-        if (variablesInRecord) {
-          // Extract variable references
-          let varRefs = variablesInRecord.VariableUsedReference;
-
-          // Ensure it's an array
-          if (!Array.isArray(varRefs)) {
-            varRefs = [varRefs];
-          }
-
-          // Find all variables
-          for (const varRef of varRefs) {
-            const varId = varRef['r:ID'];
-            const varDoc = await db.collection(ITEMS_COLLECTION).doc(varId).get();
-            if (varDoc.exists) {
-              const variable = varDoc.data();
-              variables.push(variable);
-
-              // Parse variable to extract CodeList references
-              const varParsed = xmlParser.parse(variable.Item);
-              const varFragment = varParsed.Fragment?.Variable;
-              const varRepresentation = varFragment?.VariableRepresentation;
-              const codeRepresentation = varRepresentation?.['r:CodeRepresentation'];
-
-              if (codeRepresentation) {
-                const codeListRef = codeRepresentation['r:CodeListReference'];
-                if (codeListRef) {
-                  const codeListId = codeListRef['r:ID'];
-                  if (codeListId) {
-                    codeListIds.add(codeListId);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Fetch all referenced CodeLists
-    for (const codeListId of codeListIds) {
-      const clDoc = await db.collection(ITEMS_COLLECTION).doc(codeListId).get();
-      if (clDoc.exists) {
-        const codeList = clDoc.data();
-        codeLists.push(codeList);
-
-        // Parse CodeList to extract Category references
-        const clParsed = xmlParser.parse(codeList.Item);
-        const clFragment = clParsed.Fragment?.CodeList;
-        const codes = clFragment?.Code;
-
-        if (codes) {
-          const codeArray = Array.isArray(codes) ? codes : [codes];
-          for (const code of codeArray) {
-            const categoryRef = code['r:CategoryReference'];
-            if (categoryRef) {
-              const categoryId = categoryRef['r:ID'];
-              if (categoryId) {
-                categoryIds.add(categoryId);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Fetch all referenced Categories
-    for (const categoryId of categoryIds) {
-      const catDoc = await db.collection(ITEMS_COLLECTION).doc(categoryId).get();
-      if (catDoc.exists) {
-        categories.push(catDoc.data());
-      }
-    }
-
-    // Also find all variables with the same agencyId that are not already in the list
-    // This is a fallback to ensure all variables are returned even if not referenced
-    const variableType = '683889c6-f74b-4d5e-92ed-908c0a42bb2d';
-    const variableIds = new Set(variables.map(v => v.Identifier));
-
-    const allItemsSnapshot = await db.collection(ITEMS_COLLECTION)
-      .where('ItemType', '==', variableType)
-      .where('AgencyId', '==', agencyId)
-      .get();
-
-    allItemsSnapshot.docs.forEach(doc => {
-      const item = doc.data();
-      if (!variableIds.has(item.Identifier)) {
-        //variables.push(item);
-        console.log(`Added unreferenced variable: ${item.Identifier}`);
-      }
-    });
-
-    // Generate DDI FragmentInstance XML
-    const xmlResponse = generateDDIFragmentInstance(physicalInstance, dataRelationship, variables, codeLists, categories);
-
-    res.set({
-      'Content-Type': 'application/xml',
-      ...corsHeaders
-    });
-    res.status(200).send(xmlResponse);
   } catch (error) {
     console.error('Error generating DDI set:', error);
     res.status(500).json({
@@ -764,6 +765,179 @@ async function handleDdiset(req, res, path) {
       details: error.message
     });
   }
+}
+
+/**
+ * Handle DDI set for PhysicalInstance
+ */
+async function handlePhysicalInstanceDdiset(req, res, physicalInstance, agencyId) {
+  // Parse PhysicalInstance XML to extract DataRelationship reference
+  const piParsed = xmlParser.parse(physicalInstance.Item);
+  const piFragment = piParsed.Fragment?.PhysicalInstance;
+  const dataRelationshipRef = piFragment?.['r:DataRelationshipReference'];
+
+  let dataRelationship = null;
+  let variables = [];
+  let codeLists = [];
+  let categories = [];
+  const codeListIds = new Set();
+  const categoryIds = new Set();
+
+  if (dataRelationshipRef) {
+    const drId = dataRelationshipRef['r:ID'];
+
+    // Find the DataRelationship
+    const drDoc = await db.collection(ITEMS_COLLECTION).doc(drId).get();
+    if (drDoc.exists) {
+      dataRelationship = drDoc.data();
+
+      // Parse DataRelationship XML to extract Variable references
+      const drParsed = xmlParser.parse(dataRelationship.Item);
+      const drFragment = drParsed.Fragment?.DataRelationship;
+      const logicalRecord = drFragment?.LogicalRecord;
+      const variablesInRecord = logicalRecord?.VariablesInRecord;
+
+      if (variablesInRecord) {
+        // Extract variable references
+        let varRefs = variablesInRecord.VariableUsedReference;
+
+        // Ensure it's an array
+        if (!Array.isArray(varRefs)) {
+          varRefs = [varRefs];
+        }
+
+        // Find all variables
+        for (const varRef of varRefs) {
+          const varId = varRef['r:ID'];
+          const varDoc = await db.collection(ITEMS_COLLECTION).doc(varId).get();
+          if (varDoc.exists) {
+            const variable = varDoc.data();
+            variables.push(variable);
+
+            // Parse variable to extract CodeList references
+            const varParsed = xmlParser.parse(variable.Item);
+            const varFragment = varParsed.Fragment?.Variable;
+            const varRepresentation = varFragment?.VariableRepresentation;
+            const codeRepresentation = varRepresentation?.['r:CodeRepresentation'];
+
+            if (codeRepresentation) {
+              const codeListRef = codeRepresentation['r:CodeListReference'];
+              if (codeListRef) {
+                const codeListId = codeListRef['r:ID'];
+                if (codeListId) {
+                  codeListIds.add(codeListId);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Fetch all referenced CodeLists
+  for (const codeListId of codeListIds) {
+    const clDoc = await db.collection(ITEMS_COLLECTION).doc(codeListId).get();
+    if (clDoc.exists) {
+      const codeList = clDoc.data();
+      codeLists.push(codeList);
+
+      // Parse CodeList to extract Category references
+      const clParsed = xmlParser.parse(codeList.Item);
+      const clFragment = clParsed.Fragment?.CodeList;
+      const codes = clFragment?.Code;
+
+      if (codes) {
+        const codeArray = Array.isArray(codes) ? codes : [codes];
+        for (const code of codeArray) {
+          const categoryRef = code['r:CategoryReference'];
+          if (categoryRef) {
+            const categoryId = categoryRef['r:ID'];
+            if (categoryId) {
+              categoryIds.add(categoryId);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Fetch all referenced Categories
+  for (const categoryId of categoryIds) {
+    const catDoc = await db.collection(ITEMS_COLLECTION).doc(categoryId).get();
+    if (catDoc.exists) {
+      categories.push(catDoc.data());
+    }
+  }
+
+  // Also find all variables with the same agencyId that are not already in the list
+  // This is a fallback to ensure all variables are returned even if not referenced
+  const variableType = '683889c6-f74b-4d5e-92ed-908c0a42bb2d';
+  const variableIds = new Set(variables.map(v => v.Identifier));
+
+  const allItemsSnapshot = await db.collection(ITEMS_COLLECTION)
+    .where('ItemType', '==', variableType)
+    .where('AgencyId', '==', agencyId)
+    .get();
+
+  allItemsSnapshot.docs.forEach(doc => {
+    const item = doc.data();
+    if (!variableIds.has(item.Identifier)) {
+      console.log(`Added unreferenced variable: ${item.Identifier}`);
+    }
+  });
+
+  // Generate DDI FragmentInstance XML
+  const xmlResponse = generateDDIFragmentInstance(physicalInstance, dataRelationship, variables, codeLists, categories);
+
+  res.set({
+    'Content-Type': 'application/xml',
+    ...corsHeaders
+  });
+  res.status(200).send(xmlResponse);
+}
+
+/**
+ * Handle DDI set for Group
+ */
+async function handleGroupDdiset(req, res, group, agencyId) {
+  // Parse Group XML to extract StudyUnit references
+  const groupParsed = xmlParser.parse(group.Item);
+  const groupFragment = groupParsed.Fragment?.Group;
+
+  let studyUnits = [];
+
+  if (groupFragment) {
+    // Extract StudyUnit references
+    let studyUnitRefs = groupFragment['r:StudyUnitReference'];
+
+    if (studyUnitRefs) {
+      // Ensure it's an array
+      if (!Array.isArray(studyUnitRefs)) {
+        studyUnitRefs = [studyUnitRefs];
+      }
+
+      // Find all StudyUnits
+      for (const suRef of studyUnitRefs) {
+        const suId = suRef['r:ID'];
+        const suDoc = await db.collection(ITEMS_COLLECTION).doc(suId).get();
+        if (suDoc.exists) {
+          studyUnits.push(suDoc.data());
+        }
+      }
+    }
+  }
+
+  console.log(`Found ${studyUnits.length} StudyUnits for Group ${group.Identifier}`);
+
+  // Generate DDI FragmentInstance XML for Group
+  const xmlResponse = generateGroupDDIFragmentInstance(group, studyUnits);
+
+  res.set({
+    'Content-Type': 'application/xml',
+    ...corsHeaders
+  });
+  res.status(200).send(xmlResponse);
 }
 
 /**
@@ -814,6 +988,40 @@ function generateDDIFragmentInstance(physicalInstance, dataRelationship, variabl
       xml += `
     ${category.Item}`;
     }
+  }
+
+  xml += `
+</ddi:FragmentInstance>`;
+
+  return xml;
+}
+
+/**
+ * Generate DDI FragmentInstance XML for Group with StudyUnits
+ */
+function generateGroupDDIFragmentInstance(group, studyUnits) {
+  const agency = group.AgencyId;
+  const id = group.Identifier;
+  const version = group.Version;
+
+  // Start building the XML
+  let xml = `<?xml version="1.0" encoding="utf-8"?>
+<ddi:FragmentInstance xmlns:r="ddi:reusable:3_3" xmlns:ddi="ddi:instance:3_3">
+    <ddi:TopLevelReference>
+        <r:Agency>${agency}</r:Agency>
+        <r:ID>${id}</r:ID>
+        <r:Version>${version}</r:Version>
+        <r:TypeOfObject>Group</r:TypeOfObject>
+    </ddi:TopLevelReference>`;
+
+  // Add Group fragment (use the stored XML directly)
+  xml += `
+    ${group.Item}`;
+
+  // Add StudyUnit fragments
+  for (const studyUnit of studyUnits) {
+    xml += `
+    ${studyUnit.Item}`;
   }
 
   xml += `
