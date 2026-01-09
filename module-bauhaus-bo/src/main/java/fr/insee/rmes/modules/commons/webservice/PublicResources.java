@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.commons.webservice;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -30,18 +31,20 @@ public class PublicResources {
     private final List<String> modules;
     private final String version;
     private final List<String> extraMandatoryFields;
+    private final ColecticaConfiguration colecticaConfiguration;
 
     public PublicResources(
-                           @Value("${fr.insee.rmes.bauhaus.env}") String env,
-                           @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-                           @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
-                           @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
-                           @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
-                           @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
-                           @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
-                           @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
-                           @Value("${fr.insee.rmes.bauhaus.version}") String version,
-                           @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields) {
+            @Value("${fr.insee.rmes.bauhaus.env}") String env,
+            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
+            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+            @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
+            @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
+            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
+            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
+            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
+            @Value("${fr.insee.rmes.bauhaus.version}") String version,
+            @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields,
+            ColecticaConfiguration colecticaConfiguration) {
         this.env = env;
         this.lg2 = lg2;
         this.lg1 = lg1;
@@ -52,6 +55,7 @@ public class PublicResources {
         this.modules = modules;
         this.version = version;
         this.extraMandatoryFields = extraMandatoryFields;
+        this.colecticaConfiguration = colecticaConfiguration;
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -68,6 +72,7 @@ public class PublicResources {
             props.put("modules", this.modules);
             props.put("version", this.version);
             props.put("extraMandatoryFields", this.extraMandatoryFields);
+            props.put("defaultAgencyId", this.colecticaConfiguration.server().defaultAgencyId());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
