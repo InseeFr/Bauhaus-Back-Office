@@ -177,6 +177,47 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<PartialGroup> getGroups() {
+        logger.info("Getting groups from Colectica API via HTTP");
+
+        return executeWithAuth(token -> {
+            // Set up the request with authorization header
+            String url = instanceConfiguration.baseApiUrl() + "_query";
+
+            // Create request body with Group itemType
+            QueryRequest requestBody = new QueryRequest(List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23"));
+
+            // Create headers with Bearer token and Content-Type
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Create HTTP entity with headers and body
+            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // Make the request with authentication
+            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+
+            return response.results().stream()
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialGroup(id, label, date, agency);
+                    })
+                    .toList();
+        });
+    }
+
+    @Override
     public List<PartialCodesList> getCodesLists() {
         logger.info("Getting codes lists from Colectica API via HTTP");
 
@@ -503,6 +544,237 @@ public class DDIRepositoryImpl implements DDIRepository {
                 throw new RuntimeException("Failed to process DDI response", e);
             }
         });
+    }
+
+    @Override
+    public Ddi4GroupResponse getGroup(String agencyId, String id) {
+        logger.info("Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}", agencyId, id);
+
+        return executeWithAuth(token -> {
+            try {
+                // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint
+                String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
+                        + agencyId + "/"
+                        + id;
+
+                logger.info("Fetching full DDI set for Group from: {}", ddisetUrl);
+
+                // Create headers with Bearer token
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(token);
+
+                HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
+
+                // The response from Colectica ddiset endpoint contains XML with Group and StudyUnits
+                String ddisetXml = restTemplate.exchange(
+                        ddisetUrl,
+                        HttpMethod.GET,
+                        getRequestEntity,
+                        String.class
+                ).getBody();
+
+                if (ddisetXml == null || ddisetXml.isEmpty()) {
+                    logger.error("Received empty response from Colectica API for ddiset URL: {}", ddisetUrl);
+                    return null;
+                }
+
+                logger.info("Received response from ddiset endpoint for Group. Length: {}", ddisetXml.length());
+
+                // Clean the XML - remove leading invisible/control characters
+                int startIndex = 0;
+                while (startIndex < ddisetXml.length() && ddisetXml.charAt(startIndex) != '<') {
+                    char c = ddisetXml.charAt(startIndex);
+                    if (c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c) || !Character.isDefined(c)) {
+                        startIndex++;
+                    } else {
+                        logger.warn("Unexpected character at position {}: {} (code: {})", startIndex, c, (int)c);
+                        startIndex++;
+                    }
+                }
+
+                if (startIndex > 0) {
+                    logger.info("Removed {} leading characters from XML", startIndex);
+                    ddisetXml = ddisetXml.substring(startIndex);
+                }
+
+                ddisetXml = ddisetXml.trim();
+
+                // Parse the XML directly to build Ddi4GroupResponse
+                return parseGroupXmlToDdi4Response(ddisetXml);
+
+            } catch (Exception e) {
+                logger.error("Error processing Colectica API response for Group agencyId: {}, id: {}", agencyId, id, e);
+                throw new RuntimeException("Failed to process DDI Group response", e);
+            }
+        });
+    }
+
+    /**
+     * Parse DDI3 XML directly to build Ddi4GroupResponse
+     */
+    private Ddi4GroupResponse parseGroupXmlToDdi4Response(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(new InputSource(new StringReader(xml)));
+
+        List<Ddi4Group> groups = new ArrayList<>();
+        List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
+        List<TopLevelReference> topLevelReferences = new ArrayList<>();
+
+        // Parse Group elements
+        NodeList groupNodes = doc.getElementsByTagNameNS("ddi:group:3_3", "Group");
+        logger.info("Found {} Group elements", groupNodes.getLength());
+
+        for (int i = 0; i < groupNodes.getLength(); i++) {
+            Element groupElement = (Element) groupNodes.item(i);
+            Ddi4Group group = parseGroupElement(groupElement);
+            groups.add(group);
+
+            // Add top level reference for the group
+            topLevelReferences.add(new TopLevelReference(
+                group.agency(),
+                group.id(),
+                group.version(),
+                "Group"
+            ));
+        }
+
+        // Parse StudyUnit elements
+        NodeList studyUnitNodes = doc.getElementsByTagNameNS("ddi:studyunit:3_3", "StudyUnit");
+        logger.info("Found {} StudyUnit elements", studyUnitNodes.getLength());
+
+        for (int i = 0; i < studyUnitNodes.getLength(); i++) {
+            Element studyUnitElement = (Element) studyUnitNodes.item(i);
+            Ddi4StudyUnit studyUnit = parseStudyUnitElement(studyUnitElement);
+            studyUnits.add(studyUnit);
+        }
+
+        return new Ddi4GroupResponse(
+            "ddi:4.0",
+            topLevelReferences,
+            groups,
+            studyUnits
+        );
+    }
+
+    /**
+     * Parse a Group XML element to Ddi4Group
+     */
+    private Ddi4Group parseGroupElement(Element groupElement) {
+        String isUniversallyUnique = groupElement.getAttribute("isUniversallyUnique");
+        String versionDate = groupElement.getAttribute("versionDate");
+
+        String urn = getElementTextContent(groupElement, "ddi:reusable:3_3", "URN");
+        String agency = getElementTextContent(groupElement, "ddi:reusable:3_3", "Agency");
+        String id = getElementTextContent(groupElement, "ddi:reusable:3_3", "ID");
+        String version = getElementTextContent(groupElement, "ddi:reusable:3_3", "Version");
+        String versionResponsibility = getElementTextContent(groupElement, "ddi:reusable:3_3", "VersionResponsibility");
+
+        // Parse Citation
+        Citation citation = parseCitation(groupElement);
+
+        // Parse StudyUnitReferences
+        List<StudyUnitReference> studyUnitReferences = parseStudyUnitReferences(groupElement);
+
+        return new Ddi4Group(
+            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
+            versionDate.isEmpty() ? null : versionDate,
+            urn,
+            agency,
+            id,
+            version,
+            versionResponsibility,
+            citation,
+            studyUnitReferences
+        );
+    }
+
+    /**
+     * Parse a StudyUnit XML element to Ddi4StudyUnit
+     */
+    private Ddi4StudyUnit parseStudyUnitElement(Element studyUnitElement) {
+        String isUniversallyUnique = studyUnitElement.getAttribute("isUniversallyUnique");
+        String versionDate = studyUnitElement.getAttribute("versionDate");
+
+        String urn = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "URN");
+        String agency = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "Agency");
+        String id = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "ID");
+        String version = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "Version");
+
+        // Parse Citation
+        Citation citation = parseCitation(studyUnitElement);
+
+        return new Ddi4StudyUnit(
+            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
+            versionDate.isEmpty() ? null : versionDate,
+            urn,
+            agency,
+            id,
+            version,
+            citation
+        );
+    }
+
+    /**
+     * Parse Citation from an element
+     */
+    private Citation parseCitation(Element parentElement) {
+        NodeList citationNodes = parentElement.getElementsByTagNameNS("ddi:reusable:3_3", "Citation");
+        if (citationNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element citationElement = (Element) citationNodes.item(0);
+        NodeList titleNodes = citationElement.getElementsByTagNameNS("ddi:reusable:3_3", "Title");
+        if (titleNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element titleElement = (Element) titleNodes.item(0);
+        NodeList stringNodes = titleElement.getElementsByTagNameNS("ddi:reusable:3_3", "String");
+        if (stringNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element stringElement = (Element) stringNodes.item(0);
+        String text = stringElement.getTextContent();
+        String lang = stringElement.getAttributeNS("http://www.w3.org/XML/1998/namespace", "lang");
+
+        return new Citation(new Title(new StringValue(lang.isEmpty() ? "fr-FR" : lang, text)));
+    }
+
+    /**
+     * Parse StudyUnitReferences from a Group element
+     */
+    private List<StudyUnitReference> parseStudyUnitReferences(Element groupElement) {
+        List<StudyUnitReference> references = new ArrayList<>();
+
+        NodeList refNodes = groupElement.getElementsByTagNameNS("ddi:reusable:3_3", "StudyUnitReference");
+        for (int i = 0; i < refNodes.getLength(); i++) {
+            Element refElement = (Element) refNodes.item(i);
+
+            String agency = getElementTextContent(refElement, "ddi:reusable:3_3", "Agency");
+            String id = getElementTextContent(refElement, "ddi:reusable:3_3", "ID");
+            String version = getElementTextContent(refElement, "ddi:reusable:3_3", "Version");
+            String typeOfObject = getElementTextContent(refElement, "ddi:reusable:3_3", "TypeOfObject");
+
+            references.add(new StudyUnitReference(agency, id, version, typeOfObject));
+        }
+
+        return references;
+    }
+
+    /**
+     * Get text content of a child element with given namespace and local name
+     */
+    private String getElementTextContent(Element parent, String namespaceUri, String localName) {
+        NodeList nodes = parent.getElementsByTagNameNS(namespaceUri, localName);
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent();
+        }
+        return null;
     }
 
     @Override

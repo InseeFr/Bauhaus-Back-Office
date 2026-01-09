@@ -1461,4 +1461,253 @@ class DDIRepositoryImplTest {
         assertNotNull(capturedDdi3.items());
         assertEquals(5, capturedDdi3.items().size()); // PI + Variable + DR + CodeList + Category
     }
+
+    @Test
+    void shouldGetGroups() {
+        // Given
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String tokenUrl = baseServerUrl + "/token/createtoken";
+        String queryUrl = baseApiUrl + "_query";
+
+        // Mock authentication response
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+
+        ColecticaItem group1 = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Base permanente des équipements", "en", "Permanent Database of Facilities"), // itemName
+            Map.of("fr-FR", "BPE", "en", "BPE"), // value
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "Group", // itemType
+            "fr.insee", // agencyId
+            1, // version
+            "group-1", // identifier
+            null, // item
+            null, // notes
+            "2025-01-09T00:00:00", // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            1L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaItem group2 = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "Recensement de la population", "en", "Population Census"), // itemName
+            Map.of("fr-FR", "RP", "en", "PC"), // value
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "Group", // itemType
+            "fr.insee", // agencyId
+            1, // version
+            "group-2", // identifier
+            null, // item
+            null, // notes
+            "2025-01-08T00:00:00", // versionDate
+            null, // versionResponsibility
+            true, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            2L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaResponse mockResponse = new ColecticaResponse(List.of(group1, group2), 2, 2, null, null, null);
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication call
+        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock query call - should query for Group itemType (4bd6eef6-99df-40e6-9b11-5b8f64e5cb23)
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialGroup> result = ddiRepository.getGroups();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("group-1", result.get(0).id());
+        assertEquals("Base permanente des équipements", result.get(0).label());
+        assertEquals("fr.insee", result.get(0).agency());
+        assertNotNull(result.get(0).versionDate());
+        assertEquals("group-2", result.get(1).id());
+        assertEquals("Recensement de la population", result.get(1).label());
+        assertEquals("fr.insee", result.get(1).agency());
+
+        // Verify authentication was called
+        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
+
+        // Verify query was called with Group itemType
+        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
+
+        HttpEntity<?> capturedEntity = entityCaptor.getValue();
+        QueryRequest queryRequest = (QueryRequest) capturedEntity.getBody();
+        assertNotNull(queryRequest);
+        assertEquals(1, queryRequest.itemTypes().size());
+        assertEquals("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23", queryRequest.itemTypes().get(0)); // Group UUID
+    }
+
+    @Test
+    void shouldGetGroupById() {
+        // Given
+        String groupId = "10a689ce-7006-429b-8e84-036b7787b422";
+        String baseServerUrl = "http://localhost:8082";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String username = "test-user";
+        String password = "test-password";
+        String accessToken = "test-token-123";
+        String agencyId = "fr.insee";
+
+        // Mock configuration
+        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.username()).thenReturn(username);
+        when(instanceConfiguration.password()).thenReturn(password);
+
+        // Mock authentication
+        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        when(restTemplate.postForObject(
+                eq(baseServerUrl + "/token/createtoken"),
+                any(HttpEntity.class),
+                eq(AuthenticationResponse.class)))
+                .thenReturn(authResponse);
+
+        // Mock DDI set response with Group and StudyUnits
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
+                "    <ddi:TopLevelReference>\n" +
+                "        <r:Agency>fr.insee</r:Agency>\n" +
+                "        <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID>\n" +
+                "        <r:Version>1</r:Version>\n" +
+                "        <r:TypeOfObject>Group</r:TypeOfObject>\n" +
+                "    </ddi:TopLevelReference>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <Group isUniversallyUnique=\"true\" versionDate=\"2025-01-09T09:00:00Z\" xmlns=\"ddi:group:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:VersionResponsibility>bauhaus</r:VersionResponsibility>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">Base permanente des équipements</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "            <r:StudyUnitReference>\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <r:TypeOfObject>StudyUnit</r:TypeOfObject>\n" +
+                "            </r:StudyUnitReference>\n" +
+                "            <r:StudyUnitReference>\n" +
+                "                <r:Agency>fr.insee</r:Agency>\n" +
+                "                <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID>\n" +
+                "                <r:Version>1</r:Version>\n" +
+                "                <r:TypeOfObject>StudyUnit</r:TypeOfObject>\n" +
+                "            </r:StudyUnitReference>\n" +
+                "        </Group>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <StudyUnit isUniversallyUnique=\"true\" versionDate=\"2025-01-09T09:00:00Z\" xmlns=\"ddi:studyunit:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">BPE 2021</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "        </StudyUnit>\n" +
+                "    </Fragment>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <StudyUnit isUniversallyUnique=\"true\" versionDate=\"2025-01-09T09:00:00Z\" xmlns=\"ddi:studyunit:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">BPE 2022</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "        </StudyUnit>\n" +
+                "    </Fragment>\n" +
+                "</ddi:FragmentInstance>";
+
+        // Mock the direct call to /ddiset/{agencyId}/{identifier}
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+
+        // When
+        Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("ddi:4.0", result.schema());
+
+        // Verify Group
+        assertNotNull(result.group());
+        assertEquals(1, result.group().size());
+        assertEquals(groupId, result.group().get(0).id());
+        assertEquals(agencyId, result.group().get(0).agency());
+        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().string().text());
+        assertEquals(2, result.group().get(0).studyUnitReference().size());
+
+        // Verify StudyUnits
+        assertNotNull(result.studyUnit());
+        assertEquals(2, result.studyUnit().size());
+        assertEquals("89f5e04d-da22-485f-9c08-5fbe452b6c90", result.studyUnit().get(0).id());
+        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().string().text());
+        assertEquals("820a7c14-0ac4-42bc-a8c1-d39f60e304ee", result.studyUnit().get(1).id());
+        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().string().text());
+
+        // Verify TopLevelReference
+        assertNotNull(result.topLevelReference());
+        assertEquals(1, result.topLevelReference().size());
+        assertEquals(groupId, result.topLevelReference().get(0).id());
+        assertEquals("Group", result.topLevelReference().get(0).typeOfObject());
+
+        // Verify authentication was called
+        verify(restTemplate).postForObject(
+                eq(baseServerUrl + "/token/createtoken"),
+                any(HttpEntity.class),
+                eq(AuthenticationResponse.class));
+
+        // Verify ddiset endpoint was called
+        verify(restTemplate).exchange(
+                eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(String.class));
+    }
 }
