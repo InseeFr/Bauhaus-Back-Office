@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,6 +96,64 @@ class DdiResourcesTest {
         assertEquals("http://localhost:8080/ddi/physical-instance/fr.insee/pi-2", result.get(1).getRequiredLink("self").getHref());
         
         verify(ddiService).getPhysicalInstances();
+    }
+
+    @Test
+    void shouldGetGroups() {
+        List<PartialGroup> expectedGroups = new ArrayList<>();
+        expectedGroups.add(new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee"));
+        expectedGroups.add(new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee"));
+        when(ddiService.getGroups()).thenReturn(expectedGroups);
+
+        ResponseEntity<List<PartialGroupResponse>> response = ddiResources.getGroups();
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        List<PartialGroupResponse> result = response.getBody();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        // Verify first group data and links
+        assertEquals("group-1", result.getFirst().getId());
+        assertEquals("Base permanente des équipements", result.getFirst().getLabel());
+        assertNotNull(result.getFirst().getLinks());
+        assertEquals(1, result.getFirst().getLinks().toList().size());
+        assertEquals("http://localhost:8080/ddi/group/fr.insee/group-1", result.getFirst().getRequiredLink("self").getHref());
+
+        // Verify second group data and links
+        assertEquals("group-2", result.get(1).getId());
+        assertEquals("Recensement de la population", result.get(1).getLabel());
+        assertNotNull(result.get(1).getLinks());
+        assertEquals(1, result.get(1).getLinks().toList().size());
+        assertEquals("http://localhost:8080/ddi/group/fr.insee/group-2", result.get(1).getRequiredLink("self").getHref());
+
+        verify(ddiService).getGroups();
+    }
+
+    @Test
+    void shouldGetDdi4Group() {
+        // Given
+        String agencyId = "fr.insee";
+        String id = "10a689ce-7006-429b-8e84-036b7787b422";
+        Ddi4GroupResponse expectedResponse = createMockDdi4GroupResponse();
+        when(ddiService.getDdi4Group(agencyId, id)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4GroupResponse> result = ddiResources.getDdi4Group(agencyId, id);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+
+        Ddi4GroupResponse responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        assertEquals(1, responseBody.group().size());
+        assertEquals(2, responseBody.studyUnit().size());
+        assertEquals("10a689ce-7006-429b-8e84-036b7787b422", responseBody.group().get(0).id());
+
+        verify(ddiService).getDdi4Group(agencyId, id);
     }
 
     @Test
@@ -436,6 +495,60 @@ class DdiResourcesTest {
         return new Ddi3Response(
             new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
             List.of(item)
+        );
+    }
+
+    private Ddi4GroupResponse createMockDdi4GroupResponse() {
+        // Create mock citation
+        StringValue titleStringValue = new StringValue("fr-FR", "Base permanente des équipements");
+        Title title = new Title(titleStringValue);
+        Citation citation = new Citation(title);
+
+        // Create StudyUnit references
+        StudyUnitReference suRef1 = new StudyUnitReference("fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1", "StudyUnit");
+        StudyUnitReference suRef2 = new StudyUnitReference("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
+
+        // Create Group
+        Ddi4Group group = new Ddi4Group(
+            "true", "2025-01-09T09:00:00.000000Z",
+            "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
+            "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
+            "abcde", citation, List.of(suRef1, suRef2)
+        );
+
+        // Create StudyUnits
+        StringValue su1TitleStringValue = new StringValue("fr-FR", "BPE 2021");
+        Title su1Title = new Title(su1TitleStringValue);
+        Citation su1Citation = new Citation(su1Title);
+
+        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+            "true", "2025-01-09T09:00:00.000000Z",
+            "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
+            "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
+            su1Citation
+        );
+
+        StringValue su2TitleStringValue = new StringValue("fr-FR", "BPE 2022");
+        Title su2Title = new Title(su2TitleStringValue);
+        Citation su2Citation = new Citation(su2Title);
+
+        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+            "true", "2025-01-09T09:00:00.000000Z",
+            "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
+            "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
+            su2Citation
+        );
+
+        // Create TopLevelReference
+        TopLevelReference topLevelRef = new TopLevelReference(
+            "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1", "Group"
+        );
+
+        return new Ddi4GroupResponse(
+            "test-schema",
+            List.of(topLevelRef),
+            List.of(group),
+            List.of(studyUnit1, studyUnit2)
         );
     }
 

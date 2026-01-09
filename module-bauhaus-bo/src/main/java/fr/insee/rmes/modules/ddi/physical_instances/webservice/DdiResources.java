@@ -4,8 +4,10 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -13,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodesListResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -107,6 +110,36 @@ public class DdiResources {
                 .body(responses);
     }
 
+    @GetMapping("/group")
+    public ResponseEntity<List<PartialGroupResponse>> getGroups() {
+        List<PartialGroup> groups = ddiService.getGroups();
+
+        List<PartialGroupResponse> responses = groups.stream()
+                .map(group -> {
+                    var response = PartialGroupResponse.fromDomain(group);
+                    response.add(linkTo(DdiResources.class)
+                            .slash("group")
+                            .slash(group.agency())
+                            .slash(group.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+                .body(responses);
+    }
+
+    @GetMapping("/group/{agencyId}/{id}")
+    public ResponseEntity<Ddi4GroupResponse> getDdi4Group(
+            @PathVariable String agencyId,
+            @PathVariable(Constants.ID) String id) {
+        Ddi4GroupResponse response = ddiService.getDdi4Group(agencyId, id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
 
     @PostMapping("/physical-instance")
     public ResponseEntity<Ddi4Response> createPhysicalInstance(
