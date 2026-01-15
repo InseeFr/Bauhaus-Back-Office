@@ -713,6 +713,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
         when(instanceConfiguration.username()).thenReturn(username);
         when(instanceConfiguration.password()).thenReturn(password);
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
 
         // Mock authentication
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
