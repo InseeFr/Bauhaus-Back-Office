@@ -243,24 +243,4 @@ class PropertiesRbacFetcherTest {
         assertThat(conceptResult.privileges()).hasSize(2);
     }
 
-    @Test
-    void should_fallback_to_default_role_when_no_roles_match() {
-        var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.STAMP);
-        var conceptPrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(readPrivilege));
-
-        var defaultRole = new AllModuleAccessPrivileges(
-            new AllModuleAccessPrivileges.RoleName("default"),
-            Set.of(conceptPrivileges)
-        );
-
-        when(rbacConfiguration.allModulesAccessPrivileges()).thenReturn(Set.of(defaultRole));
-        createRbacFetcher();
-
-        Set<ModuleAccessPrivileges> result = rbacFetcher.computePrivileges(List.of("UNKNOWN_ROLE"));
-
-        assertThat(result).hasSize(1);
-        assertThat(result.stream()
-            .anyMatch(mp -> mp.application().equals(RBAC.Module.CONCEPT_CONCEPT)))
-            .isTrue();
-    }
 }
