@@ -91,7 +91,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.CREATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
-        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
+        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_PLAIN_VALUE).content("{\"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
 
         if (withBearer) {
             request.header("Authorization", "Bearer toto");
@@ -106,7 +106,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         when(checker.hasAccess(eq(RBAC.Module.CONCEPT_COLLECTION.toString()), eq(RBAC.Privilege.UPDATE.toString()), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = put("/concepts/collections/" + collectionId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        var request = put("/concepts/collections/" + collectionId).contentType(MediaType.TEXT_PLAIN_VALUE).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
 
         if (withBearer) {
             request.header("Authorization", "Bearer toto");

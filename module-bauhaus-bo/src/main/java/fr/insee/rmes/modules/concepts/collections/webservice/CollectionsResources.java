@@ -11,6 +11,7 @@ import fr.insee.rmes.rbac.HasAccess;
 import fr.insee.rmes.rbac.RBAC;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -52,7 +53,7 @@ public class CollectionsResources {
         }
     }
 
-    @PostMapping
+    @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
     ResponseEntity<String> create(@RequestBody CreateCollectionRequest collection){
         try {
