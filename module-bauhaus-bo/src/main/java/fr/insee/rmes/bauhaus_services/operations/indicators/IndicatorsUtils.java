@@ -25,6 +25,7 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Component
 public class IndicatorsUtils {
@@ -117,16 +119,15 @@ public class IndicatorsUtils {
 	}
 	
 	public Indicator buildIndicatorFromJson(JSONObject indicatorJson, boolean forXML) {
-		ObjectMapper mapper = new ObjectMapper();
 		String id= indicatorJson.getString(Constants.ID);
 		Indicator indicator = new Indicator(id);
 		try {
-			if(forXML) indicator = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(indicatorJson.toString()), Indicator.class);
-			else indicator = mapper.readValue(indicatorJson.toString(), Indicator.class);
-		} catch (JsonProcessingException e) {
+			if(forXML) indicator = Deserializer.deserializeJsonString(XMLUtils.solveSpecialXmlcharacters(indicatorJson.toString()), Indicator.class);
+			else indicator = Deserializer.deserializeJsonString(indicatorJson.toString(), Indicator.class);
+		} catch (RmesException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
-		}
-		if (indicatorJson.has(Constants.CONTRIBUTORS)) {
+        }
+        if (indicatorJson.has(Constants.CONTRIBUTORS)) {
 			List<OperationsLink> contributors = buildListFromJsonToArray(indicatorJson, Constants.CONTRIBUTORS);
 			indicator.setContributors(contributors);
 		}

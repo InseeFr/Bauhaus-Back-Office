@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -10,6 +11,7 @@ import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
+import fr.insee.rmes.utils.Deserializer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -75,35 +77,14 @@ public class FamOpeSerIndUtils  extends RdfService {
 		try {
 			cls = Class.forName(className);
 		for (int i = 0; i < items.length(); i++) {
-			Object item = buildObjectFromJson(items.getJSONObject(i),cls);
+			Object item = Deserializer.deserializeJSONObject(items.getJSONObject(i),cls);
 			result.add(item);
-		}	} catch (ClassNotFoundException e) {
+		}	} catch (ClassNotFoundException | RmesException e) {
 			logger.error("JsonArray cannot be parsed to this class: ".concat(e.getMessage()));
 		}
 		return result;
 	}
 	
-	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) {
-		ObjectMapper mapper = new ObjectMapper();
-		Object result = new Object();
-		try {
-			result = mapper.readValue(objectJson.toString(), cls);
-		} catch (JsonProcessingException e) {
-			logger.error("OperationsLink Json cannot be parsed: ".concat(e.getMessage()));
-		}
-		return result;
-	}
-	
-	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) {
-		ObjectMapper mapper = new ObjectMapper();
-		OperationsLink operationsLink = new OperationsLink();
-		try {
-			operationsLink = mapper.readValue(operationsLinkJson.toString(), OperationsLink.class);
-		} catch (JsonProcessingException e) {
-			logger.error("OperationsLink Json cannot be parsed: ".concat(e.getMessage()));
-		}
-		return operationsLink;
-	}
 
 	public void fixOrganizationsNames(JSONObject series) {
 		if(series.has(Constants.PUBLISHER)) {
