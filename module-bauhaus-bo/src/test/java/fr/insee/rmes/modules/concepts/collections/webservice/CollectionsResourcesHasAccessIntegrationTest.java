@@ -89,9 +89,8 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
-        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
+        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_PLAIN_VALUE).content("{\"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
         request.header("Authorization", "Bearer toto");
-
         mvc.perform(request).andExpect(status().is(code));
     }
 

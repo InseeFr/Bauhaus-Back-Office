@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.users.domain.model.RBAC;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -48,7 +49,7 @@ public class CollectionsResources {
         }
     }
 
-    @PostMapping
+    @PostMapping(produces = MediaType.TEXT_PLAIN_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
     String create(@RequestBody CreateCollectionRequest collection, HttpServletResponse response){
         try {
