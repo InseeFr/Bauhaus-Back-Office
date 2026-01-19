@@ -91,10 +91,6 @@ public class PropertiesRbacFetcher implements RbacFetcher {
 
         }
 
-        if(result.isEmpty() && !roles.contains("default")){
-            return this.computePrivileges(List.of("default"));
-        }
-
         return result.entrySet().stream()
                 .map(entry -> new ModuleAccessPrivileges(
                         entry.getKey(),

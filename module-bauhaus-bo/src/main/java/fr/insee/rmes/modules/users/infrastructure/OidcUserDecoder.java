@@ -56,12 +56,12 @@ public class OidcUserDecoder implements UserDecoder {
         var id = (String) claims.get(jwtProperties.getIdClaim());
         var stamps = extractStamp(claims, id);
 
-        if(stamps.isEmpty()){
-            throw new MissingStampException(id);
-        }
-
         var source = (String) claims.get(jwtProperties.getSourceClaim());
         var roles = extractRoles(claims).toList();
+
+        if(stamps.isEmpty()){
+            return new User(id, roles, Collections.emptySet(), source);
+        }
 
         logger.debug("Current User is {}, {} with roles {} from source {}", id, stamps, roles, source);
         return new User(id, roles, stamps, source);

@@ -98,20 +98,7 @@ class OidcUserDecoderTest {
             .isInstanceOf(EmptyUserInformationException.class);
     }
 
-    @Test
-    void should_throw_exception_when_stamp_is_missing() {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("source", "insee");
-        claims.put("roles", List.of("ADMIN"));
-        // No stamp claim
 
-        when(jwt.getClaims()).thenReturn(claims);
-
-        assertThatThrownBy(() -> userDecoder.fromPrincipal(jwt))
-            .isInstanceOf(MissingStampException.class)
-            .hasMessageContaining("user123");
-    }
 
     @Test
     void should_extract_stamp_from_insee_groups() throws MissingUserInformationException {
@@ -198,39 +185,7 @@ class OidcUserDecoderTest {
         assertThat(result.get().roles()).containsExactly("ADMIN", "USER", "MODERATOR");
     }
 
-    @Test
-    void should_handle_insee_groups_with_no_matching_suffix() {
-        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
-        when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("source", "insee");
-        claims.put("roles", List.of("USER"));
-        claims.put("groups", List.of("GROUP1", "GROUP2"));
-        // Groups don't have the _APP suffix
-
-        when(jwt.getClaims()).thenReturn(claims);
-
-        assertThatThrownBy(() -> userDecoder.fromPrincipal(jwt))
-            .isInstanceOf(MissingStampException.class);
-    }
-
-    @Test
-    void should_handle_null_insee_groups() {
-        when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", "user123");
-        claims.put("source", "insee");
-        claims.put("roles", List.of("USER"));
-        claims.put("groups", null);
-
-        when(jwt.getClaims()).thenReturn(claims);
-
-        assertThatThrownBy(() -> userDecoder.fromPrincipal(jwt))
-            .isInstanceOf(MissingStampException.class);
-    }
 
     @Test
     void should_extract_first_matching_group_from_insee_groups() throws MissingUserInformationException {

@@ -69,8 +69,26 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
 
     private boolean authorizeFromStrategy(RBAC.Module module, ModuleAccessPrivileges.Privilege privilegeAndStrategy, String id, User user) {
         return switch (privilegeAndStrategy.strategy()) {
-            case ALL -> true;
+            case ALL -> {
+
+                var privilege = privilegeAndStrategy.privilege();
+                 if (user.getStamps().isEmpty() && (
+                        privilege.equals(RBAC.Privilege.CREATE) ||
+                                privilege.equals(RBAC.Privilege.UPDATE) ||
+                                privilege.equals(RBAC.Privilege.DELETE) ||
+                                privilege.equals(RBAC.Privilege.PUBLISH) ||
+                                privilege.equals(RBAC.Privilege.ADMINISTRATION)
+                )) {
+                    yield false;
+                }
+
+                yield true;
+            }
             case STAMP -> {
+                if(user.getStamps().isEmpty()){
+                    yield false;
+                }
+
                 List<String> stamps = null;
                 try {
                     stamps = getStamps(module, id);
