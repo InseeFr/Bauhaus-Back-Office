@@ -6,8 +6,7 @@ import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
-import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
-import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,8 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @Import({
         ClassificationsResources.class,
-        UserProviderFromSecurityContext.class,
-        OidcUserDecoder.class
+        UserAuthTestConfiguration.class
 })
 class TestClassificationsRessourcesEnvProd extends AbstractResourcesEnvProd {
 
