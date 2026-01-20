@@ -1,13 +1,9 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
-import com.nimbusds.jose.shaded.gson.JsonArray;
 import com.nimbusds.jose.shaded.gson.JsonElement;
-import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingStampException;
 import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.User;
@@ -17,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.util.Optional.*;
 
@@ -29,10 +23,12 @@ public class OidcUserDecoder implements UserDecoder {
 
     private final OrganisationsService organisationService;
     private final JwtProperties jwtProperties;
+    private final RoleClaimExtractor roleClaimExtractor;
 
-    public OidcUserDecoder(OrganisationsService organisationService, JwtProperties jwtProperties) {
+    public OidcUserDecoder(OrganisationsService organisationService, JwtProperties jwtProperties, RoleClaimExtractor roleClaimExtractor) {
         this.organisationService = organisationService;
         this.jwtProperties = jwtProperties;
+        this.roleClaimExtractor = roleClaimExtractor;
     }
 
 
@@ -57,7 +53,7 @@ public class OidcUserDecoder implements UserDecoder {
         var stamps = extractStamp(claims, id);
 
         var source = (String) claims.get(jwtProperties.getSourceClaim());
-        var roles = extractRoles(claims).toList();
+        var roles = roleClaimExtractor.extractRoles(claims).toList();
 
         if(stamps.isEmpty()){
             return new User(id, roles, Collections.emptySet(), source);
@@ -132,46 +128,17 @@ public class OidcUserDecoder implements UserDecoder {
 
         return switch (inseeGroups) {
             case List<?> list -> list.stream()
-                    .map(this::JsonElementOrElseToString)
+                    .map(this::jsonElementOrElseToString)
                     .filter(group -> group.endsWith(suffix))
                     .findFirst();
             default -> empty();
         };
     }
 
-    //TODO dupplicate dans OpenidConnectSecurityContext
-    private Stream<String> extractRoles(Map<String, Object> claims) {
-        Object roleClaimValue = claims.get(jwtProperties.getRoleClaim());
-        RoleClaim roleClaim = roleClaimFrom(roleClaimValue);
-        ArrayOfRoles arrayOfRoles=roleClaim.arrayOfRoles();
-        return arrayOfRoles.stream();
-    }
-
-    private RoleClaim roleClaimFrom(Object listOrJsonArray) {
-        return switch (listOrJsonArray){
-            case JsonArray jsonArray -> () -> () -> jsonArrayToStream(jsonArray);
-            case List<?> list -> () -> () -> list.stream().map(this::JsonElementOrElseToString);
-            default -> () -> Stream::empty;
-        };
-    }
-
-    private String JsonElementOrElseToString(Object element) {
-        if (element instanceof JsonElement jsonElement){
+    private String jsonElementOrElseToString(Object element) {
+        if (element instanceof JsonElement jsonElement) {
             return jsonElement.getAsString();
         }
         return element.toString();
-    }
-
-    private Stream<String> jsonArrayToStream(JsonArray jsonArray) {
-        return StreamSupport.stream(Spliterators.spliterator(jsonArray.iterator(), jsonArray.size(), 0), false)
-                .map(JsonElement::getAsString);
-    }
-
-    private interface RoleClaim{
-        ArrayOfRoles arrayOfRoles();
-    }
-
-    private interface ArrayOfRoles{
-        Stream<String> stream();
     }
 }

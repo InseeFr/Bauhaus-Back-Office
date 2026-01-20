@@ -31,9 +31,13 @@ class OidcUserDecoderTest {
     private JwtProperties jwtProperties;
 
     @Mock
+    private JwtProperties.RoleClaim roleClaimConfig;
+
+    @Mock
     private Jwt jwt;
 
     private OidcUserDecoder userDecoder;
+    private RoleClaimExtractor roleClaimExtractor;
 
     @BeforeEach
     void setUp() throws OrganisationFetchException {
@@ -41,11 +45,20 @@ class OidcUserDecoderTest {
         lenient().when(jwtProperties.getStampClaim()).thenReturn("timbre");
         lenient().when(jwtProperties.getSourceClaim()).thenReturn("source");
         lenient().when(jwtProperties.getRoleClaim()).thenReturn("roles");
+        lenient().when(jwtProperties.getRoleClaimConfig()).thenReturn(roleClaimConfig);
+        lenient().when(roleClaimConfig.getRoles()).thenReturn("roles");
 
         lenient().when(organisationsService.getAdmsIdentifier(anyString())).thenReturn(Optional.empty());
         lenient().when(organisationsService.getDctermsIdentifier(anyString())).thenReturn(Optional.empty());
 
-        userDecoder = new OidcUserDecoder(organisationsService, jwtProperties);
+        roleClaimExtractor = new RoleClaimExtractor(jwtProperties);
+        userDecoder = new OidcUserDecoder(organisationsService, jwtProperties, roleClaimExtractor);
+    }
+
+    private Map<String, Object> buildRolesClaim(List<String> roles) {
+        Map<String, Object> rolesMap = new HashMap<>();
+        rolesMap.put("roles", roles);
+        return rolesMap;
     }
 
     @Test
@@ -54,7 +67,7 @@ class OidcUserDecoderTest {
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
         claims.put("source", "insee");
-        claims.put("roles", List.of("ADMIN", "USER"));
+        claims.put("roles", buildRolesClaim(List.of("ADMIN", "USER")));
 
         when(jwt.getClaims()).thenReturn(claims);
 
@@ -108,7 +121,7 @@ class OidcUserDecoderTest {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("source", "insee");
-        claims.put("roles", List.of("ADMIN"));
+        claims.put("roles", buildRolesClaim(List.of("ADMIN")));
         claims.put("groups", List.of("GROUP1", "STAMP-02_APP", "GROUP2"));
         // No stamp in stampClaim, should extract from groups
 
@@ -126,7 +139,7 @@ class OidcUserDecoderTest {
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-DIRECT");
         claims.put("source", "insee");
-        claims.put("roles", List.of("ADMIN"));
+        claims.put("roles", buildRolesClaim(List.of("ADMIN")));
         claims.put("groups", List.of("STAMP-02_APP"));
 
         when(jwt.getClaims()).thenReturn(claims);
@@ -143,7 +156,7 @@ class OidcUserDecoderTest {
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
         claims.put("source", "insee");
-        claims.put("roles", List.of());
+        claims.put("roles", buildRolesClaim(List.of()));
 
         when(jwt.getClaims()).thenReturn(claims);
 
@@ -158,7 +171,7 @@ class OidcUserDecoderTest {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
-        claims.put("roles", List.of("USER"));
+        claims.put("roles", buildRolesClaim(List.of("USER")));
         // No source claim
 
         when(jwt.getClaims()).thenReturn(claims);
@@ -175,7 +188,7 @@ class OidcUserDecoderTest {
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
         claims.put("source", "ssm");
-        claims.put("roles", List.of("ADMIN", "USER", "MODERATOR"));
+        claims.put("roles", buildRolesClaim(List.of("ADMIN", "USER", "MODERATOR")));
 
         when(jwt.getClaims()).thenReturn(claims);
 
@@ -195,7 +208,7 @@ class OidcUserDecoderTest {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("source", "insee");
-        claims.put("roles", List.of("USER"));
+        claims.put("roles", buildRolesClaim(List.of("USER")));
         claims.put("groups", List.of("GROUP1", "STAMP-FIRST_APP", "STAMP-SECOND_APP"));
 
         when(jwt.getClaims()).thenReturn(claims);
@@ -215,7 +228,7 @@ class OidcUserDecoderTest {
         claims.put("sub", "user123");
         claims.put("timbre", "DG75-F601");
         claims.put("source", "insee");
-        claims.put("roles", List.of("USER"));
+        claims.put("roles", buildRolesClaim(List.of("USER")));
 
         when(jwt.getClaims()).thenReturn(claims);
 
@@ -234,7 +247,7 @@ class OidcUserDecoderTest {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
         claims.put("source", "insee");
-        claims.put("roles", List.of("USER"));
+        claims.put("roles", buildRolesClaim(List.of("USER")));
         claims.put("groups", List.of("HIE3000165_APP"));
 
         when(jwt.getClaims()).thenReturn(claims);
@@ -253,7 +266,7 @@ class OidcUserDecoderTest {
         claims.put("sub", "user123");
         claims.put("timbre", "STAMP-01");
         claims.put("source", "insee");
-        claims.put("roles", List.of("USER"));
+        claims.put("roles", buildRolesClaim(List.of("USER")));
 
         when(jwt.getClaims()).thenReturn(claims);
 
