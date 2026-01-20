@@ -1,14 +1,7 @@
 package fr.insee.rmes.modules.users;
 
-import com.nimbusds.jose.shaded.gson.JsonArray;
-import com.nimbusds.jose.shaded.gson.JsonElement;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-import fr.insee.rmes.domain.Roles;
-import fr.insee.rmes.domain.auth.Source;
 import fr.insee.rmes.modules.users.domain.DomainAccessPrivilegesChecker;
 import fr.insee.rmes.modules.users.domain.DomainUserService;
-import fr.insee.rmes.modules.users.domain.model.Stamp;
-import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.modules.users.domain.port.clientside.UserService;
 import fr.insee.rmes.modules.users.domain.port.serverside.StampChecker;
@@ -18,6 +11,7 @@ import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsS
 import fr.insee.rmes.modules.users.infrastructure.DevAuthenticationFilter;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
+import fr.insee.rmes.modules.users.infrastructure.RoleClaimExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,12 +32,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static java.util.Optional.empty;
+import java.util.Collection;
+import java.util.Optional;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration(proxyBeanMethods = false)
@@ -58,18 +48,21 @@ public class UserConfiguration {
     private final String appHost;
     private final JwtProperties jwtProperties;
     private final String env;
+    private final RoleClaimExtractor roleClaimExtractor;
 
     public UserConfiguration(
             @Value("${fr.insee.rmes.bauhaus.force.ssl}")boolean requireSsl,
             @Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin,
             @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
             JwtProperties jwtProperties,
-            @Value("${fr.insee.rmes.bauhaus.env}") String env) {
+            @Value("${fr.insee.rmes.bauhaus.env}") String env,
+            RoleClaimExtractor roleClaimExtractor) {
         this.requireSsl = requireSsl;
         this.allowedOrigin = allowedOrigin;
         this.appHost = appHost;
         this.jwtProperties = jwtProperties;
         this.env = env;
+        this.roleClaimExtractor = roleClaimExtractor;
     }
 
 
@@ -125,57 +118,13 @@ public class UserConfiguration {
     }
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
-        return extractRoles(jwt.getClaims()).map(SimpleGrantedAuthority::new)
+        return roleClaimExtractor.extractRoles(jwt.getClaims()).map(SimpleGrantedAuthority::new)
                 .map(GrantedAuthority.class::cast).toList();
     }
 
-    private Stream<String> extractRoles(Map<String, Object> claims) {
-        RoleClaim roleClaim = roleClaimFrom(claims);
-        ArrayOfRoles arrayOfRoles=roleClaim.arrayOfRoles();
-        return arrayOfRoles.stream();
-    }
-
-    private RoleClaim roleClaimFrom(Map<String, Object> claims) {
-        var valueForRoleClaim=switch (claims.get(jwtProperties.getRoleClaim())) {
-            case JsonObject objectForRoles -> objectForRoles.getAsJsonArray(jwtProperties.getRoleClaimConfig().getRoles());
-            case Map < ?, ?> mapForRoles -> mapForRoles.get(jwtProperties.getRoleClaimConfig().getRoles());
-            default -> empty();
-        };
-        return roleClaimFrom(valueForRoleClaim);
-    }
-
-    private RoleClaim roleClaimFrom(Object listOrJsonArray) {
-        return switch (listOrJsonArray){
-            case JsonArray jsonArray -> () -> () -> jsonArrayToStream(jsonArray);
-            case List<?> list -> () -> () -> list.stream().map(this::JsonElementOrElseToString);
-            default -> () -> Stream::empty;
-        };
-    }
-
-    private String JsonElementOrElseToString(Object element) {
-        if (element instanceof JsonElement jsonElement){
-            return jsonElement.getAsString();
-        }
-        return element.toString();
-    }
-
-    private Stream<String> jsonArrayToStream(JsonArray jsonArray) {
-        return StreamSupport.stream(Spliterators.spliterator(jsonArray.iterator(), jsonArray.size(), 0), false)
-                .map(JsonElement::getAsString);
-    }
-
-
-    private interface RoleClaim{
-        ArrayOfRoles arrayOfRoles();
-    }
-
-    private interface ArrayOfRoles{
-        Stream<String> stream();
-    }
-
     @Bean
-    public UserDecoder getProdUserProvider(OrganisationsService organisationsService, JwtProperties jwtProperties) {
-        return new OidcUserDecoder(organisationsService, jwtProperties);
+    public UserDecoder getProdUserProvider(OrganisationsService organisationsService, JwtProperties jwtProperties, RoleClaimExtractor roleClaimExtractor) {
+        return new OidcUserDecoder(organisationsService, jwtProperties, roleClaimExtractor);
     }
 
     @Bean
