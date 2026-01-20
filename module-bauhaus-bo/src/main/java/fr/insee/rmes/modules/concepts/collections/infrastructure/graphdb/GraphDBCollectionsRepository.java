@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsS
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionPublicationStatusFilter;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -26,8 +27,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @ServerSideAdaptor
 @Repository
@@ -43,11 +44,11 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     }
 
     @Override
-    public List<CompactCollection> getCollections() throws CollectionsFetchException {
+    public List<CompactCollection> getCollections(CollectionPublicationStatusFilter filter) throws CollectionsFetchException {
 
 
         try {
-            var collections =  repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery());
+            var collections =  repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery(filter));
 
             var response = DiacriticSorter.sort(collections,
                     GraphDBPartialCollection[].class,
@@ -118,5 +119,15 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     @Override
     public void update(Collection collection) throws CollectionsSaveException {
         this.save(collection);
+    }
+
+    @Override
+    public Set<Collection> getCollections(Set<CollectionId> ids) throws CollectionsFetchException {
+        var collections = new HashSet<Collection>();
+        for (var collectionId : ids) {
+            collections.add(getCollection(collectionId));
+        }
+
+        return null;
     }
 }

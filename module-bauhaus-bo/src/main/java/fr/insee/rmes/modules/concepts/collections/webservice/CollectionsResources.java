@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.*;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
@@ -9,6 +10,7 @@ import fr.insee.rmes.modules.users.domain.model.RBAC;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/concepts/collections")
@@ -31,6 +34,16 @@ public class CollectionsResources {
     List<PartialCollectionResponse> getAll(){
         try {
             return this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
+        } catch (CollectionsFetchException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @GetMapping(value = "/unpublished")
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    public List<PartialCollectionResponse> getUnpublishedCollections() {
+        try {
+            return this.service.getUnpublishedCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
@@ -88,6 +101,8 @@ public class CollectionsResources {
         }
     }
 
+
+
     @DeleteMapping("/{id}")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.DELETE)
     ResponseEntity<String> delete(@PathVariable String id){
@@ -100,9 +115,9 @@ public class CollectionsResources {
         return null;
     }
 
-    @PutMapping("/{id}/validate")
+    @PutMapping("/publish")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-    ResponseEntity<String> publish(@PathVariable String id){
-        return null;
+    void publish(@PathVariable Set<CollectionId> ids) {
+        this.service.publish(ids);
     }
 }

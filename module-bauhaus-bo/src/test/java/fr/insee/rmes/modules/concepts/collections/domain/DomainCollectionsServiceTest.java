@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionPublicationStatusFilter;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
@@ -57,7 +58,7 @@ class DomainCollectionsServiceTest {
     @Test
     void all_collections_should_be_returned() throws CollectionsFetchException {
         // Given
-        when(collectionsRepository.getCollections()).thenReturn(Arrays.asList(COMPACT_COLLECTIONS));
+        when(collectionsRepository.getCollections(CollectionPublicationStatusFilter.ALL)).thenReturn(Arrays.asList(COMPACT_COLLECTIONS));
         //When
         List<CompactCollection> allCollections = domainCollectionsService.getAllCollections();
         //Then

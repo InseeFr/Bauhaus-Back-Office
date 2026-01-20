@@ -5,6 +5,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionPublicationStatusFilter;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -31,7 +32,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_all_collections() throws RmesException {
         // When
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery(CollectionPublicationStatusFilter.ALL));
 
         // Then
         assertEquals(5, result.length());

@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.concepts;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionPublicationStatusFilter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,9 +14,10 @@ public class ConceptCollectionsQueries extends GenericQueries{
 		return FreeMarkerUtils.buildRequest("collections/", fileName, params);
 	}
 
-	public static String collectionsQuery() throws RmesException {
+	public static String collectionsQuery(CollectionPublicationStatusFilter filter) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
+		params.put("FILTER_UNPUBLISHED", filter.isUnpublished());
 		return  buildRequest("getCollections.ftlh", params);
 	}
 	

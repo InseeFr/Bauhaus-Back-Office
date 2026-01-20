@@ -64,6 +64,15 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .body(String.class);
         JSONAssert.assertEquals("[]", fetchedCollections, true);
 
+
+        var fetchedUnpublishedCollections = restClient
+                .get().uri("unpublished")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+        JSONAssert.assertEquals("[]", fetchedUnpublishedCollections, true);
+
+
         var entityResponse = restClient.post().body(CREATE_COLLECTION_REQUEST_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
@@ -91,6 +100,20 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                   }
                 ]
                 """.formatted(uuid), fetchedCollections, true);
+
+        fetchedUnpublishedCollections = restClient
+                .get().uri("unpublished")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "id" : "%s",
+                    "label": {"value": "label fr", "lang": "FR"}
+                  }
+                ]
+                """.formatted(uuid), fetchedUnpublishedCollections, true);
 
         fetchedCollections = restClient
                 .get().uri(uuid)
@@ -142,6 +165,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                    "isValidated": false,
                 }
                 """.formatted(uuid), fetchedCollections, false);
+
 
     }
 
