@@ -5,8 +5,7 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
-import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
-import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
@@ -45,8 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @Import({
         FamilyResources.class,
-        UserProviderFromSecurityContext.class,
-        OidcUserDecoder.class
+        UserAuthTestConfiguration.class
 })
 class TestFamiliesResourcesEnvProd {
     @Configuration

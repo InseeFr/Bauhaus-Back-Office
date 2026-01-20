@@ -10,8 +10,7 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
-import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
-import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.utils.XMLUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -48,8 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @Import({
         MetadataReportResources.class,
-        UserProviderFromSecurityContext.class,
-        OidcUserDecoder.class
+        UserAuthTestConfiguration.class
 })
 class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResourcesEnvProd {
 

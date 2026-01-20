@@ -5,8 +5,7 @@ import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
 import fr.insee.rmes.domain.Roles;
-import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
-import fr.insee.rmes.modules.users.infrastructure.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @Import({
         StructureResources.class,
-        UserProviderFromSecurityContext.class,
-        OidcUserDecoder.class
+        UserAuthTestConfiguration.class
 })
 class StructureResourcesTest extends AbstractResourcesEnvProd{
     @Autowired
