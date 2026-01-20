@@ -7,7 +7,7 @@ SELECT DISTINCT ?id ?label ?creator ?valid
 		    ?concept dc:creator ?creator .
 		    ?concept insee:isValidated 'false'^^xsd:boolean .
 		    OPTIONAL {?concept dcterms:valid ?valid .}
-		    FILTER (lang(?labelLg1) = '${LG1}') .
+		    FILTER (lang(?label) = '${LG1}') .
 		}
 	}
 ORDER BY ?label
