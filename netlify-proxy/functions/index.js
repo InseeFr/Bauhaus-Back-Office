@@ -186,7 +186,12 @@ async function initializeDefaultItems() {
 // to avoid cold start delays
 
 /**
- * In-memory storage for valid tokens
+ * Static generic token that can be used without calling /token/createtoken
+ */
+const GENERIC_TOKEN = 'bauhaus-mock-token';
+
+/**
+ * In-memory storage for valid tokens (for dynamically created tokens)
  */
 const validTokens = new Set();
 
@@ -208,11 +213,12 @@ function generateMockToken() {
 
 /**
  * Validate token from Authorization header
+ * Accepts either the generic static token or dynamically created tokens
  */
 function validateToken(authHeader) {
   if (!authHeader) return false;
   const token = authHeader.replace('Bearer ', '');
-  return validTokens.has(token);
+  return token === GENERIC_TOKEN || validTokens.has(token);
 }
 
 /**

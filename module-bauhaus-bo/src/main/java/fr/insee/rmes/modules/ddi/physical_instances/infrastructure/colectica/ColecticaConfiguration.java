@@ -45,14 +45,20 @@ public record ColecticaConfiguration(
             List<String> itemTypes,
             String versionResponsibility,
             String itemFormat,
+            String authenticationMode,
             String username,
             String password,
+            String token,
             String defaultAgencyId
     ) {
         public ColecticaInstanceConfiguration {
             // Set default apiPath if not provided
             if (apiPath == null || apiPath.isBlank()) {
                 apiPath = "/api/v1/";
+            }
+            // Set default authenticationMode if not provided
+            if (authenticationMode == null || authenticationMode.isBlank()) {
+                authenticationMode = "password";
             }
         }
 

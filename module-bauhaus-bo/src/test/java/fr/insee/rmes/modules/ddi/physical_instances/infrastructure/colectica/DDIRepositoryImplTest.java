@@ -12,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
@@ -46,30 +45,34 @@ class DDIRepositoryImplTest {
     @Mock
     private ColecticaConfiguration colecticaConfiguration;
 
+    @Mock
+    private ColecticaAuthenticator authenticator;
+
     private DDIRepositoryImpl ddiRepository;
+
+    private static final String TEST_TOKEN = "test-token-123";
 
     @BeforeEach
     void setUp() {
         // By default, mock returns null for codeListDenyList (no filtering)
         // Use lenient() since not all tests use this stubbing
         lenient().when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
-        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration);
+
+        // Configure authenticator to execute the function with a test token
+        lenient().when(authenticator.executeWithAuth(any())).thenAnswer(invocation -> {
+            java.util.function.Function<String, ?> function = invocation.getArgument(0);
+            return function.apply(TEST_TOKEN);
+        });
+
+        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, authenticator);
     }
 
     @Test
-    void shouldGetPhysicalInstancesWithAuthentication() {
+    void shouldGetPhysicalInstances() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
         List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
-
-        // Mock authentication response
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         ColecticaItem item1 = new ColecticaItem(
             null, // summary
@@ -126,15 +129,8 @@ class DDIRepositoryImplTest {
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(item1, item2), 2, 2, null, null, null);
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
         when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-
-        // Mock authentication call
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock query call
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
@@ -157,8 +153,8 @@ class DDIRepositoryImplTest {
         assertEquals("agency2", result.get(1).agency());
         assertNull(result.get(1).versionDate());
 
-        // Verify authentication was called
-        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        // Verify authenticator was called
+        verify(authenticator).executeWithAuth(any());
 
         // Verify query was called with Bearer token
         ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
@@ -171,117 +167,15 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void shouldAuthenticateWithCorrectHeaders() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-        String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
-
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When
-        ddiRepository.getPhysicalInstances();
-
-        // Then - Verify authentication request has correct headers and body
-        ArgumentCaptor<HttpEntity> authEntityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(tokenUrl), authEntityCaptor.capture(), eq(AuthenticationResponse.class));
-
-        HttpEntity<?> authEntity = authEntityCaptor.getValue();
-        HttpHeaders authHeaders = authEntity.getHeaders();
-        assertEquals(MediaType.APPLICATION_JSON, authHeaders.getContentType());
-
-        // Verify the body contains correct credentials
-        AuthenticationRequest authRequest = (AuthenticationRequest) authEntity.getBody();
-        assertNotNull(authRequest);
-        assertEquals(username, authRequest.username());
-        assertEquals(password, authRequest.password());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenAuthenticationFails() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String username = "test-user";
-        String password = "test-password";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(null);
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            ddiRepository.getPhysicalInstances();
-        });
-
-        assertEquals("Authentication failed: unable to retrieve access token", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenAccessTokenIsNull() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String username = "test-user";
-        String password = "test-password";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(new AuthenticationResponse(null));
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            ddiRepository.getPhysicalInstances();
-        });
-
-        assertEquals("Authentication failed: unable to retrieve access token", exception.getMessage());
-    }
-
-    @Test
     void shouldGetPhysicalInstanceById() {
         // Given
         String instanceId = "2514afe4-7b08-4500-be25-7a852a10fd8c";
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
         String agencyId = "fr.inserm.constances";
         int version = 1;
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        when(restTemplate.postForObject(
-                eq(baseServerUrl + "/token/createtoken"),
-                any(HttpEntity.class),
-                eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock DDI set response with complete FragmentInstance XML (including Variables)
         String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
@@ -377,12 +271,6 @@ class DDIRepositoryImplTest {
         assertEquals(agencyId, result.physicalInstance().get(0).agency());
         assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().string().text());
 
-        // Verify authentication was called
-        verify(restTemplate).postForObject(
-                eq(baseServerUrl + "/token/createtoken"),
-                any(HttpEntity.class),
-                eq(AuthenticationResponse.class));
-
         // Verify ddiset endpoint was called
         verify(restTemplate).exchange(
                 eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
@@ -421,178 +309,10 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void shouldCacheAuthenticationToken() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-        String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
-
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When - Call twice
-        ddiRepository.getPhysicalInstances();
-        ddiRepository.getPhysicalInstances();
-
-        // Then - Authentication should only be called once (token is cached)
-        verify(restTemplate, times(1)).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-        // Query should be called twice
-        verify(restTemplate, times(2)).postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class));
-    }
-
-    @Test
-    void shouldRetryWithNewTokenOn401Error() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String firstToken = "expired-token";
-        String newToken = "new-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-        String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
-
-        AuthenticationResponse firstAuthResponse = new AuthenticationResponse(firstToken);
-        AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-
-        // First auth returns first token, second auth returns new token
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(firstAuthResponse)
-                .thenReturn(newAuthResponse);
-
-        // First query call throws 401, second succeeds
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
-                .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstances();
-
-        // Then
-        assertNotNull(result);
-        // Authentication should be called twice (once initially, once after 401)
-        verify(restTemplate, times(2)).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-        // Query should be called twice (once with expired token, once with new token)
-        verify(restTemplate, times(2)).postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class));
-    }
-
-    @Test
-    void shouldRetryWithNewTokenOn403Error() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String firstToken = "forbidden-token";
-        String newToken = "new-token-456";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-        String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
-
-        AuthenticationResponse firstAuthResponse = new AuthenticationResponse(firstToken);
-        AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(), 0, 0, null, null, null);
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-
-        // First auth returns first token, second auth returns new token
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(firstAuthResponse)
-                .thenReturn(newAuthResponse);
-
-        // First query call throws 403, second succeeds
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
-                .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstances();
-
-        // Then
-        assertNotNull(result);
-        // Authentication should be called twice (once initially, once after 403)
-        verify(restTemplate, times(2)).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-        // Query should be called twice (once with forbidden token, once with new token)
-        verify(restTemplate, times(2)).postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class));
-    }
-
-    @Test
-    void shouldNotRetryOnNon401Or403Error() {
-        // Given
-        String baseServerUrl = "http://localhost:8082";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "valid-token";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
-        String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
-
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-
-        // Query throws 500 Internal Server Error
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
-                .thenThrow(new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-        // When & Then
-        assertThrows(HttpClientErrorException.class, () -> {
-            ddiRepository.getPhysicalInstances();
-        });
-
-        // Authentication should only be called once (no retry for 500 errors)
-        verify(restTemplate, times(1)).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-        // Query should only be called once (no retry)
-        verify(restTemplate, times(1)).postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class));
-    }
-
-    @Test
     void shouldGetCodesLists() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
-
-        // Mock authentication response
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         ColecticaItem codeList1 = new ColecticaItem(
             null, // summary
@@ -649,14 +369,7 @@ class DDIRepositoryImplTest {
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2), 2, 2, null, null, null);
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication call
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock query call - should query for CodeList itemType (8b108ef8-b642-4484-9c49-f88e4bf7cf1d)
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
@@ -676,9 +389,6 @@ class DDIRepositoryImplTest {
         assertEquals("Liste de codes 2", result.get(1).label());
         assertEquals("agency2", result.get(1).agency());
 
-        // Verify authentication was called
-        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-
         // Verify query was called with CodeList itemType
         ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
@@ -693,12 +403,7 @@ class DDIRepositoryImplTest {
     @Test
     void shouldCreatePhysicalInstance() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String itemUrl = baseApiUrl + "item";
 
         String physicalInstanceLabel = "Test Physical Instance";
@@ -709,16 +414,8 @@ class DDIRepositoryImplTest {
         );
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
         when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
-
-        // Mock authentication
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock item creation (POST /item)
         when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
@@ -774,9 +471,6 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.physicalInstance().size());
         assertEquals(physicalInstanceLabel, result.physicalInstance().get(0).citation().title().string().text());
 
-        // Verify authentication was called
-        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-
         // Verify item creation endpoint was called
         ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
@@ -802,12 +496,7 @@ class DDIRepositoryImplTest {
         // Given
         String instanceId = "test-pi-id";
         String agencyId = "fr.insee";
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String itemUrl = baseApiUrl + "item";
 
         String newLabel = "Updated Physical Instance Label";
@@ -818,15 +507,7 @@ class DDIRepositoryImplTest {
         );
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock existing instance (for getPhysicalInstance call)
         String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
@@ -905,6 +586,21 @@ class DDIRepositoryImplTest {
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
 
+        // Mock DDI4 to DDI3 conversion for updateFullPhysicalInstance
+        Ddi3Response.Ddi3Item mockPiDdi3Item = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "2", instanceId,
+                "<PhysicalInstance>" + newLabel + "</PhysicalInstance>",
+                "2025-01-01T00:00:00", null, true, false, false, "DDI"
+        );
+        Ddi3Response.Ddi3Item mockDrDdi3Item = new Ddi3Response.Ddi3Item(
+                "f39ff278-8500-45fe-a850-3906da2d242b", agencyId, "2", "dr-123",
+                "<DataRelationship>" + newDataRelationshipName + "</DataRelationship>",
+                "2025-01-01T00:00:00", null, true, false, false, "DDI"
+        );
+        Ddi3Response mockDdi3Response = new Ddi3Response(null, List.of(mockPiDdi3Item, mockDrDdi3Item));
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any(Ddi4Response.class)))
+                .thenReturn(mockDdi3Response);
+
         // Mock item update (POST /item)
         when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
                 .thenReturn("{}");
@@ -913,9 +609,6 @@ class DDIRepositoryImplTest {
         ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
 
         // Then
-        // Verify authentication was called
-        verify(restTemplate, atLeastOnce()).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-
         // Verify item update endpoint was called
         ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
@@ -941,16 +634,8 @@ class DDIRepositoryImplTest {
     @Test
     void shouldFilterCodeListsInDenyList() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
-
-        // Mock authentication response
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         // Create code lists - one should be filtered, one should pass
         ColecticaItem codeListToFilter = new ColecticaItem(
@@ -1014,14 +699,7 @@ class DDIRepositoryImplTest {
         when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication call
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock query call
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
@@ -1044,15 +722,8 @@ class DDIRepositoryImplTest {
     @Test
     void shouldNotFilterWhenDenyListIsEmpty() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
-
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         ColecticaItem codeList = new ColecticaItem(
             null, Map.of("fr-FR", "Liste de codes"), Map.of("fr-FR", "LC"),
@@ -1066,12 +737,7 @@ class DDIRepositoryImplTest {
         // Configure empty deny list
         when(colecticaConfiguration.codeListDenyList()).thenReturn(List.of());
 
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
@@ -1087,15 +753,8 @@ class DDIRepositoryImplTest {
     @Test
     void shouldNotFilterWhenDenyListIsNull() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
-
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         ColecticaItem codeList = new ColecticaItem(
             null, Map.of("fr-FR", "Liste de codes"), Map.of("fr-FR", "LC"),
@@ -1109,12 +768,7 @@ class DDIRepositoryImplTest {
         // Configure null deny list (default behavior)
         when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
 
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
@@ -1130,15 +784,8 @@ class DDIRepositoryImplTest {
     @Test
     void shouldFilterMultipleCodeListsInDenyList() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
-
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         ColecticaItem codeList1 = new ColecticaItem(
             null, Map.of("fr-FR", "Code List 1"), Map.of("fr-FR", "CL1"),
@@ -1170,12 +817,7 @@ class DDIRepositoryImplTest {
         );
         when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
 
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
@@ -1193,26 +835,11 @@ class DDIRepositoryImplTest {
     void shouldGetPhysicalInstanceWithCodeListsAndCategories() {
         // Given
         String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
         String agencyId = "fr.insee";
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        when(restTemplate.postForObject(
-                eq(baseServerUrl + "/token/createtoken"),
-                any(HttpEntity.class),
-                eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock DDI set response with complete FragmentInstance XML (including Variables, CodeLists, Categories)
         String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
@@ -1441,12 +1068,6 @@ class DDIRepositoryImplTest {
         assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
         assertEquals("aq", result.category().get(0).label().content().text());
 
-        // Verify authentication was called
-        verify(restTemplate).postForObject(
-                eq(baseServerUrl + "/token/createtoken"),
-                any(HttpEntity.class),
-                eq(AuthenticationResponse.class));
-
         // Verify ddiset endpoint was called
         verify(restTemplate).exchange(
                 eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
@@ -1466,16 +1087,8 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetGroups() {
         // Given
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
-        String tokenUrl = baseServerUrl + "/token/createtoken";
         String queryUrl = baseApiUrl + "_query";
-
-        // Mock authentication response
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
 
         ColecticaItem group1 = new ColecticaItem(
             null, // summary
@@ -1532,14 +1145,7 @@ class DDIRepositoryImplTest {
         ColecticaResponse mockResponse = new ColecticaResponse(List.of(group1, group2), 2, 2, null, null, null);
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication call
-        when(restTemplate.postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock query call - should query for Group itemType (4bd6eef6-99df-40e6-9b11-5b8f64e5cb23)
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
@@ -1559,9 +1165,6 @@ class DDIRepositoryImplTest {
         assertEquals("Recensement de la population", result.get(1).label());
         assertEquals("fr.insee", result.get(1).agency());
 
-        // Verify authentication was called
-        verify(restTemplate).postForObject(eq(tokenUrl), any(HttpEntity.class), eq(AuthenticationResponse.class));
-
         // Verify query was called with Group itemType
         ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
         verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
@@ -1577,26 +1180,11 @@ class DDIRepositoryImplTest {
     void shouldGetGroupById() {
         // Given
         String groupId = "10a689ce-7006-429b-8e84-036b7787b422";
-        String baseServerUrl = "http://localhost:8082";
         String baseApiUrl = "http://localhost:8082/api/v1/";
-        String username = "test-user";
-        String password = "test-password";
-        String accessToken = "test-token-123";
         String agencyId = "fr.insee";
 
         // Mock configuration
-        when(instanceConfiguration.baseServerUrl()).thenReturn(baseServerUrl);
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.username()).thenReturn(username);
-        when(instanceConfiguration.password()).thenReturn(password);
-
-        // Mock authentication
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
-        when(restTemplate.postForObject(
-                eq(baseServerUrl + "/token/createtoken"),
-                any(HttpEntity.class),
-                eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
 
         // Mock DDI set response with Group and StudyUnits
         String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
@@ -1697,12 +1285,6 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.topLevelReference().size());
         assertEquals(groupId, result.topLevelReference().get(0).id());
         assertEquals("Group", result.topLevelReference().get(0).typeOfObject());
-
-        // Verify authentication was called
-        verify(restTemplate).postForObject(
-                eq(baseServerUrl + "/token/createtoken"),
-                any(HttpEntity.class),
-                eq(AuthenticationResponse.class));
 
         // Verify ddiset endpoint was called
         verify(restTemplate).exchange(
