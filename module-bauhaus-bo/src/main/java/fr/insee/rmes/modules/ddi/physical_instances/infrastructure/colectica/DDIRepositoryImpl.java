@@ -9,7 +9,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,7 +32,6 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static javax.xml.XMLConstants.*;
@@ -47,7 +45,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
-    private String cachedAuthToken;
+    private final ColecticaAuthenticator authenticator;
     private Set<String> denyListCache;
 
     public DDIRepositoryImpl(
@@ -56,7 +54,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             ObjectMapper objectMapper,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-            ColecticaConfiguration colecticaConfiguration
+            ColecticaConfiguration colecticaConfiguration,
+            ColecticaAuthenticator authenticator
             ) {
         this.restTemplate = restTemplate;
         this.instanceConfiguration = instanceConfiguration;
@@ -64,79 +63,14 @@ public class DDIRepositoryImpl implements DDIRepository {
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
-    }
-
-    /**
-     * Retrieves authentication token from cache or fetches a new one
-     * @param forceRefresh if true, forces a new token request even if cache is available
-     * @return the authentication token
-     */
-    private String getAuthToken(boolean forceRefresh) {
-        if (!forceRefresh && cachedAuthToken != null) {
-            logger.debug("Using cached authentication token");
-            return cachedAuthToken;
-        }
-
-        logger.info("Authenticating to Colectica API");
-
-        String tokenUrl = instanceConfiguration.baseServerUrl() + "/token/createtoken";
-
-        AuthenticationRequest authRequest = new AuthenticationRequest(
-            instanceConfiguration.username(),
-            instanceConfiguration.password()
-        );
-
-        // Create headers with Content-Type for authentication request
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-
-        // Create HTTP entity with headers and body
-        HttpEntity<AuthenticationRequest> requestEntity = new HttpEntity<>(authRequest, headers);
-
-        AuthenticationResponse authResponse = restTemplate.postForObject(
-            tokenUrl,
-            requestEntity,
-            AuthenticationResponse.class
-        );
-
-        if (authResponse == null || authResponse.accessToken() == null) {
-            logger.error("Failed to retrieve authentication token");
-            throw new RuntimeException("Authentication failed: unable to retrieve access token");
-        }
-
-        cachedAuthToken = authResponse.accessToken();
-        return cachedAuthToken;
-    }
-
-    /**
-     * Generic method to execute API calls with authentication and automatic retry on auth failure
-     * @param apiCall Function that takes a token and performs the API call
-     * @param <T> Return type of the API call
-     * @return Result of the API call
-     */
-    private <T> T executeWithAuth(Function<String, T> apiCall) {
-        try {
-            // Try with cached or new token
-            String token = getAuthToken(false);
-            return apiCall.apply(token);
-        } catch (HttpClientErrorException e) {
-            // If authentication failed (401 Unauthorized or 403 Forbidden), refresh token and retry once
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
-                logger.warn("Authentication failed with cached token, refreshing and retrying...");
-                cachedAuthToken = null; // Invalidate cache
-                String newToken = getAuthToken(true);
-                return apiCall.apply(newToken);
-            }
-            // Re-throw if it's not an authentication error
-            throw e;
-        }
+        this.authenticator = authenticator;
     }
 
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Getting physical instances from Colectica API via HTTP (primary instance)");
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
@@ -177,7 +111,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public List<PartialGroup> getGroups() {
         logger.info("Getting groups from Colectica API via HTTP");
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
@@ -218,7 +152,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public List<PartialCodesList> getCodesLists() {
         logger.info("Getting codes lists from Colectica API via HTTP");
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
@@ -476,7 +410,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             try {
 
                 String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
@@ -552,7 +486,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
         logger.info("Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}", agencyId, id);
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             try {
                 // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint
                 String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
@@ -781,128 +715,94 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
+        logger.info("Updating physical instance {}/{} with PATCH (preserving variables)", agencyId, id);
 
-        executeWithAuth(token -> {
-            // First, fetch the current instance to get all necessary information
-            Ddi4Response currentInstance = getPhysicalInstance(agencyId, id);
+        // First, fetch the current instance to get all necessary information including variables
+        Ddi4Response currentInstance = getPhysicalInstance(agencyId, id);
 
-            if (currentInstance == null || currentInstance.physicalInstance() == null || currentInstance.physicalInstance().isEmpty()) {
-                throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
-            }
+        if (currentInstance == null || currentInstance.physicalInstance() == null || currentInstance.physicalInstance().isEmpty()) {
+            throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
+        }
 
-            var currentPI = currentInstance.physicalInstance().get(0);
-            var currentDR = currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
-                    ? currentInstance.dataRelationship().get(0)
-                    : null;
+        var currentPI = currentInstance.physicalInstance().get(0);
+        var currentDR = currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
+                ? currentInstance.dataRelationship().get(0)
+                : null;
 
-            // Get current timestamp in ISO format
-            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        // Get current timestamp in ISO format
+        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-            // Determine new version (increment by 1)
-            int currentVersion = Integer.parseInt(currentPI.version());
-            int newVersion = currentVersion + 1;
+        // Determine new version (increment by 1)
+        int currentVersion = Integer.parseInt(currentPI.version());
+        String newVersion = String.valueOf(currentVersion + 1);
 
-            // Build updated PhysicalInstance label
-            String physicalInstanceLabel = request.physicalInstanceLabel() != null
-                    ? request.physicalInstanceLabel()
-                    : currentPI.citation().title().string().text();
+        // Build updated PhysicalInstance with new label if provided
+        String newPhysicalInstanceLabel = request.physicalInstanceLabel() != null
+                ? request.physicalInstanceLabel()
+                : currentPI.citation().title().string().text();
 
-            // Build updated DataRelationship name
-            String dataRelationshipName = request.dataRelationshipName() != null && currentDR != null
+        var updatedPI = new Ddi4PhysicalInstance(
+                currentPI.isUniversallyUnique(),
+                versionDate,
+                currentPI.urn(),
+                currentPI.agency(),
+                currentPI.id(),
+                newVersion,
+                currentPI.basedOnObject(),
+                new Citation(new Title(new StringValue(
+                        currentPI.citation().title().string().xmlLang(),
+                        newPhysicalInstanceLabel
+                ))),
+                currentPI.dataRelationshipReference()
+        );
+
+        // Build updated DataRelationship with new name if provided, preserving LogicalRecord with variables
+        Ddi4DataRelationship updatedDR = null;
+        if (currentDR != null) {
+            String newDataRelationshipName = request.dataRelationshipName() != null
                     ? request.dataRelationshipName()
-                    : (currentDR != null ? currentDR.dataRelationshipName().string().text() : "DataRelationship");
+                    : currentDR.dataRelationshipName().string().text();
 
-            // Get DataRelationship ID from the reference
-            String dataRelationshipId = currentPI.dataRelationshipReference() != null
-                    ? currentPI.dataRelationshipReference().id()
-                    : UUID.randomUUID().toString();
-
-            // Get LogicalRecord information
-            String logicalRecordId = currentDR != null && currentDR.logicalRecord() != null
-                    ? currentDR.logicalRecord().id()
-                    : UUID.randomUUID().toString();
-
-            String logicalRecordLabel = currentDR != null && currentDR.logicalRecord() != null
-                    ? currentDR.logicalRecord().logicalRecordName().string().text()
-                    : physicalInstanceLabel;
-
-            // Build DDI3 XML fragments with updated data
-            String physicalInstanceXml = buildPhysicalInstanceXml(
-                    agencyId,
-                    id,
-                    newVersion,
-                    physicalInstanceLabel,
-                    dataRelationshipId,
-                    versionDate
-            );
-
-            String dataRelationshipXml = buildDataRelationshipXml(
-                    agencyId,
-                    dataRelationshipId,
-                    newVersion,
-                    dataRelationshipName,
-                    logicalRecordId,
-                    logicalRecordLabel,
-                    versionDate
-            );
-
-            // Create Colectica items
-            ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
-                    "a51e85bb-6259-4488-8df2-f08cb43485f8", // PhysicalInstance type UUID
-                    agencyId,
-                    newVersion,
-                    id,
-                    physicalInstanceXml,
+            updatedDR = new Ddi4DataRelationship(
+                    currentDR.isUniversallyUnique(),
                     versionDate,
-                    "bauhaus-api",
-                    false, // isPublished
-                    false, // isDeprecated
-                    false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
-            );
-
-            ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
-                    "f39ff278-8500-45fe-a850-3906da2d242b", // DataRelationship type UUID
-                    agencyId,
+                    currentDR.urn(),
+                    currentDR.agency(),
+                    currentDR.id(),
                     newVersion,
-                    dataRelationshipId,
-                    dataRelationshipXml,
-                    versionDate,
-                    "bauhaus-api",
-                    false, // isPublished
-                    false, // isDeprecated
-                    false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
+                    currentDR.basedOnObject(),
+                    new DataRelationshipName(new StringValue(
+                            currentDR.dataRelationshipName().string().xmlLang(),
+                            newDataRelationshipName
+                    )),
+                    currentDR.logicalRecord() // Preserve the LogicalRecord with all VariableUsedReferences
             );
+        }
 
-            // Create request with both items
-            ColecticaCreateItemRequest updateRequest = new ColecticaCreateItemRequest(
-                    List.of(physicalInstanceItem, dataRelationshipItem)
-            );
+        // Build updated Ddi4Response preserving all variables, codeLists and categories
+        Ddi4Response updatedResponse = new Ddi4Response(
+                currentInstance.schema(),
+                currentInstance.topLevelReference(),
+                List.of(updatedPI),
+                updatedDR != null ? List.of(updatedDR) : currentInstance.dataRelationship(),
+                currentInstance.variable(),    // Preserve all variables
+                currentInstance.codeList(),    // Preserve all codeLists
+                currentInstance.category()     // Preserve all categories
+        );
 
-            // Send to Colectica
-            String url = instanceConfiguration.baseApiUrl() + "item";
+        // Use updateFullPhysicalInstance to save everything including variables
+        updateFullPhysicalInstance(agencyId, id, updatedResponse);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(updateRequest, headers);
-
-            // POST to Colectica (same endpoint for create and update)
-            restTemplate.postForObject(url, requestEntity, String.class);
-
-            // Clear cache to force refresh on next read
-
-            return null;
-        });
+        logger.info("Successfully updated physical instance {}/{} preserving {} variables",
+                agencyId, id,
+                currentInstance.variable() != null ? currentInstance.variable().size() : 0);
     }
 
     @Override
     public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
         logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
 
-        executeWithAuth(token -> {
+        authenticator.executeWithAuth(token -> {
 
             // Convert DDI4 to DDI3
             Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
@@ -954,7 +854,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Generate UUIDs for physical instance and data relationship
             String physicalInstanceId = UUID.randomUUID().toString();
             String dataRelationshipId = UUID.randomUUID().toString();

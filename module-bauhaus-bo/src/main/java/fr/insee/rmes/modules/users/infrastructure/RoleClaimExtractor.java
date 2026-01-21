@@ -13,7 +13,6 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static java.util.Optional.empty;
 
 @Component
 public class RoleClaimExtractor {
@@ -51,8 +50,8 @@ public class RoleClaimExtractor {
                 yield mapForRoles.get(jwtProperties.getRoleClaimConfig().getRoles());
             }
             default -> {
-                logger.debug("No matching type for roleClaim value, returning empty");
-                yield empty();
+                logger.debug("No matching type for roleClaim value, returning null");
+                yield null;
             }
         };
         return roleClaimFrom(valueForRoleClaim);
