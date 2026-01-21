@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Import;
  * Configuration de test regroupant les composants d'authentification utilisateur.
  * À importer dans les tests d'intégration qui nécessitent l'authentification OIDC.
  */
-@TestConfiguration
 @Import({
         UserProviderFromSecurityContext.class,
         OidcUserDecoder.class,
