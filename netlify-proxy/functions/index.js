@@ -6,6 +6,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { XMLParser } from 'fast-xml-parser';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { nafr2Items } from './nafr2-data.js';
 
 // Initialize Firebase Admin
 initializeApp();
@@ -17,7 +18,7 @@ const ITEMS_COLLECTION = 'items';
 /**
  * Default data to populate the store on initialization
  */
-const defaultItems = [
+const baseDefaultItems = [
   // StudyUnits
   {
     ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
@@ -111,47 +112,11 @@ const defaultItems = [
     IsProvisional: false,
     ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
   },
-  // CodeLists
-  {
-    ItemType: "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "2a22ba00-a977-4a61-a582-99025c6b0582",
-    Item: " <Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"> <CodeList isUniversallyUnique=\"true\" versionDate=\"2023-07-04T09:19:29.3053289Z\" xmlns=\"ddi:logicalproduct:3_3\"> <r:URN>urn:ddi:fr.insee:2a22ba00-a977-4a61-a582-99025c6b0582:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>2a22ba00-a977-4a61-a582-99025c6b0582</r:ID> <r:Version>1</r:Version> <r:Label> <r:Content xml:lang=\"fr-FR\">Liste des statuts professionnels</r:Content> </r:Label> <Code isUniversallyUnique=\"true\"> <r:URN>urn:ddi:fr.insee:a4648d8f-a4cc-4f1a-be51-3ddc914597e5:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>a4648d8f-a4cc-4f1a-be51-3ddc914597e5</r:ID> <r:Version>1</r:Version> <r:CategoryReference> <r:Agency>fr.insee</r:Agency> <r:ID>d597f327-773f-4ae8-852f-ae04166827da</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>Category</r:TypeOfObject> </r:CategoryReference> <r:Value>0</r:Value> </Code> , <Code isUniversallyUnique=\"true\"> <r:URN>urn:ddi:fr.insee:c65cafcf-d410-4f8c-a983-3278e72c4c70:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>c65cafcf-d410-4f8c-a983-3278e72c4c70</r:ID> <r:Version>1</r:Version> <r:CategoryReference> <r:Agency>fr.insee</r:Agency> <r:ID>d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>Category</r:TypeOfObject> </r:CategoryReference> <r:Value>1</r:Value> </Code> </CodeList> </Fragment> ",
-    VersionDate: "2023-07-04T09:19:29.3053289Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  },
-  {
-    ItemType: "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "d597f327-773f-4ae8-852f-ae04166827da",
-    Item: " <Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"> <Category isUniversallyUnique=\"true\" versionDate=\"2023-07-04T09:19:29.3073232Z\" xmlns=\"ddi:logicalproduct:3_3\"> <r:URN>urn:ddi:fr.insee:d597f327-773f-4ae8-852f-ae04166827da:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>d597f327-773f-4ae8-852f-ae04166827da</r:ID> <r:Version>1</r:Version> <r:Label> <r:Content xml:lang=\"fr-FR\">Indépendant</r:Content> </r:Label> </Category> </Fragment>",
-    VersionDate: "2023-07-04T09:19:29.3073232Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  },
-  {
-    ItemType: "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a",
-    Item: " <Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"> <Category isUniversallyUnique=\"true\" versionDate=\"2023-07-04T09:19:29.3073232Z\" xmlns=\"ddi:logicalproduct:3_3\"> <r:URN>urn:ddi:fr.insee:d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a</r:ID> <r:Version>1</r:Version> <r:Label> <r:Content xml:lang=\"fr-FR\">Salarié</r:Content> </r:Label> </Category> </Fragment>",
-    VersionDate: "2023-07-04T09:19:29.3073232Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  }
+
 ];
+
+// Merge base items with NAF rév. 2 data
+const defaultItems = [...baseDefaultItems, ...nafr2Items];
 
 /**
  * Initialize the items store with default data
