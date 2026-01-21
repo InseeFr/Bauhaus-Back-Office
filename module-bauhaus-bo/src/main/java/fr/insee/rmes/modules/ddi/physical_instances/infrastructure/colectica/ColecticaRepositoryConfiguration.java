@@ -23,7 +23,8 @@ public class ColecticaRepositoryConfiguration {
             ColecticaConfiguration colecticaConfiguration,
             ObjectMapper objectMapper,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-            DDI4toDDI3ConverterService ddi4ToDdi3Converter
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaAuthenticator authenticator
     ) {
         return new DDIRepositoryImpl(
                 restTemplate,
@@ -31,7 +32,8 @@ public class ColecticaRepositoryConfiguration {
                 objectMapper,
                 ddi3ToDdi4Converter,
                 ddi4ToDdi3Converter,
-                colecticaConfiguration
+                colecticaConfiguration,
+                authenticator
         );
     }
 }
