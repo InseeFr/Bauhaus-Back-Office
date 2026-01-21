@@ -30,19 +30,18 @@ public class RoleClaimExtractor {
         logger.debug("Extracting roles from claims using roleClaim '{}'", jwtProperties.getRoleClaim());
         RoleClaim roleClaim = roleClaimFrom(claims);
         ArrayOfRoles arrayOfRoles = roleClaim.arrayOfRoles();
-        return arrayOfRoles.stream().peek(role -> logger.debug("Extracted role: {}", role));
+        return arrayOfRoles.stream();
     }
 
     private RoleClaim roleClaimFrom(Map<String, Object> claims) {
         var rawValue = claims.get(jwtProperties.getRoleClaim());
         logger.debug("Raw value for roleClaim '{}': {} (type: {})", jwtProperties.getRoleClaim(), rawValue, rawValue != null ? rawValue.getClass().getSimpleName() : "null");
 
-        if (rawValue == null) {
-            logger.debug("RoleClaim is null, returning empty stream");
-            return () -> Stream::empty;
-        }
-
         var valueForRoleClaim = switch (rawValue) {
+            case null -> {
+                logger.debug("RoleClaim is null, returning empty stream");
+                yield null;
+            }
             case JsonObject objectForRoles -> {
                 logger.debug("Processing JsonObject, extracting roles from key '{}'", jwtProperties.getRoleClaimConfig().getRoles());
                 yield objectForRoles.getAsJsonArray(jwtProperties.getRoleClaimConfig().getRoles());
@@ -62,12 +61,11 @@ public class RoleClaimExtractor {
     private RoleClaim roleClaimFrom(Object listOrJsonArray) {
         logger.debug("Converting to RoleClaim: {} (type: {})", listOrJsonArray, listOrJsonArray != null ? listOrJsonArray.getClass().getSimpleName() : "null");
 
-        if (listOrJsonArray == null) {
-            logger.debug("Value is null, returning empty stream");
-            return () -> Stream::empty;
-        }
-
         return switch (listOrJsonArray) {
+            case null -> {
+                logger.debug("Value is null, returning empty stream");
+                yield () -> Stream::empty;
+            }
             case JsonArray jsonArray -> {
                 logger.debug("Processing JsonArray with {} elements", jsonArray.size());
                 yield () -> () -> jsonArrayToStream(jsonArray);
