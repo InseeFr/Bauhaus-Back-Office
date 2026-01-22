@@ -21,6 +21,7 @@ import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -1292,5 +1293,109 @@ class DDIRepositoryImplTest {
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 eq(String.class));
+    }
+
+    @Test
+    void shouldGetMutualizedCodesLists() {
+        // Given
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String getDescriptionsUrl = baseApiUrl + "item/_getDescriptions";
+
+        // Configure mutualized codes lists
+        List<ColecticaConfiguration.MutualizedCodeListEntry> mutualizedEntries = List.of(
+            new ColecticaConfiguration.MutualizedCodeListEntry("fr.insee", "fc65a527-a04b-4505-85de-0a181e54dbad", 1)
+        );
+        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(mutualizedEntries);
+
+        // Mock response from _getDescriptions endpoint
+        ColecticaItem codeList = new ColecticaItem(
+            null, // summary
+            Map.of("fr-FR", "CL-RMES-NAFR2-SOUS-CLASSE"), // itemName
+            Map.of("fr-FR", "NAF rév. 2, 2008 - Niveau 5 - Sous-classes"), // label
+            null, // description
+            null, // versionRationale
+            0, // metadataRank
+            "test-repo", // repositoryName
+            true, // isAuthoritative
+            List.of(), // tags
+            "8b108ef8-b642-4484-9c49-f88e4bf7cf1d", // itemType (CodeList)
+            "fr.insee", // agencyId
+            1, // version
+            "fc65a527-a04b-4505-85de-0a181e54dbad", // identifier
+            null, // item
+            null, // notes
+            "2024-10-31T10:43:38", // versionDate
+            null, // versionResponsibility
+            false, // isPublished
+            false, // isDeprecated
+            false, // isProvisional
+            "DDI", // itemFormat
+            1L, // transactionId
+            0 // versionCreationType
+        );
+
+        ColecticaItem[] mockResponse = new ColecticaItem[] { codeList };
+
+        // Mock configuration
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        // Mock the POST call to _getDescriptions
+        when(restTemplate.postForObject(eq(getDescriptionsUrl), any(HttpEntity.class), eq(ColecticaItem[].class)))
+                .thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", result.get(0).id());
+        assertEquals("CL-RMES-NAFR2-SOUS-CLASSE", result.get(0).label());
+        assertEquals("fr.insee", result.get(0).agency());
+        assertNotNull(result.get(0).versionDate());
+
+        // Verify the request was made correctly
+        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).postForObject(eq(getDescriptionsUrl), entityCaptor.capture(), eq(ColecticaItem[].class));
+
+        HttpEntity<?> capturedEntity = entityCaptor.getValue();
+        GetDescriptionsRequest requestBody = (GetDescriptionsRequest) capturedEntity.getBody();
+        assertNotNull(requestBody);
+        assertEquals(1, requestBody.identifiers().size());
+        assertEquals("fr.insee", requestBody.identifiers().get(0).agencyId());
+        assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", requestBody.identifiers().get(0).identifier());
+        assertEquals(1, requestBody.identifiers().get(0).version());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoMutualizedCodesListsConfigured() {
+        // Given - no mutualized codes lists configured
+        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(null);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify no REST call was made
+        verify(restTemplate, never()).postForObject(anyString(), any(HttpEntity.class), eq(ColecticaItem[].class));
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenMutualizedCodesListsIsEmpty() {
+        // Given - empty mutualized codes lists
+        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(List.of());
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify no REST call was made
+        verify(restTemplate, never()).postForObject(anyString(), any(HttpEntity.class), eq(ColecticaItem[].class));
     }
 }
