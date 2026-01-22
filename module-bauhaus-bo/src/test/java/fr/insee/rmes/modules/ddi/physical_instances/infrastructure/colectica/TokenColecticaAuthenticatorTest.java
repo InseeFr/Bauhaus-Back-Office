@@ -2,6 +2,9 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -62,39 +65,13 @@ class TokenColecticaAuthenticatorTest {
         assertEquals(5, callCount.get());
     }
 
-    @Test
-    void shouldThrowExceptionWhenTokenIsNull() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"   "})
+    void shouldThrowExceptionWhenTokenIsInvalid(String invalidToken) {
         // Given
         when(colecticaConfiguration.server()).thenReturn(instanceConfiguration);
-        when(instanceConfiguration.token()).thenReturn(null);
-
-        // When & Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            new TokenColecticaAuthenticator(colecticaConfiguration);
-        });
-
-        assertEquals("Token authentication mode requires a non-empty token configuration", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenTokenIsEmpty() {
-        // Given
-        when(colecticaConfiguration.server()).thenReturn(instanceConfiguration);
-        when(instanceConfiguration.token()).thenReturn("");
-
-        // When & Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            new TokenColecticaAuthenticator(colecticaConfiguration);
-        });
-
-        assertEquals("Token authentication mode requires a non-empty token configuration", exception.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenTokenIsBlank() {
-        // Given
-        when(colecticaConfiguration.server()).thenReturn(instanceConfiguration);
-        when(instanceConfiguration.token()).thenReturn("   ");
+        when(instanceConfiguration.token()).thenReturn(invalidToken);
 
         // When & Then
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
