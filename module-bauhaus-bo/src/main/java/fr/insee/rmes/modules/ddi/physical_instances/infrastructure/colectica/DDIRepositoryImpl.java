@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.MutualizedCodeListEntry;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -999,5 +1000,68 @@ public class DDIRepositoryImpl implements DDIRepository {
                 agencyId, logicalRecordId, version,
                 agencyId, logicalRecordId, version, logicalRecordLabel
         );
+    }
+
+    @Override
+    public List<PartialCodesList> getMutualizedCodesLists() {
+        logger.info("Getting mutualized codes lists from Colectica API via _getDescriptions endpoint");
+
+        List<MutualizedCodeListEntry> mutualizedEntries = colecticaConfiguration.mutualizedCodesLists();
+        logger.info("Mutualized entries from config: {}", mutualizedEntries);
+
+        if (mutualizedEntries == null || mutualizedEntries.isEmpty()) {
+            logger.info("No mutualized codes lists configured");
+            return List.of();
+        }
+
+        return authenticator.executeWithAuth(token -> {
+            String url = instanceConfiguration.baseApiUrl() + "item/_getDescriptions";
+            logger.info("Calling URL: {}", url);
+
+            // Build request body from configuration
+            List<GetDescriptionsRequest.IdentifierRef> identifiers = mutualizedEntries.stream()
+                    .map(entry -> new GetDescriptionsRequest.IdentifierRef(
+                            entry.agencyId(),
+                            entry.identifier(),
+                            entry.version()
+                    ))
+                    .toList();
+
+            GetDescriptionsRequest requestBody = new GetDescriptionsRequest(identifiers);
+            logger.info("Request body identifiers: {}", identifiers);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<GetDescriptionsRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            logger.info("Calling _getDescriptions with {} identifiers", identifiers.size());
+
+            ColecticaItem[] response = restTemplate.postForObject(url, requestEntity, ColecticaItem[].class);
+            logger.info("Response from _getDescriptions: {} items", response != null ? response.length : "null");
+
+            if (response == null) {
+                logger.warn("Received null response from _getDescriptions endpoint");
+                return List.of();
+            }
+
+            return Arrays.stream(response)
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialCodesList(id, label, date, agency);
+                    })
+                    .toList();
+        });
     }
 }

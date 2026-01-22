@@ -20,4 +20,5 @@ public interface DDIService {
     Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
     Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
+    List<PartialCodesList> getMutualizedCodesLists();
 }

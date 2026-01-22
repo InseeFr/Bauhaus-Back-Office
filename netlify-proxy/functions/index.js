@@ -14,6 +14,7 @@ const db = getFirestore();
 
 // Collection name for items
 const ITEMS_COLLECTION = 'items';
+const MUTUALIZED_CODES_LIST_COLLECTION = 'mutualized_codes_list';
 
 /**
  * Default data to populate the store on initialization
@@ -116,7 +117,54 @@ const baseDefaultItems = [
 ];
 
 // Merge base items with NAF rév. 2 data
-const defaultItems = [...baseDefaultItems, ...nafr2Items];
+const defaultItems = [...baseDefaultItems];
+
+/**
+ * Default data for mutualized codes list collection
+ */
+const defaultMutualizedCodesLists = [
+  {
+    "ItemType": "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+    "Levels": [],
+    "CategoryScheme": null,
+    "ItemName": {
+      "fr-FR": "CL-RMES-NAFR2-SOUS-CLASSE"
+    },
+    "Label": {
+      "fr-FR": "NAF rév. 2, 2008 - Niveau 5 - Sous-classes"
+    },
+    "Description": {},
+    "DisplayLabel": "CL-RMES-NAFR2-SOUS-CLASSE - NAF rév. 2, 2008 - Niveau 5 - Sous-classes",
+    "IsPublished": false,
+    "IsPopulated": true,
+    "Version": 1,
+    "VersionDate": "2024-10-31T10:43:38.8611539Z",
+    "VersionResponsibility": null,
+    "VersionRationale": {},
+    "CompositeId": {
+      "Item1": "fc65a527-a04b-4505-85de-0a181e54dbad",
+      "Item2": 1,
+      "Item3": "fr.insee"
+    },
+    "OtherMaterials": [],
+    "BasedOn": null,
+    "SucceededBy": null,
+    "Attachments": [],
+    "ThumbnailImageUri": null,
+    "BannerImageUri": null,
+    "AgencyId": "fr.insee",
+    "Identifier": "fc65a527-a04b-4505-85de-0a181e54dbad",
+    "UserIds": [
+      {
+        "Type": "rmes-bauhaus",
+        "Version": null,
+        "Identifier": "http://id.insee.fr/codes/nafr2/sousClasses"
+      }
+    ],
+    "CustomFields": [],
+    "UserAttributes": []
+  }
+];
 
 /**
  * Initialize the items store with default data
@@ -144,6 +192,34 @@ async function initializeDefaultItems() {
     }
   } catch (error) {
     console.error('Error initializing default items:', error);
+  }
+}
+
+/**
+ * Initialize the mutualized codes list collection with default data
+ */
+async function initializeMutualizedCodesLists() {
+  try {
+    const collection = db.collection(MUTUALIZED_CODES_LIST_COLLECTION);
+    const snapshot = await collection.limit(1).get();
+
+    // Only initialize if collection is empty
+    if (snapshot.empty) {
+      console.log('Initializing Firestore with mutualized codes lists...');
+      const batch = db.batch();
+
+      defaultMutualizedCodesLists.forEach(item => {
+        const docRef = collection.doc(item.Identifier);
+        batch.set(docRef, item);
+      });
+
+      await batch.commit();
+      console.log(`Initialized Firestore with ${defaultMutualizedCodesLists.length} mutualized codes lists`);
+    } else {
+      console.log('Mutualized codes lists collection already contains items, skipping initialization');
+    }
+  } catch (error) {
+    console.error('Error initializing mutualized codes lists:', error);
   }
 }
 
@@ -333,6 +409,8 @@ export const proxy = onRequest(async (req, res) => {
       await handleCreateToken(req, res);
     } else if (path === '/api/v1/_query') {
       await handleQuery(req, res);
+    } else if (path === '/api/v1/item/_getDescriptions') {
+      await handleGetDescriptions(req, res);
     } else if (path === '/api/v1/item') {
       await handleItem(req, res);
     } else if (path === '/api/v1/items') {
@@ -347,6 +425,7 @@ export const proxy = onRequest(async (req, res) => {
           'POST /token/createtoken',
           'POST /api/v1/_query',
           'POST /api/v1/item',
+          'POST /api/v1/item/_getDescriptions',
           'DELETE /api/v1/items',
           'GET /api/v1/ddiset/{agencyId}/{identifier}'
         ]
@@ -605,6 +684,78 @@ async function handleItem(req, res) {
     errorCount: errorCount,
     results: results
   });
+}
+
+/**
+ * Handle get descriptions for mutualized codes lists (MOCKED)
+ * POST /api/v1/item/_getDescriptions
+ * Expected body format:
+ * {
+ *   "identifiers": [
+ *     {
+ *       "agencyId": "string",
+ *       "identifier": "uuid",
+ *       "version": 0
+ *     }
+ *   ]
+ * }
+ */
+async function handleGetDescriptions(req, res) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  // Validate token
+  if (!validateToken(req.headers.authorization)) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  const requestBody = req.body;
+  console.log('Processing _getDescriptions request:', JSON.stringify(requestBody, null, 2));
+
+  // Validate request structure
+  if (!requestBody.identifiers || !Array.isArray(requestBody.identifiers)) {
+    res.status(400).json({
+      error: 'Invalid request format. Expected { "identifiers": [...] }'
+    });
+    return;
+  }
+
+  // Initialize mutualized codes lists if needed
+  await initializeMutualizedCodesLists();
+
+  const identifiers = requestBody.identifiers;
+  const results = [];
+
+  // Process each identifier
+  for (const idRef of identifiers) {
+    const identifier = idRef.identifier || idRef.Identifier;
+
+    if (!identifier) {
+      continue;
+    }
+
+    try {
+      const docRef = db.collection(MUTUALIZED_CODES_LIST_COLLECTION).doc(identifier);
+      const doc = await docRef.get();
+
+      if (doc.exists) {
+        results.push(doc.data());
+      }
+    } catch (error) {
+      console.error(`Error fetching document ${identifier}:`, error);
+    }
+  }
+
+  console.log(`Found ${results.length} mutualized codes lists`);
+
+  res.set({
+    'Content-Type': 'application/json',
+    ...corsHeaders
+  });
+  res.status(200).json(results);
 }
 
 /**
