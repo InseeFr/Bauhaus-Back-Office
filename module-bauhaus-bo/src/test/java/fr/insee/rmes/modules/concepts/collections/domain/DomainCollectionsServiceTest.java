@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionPublicationStatusFilter;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsPublicationRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
@@ -43,7 +44,7 @@ class DomainCollectionsServiceTest {
     };
 
     CollectionsRepository collectionsRepository;
-
+    CollectionsPublicationRepository collectionsPublicationRepository;
     DomainCollectionsService domainCollectionsService ;
 
     RandomIdGenerator randomIdGenerator;
@@ -51,8 +52,9 @@ class DomainCollectionsServiceTest {
     @BeforeEach
     void resetDomainCollectionService(){
         collectionsRepository = Mockito.mock(CollectionsRepository.class);
+        collectionsPublicationRepository = Mockito.mock(CollectionsPublicationRepository.class);
         randomIdGenerator = Mockito.mock(RandomIdGenerator.class);
-        domainCollectionsService = new DomainCollectionsService(collectionsRepository, randomIdGenerator);
+        domainCollectionsService = new DomainCollectionsService(collectionsRepository, collectionsPublicationRepository, randomIdGenerator);
     }
 
     @Test

@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
+import com.google.common.collect.Sets;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionPublicationException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
@@ -63,9 +65,13 @@ public class DomainCollectionsService implements CollectionsService {
     }
 
     @Override
-    public void publish(Set<CollectionId> ids) {
-        var collections = this.gestionRepository.getCollections(ids);
+    public void publish(Set<CollectionId> ids) throws CollectionsFetchException, CollectionPublicationException {
+        Set<Collection> collections = this.gestionRepository.getCollections(ids);
+        var differences = Sets.difference(ids.stream().map(CollectionId::value).collect(Collectors.toSet()), collections.stream().map(collection -> collection.id().value()).collect(Collectors.toSet()));
+        if (!differences.isEmpty()){
+            throw new CollectionsFetchException("Missing collections : %s".formatted(differences));
+       }
         this.publicationRepository.publish(collections.stream().map(PublishedCollection::fromCollection).collect(Collectors.toSet()));
-        this.gestionRepository.save(null);
+        this.gestionRepository.updateValidationState(ids);
     }
 }

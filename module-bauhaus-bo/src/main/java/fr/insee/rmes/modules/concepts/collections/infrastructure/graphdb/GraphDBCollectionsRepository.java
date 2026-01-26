@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionPublicationException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
@@ -28,7 +29,6 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ServerSideAdaptor
 @Repository
@@ -125,9 +125,25 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     public Set<Collection> getCollections(Set<CollectionId> ids) throws CollectionsFetchException {
         var collections = new HashSet<Collection>();
         for (var collectionId : ids) {
-            collections.add(getCollection(collectionId));
+         getCollection(collectionId).ifPresent(collections::add);
         }
 
-        return null;
+        return collections;
+    }
+
+    @Override
+    public void updateValidationState(Set<CollectionId> ids) throws CollectionPublicationException {
+        Model model = new LinkedHashModel();
+        List<IRI> collectionsToValidateList = new ArrayList<>();
+        for (var collectionId : ids){
+            IRI collectionURI = RdfUtils.collectionIRI(collectionId.value());
+            model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
+            collectionsToValidateList.add(collectionURI);
+        }
+        try {
+            repositoryGestion.objectsValidation(collectionsToValidateList, model);
+        } catch (RmesException e) {
+            throw new CollectionPublicationException(e);
+        }
     }
 }

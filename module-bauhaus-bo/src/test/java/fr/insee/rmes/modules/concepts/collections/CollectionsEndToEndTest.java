@@ -166,6 +166,34 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 }
                 """.formatted(uuid), fetchedCollections, false);
 
+        restClient
+                .put().uri("/publish")
+                .body("""
+                [
+                "%s"
+                ]
+                """.formatted(uuid))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        fetchedCollections = restClient
+                .get().uri(uuid)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        JSONAssert.assertEquals("""
+                {
+                  "id" : "%s",
+                   "labels": [{"value": "label fr v2", "lang": "FR"}],
+                   "descriptions": [],
+                   "creator" : "HIE000001",
+                   "contributor" : "HIE000002",
+                   "isValidated": true,
+                }
+                """.formatted(uuid), fetchedCollections, false);
 
     }
 

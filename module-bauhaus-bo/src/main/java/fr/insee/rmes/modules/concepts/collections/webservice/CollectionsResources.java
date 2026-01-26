@@ -117,7 +117,13 @@ public class CollectionsResources {
 
     @PutMapping("/publish")
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-    void publish(@PathVariable Set<CollectionId> ids) {
-        this.service.publish(ids);
+    void publish(@RequestBody Set<CollectionId> ids) {
+        try {
+            this.service.publish(ids);
+        } catch (CollectionsFetchException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (CollectionPublicationException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
     }
 }

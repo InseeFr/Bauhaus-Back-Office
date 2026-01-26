@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.domain.port.clientside;
 
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionPublicationException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
@@ -20,5 +21,5 @@ public interface CollectionsService {
     Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException;
     CollectionId createCollection(CreateCollectionCommand collectionCommand) throws CollectionsSaveException;
     void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException;
-    void publish(Set<CollectionId> ids);
+    void publish(Set<CollectionId> ids) throws CollectionsFetchException, CollectionPublicationException;
 }

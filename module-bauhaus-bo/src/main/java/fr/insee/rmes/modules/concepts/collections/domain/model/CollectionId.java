@@ -12,7 +12,8 @@ public class CollectionId {
         if(value.isEmpty()){
             throw new InvalidCollectionIdException("The identifier is empty");
         }
-        this.value = value;
+        this.value = value.replace(" ", "").toLowerCase();
+
     }
 
     public String value() {
