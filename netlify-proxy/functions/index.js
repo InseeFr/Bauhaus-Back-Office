@@ -14,72 +14,32 @@ const db = getFirestore();
 
 // Collection name for items
 const ITEMS_COLLECTION = 'items';
+const GROUPS_COLLECTION = 'groups';
 const MUTUALIZED_CODES_LIST_COLLECTION = 'mutualized_codes_list';
 
+// ItemTypes constants
+const ITEM_TYPE_GROUP = '4bd6eef6-99df-40e6-9b11-5b8f64e5cb23';
+const ITEM_TYPE_STUDY_UNIT = '752a535b-b548-4fbe-97e4-f26a02d9e413';
+
 /**
- * Default data to populate the store on initialization
+ * Default data for items collection (excluding Groups and StudyUnits)
  */
-const baseDefaultItems = [
-  // StudyUnits
+const baseDefaultItems = [];
+
+// Merge base items with NAF rév. 2 data
+const defaultItems = [...baseDefaultItems];
+
+/**
+ * Default data for groups collection (Groups and StudyUnits)
+ */
+const defaultGroupsItems = [
+  // StudyUnits - Base permanente des équipements (2024, 2023, 2022, 2021 - décroissant)
   {
-    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "89f5e04d-da22-485f-9c08-5fbe452b6c90",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
-    VersionDate: "2025-01-09T09:00:00.000000Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  },
-  {
-    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "820a7c14-0ac4-42bc-a8c1-d39f60e304ee",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2022</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
-    VersionDate: "2025-01-09T09:00:00.000000Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  },
-  {
-    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "948edb5b-96a5-4823-b45d-3019fcc40227",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:948edb5b-96a5-4823-b45d-3019fcc40227:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2023</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
-    VersionDate: "2025-01-09T09:00:00.000000Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  },
-  {
-    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    ItemType: ITEM_TYPE_STUDY_UNIT,
     AgencyId: "fr.insee",
     Version: "1",
     Identifier: "5bd79348-ea1f-4f3c-8eff-63452147a050",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:5bd79348-ea1f-4f3c-8eff-63452147a050:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2024</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
-    VersionDate: "2025-01-09T09:00:00.000000Z",
-    VersionResponsibility: "abcde",
-    IsPublished: false,
-    IsDeprecated: false,
-    IsProvisional: false,
-    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
-  },
-  // Groups
-  {
-    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
-    AgencyId: "fr.insee",
-    Version: "1",
-    Identifier: "10a689ce-7006-429b-8e84-036b7787b422",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:5bd79348-ea1f-4f3c-8eff-63452147a050:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements 2024</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
     VersionDate: "2025-01-09T09:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -88,11 +48,51 @@ const baseDefaultItems = [
     ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
   },
   {
-    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    ItemType: ITEM_TYPE_STUDY_UNIT,
     AgencyId: "fr.insee",
     Version: "1",
-    Identifier: "20b789de-8007-530c-9f95-147c75e6cb34",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:20b789de-8007-530c-9f95-147c75e6cb34:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>20b789de-8007-530c-9f95-147c75e6cb34</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population</r:String> </r:Title> </r:Citation> </Group> </Fragment>`,
+    Identifier: "948edb5b-96a5-4823-b45d-3019fcc40227",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:948edb5b-96a5-4823-b45d-3019fcc40227:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements 2023</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "820a7c14-0ac4-42bc-a8c1-d39f60e304ee",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements 2022</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "89f5e04d-da22-485f-9c08-5fbe452b6c90",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  // StudyUnits - Recensement de la population (2022, 2021, 2020 - décroissant)
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:a1b2c3d4-e5f6-7890-abcd-ef1234567890:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>a1b2c3d4-e5f6-7890-abcd-ef1234567890</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population 2022</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
     VersionDate: "2025-01-09T10:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -101,11 +101,38 @@ const baseDefaultItems = [
     ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
   },
   {
-    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    ItemType: ITEM_TYPE_STUDY_UNIT,
     AgencyId: "fr.insee",
     Version: "1",
-    Identifier: "30c890ef-9008-631d-0a06-258d86f7dc45",
-    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:30c890ef-9008-631d-0a06-258d86f7dc45:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>30c890ef-9008-631d-0a06-258d86f7dc45</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu</r:String> </r:Title> </r:Citation> </Group> </Fragment>`,
+    Identifier: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:b2c3d4e5-f6a7-8901-bcde-f12345678901:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>b2c3d4e5-f6a7-8901-bcde-f12345678901</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T10:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:c3d4e5f6-a7b8-9012-cdef-123456789012:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>c3d4e5f6-a7b8-9012-cdef-123456789012</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population 2020</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T10:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  // StudyUnits - Enquête emploi en continu (2025, 2024, 2023 - décroissant)
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "d4e5f6a7-b8c9-0123-defa-234567890123",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:d4e5f6a7-b8c9-0123-defa-234567890123:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>d4e5f6a7-b8c9-0123-defa-234567890123</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu 2025</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
     VersionDate: "2025-01-09T11:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -113,11 +140,73 @@ const baseDefaultItems = [
     IsProvisional: false,
     ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
   },
-
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "e5f6a7b8-c9d0-1234-efab-345678901234",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:e5f6a7b8-c9d0-1234-efab-345678901234:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>e5f6a7b8-c9d0-1234-efab-345678901234</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu 2024</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T11:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: ITEM_TYPE_STUDY_UNIT,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "f6a7b8c9-d0e1-2345-fabc-456789012345",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:f6a7b8c9-d0e1-2345-fabc-456789012345:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>f6a7b8c9-d0e1-2345-fabc-456789012345</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu 2023</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T11:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  // Groups
+  {
+    ItemType: ITEM_TYPE_GROUP,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "10a689ce-7006-429b-8e84-036b7787b422",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: ITEM_TYPE_GROUP,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "20b789de-8007-530c-9f95-147c75e6cb34",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:20b789de-8007-530c-9f95-147c75e6cb34:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>20b789de-8007-530c-9f95-147c75e6cb34</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>a1b2c3d4-e5f6-7890-abcd-ef1234567890</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>b2c3d4e5-f6a7-8901-bcde-f12345678901</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>c3d4e5f6-a7b8-9012-cdef-123456789012</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    VersionDate: "2025-01-09T10:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: ITEM_TYPE_GROUP,
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "30c890ef-9008-631d-0a06-258d86f7dc45",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:30c890ef-9008-631d-0a06-258d86f7dc45:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>30c890ef-9008-631d-0a06-258d86f7dc45</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>d4e5f6a7-b8c9-0123-defa-234567890123</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>e5f6a7b8-c9d0-1234-efab-345678901234</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>f6a7b8c9-d0e1-2345-fabc-456789012345</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    VersionDate: "2025-01-09T11:00:00.000000Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  }
 ];
-
-// Merge base items with NAF rév. 2 data
-const defaultItems = [...baseDefaultItems];
 
 /**
  * Default data for mutualized codes list collection
@@ -223,6 +312,42 @@ async function initializeMutualizedCodesLists() {
   }
 }
 
+/**
+ * Initialize the groups collection with default data (Groups and StudyUnits)
+ * This function ensures all default items exist and are up to date
+ * Runs once per cold start, but always updates default items to ensure correct data
+ */
+async function initializeGroupsCollection() {
+  // Always run to ensure data is up to date (will be optimized by Firestore)
+  // TODO: Re-enable this check once data is stable
+  // if (groupsCollectionInitialized) {
+  //   console.log('Groups collection already initialized this session, skipping');
+  //   return;
+  // }
+
+  try {
+    const groupsCollection = db.collection(GROUPS_COLLECTION);
+
+    console.log(`Ensuring groups collection has all ${defaultGroupsItems.length} default items...`);
+    console.log('Default items IDs:', defaultGroupsItems.map(i => i.Identifier));
+
+    const batch = db.batch();
+
+    // Always set all default items (creates or updates)
+    defaultGroupsItems.forEach(item => {
+      const docRef = groupsCollection.doc(item.Identifier);
+      batch.set(docRef, item);
+      console.log(`Adding to batch: ${item.Identifier} (${item.ItemType === ITEM_TYPE_GROUP ? 'Group' : 'StudyUnit'})`);
+    });
+
+    await batch.commit();
+    console.log(`Successfully committed ${defaultGroupsItems.length} groups/studyUnits to Firestore`);
+    groupsCollectionInitialized = true;
+  } catch (error) {
+    console.error('Error initializing groups collection:', error);
+  }
+}
+
 // Note: Initialization is now handled on-demand when the first request comes in
 // to avoid cold start delays
 
@@ -235,6 +360,11 @@ const GENERIC_TOKEN = 'bauhaus-mock-token';
  * In-memory storage for valid tokens (for dynamically created tokens)
  */
 const validTokens = new Set();
+
+/**
+ * Flags to track initialization state (per cold start)
+ */
+let groupsCollectionInitialized = false;
 
 /**
  * CORS headers configuration
@@ -493,19 +623,49 @@ async function handleQuery(req, res) {
   // Extract query parameters
   const itemTypes = queryBody.itemTypes || queryBody.ItemTypes || [];
 
-  // Initialize default items if needed
-  await initializeDefaultItems();
+  // Determine which collections to query based on itemTypes
+  const groupsItemTypes = [ITEM_TYPE_GROUP, ITEM_TYPE_STUDY_UNIT];
+  const hasGroupsTypes = itemTypes.some(type => groupsItemTypes.includes(type));
+  const hasOtherTypes = itemTypes.some(type => !groupsItemTypes.includes(type));
+  const queryAllTypes = itemTypes.length === 0;
 
-  // Get all items from Firestore
-  let query = db.collection(ITEMS_COLLECTION);
+  let results = [];
 
-  // Filter by ItemType if specified
-  if (itemTypes.length > 0) {
-    query = query.where('ItemType', 'in', itemTypes);
+  // Query groups collection if needed (Groups and StudyUnits)
+  if (hasGroupsTypes || queryAllTypes) {
+    await initializeGroupsCollection();
+
+    let groupsQuery = db.collection(GROUPS_COLLECTION);
+
+    // Filter by ItemType if specified and only groups types
+    if (itemTypes.length > 0) {
+      const groupsTypesToQuery = itemTypes.filter(type => groupsItemTypes.includes(type));
+      if (groupsTypesToQuery.length > 0) {
+        groupsQuery = groupsQuery.where('ItemType', 'in', groupsTypesToQuery);
+      }
+    }
+
+    const groupsSnapshot = await groupsQuery.get();
+    results = [...results, ...groupsSnapshot.docs.map(doc => doc.data())];
   }
 
-  const snapshot = await query.get();
-  const results = snapshot.docs.map(doc => doc.data());
+  // Query items collection if needed (other item types)
+  if (hasOtherTypes || queryAllTypes) {
+    await initializeDefaultItems();
+
+    let itemsQuery = db.collection(ITEMS_COLLECTION);
+
+    // Filter by ItemType if specified and only non-groups types
+    if (itemTypes.length > 0) {
+      const otherTypesToQuery = itemTypes.filter(type => !groupsItemTypes.includes(type));
+      if (otherTypesToQuery.length > 0) {
+        itemsQuery = itemsQuery.where('ItemType', 'in', otherTypesToQuery);
+      }
+    }
+
+    const itemsSnapshot = await itemsQuery.get();
+    results = [...results, ...itemsSnapshot.docs.map(doc => doc.data())];
+  }
 
   // Transform items to match expected response format
   const transformedResults = results.map(item => {
@@ -619,8 +779,12 @@ async function handleItem(req, res) {
   let successCount = 0;
   let errorCount = 0;
 
-  // Initialize default items if needed
+  // Initialize collections if needed
   await initializeDefaultItems();
+  await initializeGroupsCollection();
+
+  // ItemTypes that belong to groups collection
+  const groupsItemTypes = [ITEM_TYPE_GROUP, ITEM_TYPE_STUDY_UNIT];
 
   // Process each item
   for (const item of items) {
@@ -636,9 +800,14 @@ async function handleItem(req, res) {
         continue;
       }
 
+      // Determine which collection to use based on ItemType
+      const collectionName = groupsItemTypes.includes(item.ItemType)
+        ? GROUPS_COLLECTION
+        : ITEMS_COLLECTION;
+
       // Store the item using Identifier as key
       const identifier = item.Identifier;
-      const docRef = db.collection(ITEMS_COLLECTION).doc(identifier);
+      const docRef = db.collection(collectionName).doc(identifier);
       const doc = await docRef.get();
       const isUpdate = doc.exists;
 
@@ -777,31 +946,49 @@ async function handleResetItems(req, res) {
 
   console.log('Resetting items store...');
 
-  // Get current size before clearing
-  const countSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
-  const previousSize = countSnapshot.data().count;
+  // Get current sizes before clearing
+  const itemsCountSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const previousItemsSize = itemsCountSnapshot.data().count;
+
+  const groupsCountSnapshot = await db.collection(GROUPS_COLLECTION).count().get();
+  const previousGroupsSize = groupsCountSnapshot.data().count;
 
   // Clear all items using batch delete
-  const snapshot = await db.collection(ITEMS_COLLECTION).get();
-  const batch = db.batch();
-  snapshot.docs.forEach(doc => {
-    batch.delete(doc.ref);
+  const itemsSnapshot = await db.collection(ITEMS_COLLECTION).get();
+  const itemsBatch = db.batch();
+  itemsSnapshot.docs.forEach(doc => {
+    itemsBatch.delete(doc.ref);
   });
-  await batch.commit();
+  await itemsBatch.commit();
 
-  // Reinitialize with default items
+  // Clear all groups using batch delete
+  const groupsSnapshot = await db.collection(GROUPS_COLLECTION).get();
+  const groupsBatch = db.batch();
+  groupsSnapshot.docs.forEach(doc => {
+    groupsBatch.delete(doc.ref);
+  });
+  await groupsBatch.commit();
+
+  // Reinitialize with default data
   await initializeDefaultItems();
+  await initializeGroupsCollection();
 
-  // Get new count
-  const newCountSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
-  const currentSize = newCountSnapshot.data().count;
+  // Get new counts
+  const newItemsCountSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const currentItemsSize = newItemsCountSnapshot.data().count;
+
+  const newGroupsCountSnapshot = await db.collection(GROUPS_COLLECTION).count().get();
+  const currentGroupsSize = newGroupsCountSnapshot.data().count;
 
   const response = {
     success: true,
-    message: 'Items store has been reset',
-    previousItemCount: previousSize,
-    currentItemCount: currentSize,
-    defaultItemsRestored: defaultItems.length
+    message: 'Items and groups stores have been reset',
+    previousItemCount: previousItemsSize,
+    currentItemCount: currentItemsSize,
+    defaultItemsRestored: defaultItems.length,
+    previousGroupsCount: previousGroupsSize,
+    currentGroupsCount: currentGroupsSize,
+    defaultGroupsRestored: defaultGroupsItems.length
   };
 
   console.log('Items store reset complete:', response);
@@ -846,12 +1033,20 @@ async function handleDdiset(req, res, path) {
 
   console.log(`Retrieving DDI set for: ${agencyId}/${identifier}`);
 
-  // Initialize default items if needed
+  // Initialize collections if needed
   await initializeDefaultItems();
+  await initializeGroupsCollection();
 
   try {
-    // Find the item by identifier
-    const itemDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
+    // First try to find in groups collection (for Groups and StudyUnits)
+    let itemDoc = await db.collection(GROUPS_COLLECTION).doc(identifier).get();
+    let foundInCollection = GROUPS_COLLECTION;
+
+    // If not found in groups, try items collection
+    if (!itemDoc.exists) {
+      itemDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
+      foundInCollection = ITEMS_COLLECTION;
+    }
 
     if (!itemDoc.exists) {
       res.status(404).json({
@@ -862,6 +1057,8 @@ async function handleDdiset(req, res, path) {
       return;
     }
 
+    console.log(`Found item ${identifier} in collection: ${foundInCollection}`);
+
     const item = itemDoc.data();
     const itemType = item.ItemType;
 
@@ -869,7 +1066,7 @@ async function handleDdiset(req, res, path) {
     if (itemType === 'a51e85bb-6259-4488-8df2-f08cb43485f8') {
       // PhysicalInstance
       await handlePhysicalInstanceDdiset(req, res, item, agencyId);
-    } else if (itemType === '4bd6eef6-99df-40e6-9b11-5b8f64e5cb23') {
+    } else if (itemType === ITEM_TYPE_GROUP) {
       // Group
       await handleGroupDdiset(req, res, item, agencyId);
     } else {
@@ -1027,11 +1224,15 @@ async function handleGroupDdiset(req, res, group, agencyId) {
   const groupParsed = xmlParser.parse(group.Item);
   const groupFragment = groupParsed.Fragment?.Group;
 
+  console.log(`Processing Group ${group.Identifier}, XML parsed:`, JSON.stringify(groupFragment ? 'found' : 'not found'));
+
   let studyUnits = [];
 
   if (groupFragment) {
     // Extract StudyUnit references
     let studyUnitRefs = groupFragment['r:StudyUnitReference'];
+
+    console.log(`StudyUnitReferences found:`, JSON.stringify(studyUnitRefs));
 
     if (studyUnitRefs) {
       // Ensure it's an array
@@ -1039,15 +1240,25 @@ async function handleGroupDdiset(req, res, group, agencyId) {
         studyUnitRefs = [studyUnitRefs];
       }
 
-      // Find all StudyUnits
+      console.log(`Processing ${studyUnitRefs.length} StudyUnit references`);
+
+      // Find all StudyUnits in groups collection
       for (const suRef of studyUnitRefs) {
         const suId = suRef['r:ID'];
-        const suDoc = await db.collection(ITEMS_COLLECTION).doc(suId).get();
+        console.log(`Looking for StudyUnit with ID: ${suId}`);
+        const suDoc = await db.collection(GROUPS_COLLECTION).doc(suId).get();
         if (suDoc.exists) {
+          console.log(`Found StudyUnit: ${suId}`);
           studyUnits.push(suDoc.data());
+        } else {
+          console.log(`StudyUnit NOT found in groups collection: ${suId}`);
         }
       }
+    } else {
+      console.log('No StudyUnitReferences found in Group XML');
     }
+  } else {
+    console.log('Group fragment not found in parsed XML');
   }
 
   console.log(`Found ${studyUnits.length} StudyUnits for Group ${group.Identifier}`);

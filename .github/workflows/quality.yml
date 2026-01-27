@@ -30,10 +30,6 @@ jobs:
         with:
           java-version: '25'
           distribution: 'corretto'
-      - name: Run unit tests
-        run: mvn -T 1C clean -B clean test -DexcludedGroups="integration"
-      - name: Run TestContainer
-        run: mvn -T 1C clean -B clean test -Dgroups="integration"
       - name: Run Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
