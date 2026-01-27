@@ -661,11 +661,25 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
+                    <xsl:when test="$simsRubrics//rangeType='RUBRIQUE_SANS_OBJECT'">
+                        <xsl:choose>
+                            <xsl:when test="$rubric-element = 'labelLg1'">
+                                <xsl:value-of select="'Sans objet'"/>
+                            </xsl:when>
+                            <xsl:when test="$rubric-element = 'labelLg2'">
+                                <xsl:value-of select="'Not applicable'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="'type de rubrique à définir'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="'type de rubrique à définir'"/>
                     </xsl:otherwise>
-                </xsl:choose>                
+                </xsl:choose>
             </xsl:when>
+
             <xsl:otherwise>
                 <TODO>TODO</TODO>
             </xsl:otherwise>
