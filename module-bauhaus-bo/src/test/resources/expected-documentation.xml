@@ -2569,11 +2569,11 @@
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.2S.18.2 - Fréquence de collecte des donnéesFréquence de collecte des données</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">Sans objet</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.2S.18.2 - Frequency of data collectionFrequency of data collection</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">Not applicable</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -2583,11 +2583,11 @@
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.2S.18.2 - Fréquence de collecte des donnéesFréquence de collecte des données</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">Sans objet</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.2S.18.2 - Frequency of data collectionFrequency of data collection</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">Not applicable</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
