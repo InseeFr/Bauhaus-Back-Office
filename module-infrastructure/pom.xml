@@ -50,6 +50,14 @@
       <version>1.5.1</version>
     </dependency>
 
+    <!-- Testcontainers Keycloak for E2E tests -->
+    <dependency>
+      <groupId>com.github.dasniko</groupId>
+      <artifactId>testcontainers-keycloak</artifactId>
+      <version>3.5.1</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
   <build>
     <plugins>
