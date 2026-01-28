@@ -29,9 +29,9 @@ class KeycloakServiceE2ETest {
     static void setUp() {
         createRealmWithClient();
         var properties = new KeycloakProperties(
-                new KeycloakProperties.Client(CLIENT_ID, CLIENT_SECRET),
                 new KeycloakProperties.Server(keycloak.getAuthServerUrl()),
-                new KeycloakProperties.Realm(REALM_NAME, "colectica")
+                new KeycloakProperties.RealmConfig(REALM_NAME, CLIENT_ID, CLIENT_SECRET),
+                new KeycloakProperties.RealmConfig("colectica", "colectica-client", "colectica-secret")
         );
         keycloakService = new KeycloakService(properties);
     }
@@ -74,9 +74,9 @@ class KeycloakServiceE2ETest {
     @Test
     void shouldThrowExceptionWithInvalidCredentials() {
         var invalidProperties = new KeycloakProperties(
-                new KeycloakProperties.Client(CLIENT_ID, "wrong-secret"),
                 new KeycloakProperties.Server(keycloak.getAuthServerUrl()),
-                new KeycloakProperties.Realm(REALM_NAME, "colectica")
+                new KeycloakProperties.RealmConfig(REALM_NAME, CLIENT_ID, "wrong-secret"),
+                new KeycloakProperties.RealmConfig("colectica", "colectica-client", "colectica-secret")
         );
         KeycloakService invalidService = new KeycloakService(invalidProperties);
 

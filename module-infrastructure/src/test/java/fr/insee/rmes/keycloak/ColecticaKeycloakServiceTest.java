@@ -23,9 +23,9 @@ class ColecticaKeycloakServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         var properties = new KeycloakProperties(
-                new KeycloakProperties.Client("XXX", "XXX"),
                 new KeycloakProperties.Server("keycloak.test"),
-                new KeycloakProperties.Realm("default-realm", "colectica-realm")
+                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
+                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
         );
         colecticaKeycloakService = new ColecticaKeycloakService(properties);
         colecticaKeycloakService.keycloakClient = testRestTemplate;
@@ -50,16 +50,18 @@ class ColecticaKeycloakServiceTest {
     }
 
     @Test
-    void getRealmName_shouldReturnColecticaRealm() {
-        assertEquals("colectica-realm", colecticaKeycloakService.getRealmName());
+    void getRealmConfig_shouldReturnColecticaRealm() {
+        var realmConfig = colecticaKeycloakService.getRealmConfig();
+        assertEquals("colectica-realm", realmConfig.name());
+        assertEquals("colectica-client", realmConfig.clientId());
     }
 
     @Test
     void shouldThrowMissingKeycloakConfigurationException_whenServerUrlIsNull() {
         var propertiesWithNullServer = new KeycloakProperties(
-                new KeycloakProperties.Client("XXX", "XXX"),
                 null,
-                new KeycloakProperties.Realm("default-realm", "colectica-realm")
+                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
+                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
         );
         ColecticaKeycloakService serviceWithNullServer = new ColecticaKeycloakService(propertiesWithNullServer);
 
