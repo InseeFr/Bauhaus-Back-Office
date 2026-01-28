@@ -49,7 +49,6 @@ public record ColecticaConfiguration(
             String authenticationMode,
             String username,
             String password,
-            String token,
             String defaultAgencyId
     ) {
         public ColecticaInstanceConfiguration {
