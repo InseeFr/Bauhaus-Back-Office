@@ -27,19 +27,21 @@ public abstract class AbstractTokenService implements TokenService {
         this.keycloakProperties = keycloakProperties;
     }
 
-    protected abstract String getRealmName();
+    protected abstract KeycloakProperties.RealmConfig getRealmConfig();
 
     protected String getTokenUrl() {
         if (keycloakProperties == null || keycloakProperties.server() == null) {
             return null;
         }
-        return keycloakProperties.tokenUrl(getRealmName());
+        return keycloakProperties.tokenUrl(getRealmConfig());
     }
 
     @Override
     public String getAccessToken() {
+        KeycloakProperties.RealmConfig realmConfig = getRealmConfig();
         String tokenUrl = getTokenUrl();
-        logger.debug("Requesting access token from Keycloak for realm: {}", getRealmName());
+
+        logger.debug("Requesting access token from Keycloak for realm: {}", realmConfig.name());
 
         if (tokenUrl == null || tokenUrl.isEmpty()) {
             logger.debug("Token URL is null or empty, configuration is missing");
@@ -47,14 +49,14 @@ public abstract class AbstractTokenService implements TokenService {
         }
 
         logger.debug("Token URL: {}", tokenUrl);
-        logger.debug("Client ID: {}", keycloakProperties.client().id());
+        logger.debug("Client ID: {}", realmConfig.clientId());
 
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
-        body.add("client_id", keycloakProperties.client().id());
-        body.add("client_secret", keycloakProperties.client().secret());
+        body.add("client_id", realmConfig.clientId());
+        body.add("client_secret", realmConfig.clientSecret());
 
         HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {

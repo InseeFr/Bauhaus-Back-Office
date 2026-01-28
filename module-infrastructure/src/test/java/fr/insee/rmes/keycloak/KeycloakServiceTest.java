@@ -26,9 +26,9 @@ class KeycloakServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         var properties = new KeycloakProperties(
-                new KeycloakProperties.Client("XXX", "XXX"),
                 new KeycloakProperties.Server("keycloak.test"),
-                new KeycloakProperties.Realm("test-realm", "colectica-realm")
+                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
+                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
         );
         keycloakService = new KeycloakService(properties);
         keycloakService.keycloakClient = testRestTemplate;
@@ -53,19 +53,29 @@ class KeycloakServiceTest {
     }
 
     @Test
-    void getAccessToken_shouldCallKeycloakServer() {
+    void getAccessToken_shouldCallKeycloakServerWithDefaultRealm() {
         keycloakService.getAccessToken();
-        Mockito.verify(testRestTemplate).postForObject(eq("keycloak.test/realms/test-realm/protocol/openid-connect/token"), any(HttpEntity.class), eq(Token.class));
+        Mockito.verify(testRestTemplate).postForObject(
+                eq("keycloak.test/realms/default-realm/protocol/openid-connect/token"),
+                any(HttpEntity.class),
+                eq(Token.class)
+        );
     }
 
+    @Test
+    void getRealmConfig_shouldReturnDefaultRealm() {
+        var realmConfig = keycloakService.getRealmConfig();
+        assertEquals("default-realm", realmConfig.name());
+        assertEquals("default-client", realmConfig.clientId());
+    }
 
 
     @Test
     void shouldThrowMissingKeycloakConfigurationException_whenServerUrlIsNull() {
         var propertiesWithNullServer = new KeycloakProperties(
-                new KeycloakProperties.Client("XXX", "XXX"),
                 null,
-                new KeycloakProperties.Realm("test-realm", "colectica-realm")
+                new KeycloakProperties.RealmConfig("default-realm", "default-client", "default-secret"),
+                new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
         );
         KeycloakService serviceWithNullServer = new KeycloakService(propertiesWithNullServer);
 

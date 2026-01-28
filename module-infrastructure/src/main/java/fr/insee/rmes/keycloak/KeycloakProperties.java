@@ -4,19 +4,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.keycloak")
 public record KeycloakProperties(
-        Client client,
         Server server,
-        Realm realm
+        RealmConfig defaultRealm,
+        RealmConfig colecticaRealm
 ) {
-    public record Client(String id, String secret) {}
     public record Server(String url) {}
-    public record Realm(String defaultValue, String colectica) {}
+    public record RealmConfig(String name, String clientId, String clientSecret) {}
 
-    public String tokenUrl() {
-        return tokenUrl(realm.defaultValue());
-    }
-
-    public String tokenUrl(String realmName) {
-        return server.url() + "/realms/" + realmName + "/protocol/openid-connect/token";
+    public String tokenUrl(RealmConfig realmConfig) {
+        return server.url() + "/realms/" + realmConfig.name() + "/protocol/openid-connect/token";
     }
 }
