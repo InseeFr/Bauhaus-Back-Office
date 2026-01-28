@@ -49,14 +49,14 @@ public abstract class AbstractTokenService implements TokenService {
         }
 
         logger.debug("Token URL: {}", tokenUrl);
-        logger.debug("Client ID: {}", realmConfig.clientId());
+        logger.debug("Client ID: {}", realmConfig.clientid());
 
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
-        body.add("client_id", realmConfig.clientId());
-        body.add("client_secret", realmConfig.clientSecret());
+        body.add("client_id", realmConfig.clientid());
+        body.add("client_secret", realmConfig.clientsecret());
 
         HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {

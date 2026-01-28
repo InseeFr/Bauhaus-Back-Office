@@ -66,7 +66,7 @@ class KeycloakServiceTest {
     void getRealmConfig_shouldReturnDefaultRealm() {
         var realmConfig = keycloakService.getRealmConfig();
         assertEquals("default-realm", realmConfig.name());
-        assertEquals("default-client", realmConfig.clientId());
+        assertEquals("default-client", realmConfig.clientid());
     }
 
 
