@@ -53,7 +53,7 @@ class ColecticaKeycloakServiceTest {
     void getRealmConfig_shouldReturnColecticaRealm() {
         var realmConfig = colecticaKeycloakService.getRealmConfig();
         assertEquals("colectica-realm", realmConfig.name());
-        assertEquals("colectica-client", realmConfig.clientId());
+        assertEquals("colectica-client", realmConfig.clientid());
     }
 
     @Test

@@ -15,6 +15,6 @@ public class KeycloakService extends AbstractTokenService {
 
     @Override
     protected KeycloakProperties.RealmConfig getRealmConfig() {
-        return keycloakProperties.defaultRealm();
+        return keycloakProperties.defaultrealm();
     }
 }

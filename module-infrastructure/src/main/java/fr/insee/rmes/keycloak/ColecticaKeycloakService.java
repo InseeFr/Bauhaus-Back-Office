@@ -13,6 +13,6 @@ public class ColecticaKeycloakService extends AbstractTokenService {
 
     @Override
     protected KeycloakProperties.RealmConfig getRealmConfig() {
-        return keycloakProperties.colecticaRealm();
+        return keycloakProperties.colecticarealm();
     }
 }
