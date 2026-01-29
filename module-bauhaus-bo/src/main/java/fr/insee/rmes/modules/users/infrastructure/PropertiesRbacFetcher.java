@@ -87,7 +87,7 @@ public class PropertiesRbacFetcher implements RbacFetcher {
                                 );
                     }
                 }
-            } catch (UnknownRoleException exception){}
+            } catch (UnknownRoleException _){}
 
         }
 

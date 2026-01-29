@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ObjectType;

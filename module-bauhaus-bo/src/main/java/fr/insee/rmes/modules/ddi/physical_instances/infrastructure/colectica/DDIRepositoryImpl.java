@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -40,10 +39,14 @@ import static javax.xml.XMLConstants.*;
 public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
 
+    private static final String MUTUALIZED_CODE_LIST_UUID = "dc337820-af3a-4c0b-82f9-cf02535cde83";
+    private static final String PHYSICAL_INSTANCE_TYPE_UUID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+    private static final String DATA_RELATIONSHIP_TYPE_UUID = "f39ff278-8500-45fe-a850-3906da2d242b";
+    private static final String BAUHAUS_API = "bauhaus-api";
+
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaConfiguration colecticaConfiguration;
-    private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private final ColecticaAuthenticator authenticator;
@@ -52,7 +55,6 @@ public class DDIRepositoryImpl implements DDIRepository {
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-            ObjectMapper objectMapper,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaConfiguration colecticaConfiguration,
@@ -60,7 +62,6 @@ public class DDIRepositoryImpl implements DDIRepository {
             ) {
         this.restTemplate = restTemplate;
         this.instanceConfiguration = instanceConfiguration;
-        this.objectMapper = objectMapper;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
@@ -329,7 +330,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     false, // isPublished
                     false, // isDeprecated
                     false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // itemFormat
+                    MUTUALIZED_CODE_LIST_UUID // itemFormat
                 );
 
                 items.add(ddi3Item);
@@ -349,11 +350,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     private String determineItemType(Element fragmentElement) {
         // Check for PhysicalInstance
         if (fragmentElement.getElementsByTagNameNS("ddi:physicalinstance:3_3", "PhysicalInstance").getLength() > 0) {
-            return "a51e85bb-6259-4488-8df2-f08cb43485f8"; // PhysicalInstance type UUID
+            return PHYSICAL_INSTANCE_TYPE_UUID; // PhysicalInstance type UUID
         }
         // Check for DataRelationship
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "DataRelationship").getLength() > 0) {
-            return "f39ff278-8500-45fe-a850-3906da2d242b"; // DataRelationship type UUID
+            return DATA_RELATIONSHIP_TYPE_UUID; // DataRelationship type UUID
         }
         // Check for Variable
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
@@ -716,8 +717,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
-        logger.info("Updating physical instance {}/{} with PATCH (preserving variables)", agencyId, id);
-
         // First, fetch the current instance to get all necessary information including variables
         Ddi4Response currentInstance = getPhysicalInstance(agencyId, id);
 
@@ -794,9 +793,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         // Use updateFullPhysicalInstance to save everything including variables
         updateFullPhysicalInstance(agencyId, id, updatedResponse);
 
-        logger.info("Successfully updated physical instance {}/{} preserving {} variables",
-                agencyId, id,
-                currentInstance.variable() != null ? currentInstance.variable().size() : 0);
     }
 
     @Override
@@ -888,31 +884,31 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             // Create Colectica items
             ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
-                    "a51e85bb-6259-4488-8df2-f08cb43485f8", // PhysicalInstance type UUID
+                    PHYSICAL_INSTANCE_TYPE_UUID, // PhysicalInstance type UUID
                     agencyId,
                     version,
                     physicalInstanceId,
                     physicalInstanceXml,
                     versionDate,
-                    "bauhaus-api",
+                    BAUHAUS_API,
                     false, // isPublished
                     false, // isDeprecated
                     false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
+                    MUTUALIZED_CODE_LIST_UUID // DDI format UUID
             );
 
             ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
-                    "f39ff278-8500-45fe-a850-3906da2d242b", // DataRelationship type UUID
+                    DATA_RELATIONSHIP_TYPE_UUID, // DataRelationship type UUID
                     agencyId,
                     version,
                     dataRelationshipId,
                     dataRelationshipXml,
                     versionDate,
-                    "bauhaus-api",
+                    BAUHAUS_API,
                     false, // isPublished
                     false, // isDeprecated
                     false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
+                    MUTUALIZED_CODE_LIST_UUID // DDI format UUID
             );
 
             // Create request with both items

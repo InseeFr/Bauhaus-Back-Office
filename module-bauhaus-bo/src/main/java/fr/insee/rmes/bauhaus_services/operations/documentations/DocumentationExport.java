@@ -293,7 +293,7 @@ public class DocumentationExport {
 		String simsXML=XMLUtils.produceResponse(documentationsUtils.getFullSimsForXml(id), "application/xml");
 		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
 
-		neededCodeLists = neededCodeLists.stream().distinct().collect(Collectors.toList());
+		neededCodeLists = neededCodeLists.stream().distinct().toList();
 
 		String codeListsXML="";
 		codeListsXML = codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
@@ -336,7 +336,7 @@ public class DocumentationExport {
 		List<String> validStamps = stamps.stream()
 				.filter(stamp -> stamp != null && !stamp.isBlank())
 				.distinct()
-				.collect(Collectors.toList());
+				.toList();
 
 		if (validStamps.isEmpty()) {
 			logger.debug("No valid stamps to transform");

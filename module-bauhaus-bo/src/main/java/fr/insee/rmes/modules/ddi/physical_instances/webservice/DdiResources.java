@@ -274,7 +274,7 @@ public class DdiResources {
             } else {
                 List<String> errors = validationMessages.stream()
                         .map(ValidationMessage::getMessage)
-                        .collect(Collectors.toList());
+                        .toList();
                 return ResponseEntity.badRequest()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(ValidationResponse.failure(errors));

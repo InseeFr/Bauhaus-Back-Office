@@ -147,7 +147,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
             """;
 
         var result = repositoryPublication.getResponseAsArray(query);
-        assertThat(result.length()).isGreaterThan(0);
+        assertThat(result).hasSizeGreaterThan(0);
     }
 
     @Test
@@ -171,7 +171,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         var result = repositoryPublication.getResponseAsArray(query);
 
         // S.3.7 should be published with the organization reference and label
-        assertThat(result.length()).isGreaterThan(0);
+        assertThat(result).hasSizeGreaterThan(0);
 
         // The organization URI should be transformed to publication URI
         String organisationUri = result.getJSONObject(0).getString("organisation");
@@ -197,7 +197,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
             """;
 
         var resultGeneral = repositoryPublication.getResponseAsArray(queryGeneralGraph);
-        assertThat(resultGeneral.length()).isGreaterThan(0);
+        assertThat(resultGeneral).hasSizeGreaterThan(0);
 
         // Verify data is published in the INSEE organizations graph
         String queryInseeGraph = """
@@ -209,7 +209,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
             """;
 
         var resultInsee = repositoryPublication.getResponseAsArray(queryInseeGraph);
-        assertThat(resultInsee.length()).isGreaterThan(0);
+        assertThat(resultInsee).hasSizeGreaterThan(0);
         assertThat(resultInsee.getJSONObject(0).getString("identifiant")).isEqualTo("DG75-F001");
     }
 }
