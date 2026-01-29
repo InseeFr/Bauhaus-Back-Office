@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -35,9 +34,6 @@ class DDIRepositoryImplTest {
     private ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
 
     @Mock
-    private ObjectMapper objectMapper;
-
-    @Mock
     private DDI3toDDI4ConverterService ddi3ToDdi4Converter;
 
     @Mock
@@ -65,7 +61,7 @@ class DDIRepositoryImplTest {
             return function.apply(TEST_TOKEN);
         });
 
-        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, objectMapper, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, authenticator);
+        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, authenticator);
     }
 
     @Test

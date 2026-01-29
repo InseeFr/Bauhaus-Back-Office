@@ -224,11 +224,11 @@ public class StructureUtils extends RdfService {
     private void checkUnicityForStructure(Structure structure) throws RmesException {
         List<ComponentDefinition> componentsWithoutId = structure.getComponentDefinitions().stream().filter((ComponentDefinition cd) -> 
             cd.getComponent().getId() == null
-        ).collect(Collectors.toList());
+        ).toList();
 
         if(componentsWithoutId.isEmpty()){
             String[] ids = structure.getComponentDefinitions().stream().map(cd -> cd.getComponent().getId())
-            		.map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
+            		.map(Object::toString).toList().toArray(new String[0]);
             boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
             if(structureWithSameComponents){
                 throw new RmesBadRequestException(ErrorCodes.STRUCTURE_UNICITY,

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +16,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 

@@ -82,7 +82,7 @@ public class PropertiesLogger implements ApplicationListener<ApplicationEnvironm
         if(property!=null){
             try{
                 return Optional.of(PropertySelectorEnum.valueOf(property));
-            }catch (IllegalArgumentException ie){
+            }catch (IllegalArgumentException _){
                 trace(()->"Impossible de convertir "+property+" en une constante de PropertySelectorEnum. Le PropertySelector par défaut sera utilisé.");
             }
         }

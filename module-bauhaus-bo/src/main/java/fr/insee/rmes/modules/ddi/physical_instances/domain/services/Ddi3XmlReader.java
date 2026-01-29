@@ -19,6 +19,9 @@ public class Ddi3XmlReader {
     public static final String AGENCY = "Agency";
     public static final String ID = "ID";
     public static final String VERSION = "Version";
+    private static final String STRING_ELEMENT = "String";
+    private static final String XML_LANG_ATTRIBUTE = "xml:lang";
+    private static final String TYPE_OF_OBJECT = "TypeOfObject";
     private final XmlHelper xmlHelper;
 
     public Ddi3XmlReader() {
@@ -139,10 +142,10 @@ public class Ddi3XmlReader {
         Element titleElement = xmlHelper.getChildElement(citationElement, "Title");
         if (titleElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(titleElement, "String");
+        Element stringElement = xmlHelper.getChildElement(titleElement, STRING_ELEMENT);
         if (stringElement == null) return null;
 
-        String lang = xmlHelper.getAttribute(stringElement, "xml:lang");
+        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
         String text = stringElement.getTextContent();
 
         return new Citation(new Title(new StringValue(lang, text)));
@@ -156,7 +159,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(refElement, AGENCY),
             xmlHelper.getElementText(refElement, ID),
             xmlHelper.getElementText(refElement, VERSION),
-            xmlHelper.getElementText(refElement, "TypeOfObject")
+            xmlHelper.getElementText(refElement, TYPE_OF_OBJECT)
         );
     }
 
@@ -171,7 +174,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(refElement, AGENCY),
             xmlHelper.getElementText(refElement, ID),
             xmlHelper.getElementText(refElement, VERSION),
-            xmlHelper.getElementText(refElement, "TypeOfObject")
+            xmlHelper.getElementText(refElement, TYPE_OF_OBJECT)
         );
 
         return new BasedOnObject(basedOnReference);
@@ -181,10 +184,10 @@ public class Ddi3XmlReader {
         Element nameElement = xmlHelper.getChildElement(parent, "DataRelationshipName");
         if (nameElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(nameElement, "String");
+        Element stringElement = xmlHelper.getChildElement(nameElement, STRING_ELEMENT);
         if (stringElement == null) return null;
 
-        String lang = xmlHelper.getAttribute(stringElement, "xml:lang");
+        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
         String text = stringElement.getTextContent();
 
         return new DataRelationshipName(new StringValue(lang, text));
@@ -194,10 +197,10 @@ public class Ddi3XmlReader {
         Element nameElement = xmlHelper.getChildElement(parent, "VariableName");
         if (nameElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(nameElement, "String");
+        Element stringElement = xmlHelper.getChildElement(nameElement, STRING_ELEMENT);
         if (stringElement == null) return null;
 
-        String lang = xmlHelper.getAttribute(stringElement, "xml:lang");
+        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
         String text = stringElement.getTextContent();
 
         return new VariableName(new StringValue(lang, text));
@@ -210,7 +213,7 @@ public class Ddi3XmlReader {
         Element contentElement = xmlHelper.getChildElement(labelElement, "Content");
         if (contentElement == null) return null;
 
-        String lang = xmlHelper.getAttribute(contentElement, "xml:lang");
+        String lang = xmlHelper.getAttribute(contentElement, XML_LANG_ATTRIBUTE);
         String text = contentElement.getTextContent();
 
         return new Label(new Content(lang, text));
@@ -223,7 +226,7 @@ public class Ddi3XmlReader {
         Element contentElement = xmlHelper.getChildElement(descElement, "Content");
         if (contentElement == null) return null;
 
-        String lang = xmlHelper.getAttribute(contentElement, "xml:lang");
+        String lang = xmlHelper.getAttribute(contentElement, XML_LANG_ATTRIBUTE);
         String text = contentElement.getTextContent();
 
         return new Description(new Content(lang, text));
@@ -248,10 +251,10 @@ public class Ddi3XmlReader {
         Element nameElement = xmlHelper.getChildElement(parent, "LogicalRecordName");
         if (nameElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(nameElement, "String");
+        Element stringElement = xmlHelper.getChildElement(nameElement, STRING_ELEMENT);
         if (stringElement == null) return null;
 
-        String lang = xmlHelper.getAttribute(stringElement, "xml:lang");
+        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
         String text = stringElement.getTextContent();
 
         return new LogicalRecordName(new StringValue(lang, text));
@@ -271,7 +274,7 @@ public class Ddi3XmlReader {
                 xmlHelper.getElementText(refElement, AGENCY),
                 xmlHelper.getElementText(refElement, ID),
                 xmlHelper.getElementText(refElement, VERSION),
-                xmlHelper.getElementText(refElement, "TypeOfObject")
+                xmlHelper.getElementText(refElement, TYPE_OF_OBJECT)
             ));
         }
 
@@ -347,7 +350,7 @@ public class Ddi3XmlReader {
                 xmlHelper.getElementText(refElement, AGENCY),
                 xmlHelper.getElementText(refElement, ID),
                 xmlHelper.getElementText(refElement, VERSION),
-                xmlHelper.getElementText(refElement, "TypeOfObject")
+                xmlHelper.getElementText(refElement, TYPE_OF_OBJECT)
             );
         }
 
@@ -369,7 +372,7 @@ public class Ddi3XmlReader {
         if (minLengthStr != null && !minLengthStr.isEmpty()) {
             try {
                 minLength = Integer.parseInt(minLengthStr);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 // Ignore invalid numbers
             }
         }
@@ -377,7 +380,7 @@ public class Ddi3XmlReader {
         if (maxLengthStr != null && !maxLengthStr.isEmpty()) {
             try {
                 maxLength = Integer.parseInt(maxLengthStr);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 // Ignore invalid numbers
             }
         }
@@ -418,7 +421,7 @@ public class Ddi3XmlReader {
                     xmlHelper.getElementText(catRefElement, AGENCY),
                     xmlHelper.getElementText(catRefElement, ID),
                     xmlHelper.getElementText(catRefElement, VERSION),
-                    xmlHelper.getElementText(catRefElement, "TypeOfObject")
+                    xmlHelper.getElementText(catRefElement, TYPE_OF_OBJECT)
                 );
             }
 

@@ -4,10 +4,15 @@ import fr.insee.rmes.keycloak.TokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -69,40 +74,25 @@ class TokenColecticaAuthenticatorTest {
         assertEquals("API call failed", exception.getMessage());
     }
 
-    @Test
-    void shouldReturnResultFromApiCall() {
-        when(tokenService.getAccessToken()).thenReturn(KEYCLOAK_TOKEN);
+    record TestObject(String name, int value) {}
 
-        Integer result = authenticator.executeWithAuth(token -> 42);
-
-        assertEquals(42, result);
+    static Stream<Arguments> returnTypeTestCases() {
+        return Stream.of(
+            Arguments.of("Integer return", (Function<String, Object>) token -> 42, 42),
+            Arguments.of("String return", (Function<String, Object>) token -> "string result", "string result"),
+            Arguments.of("Null return", (Function<String, Object>) token -> null, null),
+            Arguments.of("Boolean return", (Function<String, Object>) token -> true, true),
+            Arguments.of("Object return", (Function<String, Object>) token -> new TestObject("test", 42), new TestObject("test", 42))
+        );
     }
 
-    @Test
-    void shouldHandleNullReturnFromApiCall() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("returnTypeTestCases")
+    void shouldHandleDifferentReturnTypes(String testName, Function<String, Object> apiCall, Object expectedResult) {
         when(tokenService.getAccessToken()).thenReturn(KEYCLOAK_TOKEN);
 
-        String result = authenticator.executeWithAuth(token -> null);
+        Object result = authenticator.executeWithAuth(apiCall);
 
-        assertNull(result);
-    }
-
-    @Test
-    void shouldWorkWithDifferentReturnTypes() {
-        when(tokenService.getAccessToken()).thenReturn(KEYCLOAK_TOKEN);
-
-        String stringResult = authenticator.executeWithAuth(token -> "string result");
-        assertEquals("string result", stringResult);
-
-        Integer intResult = authenticator.executeWithAuth(token -> 123);
-        assertEquals(123, intResult);
-
-        Boolean boolResult = authenticator.executeWithAuth(token -> true);
-        assertTrue(boolResult);
-
-        record TestObject(String name, int value) {}
-        TestObject objectResult = authenticator.executeWithAuth(token -> new TestObject("test", 42));
-        assertEquals("test", objectResult.name());
-        assertEquals(42, objectResult.value());
+        assertEquals(expectedResult, result);
     }
 }
