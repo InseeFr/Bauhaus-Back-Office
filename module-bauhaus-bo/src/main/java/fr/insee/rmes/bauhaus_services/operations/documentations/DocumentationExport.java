@@ -37,7 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static fr.insee.rmes.Constants.GOAL_COMITE_LABEL;
 import static fr.insee.rmes.Constants.GOAL_RMES;

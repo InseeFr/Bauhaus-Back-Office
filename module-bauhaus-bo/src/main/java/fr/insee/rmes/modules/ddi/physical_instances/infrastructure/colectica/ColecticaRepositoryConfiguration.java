@@ -1,13 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestTemplate;
 
 
