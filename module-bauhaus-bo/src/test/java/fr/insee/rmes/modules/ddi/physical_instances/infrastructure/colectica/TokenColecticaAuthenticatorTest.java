@@ -65,11 +65,9 @@ class TokenColecticaAuthenticatorTest {
     void shouldPropagateExceptionFromApiCall() {
         when(tokenService.getAccessToken()).thenReturn(KEYCLOAK_TOKEN);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            authenticator.executeWithAuth(token -> {
-                throw new RuntimeException("API call failed");
-            });
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authenticator.executeWithAuth(_ -> {
+            throw new RuntimeException("API call failed");
+        }));
 
         assertEquals("API call failed", exception.getMessage());
     }
@@ -78,11 +76,11 @@ class TokenColecticaAuthenticatorTest {
 
     static Stream<Arguments> returnTypeTestCases() {
         return Stream.of(
-            Arguments.of("Integer return", (Function<String, Object>) token -> 42, 42),
-            Arguments.of("String return", (Function<String, Object>) token -> "string result", "string result"),
-            Arguments.of("Null return", (Function<String, Object>) token -> null, null),
-            Arguments.of("Boolean return", (Function<String, Object>) token -> true, true),
-            Arguments.of("Object return", (Function<String, Object>) token -> new TestObject("test", 42), new TestObject("test", 42))
+            Arguments.of("Integer return", (Function<String, Object>) _ -> 42, 42),
+            Arguments.of("String return", (Function<String, Object>) _ -> "string result", "string result"),
+            Arguments.of("Null return", (Function<String, Object>) _ -> null, null),
+            Arguments.of("Boolean return", (Function<String, Object>) _ -> true, true),
+            Arguments.of("Object return", (Function<String, Object>) _ -> new TestObject("test", 42), new TestObject("test", 42))
         );
     }
 

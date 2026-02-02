@@ -148,7 +148,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionConceptsQuery("c1000"));
 
         // Then
-        assertTrue(result.length() > 0, "Should return concepts from the collection");
+        assertTrue(!result.isEmpty(), "Should return concepts from the collection");
 
         // Verify concept c1 which exists in both graphs
         boolean foundC1 = false;

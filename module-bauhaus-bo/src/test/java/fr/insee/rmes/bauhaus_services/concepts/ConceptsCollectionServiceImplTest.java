@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
-import fr.insee.rmes.Stubber;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.model.concepts.CollectionForExport;
@@ -18,8 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConceptsCollectionServiceImplTest {

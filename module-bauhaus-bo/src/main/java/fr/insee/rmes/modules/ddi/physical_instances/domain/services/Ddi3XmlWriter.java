@@ -490,7 +490,7 @@ public class Ddi3XmlWriter {
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
                     .findFirst()
-                    .orElse(ddi3Response.items().get(0));
+                    .orElse(ddi3Response.items().getFirst());
 
             typeOfObject = topLevelReference.typeOfObject();
         } else {
@@ -498,7 +498,7 @@ public class Ddi3XmlWriter {
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
                     .findFirst()
-                    .orElse(ddi3Response.items().get(0));
+                    .orElse(ddi3Response.items().getFirst());
 
             // Determine TypeOfObject from itemType
             typeOfObject = getTypeOfObjectFromItemType(topLevelItem.itemType());

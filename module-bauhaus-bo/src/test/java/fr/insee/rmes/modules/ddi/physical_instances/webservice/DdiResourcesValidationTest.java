@@ -98,7 +98,7 @@ class DdiResourcesValidationTest {
 
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
+                (mock, _) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -133,7 +133,7 @@ class DdiResourcesValidationTest {
 
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
+                (mock, _) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -161,7 +161,7 @@ class DdiResourcesValidationTest {
 
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
+                (mock, _) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -173,7 +173,7 @@ class DdiResourcesValidationTest {
             assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
             assertNotNull(result.getBody());
             assertFalse(result.getBody().valid());
-            assertTrue(result.getBody().errors().size() > 0);
+            assertTrue(!result.getBody().errors().isEmpty());
         }
     }
 
@@ -189,7 +189,7 @@ class DdiResourcesValidationTest {
 
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
+                (mock, _) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -223,7 +223,7 @@ class DdiResourcesValidationTest {
 
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
+                (mock, _) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
