@@ -2680,25 +2680,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.10I.18.10 - Plan de sondagePlan de sondage</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.10 - Plan de sondage</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.10I.18.10 - Sampling methodSampling method</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.10I.18.10 - Plan de sondagePlan de sondage</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.10I.18.10 - Sampling methodSampling method</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.10 - Sampling method</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2708,25 +2694,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.11I.18.11 - Taille de l'échantillonTaille de l'échantillon</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.11 - Taille de l'échantillon</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.11I.18.11 - Sample sizeSample size</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.11I.18.11 - Taille de l'échantillonTaille de l'échantillon</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.11I.18.11 - Sample sizeSample size</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.11 - Sample size</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2736,25 +2708,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.12I.18.12 - Documents de collecteDocuments de collecte</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.12 - Documents de collecte</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.12I.18.12 - Data collection documentsData collection documents</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.12I.18.12 - Documents de collecteDocuments de collecte</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.12I.18.12 - Data collection documentsData collection documents</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.12 - Data collection documents</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
