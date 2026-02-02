@@ -50,10 +50,16 @@
             simsv2fr:S.1.3      "Internal contact info - should not be published"@fr ;
             sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
 
-    # S.3.7 with organization reference - should be published
+    # S.1.2 with organization reference - should be published
+    <http://bauhaus/qualite/attribut/9999/S.1.2>
+            a                   sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.2      <http://bauhaus/organisations/insee/DG75-F001> ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
+
+    # S.3.7 with geography reference - should be published
     <http://bauhaus/qualite/attribut/9999/S.3.7>
             a                   sdmx-mm:ReportedAttribute ;
-            simsv2fr:S.3.7      <http://bauhaus/organisations/insee/DG75-F001> ;
+            simsv2fr:S.3.7      <http://bauhaus/qualite/territoire/franceHorsMayotte> ;
             sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9999> .
 }
 
@@ -89,6 +95,18 @@
             rdfs:label          "Second document test"@fr ;
             dc:language         "fr" ;
             schema:url          <http://gestion.files/second-document.pdf> .
+}
+
+# Graph for geographies (territories)
+<http://rdf.insee.fr/graphes/qualite/territoires> {
+    <http://bauhaus/qualite/territoire/franceHorsMayotte>
+            a       <http://rdf.insee.fr/def/geo#TerritoireStatistique> ;
+            <http://www.opengis.net/ont/geosparql#difference>
+                    "Mayotte" ;
+            <http://www.opengis.net/ont/geosparql#union>
+                    <http://bauhaus/geo/territoireFrancais/territoireDeLaRepubliqueFrancaise> ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "France hors Mayotte"@fr .
 }
 
 # Graph for operations (target of SIMS)
