@@ -2722,25 +2722,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.19S.19 - CommentaireCommentaire</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.19 - Commentaire</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.19S.19 - CommentComment</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.19S.19 - CommentaireCommentaire</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.19S.19 - CommentComment</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.19 - Comment</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2750,25 +2736,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.20I.20 - Voir aussiVoir aussi</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.20 - Voir aussi</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.20I.20 - See AlsoSee Also</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.20I.20 - Voir aussiVoir aussi</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.20I.20 - See AlsoSee Also</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.20 - See Also</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
