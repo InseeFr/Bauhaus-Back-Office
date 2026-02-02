@@ -459,7 +459,7 @@
                 <xsl:variable name="rubric-element" select="substring-after($address-complement,'/')"/>
                 <xsl:choose>
                     <xsl:when test="not($simsRubrics//*)"/>
-                    <xsl:when test="$simsRubrics//rangeType='RICH_TEXT'">
+                    <xsl:when test="$simsRubrics/rangeType='RICH_TEXT'">
                         <xsl:call-template name="rich-text">
                             <xsl:with-param name="text">
                                 <xsl:value-of  select="$simsRubrics//*[local-name()=$rubric-element]"/>
@@ -589,7 +589,7 @@
                             <text:p text:style-name="{$style}"><xsl:value-of select="tokenize(url/text(),'/')[last()]"/></text:p>
                         </xsl:for-each>
                     </xsl:when>
-                    <xsl:when test="$simsRubrics//rangeType='TEXT' or $simsRubrics//rangeType='GEOGRAPHY'">
+                    <xsl:when test="$simsRubrics/rangeType='TEXT' or $simsRubrics/rangeType='GEOGRAPHY'">
                         <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$rubric-element]"/>
                         <xsl:choose>
                             <xsl:when test="starts-with($original-text,'&lt;p&gt;')">
@@ -600,7 +600,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
-                    <xsl:when test="$simsRubrics//rangeType='DATE'">
+                    <xsl:when test="$simsRubrics/rangeType='DATE'">
                         <xsl:variable name="date" select="$simsRubrics//value/value"/>
                         <xsl:choose>
                             <xsl:when test="$rubric-element = 'labelLg1'">
@@ -611,7 +611,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
-                    <xsl:when test="$simsRubrics//rangeType='ORGANIZATION'">
+                    <xsl:when test="$simsRubrics/rangeType='ORGANIZATION'">
                         <xsl:variable name="organisation" select="$simsRubrics//value/value"/>
                         <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$rubric-element]"/>
                         <xsl:variable name="stamp" select="$organizations//item[id=$organisation]/identifier"/>
@@ -635,7 +635,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
-                    <xsl:when test="$simsRubrics//rangeType='CODE_LIST'">
+                    <xsl:when test="$simsRubrics/rangeType='CODE_LIST'">
                         <xsl:variable name="codeList-name" select="$simsRubrics//codeList"/>
                         <xsl:variable name="code-value" select="$simsRubrics//value[not(value)]"/>
                         <xsl:choose>
@@ -661,7 +661,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
-                    <xsl:when test="$simsRubrics//rangeType='RUBRIQUE_SANS_OBJECT'">
+                    <xsl:when test="$simsRubrics/rangeType='RUBRIQUE_SANS_OBJECT'">
                         <xsl:choose>
                             <xsl:when test="$rubric-element = 'labelLg1'">
                                 <xsl:value-of select="'Sans objet'"/>
