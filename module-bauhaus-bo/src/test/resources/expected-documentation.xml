@@ -2624,25 +2624,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.6.1S.18.6.1 - Correction des variations saisonnièresCorrection des variations saisonnières</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.6.1 - Correction des variations saisonnières</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.6.1S.18.6.1 - Seasonal adjustmentSeasonal adjustment</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.6.1S.18.6.1 - Correction des variations saisonnièresCorrection des variations saisonnières</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.6.1S.18.6.1 - Seasonal adjustmentSeasonal adjustment</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.18.6.1 - Seasonal adjustment</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2652,11 +2638,25 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.7I.18.7 - Période de collectePériode de collecte</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.7 - Période de collecte</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.7I.18.7 - Data collection periodData collection period</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.7 - Data collection period</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                    </table:table-cell>
+                </table:table-row>
+            </table:table>
+             <table:table>
+                <table:table-column/>
+                <table:table-column/>
+                <table:table-row>
+                    <table:table-cell table:style-name="framedCell">
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.8 - Mode de collecte</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                    </table:table-cell>
+                    <table:table-cell table:style-name="framedCell">
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.8 - Collection mode</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2666,67 +2666,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.7I.18.7 - Période de collectePériode de collecte</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.9 - Unité(s) enquêtée(s)</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.7I.18.7 - Data collection periodData collection period</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.8I.18.8 - Mode de collecteMode de collecte</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.8I.18.8 - Collection modeCollection mode</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.8I.18.8 - Mode de collecteMode de collecte</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.8I.18.8 - Collection modeCollection mode</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.9I.18.9 - Unité(s) enquêtée(s)Unité(s) enquêtée(s)</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.9I.18.9 - Survey unitSurvey unit</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.9I.18.9 - Unité(s) enquêtée(s)Unité(s) enquêtée(s)</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.9I.18.9 - Survey unitSurvey unit</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.18.9 - Survey unit</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
