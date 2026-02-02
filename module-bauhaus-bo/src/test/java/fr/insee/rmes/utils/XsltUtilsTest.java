@@ -159,10 +159,10 @@ class XsltUtilsTest {
             InputStream expectedXmlStream = getClass().getResourceAsStream("/expected-documentation.xml");
             if (expectedXmlStream != null) {
                 String expectedXml = new String(expectedXmlStream.readAllBytes(), StandardCharsets.UTF_8);
-                Diff diff = DiffBuilder.compare(expectedXml)
-                        .withTest(xmlOutput)
-                        .ignoreWhitespace()
-                        .normalizeWhitespace()
+                String normalizedExpected = expectedXml.replaceAll(">\\s+<", "><").trim();
+                String normalizedOutput = xmlOutput.replaceAll(">\\s+<", "><").trim();
+                Diff diff = DiffBuilder.compare(normalizedExpected)
+                        .withTest(normalizedOutput)
                         .checkForSimilar()
                         .build();
                 assertFalse(diff.hasDifferences(), diff.toString());
