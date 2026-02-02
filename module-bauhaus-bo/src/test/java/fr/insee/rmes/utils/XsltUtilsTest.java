@@ -12,6 +12,9 @@ import java.nio.file.*;
 import java.nio.file.FileSystem;
 import java.util.*;
 
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.diff.Diff;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class XsltUtilsTest {
@@ -156,10 +159,13 @@ class XsltUtilsTest {
             InputStream expectedXmlStream = getClass().getResourceAsStream("/expected-documentation.xml");
             if (expectedXmlStream != null) {
                 String expectedXml = new String(expectedXmlStream.readAllBytes(), StandardCharsets.UTF_8);
-                // Normaliser les deux chaînes en supprimant sauts de ligne, tabulations et espaces multiples
-                String normalizedExpected = expectedXml.replaceAll("\\s+", " ").trim();
-                String normalizedOutput = xmlOutput.replaceAll("\\s+", " ").trim();
-                assertEquals(normalizedExpected, normalizedOutput);
+                Diff diff = DiffBuilder.compare(expectedXml)
+                        .withTest(xmlOutput)
+                        .ignoreWhitespace()
+                        .normalizeWhitespace()
+                        .checkForSimilar()
+                        .build();
+                assertFalse(diff.hasDifferences(), diff.toString());
             }
 
             Files.deleteIfExists(outputFile.toPath());
