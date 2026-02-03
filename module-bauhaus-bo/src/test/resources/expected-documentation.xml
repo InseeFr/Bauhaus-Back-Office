@@ -1,231 +1,114 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<office:document-content xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
-                         xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
-                         xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
-                         xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
-                         xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-                         xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
-                         office:version="1.2">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" office:version="1.2">
     <office:automatic-styles>
-        <style:style style:name="Tableau3.A" style:family="table-column">
+        <style:style style:family="table-column" style:name="Tableau3.A">
             <style:table-column-properties style:column-width="8.0cm"/>
         </style:style>
-        <style:style style:name="Tableau3.B" style:family="table-column">
+        <style:style style:family="table-column" style:name="Tableau3.B">
             <style:table-column-properties style:column-width="0.5cm"/>
         </style:style>
-        <style:style style:name="framedCell" style:family="table-cell">
-            <style:table-cell-properties fo:wrap-option="wrap"
-                                         style:shrink-to-fit="false"
-                                         style:vertical-align="top"
-                                         fo:border="2pt solid #234ca5"
-                                         fo:padding="0cm"/>
+        <style:style style:family="table-cell" style:name="framedCell">
+            <style:table-cell-properties fo:border="2pt solid #234ca5" fo:padding="0cm" fo:wrap-option="wrap" style:shrink-to-fit="false" style:vertical-align="top"/>
         </style:style>
-        <style:style style:name="P1"
-                     style:parent-style-name="Standard"
-                     style:family="paragraph">
-            <style:paragraph-properties fo:text-align="left"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"/>
-            <style:text-properties fo:font-size="12pt" fo:font-weight="normal" fo:color="#000000"/>
+        <style:style style:family="paragraph" style:name="P1" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:margin-top="1cm" fo:text-align="left" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#000000" fo:font-size="12pt" fo:font-weight="normal"/>
         </style:style>
-        <style:style style:name="HeaderFr"
-                     style:family="paragraph"
-                     style:class="chapter">
-            <style:paragraph-properties fo:text-align="center"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"
-                                        fo:background-color="#012a83"/>
-            <style:text-properties fo:font-size="20pt" fo:font-weight="bold" fo:color="#ffffff"/>
+        <style:style style:class="chapter" style:family="paragraph" style:name="HeaderFr">
+            <style:paragraph-properties fo:background-color="#012a83" fo:margin-top="1cm" fo:text-align="center" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#ffffff" fo:font-size="20pt" fo:font-weight="bold"/>
         </style:style>
-        <style:style style:name="HeaderEn"
-                     style:family="paragraph"
-                     style:class="chapter">
-            <style:paragraph-properties fo:text-align="center"
-                                        style:justify-single-word="false"
-                                        fo:background-color="#234ca5"/>
-            <style:text-properties fo:font-size="16pt" fo:font-weight="bold" fo:color="#ffffff"/>
+        <style:style style:class="chapter" style:family="paragraph" style:name="HeaderEn">
+            <style:paragraph-properties fo:background-color="#234ca5" fo:text-align="center" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#ffffff" fo:font-size="16pt" fo:font-weight="bold"/>
         </style:style>
-        <style:style style:name="RubricItem" style:family="paragraph">
-            <style:paragraph-properties style:vertical-align="top"
-                                        style:justify-single-word="false"
-                                        fo:text-align="start"
-                                        style:auto-text-indent="false"
-                                        fo:text-indent="0cm"
-                                        fo:line-height="100%"
-                                        fo:margin-bottom="0.15cm"
-                                        fo:margin-top="0.15cm"
-                                        fo:margin-right="0.33cm"
-                                        fo:margin-left="0.33cm"/>
-            <style:text-properties style:text-rotation-scale="line-height"
-                                   style:text-rotation-angle="0"
-                                   style:font-size-complex="10pt"
-                                   style:font-size-asian="10pt"
-                                   fo:font-size="10pt"
-                                   style:font-name="Arial"/>
+        <style:style style:family="paragraph" style:name="RubricItem">
+            <style:paragraph-properties fo:line-height="100%" fo:margin-bottom="0.15cm" fo:margin-left="0.33cm" fo:margin-right="0.33cm" fo:margin-top="0.15cm" fo:text-align="start" fo:text-indent="0cm" style:auto-text-indent="false" style:justify-single-word="false" style:vertical-align="top"/>
+            <style:text-properties fo:font-size="10pt" style:font-name="Arial" style:font-size-asian="10pt" style:font-size-complex="10pt" style:text-rotation-angle="0" style:text-rotation-scale="line-height"/>
         </style:style>
-        <style:style style:name="Tableau1"
-                     style:master-page-name="master_5f_0"
-                     style:family="table">
+        <style:style style:family="table" style:master-page-name="master_5f_0" style:name="Tableau1">
             <style:table-properties style:page-number="auto" style:width="20.98cm"/>
         </style:style>
-        <style:style style:name="T2" style:family="paragraph">
+        <style:style style:family="paragraph" style:name="T2">
             <style:paragraph-properties fo:text-align="center"/>
-            <style:text-properties style:text-rotation-scale="line-height"
-                                   style:text-rotation-angle="0"
-                                   style:font-size-complex="14pt"
-                                   style:font-size-asian="14pt"
-                                   fo:font-weight="bold"
-                                   fo:font-size="14pt"
-                                   style:font-name="Arial"
-                                   fo:color="#234ca5"/>
+            <style:text-properties fo:color="#234ca5" fo:font-size="14pt" fo:font-weight="bold" style:font-name="Arial" style:font-size-asian="14pt" style:font-size-complex="14pt" style:text-rotation-angle="0" style:text-rotation-scale="line-height"/>
         </style:style>
-        <style:style style:name="T2En" style:family="paragraph">
+        <style:style style:family="paragraph" style:name="T2En">
             <style:paragraph-properties fo:text-align="center"/>
-            <style:text-properties style:text-rotation-scale="line-height"
-                                   style:text-rotation-angle="0"
-                                   style:font-size-complex="12pt"
-                                   style:font-size-asian="12pt"
-                                   fo:font-weight="bold"
-                                   fo:font-size="12pt"
-                                   style:font-name="Arial"
-                                   fo:color="#234ca5"/>
+            <style:text-properties fo:color="#234ca5" fo:font-size="12pt" fo:font-weight="bold" style:font-name="Arial" style:font-size-asian="12pt" style:font-size-complex="12pt" style:text-rotation-angle="0" style:text-rotation-scale="line-height"/>
         </style:style>
-        <style:style style:name="T3" style:family="paragraph">
-            <style:paragraph-properties fo:text-align="center"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"
-                                        fo:background-color="#012a83"/>
-            <style:text-properties fo:font-size="14pt" fo:font-weight="bold" fo:color="#ffffff"/>
+        <style:style style:family="paragraph" style:name="T3">
+            <style:paragraph-properties fo:background-color="#012a83" fo:margin-top="1cm" fo:text-align="center" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#ffffff" fo:font-size="14pt" fo:font-weight="bold"/>
         </style:style>
         <text:list-style style:name="L1">
-            <text:list-level-style-bullet text:bullet-char="•"
-                                          text:style-name="Bullet_20_Symbols"
-                                          text:level="1">
+            <text:list-level-style-bullet text:bullet-char="•" text:level="1" text:style-name="Bullet_20_Symbols">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
-                    <style:list-level-label-alignment fo:margin-left="1.27cm"
-                                                      fo:text-indent="-0.635cm"
-                                                      text:list-tab-stop-position="1.27cm"
-                                                      text:label-followed-by="listtab"/>
+                    <style:list-level-label-alignment fo:margin-left="1.27cm" fo:text-indent="-0.635cm" text:label-followed-by="listtab" text:list-tab-stop-position="1.27cm"/>
                 </style:list-level-properties>
             </text:list-level-style-bullet>
-            <text:list-level-style-bullet text:bullet-char="◦"
-                                          text:style-name="Bullet_20_Symbols"
-                                          text:level="2">
+            <text:list-level-style-bullet text:bullet-char="◦" text:level="2" text:style-name="Bullet_20_Symbols">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
-                    <style:list-level-label-alignment fo:margin-left="1.905cm"
-                                                      fo:text-indent="-0.635cm"
-                                                      text:list-tab-stop-position="1.905cm"
-                                                      text:label-followed-by="listtab"/>
+                    <style:list-level-label-alignment fo:margin-left="1.905cm" fo:text-indent="-0.635cm" text:label-followed-by="listtab" text:list-tab-stop-position="1.905cm"/>
                 </style:list-level-properties>
             </text:list-level-style-bullet>
-            <text:list-level-style-bullet text:bullet-char="▪"
-                                          text:style-name="Bullet_20_Symbols"
-                                          text:level="3">
+            <text:list-level-style-bullet text:bullet-char="▪" text:level="3" text:style-name="Bullet_20_Symbols">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
-                    <style:list-level-label-alignment fo:margin-left="2.54cm"
-                                                      fo:text-indent="-0.635cm"
-                                                      text:list-tab-stop-position="2.54cm"
-                                                      text:label-followed-by="listtab"/>
+                    <style:list-level-label-alignment fo:margin-left="2.54cm" fo:text-indent="-0.635cm" text:label-followed-by="listtab" text:list-tab-stop-position="2.54cm"/>
                 </style:list-level-properties>
             </text:list-level-style-bullet>
         </text:list-style>
         <text:list-style style:name="L2">
-            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
-                                          text:level="1"
-                                          style:num-format="1"
-                                          style:num-suffix=".">
+            <text:list-level-style-number style:num-format="1" style:num-suffix="." text:level="1" text:style-name="Numbering_20_Symbols">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
-                    <style:list-level-label-alignment fo:margin-left="1.27cm"
-                                                      fo:text-indent="-0.635cm"
-                                                      text:list-tab-stop-position="1.27cm"
-                                                      text:label-followed-by="listtab"/>
+                    <style:list-level-label-alignment fo:margin-left="1.27cm" fo:text-indent="-0.635cm" text:label-followed-by="listtab" text:list-tab-stop-position="1.27cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
-                                          text:level="2"
-                                          style:num-format="1"
-                                          style:num-suffix=".">
+            <text:list-level-style-number style:num-format="1" style:num-suffix="." text:level="2" text:style-name="Numbering_20_Symbols">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
-                    <style:list-level-label-alignment fo:margin-left="1.905cm"
-                                                      fo:text-indent="-0.635cm"
-                                                      text:list-tab-stop-position="1.905cm"
-                                                      text:label-followed-by="listtab"/>
+                    <style:list-level-label-alignment fo:margin-left="1.905cm" fo:text-indent="-0.635cm" text:label-followed-by="listtab" text:list-tab-stop-position="1.905cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
-                                          text:level="3"
-                                          style:num-format="1"
-                                          style:num-suffix=".">
+            <text:list-level-style-number style:num-format="1" style:num-suffix="." text:level="3" text:style-name="Numbering_20_Symbols">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
-                    <style:list-level-label-alignment fo:margin-left="2.54cm"
-                                                      fo:text-indent="-0.635cm"
-                                                      text:list-tab-stop-position="2.54cm"
-                                                      text:label-followed-by="listtab"/>
+                    <style:list-level-label-alignment fo:margin-left="2.54cm" fo:text-indent="-0.635cm" text:label-followed-by="listtab" text:list-tab-stop-position="2.54cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
         </text:list-style>
-        <style:style style:name="TitleFr" style:family="paragraph" style:class="chapter">
-            <style:paragraph-properties fo:text-align="center"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"/>
-            <style:text-properties fo:font-size="20pt" fo:font-weight="bold" fo:color="#0000ff"/>
+        <style:style style:class="chapter" style:family="paragraph" style:name="TitleFr">
+            <style:paragraph-properties fo:margin-top="1cm" fo:text-align="center" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#0000ff" fo:font-size="20pt" fo:font-weight="bold"/>
         </style:style>
-        <style:style style:name="TitleEn" style:family="paragraph" style:class="chapter">
-            <style:paragraph-properties fo:text-align="center"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"/>
-            <style:text-properties fo:font-size="16pt" fo:font-weight="bold" fo:color="#0000ff"/>
+        <style:style style:class="chapter" style:family="paragraph" style:name="TitleEn">
+            <style:paragraph-properties fo:margin-top="1cm" fo:text-align="center" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#0000ff" fo:font-size="16pt" fo:font-weight="bold"/>
         </style:style>
-        <style:style style:name="Rubric" style:family="paragraph" style:class="chapter">
-            <style:paragraph-properties fo:text-align="left"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"/>
-            <style:text-properties fo:font-size="12pt" fo:font-weight="normal" fo:color="#000000"/>
+        <style:style style:class="chapter" style:family="paragraph" style:name="Rubric">
+            <style:paragraph-properties fo:margin-top="1cm" fo:text-align="left" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#000000" fo:font-size="12pt" fo:font-weight="normal"/>
         </style:style>
-        <style:style style:name="RubricHead" style:family="paragraph">
-            <style:paragraph-properties fo:text-align="left"
-                                        fo:margin-top="1cm"
-                                        style:justify-single-word="false"/>
-            <style:text-properties style:font-weight-complex="bold"
-                                   style:font-size-complex="10pt"
-                                   style:font-weight-asian="bold"
-                                   style:font-size-asian="10pt"
-                                   fo:font-weight="bold"
-                                   fo:font-size="10pt"
-                                   style:font-name="Arial1"/>
+        <style:style style:family="paragraph" style:name="RubricHead">
+            <style:paragraph-properties fo:margin-top="1cm" fo:text-align="left" style:justify-single-word="false"/>
+            <style:text-properties fo:font-size="10pt" fo:font-weight="bold" style:font-name="Arial1" style:font-size-asian="10pt" style:font-size-complex="10pt" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
         </style:style>
-        <style:style style:name="attribute" style:family="paragraph">
-            <style:paragraph-properties fo:text-align="left"
-                                        style:justify-single-word="false"
-                                        fo:margin-bottom="0.15cm"
-                                        fo:margin-top="0.33cm"
-                                        fo:margin-right="0.15cm"
-                                        fo:margin-left="0.15cm"/>
-            <style:text-properties fo:font-size="10pt"
-                                   fo:font-weight="bold"
-                                   fo:color="#000000"
-                                   style:text-underline-color="font-color"
-                                   style:text-underline-width="auto"
-                                   style:text-underline-style="solid"/>
+        <style:style style:family="paragraph" style:name="attribute">
+            <style:paragraph-properties fo:margin-bottom="0.15cm" fo:margin-left="0.15cm" fo:margin-right="0.15cm" fo:margin-top="0.33cm" fo:text-align="left" style:justify-single-word="false"/>
+            <style:text-properties fo:color="#000000" fo:font-size="10pt" fo:font-weight="bold" style:text-underline-color="font-color" style:text-underline-style="solid" style:text-underline-width="auto"/>
         </style:style>
-        <style:style style:name="Bold" style:family="text">
-            <style:text-properties style:font-weight-complex="bold"
-                                   style:font-weight-asian="bold"
-                                   fo:font-weight="bold"/>
+        <style:style style:family="text" style:name="Bold">
+            <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
         </style:style>
-        <style:style style:name="Italic" style:family="text">
-            <style:text-properties style:font-style-complex="italic"
-                                   style:font-style-asian="italic"
-                                   fo:font-style="italic"/>
+        <style:style style:family="text" style:name="Italic">
+            <style:text-properties fo:font-style="italic" style:font-style-asian="italic" style:font-style-complex="italic"/>
         </style:style>
     </office:automatic-styles>
     <office:body>
         <office:text text:use-soft-page-breaks="true">
             <text:sequence-decls>
-                <text:sequence-decl text:name="Illustration" text:display-outline-level="0"/>
-                <text:sequence-decl text:name="Table" text:display-outline-level="0"/>
-                <text:sequence-decl text:name="Text" text:display-outline-level="0"/>
-                <text:sequence-decl text:name="Drawing" text:display-outline-level="0"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Illustration"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Table"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Text"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Drawing"/>
             </text:sequence-decls>
             <table:table table:name="SeriesTitle" table:style-name="Tableau1">
                 <table:table-column table:style-name="TC0"/>
@@ -314,25 +197,25 @@
                     </table:table-cell>
                 </table:table-row>
                 <table:table-row>
-                    <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
+                    <table:table-cell table:number-columns-spanned="3" table:style-name="framedCell">
                         <text:p text:style-name="attribute">Organismes responsables</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
                 <table:table-row>
-                    <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
+                    <table:table-cell table:number-columns-spanned="3" table:style-name="framedCell">
                         <text:p text:style-name="attribute">Partenaires</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
                 <table:table-row>
-                    <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
+                    <table:table-cell table:number-columns-spanned="3" table:style-name="framedCell">
                         <text:p text:style-name="attribute">Services collecteurs</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
                 <table:table-row>
-                    <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
+                    <table:table-cell table:number-columns-spanned="3" table:style-name="framedCell">
                         <text:p text:style-name="attribute">Propriétaire</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">DG75-L201</text:p>
                     </table:table-cell>
@@ -360,7 +243,7 @@
                     </table:table-cell>
                 </table:table-row>
                 <table:table-row>
-                    <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
+                    <table:table-cell table:number-columns-spanned="3" table:style-name="framedCell">
                         <text:p text:style-name="attribute">Indicateurs produits</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
@@ -412,16 +295,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.1S.1 - ContactContact</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.1S.1 - ContactContact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.1 - Contact</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -430,11 +304,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.1S.1.1 - Organisme de contactOrganisme de contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.1 - Organisme de contact</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.1S.1.1 - Contact organisationContact organisation</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.1 - Contact organisation</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -444,25 +318,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.1S.1.1 - Organisme de contactOrganisme de contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.2 - Unité d'appartenance du contact dans l'organisme</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.1S.1.1 - Contact organisationContact organisation</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.2S.1.2 - Unité d'appartenance du  contact dans l'organismeUnité d'appartenance du  contact dans l'organisme</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.2S.1.2 - Contact organisation unitContact organisation unit</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.2 - Contact organisation unit</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -472,25 +332,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.2S.1.2 - Unité d'appartenance du  contact dans l'organismeUnité d'appartenance du  contact dans l'organisme</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.2S.1.2 - Contact organisation unitContact organisation unit</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.3S.1.3 - Nom du contactNom du contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.3 - Nom du contact</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">nom</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.3S.1.3 - Contact nameContact name</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.3 - Contact name</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -500,11 +346,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.3S.1.3 - Nom du contactNom du contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">nom</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.4 - Fonction de la personne contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.3S.1.3 - Contact nameContact name</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.4 - Contact person function</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -514,25 +360,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.4S.1.4 - Fonction de la personne contactFonction de la personne contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.5 - Adresse postale du contact</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.4S.1.4 - Contact person functionContact person function</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.4S.1.4 - Fonction de la personne contactFonction de la personne contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.4S.1.4 - Contact person functionContact person function</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.5 - Contact mail address</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -542,25 +374,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.5S.1.5 - Adresse postale du contactAdresse postale du contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.6 - Adresse électronique du contact</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.5S.1.5 - Contact mail addressContact mail address</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.5S.1.5 - Adresse postale du contactAdresse postale du contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.5S.1.5 - Contact mail addressContact mail address</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.6 - Contact email address</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -570,25 +388,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.6S.1.6 - Adresse électronique du contactAdresse électronique du contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.7 - Numéro de téléphone du contact</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.6S.1.6 - Contact email addressContact email address</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.6S.1.6 - Adresse électronique du contactAdresse électronique du contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.6S.1.6 - Contact email addressContact email address</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.7 - Contact phone number</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -598,53 +402,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.7S.1.7 - Numéro de téléphone du contactNuméro de téléphone du contact</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.8 - Numéro de télécopieur du contact</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.7S.1.7 - Contact phone numberContact phone number</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.7S.1.7 - Numéro de téléphone du contactNuméro de téléphone du contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.7S.1.7 - Contact phone numberContact phone number</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.8S.1.8 - Numéro de télécopieur du contactNuméro de télécopieur du contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.8S.1.8 - Contact fax numberContact fax number</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.8S.1.8 - Numéro de télécopieur du contactNuméro de télécopieur du contact</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.8S.1.8 - Contact fax numberContact fax number</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.1.8 - Contact fax number</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -654,16 +416,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.2S.2 - Mise à jour des métadonnéesMise à jour des métadonnées</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.2S.2 - Mise à jour des métadonnéesMise à jour des métadonnées</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.2 - Mise à jour des métadonnées</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -672,11 +425,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.1S.2.1 - Dernières métadonnées certifiéesDernières métadonnées certifiées</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.1 - Dernières métadonnées certifiées</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.1S.2.1 - Metadata last certifiedMetadata last certified</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.1 - Metadata last certified</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -686,25 +439,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.1S.2.1 - Dernières métadonnées certifiéesDernières métadonnées certifiées</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.2 - Dernières métadonnées envoyées</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.1S.2.1 - Metadata last certifiedMetadata last certified</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.2S.2.2 - Dernières métadonnées envoyéesDernières métadonnées envoyées</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.2S.2.2 - Metadata last postedMetadata last posted</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.2 - Metadata last posted</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -714,39 +453,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.2S.2.2 - Dernières métadonnées envoyéesDernières métadonnées envoyées</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.3 - Dernière mise à jour des métadonnées</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.2S.2.2 - Metadata last postedMetadata last posted</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.3S.2.3 - Dernière mise à jour des métadonnéesDernière mise à jour des métadonnées</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.3S.2.3 - Metadata last updateMetadata last update</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.3S.2.3 - Dernière mise à jour des métadonnéesDernière mise à jour des métadonnées</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.3S.2.3 - Metadata last updateMetadata last update</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.2.3 - Metadata last update</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -756,16 +467,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.3S.3 - Présentation statistiquePrésentation statistique</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.3S.3 - Présentation statistiquePrésentation statistique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.3 - Présentation statistique</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -774,11 +476,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.1S.3.1 - Description  des donnéesDescription  des données</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.1 - Description des données</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.1S.3.1 - Data descriptionData description</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.1 - Data description</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -788,25 +490,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.1S.3.1 - Description  des donnéesDescription  des données</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.2 - Nomenclature</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.1S.3.1 - Data descriptionData description</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.2S.3.2 - NomenclatureNomenclature</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.2S.3.2 - Classification systemClassification system</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.2 - Classification system</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -816,25 +504,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.2S.3.2 - NomenclatureNomenclature</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.3 - Couverture sectorielle</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.2S.3.2 - Classification systemClassification system</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.3S.3.3 - Couverture sectorielleCouverture sectorielle</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.3S.3.3 - Sector coverageSector coverage</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.3 - Sector coverage</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -844,25 +518,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.3S.3.3 - Couverture sectorielleCouverture sectorielle</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.4 - Concepts et définitions statistiques</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.3S.3.3 - Sector coverageSector coverage</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.4S.3.4 - Concepts et définitions statistiquesConcepts et définitions statistiques</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.4S.3.4 - Statistical concepts and definitionsStatistical concepts and definitions</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.4 - Statistical concepts and definitions</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -872,25 +532,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.4S.3.4 - Concepts et définitions statistiquesConcepts et définitions statistiques</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.5 - Unité statistique</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.4S.3.4 - Statistical concepts and definitionsStatistical concepts and definitions</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.5S.3.5 - Unité statistiqueUnité statistique</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.5S.3.5 - Statistical unitStatistical unit</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.5 - Statistical unit</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -900,25 +546,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.5S.3.5 - Unité statistiqueUnité statistique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.6 - Population statistique</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.5S.3.5 - Statistical unitStatistical unit</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.6S.3.6 - Population statistiquePopulation statistique</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.6S.3.6 - Statistical populationStatistical population</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.6 - Statistical population</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -928,25 +560,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.6S.3.6 - Population statistiquePopulation statistique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.7 - Zone géographique de référence</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.6S.3.6 - Statistical populationStatistical population</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.7S.3.7 - Zone géographique de référenceZone géographique de référence</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.7S.3.7 - Reference areaReference area</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.7 - Reference area</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -956,25 +574,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.7S.3.7 - Zone géographique de référenceZone géographique de référence</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.7.1 - Extensions régionales</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.7S.3.7 - Reference areaReference area</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.7.1C.3.7.1 - Extensions régionalesExtensions régionales</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.7.1C.3.7.1 - Regional extensionsRegional extensions</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.7.1 - Regional extensions</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -984,25 +588,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.7.1C.3.7.1 - Extensions régionalesExtensions régionales</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.8 - Couverture temporelle</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.7.1C.3.7.1 - Regional extensionsRegional extensions</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.8S.3.8 - Couverture temporelleCouverture temporelle</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.8S.3.8 - Time coverageTime coverage</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.8 - Time coverage</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1012,25 +602,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.8S.3.8 - Couverture temporelleCouverture temporelle</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.9 - Période de base</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.8S.3.8 - Time coverageTime coverage</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.9S.3.9 - Période de basePériode de base</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.9S.3.9 - Base periodBase period</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.9 - Base period</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1040,25 +616,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.9S.3.9 - Période de basePériode de base</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.10 - Faits marquants</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.3.9S.3.9 - Base periodBase period</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.10C.3.10 - Faits marquantsFaits marquants</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.10C.3.10 - HighlightsHighlights</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.10 - Highlights</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1068,25 +630,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.10C.3.10 - Faits marquantsFaits marquants</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.4 - Unité de mesure</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.3.10C.3.10 - HighlightsHighlights</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.4S.4 - Unité de mesureUnité de mesure</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.4S.4 - Unit of measureUnit of measure</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.4 - Unit of measure</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1096,39 +644,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.4S.4 - Unité de mesureUnité de mesure</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5 - Période de référence</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.4S.4 - Unit of measureUnit of measure</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5S.5 - Période de référencePériode de référence</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5S.5 - Reference periodReference period</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5S.5 - Période de référencePériode de référence</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5S.5 - Reference periodReference period</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5 - Reference period</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1138,16 +658,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.6S.6 - Mandat institutionnelMandat institutionnel</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.6S.6 - Mandat institutionnelMandat institutionnel</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.6 - Mandat institutionnel</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1156,11 +667,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.1S.6.1 - Actes juridiques et autres accordsActes juridiques et autres accords</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.1 - Actes juridiques et autres accords</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.1S.6.1 - Legal acts and other agreementsLegal acts and other agreements</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.1 - Legal acts and other agreements</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1170,25 +681,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.1S.6.1 - Actes juridiques et autres accordsActes juridiques et autres accords</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.2 - Partage des données</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.1S.6.1 - Legal acts and other agreementsLegal acts and other agreements</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.2S.6.2 - Partage des donnéesPartage des données</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.2S.6.2 - Data sharingData sharing</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.2 - Data sharing</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1198,25 +695,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.2S.6.2 - Partage des donnéesPartage des données</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.3 - Statut de l'enquête</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.6.2S.6.2 - Data sharingData sharing</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.3I.6.3 - Statut de l'enquêteStatut de l'enquête</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.3I.6.3 - Survey statusSurvey status</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.3 - Survey status</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1226,39 +709,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.3I.6.3 - Statut de l'enquêteStatut de l'enquête</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.4 - n° de visa</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.3I.6.3 - Survey statusSurvey status</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.4I.6.4 - n° de visan° de visa</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.4I.6.4 - n° visan° visa</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.4I.6.4 - n° de visan° de visa</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.4I.6.4 - n° visan° visa</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">I.6.4 - n° visa</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1268,16 +723,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.7S.7 - ConfidentialitéConfidentialité</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.7S.7 - ConfidentialitéConfidentialité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.7 - Confidentialité</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1286,11 +732,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.1S.7.1 - Politique de confidentialitéPolitique de confidentialité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.1 - Politique de confidentialité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.1S.7.1 - Confidentiality - policyConfidentiality - policy</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.1 - Confidentiality - policy</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1300,39 +746,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.1S.7.1 - Politique de confidentialitéPolitique de confidentialité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.2 - Confidentialité — traitement des données</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.1S.7.1 - Confidentiality - policyConfidentiality - policy</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.2S.7.2 - Confidentialité — traitement des donnéesConfidentialité — traitement des données</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.2S.7.2 - Confidentiality - data treatmentConfidentiality - data treatment</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.2S.7.2 - Confidentialité — traitement des donnéesConfidentialité — traitement des données</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.2S.7.2 - Confidentiality - data treatmentConfidentiality - data treatment</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.7.2 - Confidentiality - data treatment</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1342,16 +760,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.8S.8 - Politique de diffusionPolitique de diffusion</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.8S.8 - Politique de diffusionPolitique de diffusion</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.8 - Politique de diffusion</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1360,11 +769,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.1S.8.1 - Calendrier de diffusionCalendrier de diffusion</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.1 - Calendrier de diffusion</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.1S.8.1 - Release calendarRelease calendar</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.1 - Release calendar</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1374,25 +783,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.1S.8.1 - Calendrier de diffusionCalendrier de diffusion</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.2 - Accès au calendrier de diffusion</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.1S.8.1 - Release calendarRelease calendar</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.2S.8.2 - Accès au calendrier de diffusionAccès au calendrier de diffusion</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.2S.8.2 - Release calendar accessRelease calendar access</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.2 - Release calendar access</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1402,25 +797,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.2S.8.2 - Accès au calendrier de diffusionAccès au calendrier de diffusion</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.3 - Accès par l'utilisateur</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.2S.8.2 - Release calendar accessRelease calendar access</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.3S.8.3 - Accès par l’utilisateurAccès par l’utilisateur</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.3S.8.3 - User accessUser access</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.3 - User access</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1430,39 +811,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.3S.8.3 - Accès par l’utilisateurAccès par l’utilisateur</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.9 - Fréquence de diffusion</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.8.3S.8.3 - User accessUser access</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.9S.9 - Fréquence de diffusionFréquence de diffusion</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.9S.9 - Frequency of disseminationFrequency of dissemination</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.9S.9 - Fréquence de diffusionFréquence de diffusion</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.9S.9 - Frequency of disseminationFrequency of dissemination</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.9 - Frequency of dissemination</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1472,16 +825,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.10S.10 - Accessibilité et clartéAccessibilité et clarté</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.10S.10 - Accessibilité et clartéAccessibilité et clarté</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.10 - Accessibilité et clarté</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1490,11 +834,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.1S.10.1 - Communiqué de presseCommuniqué de presse</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.1 - Communiqué de presse</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.1S.10.1 - News releaseNews release</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.1 - News release</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1504,25 +848,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.1S.10.1 - Communiqué de presseCommuniqué de presse</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.2 - Publications</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.1S.10.1 - News releaseNews release</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.2S.10.2 - PublicationsPublications</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.2S.10.2 - PublicationsPublications</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.2 - Publications</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1532,25 +862,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.2S.10.2 - PublicationsPublications</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.3 - Base de données en ligne</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.2S.10.2 - PublicationsPublications</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.3S.10.3 - Base de données en ligneBase de données en ligne</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.3S.10.3 - On-line databaseOn-line database</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.3 - On-line database</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1560,25 +876,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.3S.10.3 - Base de données en ligneBase de données en ligne</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.4 - Accès aux micro-données</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.3S.10.3 - On-line databaseOn-line database</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.4S.10.4 - Accès aux micro-donnéesAccès aux micro-données</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.4S.10.4 - Micro-data accessMicro-data access</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.4 - Micro-data access</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1588,25 +890,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.4S.10.4 - Accès aux micro-donnéesAccès aux micro-données</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.5 - Autres</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.4S.10.4 - Micro-data accessMicro-data access</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.5S.10.5 - AutresAutres</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.5S.10.5 - OtherOther</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.5 - Other</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1616,25 +904,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.5S.10.5 - AutresAutres</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.6 - Documentation sur la méthodologie</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.5S.10.5 - OtherOther</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.6S.10.6 - Documentation sur la méthodologieDocumentation sur la méthodologie</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.6S.10.6 - Documentation on methodologyDocumentation on methodology</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.6 - Documentation on methodology</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1644,39 +918,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.6S.10.6 - Documentation sur la méthodologieDocumentation sur la méthodologie</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.7 - Documentation sur la qualité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.6S.10.6 - Documentation on methodologyDocumentation on methodology</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.7S.10.7 - Documentation sur la qualitéDocumentation sur la qualité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.7S.10.7 - Quality documentationQuality documentation</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.7S.10.7 - Documentation sur la qualitéDocumentation sur la qualité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.7S.10.7 - Quality documentationQuality documentation</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.10.7 - Quality documentation</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1686,16 +932,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.11S.11 - Gestion de la qualitéGestion de la qualité</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.11S.11 - Gestion de la qualitéGestion de la qualité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.11 - Gestion de la qualité</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1704,11 +941,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.1S.11.1 - Cadre d'assurance qualitéCadre d'assurance qualité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.1 - Cadre d'assurance qualité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.1S.11.1 - Quality assuranceQuality assurance</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.1 - Quality assurance</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1718,25 +955,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.1S.11.1 - Cadre d'assurance qualitéCadre d'assurance qualité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.11.1.2 - Comitologie</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.1S.11.1 - Quality assuranceQuality assurance</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.11.1.2C.11.1.2 - ComitologieComitologie</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.11.1.2C.11.1.2 - Steering organisationSteering organisation</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.11.1.2 - Steering organisation</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1746,39 +969,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.11.1.2C.11.1.2 - ComitologieComitologie</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.2 - Évaluation de la qualité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.11.1.2C.11.1.2 - Steering organisationSteering organisation</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.2S.11.2 - Évaluation de la qualitéÉvaluation de la qualité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.2S.11.2 - Quality assessmentQuality assessment</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.2S.11.2 - Évaluation de la qualitéÉvaluation de la qualité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.2S.11.2 - Quality assessmentQuality assessment</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.11.2 - Quality assessment</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1788,16 +983,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.12S.12 - PertinencePertinence</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.12S.12 - PertinencePertinence</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.12 - Pertinence</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1806,11 +992,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.1S.12.1 - Besoins des utilisateursBesoins des utilisateurs</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.1 - Besoins des utilisateurs</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.1S.12.1 - User needsUser needs</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.1 - User needs</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1820,25 +1006,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.1S.12.1 - Besoins des utilisateursBesoins des utilisateurs</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.12.1.1 - Instances de concertation</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.1S.12.1 - User needsUser needs</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.12.1.1C.12.1.1 - Instances de concertationInstances de concertation</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.12.1.1C.12.1.1 - Users consultation organisationUsers consultation organisation</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.12.1.1 - Users consultation organisation</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1848,25 +1020,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.12.1.1C.12.1.1 - Instances de concertationInstances de concertation</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.2 - Satisfaction des utilisateurs</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">C.12.1.1C.12.1.1 - Users consultation organisationUsers consultation organisation</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.2S.12.2 - Satisfaction des utilisateursSatisfaction des utilisateurs</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.2S.12.2 - User satisfactionUser satisfaction</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.2 - User satisfaction</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1876,39 +1034,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.2S.12.2 - Satisfaction des utilisateursSatisfaction des utilisateurs</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.3 - Exhaustivité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.2S.12.2 - User satisfactionUser satisfaction</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.3S.12.3 - ExhaustivitéExhaustivité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.3S.12.3 - Completeness and R1. Data completeness – rate for UCompleteness and R1. Data completeness – rate for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.3S.12.3 - ExhaustivitéExhaustivité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.3S.12.3 - Completeness and R1. Data completeness – rate for UCompleteness and R1. Data completeness – rate for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.12.3 - Completeness and R1. Data completeness – rate for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1918,16 +1048,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.13S.13 - Précision et fiabilitéPrécision et fiabilité</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.13S.13 - Précision et fiabilitéPrécision et fiabilité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.13 - Précision et fiabilité</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -1936,11 +1057,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.1S.13.1 - Précision globalePrécision globale</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.1 - Précision globale</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.1S.13.1 - Overall accuracyOverall accuracy</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.1 - Overall accuracy</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1950,25 +1071,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.1S.13.1 - Précision globalePrécision globale</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.2 - Erreur aléatoire</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.1S.13.1 - Overall accuracyOverall accuracy</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.2S.13.2 - Erreur aléatoireErreur aléatoire</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.2S.13.2 - Sampling error and A1. Sampling errors – indicators for USampling error and A1. Sampling errors – indicators for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.2 - Sampling error and A1. Sampling errors – indicators for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -1978,25 +1085,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.2S.13.2 - Erreur aléatoireErreur aléatoire</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3 - Erreur non aléatoire</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.2S.13.2 - Sampling error and A1. Sampling errors – indicators for USampling error and A1. Sampling errors – indicators for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3S.13.3 - Erreur non aléatoireErreur non aléatoire</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3S.13.3 - Non-sampling error and A4. Unit non-response - rate for U and A5. Item non-response - rate for UNon-sampling error and A4. Unit non-response - rate for U and A5. Item non-response - rate for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3 - Non-sampling error and A4. Unit non-response - rate for U and A5. Item non-response - rate for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2006,25 +1099,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3S.13.3 - Erreur non aléatoireErreur non aléatoire</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.1 - Erreur de couverture</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3S.13.3 - Non-sampling error and A4. Unit non-response - rate for U and A5. Item non-response - rate for UNon-sampling error and A4. Unit non-response - rate for U and A5. Item non-response - rate for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.1S.13.3.1 - Erreur de couvertureErreur de couverture</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.1S.13.3.1 - Coverage errorCoverage error</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.1 - Coverage error</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2034,25 +1113,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.1S.13.3.1 - Erreur de couvertureErreur de couverture</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.2 - Erreur de mesure</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.1S.13.3.1 - Coverage errorCoverage error</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.2S.13.3.2 - Erreur de mesureErreur de mesure</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.2S.13.3.2 - Measurement errorMeasurement error</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.2 - Measurement error</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2062,25 +1127,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.2S.13.3.2 - Erreur de mesureErreur de mesure</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.3 - Erreur de non-réponse</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.2S.13.3.2 - Measurement errorMeasurement error</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.3S.13.3.3 - Erreur de non-réponseErreur de non-réponse</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.3S.13.3.3 - Non response errorNon response error</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.3 - Non response error</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2090,25 +1141,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.3S.13.3.3 - Erreur de non-réponseErreur de non-réponse</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.4 - Erreur de traitement</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.3S.13.3.3 - Non response errorNon response error</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.4S.13.3.4 - Erreur de traitementErreur de traitement</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.4S.13.3.4 - Processing errorProcessing error</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.4 - Processing error</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2118,39 +1155,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.4S.13.3.4 - Erreur de traitementErreur de traitement</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.5 - Erreur dues aux hypothèses au modèle</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.4S.13.3.4 - Processing errorProcessing error</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.5S.13.3.5 - Erreur dues aux hypothèses au modèleErreur dues aux hypothèses au modèle</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.5S.13.3.5 - Model assumption errorModel assumption error</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.5S.13.3.5 - Erreur dues aux hypothèses au modèleErreur dues aux hypothèses au modèle</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.5S.13.3.5 - Model assumption errorModel assumption error</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.13.3.5 - Model assumption error</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2160,16 +1169,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.14S.14 - Actualité et ponctualitéActualité et ponctualité</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.14S.14 - Actualité et ponctualitéActualité et ponctualité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.14 - Actualité et ponctualité</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -2178,11 +1178,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.1S.14.1 - ActualitéActualité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.1 - Actualité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.1S.14.1 - Timeliness and TP2. Time lag - final results for UTimeliness and TP2. Time lag - final results for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.1 - Timeliness and TP2. Time lag - final results for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2192,39 +1192,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.1S.14.1 - ActualitéActualité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.2 - Ponctualité</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.1S.14.1 - Timeliness and TP2. Time lag - final results for UTimeliness and TP2. Time lag - final results for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.2S.14.2 - PonctualitéPonctualité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.2S.14.2 - Punctuality and TP3. Punctuality - delivery and publication for UPunctuality and TP3. Punctuality - delivery and publication for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.2S.14.2 - PonctualitéPonctualité</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.2S.14.2 - Punctuality and TP3. Punctuality - delivery and publication for UPunctuality and TP3. Punctuality - delivery and publication for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.14.2 - Punctuality and TP3. Punctuality - delivery and publication for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2234,16 +1206,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.15S.15 - Cohérence et comparabilitéCohérence et comparabilité</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.15S.15 - Cohérence et comparabilitéCohérence et comparabilité</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.15 - Cohérence et comparabilité</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -2252,11 +1215,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.1S.15.1 - Comparabilité — géographiqueComparabilité — géographique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.1 - Comparabilité — géographique</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.1S.15.1 - Comparability - geographicalComparability - geographical</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.1 - Comparability - geographical</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2266,25 +1229,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.1S.15.1 - Comparabilité — géographiqueComparabilité — géographique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.2 - Comparabilité dans le temps</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.1S.15.1 - Comparability - geographicalComparability - geographical</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.2S.15.2 - Comparabilité dans le tempsComparabilité dans le temps</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.2S.15.2 - Comparability - over time and CC2. Length of comparable time series for UComparability - over time and CC2. Length of comparable time series for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.2 - Comparability - over time and CC2. Length of comparable time series for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2294,25 +1243,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.2S.15.2 - Comparabilité dans le tempsComparabilité dans le temps</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3 - Cohérence — entre domaines</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.2S.15.2 - Comparability - over time and CC2. Length of comparable time series for UComparability - over time and CC2. Length of comparable time series for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3S.15.3 - Cohérence — entre domainesCohérence — entre domaines</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3S.15.3 - Coherence - cross domainCoherence - cross domain</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3 - Coherence - cross domain</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2322,25 +1257,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3S.15.3 - Cohérence — entre domainesCohérence — entre domaines</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.1 - Cohérence – Statistiques annuelles et infra-annuelles</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3S.15.3 - Coherence - cross domainCoherence - cross domain</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.1S.15.3.1 - Cohérence – Statistiques annuelles et infra-annuellesCohérence – Statistiques annuelles et infra-annuelles</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.1S.15.3.1 - Coherence - sub annual and annual statisticsCoherence - sub annual and annual statistics</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.1 - Coherence - sub annual and annual statistics</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2350,25 +1271,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.1S.15.3.1 - Cohérence – Statistiques annuelles et infra-annuellesCohérence – Statistiques annuelles et infra-annuelles</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.2 - Cohérence – Comptes nationaux</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.1S.15.3.1 - Coherence - sub annual and annual statisticsCoherence - sub annual and annual statistics</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.2S.15.3.2 - Cohérence – Comptes nationauxCohérence – Comptes nationaux</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.2S.15.3.2 - Coherence - National AccountsCoherence - National Accounts</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.2 - Coherence - National Accounts</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2378,25 +1285,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.2S.15.3.2 - Cohérence – Comptes nationauxCohérence – Comptes nationaux</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.4 - Cohérence — interne</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.3.2S.15.3.2 - Coherence - National AccountsCoherence - National Accounts</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.4S.15.4 - Cohérence — interneCohérence — interne</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.4S.15.4 - Coherence - internalCoherence - internal</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.4 - Coherence - internal</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2406,39 +1299,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.4S.15.4 - Cohérence — interneCohérence — interne</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.16 - Coûts et charge</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.15.4S.15.4 - Coherence - internalCoherence - internal</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.16S.16 - Coûts et chargeCoûts et charge</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.16S.16 - Cost and burdenCost and burden</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.16S.16 - Coûts et chargeCoûts et charge</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.16S.16 - Cost and burdenCost and burden</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.16 - Cost and burden</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2448,16 +1313,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.17S.17 - Révision des donnéesRévision des données</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.17S.17 - Révision des donnéesRévision des données</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.17 - Révision des données</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -2466,11 +1322,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.1S.17.1 - Révision des données — politiqueRévision des données — politique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.1 - Révision des données — politique</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.1S.17.1 - Data revision - policyData revision - policy</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.1 - Data revision - policy</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2480,39 +1336,11 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.1S.17.1 - Révision des données — politiqueRévision des données — politique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.2 - Révision des données — pratiques</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.1S.17.1 - Data revision - policyData revision - policy</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.2S.17.2 - Révision des données — pratiquesRévision des données — pratiques</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.2S.17.2 - Data revision - practice and A6. Data revision - average size for UData revision - practice and A6. Data revision - average size for U</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.2S.17.2 - Révision des données — pratiquesRévision des données — pratiques</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
-                    </table:table-cell>
-                    <table:table-cell table:style-name="framedCell">
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.2S.17.2 - Data revision - practice and A6. Data revision - average size for UData revision - practice and A6. Data revision - average size for U</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.17.2 - Data revision - practice and A6. Data revision - average size for U</text:p>
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
                     </table:table-cell>
                 </table:table-row>
@@ -2522,16 +1350,7 @@
                 <table:table-column/>
                 <table:table-row>
                     <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.18S.18 - Traitement statistiqueTraitement statistique</text:p>
-                    </table:table-cell>
-                </table:table-row>
-            </table:table>
-            <table:table>
-                <table:table-column/>
-                <table:table-column/>
-                <table:table-row>
-                    <table:table-cell>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.18S.18 - Traitement statistiqueTraitement statistique</text:p>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricHead">S.18 - Traitement statistique</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -2563,7 +1382,7 @@
                     </table:table-cell>
                 </table:table-row>
             </table:table>
-             <table:table>
+            <table:table>
                 <table:table-column/>
                 <table:table-column/>
                 <table:table-row>
@@ -2647,7 +1466,7 @@
                     </table:table-cell>
                 </table:table-row>
             </table:table>
-             <table:table>
+            <table:table>
                 <table:table-column/>
                 <table:table-column/>
                 <table:table-row>
