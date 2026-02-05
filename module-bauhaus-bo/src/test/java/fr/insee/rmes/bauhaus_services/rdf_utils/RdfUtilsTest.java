@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RdfUtilsTest {

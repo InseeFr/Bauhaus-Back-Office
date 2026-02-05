@@ -3,7 +3,8 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.FilesOperations;
+import fr.insee.rmes.modules.commons.configuration.StorageProperties;
+import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -60,12 +61,13 @@ public class DocumentsUtils extends RdfService {
     public static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
 
     private final ParentUtils ownersUtils;
-
     private final FilesOperations filesOperations;
+    private final StorageProperties storageProperties;
 
-    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations) {
+    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations, StorageProperties storageProperties) {
         this.ownersUtils = ownersUtils;
         this.filesOperations = filesOperations;
+        this.storageProperties = storageProperties;
     }
 
     /*
@@ -368,7 +370,7 @@ public class DocumentsUtils extends RdfService {
         checkDocumentReference(docId, uri);
         // remove the physical file
         if (!isLink) {
-            deleteFile(url);
+            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(uri)));
         }
         // delete the Document in the rdf base
         return repoGestion.executeUpdate(OperationDocumentsQueries.deleteDocumentQuery(docUri));
@@ -416,7 +418,7 @@ public class DocumentsUtils extends RdfService {
         else {
             // Delete the old file
             logger.info("Delete old file {}, with URL {}", documentName, docUrl);
-            deleteFile(docUrl);
+            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(jsonDoc.getString(Constants.URL))));
 
             // Upload the new file
             newUrl = createFileUrl(documentName);
@@ -444,8 +446,7 @@ public class DocumentsUtils extends RdfService {
             throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
-        filesOperations.writeToDirectoryGestion(documentFile, path);
-        // don't throw an error if a file already exists under this name
+        filesOperations.write(documentFile, new fr.insee.rmes.modules.commons.domain.model.Document(this.storageProperties.directoryGestion(), path.getFileName().toString()));
     }
 
 
@@ -501,21 +502,17 @@ public class DocumentsUtils extends RdfService {
         repoGestion.executeUpdate(OperationDocumentsQueries.changeDocumentUrlQuery(iri, docUrl, newUrl));
     }
 
-    private void deleteFile(String docUrl) {
-        Path path = Paths.get(docUrl);
-        filesOperations.delete(path);
-    }
-
     public static String getDocumentNameFromUrl(String docUrl) {
         return UriUtils.getLastPartFromUri(docUrl);
     }
 
     private String createFileUrl(String name) throws RmesException {
-        Path gestionStorageFolder=Path.of(config.getDocumentsStorageGestion());
-        if (!filesOperations.dirExists(gestionStorageFolder)){
+        if (!filesOperations.exists(config.getDocumentsStorageGestion())){
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
                     "config.DOCUMENTS_STORAGE");
         }
+
+        Path gestionStorageFolder=Path.of(config.getDocumentsStorageGestion());
         String url= gestionStorageFolder.resolve(name).toString();
         Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
         Matcher m = p.matcher(url);
@@ -610,7 +607,7 @@ public class DocumentsUtils extends RdfService {
     public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
         String filePath = getDocumentFilename(id);
 
-        try (InputStream inputStream = filesOperations.readInDirectoryGestion(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
+        try (InputStream inputStream = filesOperations.read(new fr.insee.rmes.modules.commons.domain.model.Document(storageProperties.directoryGestion(),filePath))) { // Lire via l'abstraction et utiliser try-with-resources
             byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
             HttpHeaders headers = new HttpHeaders();
@@ -637,11 +634,14 @@ public class DocumentsUtils extends RdfService {
     }
 
     public InputStream retrieveDocumentFromStorage(String filename) {
-        return filesOperations.readInDirectoryGestion(filename);
+        return filesOperations.read(new fr.insee.rmes.modules.commons.domain.model.Document(
+                storageProperties.directoryGestion(),
+                filename
+        ));
     }
 
     public boolean existsInStorage(String filename) {
-        return filesOperations.existsInStorageGestion(filename);
+        return filesOperations.exists(new fr.insee.rmes.modules.commons.domain.model.Document(storageProperties.directoryGestion(),filename));
     }
 }
 

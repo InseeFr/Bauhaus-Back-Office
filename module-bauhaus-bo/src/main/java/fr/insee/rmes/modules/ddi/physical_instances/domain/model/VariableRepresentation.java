@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record VariableRepresentation(
         @JsonProperty("VariableRole") String variableRole,
         @JsonProperty("CodeRepresentation") CodeRepresentation codeRepresentation,
-        @JsonProperty("NumericRepresentation") NumericRepresentation numericRepresentation
+        @JsonProperty("NumericRepresentation") NumericRepresentation numericRepresentation,
+        @JsonProperty("DateTimeRepresentation") DateTimeRepresentation dateTimeRepresentation,
+        @JsonProperty("TextRepresentation") TextRepresentation textRepresentation
 ) {
 }

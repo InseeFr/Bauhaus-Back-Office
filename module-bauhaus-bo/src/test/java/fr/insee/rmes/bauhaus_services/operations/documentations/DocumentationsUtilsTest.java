@@ -10,7 +10,6 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.GenericQueries;
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
@@ -29,6 +28,8 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

@@ -10,7 +10,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
@@ -32,6 +31,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 
@@ -105,12 +106,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public List<PartialDataset> getDatasets() throws RmesException {
-        return this.getDatasets(null);
+        return this.getDatasets(Set.of());
     }
 
     @Override
-    public List<PartialDataset> getDatasetsForDistributionCreation(String stamp) throws RmesException {
-        return this.getDatasets(stamp);
+    public List<PartialDataset> getDatasetsForDistributionCreation(Set<String> stamps) throws RmesException {
+        return this.getDatasets(stamps);
     }
 
     @Override
@@ -130,8 +131,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return id;
     }
 
-    private List<PartialDataset> getDatasets(String stamp) throws RmesException {
-        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp));
+    private List<PartialDataset> getDatasets(Set<String> stamps) throws RmesException {
+        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamps));
         return DiacriticSorter.sort(datasets,
                 PartialDataset[].class,
                 PartialDataset::label);

@@ -6,9 +6,9 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
+import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
-import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.RandomIdGenerator;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,5 +40,11 @@ public class DomainCollectionsService implements CollectionsService {
         Collection newCollection = Collection.create(collectionCommand, randomIdGenerator.generateCollectionId());
         this.repository.save(newCollection);
         return newCollection.id();
+    }
+
+    @Override
+    public void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException {
+        Collection collection = Collection.create(updateCommand, updateCommand.id());
+        this.repository.update(collection);
     }
 }

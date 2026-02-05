@@ -19,27 +19,23 @@ import java.util.Map;
 public class OrganisationGraphDBRepository implements OrganisationRepository {
 
     private final RepositoryGestion repositoryGestion;
-    private final String inseeOrganizationsGraph;
+    private final String organizationsGraph;
     private final String language;
-    private final String organisationsGraph;
 
     public OrganisationGraphDBRepository(
             RepositoryGestion repositoryGestion,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
-            @Value("${fr.insee.rmes.bauhaus.organisations.graph}") String organisationsGraph,
             @Value("${fr.insee.rmes.bauhaus.insee.graph}") String inseeGraph,
             @Value("${fr.insee.rmes.bauhaus.lg1}") String language) {
         this.repositoryGestion = repositoryGestion;
-        this.inseeOrganizationsGraph = baseGraph + inseeGraph;
-        this.organisationsGraph = baseGraph + inseeOrganizationsGraph;
+        this.organizationsGraph = baseGraph + inseeGraph;
         this.language = language;
     }
 
     @Override
     public List<OrganisationOption> getOrganisations() throws RmesException {
         Map<String, Object> params = new HashMap<>();
-        params.put("INSEE_ORGANIZATIONS_GRAPH", inseeOrganizationsGraph);
-        params.put("ORGANIZATIONS_GRAPH", organisationsGraph);
+        params.put("ORGANIZATIONS_GRAPH", organizationsGraph);
         params.put("LANG", language);
 
         String query = FreeMarkerUtils.buildRequest("organisations/", "getOrganisations.ftlh", params);
@@ -59,8 +55,7 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
     @Override
     public OrganisationOption getOrganisation(String identifier) throws RmesException {
         Map<String, Object> params = new HashMap<>();
-        params.put("INSEE_ORGANIZATIONS_GRAPH", inseeOrganizationsGraph);
-        params.put("ORGANIZATIONS_GRAPH", organisationsGraph);
+        params.put("ORGANIZATIONS_GRAPH", organizationsGraph);
         params.put("LANG", language);
         params.put("IDENTIFIER", identifier);
 
@@ -84,8 +79,7 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         }
 
         Map<String, Object> params = new HashMap<>();
-        params.put("INSEE_ORGANIZATIONS_GRAPH", inseeOrganizationsGraph);
-        params.put("ORGANIZATIONS_GRAPH", organisationsGraph);
+        params.put("ORGANIZATIONS_GRAPH", organizationsGraph);
         params.put("LANG", language);
         params.put("IDENTIFIERS", identifiers);
 

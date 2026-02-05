@@ -1,85 +1,55 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.model;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-
 public class Classification {
-    @Schema(description = "Id")
     public String id;
 
-    @Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
     public String prefLabelLg1;
 
-    @Schema(description = "Label lg2")
     public String prefLabelLg2;
 
-    @Schema(description = "Alternative Label Lg1")
     public String altLabelLg1;
 
-    @Schema(description = "Alternative Label Lg2")
     public String altLabelLg2;
 
-    @Schema(description = "Description Lg1")
     public String descriptionLg1;
 
-    @Schema(description = "Description Lg2")
     public String descriptionLg2;
 
-    @Schema(description = "Change Note Lg1")
     public String changeNoteLg1;
 
-    @Schema(description = "Change Note Lg2")
     public String changeNoteLg2;
 
-    @Schema(description = "Scope Note Lg1")
     public String scopeNoteLg1;
 
-    @Schema(description = "Scope Note Lg2")
     public String scopeNoteLg2;
 
-    @Schema(description = "Scope Note Uri Lg1")
     public String scopeNoteUriLg1;
 
-    @Schema(description = "Scope Note Uri Lg2")
     public String scopeNoteUriLg2;
 
-    @Schema(description = "Change Note Uri Lg1")
     public String changeNoteUriLg1;
 
-    @Schema(description = "Change Note Uri Lg2")
     public String changeNoteUriLg2;
 
-
-    @Schema(description = "Series ID")
     public String idSeries;
-
-    @Schema()
     public String idBefore;
 
-    @Schema()
     public String idAfter;
 
-    @Schema()
     public String idVariant;
 
-    @Schema(description = "Dissemination status", requiredMode = Schema.RequiredMode.REQUIRED)
     public String disseminationStatus;
 
-    @Schema(description = "Additional Material", requiredMode = Schema.RequiredMode.REQUIRED)
     public String additionalMaterial;
 
-    @Schema(description = "Legal Material", requiredMode = Schema.RequiredMode.REQUIRED)
     public String legalMaterial;
 
-    @Schema(description = "Homepage", requiredMode = Schema.RequiredMode.REQUIRED)
     public String homepage;
 
-    @Schema(description = "Creator", requiredMode = Schema.RequiredMode.REQUIRED)
     public String creator;
 
-    @Schema(description = "Contributor", requiredMode = Schema.RequiredMode.REQUIRED)
     public String contributor;
 
-    @Schema(description = "validationState")
     public String validationState;
 
     public String getId() {

@@ -9,6 +9,7 @@ public record Ddi4DataRelationship(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
+        @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("DataRelationshipName") DataRelationshipName dataRelationshipName,
         @JsonProperty("LogicalRecord") LogicalRecord logicalRecord
 ) {

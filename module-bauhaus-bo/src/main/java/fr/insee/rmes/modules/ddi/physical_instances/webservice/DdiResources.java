@@ -1,16 +1,21 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodesListResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,7 +71,7 @@ public class DdiResources {
     @GetMapping("/physical-instance")
     public ResponseEntity<List<PartialPhysicalInstanceResponse>> getPhysicalInstances() {
         List<PartialPhysicalInstance> instances = ddiService.getPhysicalInstances();
-        
+
         List<PartialPhysicalInstanceResponse> responses = instances.stream()
                 .map(instance -> {
                     var response = PartialPhysicalInstanceResponse.fromDomain(instance);
@@ -78,12 +83,63 @@ public class DdiResources {
                     return response;
                 })
                 .toList();
-        
+
         return ResponseEntity.ok()
                 .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
                 .body(responses);
     }
 
+    @GetMapping("/codes-list")
+    public ResponseEntity<List<PartialCodesListResponse>> getCodesLists() {
+        List<PartialCodesList> codesLists = ddiService.getCodesLists();
+
+        List<PartialCodesListResponse> responses = codesLists.stream()
+                .map(codesList -> {
+                    var response = PartialCodesListResponse.fromDomain(codesList);
+                    response.add(linkTo(DdiResources.class)
+                            .slash("codes-list")
+                            .slash(codesList.agency())
+                            .slash(codesList.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+                .body(responses);
+    }
+
+    @GetMapping("/group")
+    public ResponseEntity<List<PartialGroupResponse>> getGroups() {
+        List<PartialGroup> groups = ddiService.getGroups();
+
+        List<PartialGroupResponse> responses = groups.stream()
+                .map(group -> {
+                    var response = PartialGroupResponse.fromDomain(group);
+                    response.add(linkTo(DdiResources.class)
+                            .slash("group")
+                            .slash(group.agency())
+                            .slash(group.id())
+                            .withSelfRel());
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+                .body(responses);
+    }
+
+    @GetMapping("/group/{agencyId}/{id}")
+    public ResponseEntity<Ddi4GroupResponse> getDdi4Group(
+            @PathVariable String agencyId,
+            @PathVariable(Constants.ID) String id) {
+        Ddi4GroupResponse response = ddiService.getDdi4Group(agencyId, id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
 
     @PostMapping("/physical-instance")
     public ResponseEntity<Ddi4Response> createPhysicalInstance(
@@ -119,19 +175,19 @@ public class DdiResources {
     public ResponseEntity<Ddi4Response> replacePhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable String id,
-            @RequestBody UpdatePhysicalInstanceRequest request) {
-        Ddi4Response updatedInstance = ddiService.updatePhysicalInstance(agencyId, id, request);
+            @RequestBody Ddi4Response ddi4Response) {
+        Ddi4Response updatedInstance = ddiService.updateFullPhysicalInstance(agencyId, id, ddi4Response);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(updatedInstance);
     }
 
     @PostMapping("/convert/ddi4-to-ddi3")
-    public ResponseEntity<Ddi3Response> convertDdi4ToDdi3(@RequestBody Ddi4Response ddi4) {
-        Ddi3Response ddi3 = ddi4toDdi3ConverterService.convertDdi4ToDdi3(ddi4);
+    public ResponseEntity<String> convertDdi4ToDdi3(@RequestBody Ddi4Response ddi4) {
+        String ddi3Xml = ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(ddi4);
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ddi3);
+                .contentType(MediaType.APPLICATION_XML)
+                .body(ddi3Xml);
     }
 
     @PostMapping("/convert/ddi3-to-ddi4")

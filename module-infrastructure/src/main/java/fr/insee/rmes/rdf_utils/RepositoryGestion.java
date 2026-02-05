@@ -191,6 +191,7 @@ public class RepositoryGestion {
         processConnection(connection-> connection.remove(object, predicate, value, graph), conn, "delete triplet whose object is "+ object);
 	}
 
+
 	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, Value value) throws RmesException {
 		try {
 			RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
@@ -209,6 +210,7 @@ public class RepositoryGestion {
 	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
 		deleteTripletByPredicateAndValue(object, predicate, graph, conn, null);
 	}
+
 	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph) throws RmesException {
 		deleteTripletByPredicateAndValue(object, predicate, graph, null);
 	}

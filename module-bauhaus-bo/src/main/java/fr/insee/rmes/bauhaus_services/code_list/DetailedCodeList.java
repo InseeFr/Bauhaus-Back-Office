@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -9,16 +8,12 @@ import java.util.List;
 public class DetailedCodeList {
 
 
-	@Schema(description = "Notation", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String notation;
 	
-	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String codeListLabelLg1;
 	
-	@Schema(description = "Label lg2")
 	public String codeListLabelLg2;
 	
-	@Schema(description = "Codes")
 	public List<CodeListItem> codes;
 
 	public String getNotation() {

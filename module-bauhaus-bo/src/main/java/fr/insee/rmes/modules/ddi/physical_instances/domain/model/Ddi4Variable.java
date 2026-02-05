@@ -9,6 +9,7 @@ public record Ddi4Variable(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
+        @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("VariableName") VariableName variableName,
         @JsonProperty("Label") Label label,
         @JsonProperty("Description") Description description,

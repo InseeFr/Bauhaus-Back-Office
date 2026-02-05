@@ -1,10 +1,11 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.StringWriter;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 
 /**
  * Helper class to generate DDI3 XML fragments using StAX XMLStreamWriter
@@ -52,6 +53,9 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.agency());
         writeElement(writer, DDI_REUSABLE_NS, ID, pi.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.version());
+
+        // Write BasedOnObject if present
+        writeBasedOnObject(writer, pi.basedOnObject());
 
         // Write Citation if present
         if (pi.citation() != null && pi.citation().title() != null) {
@@ -103,6 +107,9 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, AGENCY, dr.agency());
         writeElement(writer, DDI_REUSABLE_NS, ID, dr.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, dr.version());
+
+        // Write BasedOnObject if present
+        writeBasedOnObject(writer, dr.basedOnObject());
 
         // Write DataRelationshipName if present
         if (dr.dataRelationshipName() != null) {
@@ -171,11 +178,17 @@ public class Ddi3XmlWriter {
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
         writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, var.isUniversallyUnique());
         writer.writeAttribute(VERSION_DATE, var.versionDate());
+        if (var.isGeographic() != null && !var.isGeographic().isEmpty()) {
+            writer.writeAttribute("isGeographic", var.isGeographic());
+        }
 
         writeElement(writer, DDI_REUSABLE_NS, URN, var.urn());
         writeElement(writer, DDI_REUSABLE_NS, AGENCY, var.agency());
         writeElement(writer, DDI_REUSABLE_NS, ID, var.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, var.version());
+
+        // Write BasedOnObject if present
+        writeBasedOnObject(writer, var.basedOnObject());
 
         if (var.variableName() != null) {
             writer.writeStartElement("VariableName");
@@ -255,6 +268,44 @@ public class Ddi3XmlWriter {
                 }
 
                 writer.writeEndElement(); // CodeRepresentation
+            }
+
+            if (var.variableRepresentation().dateTimeRepresentation() != null) {
+                DateTimeRepresentation dateTimeRep = var.variableRepresentation().dateTimeRepresentation();
+                writer.writeStartElement(DDI_REUSABLE_NS, "DateTimeRepresentation");
+
+                if (dateTimeRep.dateTypeCode() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "DateTypeCode", dateTimeRep.dateTypeCode());
+                }
+
+                if (dateTimeRep.dateFieldFormat() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "DateFieldFormat", dateTimeRep.dateFieldFormat());
+                }
+
+                writer.writeEndElement(); // DateTimeRepresentation
+            }
+
+            if (var.variableRepresentation().textRepresentation() != null) {
+                TextRepresentation textRep = var.variableRepresentation().textRepresentation();
+                writer.writeStartElement(DDI_REUSABLE_NS, "TextRepresentation");
+
+                if (textRep.blankIsMissingValue() != null) {
+                    writer.writeAttribute("blankIsMissingValue", textRep.blankIsMissingValue());
+                }
+
+                if (textRep.maxLength() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "MaxLength", String.valueOf(textRep.maxLength()));
+                }
+
+                if (textRep.minLength() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "MinLength", String.valueOf(textRep.minLength()));
+                }
+
+                if (textRep.regExp() != null) {
+                    writeElement(writer, DDI_REUSABLE_NS, "RegExp", textRep.regExp());
+                }
+
+                writer.writeEndElement(); // TextRepresentation
             }
         }
 
@@ -375,5 +426,132 @@ public class Ddi3XmlWriter {
             writer.writeCharacters(value);
             writer.writeEndElement();
         }
+    }
+
+    private void writeBasedOnObject(XMLStreamWriter writer, BasedOnObject basedOnObject) throws XMLStreamException {
+        if (basedOnObject != null && basedOnObject.basedOnReference() != null) {
+            BasedOnReference ref = basedOnObject.basedOnReference();
+            writer.writeStartElement(DDI_REUSABLE_NS, "BasedOnObject");
+            writer.writeStartElement(DDI_REUSABLE_NS, "BasedOnReference");
+            writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
+            writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
+            writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
+            writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", ref.typeOfObject());
+            writer.writeEndElement(); // BasedOnReference
+            writer.writeEndElement(); // BasedOnObject
+        }
+    }
+
+    /**
+     * Builds a complete DDI 3.3 FragmentInstance XML document from a Ddi3Response.
+     * This method creates the root FragmentInstance element, TopLevelReference, and all Fragment elements.
+     *
+     * @param ddi3Response The DDI3 response containing all items to include
+     * @return Complete XML document as String with XML declaration
+     */
+    public String buildFragmentInstanceDocument(Ddi3Response ddi3Response) {
+        return buildFragmentInstanceDocument(ddi3Response, null);
+    }
+
+    /**
+     * Builds a complete DDI 3.3 FragmentInstance XML document from a Ddi3Response.
+     * This method creates the root FragmentInstance element, TopLevelReference, and all Fragment elements.
+     *
+     * @param ddi3Response The DDI3 response containing all items to include
+     * @param topLevelReference Optional TopLevelReference to use; if null, will determine from items
+     * @return Complete XML document as String with XML declaration
+     */
+    public String buildFragmentInstanceDocument(Ddi3Response ddi3Response, TopLevelReference topLevelReference) {
+        if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+            throw new IllegalArgumentException("Ddi3Response must contain at least one item");
+        }
+
+        StringBuilder xml = new StringBuilder();
+
+        // Write XML declaration
+        xml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+
+        // Start FragmentInstance root element
+        xml.append("<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n");
+
+        // Determine which item to use for TopLevelReference
+        Ddi3Response.Ddi3Item topLevelItem;
+        String typeOfObject;
+
+        if (topLevelReference != null) {
+            // Use the provided topLevelReference to find the matching item
+            final String tlrId = topLevelReference.id();
+            final String tlrAgency = topLevelReference.agency();
+
+            topLevelItem = ddi3Response.items().stream()
+                    .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
+                    .findFirst()
+                    .orElse(ddi3Response.items().get(0));
+
+            typeOfObject = topLevelReference.typeOfObject();
+        } else {
+            // Fallback behavior: find first PhysicalInstance or use first item
+            topLevelItem = ddi3Response.items().stream()
+                    .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
+                    .findFirst()
+                    .orElse(ddi3Response.items().get(0));
+
+            // Determine TypeOfObject from itemType
+            typeOfObject = getTypeOfObjectFromItemType(topLevelItem.itemType());
+        }
+
+        xml.append("  <ddi:TopLevelReference>\n");
+        xml.append("    <r:Agency>").append(escapeXml(topLevelItem.agencyId())).append("</r:Agency>\n");
+        xml.append("    <r:ID>").append(escapeXml(topLevelItem.identifier())).append("</r:ID>\n");
+        xml.append("    <r:Version>").append(escapeXml(topLevelItem.version())).append("</r:Version>\n");
+        xml.append("    <r:TypeOfObject>").append(escapeXml(typeOfObject)).append("</r:TypeOfObject>\n");
+        xml.append("  </ddi:TopLevelReference>\n");
+
+        // Write all fragments
+        // Each item.item() already contains a complete <Fragment>...</Fragment> element
+        // We prepend "ddi:" to Fragment and adjust the namespaces
+        for (Ddi3Response.Ddi3Item item : ddi3Response.items()) {
+            if (item.item() != null && !item.item().isEmpty()) {
+                // The item.item() contains <Fragment>...</Fragment>
+                // We need to convert it to <ddi:Fragment>...</ddi:Fragment>
+                String fragment = item.item();
+                fragment = fragment.replace("<Fragment", "<ddi:Fragment");
+                fragment = fragment.replace("</Fragment>", "</ddi:Fragment>");
+                xml.append("  ").append(fragment).append("\n");
+            }
+        }
+
+        // Close FragmentInstance
+        xml.append("</ddi:FragmentInstance>");
+
+        return xml.toString();
+    }
+
+    /**
+     * Maps DDI 3.3 Item Type UUID to TypeOfObject string
+     */
+    private String getTypeOfObjectFromItemType(String itemType) {
+        return switch (itemType) {
+            case "a51e85bb-6259-4488-8df2-f08cb43485f8" -> "PhysicalInstance";
+            case "f39ff278-8500-45fe-a850-3906da2d242b" -> "DataRelationship";
+            case "683889c6-f74b-4d5e-92ed-908c0a42bb2d" -> "Variable";
+            case "8b108ef8-b642-4484-9c49-f88e4bf7cf1d" -> "CodeList";
+            case "7e47c269-bcab-40f7-a778-af7bbc4e3d00" -> "Category";
+            default -> "PhysicalInstance"; // Default fallback
+        };
+    }
+
+    /**
+     * Escapes special XML characters
+     */
+    private String escapeXml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&apos;");
     }
 }

@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.modules.commons.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
@@ -19,6 +18,7 @@ import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

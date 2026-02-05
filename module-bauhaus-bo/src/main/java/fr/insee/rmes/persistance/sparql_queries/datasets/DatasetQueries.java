@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.IRI;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 public class DatasetQueries extends GenericQueries {
@@ -19,13 +20,13 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getArchivageUnit.ftlh", params);
     }
 
-    public static String getDatasets(String datasetsGraph, String stamp) throws RmesException {
+    public static String getDatasets(String datasetsGraph, Set<String> stamps) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
         params.put("LG1", config.getLg1());
 
-        if(stamp != null){
-            params.put("STAMP", stamp);
+        if(stamps != null && !stamps.isEmpty()){
+            params.put("STAMP", stamps);
         }
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasets.ftlh", params);
     }

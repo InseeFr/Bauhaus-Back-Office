@@ -2,12 +2,11 @@ package fr.insee.rmes.modules.datasets.distributions.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
+import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.domain.Roles;
-import fr.insee.rmes.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.domain.auth.User;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.datasets.distributions.model.Distribution;
 import fr.insee.rmes.modules.datasets.distributions.model.DistributionsForSearch;
@@ -20,8 +19,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -87,7 +89,7 @@ class DistributionResourcesTest {
     }
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException, MissingUserInformationException {
         List<PartialDataset> datasets = new ArrayList<>();
         datasets.add(new PartialDataset(
                 "1",
@@ -95,20 +97,20 @@ class DistributionResourcesTest {
         ));
 
         when(datasetService.getDatasets()).thenReturn(datasets);
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), "fakeStampForDvAndQf")));
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), Set.of("fakeStampForDvAndQf"))));
         Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
     }
 
     @Test
-    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException {
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException, MissingUserInformationException {
         List<PartialDataset> datasets = new ArrayList<>();
         datasets.add(new PartialDataset(
                 "1",
                 "label"
         ));
 
-        when(datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf")).thenReturn(datasets);
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), "fakeStampForDvAndQf")));
+        when(datasetService.getDatasetsForDistributionCreation(Set.of("fakeStampForDvAndQf"))).thenReturn(datasets);
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), Set.of("fakeStampForDvAndQf"))));
         Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
     }
 
@@ -193,10 +195,11 @@ class DistributionResourcesTest {
 }
 
 
-@WebMvcTest(value = DistributionResources.class, properties = {
-        "fr.insee.rmes.bauhaus.force.ssl = false"
-})
-@Import({UserProviderFromSecurityContext.class, DefaultSecurityContext.class})
+@WebMvcTest(
+    value = DistributionResources.class,
+    excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class)
+)
+@AutoConfigureMockMvc(addFilters = false)
 class DistributionResourcesWebTest {
 
     @MockitoBean
@@ -207,9 +210,6 @@ class DistributionResourcesWebTest {
 
     @MockitoBean
     protected UserDecoder userDecoder;
-
-    @MockitoBean
-    FakeUserConfiguration fakeUserConfiguration;
 
     @Autowired
     MockMvc mockMvc;

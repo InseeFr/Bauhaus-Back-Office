@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.concepts.collections;
 import fr.insee.rmes.modules.concepts.collections.domain.DomainCollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
-import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.RandomIdGenerator;
+import fr.insee.rmes.modules.concepts.collections.domain.RandomIdGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -1,0 +1,42 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": []
+    }
+  ],
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/token/createtoken",
+        "function": "tokencreatetoken"
+      },
+      {
+        "source": "/api/v1/_query",
+        "function": "apiv1query"
+      },
+      {
+        "source": "/api/v1/item",
+        "function": "apiv1item"
+      },
+      {
+        "source": "/api/v1/ddiset/**",
+        "function": "apiv1ddiset"
+      }
+    ]
+  }
+}
