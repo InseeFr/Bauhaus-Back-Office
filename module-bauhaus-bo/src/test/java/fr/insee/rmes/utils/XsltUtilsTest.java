@@ -78,10 +78,10 @@ class XsltUtilsTest {
             public @NotNull Path toAbsolutePath() {return null;}
 
             @Override
-            public @NotNull Path toRealPath(@NotNull LinkOption... options) throws IOException {return null;}
+            public @NotNull Path toRealPath(@NotNull LinkOption... options) {return null;}
 
             @Override
-            public @NotNull WatchKey register(@NotNull WatchService watcher, WatchEvent.@NotNull Kind<?>[] events, @NotNull WatchEvent.Modifier... modifiers) throws IOException {return null;}
+            public @NotNull WatchKey register(@NotNull WatchService watcher, WatchEvent.@NotNull Kind<?>[] events, @NotNull WatchEvent.Modifier... modifiers) {return null;}
 
             @Override
             public int compareTo(@NotNull Path other) {return 0;}
