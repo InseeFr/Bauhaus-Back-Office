@@ -75,10 +75,7 @@ public class Config {
     private String documentsGraph;
     @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}")
     private String documentsStorageGestion;
-    @Value("${fr.insee.rmes.bauhaus.storage.document.publication}")
-    private String documentsStoragePublicationExt;
-    @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}")
-    private String documentsStoragePublicationInt;
+
     @Value("${fr.insee.web4g.baseURL}")
     private String documentsBaseUrl;
 
@@ -197,14 +194,6 @@ public class Config {
 
     public String getDocumentsStorageGestion() {
         return documentsStorageGestion;
-    }
-
-    public String getDocumentsStoragePublicationExterne() {
-        return documentsStoragePublicationExt;
-    }
-
-    public String getDocumentsStoragePublicationInterne() {
-        return documentsStoragePublicationInt;
     }
 
     public String getDocumentsBaseurl() {

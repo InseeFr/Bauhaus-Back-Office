@@ -4,5 +4,5 @@ WHERE {
 	 ?document rdf:type foaf:Document .
 	 ?document <http://schema.org/url> ?url 
 	 
-	 FILTER(REGEX(lcase(STR(?url)), '${url}')) 		
+	 FILTER(lcase(STR(?url)) = '${url}')
  }

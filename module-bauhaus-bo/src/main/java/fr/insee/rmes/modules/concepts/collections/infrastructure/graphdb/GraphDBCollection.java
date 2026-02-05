@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
-import fr.insee.rmes.modules.commons.domain.model.Lang;
-import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -9,6 +9,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 public record GraphDBCollection(
@@ -102,10 +104,14 @@ public record GraphDBCollection(
     }
 
     private static LocalDateTime parseDateTime(String dateString) {
-        if (dateString.contains("T")) {
-            return LocalDateTime.parse(dateString);
+        if (!dateString.contains("T")) {
+            return LocalDate.parse(dateString).atStartOfDay();
         }
-        return LocalDate.parse(dateString).atStartOfDay();
+        try {
+            return LocalDateTime.parse(dateString);
+        } catch (DateTimeParseException e) {
+            return OffsetDateTime.parse(dateString).toLocalDateTime();
+        }
     }
 
     private List<LocalisedLabel> generateLabels() {

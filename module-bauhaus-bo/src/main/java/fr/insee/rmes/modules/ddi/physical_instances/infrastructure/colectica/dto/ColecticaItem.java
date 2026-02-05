@@ -11,7 +11,7 @@ public record ColecticaItem(
     
     @JsonProperty("ItemName")
     Map<String, String> itemName,
-    
+
     @JsonProperty("Label")
     Map<String, String> label,
     

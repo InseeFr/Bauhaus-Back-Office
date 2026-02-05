@@ -1,0 +1,8 @@
+services:
+  graphdb:
+    image: ontotext/graphdb:10.8.4
+    restart: always
+    ports:
+      - "7200:7200"
+    environment:
+      GDB_JAVA_OPTS: "-Xmx1g -Xms512M"

@@ -3,14 +3,42 @@ package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.GenericQueries;
+import org.eclipse.rdf4j.model.IRI;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class OrganizationQueries extends GenericQueries{
 
 	public static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
 	public static final String ORGANIZATIONS_INSEE_GRAPH = "ORGANIZATIONS_INSEE_GRAPH";
-	public static final String ORGANIZATIONS_FOLDER = "organizations/";
+	public static final String ORGANIZATIONS_FOLDER = "fr/insee/rmes/modules/organisations/infrastructure/";
+
+    public static String generateCompactOrganisationQuery(String identifier) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+        params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+        params.put("LG1", config.getLg1());
+        params.put("IDENTIFIER", identifier);
+        return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "compactOrganisationQuery.ftlh", params);
+    }
+
+    public static String generateCompactOrganisationsQuery(List<String> identifiers) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+        params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+        params.put("LG1", config.getLg1());
+        params.put("IDENTIFIERS", identifiers);
+        return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "compactOrganisationQuery.ftlh", params);
+    }
+
+    public static String checkIfOrganisationExistsQuery(String iri) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+        params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+        params.put("IRI", iri);
+        return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "organisationExistsQuery.ftlh", params);
+    }
 
 	public static String organizationQuery(String identifier) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -53,4 +81,13 @@ public class OrganizationQueries extends GenericQueries{
 	}
 
 
+	public static String getOrganizationIdenfier(IRI from, String id, IRI expected) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
+		params.put(ORGANIZATIONS_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put("FROM_PREDICATE", from.toString());
+		params.put("ID", id);
+		params.put("EXPECTED_PREDICATE", expected.toString());
+		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getOrganizationIdentifier.ftlh", params);
+	}
 }

@@ -1,10 +1,8 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 
 public class MAS {
 
-	@Schema(description="Id of the Metadata Attribute Specification")
 	private String idMas;
 	private String masLabelLg1;
 	private String masLabelLg2;

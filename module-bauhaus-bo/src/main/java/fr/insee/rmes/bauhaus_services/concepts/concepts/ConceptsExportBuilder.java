@@ -8,6 +8,8 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.*;
 import org.apache.http.HttpStatus;
@@ -26,15 +28,16 @@ public class ConceptsExportBuilder extends RdfService {
     private static final String CONCEPT_VERSION = "conceptVersion";
 
     private final ConceptsUtils conceptsUtils;
-
+    private final OrganisationsService organisationsService;
     private final ExportUtils exportUtils;
 
     private static final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
     private static final String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
     private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
-    public ConceptsExportBuilder(ConceptsUtils conceptsUtils, ExportUtils exportUtils) {
+    public ConceptsExportBuilder(ConceptsUtils conceptsUtils, OrganisationsService organisationsService, ExportUtils exportUtils) {
         this.conceptsUtils = conceptsUtils;
+        this.organisationsService = organisationsService;
         this.exportUtils = exportUtils;
     }
 
@@ -58,6 +61,7 @@ public class ConceptsExportBuilder extends RdfService {
         JSONObject general = conceptsUtils.getConceptById(id);
         transformAltLabelListInString(general);
 
+
         JSONArray links = repoGestion.getResponseAsArray(ConceptConceptsQueries.conceptLinks(id));
         JSONObject notes = repoGestion.getResponseAsObject(
                 ConceptConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
@@ -78,11 +82,24 @@ public class ConceptsExportBuilder extends RdfService {
             concept.setModified(DateUtils.toDate(concept.getModified()));
             concept.setValid(DateUtils.toDate(concept.getValid()));
 
+
+            String creatorLabel = getHieLabel(concept.getCreator());
+            String contributorLabel = getHieLabel(concept.getContributor());
+            concept.setCreator(creatorLabel);
+            concept.setContributor(contributorLabel);
         } catch (JsonProcessingException e) {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
         }
         return concept;
 
+    }
+
+    private String getHieLabel(String hie) {
+        try {
+            return organisationsService.getCompactOrganisation(hie).label().value();
+        } catch (OrganisationFetchException e) {
+            return hie;
+        }
     }
 
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {

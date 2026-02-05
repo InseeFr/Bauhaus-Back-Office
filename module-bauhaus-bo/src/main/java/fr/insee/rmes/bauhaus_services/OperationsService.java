@@ -36,7 +36,7 @@ public interface OperationsService {
 
 	String getSeriesWithSims() throws RmesException;
 
-	String getSeriesWithStamp(String stamp) throws RmesException;
+	String getSeriesWithStamp() throws RmesException;
 	
 	void setSeries(String id, String body) throws RmesException;
 

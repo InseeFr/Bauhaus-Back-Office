@@ -115,30 +115,53 @@ public class OperationIndicatorsQueries extends GenericQueries{
 	}
 
 
-	public static String lastID() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
-		params.put(PRODUCT_BASE_URI, config.getProductsBaseUri());
-		return buildIndicatorRequest("getLastIndicatorId.ftlh", params);
+	public static String lastID() {
+		return "SELECT ?id \n"
+				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
+				+ "?uri ?b ?c .\n "
+				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
+				+ "BIND(SUBSTR( ?id , 2 ) AS ?intid) . \n"
+				+ "FILTER regex(STR(?uri),'/"+config.getProductsBaseUri()+"/') . \n"
+				+ "}} \n"
+				+ "ORDER BY DESC(xsd:integer(?intid)) \n"
+				+ "LIMIT 1";
 	}	
 
-	public static String checkIfExists(String id) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
-		params.put(PRODUCT_BASE_URI, config.getProductsBaseUri());
-		params.put("ID", id);
-		return buildIndicatorRequest("checkIfIndicatorExists.ftlh", params);
+	public static String checkIfExists(String id) {
+		return "ASK \n"
+				+ "WHERE  \n"
+				+ "{ graph <"+config.getProductsGraph()+">    \n"
+				+ "{?uri ?b ?c .\n "
+				+ "FILTER(STRENDS(STR(?uri),'/"+config.getProductsBaseUri()+"/" + id + "')) . }\n"
+				+ "}";
+		  	
 	}
 
+
+	public static String getCreatorsByIndicatorUri(String uris) {
+		return "SELECT ?creators { \n"
+				+ "?indic dc:creator ?creators . \n" 
+				+ "VALUES ?indic { " + uris + " } \n"
+				+ "}";
+	}
 
 	  private OperationIndicatorsQueries() {
 		    throw new IllegalStateException("Utility class");
 	}
 
 
-	public static String indicatorsWithSimsQuery() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		return buildIndicatorRequest("getIndicatorsWithSims.ftlh", params);
+	public static String indicatorsWithSimsQuery() {
+		//config.OPERATIONS_GRAPH
+		return "SELECT DISTINCT ?labelLg1 ?idSims \n"
+				+ "WHERE { \n"
+				+ "?indic a insee:StatisticalIndicator . \n"
+				+ "?indic skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') \n"
+			 	+ "?report rdf:type sdmx-mm:MetadataReport . \n"
+				+ "?report sdmx-mm:target ?indic \n"
+				+ "BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ "} \n"
+				+ "GROUP BY ?labelLg1 ?idSims \n"
+				+ "ORDER BY ?labelLg1 ";
 	}
 }

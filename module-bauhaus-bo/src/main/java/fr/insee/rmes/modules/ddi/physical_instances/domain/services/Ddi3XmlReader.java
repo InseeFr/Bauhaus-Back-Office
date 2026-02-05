@@ -40,6 +40,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(piElement, AGENCY),
             xmlHelper.getElementText(piElement, ID),
             xmlHelper.getElementText(piElement, VERSION),
+            parseBasedOnObject(piElement),
             parseCitation(piElement),
             parseDataRelationshipReference(piElement)
         );
@@ -60,6 +61,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(drElement, AGENCY),
             xmlHelper.getElementText(drElement, ID),
             xmlHelper.getElementText(drElement, VERSION),
+            parseBasedOnObject(drElement),
             parseDataRelationshipName(drElement),
             parseLogicalRecord(drElement)
         );
@@ -80,11 +82,12 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(varElement, AGENCY),
             xmlHelper.getElementText(varElement, ID),
             xmlHelper.getElementText(varElement, VERSION),
+            parseBasedOnObject(varElement),
             parseVariableName(varElement),
             parseLabel(varElement),
             parseDescription(varElement),
             parseVariableRepresentation(varElement),
-            null
+            xmlHelper.getAttribute(varElement, "isGeographic")
         );
     }
 
@@ -155,6 +158,23 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(refElement, VERSION),
             xmlHelper.getElementText(refElement, "TypeOfObject")
         );
+    }
+
+    private BasedOnObject parseBasedOnObject(Element parent) {
+        Element basedOnObjectElement = xmlHelper.getChildElement(parent, "BasedOnObject");
+        if (basedOnObjectElement == null) return null;
+
+        Element refElement = xmlHelper.getChildElement(basedOnObjectElement, "BasedOnReference");
+        if (refElement == null) return null;
+
+        BasedOnReference basedOnReference = new BasedOnReference(
+            xmlHelper.getElementText(refElement, AGENCY),
+            xmlHelper.getElementText(refElement, ID),
+            xmlHelper.getElementText(refElement, VERSION),
+            xmlHelper.getElementText(refElement, "TypeOfObject")
+        );
+
+        return new BasedOnObject(basedOnReference);
     }
 
     private DataRelationshipName parseDataRelationshipName(Element parent) {
@@ -260,16 +280,20 @@ public class Ddi3XmlReader {
 
     private VariableRepresentation parseVariableRepresentation(Element parent) {
         Element vrElement = xmlHelper.getChildElement(parent, "VariableRepresentation");
-        if (vrElement == null) return new VariableRepresentation(null, null, null);
+        if (vrElement == null) return new VariableRepresentation(null, null, null, null, null);
 
         String role = xmlHelper.getElementText(vrElement, "VariableRole");
         CodeRepresentation codeRep = parseCodeRepresentation(vrElement);
         NumericRepresentation numRep = parseNumericRepresentation(vrElement);
+        DateTimeRepresentation dateTimeRep = parseDateTimeRepresentation(vrElement);
+        TextRepresentation textRep = parseTextRepresentation(vrElement);
 
         return new VariableRepresentation(
             role.isEmpty() ? null : role,
             codeRep,
-            numRep
+            numRep,
+            dateTimeRep,
+            textRep
         );
     }
 
@@ -328,6 +352,55 @@ public class Ddi3XmlReader {
         }
 
         return new CodeRepresentation(blankIsMissing, codeListRef);
+    }
+
+    private TextRepresentation parseTextRepresentation(Element parent) {
+        Element textRepElement = xmlHelper.getChildElement(parent, "TextRepresentation");
+        if (textRepElement == null) return null;
+
+        String blankIsMissing = xmlHelper.getAttribute(textRepElement, "blankIsMissingValue");
+        String minLengthStr = xmlHelper.getElementText(textRepElement, "MinLength");
+        String maxLengthStr = xmlHelper.getElementText(textRepElement, "MaxLength");
+        String regExp = xmlHelper.getElementText(textRepElement, "RegExp");
+
+        Integer minLength = null;
+        Integer maxLength = null;
+
+        if (minLengthStr != null && !minLengthStr.isEmpty()) {
+            try {
+                minLength = Integer.parseInt(minLengthStr);
+            } catch (NumberFormatException e) {
+                // Ignore invalid numbers
+            }
+        }
+
+        if (maxLengthStr != null && !maxLengthStr.isEmpty()) {
+            try {
+                maxLength = Integer.parseInt(maxLengthStr);
+            } catch (NumberFormatException e) {
+                // Ignore invalid numbers
+            }
+        }
+
+        return new TextRepresentation(
+            maxLength,
+            minLength,
+            regExp.isEmpty() ? null : regExp,
+            blankIsMissing
+        );
+    }
+
+    private DateTimeRepresentation parseDateTimeRepresentation(Element parent) {
+        Element dateTimeRepElement = xmlHelper.getChildElement(parent, "DateTimeRepresentation");
+        if (dateTimeRepElement == null) return null;
+
+        String dateTypeCode = xmlHelper.getElementText(dateTimeRepElement, "DateTypeCode");
+        String dateFieldFormat = xmlHelper.getElementText(dateTimeRepElement, "DateFieldFormat");
+
+        return new DateTimeRepresentation(
+            dateTypeCode.isEmpty() ? null : dateTypeCode,
+            dateFieldFormat.isEmpty() ? null : dateFieldFormat
+        );
     }
 
     private List<Code> parseCodes(Element parent) {

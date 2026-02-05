@@ -1,33 +1,19 @@
 package fr.insee.rmes.modules.classifications.nomenclatures.webservice;
 
-import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.classifications.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
-import fr.insee.rmes.config.swagger.model.Id;
-import fr.insee.rmes.config.swagger.model.IdLabel;
-import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
-import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
-import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
-import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
-import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationFamilyResponse;
-import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationSeriesResponse;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationResponse;
-import fr.insee.rmes.rbac.HasAccess;
-import fr.insee.rmes.rbac.RBAC;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import fr.insee.rmes.modules.classifications.nomenclatures.webservice.response.PartialClassificationSeriesResponse;
+import fr.insee.rmes.modules.classifications.series.model.PartialClassificationSeries;
+import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,18 +26,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/classifications")
-@Tag(name ="Classifications",description = "Classification API")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('classifications')")
-@SecurityRequirement(name = "bearerAuth")
-@ApiResponses(value = { 
-@ApiResponse(responseCode = "200", description = "Success"), 
-@ApiResponse(responseCode = "204", description = "No Content"),
-@ApiResponse(responseCode = "400", description = "Bad Request"), 
-@ApiResponse(responseCode = "401", description = "Unauthorized"),
-@ApiResponse(responseCode = "403", description = "Forbidden"), 
-@ApiResponse(responseCode = "404", description = "Not found"),
-@ApiResponse(responseCode = "406", description = "Not Acceptable"),
-@ApiResponse(responseCode = "500", description = "Internal server error") })
+@ConditionalOnModule("classifications")
 public class ClassificationsResources {
 
 
@@ -68,8 +43,6 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/families", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
-	@Operation(summary = "List of classification families",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialClassificationFamilyResponse.class))))})
 	public ResponseEntity<List<PartialClassificationFamilyResponse>> getFamilies() throws RmesException {
 		List<PartialClassificationFamily> families = classificationsService.getFamilies();
 
@@ -88,8 +61,6 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/family/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Classification family",
-			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = FamilyClass.class)))})
 	public ResponseEntity<Object> getFamily(@PathVariable(Constants.ID) String id) throws RmesException {
 		String family = classificationsService.getFamily(id);
 		return ResponseEntity.status(HttpStatus.OK).body(family);
@@ -97,8 +68,6 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_FAMILY, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/family/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Members of family",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
 	public ResponseEntity<Object> getFamilyMembers(@PathVariable(Constants.ID) String id) throws RmesException {
 		String familyMembers = classificationsService.getFamilyMembers(id);
 		return ResponseEntity.status(HttpStatus.OK).body(familyMembers);
@@ -106,8 +75,6 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/series", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
-	@Operation(summary = "List of classification series",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialClassificationSeriesResponse.class))))})
 	public ResponseEntity<List<PartialClassificationSeriesResponse>> getSeries() throws RmesException {
 		List<PartialClassificationSeries> series = classificationsService.getSeries();
 
@@ -133,8 +100,6 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/series/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Members of series",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
 	public ResponseEntity<Object> getSeriesMembers(@PathVariable(Constants.ID) String id) throws RmesException {
 		String seriesMembers = classificationsService.getSeriesMembers(id);
 		return ResponseEntity.status(HttpStatus.OK).body(seriesMembers);
@@ -142,8 +107,6 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="",produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
-	@Operation(summary = "List of classifications",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=PartialClassificationResponse.class))))})
 	public ResponseEntity<List<PartialClassificationResponse>> getClassifications() throws RmesException {
 		List<PartialClassification> classifications = classificationsService.getClassifications();
 
@@ -170,17 +133,15 @@ public class ClassificationsResources {
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value="/classification/{id}")
-	@io.swagger.v3.oas.annotations.Operation(summary = "Update an existing classification" )
 	public ResponseEntity<Id> updateClassification(
 			@PathVariable(Constants.ID) Id id,
-			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
+			@RequestBody String body) throws RmesException {
 		classificationsService.updateClassification(id.identifier(), body);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	@HasAccess(module = RBAC.Module.CLASSIFICATION_CLASSIFICATION, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value="/classification/{id}/validate")
-	@io.swagger.v3.oas.annotations.Operation(summary = "Publish a classification")
 	public ResponseEntity<Id> publishClassification(
 			@PathVariable(Constants.ID) Id id) throws RmesException {
 		classificationsService.setClassificationValidation(id.identifier());
@@ -226,7 +187,7 @@ public class ClassificationsResources {
 	@PutMapping(value="/classification/{classificationId}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> updateClassificationItem(
 			@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId,
-			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = ClassificationItem.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
+			@RequestBody String body) throws RmesException {
 		classificationItemService.updateClassificationItem(classificationId, itemId, body);
 		return ResponseEntity.status(HttpStatus.OK).body(itemId);
 	}

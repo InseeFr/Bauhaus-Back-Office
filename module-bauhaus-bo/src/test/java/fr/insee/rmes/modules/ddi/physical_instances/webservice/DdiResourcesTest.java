@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -94,6 +96,64 @@ class DdiResourcesTest {
         assertEquals("http://localhost:8080/ddi/physical-instance/fr.insee/pi-2", result.get(1).getRequiredLink("self").getHref());
         
         verify(ddiService).getPhysicalInstances();
+    }
+
+    @Test
+    void shouldGetGroups() {
+        List<PartialGroup> expectedGroups = new ArrayList<>();
+        expectedGroups.add(new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee"));
+        expectedGroups.add(new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee"));
+        when(ddiService.getGroups()).thenReturn(expectedGroups);
+
+        ResponseEntity<List<PartialGroupResponse>> response = ddiResources.getGroups();
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        List<PartialGroupResponse> result = response.getBody();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        // Verify first group data and links
+        assertEquals("group-1", result.getFirst().getId());
+        assertEquals("Base permanente des équipements", result.getFirst().getLabel());
+        assertNotNull(result.getFirst().getLinks());
+        assertEquals(1, result.getFirst().getLinks().toList().size());
+        assertEquals("http://localhost:8080/ddi/group/fr.insee/group-1", result.getFirst().getRequiredLink("self").getHref());
+
+        // Verify second group data and links
+        assertEquals("group-2", result.get(1).getId());
+        assertEquals("Recensement de la population", result.get(1).getLabel());
+        assertNotNull(result.get(1).getLinks());
+        assertEquals(1, result.get(1).getLinks().toList().size());
+        assertEquals("http://localhost:8080/ddi/group/fr.insee/group-2", result.get(1).getRequiredLink("self").getHref());
+
+        verify(ddiService).getGroups();
+    }
+
+    @Test
+    void shouldGetDdi4Group() {
+        // Given
+        String agencyId = "fr.insee";
+        String id = "10a689ce-7006-429b-8e84-036b7787b422";
+        Ddi4GroupResponse expectedResponse = createMockDdi4GroupResponse();
+        when(ddiService.getDdi4Group(agencyId, id)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4GroupResponse> result = ddiResources.getDdi4Group(agencyId, id);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+
+        Ddi4GroupResponse responseBody = result.getBody();
+        assertNotNull(responseBody);
+        assertEquals("test-schema", responseBody.schema());
+        assertEquals(1, responseBody.group().size());
+        assertEquals(2, responseBody.studyUnit().size());
+        assertEquals("10a689ce-7006-429b-8e84-036b7787b422", responseBody.group().get(0).id());
+
+        verify(ddiService).getDdi4Group(agencyId, id);
     }
 
     @Test
@@ -181,12 +241,9 @@ class DdiResourcesTest {
         // Given
         String agencyId = "fr.insee";
         String instanceId = "test-id";
-        UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
-            "Replaced Physical Instance Label",
-            "Replaced DataRelationship Name"
-        );
+        Ddi4Response request = createMockDdi4Response(); // Use full Ddi4Response for PUT
         Ddi4Response expectedResponse = createMockDdi4Response();
-        when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
+        when(ddiService.updateFullPhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
 
         // When
         ResponseEntity<Ddi4Response> result = ddiResources.replacePhysicalInstance(agencyId, instanceId, request);
@@ -200,7 +257,7 @@ class DdiResourcesTest {
         assertNotNull(responseBody);
         assertEquals("test-schema", responseBody.schema());
 
-        verify(ddiService).updatePhysicalInstance(agencyId, instanceId, request);
+        verify(ddiService).updateFullPhysicalInstance(agencyId, instanceId, request);
     }
 
     @Test
@@ -234,29 +291,49 @@ class DdiResourcesTest {
     void shouldConvertDdi4ToDdi3() {
         // Given
         Ddi4Response ddi4Request = createMockDdi4Response();
-        Ddi3Response expectedDdi3Response = createMockDdi3Response();
-        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3(ddi4Request)).thenReturn(expectedDdi3Response);
+        String expectedXml = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <ddi:FragmentInstance xmlns:r="ddi:reusable:3_3" xmlns:ddi="ddi:instance:3_3">
+              <ddi:TopLevelReference>
+                <r:Agency>fr.insee</r:Agency>
+                <r:ID>test-id</r:ID>
+                <r:Version>1</r:Version>
+                <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>
+              </ddi:TopLevelReference>
+              <ddi:Fragment xmlns:r="ddi:reusable:3_3">
+                <PhysicalInstance xmlns="ddi:physicalinstance:3_3" isUniversallyUnique="true" versionDate="2024-06-03T14:29:23.4049817Z">
+                  <r:URN>urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1</r:URN>
+                  <r:Agency>fr.insee</r:Agency>
+                  <r:ID>test-id</r:ID>
+                  <r:Version>1</r:Version>
+                </PhysicalInstance>
+              </ddi:Fragment>
+            </ddi:FragmentInstance>
+            """;
+        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(ddi4Request)).thenReturn(expectedXml);
 
         // When
-        ResponseEntity<Ddi3Response> result = ddiResources.convertDdi4ToDdi3(ddi4Request);
+        ResponseEntity<String> result = ddiResources.convertDdi4ToDdi3(ddi4Request);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
 
-        Ddi3Response responseBody = result.getBody();
+        String responseBody = result.getBody();
         assertNotNull(responseBody);
-        assertNotNull(responseBody.items());
-        assertEquals(1, responseBody.items().size());
 
-        Ddi3Response.Ddi3Item item = responseBody.items().get(0);
-        assertEquals("a51e85bb-6259-4488-8df2-f08cb43485f8", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("test-id", item.identifier());
-        assertEquals("1", item.version());
+        // Verify XML structure
+        assertTrue(responseBody.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"));
+        assertTrue(responseBody.contains("<ddi:FragmentInstance"));
+        assertTrue(responseBody.contains("<ddi:TopLevelReference>"));
+        assertTrue(responseBody.contains("<r:Agency>fr.insee</r:Agency>"));
+        assertTrue(responseBody.contains("<r:ID>test-id</r:ID>"));
+        assertTrue(responseBody.contains("<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"));
+        assertTrue(responseBody.contains("<ddi:Fragment"));
+        assertTrue(responseBody.contains("</ddi:FragmentInstance>"));
 
-        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3(ddi4Request);
+        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3Xml(ddi4Request);
     }
 
     @Test
@@ -294,25 +371,22 @@ class DdiResourcesTest {
             "file:/jsonSchema.json",
             null, null, null, null, null, null
         );
-        Ddi3Response emptyDdi3 = new Ddi3Response(
-            new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
-            List.of()
-        );
-        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3(emptyDdi4)).thenReturn(emptyDdi3);
+        String emptyXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\"/>";
+        when(ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(emptyDdi4)).thenReturn(emptyXml);
 
         // When
-        ResponseEntity<Ddi3Response> result = ddiResources.convertDdi4ToDdi3(emptyDdi4);
+        ResponseEntity<String> result = ddiResources.convertDdi4ToDdi3(emptyDdi4);
 
         // Then
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, result.getHeaders().getContentType());
 
-        Ddi3Response responseBody = result.getBody();
+        String responseBody = result.getBody();
         assertNotNull(responseBody);
-        assertNotNull(responseBody.items());
-        assertEquals(0, responseBody.items().size());
+        assertTrue(responseBody.contains("<ddi:FragmentInstance"));
 
-        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3(emptyDdi4);
+        verify(ddi4toDdi3ConverterService).convertDdi4ToDdi3Xml(emptyDdi4);
     }
 
     @Test
@@ -356,7 +430,7 @@ class DdiResourcesTest {
             "true", "2024-06-03T14:29:23.4049817Z",
             "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
             "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1",
-            citation, dataRelRef
+            null, citation, dataRelRef
         );
 
         StringValue drNameStringValue = new StringValue("fr-FR", "Dessin de fichier thl-CASD");
@@ -366,7 +440,7 @@ class DdiResourcesTest {
             "true", "2024-06-03T14:29:23.4049817Z",
             "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
-            drName, null
+            null, drName, null
         );
 
         TopLevelReference topLevelRef = new TopLevelReference(
@@ -421,6 +495,60 @@ class DdiResourcesTest {
         return new Ddi3Response(
             new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
             List.of(item)
+        );
+    }
+
+    private Ddi4GroupResponse createMockDdi4GroupResponse() {
+        // Create mock citation
+        StringValue titleStringValue = new StringValue("fr-FR", "Base permanente des équipements");
+        Title title = new Title(titleStringValue);
+        Citation citation = new Citation(title);
+
+        // Create StudyUnit references
+        StudyUnitReference suRef1 = new StudyUnitReference("fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1", "StudyUnit");
+        StudyUnitReference suRef2 = new StudyUnitReference("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
+
+        // Create Group
+        Ddi4Group group = new Ddi4Group(
+            "true", "2025-01-09T09:00:00.000000Z",
+            "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
+            "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
+            "abcde", citation, List.of(suRef1, suRef2)
+        );
+
+        // Create StudyUnits
+        StringValue su1TitleStringValue = new StringValue("fr-FR", "BPE 2021");
+        Title su1Title = new Title(su1TitleStringValue);
+        Citation su1Citation = new Citation(su1Title);
+
+        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+            "true", "2025-01-09T09:00:00.000000Z",
+            "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
+            "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
+            su1Citation
+        );
+
+        StringValue su2TitleStringValue = new StringValue("fr-FR", "BPE 2022");
+        Title su2Title = new Title(su2TitleStringValue);
+        Citation su2Citation = new Citation(su2Title);
+
+        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+            "true", "2025-01-09T09:00:00.000000Z",
+            "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
+            "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
+            su2Citation
+        );
+
+        // Create TopLevelReference
+        TopLevelReference topLevelRef = new TopLevelReference(
+            "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1", "Group"
+        );
+
+        return new Ddi4GroupResponse(
+            "test-schema",
+            List.of(topLevelRef),
+            List.of(group),
+            List.of(studyUnit1, studyUnit2)
         );
     }
 

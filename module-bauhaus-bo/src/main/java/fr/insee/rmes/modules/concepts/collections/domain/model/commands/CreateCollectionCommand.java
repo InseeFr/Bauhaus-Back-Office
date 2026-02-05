@@ -1,13 +1,12 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model.commands;
 
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
-import fr.insee.rmes.modules.commons.domain.model.Lang;
-import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class CreateCollectionCommand {

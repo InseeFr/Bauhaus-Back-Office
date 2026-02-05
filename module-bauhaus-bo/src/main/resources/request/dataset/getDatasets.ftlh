@@ -9,6 +9,7 @@ WHERE {
 
 <#if STAMP??>
     ?catalogRecordUri foaf:primaryTopic ?uri .
-    ?catalogRecordUri dc:contributor '${STAMP}' .
+    ?catalogRecordUri dc:contributor ?contributor .
+    VALUES ?contributor { <#list STAMP as s>'${s}' </#list>}
 </#if>
 }

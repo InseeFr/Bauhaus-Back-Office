@@ -1,42 +1,30 @@
 package fr.insee.rmes.model.operations;
 
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import io.swagger.v3.oas.annotations.media.Schema;
+import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import org.springframework.util.ObjectUtils;
 
 public class Operation {
 
-	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 
-	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String prefLabelLg1;
 
-	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-	@Schema(description = "Alternative value lg1")
 	public String altLabelLg1;
 
-	@Schema(description = "Alternative value lg2")
 	public String altLabelLg2;
 
-	@Schema(description = "Series")
 	public IdLabelTwoLangs series;
 	
-	@Schema(description = "Sims Id")
 	public String idSims;
 
-	@Schema(description =  "Creation date")
 	private String created;
 
-	@Schema(description =  "Update date")
 	private String modified;
 
-	@Schema(description =  "Validation State")
 	private String validationState;
 
-	@Schema(description = "millesime")
 	private Integer year;
 
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,

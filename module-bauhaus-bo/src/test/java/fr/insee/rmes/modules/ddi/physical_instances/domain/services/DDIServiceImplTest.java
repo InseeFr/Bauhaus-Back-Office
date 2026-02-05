@@ -1,9 +1,18 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StringValue;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Title;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -140,5 +149,86 @@ class DDIServiceImplTest {
         assertNotNull(result);
         assertEquals("new-schema", result.schema());
         verify(ddiRepository).createPhysicalInstance(request);
+    }
+
+    @Test
+    void shouldGetGroups() {
+        // Given
+        List<PartialGroup> expectedGroups = List.of(
+                new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee"),
+                new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getGroups()).thenReturn(expectedGroups);
+
+        // When
+        List<PartialGroup> result = ddiService.getGroups();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("group-1", result.get(0).id());
+        assertEquals("Base permanente des équipements", result.get(0).label());
+        assertEquals("group-2", result.get(1).id());
+        assertEquals("Recensement de la population", result.get(1).label());
+
+        verify(ddiRepository).getGroups();
+    }
+
+    @Test
+    void shouldGetDdi4Group() {
+        // Given
+        String agencyId = "fr.insee";
+        String groupId = "10a689ce-7006-429b-8e84-036b7787b422";
+
+        Citation citation = new Citation(new Title(new StringValue("fr-FR", "Base permanente des équipements")));
+        StudyUnitReference suRef1 = new StudyUnitReference(agencyId, "su-1", "1", "StudyUnit");
+        StudyUnitReference suRef2 = new StudyUnitReference(agencyId, "su-2", "1", "StudyUnit");
+
+        Ddi4Group group = new Ddi4Group(
+            "true", "2025-01-09T09:00:00Z",
+            "urn:ddi:fr.insee:" + groupId + ":1",
+            agencyId, groupId, "1",
+            "bauhaus", citation, List.of(suRef1, suRef2)
+        );
+
+        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+            "true", "2025-01-09T09:00:00Z",
+            "urn:ddi:fr.insee:su-1:1",
+            agencyId, "su-1", "1",
+            new Citation(new Title(new StringValue("fr-FR", "BPE 2021")))
+        );
+
+        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+            "true", "2025-01-09T09:00:00Z",
+            "urn:ddi:fr.insee:su-2:1",
+            agencyId, "su-2", "1",
+            new Citation(new Title(new StringValue("fr-FR", "BPE 2022")))
+        );
+
+        TopLevelReference topLevelRef = new TopLevelReference(agencyId, groupId, "1", "Group");
+
+        Ddi4GroupResponse expectedResponse = new Ddi4GroupResponse(
+            "ddi:4.0",
+            List.of(topLevelRef),
+            List.of(group),
+            List.of(studyUnit1, studyUnit2)
+        );
+
+        when(ddiRepository.getGroup(agencyId, groupId)).thenReturn(expectedResponse);
+
+        // When
+        Ddi4GroupResponse result = ddiService.getDdi4Group(agencyId, groupId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("ddi:4.0", result.schema());
+        assertEquals(1, result.group().size());
+        assertEquals(groupId, result.group().get(0).id());
+        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().string().text());
+        assertEquals(2, result.studyUnit().size());
+        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().string().text());
+        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().string().text());
+
+        verify(ddiRepository).getGroup(agencyId, groupId);
     }
 }

@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model;
 
 
-import fr.insee.rmes.modules.commons.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedLocalisedLabelException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -519,6 +519,142 @@ class DDI3toDDI4ConverterServiceImplTest {
     }
 
     @Test
+    void shouldConvertVariableWithTextRepresentationFromDdi3() {
+        // Given
+        String variableXml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                    <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363" isGeographic="true">
+                        <r:URN>urn:ddi:fr.insee:Variable.NAME:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>NAME</r:ID>
+                        <r:Version>1</r:Version>
+                        <VariableName>
+                            <r:String xml:lang="fr-FR">NAME</r:String>
+                        </VariableName>
+                        <r:Label>
+                            <r:Content xml:lang="fr-FR">Name</r:Content>
+                        </r:Label>
+                        <r:Description>
+                            <r:Content xml:lang="fr-FR">Person name</r:Content>
+                        </r:Description>
+                        <VariableRepresentation>
+                            <r:TextRepresentation blankIsMissingValue="false">
+                                <r:MinLength>1</r:MinLength>
+                                <r:MaxLength>50</r:MaxLength>
+                                <r:RegExp>[A-Za-z ]+</r:RegExp>
+                            </r:TextRepresentation>
+                        </VariableRepresentation>
+                    </Variable>
+                </Fragment>
+                """;
+
+        Ddi3Response ddi3 = new Ddi3Response(
+                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                List.of(new Ddi3Response.Ddi3Item(
+                        "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                        "fr.insee",
+                        "1",
+                        "NAME",
+                        variableXml,
+                        "2025-01-21T13:48:46.363",
+                        "abcde",
+                        false,
+                        false,
+                        false,
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+                ))
+        );
+
+        // When
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.variable());
+        assertEquals(1, result.variable().size());
+
+        Ddi4Variable var = result.variable().get(0);
+        assertEquals("true", var.isGeographic());
+        assertEquals("NAME", var.variableName().string().text());
+        assertEquals("Name", var.label().content().text());
+        assertEquals("Person name", var.description().content().text());
+
+        assertNotNull(var.variableRepresentation());
+        assertNotNull(var.variableRepresentation().textRepresentation());
+
+        TextRepresentation textRep = var.variableRepresentation().textRepresentation();
+        assertEquals(50, textRep.maxLength());
+        assertEquals(1, textRep.minLength());
+        assertEquals("[A-Za-z ]+", textRep.regExp());
+        assertEquals("false", textRep.blankIsMissingValue());
+    }
+
+    @Test
+    void shouldConvertVariableWithDateTimeRepresentationFromDdi3() {
+        // Given
+        String variableXml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                    <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
+                        <r:URN>urn:ddi:fr.insee:Variable.BIRTHDATE:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>BIRTHDATE</r:ID>
+                        <r:Version>1</r:Version>
+                        <VariableName>
+                            <r:String xml:lang="fr-FR">BIRTHDATE</r:String>
+                        </VariableName>
+                        <r:Label>
+                            <r:Content xml:lang="fr-FR">Birth Date</r:Content>
+                        </r:Label>
+                        <VariableRepresentation>
+                            <r:DateTimeRepresentation>
+                                <r:DateTypeCode>Date</r:DateTypeCode>
+                                <r:DateFieldFormat>YYYY-MM-DD</r:DateFieldFormat>
+                            </r:DateTimeRepresentation>
+                        </VariableRepresentation>
+                    </Variable>
+                </Fragment>
+                """;
+
+        Ddi3Response ddi3 = new Ddi3Response(
+                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                List.of(new Ddi3Response.Ddi3Item(
+                        "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                        "fr.insee",
+                        "1",
+                        "BIRTHDATE",
+                        variableXml,
+                        "2025-01-21T13:48:46.363",
+                        "abcde",
+                        false,
+                        false,
+                        false,
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+                ))
+        );
+
+        // When
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.variable());
+        assertEquals(1, result.variable().size());
+
+        Ddi4Variable var = result.variable().get(0);
+        assertEquals("BIRTHDATE", var.variableName().string().text());
+        assertEquals("Birth Date", var.label().content().text());
+
+        assertNotNull(var.variableRepresentation());
+        assertNotNull(var.variableRepresentation().dateTimeRepresentation());
+
+        DateTimeRepresentation dateTimeRep = var.variableRepresentation().dateTimeRepresentation();
+        assertEquals("Date", dateTimeRep.dateTypeCode());
+        assertEquals("YYYY-MM-DD", dateTimeRep.dateFieldFormat());
+    }
+
+    @Test
     void shouldThrowExceptionForMalformedXml() {
         // Given
         Ddi3Response ddi3 = new Ddi3Response(

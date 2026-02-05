@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static javax.xml.XMLConstants.*;
 
@@ -41,21 +43,27 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
+    private final ColecticaConfiguration colecticaConfiguration;
     private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
-    private Ddi4Response cachedDdi4Response;
+    private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private String cachedAuthToken;
+    private Set<String> denyListCache;
 
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ObjectMapper objectMapper,
-            DDI3toDDI4ConverterService ddi3ToDdi4Converter
+            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+            ColecticaConfiguration colecticaConfiguration
             ) {
         this.restTemplate = restTemplate;
         this.instanceConfiguration = instanceConfiguration;
         this.objectMapper = objectMapper;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
+        this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
+        this.colecticaConfiguration = colecticaConfiguration;
     }
 
     /**
@@ -151,6 +159,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                         String id = item.identifier();
                         String label = extractLabelFromItem(item);
                         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
                         Date date = null;
                         try {
                             date = formatter.parse(item.versionDate());
@@ -161,6 +170,102 @@ public class DDIRepositoryImpl implements DDIRepository {
                         return new PartialPhysicalInstance(id, label, date, agency);
                     })
                     .toList();
+        });
+    }
+
+    @Override
+    public List<PartialGroup> getGroups() {
+        logger.info("Getting groups from Colectica API via HTTP");
+
+        return executeWithAuth(token -> {
+            // Set up the request with authorization header
+            String url = instanceConfiguration.baseApiUrl() + "_query";
+
+            // Create request body with Group itemType
+            QueryRequest requestBody = new QueryRequest(List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23"));
+
+            // Create headers with Bearer token and Content-Type
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Create HTTP entity with headers and body
+            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // Make the request with authentication
+            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+
+            return response.results().stream()
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialGroup(id, label, date, agency);
+                    })
+                    .toList();
+        });
+    }
+
+    @Override
+    public List<PartialCodesList> getCodesLists() {
+        logger.info("Getting codes lists from Colectica API via HTTP");
+
+        return executeWithAuth(token -> {
+            // Set up the request with authorization header
+            String url = instanceConfiguration.baseApiUrl() + "_query";
+
+            // Create request body with CodeList itemType
+            QueryRequest requestBody = new QueryRequest(List.of("8b108ef8-b642-4484-9c49-f88e4bf7cf1d"));
+
+            // Create headers with Bearer token and Content-Type
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Create HTTP entity with headers and body
+            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // Make the request with authentication
+            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+
+            int totalCount = response.results().size();
+            logger.debug("Received {} code lists from Colectica API", totalCount);
+
+            List<PartialCodesList> result = response.results().stream()
+                    .filter(item -> !isCodeListInDenyList(item.agencyId(), item.identifier()))
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialCodesList(id, label, date, agency);
+                    })
+                    .toList();
+
+            int filteredCount = totalCount - result.size();
+            if (filteredCount > 0) {
+                logger.info("Filtered {} code list(s) from {} total using deny list (returned {} code lists)",
+                        filteredCount, totalCount, result.size());
+            } else {
+                logger.debug("No code lists filtered, returning all {} code lists", result.size());
+            }
+
+            return result;
         });
     }
     
@@ -190,6 +295,61 @@ public class DDIRepositoryImpl implements DDIRepository {
             label = languageMap.values().stream().findFirst().orElse(null);
         }
         return label;
+    }
+
+    /**
+     * Check if a code list is in the deny list.
+     *
+     * <p>This method uses a cached HashSet for O(1) lookup performance.
+     * The cache is lazily initialized on first access.
+     *
+     * <p>Code lists matching entries in the deny list (based on agencyId and id)
+     * will be excluded from the results. This is useful for filtering out
+     * deprecated, test, or otherwise unwanted code lists from the Colectica repository.
+     *
+     * <p>Configuration example in properties file:
+     * <pre>
+     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].agency-id = fr.insee
+     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].id = 2a22ba00-a977-4a61-a582-99025c6b0582
+     * </pre>
+     *
+     * @param agencyId The agency ID of the code list to check
+     * @param id The ID of the code list to check
+     * @return true if the code list should be filtered out, false otherwise
+     * @see ColecticaConfiguration.CodeListDenyEntry
+     */
+    private boolean isCodeListInDenyList(String agencyId, String id) {
+        if (colecticaConfiguration == null || colecticaConfiguration.codeListDenyList() == null) {
+            return false;
+        }
+
+        // Lazy initialization of cache for O(1) lookups
+        if (denyListCache == null) {
+            denyListCache = colecticaConfiguration.codeListDenyList().stream()
+                    .map(entry -> createDenyListKey(entry.agencyId(), entry.id()))
+                    .collect(Collectors.toSet());
+            logger.info("Initialized code list deny list cache with {} entries", denyListCache.size());
+        }
+
+        String key = createDenyListKey(agencyId, id);
+        boolean isDenied = denyListCache.contains(key);
+
+        if (isDenied) {
+            logger.debug("Filtering out code list: agencyId={}, id={}", agencyId, id);
+        }
+
+        return isDenied;
+    }
+
+    /**
+     * Creates a unique key for deny list lookups by combining agencyId and id.
+     *
+     * @param agencyId The agency ID
+     * @param id The code list ID
+     * @return A unique key string in format "agencyId:id"
+     */
+    private String createDenyListKey(String agencyId, String id) {
+        return agencyId + ":" + id;
     }
 
     /**
@@ -264,8 +424,15 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
             return "683889c6-f74b-4d5e-92ed-908c0a42bb2d"; // Variable type UUID
         }
-        // Return null for unsupported types (CodeList, Category, etc.)
-        // These will be skipped during processing
+        // Check for CodeList
+        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "CodeList").getLength() > 0) {
+            return "8b108ef8-b642-4484-9c49-f88e4bf7cf1d"; // CodeList type UUID
+        }
+        // Check for Category
+        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Category").getLength() > 0) {
+            return "7e47c269-bcab-40f7-a778-af7bbc4e3d00"; // Category type UUID
+        }
+        // Return null for unsupported types
         return null;
     }
 
@@ -308,12 +475,6 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
-        if (cachedDdi4Response != null && cachedDdi4Response.physicalInstance() != null
-                && !cachedDdi4Response.physicalInstance().isEmpty()
-                && cachedDdi4Response.physicalInstance().get(0).id().equals(id)
-                && cachedDdi4Response.physicalInstance().get(0).agency().equals(agencyId)) {
-            return cachedDdi4Response;
-        }
 
         return executeWithAuth(token -> {
             try {
@@ -376,15 +537,246 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 // Use the converter service to convert DDI3 to DDI4
                 logger.info("Converting DDI3 to DDI4 using converter service");
-                cachedDdi4Response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
+                var response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
 
                 logger.info("Successfully converted Physical Instance to DDI4 format");
-                return cachedDdi4Response;
+                return response;
 
             } catch (Exception e) {
                 throw new RuntimeException("Failed to process DDI response", e);
             }
         });
+    }
+
+    @Override
+    public Ddi4GroupResponse getGroup(String agencyId, String id) {
+        logger.info("Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}", agencyId, id);
+
+        return executeWithAuth(token -> {
+            try {
+                // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint
+                String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
+                        + agencyId + "/"
+                        + id;
+
+                logger.info("Fetching full DDI set for Group from: {}", ddisetUrl);
+
+                // Create headers with Bearer token
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(token);
+
+                HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
+
+                // The response from Colectica ddiset endpoint contains XML with Group and StudyUnits
+                String ddisetXml = restTemplate.exchange(
+                        ddisetUrl,
+                        HttpMethod.GET,
+                        getRequestEntity,
+                        String.class
+                ).getBody();
+
+                if (ddisetXml == null || ddisetXml.isEmpty()) {
+                    logger.error("Received empty response from Colectica API for ddiset URL: {}", ddisetUrl);
+                    return null;
+                }
+
+                logger.info("Received response from ddiset endpoint for Group. Length: {}", ddisetXml.length());
+
+                // Clean the XML - remove leading invisible/control characters
+                int startIndex = 0;
+                while (startIndex < ddisetXml.length() && ddisetXml.charAt(startIndex) != '<') {
+                    char c = ddisetXml.charAt(startIndex);
+                    if (c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c) || !Character.isDefined(c)) {
+                        startIndex++;
+                    } else {
+                        logger.warn("Unexpected character at position {}: {} (code: {})", startIndex, c, (int)c);
+                        startIndex++;
+                    }
+                }
+
+                if (startIndex > 0) {
+                    logger.info("Removed {} leading characters from XML", startIndex);
+                    ddisetXml = ddisetXml.substring(startIndex);
+                }
+
+                ddisetXml = ddisetXml.trim();
+
+                // Parse the XML directly to build Ddi4GroupResponse
+                return parseGroupXmlToDdi4Response(ddisetXml);
+
+            } catch (Exception e) {
+                logger.error("Error processing Colectica API response for Group agencyId: {}, id: {}", agencyId, id, e);
+                throw new RuntimeException("Failed to process DDI Group response", e);
+            }
+        });
+    }
+
+    /**
+     * Parse DDI3 XML directly to build Ddi4GroupResponse
+     */
+    private Ddi4GroupResponse parseGroupXmlToDdi4Response(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(new InputSource(new StringReader(xml)));
+
+        List<Ddi4Group> groups = new ArrayList<>();
+        List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
+        List<TopLevelReference> topLevelReferences = new ArrayList<>();
+
+        // Parse Group elements
+        NodeList groupNodes = doc.getElementsByTagNameNS("ddi:group:3_3", "Group");
+        logger.info("Found {} Group elements", groupNodes.getLength());
+
+        for (int i = 0; i < groupNodes.getLength(); i++) {
+            Element groupElement = (Element) groupNodes.item(i);
+            Ddi4Group group = parseGroupElement(groupElement);
+            groups.add(group);
+
+            // Add top level reference for the group
+            topLevelReferences.add(new TopLevelReference(
+                group.agency(),
+                group.id(),
+                group.version(),
+                "Group"
+            ));
+        }
+
+        // Parse StudyUnit elements
+        NodeList studyUnitNodes = doc.getElementsByTagNameNS("ddi:studyunit:3_3", "StudyUnit");
+        logger.info("Found {} StudyUnit elements", studyUnitNodes.getLength());
+
+        for (int i = 0; i < studyUnitNodes.getLength(); i++) {
+            Element studyUnitElement = (Element) studyUnitNodes.item(i);
+            Ddi4StudyUnit studyUnit = parseStudyUnitElement(studyUnitElement);
+            studyUnits.add(studyUnit);
+        }
+
+        return new Ddi4GroupResponse(
+            "ddi:4.0",
+            topLevelReferences,
+            groups,
+            studyUnits
+        );
+    }
+
+    /**
+     * Parse a Group XML element to Ddi4Group
+     */
+    private Ddi4Group parseGroupElement(Element groupElement) {
+        String isUniversallyUnique = groupElement.getAttribute("isUniversallyUnique");
+        String versionDate = groupElement.getAttribute("versionDate");
+
+        String urn = getElementTextContent(groupElement, "ddi:reusable:3_3", "URN");
+        String agency = getElementTextContent(groupElement, "ddi:reusable:3_3", "Agency");
+        String id = getElementTextContent(groupElement, "ddi:reusable:3_3", "ID");
+        String version = getElementTextContent(groupElement, "ddi:reusable:3_3", "Version");
+        String versionResponsibility = getElementTextContent(groupElement, "ddi:reusable:3_3", "VersionResponsibility");
+
+        // Parse Citation
+        Citation citation = parseCitation(groupElement);
+
+        // Parse StudyUnitReferences
+        List<StudyUnitReference> studyUnitReferences = parseStudyUnitReferences(groupElement);
+
+        return new Ddi4Group(
+            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
+            versionDate.isEmpty() ? null : versionDate,
+            urn,
+            agency,
+            id,
+            version,
+            versionResponsibility,
+            citation,
+            studyUnitReferences
+        );
+    }
+
+    /**
+     * Parse a StudyUnit XML element to Ddi4StudyUnit
+     */
+    private Ddi4StudyUnit parseStudyUnitElement(Element studyUnitElement) {
+        String isUniversallyUnique = studyUnitElement.getAttribute("isUniversallyUnique");
+        String versionDate = studyUnitElement.getAttribute("versionDate");
+
+        String urn = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "URN");
+        String agency = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "Agency");
+        String id = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "ID");
+        String version = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "Version");
+
+        // Parse Citation
+        Citation citation = parseCitation(studyUnitElement);
+
+        return new Ddi4StudyUnit(
+            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
+            versionDate.isEmpty() ? null : versionDate,
+            urn,
+            agency,
+            id,
+            version,
+            citation
+        );
+    }
+
+    /**
+     * Parse Citation from an element
+     */
+    private Citation parseCitation(Element parentElement) {
+        NodeList citationNodes = parentElement.getElementsByTagNameNS("ddi:reusable:3_3", "Citation");
+        if (citationNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element citationElement = (Element) citationNodes.item(0);
+        NodeList titleNodes = citationElement.getElementsByTagNameNS("ddi:reusable:3_3", "Title");
+        if (titleNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element titleElement = (Element) titleNodes.item(0);
+        NodeList stringNodes = titleElement.getElementsByTagNameNS("ddi:reusable:3_3", "String");
+        if (stringNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element stringElement = (Element) stringNodes.item(0);
+        String text = stringElement.getTextContent();
+        String lang = stringElement.getAttributeNS("http://www.w3.org/XML/1998/namespace", "lang");
+
+        return new Citation(new Title(new StringValue(lang.isEmpty() ? "fr-FR" : lang, text)));
+    }
+
+    /**
+     * Parse StudyUnitReferences from a Group element
+     */
+    private List<StudyUnitReference> parseStudyUnitReferences(Element groupElement) {
+        List<StudyUnitReference> references = new ArrayList<>();
+
+        NodeList refNodes = groupElement.getElementsByTagNameNS("ddi:reusable:3_3", "StudyUnitReference");
+        for (int i = 0; i < refNodes.getLength(); i++) {
+            Element refElement = (Element) refNodes.item(i);
+
+            String agency = getElementTextContent(refElement, "ddi:reusable:3_3", "Agency");
+            String id = getElementTextContent(refElement, "ddi:reusable:3_3", "ID");
+            String version = getElementTextContent(refElement, "ddi:reusable:3_3", "Version");
+            String typeOfObject = getElementTextContent(refElement, "ddi:reusable:3_3", "TypeOfObject");
+
+            references.add(new StudyUnitReference(agency, id, version, typeOfObject));
+        }
+
+        return references;
+    }
+
+    /**
+     * Get text content of a child element with given namespace and local name
+     */
+    private String getElementTextContent(Element parent, String namespaceUri, String localName) {
+        NodeList nodes = parent.getElementsByTagNameNS(namespaceUri, localName);
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent();
+        }
+        return null;
     }
 
     @Override
@@ -501,7 +893,60 @@ public class DDIRepositoryImpl implements DDIRepository {
             restTemplate.postForObject(url, requestEntity, String.class);
 
             // Clear cache to force refresh on next read
-            cachedDdi4Response = null;
+
+            return null;
+        });
+    }
+
+    @Override
+    public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
+        logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
+
+        executeWithAuth(token -> {
+
+            // Convert DDI4 to DDI3
+            Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
+
+            if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+                throw new RuntimeException("No items to save in DDI4 response");
+            }
+
+            // Convert each Ddi3Item to ColecticaItemResponse
+            List<ColecticaItemResponse> colecticaItems = ddi3Response.items().stream()
+                .map(ddi3Item -> new ColecticaItemResponse(
+                    ddi3Item.itemType(),
+                    ddi3Item.agencyId(),
+                    Integer.parseInt(ddi3Item.version()),
+                    ddi3Item.identifier(),
+                    ddi3Item.item(),
+                    ddi3Item.versionDate(),
+                    ddi3Item.versionResponsibility(),
+                    ddi3Item.isPublished(),
+                    ddi3Item.isDeprecated(),
+                    ddi3Item.isProvisional(),
+                    ddi3Item.itemFormat()
+                ))
+                .toList();
+
+            // Create request with all items
+            ColecticaCreateItemRequest updateRequest = new ColecticaCreateItemRequest(colecticaItems);
+
+            // Send to Colectica
+            String url = instanceConfiguration.baseApiUrl() + "item";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(updateRequest, headers);
+
+            logger.info("Sending full update request to Colectica with {} items: {}", colecticaItems.size(), url);
+
+            // POST to Colectica
+            restTemplate.postForObject(url, requestEntity, String.class);
+
+            logger.info("Successfully updated full physical instance with id: {} ({} items saved)", id, colecticaItems.size());
+
 
             return null;
         });
@@ -514,7 +959,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             String physicalInstanceId = UUID.randomUUID().toString();
             String dataRelationshipId = UUID.randomUUID().toString();
             String logicalRecordId = UUID.randomUUID().toString();
-            String agencyId = "fr.insee";
+            String agencyId = instanceConfiguration.defaultAgencyId();
             int version = 1;
 
             // Get current timestamp in ISO format

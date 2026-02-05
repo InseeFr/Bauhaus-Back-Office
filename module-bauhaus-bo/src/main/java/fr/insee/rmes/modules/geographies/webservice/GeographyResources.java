@@ -7,18 +7,9 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.geographies.model.GeoFeature;
-import fr.insee.rmes.rbac.HasAccess;
-import fr.insee.rmes.rbac.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.geographies.webservice.response.TerritoryResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,17 +24,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/geo")
-@SecurityRequirement(name = "bearerAuth")
-@Tag(name="Geography", description="Geography API")
-@ApiResponses(value = { 
-		@ApiResponse(responseCode = "200", description = "Success"), 
-		@ApiResponse(responseCode = "204", description = "No Content"),
-		@ApiResponse(responseCode = "400", description = "Bad Request"), 
-		@ApiResponse(responseCode = "401", description = "Unauthorized"),
-		@ApiResponse(responseCode = "403", description = "Forbidden"), 
-		@ApiResponse(responseCode = "404", description = "Not found"),
-		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
-		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class GeographyResources {
 
 	final GeographyService geoService;
@@ -60,8 +40,6 @@ public class GeographyResources {
 	 ******************************************************************************************************/
 	@GetMapping(value = "/territories", produces = {MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
-	@Operation(summary = "List of geofeatures",
-	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=TerritoryResponse.class))))})
 	public ResponseEntity<List<TerritoryResponse>> getGeoFeatures() throws RmesException, JsonProcessingException {
 		String jsonResultat = geoService.getGeoFeatures();
 
@@ -89,8 +67,6 @@ public class GeographyResources {
 	
 	@GetMapping(value = "/territory/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.READ)
-	@Operation(summary = "Geofeature",
-	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=GeoFeature.class)))})
 	public ResponseEntity<Object> getGeoFeature(@PathVariable(Constants.ID) String id) throws RmesException {
 		String jsonResultat = geoService.getGeoFeatureById(id).toString();
 		return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
@@ -99,10 +75,7 @@ public class GeographyResources {
 
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Create feature")
-	public ResponseEntity<String> createGeography(
-			@Parameter(description = "Geo Feature to create", required = true,
-            content = @Content(schema = @Schema(implementation = GeoFeature.class))) @RequestBody String body) {
+	public ResponseEntity<String> createGeography(@RequestBody String body) {
 		try {
 			String iri = geoService.createFeature(body);
 
@@ -128,10 +101,9 @@ public class GeographyResources {
 
 	@HasAccess(module = RBAC.Module.GEOGRAPHY, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Geo Feature to update", required = true, schema = @Schema(implementation= GeoFeature.class)) @RequestBody String body) {
+			@PathVariable(Constants.ID) String id,
+			@RequestBody String body) {
 		try {
 			geoService.updateFeature(id, body);
 			return ResponseEntity.ok(HttpStatus.SC_OK);

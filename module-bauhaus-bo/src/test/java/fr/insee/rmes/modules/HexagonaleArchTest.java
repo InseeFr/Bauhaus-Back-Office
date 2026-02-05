@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules;
 
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
-import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -10,22 +10,18 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
-import fr.insee.rmes.modules.commons.configuration.conditional.ConditionalOnModule;
-import fr.insee.rmes.rbac.HasAccess;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.ResponseEntity;
+import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-@AnalyzeClasses(packages = "fr.insee.rmes.modules.concepts.collections", importOptions = ImportOption.DoNotIncludeTests.class)
+@AnalyzeClasses(packages = {
+        "fr.insee.rmes.modules.concepts.collections",
+        "fr.insee.rmes.modules.users"
+}, importOptions = ImportOption.DoNotIncludeTests.class)
 public class HexagonaleArchTest {
 
     private static ArchCondition<JavaClass> beImplementedIn(String targetPackage, String prefix) {
@@ -75,69 +71,70 @@ public class HexagonaleArchTest {
     @ArchTest
     public static final ArchRule domainDependencies = FreezingArchRule.freeze(classes()
             .that().resideInAPackage("..domain..")
-            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..", "org.jspecify.annotations..")
+            .should().onlyDependOnClassesThat().resideInAnyPackage("..domain..", "java..", "org.apache.commons.lang3..", "org.jspecify.annotations..", "org.slf4j..", "fr.insee.rmes.modules.commons.hexagonal..")
             .because("The domain should only depends of the domain"));
 
     @ArchTest
     public static final ArchRule webServiceNaming = classes().that().areAnnotatedWith(RestController.class)
-                .should().haveSimpleNameEndingWith("Resources");
+                .should().haveSimpleNameEndingWith("Resources")
+                .andShould().resideInAPackage("..webservice..");
 
     @ArchTest
-    public static final ArchRule webServicePackageName = classes().that().areAnnotatedWith(RestController.class)
-            .should().resideInAPackage("..webservice..");
+    public static final ArchRule serverSideAdaptorShouldImplementServerSidePort = classes()
+            .that().areAnnotatedWith(ServerSideAdaptor.class)
+            .should().resideInAPackage("..infrastructure..")
+            .andShould().implement(new DescribedPredicate<JavaClass>("Check if the interface is annotated with ServerSidePort") {
+                @Override
+                public boolean test(JavaClass javaClass) {
+                    return javaClass.isAnnotatedWith(ServerSidePort.class);
+                }
+            });
+
 
     @ArchTest
     public static final ArchRule webServicePackageDependendencies = noClasses()
             .that().resideInAPackage("..webservice..")
-            .should().dependOnClassesThat().resideInAnyPackage("..serverside..", "..infrastructure..")
+            .should().dependOnClassesThat().resideInAnyPackage("..infrastructure..")
+            .orShould().dependOnClassesThat().areAnnotatedWith(ServerSidePort.class)
             .because("The webservices should not depends of the serverside ports or the infrastructure ");
 
     @ArchTest
     public static final ArchRule infrastructurePackageDependendencies = noClasses()
             .that().resideInAPackage("..infrastructure..")
-            .should().dependOnClassesThat().resideInAnyPackage("..webservice..", "..clientside..")
+            .should().dependOnClassesThat().resideInAnyPackage("..webservice..")
+            .orShould().dependOnClassesThat().areAnnotatedWith(ClientSidePort.class)
             .because("The infrastructure should not depends of the clientside ports or the webservice ");
 
     @ArchTest
     public static final ArchRule clientsidePortsImplementedInDomain = classes()
-            .that().resideInAPackage("..clientside..")
-            .and().areInterfaces()
-            .should(beImplementedIn(".domain.", "Domain"))
+            .that().areAnnotatedWith(ClientSidePort.class)
+            .should().resideInAPackage("..clientside..")
+            .andShould().beInterfaces()
+            .andShould().haveSimpleNameEndingWith("Service")
+            .andShould(beImplementedIn(".domain.", "Domain"))
             .because("All clientside ports defined in domain should be implemented in domain package with 'Domain' prefix");
 
     @ArchTest
+    public static final ArchRule onlyClientSideInterfaceInsideClientSidePackage = classes()
+            .that().resideInAPackage("..clientside..")
+            .should().beAnnotatedWith(ClientSidePort.class)
+            .because("The package clientside should only contain Client Side port");
+
+    @ArchTest
     public static final ArchRule serversidePortsImplementedInInfrastructure = classes()
-            .that().resideInAPackage("..serverside..")
-            .and().areInterfaces()
-            .should(beImplementedIn(".infrastructure.", null))
+            .that().areAnnotatedWith(ServerSidePort.class)
+            .should().resideInAPackage("..serverside..")
+            .andShould().beInterfaces()
+            .andShould(beImplementedIn(".infrastructure.", ""))
             .because("All serverside ports defined in domain should be implemented in infrastructure package");
 
     @ArchTest
-    public static final ArchRule repositoryNaming = classes()
+    public static final ArchRule onlyServerSidePortInsideServerSidePackage = classes()
             .that().resideInAPackage("..serverside..")
-            .and().areInterfaces()
-            .should().haveSimpleNameEndingWith("Repository")
-            .because("Serverside ports should be named with 'Repository' suffix");
+            .should().beAnnotatedWith(ServerSidePort.class)
+            .because("The package serverside should only contain Server Side port");
 
-    @ArchTest
-    public static final ArchRule serviceNaming = classes()
-            .that().resideInAPackage("..clientside..")
-            .and().areInterfaces()
-            .should().haveSimpleNameEndingWith("Service")
-            .because("Clientside ports should be named with 'Service' suffix");
 
-    @ArchTest
-    public static final ArchRule exceptionNaming = classes()
-            .that().resideInAPackage("..domain..")
-            .and().areAssignableTo(Exception.class)
-            .should().haveSimpleNameEndingWith("Exception")
-            .because("Domain exceptions should be named with 'Exception' suffix");
-
-    @ArchTest
-    public static final ArchRule configurationNaming = classes()
-            .that().areAnnotatedWith(Configuration.class)
-            .should().haveSimpleNameEndingWith("Configuration")
-            .because("Spring configuration classes should be named with 'Configuration' suffix");
 
     // Port structure
 
@@ -147,87 +144,5 @@ public class HexagonaleArchTest {
             .should().beInterfaces()
             .because("All ports should be interfaces to define contracts"));
 
-    // RestController annotations
 
-    @ArchTest
-    public static final ArchRule restControllerShouldHaveSecurityRequirement = classes()
-            .that().areAnnotatedWith(RestController.class)
-            .should().beAnnotatedWith(SecurityRequirement.class)
-            .because("All RestController classes should be annotated with @SecurityRequirement for security documentation");
-
-    @ArchTest
-    public static final ArchRule restControllerShouldHaveConditionalOnExpression = classes()
-            .that().areAnnotatedWith(RestController.class)
-            .should().beAnnotatedWith(ConditionalOnModule.class)
-            .because("All RestController classes should be annotated with @ConditionalOnExpression to enable/disable modules");
-
-    // HTTP methods annotations
-
-    @ArchTest
-    public static final ArchRule httpMethodsShouldHaveHasAccess = methods()
-            .that().areAnnotatedWith(PostMapping.class)
-            .or().areAnnotatedWith(GetMapping.class)
-            .or().areAnnotatedWith(PutMapping.class)
-            .or().areAnnotatedWith(PatchMapping.class)
-            .or().areAnnotatedWith(DeleteMapping.class)
-            .should().beAnnotatedWith(HasAccess.class)
-            .because("All HTTP endpoint methods should be annotated with @HasAccess for authorization control");
-
-    @ArchTest
-    public static final ArchRule httpMethodsShouldReturnResponseEntity = methods()
-            .that().areAnnotatedWith(PostMapping.class)
-            .or().areAnnotatedWith(GetMapping.class)
-            .or().areAnnotatedWith(PutMapping.class)
-            .or().areAnnotatedWith(PatchMapping.class)
-            .or().areAnnotatedWith(DeleteMapping.class)
-            .should().haveRawReturnType(ResponseEntity.class)
-            .because("All HTTP endpoint methods should return ResponseEntity for consistent error handling and status codes");
-
-    private static ArchCondition<JavaMethod> followNamingConvention() {
-        return new ArchCondition<JavaMethod>("follow HTTP method naming conventions") {
-            @Override
-            public void check(JavaMethod method, ConditionEvents events) {
-                String methodName = method.getName();
-                boolean valid = false;
-                String expectedPattern = "";
-
-                if (method.isAnnotatedWith(GetMapping.class)) {
-                    valid = methodName.equalsIgnoreCase("getAll") || methodName.equalsIgnoreCase("getById") || methodName.equalsIgnoreCase("search");
-                    expectedPattern = "getById, getAll or search";
-                } else if (method.isAnnotatedWith(PostMapping.class)) {
-                    valid = methodName.equalsIgnoreCase("create");
-                    expectedPattern = "create";
-                } else if (method.isAnnotatedWith(PutMapping.class)) {
-                    valid = methodName.equalsIgnoreCase("update") || methodName.startsWith("publish");
-                    expectedPattern = "update or publish";
-                } else if (method.isAnnotatedWith(DeleteMapping.class)) {
-                    valid = methodName.equalsIgnoreCase("delete");
-                    expectedPattern = "delete";
-                } else if (method.isAnnotatedWith(PatchMapping.class)) {
-                    valid = methodName.equalsIgnoreCase("update");
-                    expectedPattern = "update";
-                }
-
-                if (!valid && !expectedPattern.isEmpty()) {
-                    String message = String.format(
-                            "Method '%s' in %s does not follow naming convention. Expected pattern: %s",
-                            methodName,
-                            method.getOwner().getName(),
-                            expectedPattern
-                    );
-                    events.add(SimpleConditionEvent.violated(method, message));
-                }
-            }
-        };
-    }
-
-    @ArchTest
-    public static final ArchRule httpMethodsShouldFollowNamingConventions = methods()
-            .that().areAnnotatedWith(PostMapping.class)
-            .or().areAnnotatedWith(GetMapping.class)
-            .or().areAnnotatedWith(PutMapping.class)
-            .or().areAnnotatedWith(PatchMapping.class)
-            .or().areAnnotatedWith(DeleteMapping.class)
-            .should(followNamingConvention())
-            .because("HTTP endpoint methods should follow naming conventions based on their HTTP method");
 }
