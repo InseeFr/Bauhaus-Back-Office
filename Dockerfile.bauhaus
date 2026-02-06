@@ -16,10 +16,11 @@ RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser
 RUN mkdir /opt/app/
 RUN chown -R 10000:10000 /opt/app/
 
+ADD https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/1.55.4/elastic-apm-agent-1.55.4.jar /opt/elastic_apm/java/elastic-apm-agent.jar
+RUN chown -R 10000:10000 /opt/elastic_apm/
+
 USER 10000
 COPY --from=builder /opt/app/module-bauhaus-bo/target/*.jar /opt/app/bauhaus.jar
-
-ADD https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/1.55.4/elastic-apm-agent-1.55.4.jar /opt/elastic_apm/java/elastic-apm-agent.jar
 
 EXPOSE 8080
 
