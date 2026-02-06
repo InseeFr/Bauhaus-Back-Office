@@ -99,6 +99,7 @@ class Ddi3XmlWriterTest {
                 "1",
                 basedOnObject,
                 new DataRelationshipName(new StringValue("fr-FR", "Test DR")),
+                null,
                 null
         );
 
@@ -178,5 +179,169 @@ class Ddi3XmlWriterTest {
         assertNotNull(xml);
         // Should not write BasedOnObject if basedOnReference is null
         assertFalse(xml.contains("<r:BasedOnObject>"));
+    }
+
+    @Test
+    void shouldWriteDataRelationshipWithLabel() throws XMLStreamException {
+        // Given - DataRelationship with Label
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
+                new Label(new Content("fr-FR", "DR Label")),
+                null
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertNotNull(xml);
+        assertTrue(xml.contains("<r:Label>"));
+        assertTrue(xml.contains("<r:Content"));
+        assertTrue(xml.contains("xml:lang=\"fr-FR\""));
+        assertTrue(xml.contains("DR Label"));
+        assertTrue(xml.contains("</r:Content>"));
+        assertTrue(xml.contains("</r:Label>"));
+    }
+
+    @Test
+    void shouldWriteDataRelationshipWithoutLabelWhenNull() throws XMLStreamException {
+        // Given - DataRelationship without Label
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
+                null,
+                null
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertNotNull(xml);
+        // Should not contain Label element when label is null
+        assertFalse(xml.contains("<r:Label>"));
+    }
+
+    @Test
+    void shouldWriteLogicalRecordWithLabel() throws XMLStreamException {
+        // Given - DataRelationship with LogicalRecord that has a Label
+        LogicalRecord lr = new LogicalRecord(
+                "true",
+                "urn:ddi:fr.insee:lr-id:1",
+                "fr.insee",
+                "lr-id",
+                "1",
+                new LogicalRecordName(new StringValue("fr-FR", "LR Name")),
+                new Label(new Content("fr-FR", "LR Label")),
+                null
+        );
+
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
+                null,
+                lr
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertNotNull(xml);
+        assertTrue(xml.contains("<LogicalRecord"));
+        assertTrue(xml.contains("LR Label"));
+        // Verify the Label is inside LogicalRecord
+        int logicalRecordStart = xml.indexOf("<LogicalRecord");
+        int logicalRecordEnd = xml.indexOf("</LogicalRecord>");
+        int labelIndex = xml.indexOf("LR Label");
+        assertTrue(labelIndex > logicalRecordStart && labelIndex < logicalRecordEnd,
+                "Label should be inside LogicalRecord element");
+    }
+
+    @Test
+    void shouldWriteLogicalRecordWithoutLabelWhenNull() throws XMLStreamException {
+        // Given - DataRelationship with LogicalRecord without Label
+        LogicalRecord lr = new LogicalRecord(
+                "true",
+                "urn:ddi:fr.insee:lr-id:1",
+                "fr.insee",
+                "lr-id",
+                "1",
+                new LogicalRecordName(new StringValue("fr-FR", "LR Name")),
+                null,
+                null
+        );
+
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
+                null,
+                lr
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertNotNull(xml);
+        assertTrue(xml.contains("<LogicalRecord"));
+        // LogicalRecord should not have Label element
+        int logicalRecordStart = xml.indexOf("<LogicalRecord");
+        int logicalRecordEnd = xml.indexOf("</LogicalRecord>");
+        String logicalRecordContent = xml.substring(logicalRecordStart, logicalRecordEnd);
+        assertFalse(logicalRecordContent.contains("<r:Label>"),
+                "LogicalRecord should not contain Label when label is null");
+    }
+
+    @Test
+    void shouldHandleLabelWithNullContent() throws XMLStreamException {
+        // Given - DataRelationship with Label that has null content (edge case)
+        Label labelWithNullContent = new Label(null);
+
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
+                labelWithNullContent,
+                null
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then - Should not throw NPE and should not contain Label element
+        assertNotNull(xml);
+        assertFalse(xml.contains("<r:Label>"),
+                "Should not write Label element when content is null");
     }
 }
