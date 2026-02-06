@@ -19,6 +19,8 @@ RUN chown -R 10000:10000 /opt/app/
 USER 10000
 COPY --from=builder /opt/app/module-bauhaus-bo/target/*.jar /opt/app/bauhaus.jar
 
+ADD https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/1.55.4/elastic-apm-agent-1.55.4.jar /opt/elastic_apm/java/elastic-apm-agent.jar
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar",  "/opt/app/bauhaus.jar"]
