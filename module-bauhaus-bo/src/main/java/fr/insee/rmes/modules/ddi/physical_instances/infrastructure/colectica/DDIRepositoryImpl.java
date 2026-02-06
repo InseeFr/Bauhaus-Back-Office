@@ -43,6 +43,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private static final String PHYSICAL_INSTANCE_TYPE_UUID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
     private static final String DATA_RELATIONSHIP_TYPE_UUID = "f39ff278-8500-45fe-a850-3906da2d242b";
     private static final String BAUHAUS_API = "bauhaus-api";
+    private static final String DEFAULT_LANG = "fr-FR";
 
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
@@ -756,12 +757,26 @@ public class DDIRepositoryImpl implements DDIRepository {
                 currentPI.dataRelationshipReference()
         );
 
-        // Build updated DataRelationship with new name if provided, preserving LogicalRecord with variables
+        // Build updated DataRelationship with new label if provided, preserving LogicalRecord with variables
         Ddi4DataRelationship updatedDR = null;
         if (currentDR != null) {
-            String newDataRelationshipName = request.dataRelationshipName() != null
-                    ? request.dataRelationshipName()
-                    : currentDR.dataRelationshipName().string().text();
+            // Build updated DataRelationship Label
+            Label drLabel = createLabelWithFallback(currentDR.label(), request.dataRelationshipLabel());
+
+            // Build updated LogicalRecord with new label if provided
+            LogicalRecord updatedLR = currentDR.logicalRecord();
+            if (updatedLR != null && request.logicalRecordLabel() != null) {
+                updatedLR = new LogicalRecord(
+                        updatedLR.isUniversallyUnique(),
+                        updatedLR.urn(),
+                        updatedLR.agency(),
+                        updatedLR.id(),
+                        updatedLR.version(),
+                        updatedLR.logicalRecordName(),
+                        createLabelWithFallback(updatedLR.label(), request.logicalRecordLabel()),
+                        updatedLR.variablesInRecord()
+                );
+            }
 
             updatedDR = new Ddi4DataRelationship(
                     currentDR.isUniversallyUnique(),
@@ -771,11 +786,9 @@ public class DDIRepositoryImpl implements DDIRepository {
                     currentDR.id(),
                     newVersion,
                     currentDR.basedOnObject(),
-                    new DataRelationshipName(new StringValue(
-                            currentDR.dataRelationshipName().string().xmlLang(),
-                            newDataRelationshipName
-                    )),
-                    currentDR.logicalRecord() // Preserve the LogicalRecord with all VariableUsedReferences
+                    currentDR.dataRelationshipName(),
+                    drLabel,
+                    updatedLR // Updated LogicalRecord with new label
             );
         }
 
@@ -876,9 +889,9 @@ public class DDIRepositoryImpl implements DDIRepository {
                     agencyId,
                     dataRelationshipId,
                     version,
-                    request.dataRelationshipName(),
+                    request.dataRelationshipLabel(),
                     logicalRecordId,
-                    request.physicalInstanceLabel(),
+                    request.logicalRecordLabel() != null ? request.logicalRecordLabel() : request.physicalInstanceLabel(),
                     versionDate
             );
 
@@ -958,9 +971,9 @@ public class DDIRepositoryImpl implements DDIRepository {
                     </r:DataRelationshipReference>
                   </PhysicalInstance>
                 </Fragment>""",
-                versionDate, agencyId, id, version,
-                agencyId, id, version, label,
-                agencyId, dataRelationshipId, version
+                escapeXml(versionDate), escapeXml(agencyId), escapeXml(id), version,
+                escapeXml(agencyId), escapeXml(id), version, escapeXml(label),
+                escapeXml(agencyId), escapeXml(dataRelationshipId), version
         );
     }
 
@@ -968,7 +981,7 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Build DDI3 XML fragment for DataRelationship
      */
     private String buildDataRelationshipXml(String agencyId, String dataRelationshipId, int version,
-                                           String dataRelationshipName, String logicalRecordId,
+                                           String dataRelationshipLabel, String logicalRecordId,
                                            String logicalRecordLabel, String versionDate) {
         return String.format("""
                 <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
@@ -977,25 +990,36 @@ public class DDIRepositoryImpl implements DDIRepository {
                     <r:Agency>%s</r:Agency>
                     <r:ID>%s</r:ID>
                     <r:Version>%d</r:Version>
-                    <DataRelationshipName>
-                      <r:String xml:lang="en-US">%s</r:String>
-                    </DataRelationshipName>
+                    <r:Label>
+                      <r:Content xml:lang="fr-FR">%s</r:Content>
+                    </r:Label>
                     <LogicalRecord isUniversallyUnique="true">
                       <r:URN>urn:ddi:%s:%s:%d</r:URN>
                       <r:Agency>%s</r:Agency>
                       <r:ID>%s</r:ID>
                       <r:Version>%d</r:Version>
-                      <LogicalRecordName>
-                        <r:String xml:lang="fr">%s</r:String>
-                      </LogicalRecordName>
+                      <r:Label>
+                        <r:Content xml:lang="fr-FR">%s</r:Content>
+                      </r:Label>
                     </LogicalRecord>
                   </DataRelationship>
                 </Fragment>""",
-                versionDate, agencyId, dataRelationshipId, version,
-                agencyId, dataRelationshipId, version, dataRelationshipName,
-                agencyId, logicalRecordId, version,
-                agencyId, logicalRecordId, version, logicalRecordLabel
+                escapeXml(versionDate), escapeXml(agencyId), escapeXml(dataRelationshipId), version,
+                escapeXml(agencyId), escapeXml(dataRelationshipId), version, escapeXml(dataRelationshipLabel),
+                escapeXml(agencyId), escapeXml(logicalRecordId), version,
+                escapeXml(agencyId), escapeXml(logicalRecordId), version, escapeXml(logicalRecordLabel)
         );
+    }
+
+    private String escapeXml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&apos;");
     }
 
     @Override
@@ -1059,5 +1083,23 @@ public class DDIRepositoryImpl implements DDIRepository {
                     })
                     .toList();
         });
+    }
+
+    /**
+     * Creates a Label with the given text, using the language from the existing label if available,
+     * or falling back to the default language (fr-FR).
+     *
+     * @param existingLabel the existing label to extract language from (can be null)
+     * @param newText the text for the new label
+     * @return a new Label with the appropriate language, or null if newText is null
+     */
+    private Label createLabelWithFallback(Label existingLabel, String newText) {
+        if (newText == null) {
+            return existingLabel;
+        }
+        String lang = existingLabel != null && existingLabel.content() != null
+                ? existingLabel.content().xmlLang()
+                : DEFAULT_LANG;
+        return new Label(new Content(lang, newText));
     }
 }

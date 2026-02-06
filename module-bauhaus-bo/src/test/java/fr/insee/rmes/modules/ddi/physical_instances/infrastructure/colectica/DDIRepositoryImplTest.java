@@ -404,10 +404,12 @@ class DDIRepositoryImplTest {
         String itemUrl = baseApiUrl + "item";
 
         String physicalInstanceLabel = "Test Physical Instance";
-        String dataRelationshipName = "Test Data Relationship";
+        String dataRelationshipLabel = "Test Data Relationship Label";
+        String logicalRecordLabel = "Test LogicalRecord Label";
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
                 physicalInstanceLabel,
-                dataRelationshipName
+                dataRelationshipLabel,
+                logicalRecordLabel
         );
 
         // Mock configuration
@@ -485,7 +487,7 @@ class DDIRepositoryImplTest {
         // Verify second item is DataRelationship
         ColecticaItemResponse drItem = createRequest.items().get(1);
         assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
-        assertTrue(drItem.item().contains(dataRelationshipName));
+        assertTrue(drItem.item().contains(dataRelationshipLabel));
     }
 
     @Test
@@ -497,10 +499,12 @@ class DDIRepositoryImplTest {
         String itemUrl = baseApiUrl + "item";
 
         String newLabel = "Updated Physical Instance Label";
-        String newDataRelationshipName = "Updated Data Relationship Name";
+        String newDataRelationshipLabel = "Updated Data Relationship Label";
+        String newLogicalRecordLabel = "Updated LogicalRecord Label";
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
                 newLabel,
-                newDataRelationshipName
+                newDataRelationshipLabel,
+                newLogicalRecordLabel
         );
 
         // Mock configuration
@@ -569,8 +573,9 @@ class DDIRepositoryImplTest {
                 agencyId, "dr-123", "1",
                 null,
                 new DataRelationshipName(new StringValue("en-US", "Old DR Name")),
+                null,
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        new LogicalRecordName(new StringValue("fr", "Old LR Name")), null)
+                        new LogicalRecordName(new StringValue("fr", "Old LR Name")), null, null)
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -591,7 +596,7 @@ class DDIRepositoryImplTest {
         );
         Ddi3Response.Ddi3Item mockDrDdi3Item = new Ddi3Response.Ddi3Item(
                 "f39ff278-8500-45fe-a850-3906da2d242b", agencyId, "2", "dr-123",
-                "<DataRelationship>" + newDataRelationshipName + "</DataRelationship>",
+                "<DataRelationship>" + newDataRelationshipLabel + "</DataRelationship>",
                 "2025-01-01T00:00:00", null, true, false, false, "DDI"
         );
         Ddi3Response mockDdi3Response = new Ddi3Response(null, List.of(mockPiDdi3Item, mockDrDdi3Item));
@@ -625,7 +630,7 @@ class DDIRepositoryImplTest {
         ColecticaItemResponse drItem = createRequest.items().get(1);
         assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
         assertEquals(2, drItem.version()); // Version incremented
-        assertTrue(drItem.item().contains(newDataRelationshipName));
+        assertTrue(drItem.item().contains(newDataRelationshipLabel));
     }
 
     @Test
@@ -997,9 +1002,11 @@ class DDIRepositoryImplTest {
                 agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
                 null,
                 new DataRelationshipName(new StringValue("en-US", "DataRelationShip Name:test")),
+                null,
                 new LogicalRecord("true", "urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
                         agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
                         new LogicalRecordName(new StringValue("fr", "test")),
+                        null,
                         new VariablesInRecord(List.of(
                                 new VariableUsedReference(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable")
                         )))
@@ -1393,5 +1400,250 @@ class DDIRepositoryImplTest {
 
         // Verify no REST call was made
         verify(restTemplate, never()).postForObject(anyString(), any(HttpEntity.class), eq(ColecticaItem[].class));
+    }
+
+    @Test
+    void shouldPreserveExistingLabelWhenNewTextIsNull() {
+        // This tests the createLabelWithFallback behavior when newText is null
+        // Given
+        String instanceId = "test-pi-id";
+        String agencyId = "fr.insee";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String itemUrl = baseApiUrl + "item";
+
+        // Request with null dataRelationshipLabel - should preserve existing
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
+                "Updated PI Label",
+                null, // dataRelationshipLabel is null
+                null  // logicalRecordLabel is null
+        );
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        // Mock existing instance with a Label on DataRelationship
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId, instanceId, "1",
+                null,
+                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+        );
+
+        // Existing DataRelationship has a Label with "en-US" language
+        Label existingDrLabel = new Label(new Content("en-US", "Existing DR Label"));
+        Label existingLrLabel = new Label(new Content("de-DE", "Existing LR Label"));
+
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId, "dr-123", "1",
+                null,
+                new DataRelationshipName(new StringValue("en-US", "DR Name")),
+                existingDrLabel,
+                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        new LogicalRecordName(new StringValue("fr", "LR Name")), existingLrLabel, null)
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship), List.of(), List.of(), List.of()
+        );
+
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n</ddi:FragmentInstance>";
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        // Capture what's passed to the DDI4 to DDI3 converter
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        Ddi3Response.Ddi3Item mockItem = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "2", instanceId,
+                "<PhysicalInstance></PhysicalInstance>", "2025-01-01T00:00:00", null, true, false, false, "DDI"
+        );
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
+        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+                .thenReturn("{}");
+
+        // When
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Then - verify that existing labels are preserved
+        Ddi4Response capturedDdi4 = ddi4Captor.getValue();
+        assertNotNull(capturedDdi4);
+        assertNotNull(capturedDdi4.dataRelationship());
+        assertEquals(1, capturedDdi4.dataRelationship().size());
+
+        Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
+        // When newText is null, existing label should be preserved
+        assertNotNull(updatedDr.label());
+        assertEquals("en-US", updatedDr.label().content().xmlLang());
+        assertEquals("Existing DR Label", updatedDr.label().content().text());
+    }
+
+    @Test
+    void shouldUseDefaultLangWhenExistingLabelIsNull() {
+        // This tests the createLabelWithFallback behavior when existingLabel is null
+        // Given
+        String instanceId = "test-pi-id";
+        String agencyId = "fr.insee";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String itemUrl = baseApiUrl + "item";
+
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
+                "Updated PI Label",
+                "New DR Label", // New label text
+                "New LR Label"
+        );
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId, instanceId, "1",
+                null,
+                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+        );
+
+        // DataRelationship has NO existing Label (null)
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId, "dr-123", "1",
+                null,
+                new DataRelationshipName(new StringValue("en-US", "DR Name")),
+                null, // No existing label
+                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        new LogicalRecordName(new StringValue("fr", "LR Name")), null, null) // No existing label
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship), List.of(), List.of(), List.of()
+        );
+
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n</ddi:FragmentInstance>";
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        Ddi3Response.Ddi3Item mockItem = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "2", instanceId,
+                "<PhysicalInstance></PhysicalInstance>", "2025-01-01T00:00:00", null, true, false, false, "DDI"
+        );
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
+        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+                .thenReturn("{}");
+
+        // When
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Then - verify that DEFAULT_LANG (fr-FR) is used when existing label is null
+        Ddi4Response capturedDdi4 = ddi4Captor.getValue();
+        assertNotNull(capturedDdi4);
+        assertNotNull(capturedDdi4.dataRelationship());
+
+        Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
+        assertNotNull(updatedDr.label());
+        assertEquals("fr-FR", updatedDr.label().content().xmlLang()); // Should use DEFAULT_LANG
+        assertEquals("New DR Label", updatedDr.label().content().text());
+
+        // Also verify LogicalRecord label
+        assertNotNull(updatedDr.logicalRecord());
+        assertNotNull(updatedDr.logicalRecord().label());
+        assertEquals("fr-FR", updatedDr.logicalRecord().label().content().xmlLang()); // Should use DEFAULT_LANG
+        assertEquals("New LR Label", updatedDr.logicalRecord().label().content().text());
+    }
+
+    @Test
+    void shouldPreserveExistingLangWhenUpdatingLabelText() {
+        // This tests the createLabelWithFallback behavior when both existingLabel and newText are provided
+        // Given
+        String instanceId = "test-pi-id";
+        String agencyId = "fr.insee";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String itemUrl = baseApiUrl + "item";
+
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
+                "Updated PI Label",
+                "Updated DR Label", // New text for existing label
+                "Updated LR Label"
+        );
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId, instanceId, "1",
+                null,
+                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+        );
+
+        // Existing labels with specific languages (not fr-FR)
+        Label existingDrLabel = new Label(new Content("en-GB", "Old DR Label"));
+        Label existingLrLabel = new Label(new Content("es-ES", "Old LR Label"));
+
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+                "true", "2025-01-01T00:00:00",
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId, "dr-123", "1",
+                null,
+                new DataRelationshipName(new StringValue("en-US", "DR Name")),
+                existingDrLabel,
+                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        new LogicalRecordName(new StringValue("fr", "LR Name")), existingLrLabel, null)
+        );
+
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship), List.of(), List.of(), List.of()
+        );
+
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n</ddi:FragmentInstance>";
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(ddisetXml));
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        Ddi3Response.Ddi3Item mockItem = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "2", instanceId,
+                "<PhysicalInstance></PhysicalInstance>", "2025-01-01T00:00:00", null, true, false, false, "DDI"
+        );
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
+                .thenReturn(new Ddi3Response(null, List.of(mockItem)));
+        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+                .thenReturn("{}");
+
+        // When
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Then - verify that existing language is preserved with new text
+        Ddi4Response capturedDdi4 = ddi4Captor.getValue();
+        assertNotNull(capturedDdi4);
+
+        Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
+        assertNotNull(updatedDr.label());
+        assertEquals("en-GB", updatedDr.label().content().xmlLang()); // Should preserve existing lang
+        assertEquals("Updated DR Label", updatedDr.label().content().text()); // But update text
+
+        assertNotNull(updatedDr.logicalRecord().label());
+        assertEquals("es-ES", updatedDr.logicalRecord().label().content().xmlLang()); // Should preserve existing lang
+        assertEquals("Updated LR Label", updatedDr.logicalRecord().label().content().text()); // But update text
     }
 }
