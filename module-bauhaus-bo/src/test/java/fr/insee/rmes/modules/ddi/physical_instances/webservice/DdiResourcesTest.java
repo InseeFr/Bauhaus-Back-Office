@@ -189,7 +189,8 @@ class DdiResourcesTest {
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Physical Instance Label",
-            "Updated DataRelationship Name"
+            "Updated DataRelationship Label",
+            "Updated LogicalRecord Label"
         );
         Ddi4Response expectedResponse = createMockDdi4Response();
         when(ddiService.updatePhysicalInstance(agencyId, instanceId, request)).thenReturn(expectedResponse);
@@ -216,6 +217,7 @@ class DdiResourcesTest {
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Label Only",
+            null,
             null
         );
         Ddi4Response expectedResponse = createMockDdi4Response();
@@ -265,7 +267,8 @@ class DdiResourcesTest {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
             "New Physical Instance Label",
-            "New DataRelationship Name"
+            "New DataRelationship Label",
+            "New LogicalRecord Label"
         );
         Ddi4Response expectedResponse = createMockDdi4Response();
         when(ddiService.createPhysicalInstance(request)).thenReturn(expectedResponse);
@@ -440,7 +443,7 @@ class DdiResourcesTest {
             "true", "2024-06-03T14:29:23.4049817Z",
             "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
-            null, drName, null
+            null, drName, null, null
         );
 
         TopLevelReference topLevelRef = new TopLevelReference(

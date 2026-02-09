@@ -125,6 +125,9 @@ public class Ddi3XmlWriter {
             writer.writeEndElement(); // DataRelationshipName
         }
 
+        // Write Label if present
+        writeLabel(writer, dr.label());
+
         // Write LogicalRecord if present
         if (dr.logicalRecord() != null) {
             LogicalRecord lr = dr.logicalRecord();
@@ -144,6 +147,9 @@ public class Ddi3XmlWriter {
                 writer.writeEndElement(); // String
                 writer.writeEndElement(); // LogicalRecordName
             }
+
+            // Write Label if present
+            writeLabel(writer, lr.label());
 
             if (lr.variablesInRecord() != null && lr.variablesInRecord().variableUsedReference() != null) {
                 writer.writeStartElement("VariablesInRecord");
@@ -203,14 +209,7 @@ public class Ddi3XmlWriter {
             writer.writeEndElement();
         }
 
-        if (var.label() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, LABEL);
-            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
-            writer.writeAttribute(XML_LANG, var.label().content().xmlLang());
-            writer.writeCharacters(var.label().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
+        writeLabel(writer, var.label());
 
         if (var.description() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Description");
@@ -341,14 +340,7 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, ID, cl.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, cl.version());
 
-        if (cl.label() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, LABEL);
-            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
-            writer.writeAttribute(XML_LANG, cl.label().content().xmlLang());
-            writer.writeCharacters(cl.label().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
+        writeLabel(writer, cl.label());
 
         if (cl.code() != null && !cl.code().isEmpty()) {
             for (Code code : cl.code()) {
@@ -402,14 +394,7 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, ID, cat.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, cat.version());
 
-        if (cat.label() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, LABEL);
-            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
-            writer.writeAttribute(XML_LANG, cat.label().content().xmlLang());
-            writer.writeCharacters(cat.label().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
+        writeLabel(writer, cat.label());
 
         writer.writeEndElement(); // Category
         writer.writeEndElement(); // Fragment
@@ -443,6 +428,17 @@ public class Ddi3XmlWriter {
             writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, ref.typeOfObject());
             writer.writeEndElement(); // BasedOnReference
             writer.writeEndElement(); // BasedOnObject
+        }
+    }
+
+    private void writeLabel(XMLStreamWriter writer, Label label) throws XMLStreamException {
+        if (label != null && label.content() != null) {
+            writer.writeStartElement(DDI_REUSABLE_NS, LABEL);
+            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
+            writer.writeAttribute(XML_LANG, label.content().xmlLang());
+            writer.writeCharacters(label.content().text());
+            writer.writeEndElement(); // Content
+            writer.writeEndElement(); // Label
         }
     }
 
