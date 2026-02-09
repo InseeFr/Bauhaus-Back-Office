@@ -6,7 +6,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 12 * * 5'
+    - cron: '0 12 * * 1'
 jobs:
   test-build:
     name: build & test & analyze
