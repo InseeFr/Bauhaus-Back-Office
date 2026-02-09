@@ -395,10 +395,6 @@ class DocumentationExportTest {
                 .contains("<prefLabelLg1>Aide publique au développement (APD) bilatérale</prefLabelLg1>")
                 .contains("<prefLabelLg2>Bilateral Official Development Assistance (ODA)</prefLabelLg2>")
                 .contains("<altLabelLg1>ODD 17.i2</altLabelLg1>");
-        assertThat(indicatorFile).startsWith("<Indicator><id>p1723</id>");
-        assertThat(indicatorFile).contains("<prefLabelLg1>Aide publique au développement (APD) bilatérale</prefLabelLg1>");
-        assertThat(indicatorFile).contains("<prefLabelLg2>Bilateral Official Development Assistance (ODA)</prefLabelLg2>");
-        assertThat(indicatorFile).contains("<altLabelLg1>ODD 17.i2</altLabelLg1>");
 
         // Verify abstract
         assertThat(indicatorFile).contains("<abstractLg1>L'Indicateur 17.i2");
@@ -408,9 +404,6 @@ class DocumentationExportTest {
                 .contains("<contributors><contributors>")
                 .contains("<id>DG75-L002</id>")
                 .contains("<labelLg1>Administration du comité du Label</labelLg1>");
-        assertThat(indicatorFile).contains("<contributors><contributors>");
-        assertThat(indicatorFile).contains("<id>DG75-L002</id>");
-        assertThat(indicatorFile).contains("<labelLg1>Administration du comité du Label</labelLg1>");
 
         // Verify creators (should contain organization value instead of stamp)
         assertThat(indicatorFile).contains("<creators>");

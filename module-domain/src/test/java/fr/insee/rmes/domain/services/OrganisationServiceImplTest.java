@@ -38,8 +38,6 @@ class OrganisationServiceImplTest {
         assertThat(stamps)
                 .isNotEmpty()
                 .contains("DG75-A001", "DR13-DIR", "SSM-DARES");
-        assertThat(stamps).isNotEmpty();
-        assertThat(stamps).contains("DG75-A001", "DR13-DIR", "SSM-DARES");
     }
 
     @Test
@@ -58,8 +56,6 @@ class OrganisationServiceImplTest {
         assertThat(result)
                 .hasSize(2)
                 .isEqualTo(expectedOrganisations);
-        assertThat(result).hasSize(2);
-        assertThat(result).isEqualTo(expectedOrganisations);
         verify(organisationRepository).getOrganisations();
     }
 
@@ -112,8 +108,6 @@ class OrganisationServiceImplTest {
         assertThat(result)
                 .hasSize(3)
                 .containsKeys("DG75-A001", "DR13-DIR", "SSM-DARES");
-        assertThat(result).hasSize(3);
-        assertThat(result).containsKeys("DG75-A001", "DR13-DIR", "SSM-DARES");
         assertThat(result.get("DG75-A001").label()).isEqualTo("Direction Générale 75 - Service A001");
         verify(organisationRepository).getOrganisationsMap(identifiers);
     }
@@ -164,9 +158,6 @@ class OrganisationServiceImplTest {
                 .hasSize(2)
                 .containsKeys("DG75-A001", "DR13-DIR")
                 .doesNotContainKey("UNKNOWN");
-        assertThat(result).hasSize(2);
-        assertThat(result).containsKeys("DG75-A001", "DR13-DIR");
-        assertThat(result).doesNotContainKey("UNKNOWN");
         verify(organisationRepository).getOrganisationsMap(identifiers);
     }
 }
