@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -76,21 +77,15 @@ public class FamiliesUtils {
 	}
 
 	public String createFamily(String body) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
 
-		try {
-			Family family = mapper.readValue(body,Family.class);
-			family.setId(id);
-			family.setCreated(DateUtils.getCurrentDate());
-			family.setUpdated(DateUtils.getCurrentDate());
-			validateFamily(family);
-			createRdfFamily(family, ValidationStatus.UNPUBLISHED);
-			logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
+		Family family = Deserializer.deserializeJsonString(body, Family.class);
+		family.setId(id);
+		family.setCreated(DateUtils.getCurrentDate());
+		family.setUpdated(DateUtils.getCurrentDate());
+		validateFamily(family);
+		createRdfFamily(family, ValidationStatus.UNPUBLISHED);
+		logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
 		return id;
 	}
 
