@@ -170,4 +170,140 @@ class Ddi3XmlReaderTest {
         assertEquals("original-var-id", result.basedOnObject().basedOnReference().id());
         assertEquals("Variable", result.basedOnObject().basedOnReference().typeOfObject());
     }
+
+    @Test
+    void shouldParseDataRelationshipWithLabel() throws Exception {
+        // Given - XML with Label
+        String xml = """
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>dr-id</r:ID>
+                    <r:Version>1</r:Version>
+                    <DataRelationshipName>
+                        <r:String xml:lang="fr-FR">Test DR Name</r:String>
+                    </DataRelationshipName>
+                    <r:Label>
+                        <r:Content xml:lang="fr-FR">Test DR Label</r:Content>
+                    </r:Label>
+                </DataRelationship>
+            </Fragment>
+            """;
+
+        // When
+        Ddi4DataRelationship result = reader.parseDataRelationship(xml);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("dr-id", result.id());
+        assertNotNull(result.label());
+        assertNotNull(result.label().content());
+        assertEquals("fr-FR", result.label().content().xmlLang());
+        assertEquals("Test DR Label", result.label().content().text());
+    }
+
+    @Test
+    void shouldParseDataRelationshipWithoutLabel() throws Exception {
+        // Given - XML without Label
+        String xml = """
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>dr-id</r:ID>
+                    <r:Version>1</r:Version>
+                    <DataRelationshipName>
+                        <r:String xml:lang="fr-FR">Test DR Name</r:String>
+                    </DataRelationshipName>
+                </DataRelationship>
+            </Fragment>
+            """;
+
+        // When
+        Ddi4DataRelationship result = reader.parseDataRelationship(xml);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("dr-id", result.id());
+        assertNull(result.label());
+    }
+
+    @Test
+    void shouldParseLogicalRecordWithLabel() throws Exception {
+        // Given - XML with LogicalRecord containing Label
+        String xml = """
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>dr-id</r:ID>
+                    <r:Version>1</r:Version>
+                    <DataRelationshipName>
+                        <r:String xml:lang="fr-FR">Test DR</r:String>
+                    </DataRelationshipName>
+                    <LogicalRecord isUniversallyUnique="true">
+                        <r:URN>urn:ddi:fr.insee:lr-id:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>lr-id</r:ID>
+                        <r:Version>1</r:Version>
+                        <LogicalRecordName>
+                            <r:String xml:lang="fr-FR">LR Name</r:String>
+                        </LogicalRecordName>
+                        <r:Label>
+                            <r:Content xml:lang="fr-FR">LR Label</r:Content>
+                        </r:Label>
+                    </LogicalRecord>
+                </DataRelationship>
+            </Fragment>
+            """;
+
+        // When
+        Ddi4DataRelationship result = reader.parseDataRelationship(xml);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.logicalRecord());
+        assertEquals("lr-id", result.logicalRecord().id());
+        assertNotNull(result.logicalRecord().label());
+        assertNotNull(result.logicalRecord().label().content());
+        assertEquals("fr-FR", result.logicalRecord().label().content().xmlLang());
+        assertEquals("LR Label", result.logicalRecord().label().content().text());
+    }
+
+    @Test
+    void shouldParseLogicalRecordWithoutLabel() throws Exception {
+        // Given - XML with LogicalRecord without Label
+        String xml = """
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <DataRelationship xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:dr-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency>
+                    <r:ID>dr-id</r:ID>
+                    <r:Version>1</r:Version>
+                    <DataRelationshipName>
+                        <r:String xml:lang="fr-FR">Test DR</r:String>
+                    </DataRelationshipName>
+                    <LogicalRecord isUniversallyUnique="true">
+                        <r:URN>urn:ddi:fr.insee:lr-id:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency>
+                        <r:ID>lr-id</r:ID>
+                        <r:Version>1</r:Version>
+                        <LogicalRecordName>
+                            <r:String xml:lang="fr-FR">LR Name</r:String>
+                        </LogicalRecordName>
+                    </LogicalRecord>
+                </DataRelationship>
+            </Fragment>
+            """;
+
+        // When
+        Ddi4DataRelationship result = reader.parseDataRelationship(xml);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.logicalRecord());
+        assertEquals("lr-id", result.logicalRecord().id());
+        assertNull(result.logicalRecord().label());
+    }
 }

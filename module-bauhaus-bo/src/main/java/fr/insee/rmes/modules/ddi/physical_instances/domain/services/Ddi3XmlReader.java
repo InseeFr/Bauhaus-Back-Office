@@ -66,6 +66,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(drElement, VERSION),
             parseBasedOnObject(drElement),
             parseDataRelationshipName(drElement),
+            parseLabel(drElement),
             parseLogicalRecord(drElement)
         );
     }
@@ -243,6 +244,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(lrElement, ID),
             xmlHelper.getElementText(lrElement, VERSION),
             parseLogicalRecordName(lrElement),
+            parseLabel(lrElement),
             parseVariablesInRecord(lrElement)
         );
     }
