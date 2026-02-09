@@ -10,7 +10,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
@@ -32,6 +31,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 

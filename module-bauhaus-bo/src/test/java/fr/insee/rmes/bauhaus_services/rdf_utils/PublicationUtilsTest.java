@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,7 @@ import org.mockito.Mock;
 
 import static fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils.stringEndsWithItemFromList;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PublicationUtilsTest {

@@ -152,7 +152,7 @@ public class ConceptsResources  {
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.UPDATE)
 	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> setConcept(
-			String id,
+			@PathVariable(Constants.ID) String id,
 			@RequestBody String body) throws RmesException {
 		conceptsService.setConcept(id, body);
 		return ResponseEntity.noContent().build();

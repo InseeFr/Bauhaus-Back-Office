@@ -13,30 +13,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get version
-        id: version
-        run: echo "version=$(mvn -f module-bauhaus-bo/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-
-      - name: Print version
-        run: echo ${{ steps.version.outputs.version }}
-
-      - uses: mukunku/tag-exists-action@v1.6.0
-        name: Check tag existence
-        id: check-tag-exists
-        with:
-          tag: ${{ steps.version.outputs.version }}
-
-      - name: Tag verification
-        id: check-tag
-        run: |
-          if [[ "${{ steps.check-tag-exists.outputs.exists }}" == "true" ]]; then
-            echo "Nothing to tag/release, the tag ${{ steps.version.outputs.version }} already exists"
-            exit 1
-          fi
-
       - name: Check if on main branch
         run: |
-          if [[ "${{ github.ref_name }}" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
+          if [[ "${{ github.ref_name }}" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
           echo "Le nom de la référence correspond au motif."
           else
             echo "Le nom de la référence ne correspond PAS au motif."
@@ -55,5 +34,5 @@ jobs:
           name: inseefr/bauhaus-back-office
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          tags: "latest, ${{ needs.check-version.outputs.release-version }}"
+          tags: "latest, ${{ github.event.release.tag_name }}"
           dockerfile: Dockerfile.bauhaus

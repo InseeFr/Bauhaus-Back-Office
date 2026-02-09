@@ -8,7 +8,6 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.PartialClassification;
 import fr.insee.rmes.modules.classifications.families.model.PartialClassificationFamily;
@@ -23,6 +22,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

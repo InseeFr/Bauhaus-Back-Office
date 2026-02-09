@@ -29,6 +29,10 @@ public class ConfigStub extends Config {
         return "http://rdf.insee.fr/graphes/produits";
     }
 
+    @Override
+    public String getProductsBaseUri() {
+        return "produits/indicateur";
+    }
 
     @Override
     public String getOrgInseeGraph() {
