@@ -50,11 +50,7 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
                         org.stamp().equals("HIE2000069") &&
                                 org.label().contains("Direction")
                 );
-        assertThat(organisations).isNotEmpty();
-        assertThat(organisations).anyMatch(org ->
-                org.stamp().equals("HIE2000069") &&
-                        org.label().contains("Direction")
-        );
+
     }
 
     @Test
