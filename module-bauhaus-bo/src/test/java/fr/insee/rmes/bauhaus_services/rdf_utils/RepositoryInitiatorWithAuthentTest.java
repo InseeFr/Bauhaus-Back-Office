@@ -1,8 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.graphdb.RepositoryInitiatorWithAuthent;
-import fr.insee.rmes.keycloak.KeycloakServices;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.junit.jupiter.api.Test;
@@ -20,15 +19,15 @@ import static org.mockito.Mockito.when;
 class RepositoryInitiatorWithAuthentTest {
 
     @Mock
-    private KeycloakServices keycloakServices;
+    private TokenService tokenService;
     private Repository repository;
 
     @Test
-    void initRepository_test() throws RmesException {
-        var repositoryInitiatorWithAuthent = new RepositoryInitiatorWithAuthent(keycloakServices);
-        when(keycloakServices.isTokenValid(null)).thenReturn(Boolean.FALSE);
-        when(keycloakServices.isTokenValid(anyString())).thenReturn(Boolean.TRUE);
-        when(keycloakServices.getKeycloakAccessToken(anyString())).thenReturn("token");
+    void initRepository_test() {
+        var repositoryInitiatorWithAuthent = new RepositoryInitiatorWithAuthent(tokenService);
+        when(tokenService.isTokenValid(null)).thenReturn(Boolean.FALSE);
+        when(tokenService.isTokenValid(anyString())).thenReturn(Boolean.TRUE);
+        when(tokenService.getAccessToken()).thenReturn("token");
         var servers= List.of("http://server1", "http://server2", "http://server3", "http://server1", "http://server1", "http://server3");
         for (String server : servers){
             assertDoesNotThrow(()-> repository = repositoryInitiatorWithAuthent.initRepository(server, "id"));

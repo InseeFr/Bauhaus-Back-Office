@@ -13,7 +13,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalI
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodesListResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -55,7 +54,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 )
 @ConditionalOnModule("ddi")
 public class DdiResources {
-    DDIRepository repository;
     private final DDIService ddiService;
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
     private final DDI3toDDI4ConverterService ddi3toDdi4ConverterService;
@@ -110,6 +108,23 @@ public class DdiResources {
                 .body(responses);
     }
 
+    @GetMapping("/mutualized-codes-list")
+    public ResponseEntity<List<CodeListSummaryResponse>> getMutualizedCodesLists() {
+        List<PartialCodesList> codesLists = ddiService.getMutualizedCodesLists();
+
+        List<CodeListSummaryResponse> responses = codesLists.stream()
+                .map(codesList -> new CodeListSummaryResponse(
+                        codesList.agency(),
+                        codesList.id(),
+                        codesList.label()
+                ))
+                .toList();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(responses);
+    }
+
     @GetMapping("/group")
     public ResponseEntity<List<PartialGroupResponse>> getGroups() {
         List<PartialGroup> groups = ddiService.getGroups();
@@ -158,6 +173,21 @@ public class DdiResources {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);
+    }
+
+    @GetMapping("/physical-instance/{agencyId}/{id}/codeslists")
+    public ResponseEntity<List<CodeListSummaryResponse>> getPhysicalInstanceCodesLists(
+            @PathVariable String agencyId,
+            @PathVariable(Constants.ID) String id) {
+        Ddi4Response physicalInstance = ddiService.getDdi4PhysicalInstance(agencyId, id);
+        List<CodeListSummaryResponse> codeLists = physicalInstance.codeList() != null
+                ? physicalInstance.codeList().stream()
+                    .map(CodeListSummaryResponse::fromDdi4CodeList)
+                    .toList()
+                : List.of();
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(codeLists);
     }
 
     @PatchMapping("/physical-instance/{agencyId}/{id}")
@@ -242,7 +272,7 @@ public class DdiResources {
             } else {
                 List<String> errors = validationMessages.stream()
                         .map(ValidationMessage::getMessage)
-                        .collect(Collectors.toList());
+                        .toList();
                 return ResponseEntity.badRequest()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(ValidationResponse.failure(errors));

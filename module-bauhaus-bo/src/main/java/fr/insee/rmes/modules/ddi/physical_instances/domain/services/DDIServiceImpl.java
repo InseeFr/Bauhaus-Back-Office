@@ -69,4 +69,10 @@ public class DDIServiceImpl implements DDIService {
         logger.info("Creating new physical instance with label: {}", request.physicalInstanceLabel());
         return ddiRepository.createPhysicalInstance(request);
     }
+
+    @Override
+    public List<PartialCodesList> getMutualizedCodesLists() {
+        logger.info("Starting to get mutualized codes lists");
+        return ddiRepository.getMutualizedCodesLists();
+    }
 }

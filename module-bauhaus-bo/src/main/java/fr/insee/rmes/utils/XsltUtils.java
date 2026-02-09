@@ -55,11 +55,10 @@ public class XsltUtils {
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 		try {
 			Path tempFile = Files.createTempFile(tempDir, paramName, FilesUtils.XML_EXTENSION);
-			String absolutePath = tempFile.toFile().getAbsolutePath();
 			InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
 			Files.copy(is, tempFile, options);
-			absolutePath = absolutePath.replace('\\', '/');
-			xsltTransformer.setParameter(paramName, absolutePath);
+			String fileUri = tempFile.toUri().toString();
+			xsltTransformer.setParameter(paramName, fileUri);
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					"IOException - Can't create temp files for XSLT Transformer");

@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StringValue;
@@ -101,7 +102,8 @@ class DDIServiceImplTest {
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Physical Instance Label",
-            "Updated DataRelationship Name"
+            "Updated DataRelationship Label",
+            "Updated LogicalRecord Label"
         );
         Ddi4Response expectedResponse = new Ddi4Response(
             "updated-schema",
@@ -129,7 +131,8 @@ class DDIServiceImplTest {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
             "New Physical Instance Label",
-            "New DataRelationship Name"
+            "New DataRelationship Label",
+            "New LogicalRecord Label"
         );
         Ddi4Response expectedResponse = new Ddi4Response(
             "new-schema",
@@ -230,5 +233,29 @@ class DDIServiceImplTest {
         assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().string().text());
 
         verify(ddiRepository).getGroup(agencyId, groupId);
+    }
+
+    @Test
+    void shouldGetMutualizedCodesLists() {
+        // Given
+        List<PartialCodesList> expectedCodesLists = List.of(
+                new PartialCodesList("fc65a527-a04b-4505-85de-0a181e54dbad", "NAF rév. 2, 2008 - Niveau 5 - Sous-classes", new Date(), "fr.insee"),
+                new PartialCodesList("another-id", "Another Code List", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getMutualizedCodesLists()).thenReturn(expectedCodesLists);
+
+        // When
+        List<PartialCodesList> result = ddiService.getMutualizedCodesLists();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", result.get(0).id());
+        assertEquals("NAF rév. 2, 2008 - Niveau 5 - Sous-classes", result.get(0).label());
+        assertEquals("fr.insee", result.get(0).agency());
+        assertEquals("another-id", result.get(1).id());
+        assertEquals("Another Code List", result.get(1).label());
+
+        verify(ddiRepository).getMutualizedCodesLists();
     }
 }

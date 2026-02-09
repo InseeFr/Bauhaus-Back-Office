@@ -81,13 +81,13 @@ public class PropertiesRbacFetcher implements RbacFetcher {
                         RBAC.Strategy strategy = p.strategy();
 
                         result
-                                .computeIfAbsent(module, k -> new HashMap<>())
+                                .computeIfAbsent(module, _ -> new HashMap<>())
                                 .merge(privilege, strategy, (s1, s2) ->
                                         Collections.min(List.of(s1, s2), Comparator.comparingInt(Enum::ordinal))
                                 );
                     }
                 }
-            } catch (UnknownRoleException exception){}
+            } catch (UnknownRoleException _){}
 
         }
 

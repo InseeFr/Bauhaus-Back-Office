@@ -1,7 +1,6 @@
 package fr.insee.rmes.graphdb;
 
-import fr.insee.rmes.keycloak.KeycloakServices;
-import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
@@ -10,13 +9,13 @@ import java.util.Map;
 
 public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
 
-    private final KeycloakServices keycloakServices;
+    private final TokenService tokenService;
     private final Map<String, String> accessTokens=new HashMap<>();
     private final Map<String, HTTPRepository> repositories=new HashMap<>();
 
 
-    public RepositoryInitiatorWithAuthent(KeycloakServices keycloakServices) {
-        this.keycloakServices=keycloakServices;
+    public RepositoryInitiatorWithAuthent(TokenService tokenService) {
+        this.tokenService=tokenService;
     }
 
     @Override
@@ -27,10 +26,10 @@ public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
         return repository;
     }
 
-    private HTTPRepository refreshRepository(String rdfServer, String repositoryID, HTTPRepository repository) throws RmesException {
-            if(!this.keycloakServices.isTokenValid(this.accessTokens.get(rdfServer + repositoryID)) || repository==null) {
+    private HTTPRepository refreshRepository(String rdfServer, String repositoryID, HTTPRepository repository) {
+            if(!this.tokenService.isTokenValid(this.accessTokens.get(rdfServer + repositoryID)) || repository==null) {
 
-                var accessToken = keycloakServices.getKeycloakAccessToken(rdfServer);
+                var accessToken = tokenService.getAccessToken();
 
                 repository = new HTTPRepository(rdfServer, repositoryID);
                 repository.setAdditionalHttpHeaders(Map.of("Authorization", "bearer " + accessToken));
