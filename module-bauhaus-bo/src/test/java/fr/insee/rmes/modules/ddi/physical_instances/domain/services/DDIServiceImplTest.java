@@ -102,7 +102,8 @@ class DDIServiceImplTest {
         String instanceId = "test-id";
         UpdatePhysicalInstanceRequest request = new UpdatePhysicalInstanceRequest(
             "Updated Physical Instance Label",
-            "Updated DataRelationship Name"
+            "Updated DataRelationship Label",
+            "Updated LogicalRecord Label"
         );
         Ddi4Response expectedResponse = new Ddi4Response(
             "updated-schema",
@@ -130,7 +131,8 @@ class DDIServiceImplTest {
         // Given
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
             "New Physical Instance Label",
-            "New DataRelationship Name"
+            "New DataRelationship Label",
+            "New LogicalRecord Label"
         );
         Ddi4Response expectedResponse = new Ddi4Response(
             "new-schema",
