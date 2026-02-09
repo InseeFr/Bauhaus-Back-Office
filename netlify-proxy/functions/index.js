@@ -7,6 +7,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { nafr2Items } from './nafr2-data.js';
+>>>>>>> main
 
 // Initialize Firebase Admin
 initializeApp();
@@ -79,6 +80,19 @@ const defaultGroupsItems = [
     Version: "1",
     Identifier: "89f5e04d-da22-485f-9c08-5fbe452b6c90",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+
+/**
+ * Default data to populate the store on initialization
+ */
+const defaultItems = [
+  // StudyUnits
+  {
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "89f5e04d-da22-485f-9c08-5fbe452b6c90",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+>>>>>>> main
     VersionDate: "2025-01-09T09:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -94,6 +108,14 @@ const defaultGroupsItems = [
     Identifier: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:a1b2c3d4-e5f6-7890-abcd-ef1234567890:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>a1b2c3d4-e5f6-7890-abcd-ef1234567890</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population 2022</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
     VersionDate: "2025-01-09T10:00:00.000000Z",
+  {
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "820a7c14-0ac4-42bc-a8c1-d39f60e304ee",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2022</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+>>>>>>> main
     VersionResponsibility: "abcde",
     IsPublished: false,
     IsDeprecated: false,
@@ -107,6 +129,13 @@ const defaultGroupsItems = [
     Identifier: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:b2c3d4e5-f6a7-8901-bcde-f12345678901:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>b2c3d4e5-f6a7-8901-bcde-f12345678901</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population 2021</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
     VersionDate: "2025-01-09T10:00:00.000000Z",
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "948edb5b-96a5-4823-b45d-3019fcc40227",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:948edb5b-96a5-4823-b45d-3019fcc40227:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2023</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+>>>>>>> main
     VersionResponsibility: "abcde",
     IsPublished: false,
     IsDeprecated: false,
@@ -160,6 +189,13 @@ const defaultGroupsItems = [
     Identifier: "f6a7b8c9-d0e1-2345-fabc-456789012345",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:f6a7b8c9-d0e1-2345-fabc-456789012345:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>f6a7b8c9-d0e1-2345-fabc-456789012345</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu 2023</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
     VersionDate: "2025-01-09T11:00:00.000000Z",
+    ItemType: "752a535b-b548-4fbe-97e4-f26a02d9e413",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "5bd79348-ea1f-4f3c-8eff-63452147a050",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <StudyUnit isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:studyunit:3_3"> <r:URN>urn:ddi:fr.insee:5bd79348-ea1f-4f3c-8eff-63452147a050:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">BPE 2024</r:String> </r:Title> </r:Citation> </StudyUnit> </Fragment>`,
+    VersionDate: "2025-01-09T09:00:00.000000Z",
+>>>>>>> main
     VersionResponsibility: "abcde",
     IsPublished: false,
     IsDeprecated: false,
@@ -173,6 +209,12 @@ const defaultGroupsItems = [
     Version: "1",
     Identifier: "10a689ce-7006-429b-8e84-036b7787b422",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "10a689ce-7006-429b-8e84-036b7787b422",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T09:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>10a689ce-7006-429b-8e84-036b7787b422</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Base permanente des équipements</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>89f5e04d-da22-485f-9c08-5fbe452b6c90</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>820a7c14-0ac4-42bc-a8c1-d39f60e304ee</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>948edb5b-96a5-4823-b45d-3019fcc40227</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>5bd79348-ea1f-4f3c-8eff-63452147a050</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+>>>>>>> main
     VersionDate: "2025-01-09T09:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -186,6 +228,12 @@ const defaultGroupsItems = [
     Version: "1",
     Identifier: "20b789de-8007-530c-9f95-147c75e6cb34",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:20b789de-8007-530c-9f95-147c75e6cb34:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>20b789de-8007-530c-9f95-147c75e6cb34</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>a1b2c3d4-e5f6-7890-abcd-ef1234567890</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>b2c3d4e5-f6a7-8901-bcde-f12345678901</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>c3d4e5f6-a7b8-9012-cdef-123456789012</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "20b789de-8007-530c-9f95-147c75e6cb34",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T10:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:20b789de-8007-530c-9f95-147c75e6cb34:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>20b789de-8007-530c-9f95-147c75e6cb34</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Recensement de la population</r:String> </r:Title> </r:Citation> </Group> </Fragment>`,
+>>>>>>> main
     VersionDate: "2025-01-09T10:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -199,6 +247,12 @@ const defaultGroupsItems = [
     Version: "1",
     Identifier: "30c890ef-9008-631d-0a06-258d86f7dc45",
     Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:30c890ef-9008-631d-0a06-258d86f7dc45:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>30c890ef-9008-631d-0a06-258d86f7dc45</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu</r:String> </r:Title> </r:Citation> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>d4e5f6a7-b8c9-0123-defa-234567890123</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>e5f6a7b8-c9d0-1234-efab-345678901234</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> <r:StudyUnitReference> <r:Agency>fr.insee</r:Agency> <r:ID>f6a7b8c9-d0e1-2345-fabc-456789012345</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>StudyUnit</r:TypeOfObject> </r:StudyUnitReference> </Group> </Fragment>`,
+    ItemType: "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "30c890ef-9008-631d-0a06-258d86f7dc45",
+    Item: ` <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3"> <Group isUniversallyUnique="true" versionDate="2025-01-09T11:00:00.000000Z" xmlns="ddi:group:3_3"> <r:URN>urn:ddi:fr.insee:30c890ef-9008-631d-0a06-258d86f7dc45:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>30c890ef-9008-631d-0a06-258d86f7dc45</r:ID> <r:Version>1</r:Version> <r:VersionResponsibility>abcde</r:VersionResponsibility> <r:Citation> <r:Title> <r:String xml:lang="fr-FR">Enquête emploi en continu</r:String> </r:Title> </r:Citation> </Group> </Fragment>`,
+>>>>>>> main
     VersionDate: "2025-01-09T11:00:00.000000Z",
     VersionResponsibility: "abcde",
     IsPublished: false,
@@ -252,6 +306,47 @@ const defaultMutualizedCodesLists = [
     ],
     "CustomFields": [],
     "UserAttributes": []
+  },
+  // CodeLists
+  {
+    ItemType: "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "2a22ba00-a977-4a61-a582-99025c6b0582",
+    Item: " <Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"> <CodeList isUniversallyUnique=\"true\" versionDate=\"2023-07-04T09:19:29.3053289Z\" xmlns=\"ddi:logicalproduct:3_3\"> <r:URN>urn:ddi:fr.insee:2a22ba00-a977-4a61-a582-99025c6b0582:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>2a22ba00-a977-4a61-a582-99025c6b0582</r:ID> <r:Version>1</r:Version> <r:Label> <r:Content xml:lang=\"fr-FR\">Liste des statuts professionnels</r:Content> </r:Label> <Code isUniversallyUnique=\"true\"> <r:URN>urn:ddi:fr.insee:a4648d8f-a4cc-4f1a-be51-3ddc914597e5:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>a4648d8f-a4cc-4f1a-be51-3ddc914597e5</r:ID> <r:Version>1</r:Version> <r:CategoryReference> <r:Agency>fr.insee</r:Agency> <r:ID>d597f327-773f-4ae8-852f-ae04166827da</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>Category</r:TypeOfObject> </r:CategoryReference> <r:Value>0</r:Value> </Code> , <Code isUniversallyUnique=\"true\"> <r:URN>urn:ddi:fr.insee:c65cafcf-d410-4f8c-a983-3278e72c4c70:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>c65cafcf-d410-4f8c-a983-3278e72c4c70</r:ID> <r:Version>1</r:Version> <r:CategoryReference> <r:Agency>fr.insee</r:Agency> <r:ID>d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a</r:ID> <r:Version>1</r:Version> <r:TypeOfObject>Category</r:TypeOfObject> </r:CategoryReference> <r:Value>1</r:Value> </Code> </CodeList> </Fragment> ",
+    VersionDate: "2023-07-04T09:19:29.3053289Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "d597f327-773f-4ae8-852f-ae04166827da",
+    Item: " <Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"> <Category isUniversallyUnique=\"true\" versionDate=\"2023-07-04T09:19:29.3073232Z\" xmlns=\"ddi:logicalproduct:3_3\"> <r:URN>urn:ddi:fr.insee:d597f327-773f-4ae8-852f-ae04166827da:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>d597f327-773f-4ae8-852f-ae04166827da</r:ID> <r:Version>1</r:Version> <r:Label> <r:Content xml:lang=\"fr-FR\">Indépendant</r:Content> </r:Label> </Category> </Fragment>",
+    VersionDate: "2023-07-04T09:19:29.3073232Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+  },
+  {
+    ItemType: "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+    AgencyId: "fr.insee",
+    Version: "1",
+    Identifier: "d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a",
+    Item: " <Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"> <Category isUniversallyUnique=\"true\" versionDate=\"2023-07-04T09:19:29.3073232Z\" xmlns=\"ddi:logicalproduct:3_3\"> <r:URN>urn:ddi:fr.insee:d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a:1</r:URN> <r:Agency>fr.insee</r:Agency> <r:ID>d1ee8459-65ec-40e2-a7e3-f1809e1b1b5a</r:ID> <r:Version>1</r:Version> <r:Label> <r:Content xml:lang=\"fr-FR\">Salarié</r:Content> </r:Label> </Category> </Fragment>",
+    VersionDate: "2023-07-04T09:19:29.3073232Z",
+    VersionResponsibility: "abcde",
+    IsPublished: false,
+    IsDeprecated: false,
+    IsProvisional: false,
+    ItemFormat: "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+>>>>>>> main
   }
 ];
 
@@ -348,6 +443,7 @@ async function initializeGroupsCollection() {
   }
 }
 
+>>>>>>> main
 // Note: Initialization is now handled on-demand when the first request comes in
 // to avoid cold start delays
 
@@ -358,6 +454,8 @@ const GENERIC_TOKEN = 'bauhaus-mock-token';
 
 /**
  * In-memory storage for valid tokens (for dynamically created tokens)
+ * In-memory storage for valid tokens
+>>>>>>> main
  */
 const validTokens = new Set();
 
@@ -367,6 +465,7 @@ const validTokens = new Set();
 let groupsCollectionInitialized = false;
 
 /**
+>>>>>>> main
  * CORS headers configuration
  */
 const corsHeaders = {
@@ -385,11 +484,14 @@ function generateMockToken() {
 /**
  * Validate token from Authorization header
  * Accepts either the generic static token or dynamically created tokens
+>>>>>>> main
  */
 function validateToken(authHeader) {
   if (!authHeader) return false;
   const token = authHeader.replace('Bearer ', '');
   return token === GENERIC_TOKEN || validTokens.has(token);
+  return validTokens.has(token);
+>>>>>>> main
 }
 
 /**
@@ -541,6 +643,7 @@ export const proxy = onRequest(async (req, res) => {
       await handleQuery(req, res);
     } else if (path === '/api/v1/item/_getDescriptions') {
       await handleGetDescriptions(req, res);
+>>>>>>> main
     } else if (path === '/api/v1/item') {
       await handleItem(req, res);
     } else if (path === '/api/v1/items') {
@@ -556,6 +659,7 @@ export const proxy = onRequest(async (req, res) => {
           'POST /api/v1/_query',
           'POST /api/v1/item',
           'POST /api/v1/item/_getDescriptions',
+>>>>>>> main
           'DELETE /api/v1/items',
           'GET /api/v1/ddiset/{agencyId}/{identifier}'
         ]
@@ -666,6 +770,20 @@ async function handleQuery(req, res) {
     const itemsSnapshot = await itemsQuery.get();
     results = [...results, ...itemsSnapshot.docs.map(doc => doc.data())];
   }
+  // Initialize default items if needed
+  await initializeDefaultItems();
+
+  // Get all items from Firestore
+  let query = db.collection(ITEMS_COLLECTION);
+
+  // Filter by ItemType if specified
+  if (itemTypes.length > 0) {
+    query = query.where('ItemType', 'in', itemTypes);
+  }
+
+  const snapshot = await query.get();
+  const results = snapshot.docs.map(doc => doc.data());
+>>>>>>> main
 
   // Transform items to match expected response format
   const transformedResults = results.map(item => {
@@ -785,6 +903,9 @@ async function handleItem(req, res) {
 
   // ItemTypes that belong to groups collection
   const groupsItemTypes = [ITEM_TYPE_GROUP, ITEM_TYPE_STUDY_UNIT];
+  // Initialize default items if needed
+  await initializeDefaultItems();
+>>>>>>> main
 
   // Process each item
   for (const item of items) {
@@ -808,6 +929,10 @@ async function handleItem(req, res) {
       // Store the item using Identifier as key
       const identifier = item.Identifier;
       const docRef = db.collection(collectionName).doc(identifier);
+      // Store the item using Identifier as key
+      const identifier = item.Identifier;
+      const docRef = db.collection(ITEMS_COLLECTION).doc(identifier);
+>>>>>>> main
       const doc = await docRef.get();
       const isUpdate = doc.exists;
 
@@ -928,6 +1053,7 @@ async function handleGetDescriptions(req, res) {
 }
 
 /**
+>>>>>>> main
  * Handle items store reset (MOCKED)
  * DELETE /api/v1/items
  * Clears all items and reinitializes with default data
@@ -989,6 +1115,32 @@ async function handleResetItems(req, res) {
     previousGroupsCount: previousGroupsSize,
     currentGroupsCount: currentGroupsSize,
     defaultGroupsRestored: defaultGroupsItems.length
+  // Get current size before clearing
+  const countSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const previousSize = countSnapshot.data().count;
+
+  // Clear all items using batch delete
+  const snapshot = await db.collection(ITEMS_COLLECTION).get();
+  const batch = db.batch();
+  snapshot.docs.forEach(doc => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+
+  // Reinitialize with default items
+  await initializeDefaultItems();
+
+  // Get new count
+  const newCountSnapshot = await db.collection(ITEMS_COLLECTION).count().get();
+  const currentSize = newCountSnapshot.data().count;
+
+  const response = {
+    success: true,
+    message: 'Items store has been reset',
+    previousItemCount: previousSize,
+    currentItemCount: currentSize,
+    defaultItemsRestored: defaultItems.length
+>>>>>>> main
   };
 
   console.log('Items store reset complete:', response);
@@ -1047,6 +1199,13 @@ async function handleDdiset(req, res, path) {
       itemDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
       foundInCollection = ITEMS_COLLECTION;
     }
+  // Initialize default items if needed
+  await initializeDefaultItems();
+
+  try {
+    // Find the item by identifier
+    const itemDoc = await db.collection(ITEMS_COLLECTION).doc(identifier).get();
+>>>>>>> main
 
     if (!itemDoc.exists) {
       res.status(404).json({
@@ -1059,6 +1218,7 @@ async function handleDdiset(req, res, path) {
 
     console.log(`Found item ${identifier} in collection: ${foundInCollection}`);
 
+>>>>>>> main
     const item = itemDoc.data();
     const itemType = item.ItemType;
 
@@ -1067,6 +1227,8 @@ async function handleDdiset(req, res, path) {
       // PhysicalInstance
       await handlePhysicalInstanceDdiset(req, res, item, agencyId);
     } else if (itemType === ITEM_TYPE_GROUP) {
+    } else if (itemType === '4bd6eef6-99df-40e6-9b11-5b8f64e5cb23') {
+>>>>>>> main
       // Group
       await handleGroupDdiset(req, res, item, agencyId);
     } else {
@@ -1226,6 +1388,7 @@ async function handleGroupDdiset(req, res, group, agencyId) {
 
   console.log(`Processing Group ${group.Identifier}, XML parsed:`, JSON.stringify(groupFragment ? 'found' : 'not found'));
 
+>>>>>>> main
   let studyUnits = [];
 
   if (groupFragment) {
@@ -1234,6 +1397,7 @@ async function handleGroupDdiset(req, res, group, agencyId) {
 
     console.log(`StudyUnitReferences found:`, JSON.stringify(studyUnitRefs));
 
+>>>>>>> main
     if (studyUnitRefs) {
       // Ensure it's an array
       if (!Array.isArray(studyUnitRefs)) {
@@ -1259,6 +1423,16 @@ async function handleGroupDdiset(req, res, group, agencyId) {
     }
   } else {
     console.log('Group fragment not found in parsed XML');
+      // Find all StudyUnits
+      for (const suRef of studyUnitRefs) {
+        const suId = suRef['r:ID'];
+        const suDoc = await db.collection(ITEMS_COLLECTION).doc(suId).get();
+        if (suDoc.exists) {
+          studyUnits.push(suDoc.data());
+        }
+      }
+    }
+>>>>>>> main
   }
 
   console.log(`Found ${studyUnits.length} StudyUnits for Group ${group.Identifier}`);

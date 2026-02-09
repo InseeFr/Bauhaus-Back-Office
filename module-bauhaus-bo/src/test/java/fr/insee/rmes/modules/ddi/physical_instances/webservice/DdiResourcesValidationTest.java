@@ -99,6 +99,8 @@ class DdiResourcesValidationTest {
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
                 (mock, _) -> {
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
+                (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -134,6 +136,8 @@ class DdiResourcesValidationTest {
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
                 (mock, _) -> {
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
+                (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -162,6 +166,8 @@ class DdiResourcesValidationTest {
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
                 (mock, _) -> {
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
+                (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -174,6 +180,7 @@ class DdiResourcesValidationTest {
             assertNotNull(result.getBody());
             assertFalse(result.getBody().valid());
             assertTrue(!result.getBody().errors().isEmpty());
+            assertTrue(result.getBody().errors().size() > 0);
         }
     }
 
@@ -190,6 +197,8 @@ class DdiResourcesValidationTest {
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
                 (mock, _) -> {
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
+                (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -224,6 +233,8 @@ class DdiResourcesValidationTest {
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
                 (mock, _) -> {
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
+                (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
                 })) {
@@ -250,6 +261,7 @@ class DdiResourcesValidationTest {
 
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
@@ -271,6 +283,7 @@ class DdiResourcesValidationTest {
     void shouldGetDdiSchema() throws IOException {
         // When
         try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
+        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
                             .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
@@ -283,6 +296,7 @@ class DdiResourcesValidationTest {
             assertEquals(HttpStatus.OK, result.getStatusCode());
             assertNotNull(result.getBody());
             assertFalse(result.getBody().isEmpty());
+            assertTrue(result.getBody().length() > 0);
             assertTrue(result.getBody().contains("$schema"));
         }
     }

@@ -1,5 +1,6 @@
 package fr.insee.rmes.testcontainers.queries.organisations;
 
+import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.OrganisationOption;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
@@ -49,6 +50,11 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
                         org.stamp().equals("HIE2000069") &&
                                 org.label().contains("Direction")
                 );
+        assertThat(organisations).isNotEmpty();
+        assertThat(organisations).anyMatch(org ->
+                org.stamp().equals("HIE2000069") &&
+                        org.label().contains("Direction")
+        );
     }
 
     @Test
@@ -92,6 +98,7 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
         // All labels should be in French (we can't verify the language tag after parsing,
         // but we verify that we get results which implies the FILTER worked)
         assertThat(organisations).hasSizeGreaterThan(0);
+        assertThat(organisations.size()).isGreaterThan(0);
     }
 
     @Test

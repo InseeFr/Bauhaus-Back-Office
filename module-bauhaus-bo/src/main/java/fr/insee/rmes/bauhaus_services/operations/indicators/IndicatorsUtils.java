@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
@@ -19,8 +18,8 @@ import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;

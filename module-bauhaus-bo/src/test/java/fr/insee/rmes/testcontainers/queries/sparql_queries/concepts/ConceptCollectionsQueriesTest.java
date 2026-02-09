@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration")
@@ -149,6 +150,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
 
         // Then
         assertTrue(!result.isEmpty(), "Should return concepts from the collection");
+        assertTrue(result.length() > 0, "Should return concepts from the collection");
 
         // Verify concept c1 which exists in both graphs
         boolean foundC1 = false;

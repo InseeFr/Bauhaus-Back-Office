@@ -98,6 +98,8 @@ public class OperationIndicatorsQueries extends GenericQueries{
 		params.put("LG2", config.getLg2());
 		params.put("ID", id);
 		params.put("LINKPREDICATE", linkPredicate);
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
 		return buildIndicatorRequest("getIndicatorLinks.ftlh", params);
 	}
 

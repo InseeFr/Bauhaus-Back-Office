@@ -238,6 +238,18 @@ class DocumentationExportTest {
                 .contains("<labelLg1>Comptes nationaux</labelLg1>")
                 .contains("<labelLg2>National accounts</labelLg2>")
                 .contains("</family>");
+        assertThat(seriesFile).startsWith("<Series><id>s2144</id>");
+        assertThat(seriesFile).contains("<prefLabelLg1>Comptes nationaux annuels (base 2020)</prefLabelLg1>");
+        assertThat(seriesFile).contains("<prefLabelLg2>Annual national accounts (2020 Base)</prefLabelLg2>");
+        assertThat(seriesFile).contains("<abstractLg1><p>La comptabilité nationale");
+        assertThat(seriesFile).contains("<historyNoteLg1><p>Les origines de la comptabilité nationale");
+
+        // Verify family
+        assertThat(seriesFile).contains("<family>");
+        assertThat(seriesFile).contains("<id>s30</id>");
+        assertThat(seriesFile).contains("<labelLg1>Comptes nationaux</labelLg1>");
+        assertThat(seriesFile).contains("<labelLg2>National accounts</labelLg2>");
+        assertThat(seriesFile).contains("</family>");
 
         // Verify type and periodicity
         assertThat(seriesFile).contains("<typeCode>C</typeCode>");
@@ -383,6 +395,10 @@ class DocumentationExportTest {
                 .contains("<prefLabelLg1>Aide publique au développement (APD) bilatérale</prefLabelLg1>")
                 .contains("<prefLabelLg2>Bilateral Official Development Assistance (ODA)</prefLabelLg2>")
                 .contains("<altLabelLg1>ODD 17.i2</altLabelLg1>");
+        assertThat(indicatorFile).startsWith("<Indicator><id>p1723</id>");
+        assertThat(indicatorFile).contains("<prefLabelLg1>Aide publique au développement (APD) bilatérale</prefLabelLg1>");
+        assertThat(indicatorFile).contains("<prefLabelLg2>Bilateral Official Development Assistance (ODA)</prefLabelLg2>");
+        assertThat(indicatorFile).contains("<altLabelLg1>ODD 17.i2</altLabelLg1>");
 
         // Verify abstract
         assertThat(indicatorFile).contains("<abstractLg1>L'Indicateur 17.i2");
@@ -392,6 +408,9 @@ class DocumentationExportTest {
                 .contains("<contributors><contributors>")
                 .contains("<id>DG75-L002</id>")
                 .contains("<labelLg1>Administration du comité du Label</labelLg1>");
+        assertThat(indicatorFile).contains("<contributors><contributors>");
+        assertThat(indicatorFile).contains("<id>DG75-L002</id>");
+        assertThat(indicatorFile).contains("<labelLg1>Administration du comité du Label</labelLg1>");
 
         // Verify creators (should contain organization value instead of stamp)
         assertThat(indicatorFile).contains("<creators>");
