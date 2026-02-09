@@ -97,8 +97,6 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, _) -> {
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
@@ -134,8 +132,6 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, _) -> {
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
@@ -164,8 +160,6 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, _) -> {
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
@@ -195,8 +189,6 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, _) -> {
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
@@ -231,8 +223,6 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
-                (mock, _) -> {
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
@@ -260,7 +250,6 @@ class DdiResourcesValidationTest {
         String malformedJson = "{ invalid json }";
 
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
@@ -282,7 +271,6 @@ class DdiResourcesValidationTest {
     @Test
     void shouldGetDdiSchema() throws IOException {
         // When
-        try (MockedConstruction<ClassPathResource> _ = mockConstruction(ClassPathResource.class,
         try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
                 (mock, context) -> {
                     when(mock.getInputStream())
