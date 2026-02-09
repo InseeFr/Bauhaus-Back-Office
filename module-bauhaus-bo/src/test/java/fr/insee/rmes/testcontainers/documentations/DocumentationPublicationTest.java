@@ -81,6 +81,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         injectField(documentationPublication, "documentsPublication", documentsPublication);
         injectField(documentationPublication, "publicationUtils", publicationUtils);
         injectField(documentationPublication, "config", config);
+        injectField(documentationPublication, "organisationsGraph", "organisations");
+        injectField(documentationPublication, "documentationsGeoBaseUri", "territoire");
     }
 
     private void injectField(Object target, String fieldName, Object value) throws Exception {
