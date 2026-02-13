@@ -50,4 +50,5 @@ public class INSEE {
 	public static final IRI SPATIAL_RESOLUTION = INSEE.createIRI("spatialResolution");
 	public static final IRI SPATIAL_TEMPORAL = INSEE.createIRI("spatialTemporal");
 	public static final IRI RUBRIQUE_SANS_OBJECT = INSEE.createIRI("rubriqueSansObjet");
+	public static final IRI HTML = INSEE.createIRI("html");
 }
