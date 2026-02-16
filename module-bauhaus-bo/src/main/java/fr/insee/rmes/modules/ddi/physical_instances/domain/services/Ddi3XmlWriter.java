@@ -26,6 +26,10 @@ public class Ddi3XmlWriter {
     public static final String ID = "ID";
     public static final String VERSION = "Version";
     public static final String XML_LANG = "xml:lang";
+    private static final String STRING_ELEMENT = "String";
+    private static final String TYPE_OF_OBJECT = "TypeOfObject";
+    private static final String LABEL = "Label";
+    private static final String CONTENT = "Content";
 
     private final XMLOutputFactory xmlOutputFactory;
 
@@ -61,7 +65,7 @@ public class Ddi3XmlWriter {
         if (pi.citation() != null && pi.citation().title() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Citation");
             writer.writeStartElement(DDI_REUSABLE_NS, "Title");
-            writer.writeStartElement(DDI_REUSABLE_NS, "String");
+            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
             writer.writeAttribute(XML_LANG, pi.citation().title().string().xmlLang());
             writer.writeCharacters(pi.citation().title().string().text());
             writer.writeEndElement(); // String
@@ -75,7 +79,7 @@ public class Ddi3XmlWriter {
             writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.dataRelationshipReference().agency());
             writeElement(writer, DDI_REUSABLE_NS, ID, pi.dataRelationshipReference().id());
             writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.dataRelationshipReference().version());
-            writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", pi.dataRelationshipReference().typeOfObject());
+            writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, pi.dataRelationshipReference().typeOfObject());
             writer.writeEndElement(); // DataRelationshipReference
         }
 
@@ -114,12 +118,15 @@ public class Ddi3XmlWriter {
         // Write DataRelationshipName if present
         if (dr.dataRelationshipName() != null) {
             writer.writeStartElement("DataRelationshipName");
-            writer.writeStartElement(DDI_REUSABLE_NS, "String");
+            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
             writer.writeAttribute(XML_LANG, dr.dataRelationshipName().string().xmlLang());
             writer.writeCharacters(dr.dataRelationshipName().string().text());
             writer.writeEndElement(); // String
             writer.writeEndElement(); // DataRelationshipName
         }
+
+        // Write Label if present
+        writeLabel(writer, dr.label());
 
         // Write LogicalRecord if present
         if (dr.logicalRecord() != null) {
@@ -134,12 +141,15 @@ public class Ddi3XmlWriter {
 
             if (lr.logicalRecordName() != null) {
                 writer.writeStartElement("LogicalRecordName");
-                writer.writeStartElement(DDI_REUSABLE_NS, "String");
+                writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
                 writer.writeAttribute(XML_LANG, lr.logicalRecordName().string().xmlLang());
                 writer.writeCharacters(lr.logicalRecordName().string().text());
                 writer.writeEndElement(); // String
                 writer.writeEndElement(); // LogicalRecordName
             }
+
+            // Write Label if present
+            writeLabel(writer, lr.label());
 
             if (lr.variablesInRecord() != null && lr.variablesInRecord().variableUsedReference() != null) {
                 writer.writeStartElement("VariablesInRecord");
@@ -148,7 +158,7 @@ public class Ddi3XmlWriter {
                     writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
                     writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
                     writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
-                    writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", ref.typeOfObject());
+                    writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, ref.typeOfObject());
                     writer.writeEndElement(); // VariableUsedReference
                 }
                 writer.writeEndElement(); // VariablesInRecord
@@ -192,25 +202,18 @@ public class Ddi3XmlWriter {
 
         if (var.variableName() != null) {
             writer.writeStartElement("VariableName");
-            writer.writeStartElement(DDI_REUSABLE_NS, "String");
+            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
             writer.writeAttribute(XML_LANG, var.variableName().string().xmlLang());
             writer.writeCharacters(var.variableName().string().text());
             writer.writeEndElement();
             writer.writeEndElement();
         }
 
-        if (var.label() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "Label");
-            writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute(XML_LANG, var.label().content().xmlLang());
-            writer.writeCharacters(var.label().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
+        writeLabel(writer, var.label());
 
         if (var.description() != null) {
             writer.writeStartElement(DDI_REUSABLE_NS, "Description");
-            writer.writeStartElement(DDI_REUSABLE_NS, "Content");
+            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
             writer.writeAttribute(XML_LANG, var.description().content().xmlLang());
             writer.writeCharacters(var.description().content().text());
             writer.writeEndElement();
@@ -263,7 +266,7 @@ public class Ddi3XmlWriter {
                     writeElement(writer, DDI_REUSABLE_NS, AGENCY, codeRep.codeListReference().agency());
                     writeElement(writer, DDI_REUSABLE_NS, ID, codeRep.codeListReference().id());
                     writeElement(writer, DDI_REUSABLE_NS, VERSION, codeRep.codeListReference().version());
-                    writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", codeRep.codeListReference().typeOfObject());
+                    writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, codeRep.codeListReference().typeOfObject());
                     writer.writeEndElement(); // CodeListReference
                 }
 
@@ -337,14 +340,7 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, ID, cl.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, cl.version());
 
-        if (cl.label() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "Label");
-            writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute(XML_LANG, cl.label().content().xmlLang());
-            writer.writeCharacters(cl.label().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
+        writeLabel(writer, cl.label());
 
         if (cl.code() != null && !cl.code().isEmpty()) {
             for (Code code : cl.code()) {
@@ -361,7 +357,7 @@ public class Ddi3XmlWriter {
                     writeElement(writer, DDI_REUSABLE_NS, AGENCY, code.categoryReference().agency());
                     writeElement(writer, DDI_REUSABLE_NS, ID, code.categoryReference().id());
                     writeElement(writer, DDI_REUSABLE_NS, VERSION, code.categoryReference().version());
-                    writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", code.categoryReference().typeOfObject());
+                    writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, code.categoryReference().typeOfObject());
                     writer.writeEndElement(); // CategoryReference
                 }
 
@@ -398,14 +394,7 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, ID, cat.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, cat.version());
 
-        if (cat.label() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "Label");
-            writer.writeStartElement(DDI_REUSABLE_NS, "Content");
-            writer.writeAttribute(XML_LANG, cat.label().content().xmlLang());
-            writer.writeCharacters(cat.label().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
+        writeLabel(writer, cat.label());
 
         writer.writeEndElement(); // Category
         writer.writeEndElement(); // Fragment
@@ -436,9 +425,20 @@ public class Ddi3XmlWriter {
             writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
             writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
             writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
-            writeElement(writer, DDI_REUSABLE_NS, "TypeOfObject", ref.typeOfObject());
+            writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, ref.typeOfObject());
             writer.writeEndElement(); // BasedOnReference
             writer.writeEndElement(); // BasedOnObject
+        }
+    }
+
+    private void writeLabel(XMLStreamWriter writer, Label label) throws XMLStreamException {
+        if (label != null && label.content() != null) {
+            writer.writeStartElement(DDI_REUSABLE_NS, LABEL);
+            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
+            writer.writeAttribute(XML_LANG, label.content().xmlLang());
+            writer.writeCharacters(label.content().text());
+            writer.writeEndElement(); // Content
+            writer.writeEndElement(); // Label
         }
     }
 
@@ -486,7 +486,7 @@ public class Ddi3XmlWriter {
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
                     .findFirst()
-                    .orElse(ddi3Response.items().get(0));
+                    .orElse(ddi3Response.items().getFirst());
 
             typeOfObject = topLevelReference.typeOfObject();
         } else {
@@ -494,7 +494,7 @@ public class Ddi3XmlWriter {
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
                     .findFirst()
-                    .orElse(ddi3Response.items().get(0));
+                    .orElse(ddi3Response.items().getFirst());
 
             // Determine TypeOfObject from itemType
             typeOfObject = getTypeOfObjectFromItemType(topLevelItem.itemType());

@@ -1,7 +1,7 @@
 package fr.insee.rmes.graphdb;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.keycloak.KeycloakServices;
+import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.Repository;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class RepositoryUtilsTest {
 
     @Mock
-    private KeycloakServices keycloakServices;
+    private TokenService tokenService;
 
     private RepositoryUtils repositoryUtils;
     private Repository testRepository;
@@ -32,7 +32,7 @@ class RepositoryUtilsTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        repositoryUtils = new RepositoryUtils(keycloakServices, RepositoryInitiator.Type.DISABLED);
+        repositoryUtils = new RepositoryUtils(tokenService, RepositoryInitiator.Type.DISABLED);
         testRepository = new SailRepository(new MemoryStore());
         testRepository.init();
     }

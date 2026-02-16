@@ -82,7 +82,7 @@ public class PropertiesLogger implements ApplicationListener<ApplicationEnvironm
         if(property!=null){
             try{
                 return Optional.of(PropertySelectorEnum.valueOf(property));
-            }catch (IllegalArgumentException ie){
+            }catch (IllegalArgumentException _){
                 trace(()->"Impossible de convertir "+property+" en une constante de PropertySelectorEnum. Le PropertySelector par défaut sera utilisé.");
             }
         }
@@ -152,8 +152,8 @@ public class PropertiesLogger implements ApplicationListener<ApplicationEnvironm
     }
 
     private enum PropertySelectorEnum {
-        ALL(s->true, ()->"all properties"),
-        NONE(s->false, ()->"no properties"),
+        ALL(_->true, ()->"all properties"),
+        NONE(_->false, ()->"no properties"),
         PREFIX(k->prefixForSelectedProps.stream().anyMatch(k::startsWith), () -> "properties starting with "+ prefixForSelectedProps);
 
         private final PropertySelector propertySelector;

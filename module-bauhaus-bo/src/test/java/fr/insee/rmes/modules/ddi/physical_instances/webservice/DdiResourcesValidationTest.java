@@ -173,6 +173,7 @@ class DdiResourcesValidationTest {
             assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
             assertNotNull(result.getBody());
             assertFalse(result.getBody().valid());
+            assertTrue(!result.getBody().errors().isEmpty());
             assertTrue(result.getBody().errors().size() > 0);
         }
     }
@@ -282,6 +283,7 @@ class DdiResourcesValidationTest {
             assertNotNull(result);
             assertEquals(HttpStatus.OK, result.getStatusCode());
             assertNotNull(result.getBody());
+            assertFalse(result.getBody().isEmpty());
             assertTrue(result.getBody().length() > 0);
             assertTrue(result.getBody().contains("$schema"));
         }
