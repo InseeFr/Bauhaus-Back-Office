@@ -1,65 +1,107 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Collections;
+import java.util.List;
 
-@SpringBootTest(classes = ColecticaConfigurationTest.TestConfiguration.class)
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.colectica.server.baseUrl=http://localhost:8082",
-        "fr.insee.rmes.bauhaus.colectica.server.apiPath=/api/v1/",
-        "fr.insee.rmes.bauhaus.colectica.server.username=test-user",
-        "fr.insee.rmes.bauhaus.colectica.server.password=test-password",
-        "fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].agency-id=fr.insee",
-        "fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].identifier=fc65a527-a04b-4505-85de-0a181e54dbad",
-        "fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].version=1",
-        "fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[1].agency-id=other.agency",
-        "fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[1].identifier=another-uuid",
-        "fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[1].version=2",
-})
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 class ColecticaConfigurationTest {
 
-    @Autowired
-    private ColecticaConfiguration colecticaConfiguration;
+    private static final ColecticaConfiguration.ColecticaInstanceConfiguration VALID_SERVER =
+            new ColecticaConfiguration.ColecticaInstanceConfiguration(
+                    "https://example.com",
+                    "/api/v1/",
+                    List.of("type1"),
+                    "resp",
+                    "format",
+                    "password",
+                    "user",
+                    "pass",
+                    "fr.insee"
+            );
 
     @Test
-    void shouldLoadConfigurationPropertiesForPrimaryInstance() {
-
-        // Verify primary instance configuration
-        assertEquals("http://localhost:8082", colecticaConfiguration.server().baseUrl());
-        assertEquals("/api/v1/", colecticaConfiguration.server().apiPath());
-        assertEquals("http://localhost:8082", colecticaConfiguration.server().baseServerUrl());
-        assertEquals("http://localhost:8082/api/v1/", colecticaConfiguration.server().baseApiUrl());
-        assertEquals("test-user", colecticaConfiguration.server().username());
-        assertEquals("test-password", colecticaConfiguration.server().password());
+    void should_throw_exception_when_langs_is_null() {
+        assertThatThrownBy(() ->
+                new ColecticaConfiguration(
+                        null,
+                        VALID_SERVER,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        )
+                .isInstanceOf(InvalidColecticaConfigurationException.class)
+                .hasMessage("langs cannot be null or empty");
     }
 
     @Test
-    void shouldLoadMutualizedCodesListsConfiguration() {
-        // Verify mutualized codes lists configuration
-        assertNotNull(colecticaConfiguration.mutualizedCodesLists());
-        assertEquals(2, colecticaConfiguration.mutualizedCodesLists().size());
-
-        // First entry
-        ColecticaConfiguration.MutualizedCodeListEntry firstEntry = colecticaConfiguration.mutualizedCodesLists().get(0);
-        assertEquals("fr.insee", firstEntry.agencyId());
-        assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", firstEntry.identifier());
-        assertEquals(1, firstEntry.version());
-
-        // Second entry
-        ColecticaConfiguration.MutualizedCodeListEntry secondEntry = colecticaConfiguration.mutualizedCodesLists().get(1);
-        assertEquals("other.agency", secondEntry.agencyId());
-        assertEquals("another-uuid", secondEntry.identifier());
-        assertEquals(2, secondEntry.version());
+    void should_throw_exception_when_langs_is_empty() {
+        assertThatThrownBy(() ->
+                new ColecticaConfiguration(
+                        Collections.emptyList(),
+                        VALID_SERVER,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        )
+                .isInstanceOf(InvalidColecticaConfigurationException.class)
+                .hasMessage("langs cannot be null or empty");
     }
 
-    @EnableConfigurationProperties(ColecticaConfiguration.class)
-    static class TestConfiguration {
+    @Test
+    void should_throw_exception_when_lang_code_is_invalid() {
+        assertThatThrownBy(() ->
+                new ColecticaConfiguration(
+                        List.of("invalid-code"),
+                        VALID_SERVER,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        )
+                .isInstanceOf(InvalidColecticaConfigurationException.class)
+                .hasMessageContaining("Invalid language code: 'invalid-code'")
+                .hasMessageContaining("Expected format: xx-XX");
+    }
+
+    @Test
+    void should_throw_exception_when_lang_code_has_wrong_case() {
+        assertThatThrownBy(() ->
+                new ColecticaConfiguration(
+                        List.of("FR-fr"),
+                        VALID_SERVER,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        )
+                .isInstanceOf(InvalidColecticaConfigurationException.class)
+                .hasMessageContaining("Invalid language code: 'FR-fr'");
+    }
+
+    @Test
+    void should_accept_valid_language_codes() {
+        assertDoesNotThrow(() ->
+                new ColecticaConfiguration(
+                        List.of("fr-FR", "en-GB", "de-DE"),
+                        VALID_SERVER,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        );
+    }
+
+    @Test
+    void should_accept_single_valid_language_code() {
+        assertDoesNotThrow(() ->
+                new ColecticaConfiguration(
+                        List.of("fr-FR"),
+                        VALID_SERVER,
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                )
+        );
     }
 }
