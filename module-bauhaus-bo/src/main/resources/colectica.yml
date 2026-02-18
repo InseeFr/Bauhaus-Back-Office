@@ -1,0 +1,41 @@
+fr.insee.rmes.bauhaus.colectica:
+  langs:
+    - fr-FR
+    - en-GB
+
+  mock-server-enabled: false
+
+  server:
+    # Primary Colectica Instance
+    itemTypes: a51e85bb-6259-4488-8df2-f08cb43485f8
+    versionResponsibility: abcde
+    itemFormat: DC337820-AF3A-4C0B-82F9-CF02535CDE83
+    baseUrl: https://proxy-6ihxddcaqa-uc.a.run.app
+    apiPath: /api/v1/
+    defaultAgencyId: fr.insee
+
+    # Authentication mode:
+    # - "password": Uses username/password credentials to obtain a token from /token/createtoken endpoint.
+    #               The token is cached and automatically refreshed on 401/403 errors.
+    # - "token": Uses a pre-configured static token directly (no API call to obtain token).
+    #            Useful for environments with pre-generated long-lived tokens.
+    authenticationMode: password
+
+    # Credentials for "password" authentication mode
+    # Override these values in environment-specific configuration files
+    username: ""
+    password: ""
+
+    # Static token for "token" authentication mode
+    # Override this value when using token-based authentication
+    token: ""
+
+  # Exemple: Liste des statuts professionnels à supprimer
+  # code-list-deny-list:
+  #   - agency-id: fr.insee
+  #     id: 2a22ba00-a977-4a61-a582-99025c6b0582
+
+  mutualized-codes-lists:
+    - agency-id: fr.insee
+      identifier: fc65a527-a04b-4505-85de-0a181e54dbad
+      version: 1

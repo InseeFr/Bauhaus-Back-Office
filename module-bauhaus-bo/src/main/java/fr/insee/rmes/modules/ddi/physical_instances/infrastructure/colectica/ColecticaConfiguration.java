@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
  * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].id = 2a22ba00-a977-4a61-a582-99025c6b0582
  * </pre>
  *
+ * @param langs List of supported language codes (e.g., "fr-FR", "en-GB")
  * @param server Configuration for the Colectica server instance
  * @param codeListDenyList List of code lists to exclude from results (optional)
  * @see ColecticaInstanceConfiguration
@@ -33,10 +35,32 @@ import java.util.List;
  */
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.colectica")
 public record ColecticaConfiguration(
+        List<String> langs,
         ColecticaInstanceConfiguration server,
         List<CodeListDenyEntry> codeListDenyList,
         List<MutualizedCodeListEntry> mutualizedCodesLists
 ) {
+    /**
+     * Compact constructor for validation.
+     * Validates that:
+     * - langs is not null or empty
+     * - all language codes follow the pattern xx-XX (e.g., fr-FR, en-GB)
+     */
+    public ColecticaConfiguration {
+        if (langs == null || langs.isEmpty()) {
+            throw new InvalidColecticaConfigurationException("langs cannot be null or empty");
+        }
+
+        // Validate language code format (e.g., fr-FR, en-GB)
+        langs.forEach(lang -> {
+            if (!lang.matches("[a-z]{2}-[A-Z]{2}")) {
+                throw new InvalidColecticaConfigurationException(
+                    "Invalid language code: '%s'. Expected format: xx-XX (e.g., fr-FR, en-GB)".formatted(lang)
+                );
+            }
+        });
+    }
+
     /**
      * Configuration for a single Colectica instance
      */
