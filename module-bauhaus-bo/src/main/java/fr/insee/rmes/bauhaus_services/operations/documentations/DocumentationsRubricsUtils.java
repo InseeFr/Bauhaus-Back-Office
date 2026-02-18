@@ -19,6 +19,7 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -269,7 +270,7 @@ DocumentationsRubricsUtils extends RdfService {
 			RdfUtils.addTripleUri(textUriLg1, DCTERMS.LANGUAGE, langService.getLanguage1(), model, graph);
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-				RdfUtils.addTripleStringMdToXhtml(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), config.getLg1(), model, graph);
+				RdfUtils.addTripleString(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), config.getLg1(), model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
 		}
@@ -280,7 +281,7 @@ DocumentationsRubricsUtils extends RdfService {
 			RdfUtils.addTripleUri(textUriLg2, DCTERMS.LANGUAGE, langService.getLanguage2(), model, graph);
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-				RdfUtils.addTripleStringMdToXhtml(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), config.getLg2(), model, graph);
+				RdfUtils.addTripleString(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), config.getLg2(), model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}
@@ -331,11 +332,33 @@ DocumentationsRubricsUtils extends RdfService {
 			}
 		}
 		if (jsonRubric.has(Constants.LABEL_LG1)) {
-			String labelLg1 = forXml ? XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG1)) : jsonRubric.getString(Constants.LABEL_LG1);
+			String labelLg1 = jsonRubric.getString(Constants.LABEL_LG1);
+			if (forXml) {
+				if (isRichText(jsonRubric)) {
+					// Convert Markdown to XHTML for rich text fields during XML export
+					// Then escape XML characters - the XSLT rich-text template expects escaped HTML (&lt; instead of <)
+					labelLg1 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg1);
+					labelLg1 = XMLUtils.solveSpecialXmlcharacters(labelLg1);
+				} else {
+					// Escape XML characters for non-RICHTEXT fields
+					labelLg1 = XMLUtils.solveSpecialXmlcharacters(labelLg1);
+				}
+			}
 			documentationRubric.setLabelLg1(labelLg1);
 		}
 		if (jsonRubric.has(Constants.LABEL_LG2)) {
-			String labelLg2 = forXml ? XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)) : jsonRubric.getString(Constants.LABEL_LG2);
+			String labelLg2 = jsonRubric.getString(Constants.LABEL_LG2);
+			if (forXml) {
+				if (isRichText(jsonRubric)) {
+					// Convert Markdown to XHTML for rich text fields during XML export
+					// Then escape XML characters - the XSLT rich-text template expects escaped HTML (&lt; instead of <)
+					labelLg2 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg2);
+					labelLg2 = XMLUtils.solveSpecialXmlcharacters(labelLg2);
+				} else {
+					// Escape XML characters for non-RICHTEXT fields
+					labelLg2 = XMLUtils.solveSpecialXmlcharacters(labelLg2);
+				}
+			}
 			documentationRubric.setLabelLg2(labelLg2);
 		}
 		if (jsonRubric.has(Constants.CODELIST)) {
@@ -370,6 +393,21 @@ DocumentationsRubricsUtils extends RdfService {
 		}else {
 			documentationRubric.setDocumentsLg2(docs);
 		}
+	}
+
+	/**
+	 * Helper method to check if a rubric is of type RICHTEXT.
+	 * This is used to determine if Markdown to XHTML conversion should be applied during XML export.
+	 *
+	 * @param jsonRubric The rubric JSON object to check
+	 * @return true if the rubric is of type RICHTEXT, false otherwise
+	 */
+	private boolean isRichText(JSONObject jsonRubric) {
+		if (!jsonRubric.has(Constants.RANGE_TYPE)) {
+			return false;
+		}
+		String rangeType = jsonRubric.getString(Constants.RANGE_TYPE);
+		return RangeType.RICHTEXT.getJsonType().equals(rangeType);
 	}
 
 }
