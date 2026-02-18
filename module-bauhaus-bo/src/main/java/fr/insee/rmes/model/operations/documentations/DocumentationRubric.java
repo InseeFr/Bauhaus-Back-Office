@@ -36,13 +36,13 @@ public class DocumentationRubric {
 		return labelLg1;
 	}
 	public void setLabelLg1(String labelLg1) {
-		this.labelLg1 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg1);
+		this.labelLg1 = labelLg1;
 	}
 	public String getLabelLg2() {
 		return labelLg2;
 	}
 	public void setLabelLg2(String labelLg2) {
-		this.labelLg2 = XhtmlToMarkdownUtils.markdownToXhtml(labelLg2);
+		this.labelLg2 = labelLg2;
 	}
 	public String getCodeList() {
 		return codeList;

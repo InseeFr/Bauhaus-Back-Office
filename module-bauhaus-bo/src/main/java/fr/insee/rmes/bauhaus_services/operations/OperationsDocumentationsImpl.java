@@ -75,7 +75,6 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	@Override
 	public String getMetadataReport(String id) throws RmesException {
 		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
-		XhtmlToMarkdownUtils.convertJSONObject(documentation);
 		return documentation.toString();
 	}
 
