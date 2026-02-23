@@ -11,26 +11,10 @@
   <artifactId>parent</artifactId>
   <packaging>pom</packaging>
   <version>1.0.0</version>
-  <name>RMES</name>
-  <description>Back-office services for Bauhaus</description>
-  <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>http://www.opensource.org/licences/MIT</url>
-    </license>
-  </licenses>
-  <organization>
-    <name>INSEE</name>
-    <url>http://www.insee.fr</url>
-  </organization>
-  <developers>
-    <developer>
-      <name>Jérôme Bourgeois</name>
-      <email>jerome.bourgeois@insee.fr</email>
-    </developer>
-  </developers>
   <properties>
+    <!-- TODO : a supprimer après une mise à jour de spring boot > 3.5.10 -->
+    <assertj.version>3.27.7</assertj.version>
+    <!-- Fin des dépendances à supprimer pour la maj -->
     <java.version>25</java.version>
     <springdoc.version>2.8.3</springdoc.version>
     <rdf4j.version>5.1.0</rdf4j.version>
@@ -50,10 +34,26 @@
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
-    <!-- A supprimer après une mise à jour de spring boot > 3.5.10 -->
-    <assertj.version>3.27.7</assertj.version>
-    <!-- Fin des dépendances à supprimer pour la maj -->
   </properties>
+  <name>RMES</name>
+  <description>Back-office services for Bauhaus</description>
+  <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licences/MIT</url>
+    </license>
+  </licenses>
+  <organization>
+    <name>INSEE</name>
+    <url>http://www.insee.fr</url>
+  </organization>
+  <developers>
+    <developer>
+      <name>Jérôme Bourgeois</name>
+      <email>jerome.bourgeois@insee.fr</email>
+    </developer>
+  </developers>
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
