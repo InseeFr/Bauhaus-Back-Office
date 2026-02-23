@@ -54,6 +54,7 @@
     <assertj-core>3.27.7</assertj-core>
     <!-- Fin des dépendances à supprimer pour la maj -->
   </properties>
+  <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
