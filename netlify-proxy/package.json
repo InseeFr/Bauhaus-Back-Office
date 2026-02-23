@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@netlify/functions": "^2.4.1",
-    "fast-xml-parser": "^5.3.5",
+    "fast-xml-parser": "^5.3.6",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
