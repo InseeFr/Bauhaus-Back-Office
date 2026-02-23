@@ -58,6 +58,20 @@
       <artifactId>assertj-core</artifactId>
       <version>3.27.7</version>
     </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/org.assertj/assertj-core -->
+    <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.27.7</version>
+        <scope>test</scope>
+    </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/org.mvnpm/fast-xml-parser -->
+    <dependency>
+        <groupId>org.mvnpm</groupId>
+        <artifactId>fast-xml-parser</artifactId>
+        <version>5.3.7</version>
+        <scope>compile</scope>
+    </dependency>
     <!-- Fin des dépendances à supprimer pour la maj -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
