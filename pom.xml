@@ -54,15 +54,6 @@
     <assertj-core>3.27.7</assertj-core>
     <!-- Fin des dépendances à supprimer pour la maj -->
   </properties>
-  <dependencies>
-    <!-- Source: https://mvnrepository.com/artifact/org.mvnpm/fast-xml-parser -->
-    <dependency>
-        <groupId>org.mvnpm</groupId>
-        <artifactId>fast-xml-parser</artifactId>
-        <version>5.3.7</version>
-        <scope>compile</scope>
-    </dependency>
-    <!-- Fin des dépendances à supprimer pour la maj -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
