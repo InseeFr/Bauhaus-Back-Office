@@ -13,23 +13,88 @@
 
 
   <dependencies>
+    <!-- Internal modules -->
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-domain</artifactId>
-      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-infrastructure-graphdb</artifactId>
-      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-sparql-orm</artifactId>
-      <version>1.0.0</version>
     </dependency>
 
-    <!-- RDF4J dependencies for tests -->
+    <!-- Spring Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-hateoas</artifactId>
+    </dependency>
+
+    <!-- FreeMarker -->
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+    </dependency>
+
+    <!-- Jakarta -->
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+
+    <!-- JSON -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+    </dependency>
+
+    <!-- RDF4J -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-repository-http</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
+    </dependency>
+
+    <!-- Security -->
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+    </dependency>
+
+    <!-- JSON Schema Validator -->
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>1.5.1</version>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.vaadin.external.google</groupId>
+          <artifactId>android-json</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-repository-sail</artifactId>
@@ -41,13 +106,6 @@
       <artifactId>rdf4j-sail-memory</artifactId>
       <version>${rdf4j.version}</version>
       <scope>test</scope>
-    </dependency>
-
-    <!-- JSON Schema Validator -->
-    <dependency>
-      <groupId>com.networknt</groupId>
-      <artifactId>json-schema-validator</artifactId>
-      <version>1.5.1</version>
     </dependency>
 
   </dependencies>

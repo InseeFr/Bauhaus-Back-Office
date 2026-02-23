@@ -16,7 +16,6 @@
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-domain</artifactId>
-      <version>1.0.0</version>
     </dependency>
 
     <!-- Spring Framework dependencies -->
@@ -25,23 +24,17 @@
       <artifactId>spring-context</artifactId>
     </dependency>
     
-    <!-- FreeMarker for template processing -->
+    <!-- Test -->
     <dependency>
-      <groupId>fr.opensagres.xdocreport</groupId>
-      <artifactId>fr.opensagres.xdocreport.template.freemarker</artifactId>
-      <version>${xdocreport.version}</version>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
-      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.vaadin.external.google</groupId>
+          <artifactId>android-json</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

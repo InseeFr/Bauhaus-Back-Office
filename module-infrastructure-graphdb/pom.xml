@@ -8,7 +8,6 @@
     </parent>
 
     <artifactId>module-infrastructure-graphdb</artifactId>
-    <version>1.0.0</version>
 
     <name>module-infrastructure-graphdb</name>
 
@@ -17,7 +16,6 @@
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-domain</artifactId>
-      <version>1.0.0</version>
     </dependency>
 
     <dependency>
