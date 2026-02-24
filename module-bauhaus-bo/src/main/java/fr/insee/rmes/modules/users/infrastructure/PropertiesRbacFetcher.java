@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import fr.insee.rmes.domain.auth.Source;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownPrivilegeException;
@@ -66,31 +67,46 @@ public class PropertiesRbacFetcher implements RbacFetcher {
     }
 
     @Override
-    public Set<ModuleAccessPrivileges> computePrivileges(List<String> roles) {
+    public Set<ModuleAccessPrivileges> computePrivileges(List<String> roles, Source source) {
+        var result = computePrivilegesFromRoles(roles);
+        if (Source.INSEE.equals(source)) {
+            addInseeReadPrivileges(result);
+        }
+        return toModuleAccessPrivileges(result);
+    }
+
+    private Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> computePrivilegesFromRoles(List<String> roles) {
         Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result = new HashMap<>();
-
-
         for (String role : roles) {
             try {
-                Set<ModuleAccessPrivileges> modulePrivileges = getPrivilegesByRole(role);
-
-                for (ModuleAccessPrivileges mp : modulePrivileges) {
+                for (ModuleAccessPrivileges mp : getPrivilegesByRole(role)) {
                     RBAC.Module module = mp.application();
                     for (ModuleAccessPrivileges.Privilege p : mp.privileges()) {
-                        RBAC.Privilege privilege = p.privilege();
-                        RBAC.Strategy strategy = p.strategy();
-
                         result
                                 .computeIfAbsent(module, _ -> new HashMap<>())
-                                .merge(privilege, strategy, (s1, s2) ->
+                                .merge(p.privilege(), p.strategy(), (s1, s2) ->
                                         Collections.min(List.of(s1, s2), Comparator.comparingInt(Enum::ordinal))
                                 );
                     }
                 }
-            } catch (UnknownRoleException _){}
-
+            } catch (UnknownRoleException _) {}
         }
+        return result;
+    }
 
+    private void addInseeReadPrivileges(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result) {
+        for (RBAC.Module module : RBAC.Module.values()) {
+            if (module != RBAC.Module.UNKNOWN) {
+                result
+                        .computeIfAbsent(module, _ -> new HashMap<>())
+                        .merge(RBAC.Privilege.READ, RBAC.Strategy.ALL, (s1, s2) ->
+                                Collections.min(List.of(s1, s2), Comparator.comparingInt(Enum::ordinal))
+                        );
+            }
+        }
+    }
+
+    private Set<ModuleAccessPrivileges> toModuleAccessPrivileges(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> result) {
         return result.entrySet().stream()
                 .map(entry -> new ModuleAccessPrivileges(
                         entry.getKey(),
