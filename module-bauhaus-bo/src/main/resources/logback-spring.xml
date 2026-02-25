@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Example logback.xml demonstrating the ElasticAppender configuration.
+
+    This appender sends logs directly to Elasticsearch data streams via the Bulk API,
+    mimicking Elastic Agent's filestream behavior without writing to an intermediate log file.
+
+    The resulting data stream name will be: logs-myapp-production
+    (constructed from dataStreamType-dataStreamDataset-dataStreamNamespace)
+-->
+<configuration>
+
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+	<!-- ─── Elastic Appender ───────────────────────────────────────────────── -->
+	<appender name="ELASTIC" class="com.elastic.logback.ElasticAppender">
+
+		<url>${ELASTIC_URL:-https://localhost:9200}</url>
+
+		<!--
+			Data stream configuration.
+			The final data stream name = {type}-{dataset}-{namespace}
+			Elasticsearch must have a matching index template (the built-in
+			logs-*-* template handles this automatically).
+		-->
+		<dataStreamType>logs</dataStreamType>
+		<dataStreamDataset>myapp</dataStreamDataset>
+		<dataStreamNamespace>production</dataStreamNamespace>
+
+		<!--
+			Service identification (ECS fields).
+			These appear in Kibana's Services/APM views and allow
+			filtering and correlation across logs.
+		-->
+		<serviceName>my-application</serviceName>
+		<serviceVersion>1.2.3</serviceVersion>
+		<serviceEnvironment>production</serviceEnvironment>
+
+		<!--
+			Batching & performance tuning.
+			Events are buffered in a queue and sent in bulk batches.
+		-->
+		<batchSize>100</batchSize>              <!-- Max events per bulk request -->
+		<flushIntervalMillis>5000</flushIntervalMillis>  <!-- Flush every 5s even if batch not full -->
+		<maxQueueSize>10000</maxQueueSize>       <!-- Drop events when queue exceeds this -->
+
+		<!-- HTTP timeouts -->
+		<connectTimeoutMillis>5000</connectTimeoutMillis>
+		<readTimeoutMillis>30000</readTimeoutMillis>
+		<maxRetries>3</maxRetries>
+
+		<!-- Include MDC properties in the JSON document -->
+		<includeMdc>true</includeMdc>
+
+		<!-- Include caller data (file name, line number) — expensive, use sparingly -->
+		<includeCallerData>false</includeCallerData>
+
+		<!-- Include host.name and host.ip in every document -->
+		<includeHostInfo>true</includeHostInfo>
+
+		<!--
+			Custom labels: added under the ECS "labels" namespace.
+			Useful for filtering in Kibana (e.g. labels.team: "backend").
+		-->
+		<label>
+			<key>team</key>
+			<value>backend</value>
+		</label>
+		<label>
+			<key>region</key>
+			<value>eu-west-1</value>
+		</label>
+	</appender>
+
+	<!-- ─── Root Logger ────────────────────────────────────────────────────── -->
+	<root level="INFO">
+		<appender-ref ref="CONSOLE"/>
+		<appender-ref ref="ELASTIC"/>
+	</root>
+
+	<!--
+		Optional: fine-grained logger configuration.
+		You can route specific loggers only to Elastic.
+	-->
+	<!-- <logger name="com.myapp.critical" level="WARN" additivity="false">
+		<appender-ref ref="ELASTIC" />
+	</logger> -->
+
+</configuration>
