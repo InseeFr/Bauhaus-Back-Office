@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.10</version>
+    <version>3.5.11</version>
     <relativePath/>
     <!-- lookup parent from repository -->
   </parent>
@@ -34,7 +34,7 @@
     <java.version>25</java.version>
     <springdoc.version>2.8.3</springdoc.version>
     <rdf4j.version>5.1.0</rdf4j.version>
-    <xdocreport.version>2.1.0</xdocreport.version>
+    <xdocreport.version>2.2.0</xdocreport.version>
     <jacoco.version>0.8.13</jacoco.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java-jwt.version>4.5.0</java-jwt.version>
@@ -43,7 +43,7 @@
     <jaxb.version>4.0.5</jaxb.version>
     <zt.version>1.17</zt.version>
     <saxon.version>12.5</saxon.version>
-    <minio.version>8.5.17</minio.version>
+    <minio.version>8.6.0</minio.version>
     <record.builder.version>44</record.builder.version>
     <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
     <!-- SONAR -->
@@ -52,12 +52,6 @@
     <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
   </properties>
   <dependencies>
-    <!-- A supprimer après une mise à jour de spring boot > 3.5.10 -->
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.27.7</version>
-    </dependency>
     <!-- Fin des dépendances à supprimer pour la maj -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
