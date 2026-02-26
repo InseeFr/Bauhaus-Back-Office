@@ -11,6 +11,8 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
+import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -24,7 +26,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -41,8 +42,8 @@ public class DocumentationPublication {
 	private final RepositoryPublication repositoryPublication;
 	private final PublicationUtils publicationUtils;
 	private final DocumentsPublication documentsPublication;
-	private final String documentationsGeoBaseUri;
-	private final String organisationsGraph;
+	private final DocumentationConfiguration documentationConfiguration;
+	private final OrganisationsProperties organisationsProperties;
 
 	private static final Set<String> RUBRICS_NOT_FOR_PUBLICATION = Set.of("S.1.3","S.1.4","S.1.5","S.1.6","S.1.7","S.1.8","validationState");
 	private static final String SIMS_CONTEXT_TYPE = "sims";
@@ -52,14 +53,14 @@ public class DocumentationPublication {
 			RepositoryPublication repositoryPublication,
 			PublicationUtils publicationUtils,
 			DocumentsPublication documentsPublication,
-			@Value("${fr.insee.rmes.bauhaus.documentation.geographie.baseURI}") String documentationsGeoBaseUri,
-			@Value("${fr.insee.rmes.bauhaus.organisations.graph}") String organisationsGraph) {
+			DocumentationConfiguration documentationConfiguration,
+			OrganisationsProperties organisationsProperties) {
 		this.repoGestion = repoGestion;
 		this.repositoryPublication = repositoryPublication;
 		this.publicationUtils = publicationUtils;
 		this.documentsPublication = documentsPublication;
-		this.documentationsGeoBaseUri = documentationsGeoBaseUri;
-		this.organisationsGraph = organisationsGraph;
+		this.documentationConfiguration = documentationConfiguration;
+		this.organisationsProperties = organisationsProperties;
 	}
 
 	/**
@@ -116,19 +117,19 @@ public class DocumentationPublication {
 	}
 
 	private boolean isOrganization(Resource resource) {
-		if (resource == null || organisationsGraph == null) {
+		if (resource == null || organisationsProperties.graph() == null) {
 			return false;
 		}
 		String resourceValue = resource.stringValue();
-		return resourceValue != null && resourceValue.contains(organisationsGraph);
+		return resourceValue != null && resourceValue.contains(organisationsProperties.graph());
 	}
 
 	private boolean isGeography(Resource resource) {
-		if (resource == null || documentationsGeoBaseUri == null) {
+		if (resource == null || documentationConfiguration.geographie() == null) {
 			return false;
 		}
 		String resourceValue = resource.stringValue();
-		return resourceValue != null && resourceValue.contains(documentationsGeoBaseUri);
+		return resourceValue != null && resourceValue.contains(documentationConfiguration.geographie().baseUri());
 	}
 
 	private void transformTripleToPublish(Model model, Statement st) {
