@@ -18,6 +18,7 @@ import java.util.List;
  * @param extraMandatoryFields Additional mandatory fields for validation
  * @param defaultAgencyId Default agency identifier for Colectica
  * @param colecticaLangs Supported languages for Colectica integration
+ * @param enableDevTools Whether dev tools are enabled
  */
 public record InitProperties(
         String appHost,
@@ -31,6 +32,7 @@ public record InitProperties(
         String version,
         List<String> extraMandatoryFields,
         String defaultAgencyId,
-        List<String> colecticaLangs
+        List<String> colecticaLangs,
+        boolean enableDevTools
 ) {
 }

@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.init.domain;
 
-import fr.insee.rmes.modules.init.domain.DomainInitService;
-import fr.insee.rmes.modules.init.domain.model.InitProperties;
+import fr.insee.rmes.BauhausConfiguration;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
+import fr.insee.rmes.modules.init.domain.model.InitProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,15 +28,12 @@ class DomainInitServiceTest {
         when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR", "en-GB"));
 
         domainInitService = new DomainInitService(
-                "dev",
-                "fr",
-                "en",
+                new BauhausConfiguration("dev", "fr", "en", true, "http://localhost:3000",
+                        List.of("concepts", "classifications"),
+                        List.of("concepts", "classifications", "operations"),
+                        "1.0.0"),
                 "350",
                 "DG75-L201",
-                "http://localhost:3000",
-                List.of("concepts", "classifications"),
-                List.of("concepts", "classifications", "operations"),
-                "1.0.0",
                 List.of("altLabel"),
                 colecticaConfiguration
         );
@@ -58,20 +55,16 @@ class DomainInitServiceTest {
         assertThat(properties.modules()).containsExactly("concepts", "classifications", "operations");
         assertThat(properties.extraMandatoryFields()).containsExactly("altLabel");
         assertThat(properties.colecticaLangs()).containsExactly("fr-FR", "en-GB");
+        assertThat(properties.enableDevTools()).isTrue();
     }
 
     @Test
     void should_return_openid_connect_auth_for_pre_prod() {
         domainInitService = new DomainInitService(
-                "pre-prod",
-                "fr",
-                "en",
+                new BauhausConfiguration("pre-prod", "fr", "en", true, "http://localhost:3000",
+                        List.of(), List.of(), "1.0.0"),
                 "350",
                 "DG75-L201",
-                "http://localhost:3000",
-                List.of(),
-                List.of(),
-                "1.0.0",
                 List.of(),
                 colecticaConfiguration
         );
@@ -84,15 +77,10 @@ class DomainInitServiceTest {
     @Test
     void should_return_openid_connect_auth_for_prod() {
         domainInitService = new DomainInitService(
-                "prod",
-                "fr",
-                "en",
+                new BauhausConfiguration("prod", "fr", "en", true, "http://localhost:3000",
+                        List.of(), List.of(), "1.0.0"),
                 "350",
                 "DG75-L201",
-                "http://localhost:3000",
-                List.of(),
-                List.of(),
-                "1.0.0",
                 List.of(),
                 colecticaConfiguration
         );
@@ -105,15 +93,10 @@ class DomainInitServiceTest {
     @Test
     void should_return_openid_connect_auth_for_PROD() {
         domainInitService = new DomainInitService(
-                "PROD",
-                "fr",
-                "en",
+                new BauhausConfiguration("PROD", "fr", "en", true, "http://localhost:3000",
+                        List.of(), List.of(), "1.0.0"),
                 "350",
                 "DG75-L201",
-                "http://localhost:3000",
-                List.of(),
-                List.of(),
-                "1.0.0",
                 List.of(),
                 colecticaConfiguration
         );

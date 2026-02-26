@@ -20,7 +20,8 @@ public record InitResponse(
         String version,
         List<String> extraMandatoryFields,
         String defaultAgencyId,
-        List<String> colecticaLangs
+        List<String> colecticaLangs,
+        boolean enableDevTools
 ) {
     public static InitResponse fromDomain(InitProperties properties) {
         return new InitResponse(
@@ -35,7 +36,8 @@ public record InitResponse(
                 properties.version(),
                 properties.extraMandatoryFields(),
                 properties.defaultAgencyId(),
-                properties.colecticaLangs()
+                properties.colecticaLangs(),
+                properties.enableDevTools()
         );
     }
 }

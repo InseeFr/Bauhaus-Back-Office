@@ -46,6 +46,7 @@ class InitEndToEndTest {
         assertThat(props.has("extraMandatoryFields")).isTrue();
         assertThat(props.has("defaultAgencyId")).isTrue();
         assertThat(props.has("colecticaLangs")).isTrue();
+        assertThat(props.has("enableDevTools")).isTrue();
 
         assertThat(props.getJSONArray("colecticaLangs")).isNotNull();
         assertThat(props.getJSONArray("colecticaLangs").length()).isEqualTo(2);
