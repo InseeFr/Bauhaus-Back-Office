@@ -78,7 +78,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
         // Create DocumentationPublication with constructor injection
         var documentationConfiguration = new DocumentationConfiguration(
-                new DocumentationConfiguration.Geographie("qualite/territoires", "territoire"),
+                new DocumentationConfiguration.Geographie( "territoire"),
                 "Rapport qualité :",
                 "Quality report:"
         );

@@ -9,7 +9,6 @@ public record DocumentationConfiguration(
 	String titlePrefixLg2
 ) {
 	public record Geographie(
-		String graph,
 		String baseUri
 	) {}
 }

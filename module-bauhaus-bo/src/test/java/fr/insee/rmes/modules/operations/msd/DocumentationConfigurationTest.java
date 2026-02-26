@@ -9,9 +9,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = {DocumentationConfigurationTest.TestConfig.class})
-@TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.documentation.geographie.graph=qualite/territoires",
+@SpringBootTest(properties = {
         "fr.insee.rmes.bauhaus.documentation.geographie.baseURI=qualite/territoire",
         "fr.insee.rmes.bauhaus.documentation.titlePrefixLg1=Rapport qualité :",
         "fr.insee.rmes.bauhaus.documentation.titlePrefixLg2=Quality report:"
@@ -25,10 +23,6 @@ class DocumentationConfigurationTest {
     @Autowired
     private DocumentationConfiguration documentationConfiguration;
 
-    @Test
-    void shouldBindGeographieGraph() {
-        assertEquals("qualite/territoires", documentationConfiguration.geographie().graph());
-    }
 
     @Test
     void shouldBindGeographieBaseUri() {
