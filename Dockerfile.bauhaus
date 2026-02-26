@@ -1,4 +1,7 @@
 FROM eclipse-temurin:25-jdk-jammy AS builder
+
+ARG ELASTIC_APM_VERSION=1.55.4
+
 WORKDIR /opt/app
 
 COPY .mvn/ .mvn
@@ -7,7 +10,7 @@ COPY mvnw mvnw
 COPY . .
 
 RUN chmod +x mvnw
-RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X
+RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X --no-transfer-progress --batch-mode --errors --fail-at-end --show-version
 
 FROM eclipse-temurin:25-jre-jammy
 
@@ -15,6 +18,9 @@ RUN groupadd -g 10000 javagroup
 RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser
 RUN mkdir /opt/app/
 RUN chown -R 10000:10000 /opt/app/
+
+ADD https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/$ELASTIC_APM_VERSION/elastic-apm-agent-$ELASTIC_APM_VERSION.jar /opt/elastic_apm/java/elastic-apm-agent.jar
+RUN chown -R 10000:10000 /opt/elastic_apm/
 
 USER 10000
 COPY --from=builder /opt/app/module-bauhaus-bo/target/*.jar /opt/app/bauhaus.jar
