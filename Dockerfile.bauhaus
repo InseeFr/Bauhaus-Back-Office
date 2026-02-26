@@ -1,7 +1,5 @@
 FROM eclipse-temurin:25-jdk-jammy AS builder
 
-ARG ELASTIC_APM_VERSION=1.55.4
-
 WORKDIR /opt/app
 
 COPY .mvn/ .mvn
@@ -13,6 +11,8 @@ RUN chmod +x mvnw
 RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X --no-transfer-progress --batch-mode --errors --fail-at-end --show-version
 
 FROM eclipse-temurin:25-jre-jammy
+
+ARG ELASTIC_APM_VERSION=1.55.4
 
 RUN groupadd -g 10000 javagroup
 RUN useradd -u 10000 -g javagroup -s /usr/sbin/nologin javauser
