@@ -69,7 +69,7 @@ class DDIRepositoryImplTest {
         // Given
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
+        Map<String, String> itemTypes = Map.of("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8");
 
         ColecticaItem item1 = new ColecticaItem(
             null, // summary

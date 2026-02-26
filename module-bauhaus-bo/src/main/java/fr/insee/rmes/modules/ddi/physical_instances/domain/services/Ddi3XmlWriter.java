@@ -6,12 +6,19 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.StringWriter;
+import java.util.Map;
 
 /**
  * Helper class to generate DDI3 XML fragments using StAX XMLStreamWriter
  * This is much cleaner and safer than StringBuilder concatenation
  */
 public class Ddi3XmlWriter {
+
+    private final Map<String, String> itemTypes;
+
+    public Ddi3XmlWriter(Map<String, String> itemTypes) {
+        this.itemTypes = itemTypes;
+    }
 
     private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
@@ -492,7 +499,7 @@ public class Ddi3XmlWriter {
         } else {
             // Fallback behavior: find first PhysicalInstance or use first item
             topLevelItem = ddi3Response.items().stream()
-                    .filter(item -> "a51e85bb-6259-4488-8df2-f08cb43485f8".equals(item.itemType()))
+                    .filter(item -> itemTypes.get("PhysicalInstance").equals(item.itemType()))
                     .findFirst()
                     .orElse(ddi3Response.items().getFirst());
 
@@ -531,14 +538,11 @@ public class Ddi3XmlWriter {
      * Maps DDI 3.3 Item Type UUID to TypeOfObject string
      */
     private String getTypeOfObjectFromItemType(String itemType) {
-        return switch (itemType) {
-            case "a51e85bb-6259-4488-8df2-f08cb43485f8" -> "PhysicalInstance";
-            case "f39ff278-8500-45fe-a850-3906da2d242b" -> "DataRelationship";
-            case "683889c6-f74b-4d5e-92ed-908c0a42bb2d" -> "Variable";
-            case "8b108ef8-b642-4484-9c49-f88e4bf7cf1d" -> "CodeList";
-            case "7e47c269-bcab-40f7-a778-af7bbc4e3d00" -> "Category";
-            default -> "PhysicalInstance"; // Default fallback
-        };
+        return itemTypes.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(itemType))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse("PhysicalInstance");
     }
 
     /**

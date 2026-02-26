@@ -9,24 +9,20 @@ import org.slf4j.LoggerFactory;
 import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI4toDDI3ConverterServiceImpl.class);
 
-    // DDI 3.3 Item Type UUIDs
-    private static final String PHYSICAL_INSTANCE_TYPE_ID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
-    private static final String DATA_RELATIONSHIP_TYPE_ID = "f39ff278-8500-45fe-a850-3906da2d242b";
-    private static final String VARIABLE_TYPE_ID = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
-    private static final String CODE_LIST_TYPE_ID = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
-    private static final String CATEGORY_TYPE_ID = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
-
     private static final String DEFAULT_VERSION_RESPONSIBILITY = "abcde";
     private static final String DEFAULT_ITEM_FORMAT = "DC337820-AF3A-4C0B-82F9-CF02535CDE83";
 
+    private final Map<String, String> itemTypes;
     private final Ddi3XmlWriter xmlWriter;
 
-    public DDI4toDDI3ConverterServiceImpl() {
-        this.xmlWriter = new Ddi3XmlWriter();
+    public DDI4toDDI3ConverterServiceImpl(Map<String, String> itemTypes) {
+        this.itemTypes = itemTypes;
+        this.xmlWriter = new Ddi3XmlWriter(itemTypes);
     }
 
     /**
@@ -60,7 +56,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
             ddi4.physicalInstance().forEach(pi -> {
                 try {
                     String xmlFragment = xmlWriter.buildPhysicalInstanceXml(pi);
-                    items.add(createDdi3Item(PHYSICAL_INSTANCE_TYPE_ID, pi.agency(), pi.version(),
+                    items.add(createDdi3Item(itemTypes.get("PhysicalInstance"), pi.agency(), pi.version(),
                             pi.id(), xmlFragment, pi.versionDate()));
                 } catch (XMLStreamException e) {
                     logger.error("Error converting PhysicalInstance to XML", e);
@@ -74,7 +70,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
             ddi4.dataRelationship().forEach(dr -> {
                 try {
                     String xmlFragment = xmlWriter.buildDataRelationshipXml(dr);
-                    items.add(createDdi3Item(DATA_RELATIONSHIP_TYPE_ID, dr.agency(), dr.version(),
+                    items.add(createDdi3Item(itemTypes.get("DataRelationship"), dr.agency(), dr.version(),
                             dr.id(), xmlFragment, dr.versionDate()));
                 } catch (XMLStreamException e) {
                     logger.error("Error converting DataRelationship to XML", e);
@@ -88,7 +84,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
             ddi4.variable().forEach(var -> {
                 try {
                     String xmlFragment = xmlWriter.buildVariableXml(var);
-                    items.add(createDdi3Item(VARIABLE_TYPE_ID, var.agency(), var.version(),
+                    items.add(createDdi3Item(itemTypes.get("Variable"), var.agency(), var.version(),
                             var.id(), xmlFragment, var.versionDate()));
                 } catch (XMLStreamException e) {
                     logger.error("Error converting Variable to XML", e);
@@ -102,7 +98,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
             ddi4.codeList().forEach(cl -> {
                 try {
                     String xmlFragment = xmlWriter.buildCodeListXml(cl);
-                    items.add(createDdi3Item(CODE_LIST_TYPE_ID, cl.agency(), cl.version(),
+                    items.add(createDdi3Item(itemTypes.get("CodeList"), cl.agency(), cl.version(),
                             cl.id(), xmlFragment, cl.versionDate()));
                 } catch (XMLStreamException e) {
                     logger.error("Error converting CodeList to XML", e);
@@ -116,7 +112,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
             ddi4.category().forEach(cat -> {
                 try {
                     String xmlFragment = xmlWriter.buildCategoryXml(cat);
-                    items.add(createDdi3Item(CATEGORY_TYPE_ID, cat.agency(), cat.version(),
+                    items.add(createDdi3Item(itemTypes.get("Category"), cat.agency(), cat.version(),
                             cat.id(), xmlFragment, cat.versionDate()));
                 } catch (XMLStreamException e) {
                     logger.error("Error converting Category to XML", e);

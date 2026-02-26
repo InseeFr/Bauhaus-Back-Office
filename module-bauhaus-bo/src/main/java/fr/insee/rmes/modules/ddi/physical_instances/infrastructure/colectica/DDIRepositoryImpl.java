@@ -40,8 +40,6 @@ public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
 
     private static final String MUTUALIZED_CODE_LIST_UUID = "dc337820-af3a-4c0b-82f9-cf02535cde83";
-    private static final String PHYSICAL_INSTANCE_TYPE_UUID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
-    private static final String DATA_RELATIONSHIP_TYPE_UUID = "f39ff278-8500-45fe-a850-3906da2d242b";
     private static final String BAUHAUS_API = "bauhaus-api";
     private static final String DEFAULT_LANG = "fr-FR";
 
@@ -78,7 +76,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
             // Create request body with itemTypes from configuration
-            QueryRequest requestBody = new QueryRequest(instanceConfiguration.itemTypes());
+            QueryRequest requestBody = new QueryRequest(List.of(instanceConfiguration.itemTypes().get("PhysicalInstance")));
 
             // Create headers with Bearer token and Content-Type
             HttpHeaders headers = new HttpHeaders();
@@ -351,11 +349,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     private String determineItemType(Element fragmentElement) {
         // Check for PhysicalInstance
         if (fragmentElement.getElementsByTagNameNS("ddi:physicalinstance:3_3", "PhysicalInstance").getLength() > 0) {
-            return PHYSICAL_INSTANCE_TYPE_UUID; // PhysicalInstance type UUID
+            return instanceConfiguration.itemTypes().get("PhysicalInstance");
         }
         // Check for DataRelationship
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "DataRelationship").getLength() > 0) {
-            return DATA_RELATIONSHIP_TYPE_UUID; // DataRelationship type UUID
+            return instanceConfiguration.itemTypes().get("DataRelationship");
         }
         // Check for Variable
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
@@ -897,7 +895,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             // Create Colectica items
             ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
-                    PHYSICAL_INSTANCE_TYPE_UUID, // PhysicalInstance type UUID
+                    instanceConfiguration.itemTypes().get("PhysicalInstance"),
                     agencyId,
                     version,
                     physicalInstanceId,
@@ -911,7 +909,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             );
 
             ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
-                    DATA_RELATIONSHIP_TYPE_UUID, // DataRelationship type UUID
+                    instanceConfiguration.itemTypes().get("DataRelationship"),
                     agencyId,
                     version,
                     dataRelationshipId,
