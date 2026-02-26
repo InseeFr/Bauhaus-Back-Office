@@ -2,6 +2,8 @@ package fr.insee.rmes.testcontainers.documentations;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
+import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
+import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -75,13 +77,18 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         DocumentsPublication documentsPublication = Mockito.mock(DocumentsPublication.class);
 
         // Create DocumentationPublication with constructor injection
+        var documentationConfiguration = new DocumentationConfiguration(
+                new DocumentationConfiguration.Geographie( "territoire"),
+                "Rapport qualité :",
+                "Quality report:"
+        );
         documentationPublication = new DocumentationPublication(
                 repositoryGestion,
                 repositoryPublication,
                 publicationUtils,
                 documentsPublication,
-                "territoire",
-                "organisations"
+                documentationConfiguration,
+                new OrganisationsProperties("organisations")
         );
     }
 
