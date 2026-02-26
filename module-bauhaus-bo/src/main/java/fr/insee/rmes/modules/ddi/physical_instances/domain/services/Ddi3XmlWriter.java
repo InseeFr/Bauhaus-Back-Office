@@ -16,9 +16,7 @@ public class Ddi3XmlWriter {
 
     private final Map<String, String> itemTypes;
 
-    public Ddi3XmlWriter(Map<String, String> itemTypes) {
-        this.itemTypes = itemTypes;
-    }
+
 
     private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
@@ -40,8 +38,9 @@ public class Ddi3XmlWriter {
 
     private final XMLOutputFactory xmlOutputFactory;
 
-    public Ddi3XmlWriter() {
+    public Ddi3XmlWriter(Map<String, String> itemTypes) {
         this.xmlOutputFactory = XMLOutputFactory.newInstance();
+        this.itemTypes = itemTypes;
     }
 
     public String buildPhysicalInstanceXml(Ddi4PhysicalInstance pi) throws XMLStreamException {

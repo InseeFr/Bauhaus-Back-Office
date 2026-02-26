@@ -15,7 +15,7 @@ class ColecticaConfigurationTest {
             new ColecticaConfiguration.ColecticaInstanceConfiguration(
                     "https://example.com",
                     "/api/v1/",
-                    List.of("type1"),
+                    Collections.emptyMap(),
                     "resp",
                     "format",
                     "password",
