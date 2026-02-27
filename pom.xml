@@ -31,6 +31,9 @@
     </developer>
   </developers>
   <properties>
+    <!-- TODO : a supprimer après une mise à jour de spring boot > 3.5.10 -->
+    <assertj.version>3.27.7</assertj.version>
+    <!-- Fin des dépendances à supprimer pour la maj -->
     <java.version>25</java.version>
     <springdoc.version>2.8.3</springdoc.version>
     <rdf4j.version>5.1.0</rdf4j.version>
@@ -52,13 +55,6 @@
     <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
   </properties>
   <dependencies>
-    <!-- A supprimer après une mise à jour de spring boot > 3.5.10 -->
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.27.7</version>
-    </dependency>
-    <!-- Fin des dépendances à supprimer pour la maj -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
