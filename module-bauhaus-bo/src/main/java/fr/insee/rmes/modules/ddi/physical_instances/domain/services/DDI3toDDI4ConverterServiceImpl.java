@@ -7,21 +7,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class DDI3toDDI4ConverterServiceImpl implements
         DDI3toDDI4ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI3toDDI4ConverterServiceImpl.class);
 
-    // DDI 3.3 Item Type UUIDs
-    private static final String PHYSICAL_INSTANCE_TYPE_ID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
-    private static final String DATA_RELATIONSHIP_TYPE_ID = "f39ff278-8500-45fe-a850-3906da2d242b";
-    private static final String VARIABLE_TYPE_ID = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
-    private static final String CODE_LIST_TYPE_ID = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
-    private static final String CATEGORY_TYPE_ID = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
-
+    private final Map<String, String> itemTypes;
     private final Ddi3XmlReader xmlReader;
 
-    public DDI3toDDI4ConverterServiceImpl() {
+    public DDI3toDDI4ConverterServiceImpl(Map<String, String> itemTypes) {
+        this.itemTypes = itemTypes;
         this.xmlReader = new Ddi3XmlReader();
     }
 
@@ -39,21 +35,24 @@ public class DDI3toDDI4ConverterServiceImpl implements
         if (ddi3.items() != null) {
             for (Ddi3Response.Ddi3Item item : ddi3.items()) {
                 try {
-                    switch (item.itemType()) {
-                        case PHYSICAL_INSTANCE_TYPE_ID -> {
-                            Ddi4PhysicalInstance pi = xmlReader.parsePhysicalInstance(item.item());
-                            physicalInstances.add(pi);
-                            topLevelReferences.add(new TopLevelReference(
-                                item.agencyId(),
-                                item.identifier(),
-                                item.version(),
-                                "PhysicalInstance"
-                            ));
-                        }
-                        case DATA_RELATIONSHIP_TYPE_ID -> dataRelationships.add(xmlReader.parseDataRelationship(item.item()));
-                        case VARIABLE_TYPE_ID -> variables.add(xmlReader.parseVariable(item.item()));
-                        case CODE_LIST_TYPE_ID -> codeLists.add(xmlReader.parseCodeList(item.item()));
-                        case CATEGORY_TYPE_ID -> categories.add(xmlReader.parseCategory(item.item()));
+                    String itemType = item.itemType();
+                    if (itemTypes.get("PhysicalInstance").equals(itemType)) {
+                        Ddi4PhysicalInstance pi = xmlReader.parsePhysicalInstance(item.item());
+                        physicalInstances.add(pi);
+                        topLevelReferences.add(new TopLevelReference(
+                            item.agencyId(),
+                            item.identifier(),
+                            item.version(),
+                            "PhysicalInstance"
+                        ));
+                    } else if (itemTypes.get("DataRelationship").equals(itemType)) {
+                        dataRelationships.add(xmlReader.parseDataRelationship(item.item()));
+                    } else if (itemTypes.get("Variable").equals(itemType)) {
+                        variables.add(xmlReader.parseVariable(item.item()));
+                    } else if (itemTypes.get("CodeList").equals(itemType)) {
+                        codeLists.add(xmlReader.parseCodeList(item.item()));
+                    } else if (itemTypes.get("Category").equals(itemType)) {
+                        categories.add(xmlReader.parseCategory(item.item()));
                     }
                 } catch (Exception e) {
                     logger.error("Error parsing DDI3 item of type {}", item.itemType(), e);

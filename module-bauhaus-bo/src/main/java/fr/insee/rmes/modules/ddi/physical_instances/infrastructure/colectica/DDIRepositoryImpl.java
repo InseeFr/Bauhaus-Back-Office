@@ -40,10 +40,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
 
     private static final String MUTUALIZED_CODE_LIST_UUID = "dc337820-af3a-4c0b-82f9-cf02535cde83";
-    private static final String PHYSICAL_INSTANCE_TYPE_UUID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
-    private static final String DATA_RELATIONSHIP_TYPE_UUID = "f39ff278-8500-45fe-a850-3906da2d242b";
     private static final String BAUHAUS_API = "bauhaus-api";
-    private static final String DEFAULT_LANG = "fr-FR";
+    private final String defaultLang;
 
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
@@ -67,6 +65,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
         this.authenticator = authenticator;
+        this.defaultLang = colecticaConfiguration.langs().get(0);
     }
 
     @Override
@@ -78,7 +77,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
             // Create request body with itemTypes from configuration
-            QueryRequest requestBody = new QueryRequest(instanceConfiguration.itemTypes());
+            QueryRequest requestBody = new QueryRequest(List.of(instanceConfiguration.itemTypes().get("PhysicalInstance")));
 
             // Create headers with Bearer token and Content-Type
             HttpHeaders headers = new HttpHeaders();
@@ -223,8 +222,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             return null;
         }
 
-        // Try French first, then English, then first available
-        String label = languageMap.get("fr-FR");
+        // Try default lang first, then English, then first available
+        String label = languageMap.get(defaultLang);
         if (label == null || label.trim().isEmpty()) {
             label = languageMap.get("en");
         }
@@ -351,11 +350,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     private String determineItemType(Element fragmentElement) {
         // Check for PhysicalInstance
         if (fragmentElement.getElementsByTagNameNS("ddi:physicalinstance:3_3", "PhysicalInstance").getLength() > 0) {
-            return PHYSICAL_INSTANCE_TYPE_UUID; // PhysicalInstance type UUID
+            return instanceConfiguration.itemTypes().get("PhysicalInstance");
         }
         // Check for DataRelationship
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "DataRelationship").getLength() > 0) {
-            return DATA_RELATIONSHIP_TYPE_UUID; // DataRelationship type UUID
+            return instanceConfiguration.itemTypes().get("DataRelationship");
         }
         // Check for Variable
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
@@ -681,7 +680,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         String text = stringElement.getTextContent();
         String lang = stringElement.getAttributeNS("http://www.w3.org/XML/1998/namespace", "lang");
 
-        return new Citation(new Title(new StringValue(lang.isEmpty() ? "fr-FR" : lang, text)));
+        return new Citation(new Title(new StringValue(lang.isEmpty() ? defaultLang : lang, text)));
     }
 
     /**
@@ -897,7 +896,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             // Create Colectica items
             ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
-                    PHYSICAL_INSTANCE_TYPE_UUID, // PhysicalInstance type UUID
+                    instanceConfiguration.itemTypes().get("PhysicalInstance"),
                     agencyId,
                     version,
                     physicalInstanceId,
@@ -911,7 +910,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             );
 
             ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
-                    DATA_RELATIONSHIP_TYPE_UUID, // DataRelationship type UUID
+                    instanceConfiguration.itemTypes().get("DataRelationship"),
                     agencyId,
                     version,
                     dataRelationshipId,
@@ -949,6 +948,18 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Build DDI3 XML fragment for PhysicalInstance
      */
+    private String generateDataRelationshipReference(String agencyId, String dataRelationshipId, int version) {
+        return String.format("""
+                    <r:DataRelationshipReference>
+                      <r:Agency>%s</r:Agency>
+                      <r:ID>%s</r:ID>
+                      <r:Version>%d</r:Version>
+                      <r:TypeOfObject>DataRelationship</r:TypeOfObject>
+                    </r:DataRelationshipReference>""",
+                escapeXml(agencyId), escapeXml(dataRelationshipId), version
+        );
+    }
+
     private String buildPhysicalInstanceXml(String agencyId, String id, int version,
                                            String label, String dataRelationshipId, String versionDate) {
         return String.format("""
@@ -960,20 +971,15 @@ public class DDIRepositoryImpl implements DDIRepository {
                     <r:Version>%d</r:Version>
                     <r:Citation>
                       <r:Title>
-                        <r:String xml:lang="fr-FR">%s</r:String>
+                        <r:String xml:lang="%s">%s</r:String>
                       </r:Title>
                     </r:Citation>
-                    <r:DataRelationshipReference>
-                      <r:Agency>%s</r:Agency>
-                      <r:ID>%s</r:ID>
-                      <r:Version>%d</r:Version>
-                      <r:TypeOfObject>DataRelationship</r:TypeOfObject>
-                    </r:DataRelationshipReference>
+                    %s
                   </PhysicalInstance>
                 </Fragment>""",
                 escapeXml(versionDate), escapeXml(agencyId), escapeXml(id), version,
-                escapeXml(agencyId), escapeXml(id), version, escapeXml(label),
-                escapeXml(agencyId), escapeXml(dataRelationshipId), version
+                escapeXml(agencyId), escapeXml(id), version, defaultLang, escapeXml(label),
+                generateDataRelationshipReference(agencyId, dataRelationshipId, version)
         );
     }
 
@@ -991,7 +997,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     <r:ID>%s</r:ID>
                     <r:Version>%d</r:Version>
                     <r:Label>
-                      <r:Content xml:lang="fr-FR">%s</r:Content>
+                      <r:Content xml:lang="%s">%s</r:Content>
                     </r:Label>
                     <LogicalRecord isUniversallyUnique="true">
                       <r:URN>urn:ddi:%s:%s:%d</r:URN>
@@ -999,15 +1005,15 @@ public class DDIRepositoryImpl implements DDIRepository {
                       <r:ID>%s</r:ID>
                       <r:Version>%d</r:Version>
                       <r:Label>
-                        <r:Content xml:lang="fr-FR">%s</r:Content>
+                        <r:Content xml:lang="%s">%s</r:Content>
                       </r:Label>
                     </LogicalRecord>
                   </DataRelationship>
                 </Fragment>""",
                 escapeXml(versionDate), escapeXml(agencyId), escapeXml(dataRelationshipId), version,
-                escapeXml(agencyId), escapeXml(dataRelationshipId), version, escapeXml(dataRelationshipLabel),
+                escapeXml(agencyId), escapeXml(dataRelationshipId), version, defaultLang, escapeXml(dataRelationshipLabel),
                 escapeXml(agencyId), escapeXml(logicalRecordId), version,
-                escapeXml(agencyId), escapeXml(logicalRecordId), version, escapeXml(logicalRecordLabel)
+                escapeXml(agencyId), escapeXml(logicalRecordId), version, defaultLang, escapeXml(logicalRecordLabel)
         );
     }
 
@@ -1087,7 +1093,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     /**
      * Creates a Label with the given text, using the language from the existing label if available,
-     * or falling back to the default language (fr-FR).
+     * or falling back to the default language (first entry of {@code ColecticaConfiguration.langs()}).
      *
      * @param existingLabel the existing label to extract language from (can be null)
      * @param newText the text for the new label
@@ -1099,7 +1105,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
         String lang = existingLabel != null && existingLabel.content() != null
                 ? existingLabel.content().xmlLang()
-                : DEFAULT_LANG;
+                : defaultLang;
         return new Label(new Content(lang, newText));
     }
 }
