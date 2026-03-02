@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -10,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.modules.geographies.model.GeoFeature;
 import fr.insee.rmes.graphdb.ontologies.GEO;
 import fr.insee.rmes.graphdb.ontologies.IGEO;
@@ -27,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.UUID;
 
 @Service
@@ -107,38 +105,22 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		// Est-ce il existe une geographie ayant l'id passé en paramètre
 		// si c'est non => 404
 
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		GeoFeature geoFeature = new GeoFeature();
-		try {
-			geoFeature = mapper.readValue(body,GeoFeature.class);
+		GeoFeature geoFeature = Deserializer.deserializeJsonString(body, GeoFeature.class);
+		geoFeature.setId(id);
 
-			geoFeature.setId(id);
-
-
-			if (geoFeature.getCode()==null) {
-				geoFeature.setCode(geoFeature.getId());
-			}
-		} catch (IOException e) {
-			logger.error(e.getMessage());
+		if (geoFeature.getCode()==null) {
+			geoFeature.setCode(geoFeature.getId());
 		}
 		createRdfGeoFeature(geoFeature);
 	}
 
 	@Override
 	public String createFeature(String body) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		UUID id = UUID.randomUUID();
-		GeoFeature geoFeature = new GeoFeature();
-		try {
-			geoFeature = mapper.readValue(body,GeoFeature.class);
-			geoFeature.setId(id.toString());
-			if (geoFeature.getCode()==null) {
-				geoFeature.setCode(id.toString());
-			}
-		} catch (IOException e) {
-			logger.error(e.getMessage());
+		GeoFeature geoFeature = Deserializer.deserializeJsonString(body, GeoFeature.class);
+		geoFeature.setId(id.toString());
+		if (geoFeature.getCode()==null) {
+			geoFeature.setCode(id.toString());
 		}
 		String iri = createRdfGeoFeature(geoFeature);
 		logger.info("Create geofeature : {} - {}", id , geoFeature.getLabelLg1());
