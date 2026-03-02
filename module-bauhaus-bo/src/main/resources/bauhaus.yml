@@ -1,0 +1,8 @@
+fr.insee.rmes.bauhaus:
+  env: NoAuth
+  lg1: fr
+  lg2: en
+  enable-dev-tools: false
+  app-host: http://localhost:3000/#/
+  activeModules: concepts,classifications,operations,structures,codelists,datasets,ddi
+  modules: concepts,classifications,operations,structures,codelists,datasets,ddi
