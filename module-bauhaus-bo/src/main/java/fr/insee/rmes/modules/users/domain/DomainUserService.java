@@ -32,6 +32,6 @@ public class DomainUserService implements UserService {
     @Override
     public Set<ModuleAccessPrivileges> computePrivileges(Object principal) throws MissingUserInformationException {
         var user = this.getUser(principal);
-        return rbacFetcher.computePrivileges(user.roles());
+        return rbacFetcher.computePrivileges(user.roles(), user.source());
     }
 }
