@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exc
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Configuration properties for Colectica API integration.
@@ -67,7 +68,7 @@ public record ColecticaConfiguration(
     public record ColecticaInstanceConfiguration(
             String baseUrl,
             String apiPath,
-            List<String> itemTypes,
+            Map<String, String> itemTypes,
             String versionResponsibility,
             String itemFormat,
             String authenticationMode,

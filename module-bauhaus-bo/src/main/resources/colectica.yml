@@ -7,7 +7,12 @@ fr.insee.rmes.bauhaus.colectica:
 
   server:
     # Primary Colectica Instance
-    itemTypes: a51e85bb-6259-4488-8df2-f08cb43485f8
+    itemTypes:
+      PhysicalInstance: a51e85bb-6259-4488-8df2-f08cb43485f8
+      DataRelationship: f39ff278-8500-45fe-a850-3906da2d242b
+      Variable: 683889c6-f74b-4d5e-92ed-908c0a42bb2d
+      CodeList: 8b108ef8-b642-4484-9c49-f88e4bf7cf1d
+      Category: 7e47c269-bcab-40f7-a778-af7bbc4e3d00
     versionResponsibility: abcde
     itemFormat: DC337820-AF3A-4C0B-82F9-CF02535CDE83
     baseUrl: https://proxy-6ihxddcaqa-uc.a.run.app
