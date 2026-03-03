@@ -1,14 +1,10 @@
-package fr.insee.rmes.modules.init.webservice;
+package fr.insee.rmes.modules.clientconfig.webservice;
 
-import fr.insee.rmes.modules.init.domain.model.InitProperties;
+import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
 
 import java.util.List;
 
-/**
- * DTO representing the response of the /init endpoint.
- * This response contains all configuration properties needed by the frontend.
- */
-public record InitResponse(
+public record ClientConfigResponse(
         String appHost,
         String defaultContributor,
         String maxLengthScopeNote,
@@ -23,8 +19,8 @@ public record InitResponse(
         List<String> colecticaLangs,
         boolean enableDevTools
 ) {
-    public static InitResponse fromDomain(InitProperties properties) {
-        return new InitResponse(
+    public static ClientConfigResponse fromDomain(ClientConfigProperties properties) {
+        return new ClientConfigResponse(
                 properties.appHost(),
                 properties.defaultContributor(),
                 properties.maxLengthScopeNote(),

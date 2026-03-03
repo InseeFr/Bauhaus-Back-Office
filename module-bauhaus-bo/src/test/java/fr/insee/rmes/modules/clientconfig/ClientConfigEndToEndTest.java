@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.init;
+package fr.insee.rmes.modules.clientconfig;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +12,7 @@ import org.springframework.web.client.RestClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class InitEndToEndTest {
+class ClientConfigEndToEndTest {
 
     @LocalServerPort
     int serverPort;
