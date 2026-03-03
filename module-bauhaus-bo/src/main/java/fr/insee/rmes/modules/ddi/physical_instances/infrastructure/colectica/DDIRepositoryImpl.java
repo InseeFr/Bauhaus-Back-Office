@@ -65,7 +65,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
         this.authenticator = authenticator;
-        this.defaultLang = colecticaConfiguration.langs().get(0);
+        this.defaultLang = colecticaConfiguration.langs().getFirst();
     }
 
     @Override
@@ -724,9 +724,9 @@ public class DDIRepositoryImpl implements DDIRepository {
             throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
         }
 
-        var currentPI = currentInstance.physicalInstance().get(0);
+        var currentPI = currentInstance.physicalInstance().getFirst();
         var currentDR = currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
-                ? currentInstance.dataRelationship().get(0)
+                ? currentInstance.dataRelationship().getFirst()
                 : null;
 
         // Get current timestamp in ISO format
