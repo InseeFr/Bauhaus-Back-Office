@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.users.infrastructure.DevAuthenticationFilter;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
 import fr.insee.rmes.modules.users.infrastructure.RoleClaimExtractor;
+import fr.insee.rmes.BauhausConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,23 +46,20 @@ public class UserConfiguration {
 
     private final boolean requireSsl;
     private final Optional<String> allowedOrigin;
-    private final String appHost;
+    private final BauhausConfiguration bauhausConfiguration;
     private final JwtProperties jwtProperties;
-    private final String env;
     private final RoleClaimExtractor roleClaimExtractor;
 
     public UserConfiguration(
-            @Value("${fr.insee.rmes.bauhaus.force.ssl}")boolean requireSsl,
+            @Value("${fr.insee.rmes.bauhaus.force.ssl}") boolean requireSsl,
             @Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin,
-            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
+            BauhausConfiguration bauhausConfiguration,
             JwtProperties jwtProperties,
-            @Value("${fr.insee.rmes.bauhaus.env}") String env,
             RoleClaimExtractor roleClaimExtractor) {
         this.requireSsl = requireSsl;
         this.allowedOrigin = allowedOrigin;
-        this.appHost = appHost;
+        this.bauhausConfiguration = bauhausConfiguration;
         this.jwtProperties = jwtProperties;
-        this.env = env;
         this.roleClaimExtractor = roleClaimExtractor;
     }
 
@@ -83,7 +81,7 @@ public class UserConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        boolean isProd = "PROD".equalsIgnoreCase(env);
+        boolean isProd = "PROD".equalsIgnoreCase(bauhausConfiguration.env());
 
         http.sessionManagement(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
@@ -149,7 +147,7 @@ public class UserConfiguration {
             public void addCorsMappings(CorsRegistry registry) {
                 logger.info("Allowed origins : {}", allowedOrigin);
                 registry.addMapping("/**")
-                        .allowedOrigins(allowedOrigin.orElse(appHost))
+                        .allowedOrigins(allowedOrigin.orElse(bauhausConfiguration.appHost()))
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .maxAge(3600);

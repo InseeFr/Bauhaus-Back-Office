@@ -1,58 +1,58 @@
-package fr.insee.rmes.modules.init.domain;
+package fr.insee.rmes.modules.clientconfig.domain;
 
-import fr.insee.rmes.modules.init.domain.model.InitProperties;
-import fr.insee.rmes.modules.init.domain.port.clientside.InitService;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
+import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
+import fr.insee.rmes.modules.clientconfig.domain.port.clientside.ClientConfigService;
 
 import java.util.List;
 
-/**
- * Domain service responsible for building initialization properties.
- * Determines the authentication type based on the environment and aggregates
- * configuration from multiple sources.
- */
-public class DomainInitService implements InitService {
+public class DomainClientConfigService implements ClientConfigService {
 
-    private final String env;
-    private final String lg2;
-    private final String lg1;
+    private final String appHost;
     private final String maxLengthScopeNote;
     private final String defaultContributor;
-    private final String appHost;
+    private final String lg1;
+    private final String lg2;
+    private final String env;
     private final List<String> activeModules;
     private final List<String> modules;
     private final String version;
     private final List<String> extraMandatoryFields;
-    private final ColecticaConfiguration colecticaConfiguration;
+    private final String defaultAgencyId;
+    private final List<String> colecticaLangs;
+    private final boolean enableDevTools;
 
-    public DomainInitService(
-            String env,
-            String lg1,
-            String lg2,
+    public DomainClientConfigService(
+            String appHost,
             String maxLengthScopeNote,
             String defaultContributor,
-            String appHost,
+            String lg1,
+            String lg2,
+            String env,
             List<String> activeModules,
             List<String> modules,
             String version,
             List<String> extraMandatoryFields,
-            ColecticaConfiguration colecticaConfiguration) {
-        this.env = env;
-        this.lg2 = lg2;
-        this.lg1 = lg1;
+            String defaultAgencyId,
+            List<String> colecticaLangs,
+            boolean enableDevTools) {
+        this.appHost = appHost;
         this.maxLengthScopeNote = maxLengthScopeNote;
         this.defaultContributor = defaultContributor;
-        this.appHost = appHost;
+        this.lg1 = lg1;
+        this.lg2 = lg2;
+        this.env = env;
         this.activeModules = activeModules;
         this.modules = modules;
         this.version = version;
         this.extraMandatoryFields = extraMandatoryFields;
-        this.colecticaConfiguration = colecticaConfiguration;
+        this.defaultAgencyId = defaultAgencyId;
+        this.colecticaLangs = colecticaLangs;
+        this.enableDevTools = enableDevTools;
     }
 
     @Override
-    public InitProperties getInitProperties() {
-        return new InitProperties(
+    public ClientConfigProperties getClientConfigProperties() {
+        return new ClientConfigProperties(
                 appHost,
                 defaultContributor,
                 maxLengthScopeNote,
@@ -63,8 +63,9 @@ public class DomainInitService implements InitService {
                 modules,
                 version,
                 extraMandatoryFields,
-                colecticaConfiguration.server().defaultAgencyId(),
-                colecticaConfiguration.langs()
+                defaultAgencyId,
+                colecticaLangs,
+                enableDevTools
         );
     }
 
