@@ -93,7 +93,7 @@ public class FilesUtils {
 		try {
 			zipOut.close();
 			fos.close();
-		} catch(IOException e ) {
+		} catch(IOException _ ) {
 			log.warn("outputStream already closed");
 		}
 		

@@ -19,7 +19,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import fr.insee.rmes.domain.auth.Source;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -100,14 +104,14 @@ class DomainUserServiceTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege1, privilege2));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
 
         assertThat(result).hasSize(1);
         assertThat(result).contains(modulePrivileges);
         verify(userDecoder).fromPrincipal(principal);
-        verify(rbacFetcher).computePrivileges(List.of("ADMIN", "USER"));
+        verify(rbacFetcher).computePrivileges(eq(List.of("ADMIN", "USER")), eq(Source.INSEE));
     }
 
     @Test
@@ -125,7 +129,7 @@ class DomainUserServiceTest {
         );
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(conceptPrivileges, operationPrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(conceptPrivileges, operationPrivileges));
 
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
 
@@ -139,12 +143,12 @@ class DomainUserServiceTest {
         Object principal = "somePrincipal";
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of());
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of());
 
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
 
         assertThat(result).isEmpty();
-        verify(rbacFetcher).computePrivileges(List.of());
+        verify(rbacFetcher).computePrivileges(eq(List.of()), eq(Source.INSEE));
     }
 
     @Test

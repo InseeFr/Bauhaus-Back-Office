@@ -1,15 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.MutualizedCodeListEntry;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,7 +32,6 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static javax.xml.XMLConstants.*;
@@ -41,102 +39,41 @@ import static javax.xml.XMLConstants.*;
 public class DDIRepositoryImpl implements DDIRepository {
     static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
 
+    private static final String MUTUALIZED_CODE_LIST_UUID = "dc337820-af3a-4c0b-82f9-cf02535cde83";
+    private static final String PHYSICAL_INSTANCE_TYPE_UUID = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+    private static final String DATA_RELATIONSHIP_TYPE_UUID = "f39ff278-8500-45fe-a850-3906da2d242b";
+    private static final String BAUHAUS_API = "bauhaus-api";
+    private static final String DEFAULT_LANG = "fr-FR";
+
     private final RestTemplate restTemplate;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaConfiguration colecticaConfiguration;
-    private final ObjectMapper objectMapper;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
-    private String cachedAuthToken;
+    private final ColecticaAuthenticator authenticator;
     private Set<String> denyListCache;
 
     public DDIRepositoryImpl(
             RestTemplate restTemplate,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-            ObjectMapper objectMapper,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-            ColecticaConfiguration colecticaConfiguration
+            ColecticaConfiguration colecticaConfiguration,
+            ColecticaAuthenticator authenticator
             ) {
         this.restTemplate = restTemplate;
         this.instanceConfiguration = instanceConfiguration;
-        this.objectMapper = objectMapper;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
-    }
-
-    /**
-     * Retrieves authentication token from cache or fetches a new one
-     * @param forceRefresh if true, forces a new token request even if cache is available
-     * @return the authentication token
-     */
-    private String getAuthToken(boolean forceRefresh) {
-        if (!forceRefresh && cachedAuthToken != null) {
-            logger.debug("Using cached authentication token");
-            return cachedAuthToken;
-        }
-
-        logger.info("Authenticating to Colectica API");
-
-        String tokenUrl = instanceConfiguration.baseServerUrl() + "/token/createtoken";
-
-        AuthenticationRequest authRequest = new AuthenticationRequest(
-            instanceConfiguration.username(),
-            instanceConfiguration.password()
-        );
-
-        // Create headers with Content-Type for authentication request
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-
-        // Create HTTP entity with headers and body
-        HttpEntity<AuthenticationRequest> requestEntity = new HttpEntity<>(authRequest, headers);
-
-        AuthenticationResponse authResponse = restTemplate.postForObject(
-            tokenUrl,
-            requestEntity,
-            AuthenticationResponse.class
-        );
-
-        if (authResponse == null || authResponse.accessToken() == null) {
-            logger.error("Failed to retrieve authentication token");
-            throw new RuntimeException("Authentication failed: unable to retrieve access token");
-        }
-
-        cachedAuthToken = authResponse.accessToken();
-        return cachedAuthToken;
-    }
-
-    /**
-     * Generic method to execute API calls with authentication and automatic retry on auth failure
-     * @param apiCall Function that takes a token and performs the API call
-     * @param <T> Return type of the API call
-     * @return Result of the API call
-     */
-    private <T> T executeWithAuth(Function<String, T> apiCall) {
-        try {
-            // Try with cached or new token
-            String token = getAuthToken(false);
-            return apiCall.apply(token);
-        } catch (HttpClientErrorException e) {
-            // If authentication failed (401 Unauthorized or 403 Forbidden), refresh token and retry once
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {
-                logger.warn("Authentication failed with cached token, refreshing and retrying...");
-                cachedAuthToken = null; // Invalidate cache
-                String newToken = getAuthToken(true);
-                return apiCall.apply(newToken);
-            }
-            // Re-throw if it's not an authentication error
-            throw e;
-        }
+        this.authenticator = authenticator;
     }
 
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Getting physical instances from Colectica API via HTTP (primary instance)");
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
@@ -177,7 +114,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public List<PartialGroup> getGroups() {
         logger.info("Getting groups from Colectica API via HTTP");
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
@@ -218,7 +155,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public List<PartialCodesList> getCodesLists() {
         logger.info("Getting codes lists from Colectica API via HTTP");
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
@@ -394,7 +331,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     false, // isPublished
                     false, // isDeprecated
                     false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // itemFormat
+                    MUTUALIZED_CODE_LIST_UUID // itemFormat
                 );
 
                 items.add(ddi3Item);
@@ -414,11 +351,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     private String determineItemType(Element fragmentElement) {
         // Check for PhysicalInstance
         if (fragmentElement.getElementsByTagNameNS("ddi:physicalinstance:3_3", "PhysicalInstance").getLength() > 0) {
-            return "a51e85bb-6259-4488-8df2-f08cb43485f8"; // PhysicalInstance type UUID
+            return PHYSICAL_INSTANCE_TYPE_UUID; // PhysicalInstance type UUID
         }
         // Check for DataRelationship
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "DataRelationship").getLength() > 0) {
-            return "f39ff278-8500-45fe-a850-3906da2d242b"; // DataRelationship type UUID
+            return DATA_RELATIONSHIP_TYPE_UUID; // DataRelationship type UUID
         }
         // Check for Variable
         if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
@@ -476,7 +413,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             try {
 
                 String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
@@ -552,7 +489,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
         logger.info("Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}", agencyId, id);
 
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             try {
                 // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint
                 String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
@@ -781,128 +718,101 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
+        // First, fetch the current instance to get all necessary information including variables
+        Ddi4Response currentInstance = getPhysicalInstance(agencyId, id);
 
-        executeWithAuth(token -> {
-            // First, fetch the current instance to get all necessary information
-            Ddi4Response currentInstance = getPhysicalInstance(agencyId, id);
+        if (currentInstance == null || currentInstance.physicalInstance() == null || currentInstance.physicalInstance().isEmpty()) {
+            throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
+        }
 
-            if (currentInstance == null || currentInstance.physicalInstance() == null || currentInstance.physicalInstance().isEmpty()) {
-                throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
+        var currentPI = currentInstance.physicalInstance().get(0);
+        var currentDR = currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
+                ? currentInstance.dataRelationship().get(0)
+                : null;
+
+        // Get current timestamp in ISO format
+        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+        // Determine new version (increment by 1)
+        int currentVersion = Integer.parseInt(currentPI.version());
+        String newVersion = String.valueOf(currentVersion + 1);
+
+        // Build updated PhysicalInstance with new label if provided
+        String newPhysicalInstanceLabel = request.physicalInstanceLabel() != null
+                ? request.physicalInstanceLabel()
+                : currentPI.citation().title().string().text();
+
+        var updatedPI = new Ddi4PhysicalInstance(
+                currentPI.isUniversallyUnique(),
+                versionDate,
+                currentPI.urn(),
+                currentPI.agency(),
+                currentPI.id(),
+                newVersion,
+                currentPI.basedOnObject(),
+                new Citation(new Title(new StringValue(
+                        currentPI.citation().title().string().xmlLang(),
+                        newPhysicalInstanceLabel
+                ))),
+                currentPI.dataRelationshipReference()
+        );
+
+        // Build updated DataRelationship with new label if provided, preserving LogicalRecord with variables
+        Ddi4DataRelationship updatedDR = null;
+        if (currentDR != null) {
+            // Build updated DataRelationship Label
+            Label drLabel = createLabelWithFallback(currentDR.label(), request.dataRelationshipLabel());
+
+            // Build updated LogicalRecord with new label if provided
+            LogicalRecord updatedLR = currentDR.logicalRecord();
+            if (updatedLR != null && request.logicalRecordLabel() != null) {
+                updatedLR = new LogicalRecord(
+                        updatedLR.isUniversallyUnique(),
+                        updatedLR.urn(),
+                        updatedLR.agency(),
+                        updatedLR.id(),
+                        updatedLR.version(),
+                        updatedLR.logicalRecordName(),
+                        createLabelWithFallback(updatedLR.label(), request.logicalRecordLabel()),
+                        updatedLR.variablesInRecord()
+                );
             }
 
-            var currentPI = currentInstance.physicalInstance().get(0);
-            var currentDR = currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
-                    ? currentInstance.dataRelationship().get(0)
-                    : null;
-
-            // Get current timestamp in ISO format
-            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-
-            // Determine new version (increment by 1)
-            int currentVersion = Integer.parseInt(currentPI.version());
-            int newVersion = currentVersion + 1;
-
-            // Build updated PhysicalInstance label
-            String physicalInstanceLabel = request.physicalInstanceLabel() != null
-                    ? request.physicalInstanceLabel()
-                    : currentPI.citation().title().string().text();
-
-            // Build updated DataRelationship name
-            String dataRelationshipName = request.dataRelationshipName() != null && currentDR != null
-                    ? request.dataRelationshipName()
-                    : (currentDR != null ? currentDR.dataRelationshipName().string().text() : "DataRelationship");
-
-            // Get DataRelationship ID from the reference
-            String dataRelationshipId = currentPI.dataRelationshipReference() != null
-                    ? currentPI.dataRelationshipReference().id()
-                    : UUID.randomUUID().toString();
-
-            // Get LogicalRecord information
-            String logicalRecordId = currentDR != null && currentDR.logicalRecord() != null
-                    ? currentDR.logicalRecord().id()
-                    : UUID.randomUUID().toString();
-
-            String logicalRecordLabel = currentDR != null && currentDR.logicalRecord() != null
-                    ? currentDR.logicalRecord().logicalRecordName().string().text()
-                    : physicalInstanceLabel;
-
-            // Build DDI3 XML fragments with updated data
-            String physicalInstanceXml = buildPhysicalInstanceXml(
-                    agencyId,
-                    id,
-                    newVersion,
-                    physicalInstanceLabel,
-                    dataRelationshipId,
-                    versionDate
-            );
-
-            String dataRelationshipXml = buildDataRelationshipXml(
-                    agencyId,
-                    dataRelationshipId,
-                    newVersion,
-                    dataRelationshipName,
-                    logicalRecordId,
-                    logicalRecordLabel,
-                    versionDate
-            );
-
-            // Create Colectica items
-            ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
-                    "a51e85bb-6259-4488-8df2-f08cb43485f8", // PhysicalInstance type UUID
-                    agencyId,
-                    newVersion,
-                    id,
-                    physicalInstanceXml,
+            updatedDR = new Ddi4DataRelationship(
+                    currentDR.isUniversallyUnique(),
                     versionDate,
-                    "bauhaus-api",
-                    false, // isPublished
-                    false, // isDeprecated
-                    false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
-            );
-
-            ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
-                    "f39ff278-8500-45fe-a850-3906da2d242b", // DataRelationship type UUID
-                    agencyId,
+                    currentDR.urn(),
+                    currentDR.agency(),
+                    currentDR.id(),
                     newVersion,
-                    dataRelationshipId,
-                    dataRelationshipXml,
-                    versionDate,
-                    "bauhaus-api",
-                    false, // isPublished
-                    false, // isDeprecated
-                    false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
+                    currentDR.basedOnObject(),
+                    currentDR.dataRelationshipName(),
+                    drLabel,
+                    updatedLR // Updated LogicalRecord with new label
             );
+        }
 
-            // Create request with both items
-            ColecticaCreateItemRequest updateRequest = new ColecticaCreateItemRequest(
-                    List.of(physicalInstanceItem, dataRelationshipItem)
-            );
+        // Build updated Ddi4Response preserving all variables, codeLists and categories
+        Ddi4Response updatedResponse = new Ddi4Response(
+                currentInstance.schema(),
+                currentInstance.topLevelReference(),
+                List.of(updatedPI),
+                updatedDR != null ? List.of(updatedDR) : currentInstance.dataRelationship(),
+                currentInstance.variable(),    // Preserve all variables
+                currentInstance.codeList(),    // Preserve all codeLists
+                currentInstance.category()     // Preserve all categories
+        );
 
-            // Send to Colectica
-            String url = instanceConfiguration.baseApiUrl() + "item";
+        // Use updateFullPhysicalInstance to save everything including variables
+        updateFullPhysicalInstance(agencyId, id, updatedResponse);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(updateRequest, headers);
-
-            // POST to Colectica (same endpoint for create and update)
-            restTemplate.postForObject(url, requestEntity, String.class);
-
-            // Clear cache to force refresh on next read
-
-            return null;
-        });
     }
 
     @Override
     public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
         logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
 
-        executeWithAuth(token -> {
+        authenticator.executeWithAuth(token -> {
 
             // Convert DDI4 to DDI3
             Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
@@ -954,7 +864,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
-        return executeWithAuth(token -> {
+        return authenticator.executeWithAuth(token -> {
             // Generate UUIDs for physical instance and data relationship
             String physicalInstanceId = UUID.randomUUID().toString();
             String dataRelationshipId = UUID.randomUUID().toString();
@@ -979,39 +889,39 @@ public class DDIRepositoryImpl implements DDIRepository {
                     agencyId,
                     dataRelationshipId,
                     version,
-                    request.dataRelationshipName(),
+                    request.dataRelationshipLabel(),
                     logicalRecordId,
-                    request.physicalInstanceLabel(),
+                    request.logicalRecordLabel() != null ? request.logicalRecordLabel() : request.physicalInstanceLabel(),
                     versionDate
             );
 
             // Create Colectica items
             ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
-                    "a51e85bb-6259-4488-8df2-f08cb43485f8", // PhysicalInstance type UUID
+                    PHYSICAL_INSTANCE_TYPE_UUID, // PhysicalInstance type UUID
                     agencyId,
                     version,
                     physicalInstanceId,
                     physicalInstanceXml,
                     versionDate,
-                    "bauhaus-api",
+                    BAUHAUS_API,
                     false, // isPublished
                     false, // isDeprecated
                     false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
+                    MUTUALIZED_CODE_LIST_UUID // DDI format UUID
             );
 
             ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
-                    "f39ff278-8500-45fe-a850-3906da2d242b", // DataRelationship type UUID
+                    DATA_RELATIONSHIP_TYPE_UUID, // DataRelationship type UUID
                     agencyId,
                     version,
                     dataRelationshipId,
                     dataRelationshipXml,
                     versionDate,
-                    "bauhaus-api",
+                    BAUHAUS_API,
                     false, // isPublished
                     false, // isDeprecated
                     false, // isProvisional
-                    "dc337820-af3a-4c0b-82f9-cf02535cde83" // DDI format UUID
+                    MUTUALIZED_CODE_LIST_UUID // DDI format UUID
             );
 
             // Create request with both items
@@ -1061,9 +971,9 @@ public class DDIRepositoryImpl implements DDIRepository {
                     </r:DataRelationshipReference>
                   </PhysicalInstance>
                 </Fragment>""",
-                versionDate, agencyId, id, version,
-                agencyId, id, version, label,
-                agencyId, dataRelationshipId, version
+                escapeXml(versionDate), escapeXml(agencyId), escapeXml(id), version,
+                escapeXml(agencyId), escapeXml(id), version, escapeXml(label),
+                escapeXml(agencyId), escapeXml(dataRelationshipId), version
         );
     }
 
@@ -1071,7 +981,7 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Build DDI3 XML fragment for DataRelationship
      */
     private String buildDataRelationshipXml(String agencyId, String dataRelationshipId, int version,
-                                           String dataRelationshipName, String logicalRecordId,
+                                           String dataRelationshipLabel, String logicalRecordId,
                                            String logicalRecordLabel, String versionDate) {
         return String.format("""
                 <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
@@ -1080,24 +990,116 @@ public class DDIRepositoryImpl implements DDIRepository {
                     <r:Agency>%s</r:Agency>
                     <r:ID>%s</r:ID>
                     <r:Version>%d</r:Version>
-                    <DataRelationshipName>
-                      <r:String xml:lang="en-US">%s</r:String>
-                    </DataRelationshipName>
+                    <r:Label>
+                      <r:Content xml:lang="fr-FR">%s</r:Content>
+                    </r:Label>
                     <LogicalRecord isUniversallyUnique="true">
                       <r:URN>urn:ddi:%s:%s:%d</r:URN>
                       <r:Agency>%s</r:Agency>
                       <r:ID>%s</r:ID>
                       <r:Version>%d</r:Version>
-                      <LogicalRecordName>
-                        <r:String xml:lang="fr">%s</r:String>
-                      </LogicalRecordName>
+                      <r:Label>
+                        <r:Content xml:lang="fr-FR">%s</r:Content>
+                      </r:Label>
                     </LogicalRecord>
                   </DataRelationship>
                 </Fragment>""",
-                versionDate, agencyId, dataRelationshipId, version,
-                agencyId, dataRelationshipId, version, dataRelationshipName,
-                agencyId, logicalRecordId, version,
-                agencyId, logicalRecordId, version, logicalRecordLabel
+                escapeXml(versionDate), escapeXml(agencyId), escapeXml(dataRelationshipId), version,
+                escapeXml(agencyId), escapeXml(dataRelationshipId), version, escapeXml(dataRelationshipLabel),
+                escapeXml(agencyId), escapeXml(logicalRecordId), version,
+                escapeXml(agencyId), escapeXml(logicalRecordId), version, escapeXml(logicalRecordLabel)
         );
+    }
+
+    private String escapeXml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                   .replace("<", "&lt;")
+                   .replace(">", "&gt;")
+                   .replace("\"", "&quot;")
+                   .replace("'", "&apos;");
+    }
+
+    @Override
+    public List<PartialCodesList> getMutualizedCodesLists() {
+        logger.info("Getting mutualized codes lists from Colectica API via _getDescriptions endpoint");
+
+        List<MutualizedCodeListEntry> mutualizedEntries = colecticaConfiguration.mutualizedCodesLists();
+        logger.info("Mutualized entries from config: {}", mutualizedEntries);
+
+        if (mutualizedEntries == null || mutualizedEntries.isEmpty()) {
+            logger.info("No mutualized codes lists configured");
+            return List.of();
+        }
+
+        return authenticator.executeWithAuth(token -> {
+            String url = instanceConfiguration.baseApiUrl() + "item/_getDescriptions";
+            logger.info("Calling URL: {}", url);
+
+            // Build request body from configuration
+            List<GetDescriptionsRequest.IdentifierRef> identifiers = mutualizedEntries.stream()
+                    .map(entry -> new GetDescriptionsRequest.IdentifierRef(
+                            entry.agencyId(),
+                            entry.identifier(),
+                            entry.version()
+                    ))
+                    .toList();
+
+            GetDescriptionsRequest requestBody = new GetDescriptionsRequest(identifiers);
+            logger.info("Request body identifiers: {}", identifiers);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<GetDescriptionsRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            logger.info("Calling _getDescriptions with {} identifiers", identifiers.size());
+
+            ColecticaItem[] response = restTemplate.postForObject(url, requestEntity, ColecticaItem[].class);
+            logger.info("Response from _getDescriptions: {} items", response != null ? response.length : "null");
+
+            if (response == null) {
+                logger.warn("Received null response from _getDescriptions endpoint");
+                return List.of();
+            }
+
+            return Arrays.stream(response)
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialCodesList(id, label, date, agency);
+                    })
+                    .toList();
+        });
+    }
+
+    /**
+     * Creates a Label with the given text, using the language from the existing label if available,
+     * or falling back to the default language (fr-FR).
+     *
+     * @param existingLabel the existing label to extract language from (can be null)
+     * @param newText the text for the new label
+     * @return a new Label with the appropriate language, or null if newText is null
+     */
+    private Label createLabelWithFallback(Label existingLabel, String newText) {
+        if (newText == null) {
+            return existingLabel;
+        }
+        String lang = existingLabel != null && existingLabel.content() != null
+                ? existingLabel.content().xmlLang()
+                : DEFAULT_LANG;
+        return new Label(new Content(lang, newText));
     }
 }

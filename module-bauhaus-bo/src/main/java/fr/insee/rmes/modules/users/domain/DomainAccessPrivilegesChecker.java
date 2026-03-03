@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.users.domain;
 
-import fr.insee.rmes.domain.auth.Source;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;
@@ -47,10 +46,6 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid privilege identifier: {}", privilegeIdentifier, e);
             return false;
-        }
-
-        if(Source.INSEE.equals(user.source()) && privilege.equals(RBAC.Privilege.READ)){
-            return true;
         }
 
         try {
@@ -107,7 +102,7 @@ public class DomainAccessPrivilegesChecker implements AccessPrivilegesCheckerSer
     }
 
     private Optional<ModuleAccessPrivileges> findModuleAccessPrivileges(User user, RBAC.Module module) {
-        var privileges = fetcher.computePrivileges(user.roles());
+        var privileges = fetcher.computePrivileges(user.roles(), user.source());
         return privileges.stream().filter(p -> p.application().equals(module)).findFirst();
     }
 

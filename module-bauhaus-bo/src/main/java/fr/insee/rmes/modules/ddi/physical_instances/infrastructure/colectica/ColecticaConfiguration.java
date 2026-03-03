@@ -34,7 +34,8 @@ import java.util.List;
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.colectica")
 public record ColecticaConfiguration(
         ColecticaInstanceConfiguration server,
-        List<CodeListDenyEntry> codeListDenyList
+        List<CodeListDenyEntry> codeListDenyList,
+        List<MutualizedCodeListEntry> mutualizedCodesLists
 ) {
     /**
      * Configuration for a single Colectica instance
@@ -45,6 +46,7 @@ public record ColecticaConfiguration(
             List<String> itemTypes,
             String versionResponsibility,
             String itemFormat,
+            String authenticationMode,
             String username,
             String password,
             String defaultAgencyId
@@ -53,6 +55,10 @@ public record ColecticaConfiguration(
             // Set default apiPath if not provided
             if (apiPath == null || apiPath.isBlank()) {
                 apiPath = "/api/v1/";
+            }
+            // Set default authenticationMode if not provided
+            if (authenticationMode == null || authenticationMode.isBlank()) {
+                authenticationMode = "password";
             }
         }
 
@@ -99,5 +105,25 @@ public record ColecticaConfiguration(
     public record CodeListDenyEntry(
             String agencyId,
             String id
+    ) {}
+
+    /**
+     * Represents a mutualized code list identifier to be fetched from Colectica.
+     *
+     * <p>Configuration example:
+     * <pre>
+     * fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].agency-id = fr.insee
+     * fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].identifier = fc65a527-a04b-4505-85de-0a181e54dbad
+     * fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].version = 1
+     * </pre>
+     *
+     * @param agencyId Agency ID of the code list (e.g., "fr.insee")
+     * @param identifier Identifier of the code list (UUID)
+     * @param version Version of the code list
+     */
+    public record MutualizedCodeListEntry(
+            String agencyId,
+            String identifier,
+            int version
     ) {}
 }

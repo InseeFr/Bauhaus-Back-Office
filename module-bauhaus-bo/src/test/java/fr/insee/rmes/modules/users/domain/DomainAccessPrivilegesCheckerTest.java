@@ -49,7 +49,11 @@ class DomainAccessPrivilegesCheckerTest {
         var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "insee");
         Object principal = "somePrincipal";
 
+        var readPrivilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(readPrivilege));
+
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal);
 
@@ -76,7 +80,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "CREATE", "resource-id", principal);
 
@@ -92,7 +96,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "DELETE", "resource-id", principal);
 
@@ -108,7 +112,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
             .thenReturn(List.of("STAMP-01", "STAMP-02"));
 
@@ -127,7 +131,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
             .thenReturn(List.of("STAMP-01", "STAMP-02"));
 
@@ -145,7 +149,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
             .thenReturn(List.of());
 
@@ -163,7 +167,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
             .thenThrow(new StampFetchException(RBAC.Module.OPERATION_SERIES, "resource-id"));
 
@@ -181,7 +185,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DATASET_DISTRIBUTION, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         when(stampChecker.getContributorsStamps(RBAC.Module.DATASET_DISTRIBUTION, "resource-id"))
             .thenReturn(List.of("STAMP-01"));
 
@@ -200,7 +204,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.STRUCTURE_STRUCTURE, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         when(stampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "resource-id"))
             .thenReturn(List.of("STAMP-01"));
 
@@ -218,7 +222,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "DELETE", "resource-id", principal);
 
@@ -234,7 +238,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         boolean hasAccess = accessChecker.hasAccess("OPERATION_SERIES", "READ", "resource-id", principal);
 
@@ -275,7 +279,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         // Resource only requires STAMP-02
         when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
             .thenReturn(List.of("STAMP-02"));
@@ -295,7 +299,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.OPERATION_SERIES, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
         // Resource requires STAMP-99 which user doesn't have
         when(stampChecker.getCreatorsStamps(RBAC.Module.OPERATION_SERIES, "resource-id"))
             .thenReturn(List.of("STAMP-99"));
@@ -314,7 +318,7 @@ class DomainAccessPrivilegesCheckerTest {
         var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
 
         when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
-        when(rbacFetcher.computePrivileges(anyList())).thenReturn(Set.of(modulePrivileges));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
 
         boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal);
 
