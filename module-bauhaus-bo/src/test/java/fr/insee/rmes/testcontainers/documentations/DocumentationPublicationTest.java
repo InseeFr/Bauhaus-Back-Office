@@ -2,6 +2,7 @@ package fr.insee.rmes.testcontainers.documentations;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
+import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
 import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
@@ -9,7 +10,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;

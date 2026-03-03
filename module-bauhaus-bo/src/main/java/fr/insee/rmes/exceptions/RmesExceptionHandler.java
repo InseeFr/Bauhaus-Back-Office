@@ -11,7 +11,7 @@ import fr.insee.rmes.modules.users.webservice.UserResources;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
 import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources;
 import fr.insee.rmes.modules.commons.webservice.concepts.ConceptsCollectionsResources;
-import fr.insee.rmes.modules.init.webservice.InitResources;
+import fr.insee.rmes.modules.clientconfig.webservice.ClientConfigResources;
 import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
 import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
@@ -26,7 +26,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.nio.file.NoSuchFileException;
 
 @ControllerAdvice(assignableTypes = {
-        InitResources.class,
         CodesListsResources.class,
         MetadataReportResources.class,
         UserResources.class,
