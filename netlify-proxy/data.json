@@ -1,0 +1,41 @@
+{
+  "ItemType": "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+  "Levels": [],
+  "CategoryScheme": null,
+  "ItemName": {
+    "fr-FR": "CL-RMES-NAFR2-SOUS-CLASSE"
+  },
+  "Label": {
+    "fr-FR": "NAF rév. 2, 2008 - Niveau 5 - Sous-classes"
+  },
+  "Description": {},
+  "DisplayLabel": "CL-RMES-NAFR2-SOUS-CLASSE - NAF rév. 2, 2008 - Niveau 5 - Sous-classes",
+  "IsPublished": false,
+  "IsPopulated": true,
+  "Version": 1,
+  "VersionDate": "2024-10-31T10:43:38.8611539Z",
+  "VersionResponsibility": null,
+  "VersionRatio0nale": {},
+  "CompositeId": {
+    "Item1": "fc65a527-a04b-4505-85de-0a181e54dbad",
+    "Item2": 1,
+    "Item3": "fr.insee"
+  },
+  "OtherMaterials": [],
+  "BasedOn": null,
+  "SucceededBy": null,
+  "Attachments": [],
+  "ThumbnailImageUri": null,
+  "BannerImageUri": null,
+  "AgencyId": "fr.insee",
+  "Identifier": "fc65a527-a04b-4505-85de-0a181e54dbad",
+  "UserIds": [
+    {
+      "Type": "rmes-bauhaus",
+      "Version": null,
+      "Identifier": "http://id.insee.fr/codes/nafr2/sousClasses"
+    }
+  ],
+  "CustomFields": [],
+  "UserAttributes": []
+}

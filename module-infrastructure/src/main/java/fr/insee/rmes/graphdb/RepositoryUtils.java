@@ -3,7 +3,7 @@ package fr.insee.rmes.graphdb;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
-import fr.insee.rmes.keycloak.KeycloakServices;
+import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -41,8 +41,8 @@ public class RepositoryUtils {
 	private final RepositoryInitiator repositoryInitiator;
 
 
-	public RepositoryUtils(KeycloakServices keycloakServices, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){
-		repositoryInitiator=RepositoryInitiator.newInstance(type, keycloakServices);
+	public RepositoryUtils(TokenService tokenService, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){
+		repositoryInitiator=RepositoryInitiator.newInstance(type, tokenService);
 	}
 
 	public Repository initRepository(String rdfServer, String repositoryID) {

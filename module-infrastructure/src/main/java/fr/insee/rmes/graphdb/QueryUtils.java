@@ -6,6 +6,8 @@ import org.json.JSONObject;
 
 public class QueryUtils {
 
+	private static final String TYPE_OF_OBJECT_PARAM = "typeOfObject";
+
 	public static final String PREFIXES =
             """
                     PREFIX dcterms:<http://purl.org/dc/terms/>\s
@@ -49,11 +51,11 @@ public class QueryUtils {
 	public static JSONArray transformRdfTypeInString(JSONArray jArray) {
 		for (int i = 0; i < jArray.length(); i++) {
 			JSONObject jsonObject = jArray.getJSONObject(i);
-			if (jsonObject.has("typeOfObject")) {
-				String typeOfObject = jsonObject.getString("typeOfObject");
+			if (jsonObject.has(TYPE_OF_OBJECT_PARAM)) {
+				String typeOfObject = jsonObject.getString(TYPE_OF_OBJECT_PARAM);
 				String type = ObjectType.getLabelType(SimpleValueFactory.getInstance().createIRI(typeOfObject));
 				jsonObject.put("type", type);
-				jsonObject.remove("typeOfObject");
+				jsonObject.remove(TYPE_OF_OBJECT_PARAM);
 			}
 		}
 		return jArray;

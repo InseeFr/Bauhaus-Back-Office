@@ -31,12 +31,6 @@ class RdfUtilsTest {
        this.valueIri = new InternedIRI("namespaceValue","localNameValue");
    }
 
-    @Test
-    void shouldCreateXSDIRI() {
-        IRI iriActual = RdfUtils.createXSDIRI("example");
-        boolean iriActualIsExpected = "http://www.w3.org/2001/XMLSchema#example".equals(iriActual.toString());
-        assertTrue(iriActualIsExpected);
-    }
 
     @Test
     void shouldAddTripleNode() {

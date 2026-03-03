@@ -1,13 +1,13 @@
 package fr.insee.rmes.graphdb;
 
-import fr.insee.rmes.keycloak.KeycloakServices;
+import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
 
 public interface RepositoryInitiator {
-    static RepositoryInitiator newInstance(Type type, KeycloakServices keycloakServices) {
-        return type==Type.ENABLED ? new RepositoryInitiatorWithAuthent(keycloakServices):new RepositoryInitiator() {
+    static RepositoryInitiator newInstance(Type type, TokenService tokenService) {
+        return type==Type.ENABLED ? new RepositoryInitiatorWithAuthent(tokenService):new RepositoryInitiator() {
             };
     }
 

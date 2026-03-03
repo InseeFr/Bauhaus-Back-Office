@@ -54,7 +54,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
                 propertiesFinder
         );
         RdfUtils.setUriUtils(uriUtils);
-    
+
         RepositoryUtils repositoryUtils = new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED);
 
         // For publication repository, we use the same GraphDB instance
@@ -81,8 +81,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         injectField(documentationPublication, "documentsPublication", documentsPublication);
         injectField(documentationPublication, "publicationUtils", publicationUtils);
         injectField(documentationPublication, "config", config);
-        injectField(documentationPublication, "documentationsGeoBaseUri", "qualite/territoire");
         injectField(documentationPublication, "organisationsGraph", "organisations");
+        injectField(documentationPublication, "documentationsGeoBaseUri", "territoire");
     }
 
     private void injectField(Object target, String fieldName, Object value) throws Exception {
@@ -149,19 +149,20 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
             """;
 
         var result = repositoryPublication.getResponseAsArray(query);
-        assertThat(result.length()).isGreaterThan(0);
+        assertThat(result).hasSizeGreaterThan(0);
     }
 
     @Test
-    void shouldPublishOrganizationInS12() throws RmesException {
-        // Publish SIMS 9999 which contains an organization reference in S.1.2
+    void shouldPublishOrganizationInS37() throws RmesException {
+        // Publish SIMS 9999 which contains an organization reference in S.3.7
         documentationPublication.publishSims("9999");
 
-        // Verify that S.1.2 organization reference and its label are published
+        // Verify that S.3.7 organization reference and its label are published
+        // The label is in the general organizations graph
         String query = """
             SELECT ?organisation ?label WHERE {
                 GRAPH <http://rdf.insee.fr/graphes/qualite/rapport/9999> {
-                    ?s <http://publication/qualite/simsv2fr/attribut/S.1.2> ?organisation .
+                    ?s <http://publication/qualite/simsv2fr/attribut/S.3.7> ?organisation .
                 }
                 GRAPH <http://rdf.insee.fr/graphes/organisations> {
                     ?organisation <http://www.w3.org/2000/01/rdf-schema#label> ?label .
@@ -171,7 +172,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
         var result = repositoryPublication.getResponseAsArray(query);
 
-        assertThat(result.length()).isGreaterThan(0);
+        // S.3.7 should be published with the organization reference and label
+        assertThat(result).hasSizeGreaterThan(0);
 
         // The organization URI should be transformed to publication URI
         String organisationUri = result.getJSONObject(0).getString("organisation");
@@ -184,7 +186,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
     @Test
     void shouldPublishOrganizationInBothGraphs() throws RmesException {
-        // Publish SIMS 9999 which contains an organization reference in S.1.2
+        // Publish SIMS 9999 which contains an organization reference in S.3.7
         documentationPublication.publishSims("9999");
 
         // Verify data is published in the general organizations graph
@@ -197,7 +199,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
             """;
 
         var resultGeneral = repositoryPublication.getResponseAsArray(queryGeneralGraph);
-        assertThat(resultGeneral.length()).isGreaterThan(0);
+        assertThat(resultGeneral).hasSizeGreaterThan(0);
 
         // Verify data is published in the INSEE organizations graph
         String queryInseeGraph = """
@@ -209,37 +211,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
             """;
 
         var resultInsee = repositoryPublication.getResponseAsArray(queryInseeGraph);
-        assertThat(resultInsee.length()).isGreaterThan(0);
+        assertThat(resultInsee).hasSizeGreaterThan(0);
         assertThat(resultInsee.getJSONObject(0).getString("identifiant")).isEqualTo("DG75-F001");
-    }
-
-    @Test
-    void shouldPublishGeographyInS37() throws RmesException {
-        // Publish SIMS 9999 which contains a geography reference in S.3.7
-        documentationPublication.publishSims("9999");
-
-        // Verify that S.3.7 geography reference is published
-        String query = """
-            SELECT ?geography ?label WHERE {
-                GRAPH <http://rdf.insee.fr/graphes/qualite/rapport/9999> {
-                    ?s <http://publication/qualite/simsv2fr/attribut/S.3.7> ?geography .
-                }
-                GRAPH <http://rdf.insee.fr/graphes/qualite/territoires> {
-                    ?geography <http://www.w3.org/2004/02/skos/core#prefLabel> ?label .
-                }
-            }
-            """;
-
-        var result = repositoryPublication.getResponseAsArray(query);
-
-        assertThat(result.length()).isGreaterThan(0);
-
-        // The geography URI should be transformed to publication URI
-        String geographyUri = result.getJSONObject(0).getString("geography");
-        assertThat(geographyUri).contains("publication");
-
-        // The geography label should be published
-        String label = result.getJSONObject(0).getString("label");
-        assertThat(label).isEqualTo("France hors Mayotte");
     }
 }

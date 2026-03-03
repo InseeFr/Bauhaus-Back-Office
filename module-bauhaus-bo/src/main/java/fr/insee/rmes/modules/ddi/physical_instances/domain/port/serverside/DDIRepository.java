@@ -20,4 +20,5 @@ public interface DDIRepository {
     void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
+    List<PartialCodesList> getMutualizedCodesLists();
 }
