@@ -65,8 +65,7 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(drElement, ID),
             xmlHelper.getElementText(drElement, VERSION),
             parseBasedOnObject(drElement),
-            parseDataRelationshipName(drElement),
-            parseLabel(drElement),
+            parseLabelOrDataRelationshipName(drElement),
             parseLogicalRecord(drElement)
         );
     }
@@ -181,7 +180,10 @@ public class Ddi3XmlReader {
         return new BasedOnObject(basedOnReference);
     }
 
-    private DataRelationshipName parseDataRelationshipName(Element parent) {
+    private Label parseLabelOrDataRelationshipName(Element parent) {
+        Label label = parseLabel(parent);
+        if (label != null) return label;
+
         Element nameElement = xmlHelper.getChildElement(parent, "DataRelationshipName");
         if (nameElement == null) return null;
 
@@ -191,7 +193,7 @@ public class Ddi3XmlReader {
         String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
         String text = stringElement.getTextContent();
 
-        return new DataRelationshipName(new StringValue(lang, text));
+        return new Label(new Content(lang, text));
     }
 
     private VariableName parseVariableName(Element parent) {
@@ -243,13 +245,15 @@ public class Ddi3XmlReader {
             xmlHelper.getElementText(lrElement, AGENCY),
             xmlHelper.getElementText(lrElement, ID),
             xmlHelper.getElementText(lrElement, VERSION),
-            parseLogicalRecordName(lrElement),
-            parseLabel(lrElement),
+            parseLabelOrLogicalRecordName(lrElement),
             parseVariablesInRecord(lrElement)
         );
     }
 
-    private LogicalRecordName parseLogicalRecordName(Element parent) {
+    private Label parseLabelOrLogicalRecordName(Element parent) {
+        Label label = parseLabel(parent);
+        if (label != null) return label;
+
         Element nameElement = xmlHelper.getChildElement(parent, "LogicalRecordName");
         if (nameElement == null) return null;
 
@@ -259,7 +263,7 @@ public class Ddi3XmlReader {
         String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
         String text = stringElement.getTextContent();
 
-        return new LogicalRecordName(new StringValue(lang, text));
+        return new Label(new Content(lang, text));
     }
 
     private VariablesInRecord parseVariablesInRecord(Element parent) {

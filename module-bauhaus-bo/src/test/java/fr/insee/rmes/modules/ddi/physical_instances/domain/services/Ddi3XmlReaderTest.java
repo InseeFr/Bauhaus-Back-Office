@@ -226,7 +226,9 @@ class Ddi3XmlReaderTest {
         // Then
         assertNotNull(result);
         assertEquals("dr-id", result.id());
-        assertNull(result.label());
+        assertNotNull(result.label());
+        assertEquals("Test DR Name", result.label().content().text());
+        assertEquals("fr-FR", result.label().content().xmlLang());
     }
 
     @Test
@@ -304,6 +306,8 @@ class Ddi3XmlReaderTest {
         assertNotNull(result);
         assertNotNull(result.logicalRecord());
         assertEquals("lr-id", result.logicalRecord().id());
-        assertNull(result.logicalRecord().label());
+        assertNotNull(result.logicalRecord().label());
+        assertEquals("LR Name", result.logicalRecord().label().content().text());
+        assertEquals("fr-FR", result.logicalRecord().label().content().xmlLang());
     }
 }

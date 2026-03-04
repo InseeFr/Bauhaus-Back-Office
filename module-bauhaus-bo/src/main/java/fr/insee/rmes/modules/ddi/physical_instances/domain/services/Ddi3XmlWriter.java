@@ -121,12 +121,12 @@ public class Ddi3XmlWriter {
         // Write BasedOnObject if present
         writeBasedOnObject(writer, dr.basedOnObject());
 
-        // Write DataRelationshipName if present
-        if (dr.dataRelationshipName() != null) {
+        // Write DataRelationshipName from label if present
+        if (dr.label() != null && dr.label().content() != null) {
             writer.writeStartElement("DataRelationshipName");
             writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-            writer.writeAttribute(XML_LANG, dr.dataRelationshipName().string().xmlLang());
-            writer.writeCharacters(dr.dataRelationshipName().string().text());
+            writer.writeAttribute(XML_LANG, dr.label().content().xmlLang());
+            writer.writeCharacters(dr.label().content().text());
             writer.writeEndElement(); // String
             writer.writeEndElement(); // DataRelationshipName
         }
@@ -145,11 +145,12 @@ public class Ddi3XmlWriter {
             writeElement(writer, DDI_REUSABLE_NS, ID, lr.id());
             writeElement(writer, DDI_REUSABLE_NS, VERSION, lr.version());
 
-            if (lr.logicalRecordName() != null) {
+            // Write LogicalRecordName from label if present
+            if (lr.label() != null && lr.label().content() != null) {
                 writer.writeStartElement("LogicalRecordName");
                 writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-                writer.writeAttribute(XML_LANG, lr.logicalRecordName().string().xmlLang());
-                writer.writeCharacters(lr.logicalRecordName().string().text());
+                writer.writeAttribute(XML_LANG, lr.label().content().xmlLang());
+                writer.writeCharacters(lr.label().content().text());
                 writer.writeEndElement(); // String
                 writer.writeEndElement(); // LogicalRecordName
             }

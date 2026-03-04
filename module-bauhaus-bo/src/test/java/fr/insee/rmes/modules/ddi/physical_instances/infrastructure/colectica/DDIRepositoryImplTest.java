@@ -577,10 +577,9 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
-                new DataRelationshipName(new StringValue("en-US", "Old DR Name")),
                 null,
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        new LogicalRecordName(new StringValue("fr", "Old LR Name")), null, null)
+                        null, null)
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -1010,11 +1009,9 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1",
                 agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
                 null,
-                new DataRelationshipName(new StringValue("en-US", "DataRelationShip Name:test")),
                 null,
                 new LogicalRecord("true", "urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
                         agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
-                        new LogicalRecordName(new StringValue("fr", "test")),
                         null,
                         new VariablesInRecord(List.of(
                                 new VariableUsedReference(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable")
@@ -1448,10 +1445,9 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
-                new DataRelationshipName(new StringValue("en-US", "DR Name")),
                 existingDrLabel,
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        new LogicalRecordName(new StringValue("fr", "LR Name")), existingLrLabel, null)
+                        existingLrLabel, null)
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -1526,10 +1522,9 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
-                new DataRelationshipName(new StringValue("en-US", "DR Name")),
                 null, // No existing label
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        new LogicalRecordName(new StringValue("fr", "LR Name")), null, null) // No existing label
+                        null, null) // No existing label
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -1610,10 +1605,9 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
-                new DataRelationshipName(new StringValue("en-US", "DR Name")),
                 existingDrLabel,
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        new LogicalRecordName(new StringValue("fr", "LR Name")), existingLrLabel, null)
+                        existingLrLabel, null)
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
