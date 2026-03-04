@@ -54,6 +54,7 @@ class DDIRepositoryImplTest {
         // By default, mock returns null for codeListDenyList (no filtering)
         // Use lenient() since not all tests use this stubbing
         lenient().when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
+        lenient().when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR"));
 
         // Configure authenticator to execute the function with a test token
         lenient().when(authenticator.executeWithAuth(any())).thenAnswer(invocation -> {
@@ -69,7 +70,7 @@ class DDIRepositoryImplTest {
         // Given
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String queryUrl = baseApiUrl + "_query";
-        List<String> itemTypes = List.of("a51e85bb-6259-4488-8df2-f08cb43485f8");
+        Map<String, String> itemTypes = Map.of("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8");
 
         ColecticaItem item1 = new ColecticaItem(
             null, // summary
@@ -415,6 +416,10 @@ class DDIRepositoryImplTest {
         // Mock configuration
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
         when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"
+        ));
 
         // Mock item creation (POST /item)
         when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
@@ -842,6 +847,10 @@ class DDIRepositoryImplTest {
 
         // Mock configuration
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"
+        ));
 
         // Mock DDI set response with complete FragmentInstance XML (including Variables, CodeLists, Categories)
         String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +

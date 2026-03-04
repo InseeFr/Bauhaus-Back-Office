@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,7 +15,13 @@ class Ddi3XmlWriterTest {
 
     @BeforeEach
     void setUp() {
-        writer = new Ddi3XmlWriter();
+        writer = new Ddi3XmlWriter(Map.of(
+            "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+            "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+            "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+            "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
+        ));
     }
 
     @Test

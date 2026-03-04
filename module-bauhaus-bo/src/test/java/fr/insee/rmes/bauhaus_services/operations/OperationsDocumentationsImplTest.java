@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,6 +26,9 @@ class OperationsDocumentationsImplTest {
 
     @Mock
     private DocumentationExport documentationsExport;
+
+    @Mock
+    private DocumentationsUtils documentationsUtils;
 
     @InjectMocks
     private OperationsDocumentationsImpl metadataReportService;
@@ -60,6 +65,58 @@ class OperationsDocumentationsImplTest {
         assertEquals(ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, formattedException.getInt("code"));
         assertEquals("at least one language must be selected for export", formattedException.getString("message"));
         assertEquals("in export of sims: " + id, formattedException.getString("details"));
+    }
+
+    @Test
+    void shouldGetMetadataReportAndReturnJsonString() throws RmesException {
+        // Given
+        String simsId = "1000";
+        JSONObject expectedDocumentation = new JSONObject();
+        expectedDocumentation.put("id", simsId);
+        expectedDocumentation.put("labelLg1", "Documentation test");
+        expectedDocumentation.put("labelLg2", "Test documentation");
+
+        when(documentationsUtils.getDocumentationByIdSims(simsId)).thenReturn(expectedDocumentation);
+
+        // When
+        String result = metadataReportService.getMetadataReport(simsId);
+
+        // Then
+        verify(documentationsUtils).getDocumentationByIdSims(simsId);
+        assertEquals(expectedDocumentation.toString(), result);
+    }
+
+    @Test
+    void shouldGetMetadataReportWithEmptyJsonObject() throws RmesException {
+        // Given
+        String simsId = "2000";
+        JSONObject emptyDocumentation = new JSONObject();
+
+        when(documentationsUtils.getDocumentationByIdSims(simsId)).thenReturn(emptyDocumentation);
+
+        // When
+        String result = metadataReportService.getMetadataReport(simsId);
+
+        // Then
+        verify(documentationsUtils).getDocumentationByIdSims(simsId);
+        assertEquals("{}", result);
+    }
+
+    @Test
+    void shouldPropagateRmesExceptionWhenGetMetadataReportFails() throws RmesException {
+        // Given
+        String simsId = "3000";
+        RmesException expectedException = new RmesException(404, "Documentation not found", "No documentation with id: " + simsId);
+
+        when(documentationsUtils.getDocumentationByIdSims(simsId)).thenThrow(expectedException);
+
+        // When / Then
+        RmesException exception = assertThrows(RmesException.class, () -> {
+            metadataReportService.getMetadataReport(simsId);
+        });
+
+        assertEquals(expectedException.getMessage(), exception.getMessage());
+        verify(documentationsUtils).getDocumentationByIdSims(simsId);
     }
 
 }

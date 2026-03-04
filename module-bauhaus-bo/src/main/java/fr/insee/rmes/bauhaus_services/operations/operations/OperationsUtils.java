@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
@@ -32,8 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 @Component
 public class OperationsUtils extends RdfService{
@@ -94,15 +90,8 @@ public class OperationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 	public String setOperation(String body) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerIndUtils.createId();
-		Operation operation = new Operation();
-		try {
-			operation = mapper.readValue(body, Operation.class);
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
+		Operation operation = Deserializer.deserializeJsonString(body, Operation.class);
 		operation.setId(id);
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();

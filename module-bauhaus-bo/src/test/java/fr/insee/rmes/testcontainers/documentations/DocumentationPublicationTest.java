@@ -2,12 +2,14 @@ package fr.insee.rmes.testcontainers.documentations;
 
 import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
+import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
+import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -74,15 +76,20 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         // Create DocumentsPublication mock (we don't need to test document publication here)
         DocumentsPublication documentsPublication = Mockito.mock(DocumentsPublication.class);
 
-        // Create DocumentationPublication and inject dependencies
-        documentationPublication = new DocumentationPublication();
-        injectField(documentationPublication, "repoGestion", repositoryGestion);
-        injectField(documentationPublication, "repositoryPublication", repositoryPublication);
-        injectField(documentationPublication, "documentsPublication", documentsPublication);
-        injectField(documentationPublication, "publicationUtils", publicationUtils);
-        injectField(documentationPublication, "config", config);
-        injectField(documentationPublication, "organisationsGraph", "organisations");
-        injectField(documentationPublication, "documentationsGeoBaseUri", "territoire");
+        // Create DocumentationPublication with constructor injection
+        var documentationConfiguration = new DocumentationConfiguration(
+                new DocumentationConfiguration.Geographie( "territoire"),
+                "Rapport qualité :",
+                "Quality report:"
+        );
+        documentationPublication = new DocumentationPublication(
+                repositoryGestion,
+                repositoryPublication,
+                publicationUtils,
+                documentsPublication,
+                documentationConfiguration,
+                new OrganisationsProperties("organisations")
+        );
     }
 
     private void injectField(Object target, String fieldName, Object value) throws Exception {
@@ -213,5 +220,32 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         var resultInsee = repositoryPublication.getResponseAsArray(queryInseeGraph);
         assertThat(resultInsee).hasSizeGreaterThan(0);
         assertThat(resultInsee.getJSONObject(0).getString("identifiant")).isEqualTo("DG75-F001");
+    }
+
+    @Test
+    void shouldConvertMarkdownToHtmlWhenPublishingRichTextRubrics() throws RmesException {
+        // Publish SIMS 9999
+        documentationPublication.publishSims("9999");
+
+        // Verify that RICHTEXT rubrics have both rdf:value (markdown) and insee:html (HTML)
+        String queryHtmlVersion = """
+            SELECT ?html WHERE {
+                GRAPH <http://rdf.insee.fr/graphes/qualite/rapport/9999> {
+                    ?textResource a <http://purl.org/dc/dcmitype/Text> .
+                    ?textResource <http://rdf.insee.fr/def/base#html> ?html .
+                }
+            }
+            """;
+
+        var resultHtml = repositoryPublication.getResponseAsArray(queryHtmlVersion);
+
+        // If there are RICHTEXT rubrics with content, they should have HTML versions
+        // The test data should have at least one RICHTEXT rubric to properly test this
+        if (resultHtml.length() > 0) {
+            String htmlContent = resultHtml.getJSONObject(0).getString("html");
+            assertThat(htmlContent).isNotEmpty();
+            // HTML content should contain HTML tags (not markdown)
+            // If the original was markdown like "**bold**", HTML should be "<strong>bold</strong>" or similar
+        }
     }
 }

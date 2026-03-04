@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.18.0</version>
+  <version>4.19.0-rc3</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -26,6 +26,10 @@
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>
       <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.fbibonne</groupId>
+      <artifactId>boot-properties-logger-starter</artifactId>
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>

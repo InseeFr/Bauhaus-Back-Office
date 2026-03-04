@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.11</version>
+    <version>3.5.10</version>
     <relativePath/>
     <!-- lookup parent from repository -->
   </parent>
@@ -11,31 +11,6 @@
   <artifactId>parent</artifactId>
   <packaging>pom</packaging>
   <version>1.0.0</version>
-  <properties>
-    <!-- TODO : a supprimer après une mise à jour de spring boot > 3.5.10 -->
-    <assertj.version>3.27.7</assertj.version>
-    <!-- Fin des dépendances à supprimer pour la maj -->
-    <java.version>25</java.version>
-    <springdoc.version>2.8.3</springdoc.version>
-    <rdf4j.version>5.1.0</rdf4j.version>
-    <xdocreport.version>2.2.0</xdocreport.version>
-    <jacoco.version>0.8.13</jacoco.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java-jwt.version>4.5.0</java-jwt.version>
-    <json.version>20250107</json.version>
-    <flexmark.version>0.64.8</flexmark.version>
-    <jaxb.version>4.0.5</jaxb.version>
-    <zt.version>1.17</zt.version>
-    <saxon.version>12.5</saxon.version>
-    <minio.version>8.5.17</minio.version>
-    <record.builder.version>44</record.builder.version>
-    <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
-    <jackson-bom.version>2.21.1</jackson-bom.version>
-    <!-- SONAR -->
-    <sonar.organization>inseefr</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
-  </properties>
   <name>RMES</name>
   <description>Back-office services for Bauhaus</description>
   <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -55,6 +30,46 @@
       <email>jerome.bourgeois@insee.fr</email>
     </developer>
   </developers>
+  <properties>
+    <!-- TODO : a supprimer après une mise à jour de spring boot > 3.5.10 -->
+    <assertj.version>3.27.7</assertj.version>
+    <jackson-bom.version>2.21.1</jackson-bom.version>
+    <!-- Fin des dépendances à supprimer pour la maj -->
+    <java.version>25</java.version>
+    <springdoc.version>2.8.3</springdoc.version>
+    <rdf4j.version>5.1.0</rdf4j.version>
+    <xdocreport.version>2.1.0</xdocreport.version>
+    <jacoco.version>0.8.13</jacoco.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java-jwt.version>4.5.0</java-jwt.version>
+    <json.version>20250107</json.version>
+    <flexmark.version>0.64.8</flexmark.version>
+    <jaxb.version>4.0.5</jaxb.version>
+    <zt.version>1.17</zt.version>
+    <saxon.version>12.5</saxon.version>
+    <minio.version>8.5.17</minio.version>
+    <record.builder.version>44</record.builder.version>
+    <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
+    <!-- SONAR -->
+    <sonar.organization>inseefr</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
+    <boot-properties-logger-starter.version>2.2.0</boot-properties-logger-starter.version>
+    <!-- A supprimer après une mise à jour de spring boot > 3.5.10 -->
+    <assertj.version>3.27.7</assertj.version>
+    <!-- Fin des dépendances à supprimer pour la maj -->
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.github.fbibonne</groupId>
+        <artifactId>boot-properties-logger-starter</artifactId>
+        <version>${boot-properties-logger-starter.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
