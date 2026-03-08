@@ -131,16 +131,14 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "saphir-rp99-sas",
                 "1",
                 null,
-                new DataRelationshipName(new StringValue("fr-FR", "SAPHIR - RP99")),
-                null,
+                new Label(new Content("fr-FR", "SAPHIR - RP99")),
                 new LogicalRecord(
                         "true",
                         "urn:ddi:fr.insee:LogicalRecord.saphir-rp99-sas:1",
                         "fr.insee",
                         "saphir-rp99-sas",
                         "1",
-                        new LogicalRecordName(new StringValue("fr-FR", "SAPHIR - RP99")),
-                        null,
+                        new Label(new Content("fr-FR", "SAPHIR - RP99")),
                         new VariablesInRecord(List.of(
                                 new VariableUsedReference("fr.insee", "var1", "1", "Variable"),
                                 new VariableUsedReference("fr.insee", "var2", "1", "Variable")
@@ -723,7 +721,6 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "copy-dr-id",
                 "1",
                 basedOnObject,
-                new DataRelationshipName(new StringValue("fr-FR", "Copy DR")),
                 null,
                 null
         );
@@ -883,7 +880,6 @@ class DDI4toDDI3ConverterServiceImplTest {
                         "test",
                         "1",
                         null,
-                        new DataRelationshipName(new StringValue("fr-FR", "Test")),
                         null,
                         null
                 )),

@@ -10,7 +10,6 @@ public record Ddi4DataRelationship(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
-        @JsonProperty("DataRelationshipName") DataRelationshipName dataRelationshipName,
         @JsonProperty("Label") Label label,
         @JsonProperty("LogicalRecord") LogicalRecord logicalRecord
 ) {

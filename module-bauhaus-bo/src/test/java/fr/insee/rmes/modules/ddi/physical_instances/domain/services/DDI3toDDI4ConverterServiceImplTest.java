@@ -193,8 +193,8 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("saphir-rp99-sas", dr.id());
         assertEquals("1", dr.version());
 
-        assertNotNull(dr.dataRelationshipName());
-        assertEquals("SAPHIR - RP99", dr.dataRelationshipName().string().text());
+        assertNotNull(dr.label());
+        assertEquals("SAPHIR - RP99", dr.label().content().text());
 
         assertNotNull(dr.logicalRecord());
         assertEquals("true", dr.logicalRecord().isUniversallyUnique());

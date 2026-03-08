@@ -771,7 +771,6 @@ public class DDIRepositoryImpl implements DDIRepository {
                         updatedLR.agency(),
                         updatedLR.id(),
                         updatedLR.version(),
-                        updatedLR.logicalRecordName(),
                         createLabelWithFallback(updatedLR.label(), request.logicalRecordLabel()),
                         updatedLR.variablesInRecord()
                 );
@@ -785,7 +784,6 @@ public class DDIRepositoryImpl implements DDIRepository {
                     currentDR.id(),
                     newVersion,
                     currentDR.basedOnObject(),
-                    currentDR.dataRelationshipName(),
                     drLabel,
                     updatedLR // Updated LogicalRecord with new label
             );

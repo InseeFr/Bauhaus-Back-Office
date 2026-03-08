@@ -436,14 +436,13 @@ class DdiResourcesTest {
             null, citation, dataRelRef
         );
 
-        StringValue drNameStringValue = new StringValue("fr-FR", "Dessin de fichier thl-CASD");
-        DataRelationshipName drName = new DataRelationshipName(drNameStringValue);
+        Label drLabel = new Label(new Content("fr-FR", "Dessin de fichier thl-CASD"));
 
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
             "true", "2024-06-03T14:29:23.4049817Z",
             "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
-            null, drName, null, null
+            null, drLabel, null
         );
 
         TopLevelReference topLevelRef = new TopLevelReference(
