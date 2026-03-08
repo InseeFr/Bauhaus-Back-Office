@@ -105,7 +105,6 @@ class Ddi3XmlWriterTest {
                 "new-dr-id",
                 "1",
                 basedOnObject,
-                new DataRelationshipName(new StringValue("fr-FR", "Test DR")),
                 null,
                 null
         );
@@ -199,7 +198,6 @@ class Ddi3XmlWriterTest {
                 "dr-id",
                 "1",
                 null,
-                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
                 new Label(new Content("fr-FR", "DR Label")),
                 null
         );
@@ -228,7 +226,6 @@ class Ddi3XmlWriterTest {
                 "dr-id",
                 "1",
                 null,
-                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
                 null,
                 null
         );
@@ -251,7 +248,6 @@ class Ddi3XmlWriterTest {
                 "fr.insee",
                 "lr-id",
                 "1",
-                new LogicalRecordName(new StringValue("fr-FR", "LR Name")),
                 new Label(new Content("fr-FR", "LR Label")),
                 null
         );
@@ -264,7 +260,6 @@ class Ddi3XmlWriterTest {
                 "dr-id",
                 "1",
                 null,
-                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
                 null,
                 lr
         );
@@ -293,7 +288,6 @@ class Ddi3XmlWriterTest {
                 "fr.insee",
                 "lr-id",
                 "1",
-                new LogicalRecordName(new StringValue("fr-FR", "LR Name")),
                 null,
                 null
         );
@@ -306,7 +300,6 @@ class Ddi3XmlWriterTest {
                 "dr-id",
                 "1",
                 null,
-                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
                 null,
                 lr
         );
@@ -338,7 +331,6 @@ class Ddi3XmlWriterTest {
                 "dr-id",
                 "1",
                 null,
-                new DataRelationshipName(new StringValue("fr-FR", "DR Name")),
                 labelWithNullContent,
                 null
         );

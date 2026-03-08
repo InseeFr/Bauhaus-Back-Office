@@ -8,7 +8,6 @@ public record LogicalRecord(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
-        @JsonProperty("LogicalRecordName") LogicalRecordName logicalRecordName,
         @JsonProperty("Label") Label label,
         @JsonProperty("VariablesInRecord") VariablesInRecord variablesInRecord
 ) {
