@@ -363,10 +363,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG2), config.getLg2()), graph);
 		}
 		if(codesList.has(Constants.CREATOR)){
-			RdfUtils.addTripleString(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
+			RdfUtils.addTripleUri(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
 		}
 		if(codesList.has(Constants.CONTRIBUTOR)){
-			codesList.getJSONArray(Constants.CONTRIBUTOR).toList().forEach(c -> RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, (String) c, model, graph));
+			codesList.getJSONArray(Constants.CONTRIBUTOR).toList().forEach(c -> RdfUtils.addTripleUri(codeListIri, DC.CONTRIBUTOR, (String) c, model, graph));
 		}
 
 		if(partial){
