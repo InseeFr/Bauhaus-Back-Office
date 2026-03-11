@@ -1,11 +1,17 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
+import fr.insee.ddi.lifecycle33.reusable.StringType;
+import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import org.apache.xmlbeans.XmlOptions;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,7 +21,6 @@ import java.util.Map;
 public class Ddi3XmlWriter {
 
     private final Map<String, String> itemTypes;
-
 
 
     private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
@@ -44,70 +49,57 @@ public class Ddi3XmlWriter {
     }
 
     public String buildPhysicalInstanceXml(Ddi4PhysicalInstance pi) throws XMLStreamException {
-        StringWriter stringWriter = new StringWriter();
-        XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var piType = doc.addNewFragment().addNewPhysicalInstance();
 
-        // Start Fragment
-        writer.writeStartElement(FRAGMENT);
-        writer.writeDefaultNamespace(DDI_INSTANCE_NS);
-        writer.writeNamespace("r", DDI_REUSABLE_NS);
+        piType.setIsUniversallyUnique(Boolean.parseBoolean(pi.isUniversallyUnique()));
+        piType.setVersionDate(pi.versionDate());
+        piType.addNewURN().setStringValue(pi.urn());
+        piType.addAgency(pi.agency());
+        piType.addNewID().setStringValue(pi.id());
+        piType.addVersion(pi.version());
 
-        // Start PhysicalInstance
-        writer.writeStartElement(PHYSICAL_INSTANCE);
-        writer.writeDefaultNamespace(DDI_PHYSICAL_INSTANCE_NS);
-        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, pi.isUniversallyUnique());
-        writer.writeAttribute(VERSION_DATE, pi.versionDate());
+        if (pi.basedOnObject() != null && pi.basedOnObject().basedOnReference() != null) {
+            BasedOnReference ref = pi.basedOnObject().basedOnReference();
+            ReferenceType refType = piType.addNewBasedOnObject().addNewBasedOnReference();
+            refType.addAgency(ref.agency());
+            refType.addNewID().setStringValue(ref.id());
+            refType.addVersion(ref.version());
+            refType.setTypeOfObject(TypeOfObjectType.Enum.forString(ref.typeOfObject()));
+        }
 
-        // Write basic elements
-        writeElement(writer, DDI_REUSABLE_NS, URN, pi.urn());
-        writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.agency());
-        writeElement(writer, DDI_REUSABLE_NS, ID, pi.id());
-        writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.version());
-
-        // Write BasedOnObject if present
-        writeBasedOnObject(writer, pi.basedOnObject());
-
-        // Write Citation if present
         if (pi.citation() != null && pi.citation().title() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "Citation");
-            writer.writeStartElement(DDI_REUSABLE_NS, "Title");
-            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-            writer.writeAttribute(XML_LANG, pi.citation().title().string().xmlLang());
-            writer.writeCharacters(pi.citation().title().string().text());
-            writer.writeEndElement(); // String
-            writer.writeEndElement(); // Title
-            writer.writeEndElement(); // Citation
+            StringType titleStr = piType.addNewCitation().addNewTitle().addNewString();
+            titleStr.setLang(pi.citation().title().string().xmlLang());
+            titleStr.setStringValue(pi.citation().title().string().text());
         }
 
-        // Write DataRelationshipReference if present
         if (pi.dataRelationshipReference() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "DataRelationshipReference");
-            writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.dataRelationshipReference().agency());
-            writeElement(writer, DDI_REUSABLE_NS, ID, pi.dataRelationshipReference().id());
-            writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.dataRelationshipReference().version());
-            writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, pi.dataRelationshipReference().typeOfObject());
-            writer.writeEndElement(); // DataRelationshipReference
+            ReferenceType refType = piType.addNewDataRelationshipReference();
+            refType.addAgency(pi.dataRelationshipReference().agency());
+            refType.addNewID().setStringValue(pi.dataRelationshipReference().id());
+            refType.addVersion(pi.dataRelationshipReference().version());
+            refType.setTypeOfObject(TypeOfObjectType.Enum.forString(pi.dataRelationshipReference().typeOfObject()));
         }
 
-        writer.writeEndElement(); // PhysicalInstance
-        writer.writeEndElement(); // Fragment
+        XmlOptions options = new XmlOptions();
+        HashMap<String, String> prefixes = new HashMap<>();
+        prefixes.put(DDI_INSTANCE_NS, "");
+        prefixes.put(DDI_PHYSICAL_INSTANCE_NS, "");
+        prefixes.put(DDI_REUSABLE_NS, "r");
+        options.setSaveSuggestedPrefixes(prefixes);
 
-        writer.flush();
-        writer.close();
-
-        return stringWriter.toString();
+        return doc.xmlText(options);
     }
 
     public String buildDataRelationshipXml(Ddi4DataRelationship dr) throws XMLStreamException {
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
 
-        // Start Fragment
         writer.writeStartElement(FRAGMENT);
         writer.writeDefaultNamespace(DDI_INSTANCE_NS);
         writer.writeNamespace("r", DDI_REUSABLE_NS);
 
-        // Start DataRelationship
         writer.writeStartElement("DataRelationship");
         writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
         writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, dr.isUniversallyUnique());
@@ -118,10 +110,8 @@ public class Ddi3XmlWriter {
         writeElement(writer, DDI_REUSABLE_NS, ID, dr.id());
         writeElement(writer, DDI_REUSABLE_NS, VERSION, dr.version());
 
-        // Write BasedOnObject if present
         writeBasedOnObject(writer, dr.basedOnObject());
 
-        // Write DataRelationshipName from label if present
         if (dr.label() != null && dr.label().content() != null) {
             writer.writeStartElement("DataRelationshipName");
             writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
@@ -131,10 +121,8 @@ public class Ddi3XmlWriter {
             writer.writeEndElement(); // DataRelationshipName
         }
 
-        // Write Label if present
         writeLabel(writer, dr.label());
 
-        // Write LogicalRecord if present
         if (dr.logicalRecord() != null) {
             LogicalRecord lr = dr.logicalRecord();
             writer.writeStartElement("LogicalRecord");
@@ -145,7 +133,6 @@ public class Ddi3XmlWriter {
             writeElement(writer, DDI_REUSABLE_NS, ID, lr.id());
             writeElement(writer, DDI_REUSABLE_NS, VERSION, lr.version());
 
-            // Write LogicalRecordName from label if present
             if (lr.label() != null && lr.label().content() != null) {
                 writer.writeStartElement("LogicalRecordName");
                 writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
@@ -155,7 +142,6 @@ public class Ddi3XmlWriter {
                 writer.writeEndElement(); // LogicalRecordName
             }
 
-            // Write Label if present
             writeLabel(writer, lr.label());
 
             if (lr.variablesInRecord() != null && lr.variablesInRecord().variableUsedReference() != null) {
