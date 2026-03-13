@@ -127,7 +127,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:new-dr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>new-dr-id</r:ID><r:Version>1</r:Version><r:BasedOnObject><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-dr-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>DataRelationship</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject></DataRelationship></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:BasedOnObject xmlns:r=\"ddi:reusable:3_3\"><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-dr-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>DataRelationship</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -149,7 +149,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version><DataRelationshipName><r:String xml:lang=\"fr-FR\">DR Label</r:String></DataRelationshipName><r:Label><r:Content xml:lang=\"fr-FR\">DR Label</r:Content></r:Label></DataRelationship></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:DataRelationshipName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">DR Label</r:String></ddi:DataRelationshipName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">DR Label</r:Content></r:Label></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -171,7 +171,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version></DataRelationship></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -193,7 +193,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version></DataRelationship></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -225,7 +225,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version><LogicalRecord isUniversallyUnique=\"true\"><r:URN>urn:ddi:fr.insee:lr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>lr-id</r:ID><r:Version>1</r:Version><LogicalRecordName><r:String xml:lang=\"fr-FR\">LR Label</r:String></LogicalRecordName><r:Label><r:Content xml:lang=\"fr-FR\">LR Label</r:Content></r:Label></LogicalRecord></DataRelationship></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:LogicalRecord isUniversallyUnique=\"true\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:lr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">lr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:LogicalRecordName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">LR Label</r:String></ddi:LogicalRecordName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">LR Label</r:Content></r:Label></ddi:LogicalRecord></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -257,7 +257,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version><LogicalRecord isUniversallyUnique=\"true\"><r:URN>urn:ddi:fr.insee:lr-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>lr-id</r:ID><r:Version>1</r:Version></LogicalRecord></DataRelationship></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:LogicalRecord isUniversallyUnique=\"true\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:lr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">lr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version></ddi:LogicalRecord></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -290,6 +290,6 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildVariableXml(var);
 
         // Then
-        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\"><Variable xmlns=\"ddi:logicalproduct:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\"><r:URN>urn:ddi:fr.insee:new-var-id:1</r:URN><r:Agency>fr.insee</r:Agency><r:ID>new-var-id</r:ID><r:Version>1</r:Version><r:BasedOnObject><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-var-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>Variable</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject><VariableName><r:String xml:lang=\"fr-FR\">TEST_VAR</r:String></VariableName><r:Label><r:Content xml:lang=\"fr-FR\">Test Variable</r:Content></r:Label><VariableRepresentation/></Variable></Fragment>", xml);
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:Variable isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-var-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-var-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:BasedOnObject xmlns:r=\"ddi:reusable:3_3\"><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-var-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>Variable</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject><ddi:VariableName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">TEST_VAR</r:String></ddi:VariableName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">Test Variable</r:Content></r:Label><ddi:VariableRepresentation/></ddi:Variable></Fragment>", xml);
     }
 }
