@@ -73,9 +73,6 @@ public class StructureComponentUtils extends RdfService {
     public String updateComponent(String componentId, String body) throws RmesException {
         MutualizedComponent component;
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         JSONObject jsonComponent = new JSONObject(body);
 
         try {
@@ -105,9 +102,6 @@ public class StructureComponentUtils extends RdfService {
     public String createComponent(String body) throws RmesException {
         MutualizedComponent component;
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         JSONObject jsonComponent = new JSONObject(body);
 
         try {
@@ -182,9 +176,9 @@ public class StructureComponentUtils extends RdfService {
 
         RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(componentURI, DC.CREATOR, component.getCreator(), model, graph);
+        RdfUtils.addTripleUri(componentURI, DC.CREATOR, component.getCreator(), model, graph);
 
-        component.getContributor().forEach(contributor ->  RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, contributor, model, graph));
+        component.getContributor().forEach(contributor ->  RdfUtils.addTripleUri(componentURI, DC.CONTRIBUTOR, contributor, model, graph));
 
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
