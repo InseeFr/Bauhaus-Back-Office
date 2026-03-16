@@ -170,6 +170,13 @@ public class UtilsTest {
             			<simpleValue/>
             		</rubrics>
             		<rubrics>
+            			<idAttribute>S.5</idAttribute>
+            			<labelLg1>Direction générale de l'INSEE</labelLg1>
+            			<labelLg2>General direction of INSEE</labelLg2>
+            			<value><value>DG75-L002</value></value>
+            			<rangeType>ORGANIZATION</rangeType>
+            		</rubrics>
+            		<rubrics>
             			<idAttribute>S.18.2</idAttribute>
             			<labelLg1/>
             			<labelLg2/>
