@@ -645,11 +645,11 @@
                 <table:table-row>
                     <table:table-cell table:style-name="framedCell">
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5 - Période de référence</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">DG75-L002 : Direction générale de l'INSEE</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="framedCell">
                         <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="attribute">S.5 - Reference period</text:p>
-                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem"/>
+                        <text:p xmlns:xlink="http://www.w3.org/1999/xlink" text:style-name="RubricItem">DG75-L002 : General direction of INSEE</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>

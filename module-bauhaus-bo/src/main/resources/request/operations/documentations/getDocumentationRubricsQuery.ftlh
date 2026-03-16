@@ -86,6 +86,16 @@ WHERE {
 			?reportAttr ?attr ?organisationUri . 
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 			?organisationUri adms:identifier ?value .
+
+			OPTIONAL{
+                ?organisationUri skos:prefLabel ?labelLg1 .
+                FILTER(lang(?labelLg1) = '${LG1}')
+            }
+            OPTIONAL{
+                ?organisationUri skos:prefLabel ?labelLg2 .
+                FILTER(lang(?labelLg2) = '${LG2}')
+            }
+
 			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
 		} 
 		

@@ -612,12 +612,11 @@
                         </xsl:choose>
                     </xsl:when>
                     <xsl:when test="$simsRubrics/rangeType='ORGANIZATION'">
-                        <xsl:variable name="organisation" select="$simsRubrics//value/value"/>
-                        <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$rubric-element]"/>
-                        <xsl:variable name="stamp" select="$organizations//item[id=$organisation]/identifier"/>
+                        <xsl:variable name="stamp" select="$simsRubrics//value/value"/>
+                        <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$rubric-element]"/>
                         <xsl:choose>
                             <xsl:when test="$original-text != '' and $rubric-element = 'labelLg1'">
-                                <xsl:variable name="altLabel" select="$organizations//item[id=$organisation]/altLabel"/>
+                                <xsl:variable name="altLabel" select="$organizations//item[id=$stamp]/altLabel"/>
                                 <xsl:choose>
                                     <xsl:when test="$altLabel != ''">
                                         <xsl:value-of select="concat($stamp,' : ',$original-text,' - ',$altLabel)"/>
