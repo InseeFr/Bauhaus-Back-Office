@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import javax.xml.stream.XMLStreamException;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Ddi3XmlWriterTest {
 
@@ -51,15 +51,7 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildPhysicalInstanceXml(pi);
 
         // Then
-        assertNotNull(xml);
-        assertTrue(xml.contains("<r:BasedOnObject>"));
-        assertTrue(xml.contains("<r:BasedOnReference>"));
-        assertTrue(xml.contains("<r:Agency>fr.insee</r:Agency>"));
-        assertTrue(xml.contains("<r:ID>original-pi-id</r:ID>"));
-        assertTrue(xml.contains("<r:Version>1</r:Version>"));
-        assertTrue(xml.contains("<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"));
-        assertTrue(xml.contains("</r:BasedOnReference>"));
-        assertTrue(xml.contains("</r:BasedOnObject>"));
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:physicalinstance:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-pi-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-pi-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:BasedOnObject xmlns:r=\"ddi:reusable:3_3\"><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-pi-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>PhysicalInstance</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject><r:Citation xmlns:r=\"ddi:reusable:3_3\"><r:Title><r:String xml:lang=\"fr-FR\">Test Instance</r:String></r:Title></r:Citation><r:DataRelationshipReference xmlns:r=\"ddi:reusable:3_3\"><r:Agency>fr.insee</r:Agency><r:ID>dr-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>DataRelationship</r:TypeOfObject></r:DataRelationshipReference></ddi:PhysicalInstance></Fragment>", xml);
     }
 
     @Test
@@ -81,9 +73,31 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildPhysicalInstanceXml(pi);
 
         // Then
-        assertNotNull(xml);
-        assertFalse(xml.contains("<r:BasedOnObject>"));
-        assertFalse(xml.contains("<r:BasedOnReference>"));
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:physicalinstance:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-pi-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-pi-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:Citation xmlns:r=\"ddi:reusable:3_3\"><r:Title><r:String xml:lang=\"fr-FR\">Test Instance</r:String></r:Title></r:Citation></ddi:PhysicalInstance></Fragment>", xml);
+    }
+
+    @Test
+    void shouldHandleBasedOnObjectWithNullBasedOnReference() throws XMLStreamException {
+        // Given
+        BasedOnObject basedOnObject = new BasedOnObject(null);
+
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:new-pi-id:1",
+                "fr.insee",
+                "new-pi-id",
+                "1",
+                basedOnObject,
+                new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
+                null
+        );
+
+        // When
+        String xml = writer.buildPhysicalInstanceXml(pi);
+
+        // Then
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:physicalinstance:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-pi-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-pi-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:Citation xmlns:r=\"ddi:reusable:3_3\"><r:Title><r:String xml:lang=\"fr-FR\">Test Instance</r:String></r:Title></r:Citation></ddi:PhysicalInstance></Fragment>", xml);
     }
 
     @Test
@@ -113,13 +127,137 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildDataRelationshipXml(dr);
 
         // Then
-        assertNotNull(xml);
-        assertTrue(xml.contains("<r:BasedOnObject>"));
-        assertTrue(xml.contains("<r:BasedOnReference>"));
-        assertTrue(xml.contains("<r:ID>original-dr-id</r:ID>"));
-        assertTrue(xml.contains("<r:TypeOfObject>DataRelationship</r:TypeOfObject>"));
-        assertTrue(xml.contains("</r:BasedOnReference>"));
-        assertTrue(xml.contains("</r:BasedOnObject>"));
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:BasedOnObject xmlns:r=\"ddi:reusable:3_3\"><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-dr-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>DataRelationship</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject></ddi:DataRelationship></Fragment>", xml);
+    }
+
+    @Test
+    void shouldWriteDataRelationshipWithLabel() throws XMLStreamException {
+        // Given
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new Label(new Content("fr-FR", "DR Label")),
+                null
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:DataRelationshipName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">DR Label</r:String></ddi:DataRelationshipName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">DR Label</r:Content></r:Label></ddi:DataRelationship></Fragment>", xml);
+    }
+
+    @Test
+    void shouldWriteDataRelationshipWithoutLabelWhenNull() throws XMLStreamException {
+        // Given
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                null,
+                null
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version></ddi:DataRelationship></Fragment>", xml);
+    }
+
+    @Test
+    void shouldHandleLabelWithNullContent() throws XMLStreamException {
+        // Given
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                new Label(null),
+                null
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version></ddi:DataRelationship></Fragment>", xml);
+    }
+
+    @Test
+    void shouldWriteLogicalRecordWithLabel() throws XMLStreamException {
+        // Given
+        LogicalRecord lr = new LogicalRecord(
+                "true",
+                "urn:ddi:fr.insee:lr-id:1",
+                "fr.insee",
+                "lr-id",
+                "1",
+                new Label(new Content("fr-FR", "LR Label")),
+                null
+        );
+
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                null,
+                lr
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:LogicalRecord isUniversallyUnique=\"true\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:lr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">lr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:LogicalRecordName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">LR Label</r:String></ddi:LogicalRecordName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">LR Label</r:Content></r:Label></ddi:LogicalRecord></ddi:DataRelationship></Fragment>", xml);
+    }
+
+    @Test
+    void shouldWriteLogicalRecordWithoutLabelWhenNull() throws XMLStreamException {
+        // Given
+        LogicalRecord lr = new LogicalRecord(
+                "true",
+                "urn:ddi:fr.insee:lr-id:1",
+                "fr.insee",
+                "lr-id",
+                "1",
+                null,
+                null
+        );
+
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:dr-id:1",
+                "fr.insee",
+                "dr-id",
+                "1",
+                null,
+                null,
+                lr
+        );
+
+        // When
+        String xml = writer.buildDataRelationshipXml(dr);
+
+        // Then
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:dr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">dr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><ddi:LogicalRecord isUniversallyUnique=\"true\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:lr-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">lr-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version></ddi:LogicalRecord></ddi:DataRelationship></Fragment>", xml);
     }
 
     @Test
@@ -152,195 +290,6 @@ class Ddi3XmlWriterTest {
         String xml = writer.buildVariableXml(var);
 
         // Then
-        assertNotNull(xml);
-        assertTrue(xml.contains("<r:BasedOnObject>"));
-        assertTrue(xml.contains("<r:BasedOnReference>"));
-        assertTrue(xml.contains("<r:ID>original-var-id</r:ID>"));
-        assertTrue(xml.contains("<r:TypeOfObject>Variable</r:TypeOfObject>"));
-        assertTrue(xml.contains("</r:BasedOnReference>"));
-        assertTrue(xml.contains("</r:BasedOnObject>"));
-    }
-
-    @Test
-    void shouldHandleBasedOnObjectWithNullBasedOnReference() throws XMLStreamException {
-        // Given - BasedOnObject with null basedOnReference
-        BasedOnObject basedOnObject = new BasedOnObject(null);
-
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true",
-                "2025-12-23T09:52:06.355Z",
-                "urn:ddi:fr.insee:new-pi-id:1",
-                "fr.insee",
-                "new-pi-id",
-                "1",
-                basedOnObject,
-                new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
-                null
-        );
-
-        // When
-        String xml = writer.buildPhysicalInstanceXml(pi);
-
-        // Then
-        assertNotNull(xml);
-        // Should not write BasedOnObject if basedOnReference is null
-        assertFalse(xml.contains("<r:BasedOnObject>"));
-    }
-
-    @Test
-    void shouldWriteDataRelationshipWithLabel() throws XMLStreamException {
-        // Given - DataRelationship with Label
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                "true",
-                "2025-12-23T09:52:06.355Z",
-                "urn:ddi:fr.insee:dr-id:1",
-                "fr.insee",
-                "dr-id",
-                "1",
-                null,
-                new Label(new Content("fr-FR", "DR Label")),
-                null
-        );
-
-        // When
-        String xml = writer.buildDataRelationshipXml(dr);
-
-        // Then
-        assertNotNull(xml);
-        assertTrue(xml.contains("<r:Label>"));
-        assertTrue(xml.contains("<r:Content"));
-        assertTrue(xml.contains("xml:lang=\"fr-FR\""));
-        assertTrue(xml.contains("DR Label"));
-        assertTrue(xml.contains("</r:Content>"));
-        assertTrue(xml.contains("</r:Label>"));
-    }
-
-    @Test
-    void shouldWriteDataRelationshipWithoutLabelWhenNull() throws XMLStreamException {
-        // Given - DataRelationship without Label
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                "true",
-                "2025-12-23T09:52:06.355Z",
-                "urn:ddi:fr.insee:dr-id:1",
-                "fr.insee",
-                "dr-id",
-                "1",
-                null,
-                null,
-                null
-        );
-
-        // When
-        String xml = writer.buildDataRelationshipXml(dr);
-
-        // Then
-        assertNotNull(xml);
-        // Should not contain Label element when label is null
-        assertFalse(xml.contains("<r:Label>"));
-    }
-
-    @Test
-    void shouldWriteLogicalRecordWithLabel() throws XMLStreamException {
-        // Given - DataRelationship with LogicalRecord that has a Label
-        LogicalRecord lr = new LogicalRecord(
-                "true",
-                "urn:ddi:fr.insee:lr-id:1",
-                "fr.insee",
-                "lr-id",
-                "1",
-                new Label(new Content("fr-FR", "LR Label")),
-                null
-        );
-
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                "true",
-                "2025-12-23T09:52:06.355Z",
-                "urn:ddi:fr.insee:dr-id:1",
-                "fr.insee",
-                "dr-id",
-                "1",
-                null,
-                null,
-                lr
-        );
-
-        // When
-        String xml = writer.buildDataRelationshipXml(dr);
-
-        // Then
-        assertNotNull(xml);
-        assertTrue(xml.contains("<LogicalRecord"));
-        assertTrue(xml.contains("LR Label"));
-        // Verify the Label is inside LogicalRecord
-        int logicalRecordStart = xml.indexOf("<LogicalRecord");
-        int logicalRecordEnd = xml.indexOf("</LogicalRecord>");
-        int labelIndex = xml.indexOf("LR Label");
-        assertTrue(labelIndex > logicalRecordStart && labelIndex < logicalRecordEnd,
-                "Label should be inside LogicalRecord element");
-    }
-
-    @Test
-    void shouldWriteLogicalRecordWithoutLabelWhenNull() throws XMLStreamException {
-        // Given - DataRelationship with LogicalRecord without Label
-        LogicalRecord lr = new LogicalRecord(
-                "true",
-                "urn:ddi:fr.insee:lr-id:1",
-                "fr.insee",
-                "lr-id",
-                "1",
-                null,
-                null
-        );
-
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                "true",
-                "2025-12-23T09:52:06.355Z",
-                "urn:ddi:fr.insee:dr-id:1",
-                "fr.insee",
-                "dr-id",
-                "1",
-                null,
-                null,
-                lr
-        );
-
-        // When
-        String xml = writer.buildDataRelationshipXml(dr);
-
-        // Then
-        assertNotNull(xml);
-        assertTrue(xml.contains("<LogicalRecord"));
-        // LogicalRecord should not have Label element
-        int logicalRecordStart = xml.indexOf("<LogicalRecord");
-        int logicalRecordEnd = xml.indexOf("</LogicalRecord>");
-        String logicalRecordContent = xml.substring(logicalRecordStart, logicalRecordEnd);
-        assertFalse(logicalRecordContent.contains("<r:Label>"),
-                "LogicalRecord should not contain Label when label is null");
-    }
-
-    @Test
-    void shouldHandleLabelWithNullContent() throws XMLStreamException {
-        // Given - DataRelationship with Label that has null content (edge case)
-        Label labelWithNullContent = new Label(null);
-
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                "true",
-                "2025-12-23T09:52:06.355Z",
-                "urn:ddi:fr.insee:dr-id:1",
-                "fr.insee",
-                "dr-id",
-                "1",
-                null,
-                labelWithNullContent,
-                null
-        );
-
-        // When
-        String xml = writer.buildDataRelationshipXml(dr);
-
-        // Then - Should not throw NPE and should not contain Label element
-        assertNotNull(xml);
-        assertFalse(xml.contains("<r:Label>"),
-                "Should not write Label element when content is null");
+        assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:Variable isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-var-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-var-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:BasedOnObject xmlns:r=\"ddi:reusable:3_3\"><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-var-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>Variable</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject><ddi:VariableName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">TEST_VAR</r:String></ddi:VariableName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">Test Variable</r:Content></r:Label><ddi:VariableRepresentation/></ddi:Variable></Fragment>", xml);
     }
 }
