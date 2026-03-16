@@ -159,10 +159,11 @@ public class Ddi3XmlWriter {
             if (var.variableRepresentation().numericRepresentation() != null) {
                 NumericRepresentation numRepDomain = var.variableRepresentation().numericRepresentation();
                 RepresentationType rep = varRepType.addNewValueRepresentation();
+                NumericRepresentationBaseType numRep;
                 try (XmlCursor cursor = rep.newCursor()) {
                     cursor.setName(new QName(DDI_REUSABLE_NS, "NumericRepresentation"));
+                    numRep = (NumericRepresentationBaseType) cursor.getObject().changeType(NumericRepresentationBaseType.type);
                 }
-                NumericRepresentationBaseType numRep = (NumericRepresentationBaseType) rep.changeType(NumericRepresentationBaseType.type);
                 numRep.setBlankIsMissingValue(false);
 
                 if (numRepDomain.numberRange() != null) {
@@ -187,10 +188,11 @@ public class Ddi3XmlWriter {
             if (var.variableRepresentation().codeRepresentation() != null) {
                 CodeRepresentation codeRepDomain = var.variableRepresentation().codeRepresentation();
                 RepresentationType rep = varRepType.addNewValueRepresentation();
+                CodeRepresentationBaseType codeRep;
                 try (XmlCursor cursor = rep.newCursor()) {
                     cursor.setName(new QName(DDI_REUSABLE_NS, "CodeRepresentation"));
+                    codeRep = (CodeRepresentationBaseType) cursor.getObject().changeType(CodeRepresentationBaseType.type);
                 }
-                CodeRepresentationBaseType codeRep = (CodeRepresentationBaseType) rep.changeType(CodeRepresentationBaseType.type);
                 codeRep.setBlankIsMissingValue(Boolean.parseBoolean(codeRepDomain.blankIsMissingValue()));
 
                 if (codeRepDomain.codeListReference() != null) {
@@ -205,10 +207,11 @@ public class Ddi3XmlWriter {
             if (var.variableRepresentation().dateTimeRepresentation() != null) {
                 DateTimeRepresentation dateTimeDomain = var.variableRepresentation().dateTimeRepresentation();
                 RepresentationType rep = varRepType.addNewValueRepresentation();
+                DateTimeRepresentationBaseType dateTimeRep;
                 try (XmlCursor cursor = rep.newCursor()) {
                     cursor.setName(new QName(DDI_REUSABLE_NS, "DateTimeRepresentation"));
+                    dateTimeRep = (DateTimeRepresentationBaseType) cursor.getObject().changeType(DateTimeRepresentationBaseType.type);
                 }
-                DateTimeRepresentationBaseType dateTimeRep = (DateTimeRepresentationBaseType) rep.changeType(DateTimeRepresentationBaseType.type);
 
                 if (dateTimeDomain.dateTypeCode() != null) {
                     dateTimeRep.addNewDateTypeCode().setStringValue(dateTimeDomain.dateTypeCode());
@@ -221,10 +224,11 @@ public class Ddi3XmlWriter {
             if (var.variableRepresentation().textRepresentation() != null) {
                 TextRepresentation textDomain = var.variableRepresentation().textRepresentation();
                 RepresentationType rep = varRepType.addNewValueRepresentation();
+                TextRepresentationBaseType textRep;
                 try (XmlCursor cursor = rep.newCursor()) {
                     cursor.setName(new QName(DDI_REUSABLE_NS, "TextRepresentation"));
+                    textRep = (TextRepresentationBaseType) cursor.getObject().changeType(TextRepresentationBaseType.type);
                 }
-                TextRepresentationBaseType textRep = (TextRepresentationBaseType) rep.changeType(TextRepresentationBaseType.type);
 
                 if (textDomain.blankIsMissingValue() != null) {
                     textRep.setBlankIsMissingValue(Boolean.parseBoolean(textDomain.blankIsMissingValue()));
