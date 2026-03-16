@@ -1,561 +1,401 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.instance.FragmentInstanceDocument;
+import fr.insee.ddi.lifecycle33.reusable.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlOptions;
 
-import javax.xml.stream.XMLOutputFactory;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.StringWriter;
+import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
-/**
- * Helper class to generate DDI3 XML fragments using StAX XMLStreamWriter
- * This is much cleaner and safer than StringBuilder concatenation
- */
 public class Ddi3XmlWriter {
 
     private final Map<String, String> itemTypes;
-
-
 
     private static final String DDI_INSTANCE_NS = "ddi:instance:3_3";
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
     private static final String DDI_PHYSICAL_INSTANCE_NS = "ddi:physicalinstance:3_3";
     private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
-    public static final String FRAGMENT = "Fragment";
-    public static final String PHYSICAL_INSTANCE = "PhysicalInstance";
-    public static final String IS_UNIVERSALLY_UNIQUE = "isUniversallyUnique";
-    public static final String VERSION_DATE = "versionDate";
-    public static final String URN = "URN";
-    public static final String AGENCY = "Agency";
-    public static final String ID = "ID";
-    public static final String VERSION = "Version";
-    public static final String XML_LANG = "xml:lang";
-    private static final String STRING_ELEMENT = "String";
-    private static final String TYPE_OF_OBJECT = "TypeOfObject";
-    private static final String LABEL = "Label";
-    private static final String CONTENT = "Content";
-
-    private final XMLOutputFactory xmlOutputFactory;
 
     public Ddi3XmlWriter(Map<String, String> itemTypes) {
-        this.xmlOutputFactory = XMLOutputFactory.newInstance();
         this.itemTypes = itemTypes;
     }
 
     public String buildPhysicalInstanceXml(Ddi4PhysicalInstance pi) throws XMLStreamException {
-        StringWriter stringWriter = new StringWriter();
-        XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var piType = doc.addNewFragment().addNewPhysicalInstance();
 
-        // Start Fragment
-        writer.writeStartElement(FRAGMENT);
-        writer.writeDefaultNamespace(DDI_INSTANCE_NS);
-        writer.writeNamespace("r", DDI_REUSABLE_NS);
+        piType.setIsUniversallyUnique(Boolean.parseBoolean(pi.isUniversallyUnique()));
+        piType.setVersionDate(pi.versionDate());
+        piType.addNewURN().setStringValue(pi.urn());
+        piType.addAgency(pi.agency());
+        piType.addNewID().setStringValue(pi.id());
+        piType.addVersion(pi.version());
 
-        // Start PhysicalInstance
-        writer.writeStartElement(PHYSICAL_INSTANCE);
-        writer.writeDefaultNamespace(DDI_PHYSICAL_INSTANCE_NS);
-        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, pi.isUniversallyUnique());
-        writer.writeAttribute(VERSION_DATE, pi.versionDate());
+        populateBasedOnObject(pi.basedOnObject(), () -> piType.addNewBasedOnObject().addNewBasedOnReference());
 
-        // Write basic elements
-        writeElement(writer, DDI_REUSABLE_NS, URN, pi.urn());
-        writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.agency());
-        writeElement(writer, DDI_REUSABLE_NS, ID, pi.id());
-        writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.version());
-
-        // Write BasedOnObject if present
-        writeBasedOnObject(writer, pi.basedOnObject());
-
-        // Write Citation if present
         if (pi.citation() != null && pi.citation().title() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "Citation");
-            writer.writeStartElement(DDI_REUSABLE_NS, "Title");
-            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-            writer.writeAttribute(XML_LANG, pi.citation().title().string().xmlLang());
-            writer.writeCharacters(pi.citation().title().string().text());
-            writer.writeEndElement(); // String
-            writer.writeEndElement(); // Title
-            writer.writeEndElement(); // Citation
+            StringType titleStr = piType.addNewCitation().addNewTitle().addNewString();
+            titleStr.setLang(pi.citation().title().string().xmlLang());
+            titleStr.setStringValue(pi.citation().title().string().text());
         }
 
-        // Write DataRelationshipReference if present
         if (pi.dataRelationshipReference() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "DataRelationshipReference");
-            writeElement(writer, DDI_REUSABLE_NS, AGENCY, pi.dataRelationshipReference().agency());
-            writeElement(writer, DDI_REUSABLE_NS, ID, pi.dataRelationshipReference().id());
-            writeElement(writer, DDI_REUSABLE_NS, VERSION, pi.dataRelationshipReference().version());
-            writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, pi.dataRelationshipReference().typeOfObject());
-            writer.writeEndElement(); // DataRelationshipReference
+            ReferenceType refType = piType.addNewDataRelationshipReference();
+            refType.addAgency(pi.dataRelationshipReference().agency());
+            refType.addNewID().setStringValue(pi.dataRelationshipReference().id());
+            refType.addVersion(pi.dataRelationshipReference().version());
+            refType.setTypeOfObject(TypeOfObjectType.Enum.forString(pi.dataRelationshipReference().typeOfObject()));
         }
 
-        writer.writeEndElement(); // PhysicalInstance
-        writer.writeEndElement(); // Fragment
-
-        writer.flush();
-        writer.close();
-
-        return stringWriter.toString();
+        return doc.xmlText(fragmentXmlOptions(DDI_PHYSICAL_INSTANCE_NS));
     }
 
     public String buildDataRelationshipXml(Ddi4DataRelationship dr) throws XMLStreamException {
-        StringWriter stringWriter = new StringWriter();
-        XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var drType = doc.addNewFragment().addNewDataRelationship();
 
-        // Start Fragment
-        writer.writeStartElement(FRAGMENT);
-        writer.writeDefaultNamespace(DDI_INSTANCE_NS);
-        writer.writeNamespace("r", DDI_REUSABLE_NS);
+        drType.setIsUniversallyUnique(Boolean.parseBoolean(dr.isUniversallyUnique()));
+        drType.setVersionDate(dr.versionDate());
+        drType.addNewURN().setStringValue(dr.urn());
+        drType.addAgency(dr.agency());
+        drType.addNewID().setStringValue(dr.id());
+        drType.addVersion(dr.version());
 
-        // Start DataRelationship
-        writer.writeStartElement("DataRelationship");
-        writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, dr.isUniversallyUnique());
-        writer.writeAttribute(VERSION_DATE, dr.versionDate());
+        populateBasedOnObject(dr.basedOnObject(), () -> drType.addNewBasedOnObject().addNewBasedOnReference());
 
-        writeElement(writer, DDI_REUSABLE_NS, URN, dr.urn());
-        writeElement(writer, DDI_REUSABLE_NS, AGENCY, dr.agency());
-        writeElement(writer, DDI_REUSABLE_NS, ID, dr.id());
-        writeElement(writer, DDI_REUSABLE_NS, VERSION, dr.version());
-
-        // Write BasedOnObject if present
-        writeBasedOnObject(writer, dr.basedOnObject());
-
-        // Write DataRelationshipName from label if present
         if (dr.label() != null && dr.label().content() != null) {
-            writer.writeStartElement("DataRelationshipName");
-            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-            writer.writeAttribute(XML_LANG, dr.label().content().xmlLang());
-            writer.writeCharacters(dr.label().content().text());
-            writer.writeEndElement(); // String
-            writer.writeEndElement(); // DataRelationshipName
+            StringType nameStr = drType.addNewDataRelationshipName().addNewString();
+            nameStr.setLang(dr.label().content().xmlLang());
+            nameStr.setStringValue(dr.label().content().text());
+
+            ContentType content = drType.addNewLabel().addNewContent();
+            content.setLang(dr.label().content().xmlLang());
+            setContentText(content, dr.label().content().text());
         }
 
-        // Write Label if present
-        writeLabel(writer, dr.label());
-
-        // Write LogicalRecord if present
         if (dr.logicalRecord() != null) {
             LogicalRecord lr = dr.logicalRecord();
-            writer.writeStartElement("LogicalRecord");
-            writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, lr.isUniversallyUnique());
+            var lrType = drType.addNewLogicalRecord();
+            lrType.setIsUniversallyUnique(Boolean.parseBoolean(lr.isUniversallyUnique()));
+            lrType.addNewURN().setStringValue(lr.urn());
+            lrType.addAgency(lr.agency());
+            lrType.addNewID().setStringValue(lr.id());
+            lrType.addVersion(lr.version());
 
-            writeElement(writer, DDI_REUSABLE_NS, URN, lr.urn());
-            writeElement(writer, DDI_REUSABLE_NS, AGENCY, lr.agency());
-            writeElement(writer, DDI_REUSABLE_NS, ID, lr.id());
-            writeElement(writer, DDI_REUSABLE_NS, VERSION, lr.version());
-
-            // Write LogicalRecordName from label if present
             if (lr.label() != null && lr.label().content() != null) {
-                writer.writeStartElement("LogicalRecordName");
-                writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-                writer.writeAttribute(XML_LANG, lr.label().content().xmlLang());
-                writer.writeCharacters(lr.label().content().text());
-                writer.writeEndElement(); // String
-                writer.writeEndElement(); // LogicalRecordName
-            }
+                StringType nameStr = lrType.addNewLogicalRecordName().addNewString();
+                nameStr.setLang(lr.label().content().xmlLang());
+                nameStr.setStringValue(lr.label().content().text());
 
-            // Write Label if present
-            writeLabel(writer, lr.label());
+                ContentType content = lrType.addNewLabel().addNewContent();
+                content.setLang(lr.label().content().xmlLang());
+                setContentText(content, lr.label().content().text());
+            }
 
             if (lr.variablesInRecord() != null && lr.variablesInRecord().variableUsedReference() != null) {
-                writer.writeStartElement("VariablesInRecord");
+                var virType = lrType.addNewVariablesInRecord();
                 for (VariableUsedReference ref : lr.variablesInRecord().variableUsedReference()) {
-                    writer.writeStartElement("VariableUsedReference");
-                    writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
-                    writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
-                    writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
-                    writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, ref.typeOfObject());
-                    writer.writeEndElement(); // VariableUsedReference
+                    ReferenceType refType = virType.addNewVariableUsedReference();
+                    refType.addAgency(ref.agency());
+                    refType.addNewID().setStringValue(ref.id());
+                    refType.addVersion(ref.version());
+                    refType.setTypeOfObject(TypeOfObjectType.Enum.forString(ref.typeOfObject()));
                 }
-                writer.writeEndElement(); // VariablesInRecord
             }
-
-            writer.writeEndElement(); // LogicalRecord
         }
 
-        writer.writeEndElement(); // DataRelationship
-        writer.writeEndElement(); // Fragment
-
-        writer.flush();
-        writer.close();
-
-        return stringWriter.toString();
+        return doc.xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
     }
 
     public String buildVariableXml(Ddi4Variable var) throws XMLStreamException {
-        StringWriter stringWriter = new StringWriter();
-        XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var varType = doc.addNewFragment().addNewVariable();
 
-        writer.writeStartElement(FRAGMENT);
-        writer.writeDefaultNamespace(DDI_INSTANCE_NS);
-        writer.writeNamespace("r", DDI_REUSABLE_NS);
-
-        writer.writeStartElement("Variable");
-        writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, var.isUniversallyUnique());
-        writer.writeAttribute(VERSION_DATE, var.versionDate());
+        varType.setIsUniversallyUnique(Boolean.parseBoolean(var.isUniversallyUnique()));
+        varType.setVersionDate(var.versionDate());
         if (var.isGeographic() != null && !var.isGeographic().isEmpty()) {
-            writer.writeAttribute("isGeographic", var.isGeographic());
+            varType.setIsGeographic(Boolean.parseBoolean(var.isGeographic()));
         }
+        varType.addNewURN().setStringValue(var.urn());
+        varType.addAgency(var.agency());
+        varType.addNewID().setStringValue(var.id());
+        varType.addVersion(var.version());
 
-        writeElement(writer, DDI_REUSABLE_NS, URN, var.urn());
-        writeElement(writer, DDI_REUSABLE_NS, AGENCY, var.agency());
-        writeElement(writer, DDI_REUSABLE_NS, ID, var.id());
-        writeElement(writer, DDI_REUSABLE_NS, VERSION, var.version());
-
-        // Write BasedOnObject if present
-        writeBasedOnObject(writer, var.basedOnObject());
+        populateBasedOnObject(var.basedOnObject(), () -> varType.addNewBasedOnObject().addNewBasedOnReference());
 
         if (var.variableName() != null) {
-            writer.writeStartElement("VariableName");
-            writer.writeStartElement(DDI_REUSABLE_NS, STRING_ELEMENT);
-            writer.writeAttribute(XML_LANG, var.variableName().string().xmlLang());
-            writer.writeCharacters(var.variableName().string().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
+            StringType nameStr = varType.addNewVariableName().addNewString();
+            nameStr.setLang(var.variableName().string().xmlLang());
+            nameStr.setStringValue(var.variableName().string().text());
         }
 
-        writeLabel(writer, var.label());
-
-        if (var.description() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, "Description");
-            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
-            writer.writeAttribute(XML_LANG, var.description().content().xmlLang());
-            writer.writeCharacters(var.description().content().text());
-            writer.writeEndElement();
-            writer.writeEndElement();
+        if (var.label() != null && var.label().content() != null) {
+            ContentType content = varType.addNewLabel().addNewContent();
+            content.setLang(var.label().content().xmlLang());
+            setContentText(content, var.label().content().text());
         }
 
-        writer.writeStartElement("VariableRepresentation");
+        if (var.description() != null && var.description().content() != null) {
+            ContentType content = varType.addNewDescription().addNewContent();
+            content.setLang(var.description().content().xmlLang());
+            setContentText(content, var.description().content().text());
+        }
+
+        var varRepType = varType.addNewVariableRepresentation();
 
         if (var.variableRepresentation() != null) {
             if (var.variableRepresentation().variableRole() != null) {
-                writeElement(writer, null, "VariableRole", var.variableRepresentation().variableRole());
+                varRepType.addNewVariableRole().setStringValue(var.variableRepresentation().variableRole());
             }
 
             if (var.variableRepresentation().numericRepresentation() != null) {
-                NumericRepresentation numRep = var.variableRepresentation().numericRepresentation();
-                writer.writeStartElement(DDI_REUSABLE_NS, "NumericRepresentation");
-                writer.writeAttribute("blankIsMissingValue", "false");
+                NumericRepresentation numRepDomain = var.variableRepresentation().numericRepresentation();
+                RepresentationType rep = varRepType.addNewValueRepresentation();
+                NumericRepresentationBaseType numRep;
+                try (XmlCursor cursor = rep.newCursor()) {
+                    cursor.setName(new QName(DDI_REUSABLE_NS, "NumericRepresentation"));
+                    numRep = (NumericRepresentationBaseType) cursor.getObject().changeType(NumericRepresentationBaseType.type);
+                }
+                numRep.setBlankIsMissingValue(false);
 
-                if (numRep.numberRange() != null) {
-                    writer.writeStartElement(DDI_REUSABLE_NS, "NumberRange");
-                    if (numRep.numberRange().low() != null) {
-                        writer.writeStartElement(DDI_REUSABLE_NS, "Low");
-                        writer.writeAttribute("isInclusive", numRep.numberRange().low().isInclusive());
-                        writer.writeCharacters(numRep.numberRange().low().text());
-                        writer.writeEndElement();
+                if (numRepDomain.numberRange() != null) {
+                    NumberRangeType nrt = numRep.addNewNumberRange();
+                    if (numRepDomain.numberRange().low() != null) {
+                        NumberRangeValueType low = nrt.addNewLow();
+                        low.setIsInclusive(Boolean.parseBoolean(numRepDomain.numberRange().low().isInclusive()));
+                        low.setStringValue(numRepDomain.numberRange().low().text());
                     }
-                    if (numRep.numberRange().high() != null) {
-                        writer.writeStartElement(DDI_REUSABLE_NS, "High");
-                        writer.writeAttribute("isInclusive", numRep.numberRange().high().isInclusive());
-                        writer.writeCharacters(numRep.numberRange().high().text());
-                        writer.writeEndElement();
+                    if (numRepDomain.numberRange().high() != null) {
+                        NumberRangeValueType high = nrt.addNewHigh();
+                        high.setIsInclusive(Boolean.parseBoolean(numRepDomain.numberRange().high().isInclusive()));
+                        high.setStringValue(numRepDomain.numberRange().high().text());
                     }
-                    writer.writeEndElement(); // NumberRange
                 }
 
-                if (numRep.numericTypeCode() != null) {
-                    writeElement(writer, DDI_REUSABLE_NS, "NumericTypeCode", numRep.numericTypeCode());
+                if (numRepDomain.numericTypeCode() != null) {
+                    numRep.addNewNumericTypeCode().setStringValue(numRepDomain.numericTypeCode());
                 }
-
-                writer.writeEndElement(); // NumericRepresentation
             }
 
             if (var.variableRepresentation().codeRepresentation() != null) {
-                CodeRepresentation codeRep = var.variableRepresentation().codeRepresentation();
-                writer.writeStartElement(DDI_REUSABLE_NS, "CodeRepresentation");
-                writer.writeAttribute("blankIsMissingValue", codeRep.blankIsMissingValue());
-
-                if (codeRep.codeListReference() != null) {
-                    writer.writeStartElement(DDI_REUSABLE_NS, "CodeListReference");
-                    writeElement(writer, DDI_REUSABLE_NS, AGENCY, codeRep.codeListReference().agency());
-                    writeElement(writer, DDI_REUSABLE_NS, ID, codeRep.codeListReference().id());
-                    writeElement(writer, DDI_REUSABLE_NS, VERSION, codeRep.codeListReference().version());
-                    writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, codeRep.codeListReference().typeOfObject());
-                    writer.writeEndElement(); // CodeListReference
+                CodeRepresentation codeRepDomain = var.variableRepresentation().codeRepresentation();
+                RepresentationType rep = varRepType.addNewValueRepresentation();
+                CodeRepresentationBaseType codeRep;
+                try (XmlCursor cursor = rep.newCursor()) {
+                    cursor.setName(new QName(DDI_REUSABLE_NS, "CodeRepresentation"));
+                    codeRep = (CodeRepresentationBaseType) cursor.getObject().changeType(CodeRepresentationBaseType.type);
                 }
+                codeRep.setBlankIsMissingValue(Boolean.parseBoolean(codeRepDomain.blankIsMissingValue()));
 
-                writer.writeEndElement(); // CodeRepresentation
+                if (codeRepDomain.codeListReference() != null) {
+                    ReferenceType ref = codeRep.addNewCodeListReference();
+                    ref.addAgency(codeRepDomain.codeListReference().agency());
+                    ref.addNewID().setStringValue(codeRepDomain.codeListReference().id());
+                    ref.addVersion(codeRepDomain.codeListReference().version());
+                    ref.setTypeOfObject(TypeOfObjectType.Enum.forString(codeRepDomain.codeListReference().typeOfObject()));
+                }
             }
 
             if (var.variableRepresentation().dateTimeRepresentation() != null) {
-                DateTimeRepresentation dateTimeRep = var.variableRepresentation().dateTimeRepresentation();
-                writer.writeStartElement(DDI_REUSABLE_NS, "DateTimeRepresentation");
-
-                if (dateTimeRep.dateTypeCode() != null) {
-                    writeElement(writer, DDI_REUSABLE_NS, "DateTypeCode", dateTimeRep.dateTypeCode());
+                DateTimeRepresentation dateTimeDomain = var.variableRepresentation().dateTimeRepresentation();
+                RepresentationType rep = varRepType.addNewValueRepresentation();
+                DateTimeRepresentationBaseType dateTimeRep;
+                try (XmlCursor cursor = rep.newCursor()) {
+                    cursor.setName(new QName(DDI_REUSABLE_NS, "DateTimeRepresentation"));
+                    dateTimeRep = (DateTimeRepresentationBaseType) cursor.getObject().changeType(DateTimeRepresentationBaseType.type);
                 }
 
-                if (dateTimeRep.dateFieldFormat() != null) {
-                    writeElement(writer, DDI_REUSABLE_NS, "DateFieldFormat", dateTimeRep.dateFieldFormat());
+                if (dateTimeDomain.dateTypeCode() != null) {
+                    dateTimeRep.addNewDateTypeCode().setStringValue(dateTimeDomain.dateTypeCode());
                 }
-
-                writer.writeEndElement(); // DateTimeRepresentation
+                if (dateTimeDomain.dateFieldFormat() != null) {
+                    dateTimeRep.addNewDateFieldFormat().setStringValue(dateTimeDomain.dateFieldFormat());
+                }
             }
 
             if (var.variableRepresentation().textRepresentation() != null) {
-                TextRepresentation textRep = var.variableRepresentation().textRepresentation();
-                writer.writeStartElement(DDI_REUSABLE_NS, "TextRepresentation");
-
-                if (textRep.blankIsMissingValue() != null) {
-                    writer.writeAttribute("blankIsMissingValue", textRep.blankIsMissingValue());
+                TextRepresentation textDomain = var.variableRepresentation().textRepresentation();
+                RepresentationType rep = varRepType.addNewValueRepresentation();
+                TextRepresentationBaseType textRep;
+                try (XmlCursor cursor = rep.newCursor()) {
+                    cursor.setName(new QName(DDI_REUSABLE_NS, "TextRepresentation"));
+                    textRep = (TextRepresentationBaseType) cursor.getObject().changeType(TextRepresentationBaseType.type);
                 }
 
-                if (textRep.maxLength() != null) {
-                    writeElement(writer, DDI_REUSABLE_NS, "MaxLength", String.valueOf(textRep.maxLength()));
+                if (textDomain.blankIsMissingValue() != null) {
+                    textRep.setBlankIsMissingValue(Boolean.parseBoolean(textDomain.blankIsMissingValue()));
                 }
-
-                if (textRep.minLength() != null) {
-                    writeElement(writer, DDI_REUSABLE_NS, "MinLength", String.valueOf(textRep.minLength()));
+                if (textDomain.maxLength() != null) {
+                    textRep.setMaxLength(BigInteger.valueOf(textDomain.maxLength()));
                 }
-
-                if (textRep.regExp() != null) {
-                    writeElement(writer, DDI_REUSABLE_NS, "RegExp", textRep.regExp());
+                if (textDomain.minLength() != null) {
+                    textRep.setMinLength(BigInteger.valueOf(textDomain.minLength()));
                 }
-
-                writer.writeEndElement(); // TextRepresentation
+                if (textDomain.regExp() != null) {
+                    textRep.setRegExp(textDomain.regExp());
+                }
             }
         }
 
-        writer.writeEndElement(); // VariableRepresentation
-        writer.writeEndElement(); // Variable
-        writer.writeEndElement(); // Fragment
-
-        writer.flush();
-        writer.close();
-
-        return stringWriter.toString();
+        return doc.xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
     }
 
     public String buildCodeListXml(Ddi4CodeList cl) throws XMLStreamException {
-        StringWriter stringWriter = new StringWriter();
-        XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var clType = doc.addNewFragment().addNewCodeList();
 
-        writer.writeStartElement(FRAGMENT);
-        writer.writeDefaultNamespace(DDI_INSTANCE_NS);
-        writer.writeNamespace("r", DDI_REUSABLE_NS);
+        clType.setIsUniversallyUnique(Boolean.parseBoolean(cl.isUniversallyUnique()));
+        clType.setVersionDate(cl.versionDate());
+        clType.addNewURN().setStringValue(cl.urn());
+        clType.addAgency(cl.agency());
+        clType.addNewID().setStringValue(cl.id());
+        clType.addVersion(cl.version());
 
-        writer.writeStartElement("CodeList");
-        writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, cl.isUniversallyUnique());
-        writer.writeAttribute(VERSION_DATE, cl.versionDate());
-
-        writeElement(writer, DDI_REUSABLE_NS, URN, cl.urn());
-        writeElement(writer, DDI_REUSABLE_NS, AGENCY, cl.agency());
-        writeElement(writer, DDI_REUSABLE_NS, ID, cl.id());
-        writeElement(writer, DDI_REUSABLE_NS, VERSION, cl.version());
-
-        writeLabel(writer, cl.label());
+        if (cl.label() != null && cl.label().content() != null) {
+            ContentType content = clType.addNewLabel().addNewContent();
+            content.setLang(cl.label().content().xmlLang());
+            setContentText(content, cl.label().content().text());
+        }
 
         if (cl.code() != null && !cl.code().isEmpty()) {
             for (Code code : cl.code()) {
-                writer.writeStartElement("Code");
-                writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, code.isUniversallyUnique());
-
-                writeElement(writer, DDI_REUSABLE_NS, URN, code.urn());
-                writeElement(writer, DDI_REUSABLE_NS, AGENCY, code.agency());
-                writeElement(writer, DDI_REUSABLE_NS, ID, code.id());
-                writeElement(writer, DDI_REUSABLE_NS, VERSION, code.version());
+                var codeType = clType.addNewCode();
+                codeType.setIsUniversallyUnique(Boolean.parseBoolean(code.isUniversallyUnique()));
+                codeType.addNewURN().setStringValue(code.urn());
+                codeType.addAgency(code.agency());
+                codeType.addNewID().setStringValue(code.id());
+                codeType.addVersion(code.version());
 
                 if (code.categoryReference() != null) {
-                    writer.writeStartElement(DDI_REUSABLE_NS, "CategoryReference");
-                    writeElement(writer, DDI_REUSABLE_NS, AGENCY, code.categoryReference().agency());
-                    writeElement(writer, DDI_REUSABLE_NS, ID, code.categoryReference().id());
-                    writeElement(writer, DDI_REUSABLE_NS, VERSION, code.categoryReference().version());
-                    writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, code.categoryReference().typeOfObject());
-                    writer.writeEndElement(); // CategoryReference
+                    ReferenceType ref = codeType.addNewCategoryReference();
+                    ref.addAgency(code.categoryReference().agency());
+                    ref.addNewID().setStringValue(code.categoryReference().id());
+                    ref.addVersion(code.categoryReference().version());
+                    ref.setTypeOfObject(TypeOfObjectType.Enum.forString(code.categoryReference().typeOfObject()));
                 }
 
-                writeElement(writer, DDI_REUSABLE_NS, "Value", code.value());
-                writer.writeEndElement(); // Code
+                if (code.value() != null && !code.value().isEmpty()) {
+                    codeType.addNewValue().setStringValue(code.value());
+                }
             }
         }
 
-        writer.writeEndElement(); // CodeList
-        writer.writeEndElement(); // Fragment
-
-        writer.flush();
-        writer.close();
-
-        return stringWriter.toString();
+        return doc.xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
     }
 
     public String buildCategoryXml(Ddi4Category cat) throws XMLStreamException {
-        StringWriter stringWriter = new StringWriter();
-        XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(stringWriter);
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var catType = doc.addNewFragment().addNewCategory();
 
-        writer.writeStartElement(FRAGMENT);
-        writer.writeDefaultNamespace(DDI_INSTANCE_NS);
-        writer.writeNamespace("r", DDI_REUSABLE_NS);
+        catType.setIsUniversallyUnique(Boolean.parseBoolean(cat.isUniversallyUnique()));
+        catType.setVersionDate(cat.versionDate());
+        catType.setIsMissing(false);
+        catType.addNewURN().setStringValue(cat.urn());
+        catType.addAgency(cat.agency());
+        catType.addNewID().setStringValue(cat.id());
+        catType.addVersion(cat.version());
 
-        writer.writeStartElement("Category");
-        writer.writeDefaultNamespace(DDI_LOGICAL_PRODUCT_NS);
-        writer.writeAttribute(IS_UNIVERSALLY_UNIQUE, cat.isUniversallyUnique());
-        writer.writeAttribute(VERSION_DATE, cat.versionDate());
-        writer.writeAttribute("isMissing", "false");
-
-        writeElement(writer, DDI_REUSABLE_NS, URN, cat.urn());
-        writeElement(writer, DDI_REUSABLE_NS, AGENCY, cat.agency());
-        writeElement(writer, DDI_REUSABLE_NS, ID, cat.id());
-        writeElement(writer, DDI_REUSABLE_NS, VERSION, cat.version());
-
-        writeLabel(writer, cat.label());
-
-        writer.writeEndElement(); // Category
-        writer.writeEndElement(); // Fragment
-
-        writer.flush();
-        writer.close();
-
-        return stringWriter.toString();
-    }
-
-    private void writeElement(XMLStreamWriter writer, String namespace, String localName, String value) throws XMLStreamException {
-        if (value != null && !value.isEmpty()) {
-            if (namespace != null) {
-                writer.writeStartElement(namespace, localName);
-            } else {
-                writer.writeStartElement(localName);
-            }
-            writer.writeCharacters(value);
-            writer.writeEndElement();
+        if (cat.label() != null && cat.label().content() != null) {
+            ContentType content = catType.addNewLabel().addNewContent();
+            content.setLang(cat.label().content().xmlLang());
+            setContentText(content, cat.label().content().text());
         }
+
+        return doc.xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
     }
 
-    private void writeBasedOnObject(XMLStreamWriter writer, BasedOnObject basedOnObject) throws XMLStreamException {
-        if (basedOnObject != null && basedOnObject.basedOnReference() != null) {
-            BasedOnReference ref = basedOnObject.basedOnReference();
-            writer.writeStartElement(DDI_REUSABLE_NS, "BasedOnObject");
-            writer.writeStartElement(DDI_REUSABLE_NS, "BasedOnReference");
-            writeElement(writer, DDI_REUSABLE_NS, AGENCY, ref.agency());
-            writeElement(writer, DDI_REUSABLE_NS, ID, ref.id());
-            writeElement(writer, DDI_REUSABLE_NS, VERSION, ref.version());
-            writeElement(writer, DDI_REUSABLE_NS, TYPE_OF_OBJECT, ref.typeOfObject());
-            writer.writeEndElement(); // BasedOnReference
-            writer.writeEndElement(); // BasedOnObject
-        }
-    }
-
-    private void writeLabel(XMLStreamWriter writer, Label label) throws XMLStreamException {
-        if (label != null && label.content() != null) {
-            writer.writeStartElement(DDI_REUSABLE_NS, LABEL);
-            writer.writeStartElement(DDI_REUSABLE_NS, CONTENT);
-            writer.writeAttribute(XML_LANG, label.content().xmlLang());
-            writer.writeCharacters(label.content().text());
-            writer.writeEndElement(); // Content
-            writer.writeEndElement(); // Label
-        }
-    }
-
-    /**
-     * Builds a complete DDI 3.3 FragmentInstance XML document from a Ddi3Response.
-     * This method creates the root FragmentInstance element, TopLevelReference, and all Fragment elements.
-     *
-     * @param ddi3Response The DDI3 response containing all items to include
-     * @return Complete XML document as String with XML declaration
-     */
-    public String buildFragmentInstanceDocument(Ddi3Response ddi3Response) {
-        return buildFragmentInstanceDocument(ddi3Response, null);
-    }
-
-    /**
-     * Builds a complete DDI 3.3 FragmentInstance XML document from a Ddi3Response.
-     * This method creates the root FragmentInstance element, TopLevelReference, and all Fragment elements.
-     *
-     * @param ddi3Response The DDI3 response containing all items to include
-     * @param topLevelReference Optional TopLevelReference to use; if null, will determine from items
-     * @return Complete XML document as String with XML declaration
-     */
     public String buildFragmentInstanceDocument(Ddi3Response ddi3Response, TopLevelReference topLevelReference) {
         if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
             throw new IllegalArgumentException("Ddi3Response must contain at least one item");
         }
 
-        StringBuilder xml = new StringBuilder();
+        FragmentInstanceDocument doc = FragmentInstanceDocument.Factory.newInstance();
+        var fiType = doc.addNewFragmentInstance();
 
-        // Write XML declaration
-        xml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-
-        // Start FragmentInstance root element
-        xml.append("<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n");
-
-        // Determine which item to use for TopLevelReference
         Ddi3Response.Ddi3Item topLevelItem;
         String typeOfObject;
 
         if (topLevelReference != null) {
-            // Use the provided topLevelReference to find the matching item
             final String tlrId = topLevelReference.id();
             final String tlrAgency = topLevelReference.agency();
-
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
                     .findFirst()
                     .orElse(ddi3Response.items().getFirst());
-
             typeOfObject = topLevelReference.typeOfObject();
         } else {
-            // Fallback behavior: find first PhysicalInstance or use first item
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> itemTypes.get("PhysicalInstance").equals(item.itemType()))
                     .findFirst()
                     .orElse(ddi3Response.items().getFirst());
-
-            // Determine TypeOfObject from itemType
             typeOfObject = getTypeOfObjectFromItemType(topLevelItem.itemType());
         }
 
-        xml.append("  <ddi:TopLevelReference>\n");
-        xml.append("    <r:Agency>").append(escapeXml(topLevelItem.agencyId())).append("</r:Agency>\n");
-        xml.append("    <r:ID>").append(escapeXml(topLevelItem.identifier())).append("</r:ID>\n");
-        xml.append("    <r:Version>").append(escapeXml(topLevelItem.version())).append("</r:Version>\n");
-        xml.append("    <r:TypeOfObject>").append(escapeXml(typeOfObject)).append("</r:TypeOfObject>\n");
-        xml.append("  </ddi:TopLevelReference>\n");
+        ReferenceType tlRef = fiType.addNewTopLevelReference();
+        tlRef.addAgency(topLevelItem.agencyId());
+        tlRef.addNewID().setStringValue(topLevelItem.identifier());
+        tlRef.addVersion(topLevelItem.version());
+        tlRef.setTypeOfObject(TypeOfObjectType.Enum.forString(typeOfObject));
 
-        // Write all fragments
-        // Each item.item() already contains a complete <Fragment>...</Fragment> element
-        // We prepend "ddi:" to Fragment and adjust the namespaces
         for (Ddi3Response.Ddi3Item item : ddi3Response.items()) {
             if (item.item() != null && !item.item().isEmpty()) {
-                // The item.item() contains <Fragment>...</Fragment>
-                // We need to convert it to <ddi:Fragment>...</ddi:Fragment>
-                String fragment = item.item();
-                fragment = fragment.replace("<Fragment", "<ddi:Fragment");
-                fragment = fragment.replace("</Fragment>", "</ddi:Fragment>");
-                xml.append("  ").append(fragment).append("\n");
+                try {
+                    fiType.addNewFragment().set(FragmentDocument.Factory.parse(item.item()).getFragment());
+                } catch (XmlException e) {
+                    throw new IllegalArgumentException("Failed to parse fragment XML for item " + item.identifier(), e);
+                }
             }
         }
 
-        // Close FragmentInstance
-        xml.append("</ddi:FragmentInstance>");
+        XmlOptions options = new XmlOptions();
+        HashMap<String, String> prefixes = new HashMap<>();
+        prefixes.put(DDI_INSTANCE_NS, "ddi");
+        prefixes.put(DDI_REUSABLE_NS, "r");
+        options.setSaveSuggestedPrefixes(prefixes);
 
-        return xml.toString();
+        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + doc.xmlText(options);
     }
 
-    /**
-     * Maps DDI 3.3 Item Type UUID to TypeOfObject string
-     */
+    private XmlOptions fragmentXmlOptions(String contentNs) {
+        HashMap<String, String> prefixes = new HashMap<>();
+        prefixes.put(DDI_INSTANCE_NS, "");
+        prefixes.put(contentNs, "");
+        prefixes.put(DDI_REUSABLE_NS, "r");
+        XmlOptions options = new XmlOptions();
+        options.setSaveSuggestedPrefixes(prefixes);
+        return options;
+    }
+
+    private void populateBasedOnObject(BasedOnObject basedOnObject, Supplier<ReferenceType> refSupplier) {
+        if (basedOnObject == null || basedOnObject.basedOnReference() == null) return;
+        BasedOnReference ref = basedOnObject.basedOnReference();
+        ReferenceType refType = refSupplier.get();
+        refType.addAgency(ref.agency());
+        refType.addNewID().setStringValue(ref.id());
+        refType.addVersion(ref.version());
+        refType.setTypeOfObject(TypeOfObjectType.Enum.forString(ref.typeOfObject()));
+    }
+
+    private void setContentText(ContentType content, String text) {
+        try (XmlCursor cursor = content.newCursor()) {
+            cursor.toEndToken();
+            cursor.insertChars(text);
+        }
+    }
+
     private String getTypeOfObjectFromItemType(String itemType) {
         return itemTypes.entrySet().stream()
                 .filter(entry -> entry.getValue().equals(itemType))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse("PhysicalInstance");
-    }
-
-    /**
-     * Escapes special XML characters
-     */
-    private String escapeXml(String text) {
-        if (text == null) {
-            return "";
-        }
-        return text.replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&apos;");
     }
 }

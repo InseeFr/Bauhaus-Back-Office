@@ -37,6 +37,11 @@
       <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>fr.insee.ddi</groupId>
+      <artifactId>ddi-lifecycle</artifactId>
+      <version>1.1.0</version>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>

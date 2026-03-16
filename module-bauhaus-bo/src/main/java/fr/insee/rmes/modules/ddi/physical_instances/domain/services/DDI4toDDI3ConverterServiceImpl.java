@@ -21,8 +21,12 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
     private final Ddi3XmlWriter xmlWriter;
 
     public DDI4toDDI3ConverterServiceImpl(Map<String, String> itemTypes) {
+        this(itemTypes, new Ddi3XmlWriter(itemTypes));
+    }
+
+    DDI4toDDI3ConverterServiceImpl(Map<String, String> itemTypes, Ddi3XmlWriter xmlWriter) {
         this.itemTypes = itemTypes;
-        this.xmlWriter = new Ddi3XmlWriter(itemTypes);
+        this.xmlWriter = xmlWriter;
     }
 
     /**
