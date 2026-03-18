@@ -94,8 +94,10 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(graphDBCollection.prefLabelLg1(),
                 graphDBCollection.prefLabelLg1_lg()), graph);
         model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(graphDBCollection.created()), graph);
-        model.add(collectionURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(graphDBCollection.contributor()), graph);
-        model.add(collectionURI, DC.CREATOR, RdfUtils.setLiteralString(graphDBCollection.creator()), graph);
+
+        RdfUtils.addTripleUri(collectionURI, DC.CONTRIBUTOR, graphDBCollection.contributor(), model, graph);
+        RdfUtils.addTripleUri(collectionURI, DC.CREATOR, graphDBCollection.creator(), model, graph);
+
         /*Optional*/
         RdfUtils.addTripleDateTime(collectionURI, DCTERMS.MODIFIED, graphDBCollection.modified(), model, graph);
         RdfUtils.addTripleString(collectionURI, DCTERMS.TITLE, graphDBCollection.prefLabelLg2(), graphDBCollection.prefLabelLg2_lg(), model, graph);

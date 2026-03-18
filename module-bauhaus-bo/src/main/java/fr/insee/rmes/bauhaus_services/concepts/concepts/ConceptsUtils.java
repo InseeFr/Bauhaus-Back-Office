@@ -150,8 +150,10 @@ public class ConceptsUtils extends RdfService {
 		/*Required*/
 		model.add(conceptURI, SKOS.NOTATION, RdfUtils.setLiteralString(concept.getId()), RdfUtils.conceptGraph());
 		model.add(conceptURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(concept.getPrefLabelLg1(), config.getLg1()), RdfUtils.conceptGraph());
-		model.add(conceptURI, DC.CREATOR, RdfUtils.setLiteralString(concept.getCreator()), RdfUtils.conceptGraph());
-		model.add(conceptURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(concept.getContributor()), RdfUtils.conceptGraph());
+
+		RdfUtils.addTripleUri(conceptURI, DC.CREATOR, concept.getCreator(), config.getLg1(), model, RdfUtils.conceptGraph());
+		RdfUtils.addTripleUri(conceptURI, DC.CONTRIBUTOR, concept.getComodule-bauhaus-bo/src/main/java/fr/insee/rmes/bauhaus_services/classifications/ClassificationRepository.javantributor(), config.getLg1(), model, RdfUtils.conceptGraph());
+
 		model.add(conceptURI, INSEE.DISSEMINATIONSTATUS, RdfUtils.toURI(concept.getDisseminationStatus()), RdfUtils.conceptGraph());
 		RdfUtils.addTripleDateTime(conceptURI, DCTERMS.CREATED, concept.getCreated(), model, RdfUtils.conceptGraph());
 		/*Optional*/

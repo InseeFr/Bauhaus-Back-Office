@@ -191,31 +191,6 @@ public class ConceptsResources  {
 		conceptsService.exportZipConcept(id, accept, response, lg, type, withConcepts);
 	}
 
-	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setCollection(@RequestBody Collection body) throws RmesException {
-		String id = conceptsService.createCollection(body);
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(id)
-				.toUri();
-		return ResponseEntity.created(location).body(id);
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
-	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setCollection(
-			@PathVariable(Constants.ID) String id,
-			@RequestBody Collection body) throws RmesException {
-
-		if (body.getId() != null && !id.equals(body.getId())) {
-			return ResponseEntity.badRequest().build();
-		}
-
-		conceptsService.updateCollection(id, body);
-		return ResponseEntity.noContent().build();
-	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value= "/collections/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
