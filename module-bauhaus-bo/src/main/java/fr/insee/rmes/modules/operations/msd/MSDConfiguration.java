@@ -1,7 +1,10 @@
 package fr.insee.rmes.modules.operations.msd;
 
+import fr.insee.rmes.modules.operations.msd.domain.SimsMigrationServiceImpl;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
+import fr.insee.rmes.modules.operations.msd.domain.port.clientside.SimsMigrationService;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
+import fr.insee.rmes.modules.operations.msd.domain.port.serverside.SimsMigrationRepository;
 import fr.insee.rmes.modules.operations.msd.domain.DocumentationServiceImpl;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -13,5 +16,10 @@ public class MSDConfiguration {
     @Bean
     DocumentationService documentationService(DocumentationRepository repository){
         return new DocumentationServiceImpl(repository);
+    }
+
+    @Bean
+    SimsMigrationService simsMigrationService(SimsMigrationRepository repository) {
+        return new SimsMigrationServiceImpl(repository);
     }
 }

@@ -178,6 +178,16 @@ public class RepositoryPublication{
 		RepositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
+	public void overrideTriplets(IRI subject, Model model, Resource graph) throws RmesException {
+		Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+		try (RepositoryConnection conn = repo.getConnection()) {
+			model.predicates().forEach(predicate -> conn.remove(subject, predicate, null, graph));
+			conn.add(model);
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+		}
+	}
+
 	private void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
 				DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);

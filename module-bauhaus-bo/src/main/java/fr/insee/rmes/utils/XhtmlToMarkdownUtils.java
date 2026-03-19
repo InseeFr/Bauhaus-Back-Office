@@ -23,7 +23,7 @@ public class XhtmlToMarkdownUtils {
 		}
 	}
 	
-	private static String xhtmlToMarkdown(String xhtml) {
+	public static String xhtmlToMarkdown(String xhtml) {
 		init();
       	String md = FlexmarkHtmlConverter.builder(optionsXhtmlToMd).build().convert(xhtml);
 		if (md.endsWith("\n")){
