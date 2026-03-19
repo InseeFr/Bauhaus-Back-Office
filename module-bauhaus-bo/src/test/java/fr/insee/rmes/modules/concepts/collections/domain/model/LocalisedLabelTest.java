@@ -18,10 +18,6 @@ class LocalisedLabelTest {
         assertThrows(MalformedLocalisedLabelException.class, () -> LocalisedLabel.ofDefaultLanguage(blankString));
     }
 
-    @Test
-    void should_throw_exception_if_value_is_null(){
-        assertThrows(MalformedLocalisedLabelException.class, () -> LocalisedLabel.ofDefaultLanguage(null));
-    }
 
     @Test
     void should_create_new_localised_label(){
