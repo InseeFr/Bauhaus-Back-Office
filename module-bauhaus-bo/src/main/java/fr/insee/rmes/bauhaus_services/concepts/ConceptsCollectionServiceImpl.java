@@ -41,16 +41,6 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     }
 
 
-    @Override
-    public String getCollectionsDashboard()  throws RmesException{
-        return repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsDashboardQuery()).toString();
-    }
-
-    @Override
-    public String getCollectionMembersByID(String id)  throws RmesException{
-        return repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id)).toString();
-    }
-
     private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
         String collectionXml = XMLUtils.produceXMLResponse(collection);
         Map<String,String> xmlContent = new HashMap<>();

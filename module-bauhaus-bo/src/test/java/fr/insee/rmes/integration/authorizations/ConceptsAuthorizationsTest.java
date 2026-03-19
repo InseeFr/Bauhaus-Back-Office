@@ -78,28 +78,9 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
                 Arguments.of("/concepts/concept/"+id+"/notes/16"+conceptVersion),
                 Arguments.of("/concepts/concept/"+id+"/links"),
                 Arguments.of("/concepts/concept/export/"+id),
-                Arguments.of("/concepts/collections/toValidate"),
-                Arguments.of("/concepts/collections/dashboard"),
-                Arguments.of("/concepts/collection/"+id+"/members"),
                 Arguments.of("/concepts/collection/export/"+id),
                 Arguments.of("/concepts/advanced-search"),
                 Arguments.of("/concepts/concept/"+id)
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("TestRoleCaseForUpdateCollection")
-    void updateCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
-        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        var request = put("/concepts/collection/1").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
-        request.header("Authorization", "Bearer toto");
-        mvc.perform(request).andExpect(status().is(code));
-    }
-    static Collection<Arguments> TestRoleCaseForUpdateCollection() {
-        return Arrays.asList(
-                Arguments.of(204, true),
-                Arguments.of(403, false)
         );
     }
 

@@ -6,9 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface ConceptsCollectionService {
-    String getCollectionsDashboard() throws RmesException;
-
-    String getCollectionMembersByID(String id) throws RmesException;
 
     ResponseEntity<?> getCollectionExportODT(String id, String accept, Language lg, boolean withConcepts, HttpServletResponse response) throws RmesException;
 

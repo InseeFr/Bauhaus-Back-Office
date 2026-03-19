@@ -4,11 +4,6 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedLoc
 import org.apache.commons.lang3.StringUtils;
 
 public record LocalisedLabel(String value, Lang lang) {
-    public LocalisedLabel {
-        if(StringUtils.isAllBlank(value)){
-            throw new MalformedLocalisedLabelException();
-        }
-    }
 
     public static LocalisedLabel ofDefaultLanguage(String label){
         return new LocalisedLabel(label, Lang.defaultLanguage());
