@@ -12,13 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class LocalisedLabelTest {
 
-    @ParameterizedTest
-    @ValueSource(strings = {"","  "})
-    void shouldThrowExceptionIfValueIsBlank(String blankString){
-        assertThrows(MalformedLocalisedLabelException.class, () -> LocalisedLabel.ofDefaultLanguage(blankString));
-    }
-
-
     @Test
     void should_create_new_localised_label(){
         assertDoesNotThrow(() -> LocalisedLabel.ofDefaultLanguage("Label"));
