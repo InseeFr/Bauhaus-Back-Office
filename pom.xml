@@ -315,7 +315,6 @@
   </repositories>
   <modules>
     <module>module-domain</module>
-    <module>module-sparql-orm</module>
     <module>module-infrastructure</module>
     <module>module-testcontainer-graphdb</module>
     <module>module-infrastructure-graphdb</module>
