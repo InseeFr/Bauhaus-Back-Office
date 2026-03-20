@@ -12,8 +12,6 @@ public interface OperationsService {
 	 * FAMILIES
 	 * *******************************************************************************************/
 
-	String getFamiliesForSearch() throws RmesException;
-
 	void setFamily(String id, String body) throws RmesException;
 
 	void setFamilyValidation(String body) throws RmesException;
