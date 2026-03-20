@@ -48,25 +48,7 @@ class OperationFamilyQueriesTest {
         }
     }
 
-    @Test
-    void shouldGetFamiliesSearchQuery() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getFamiliesForAdvancedSearch.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?family WHERE { ?family a insee:StatisticalOperationFamily }");
 
-            String result = OperationFamilyQueries.familiesSearchQuery();
-
-            assertNotNull(result);
-            assertEquals("SELECT ?family WHERE { ?family a insee:StatisticalOperationFamily }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getFamiliesForAdvancedSearch.ftlh"), 
-                    argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2"));
-                    })));
-        }
-    }
 
     @Test
     void shouldHandleNullValuesInCheckPrefLabelUnicity() throws RmesException {
@@ -108,50 +90,7 @@ class OperationFamilyQueriesTest {
         }
     }
 
-    @Test
-    void shouldVerifyCorrectTemplatePathsAreUsed() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            // Test operations/ path for checkPrefLabelUnicity
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), any(String.class), any(Map.class)))
-                    .thenReturn("OPERATIONS_RESULT");
-            
-            // Test operations/famOpeSer/ path for familiesSearchQuery
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), any(String.class), any(Map.class)))
-                    .thenReturn("FAMOPSER_RESULT");
 
-            String checkResult = OperationFamilyQueries.checkPrefLabelUnicity("test", "Test", "en");
-            String searchResult = OperationFamilyQueries.familiesSearchQuery();
-
-            assertEquals("OPERATIONS_RESULT", checkResult);
-            assertEquals("FAMOPSER_RESULT", searchResult);
-
-            // Verify correct paths are used
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)));
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getFamiliesForAdvancedSearch.ftlh"), any(Map.class)));
-        }
-    }
-
-    @Test
-    void shouldVerifyParametersContainAllRequiredFields() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getFamiliesForAdvancedSearch.ftlh"), any(Map.class)))
-                    .thenReturn("SELECT ?family WHERE { ?family a insee:StatisticalOperationFamily }");
-
-            OperationFamilyQueries.familiesSearchQuery();
-
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getFamiliesForAdvancedSearch.ftlh"), 
-                    argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        // Verify all required parameters are present
-                        return map.containsKey("OPERATIONS_GRAPH") &&
-                               map.containsKey("LG1") &&
-                               map.containsKey("LG2") &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2"));
-                    })));
-        }
-    }
 
     @Test
     void shouldPropagateRmesExceptionFromFreeMarkerUtils() {

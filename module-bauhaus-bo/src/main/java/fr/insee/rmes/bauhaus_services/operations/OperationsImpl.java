@@ -215,13 +215,6 @@ public class OperationsImpl  implements OperationsService {
 	 *****************************************************************************************************/
 
 
-	@Override
-	public String getFamiliesForSearch() throws RmesException {
-		logger.info("Starting to get families list for search");
-		String resQuery = repoGestion.getResponseAsArray(OperationFamilyQueries.familiesSearchQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
 
 	@Override
 	public void setFamily(String id, String body) throws RmesException {

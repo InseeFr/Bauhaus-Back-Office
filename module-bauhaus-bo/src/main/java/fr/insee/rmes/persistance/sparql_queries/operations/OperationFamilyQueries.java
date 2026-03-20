@@ -26,18 +26,7 @@ public class OperationFamilyQueries extends GenericQueries{
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
-	public static String familiesSearchQuery() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
-	}
 
-
-
-
-	
 	  private OperationFamilyQueries() {
 		    throw new IllegalStateException("Utility class");
 	}

@@ -83,12 +83,6 @@ public class FamilyResources  {
         );
 	}
 
-	@GetMapping("/families/advanced-search")
-	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
-	public ResponseEntity<Object> getFamiliesForSearch() throws RmesException {
-		String families = operationsService.getFamiliesForSearch();
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(families);
-	}
 
 	@GetMapping("/families/{id}/seriesWithReport")
 	@HasAccess(module = RBAC.Module.OPERATION_FAMILY, privilege =  RBAC.Privilege.READ)
