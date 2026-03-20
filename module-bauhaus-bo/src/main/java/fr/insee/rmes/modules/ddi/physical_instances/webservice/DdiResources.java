@@ -18,6 +18,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialC
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
@@ -67,6 +69,7 @@ public class DdiResources {
     }
 
     @GetMapping("/physical-instance")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialPhysicalInstanceResponse>> getPhysicalInstances() {
         List<PartialPhysicalInstance> instances = ddiService.getPhysicalInstances();
 
@@ -88,6 +91,7 @@ public class DdiResources {
     }
 
     @GetMapping("/codes-list")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialCodesListResponse>> getCodesLists() {
         List<PartialCodesList> codesLists = ddiService.getCodesLists();
 
@@ -109,6 +113,7 @@ public class DdiResources {
     }
 
     @GetMapping("/mutualized-codes-list")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListSummaryResponse>> getMutualizedCodesLists() {
         List<PartialCodesList> codesLists = ddiService.getMutualizedCodesLists();
 
@@ -126,6 +131,7 @@ public class DdiResources {
     }
 
     @GetMapping("/group")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialGroupResponse>> getGroups() {
         List<PartialGroup> groups = ddiService.getGroups();
 
@@ -147,6 +153,7 @@ public class DdiResources {
     }
 
     @GetMapping("/group/{agencyId}/{id}")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4GroupResponse> getDdi4Group(
             @PathVariable String agencyId,
             @PathVariable(Constants.ID) String id) {
@@ -157,6 +164,7 @@ public class DdiResources {
     }
 
     @PostMapping("/physical-instance")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<Ddi4Response> createPhysicalInstance(
             @RequestBody CreatePhysicalInstanceRequest request) {
         Ddi4Response response = ddiService.createPhysicalInstance(request);
@@ -166,6 +174,7 @@ public class DdiResources {
     }
 
     @GetMapping("/physical-instance/{agencyId}/{id}")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4Response> getDdi4PhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable(Constants.ID) String id) {
@@ -176,6 +185,7 @@ public class DdiResources {
     }
 
     @GetMapping("/physical-instance/{agencyId}/{id}/codeslists")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListSummaryResponse>> getPhysicalInstanceCodesLists(
             @PathVariable String agencyId,
             @PathVariable(Constants.ID) String id) {
@@ -191,6 +201,7 @@ public class DdiResources {
     }
 
     @PatchMapping("/physical-instance/{agencyId}/{id}")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Ddi4Response> updatePhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable String id,
@@ -202,6 +213,7 @@ public class DdiResources {
     }
 
     @PutMapping("/physical-instance/{agencyId}/{id}")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.UPDATE)
     public ResponseEntity<Ddi4Response> replacePhysicalInstance(
             @PathVariable String agencyId,
             @PathVariable String id,
@@ -213,6 +225,7 @@ public class DdiResources {
     }
 
     @PostMapping("/convert/ddi4-to-ddi3")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<String> convertDdi4ToDdi3(@RequestBody Ddi4Response ddi4) {
         String ddi3Xml = ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(ddi4);
         return ResponseEntity.ok()
@@ -221,6 +234,7 @@ public class DdiResources {
     }
 
     @PostMapping("/convert/ddi3-to-ddi4")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4Response> convertDdi3ToDdi4(@RequestBody Ddi3Response ddi3) {
         String schemaUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/ddi/schema")
@@ -232,6 +246,7 @@ public class DdiResources {
     }
 
     @GetMapping("/schema")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<String> getDdiSchema() throws IOException {
         ClassPathResource resource = new ClassPathResource("ddi-schema.json");
         String schema = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -245,6 +260,7 @@ public class DdiResources {
     }
 
     @PostMapping("/validate")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.PUBLISH)
     public ResponseEntity<ValidationResponse> validateDdi4(@RequestBody String jsonData) {
         try {
             // Load schema
