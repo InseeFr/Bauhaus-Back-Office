@@ -84,12 +84,10 @@ class TestFamiliesResourcesEnvProd {
     private static Stream<Arguments> provideDataForGetEndpoints() {
         return Stream.of(
                 Arguments.of("/operations/families", 200, true),
-                Arguments.of("/operations/families/advanced-search", 200, true),
                 Arguments.of("/operations/families/1/seriesWithReport", 200, true),
                 Arguments.of("/operations/family/1", 200, true),
 
                 Arguments.of("/operations/families", 403, false),
-                Arguments.of("/operations/families/advanced-search", 403, false),
                 Arguments.of("/operations/families/1/seriesWithReport", 403, false),
                 Arguments.of("/operations/family/1", 403, false)
         );

@@ -13,6 +13,7 @@ public record BauhausConfiguration(
         String appHost,
         List<String> activeModules,
         List<String> modules,
-        String version
+        String version,
+        String baseGraph
 ) {
 }
