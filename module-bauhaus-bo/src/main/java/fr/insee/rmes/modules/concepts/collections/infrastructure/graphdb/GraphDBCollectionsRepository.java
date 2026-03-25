@@ -7,7 +7,10 @@ import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
@@ -26,6 +29,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,8 +98,10 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(graphDBCollection.prefLabelLg1(),
                 graphDBCollection.prefLabelLg1_lg()), graph);
         model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(graphDBCollection.created()), graph);
-        model.add(collectionURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(graphDBCollection.contributor()), graph);
-        model.add(collectionURI, DC.CREATOR, RdfUtils.setLiteralString(graphDBCollection.creator()), graph);
+
+        RdfUtils.addTripleUri(collectionURI, DC.CONTRIBUTOR, graphDBCollection.contributor(), model, graph);
+        RdfUtils.addTripleUri(collectionURI, DC.CREATOR, graphDBCollection.creator(), model, graph);
+
         /*Optional*/
         RdfUtils.addTripleDateTime(collectionURI, DCTERMS.MODIFIED, graphDBCollection.modified(), model, graph);
         RdfUtils.addTripleString(collectionURI, DCTERMS.TITLE, graphDBCollection.prefLabelLg2(), graphDBCollection.prefLabelLg2_lg(), model, graph);
@@ -118,5 +124,38 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     @Override
     public void update(Collection collection) throws CollectionsSaveException {
         this.save(collection);
+    }
+
+    @Override
+    public List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException {
+        try {
+            var results = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsDashboardQuery());
+            return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBCollectionDashboardItem[].class))
+                    .map(GraphDBCollectionDashboardItem::toDomain).toList();
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public List<CollectionToValidate> getToValidate() throws CollectionsFetchException {
+        try {
+            var results = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsToValidateQuery());
+            return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBCollectionToValidate[].class))
+                    .map(GraphDBCollectionToValidate::toDomain).toList();
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException {
+        try {
+            var results = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
+            return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBConcept[].class))
+                    .map(GraphDBConcept::toDomain).toList();
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
     }
 }

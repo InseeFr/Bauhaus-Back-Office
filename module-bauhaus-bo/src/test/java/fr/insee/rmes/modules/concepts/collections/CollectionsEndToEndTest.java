@@ -24,8 +24,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
             {
                  "labels": [{"value": "label fr", "lang": "fr"}],
                  "descriptions": [],
-                 "creator" : "HIE000000",
-                 "contributor" : "HIE000000",
+                 "creator" : "http://bauhaus/HIE000000",
+                 "contributor" : "http://bauhaus/HIE000000",
                  "conceptsIdentifiers": ["c00001"]
              }
             """;
@@ -35,8 +35,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 "id": "%s",
                  "labels": [{"value": "label fr v2", "lang": "fr"}],
                  "descriptions": [],
-                 "creator" : "HIE000001",
-                 "contributor" : "HIE000002",
+                 "creator" : "http://bauhaus/HIE000001",
+                 "contributor" : "http://bauhaus/HIE000002",
                  "conceptsIdentifiers": ["c00001"]
              }
             """;
@@ -49,6 +49,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        container.withInitFolder("fr/insee/rmes/modules/concepts/collections")
+                .withTrigFiles("collections-end-to-end-test.trig");
     }
 
     @Test
@@ -102,8 +104,8 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                   "id" : "%s",
                    "labels": [{"value": "label fr", "lang": "FR"}],
                    "descriptions": [],
-                   "creator" : "HIE000000",
-                   "contributor" : "HIE000000",
+                   "creator" : "http://bauhaus/HIE000000",
+                   "contributor" : "http://bauhaus/HIE000000",
                    "isValidated": false,
                 }
                 """.formatted(uuid), fetchedCollections, false);
@@ -137,11 +139,55 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                   "id" : "%s",
                    "labels": [{"value": "label fr v2", "lang": "FR"}],
                    "descriptions": [],
-                   "creator" : "HIE000001",
-                   "contributor" : "HIE000002",
+                   "creator" : "http://bauhaus/HIE000001",
+                   "contributor" : "http://bauhaus/HIE000002",
                    "isValidated": false,
                 }
                 """.formatted(uuid), fetchedCollections, false);
+
+        var dashboardResponse = restClient
+                .get().uri("dashboard")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "id": "%s",
+                    "label": "label fr v2",
+                    "isValidated": false,
+                    "nbMembers": 1
+                  }
+                ]
+                """.formatted(uuid), dashboardResponse, false);
+
+        var toValidateResponse = restClient
+                .get().uri("toValidate")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "id": "%s",
+                    "label": "label fr v2"
+                  }
+                ]
+                """.formatted(uuid), toValidateResponse, false);
+
+        var membersResponse = restClient
+                .get().uri(uuid + "/members")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+        JSONAssert.assertEquals("""
+                [
+                  {
+                    "id": "c00001",
+                    "prefLabelLg1": "Concept test"
+                  }
+                ]
+                """, membersResponse, false);
 
     }
 

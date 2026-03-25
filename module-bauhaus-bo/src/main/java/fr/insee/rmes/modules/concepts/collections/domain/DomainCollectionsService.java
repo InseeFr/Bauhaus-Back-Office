@@ -3,7 +3,10 @@ package fr.insee.rmes.modules.concepts.collections.domain;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
@@ -46,5 +49,20 @@ public class DomainCollectionsService implements CollectionsService {
     public void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException {
         Collection collection = Collection.create(updateCommand, updateCommand.id());
         this.repository.update(collection);
+    }
+
+    @Override
+    public List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException {
+        return this.repository.getDashboard();
+    }
+
+    @Override
+    public List<CollectionToValidate> getToValidate() throws CollectionsFetchException {
+        return this.repository.getToValidate();
+    }
+
+    @Override
+    public List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException {
+        return this.repository.getCollectionMembers(id);
     }
 }

@@ -4,7 +4,10 @@ import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 
 import java.util.List;
@@ -16,4 +19,7 @@ public interface CollectionsRepository {
     Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException;
     void save(Collection collection) throws CollectionsSaveException;
     void update(Collection collection) throws CollectionsSaveException;
+    List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException;
+    List<CollectionToValidate> getToValidate() throws CollectionsFetchException;
+    List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException;
 }

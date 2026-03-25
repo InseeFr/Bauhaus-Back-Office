@@ -113,28 +113,6 @@ public class ConceptsResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(notes);
 	}
 
-
-	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/collections/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getCollectionsDashboard() throws RmesException {
-		String collections = conceptsCollectionService.getCollectionsDashboard();
-		return ResponseEntity.status(HttpStatus.OK).body(collections);
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/collections/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getCollectionsToValidate() throws RmesException {
-		String collections = conceptsService.getCollectionsToValidate();
-		return ResponseEntity.status(HttpStatus.OK).body(collections);
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getCollectionMembersByID(@PathVariable(Constants.ID) String id) throws RmesException {
-		String collectionMembers = conceptsCollectionService.getCollectionMembersByID(id);
-		return ResponseEntity.status(HttpStatus.OK).body(collectionMembers);
-	}
-
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.CREATE)
 	@PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> setConcept(@RequestBody String body) throws RmesException {
@@ -191,31 +169,6 @@ public class ConceptsResources  {
 		conceptsService.exportZipConcept(id, accept, response, lg, type, withConcepts);
 	}
 
-	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.CREATE)
-	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setCollection(@RequestBody Collection body) throws RmesException {
-		String id = conceptsService.createCollection(body);
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(id)
-				.toUri();
-		return ResponseEntity.created(location).body(id);
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.UPDATE)
-	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setCollection(
-			@PathVariable(Constants.ID) String id,
-			@RequestBody Collection body) throws RmesException {
-
-		if (body.getId() != null && !id.equals(body.getId())) {
-			return ResponseEntity.badRequest().build();
-		}
-
-		conceptsService.updateCollection(id, body);
-		return ResponseEntity.noContent().build();
-	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
 	@PutMapping(value= "/collections/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)

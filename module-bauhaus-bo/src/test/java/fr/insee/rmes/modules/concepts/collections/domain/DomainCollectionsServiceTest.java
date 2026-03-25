@@ -5,7 +5,10 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsF
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
@@ -90,6 +93,39 @@ class DomainCollectionsServiceTest {
 
         //Then
         assertThat(collectionId).isEqualTo(ID);
+    }
+
+    @Test
+    void dashboard_items_should_be_returned() throws CollectionsFetchException {
+        // Given
+        var dashboardItem = new CollectionDashboardItem(ID, "Label", "2024-01-01T10:00:00", null, false, "creator1", 2);
+        when(collectionsRepository.getDashboard()).thenReturn(List.of(dashboardItem));
+        // When
+        var result = domainCollectionsService.getDashboard();
+        // Then
+        assertThat(result).containsExactly(dashboardItem);
+    }
+
+    @Test
+    void collections_to_validate_should_be_returned() throws CollectionsFetchException {
+        // Given
+        var toValidate = new CollectionToValidate(ID, "Label", "creator1");
+        when(collectionsRepository.getToValidate()).thenReturn(List.of(toValidate));
+        // When
+        var result = domainCollectionsService.getToValidate();
+        // Then
+        assertThat(result).containsExactly(toValidate);
+    }
+
+    @Test
+    void collection_members_should_be_returned() throws CollectionsFetchException {
+        // Given
+        var member = new CollectionMember("c00001", "Label FR", "Label EN");
+        when(collectionsRepository.getCollectionMembers(ID)).thenReturn(List.of(member));
+        // When
+        var result = domainCollectionsService.getCollectionMembers(ID);
+        // Then
+        assertThat(result).containsExactly(member);
     }
 
 }

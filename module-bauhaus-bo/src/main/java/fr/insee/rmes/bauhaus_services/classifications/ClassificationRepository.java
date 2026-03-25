@@ -72,14 +72,10 @@ public class ClassificationRepository extends RdfService {
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.CREATOR, graph, null);
-        if(classification.getCreator() != null){
-            model.add(classificationIri, DC.CREATOR, RdfUtils.setLiteralString(classification.getCreator()), graph);
-        }
+        RdfUtils.addTripleUri(classificationIri, DC.CREATOR, classification.getCreator(), model, graph);
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.CONTRIBUTOR, graph, null);
-        if(classification.getContributor() != null){
-            model.add(classificationIri, DC.CONTRIBUTOR, RdfUtils.setLiteralString(classification.getContributor()), graph);
-        }
+        RdfUtils.addTripleUri(classificationIri, DC.CONTRIBUTOR, classification.getContributor(), model, graph);
 
         repoGestion.deleteTripletByPredicate(classificationIri, INSEE.ADDITIONALMATERIAL, graph, null);
         if(StringUtils.isNotEmpty(classification.getAdditionalMaterial())){
