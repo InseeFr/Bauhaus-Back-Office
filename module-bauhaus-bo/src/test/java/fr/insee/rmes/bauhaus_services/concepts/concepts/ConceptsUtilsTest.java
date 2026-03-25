@@ -186,7 +186,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldCreateConceptWithSetConcept() throws RmesException {
         // Given
-        String body = "{\"prefLabelLg1\":\"Test Concept\",\"creator\":\"testCreator\",\"contributor\":\"testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
+        String body = "{\"prefLabelLg1\":\"Test Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
 
         JSONObject json = new JSONObject().put(Constants.NOTATION, "c0010");
         when(repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID())).thenReturn(json);
@@ -203,7 +203,7 @@ class ConceptsUtilsTest {
     void shouldUpdateConceptWithSetConcept() throws RmesException {
         // Given
         String id = "c1";
-        String body = "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"testCreator\",\"contributor\":\"testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
+        String body = "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
 
         // When/Then - Should not throw exception
         assertDoesNotThrow(() -> conceptsUtils.setConcept(id, body));

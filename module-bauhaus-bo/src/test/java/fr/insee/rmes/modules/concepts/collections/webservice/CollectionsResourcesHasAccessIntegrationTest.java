@@ -7,6 +7,8 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsF
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
+
+import java.util.List;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -130,6 +132,45 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
         var request = put("/concepts/collections/" + collectionId + "/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        request.header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().is(code));
+    }
+
+    @MethodSource("provideCollectionData")
+    @ParameterizedTest
+    void getDashboard(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        when(collectionsService.getDashboard()).thenReturn(List.of());
+
+        var request = get("/concepts/collections/dashboard").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        request.header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().is(code));
+    }
+
+    @MethodSource("provideCollectionData")
+    @ParameterizedTest
+    void getToValidate(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        when(collectionsService.getToValidate()).thenReturn(List.of());
+
+        var request = get("/concepts/collections/toValidate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        request.header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().is(code));
+    }
+
+    @MethodSource("provideCollectionData")
+    @ParameterizedTest
+    void getCollectionMembers(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        when(collectionsService.getCollectionMembers(any())).thenReturn(List.of());
+
+        var request = get("/concepts/collections/" + collectionId + "/members").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

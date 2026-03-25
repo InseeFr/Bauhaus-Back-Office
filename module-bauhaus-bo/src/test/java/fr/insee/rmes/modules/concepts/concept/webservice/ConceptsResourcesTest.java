@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.concepts.concept.webservice;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
@@ -110,32 +109,6 @@ class ConceptsResourcesTest {
     }
 
     @Test
-    void shouldReturnResponseWhenGetCollectionsDashboard()  throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        when(conceptsCollectionService.getCollectionsDashboard()).thenReturn("mocked result");
-        String actual = conceptsResources.getCollectionsDashboard().toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
-
-    @Test
-    void shouldReturnResponseWhenGetCollectionsToValidate()  throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        when(conceptsService.getCollectionsToValidate()).thenReturn("mocked result");
-        String actual = conceptsResources.getCollectionsToValidate().toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
-
-
-
-    @Test
-    void shouldReturnResponseWhenGetCollectionMembersByID()  throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        when(conceptsCollectionService.getCollectionMembersByID("id mocked")).thenReturn("mocked result");
-        String actual = conceptsResources.getCollectionMembersByID("id mocked").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
-
-    @Test
     void shouldReturnLocationHeaderWhenCreateConcept() throws RmesException {
         MockHttpServletRequest req = new MockHttpServletRequest("POST", "/concepts/concept");
         req.setServerName("localhost");
@@ -171,47 +144,6 @@ class ConceptsResourcesTest {
         String actual = conceptsResources.setConceptsValidation("mocked id", "mocked body").toString();
         Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
     }
-
-    @Test
-    void shouldReturnResponseWhenSetCollection()  throws RmesException {
-        var req = new MockHttpServletRequest("POST", "/concepts/collection");
-        req.setServerName("localhost");
-        req.setServerPort(80);
-        req.setScheme("http");
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
-
-
-        var collection = new Collection("1");
-        when(conceptsService.createCollection(collection)).thenReturn("1");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
-        var response = conceptsResources.setCollection(collection);
-        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        Assertions.assertEquals("1", response.getBody());
-        Assertions.assertEquals(
-                "/concepts/collection/1",
-                Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
-        );
-    }
-
-    @Test
-    void shouldReturnResponseWhenSetCollectionWithIdAndBody()  throws RmesException {
-        var collection = new Collection("1");
-        doNothing().when(conceptsService).updateCollection( "1", collection);
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
-        var response = conceptsResources.setCollection( "1", collection);
-        Assertions.assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    void shouldReturnErrorWhenSetCollectionWithDifferentId()  throws RmesException {
-        var collection = new Collection("2");
-        doNothing().when(conceptsService).updateCollection( "1", collection);
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
-        var response = conceptsResources.setCollection( "1", collection);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-
 
     @Test
     void shouldReturnResponseWhenSetCollectionsValidation()  throws RmesException {

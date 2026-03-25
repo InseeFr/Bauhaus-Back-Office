@@ -18,6 +18,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/concepts/collections")
 @ConditionalOnModule("concepts")
@@ -27,11 +29,43 @@ public class CollectionsResources {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
     List<PartialCollectionResponse> getAll(){
         try {
             return this.service.getAllCollections().stream().map(PartialCollectionResponse::fromDomain).toList();
+        } catch (CollectionsFetchException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @GetMapping(value = "/dashboard", produces = APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    List<CollectionDashboardItemResponse> getDashboard() {
+        try {
+            return this.service.getDashboard().stream().map(CollectionDashboardItemResponse::fromDomain).toList();
+        } catch (CollectionsFetchException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @GetMapping(value = "/toValidate", produces = APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    List<CollectionToValidateResponse> getToValidate() {
+        try {
+            return this.service.getToValidate().stream().map(CollectionToValidateResponse::fromDomain).toList();
+        } catch (CollectionsFetchException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @GetMapping(value = "/{id}/members", produces = APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    List<CollectionMemberResponse> getCollectionMembers(@PathVariable String id) {
+        try {
+            return this.service.getCollectionMembers(new CollectionId(id)).stream().map(CollectionMemberResponse::fromDomain).toList();
+        } catch (InvalidCollectionIdException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
