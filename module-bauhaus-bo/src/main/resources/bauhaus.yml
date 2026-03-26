@@ -4,5 +4,11 @@ fr.insee.rmes.bauhaus:
   lg2: en
   enable-dev-tools: false
   app-host: http://localhost:3000/#/
-  activeModules: concepts,classifications,operations,structures,codelists,datasets,ddi
-  modules: concepts,classifications,operations,structures,codelists,datasets,ddi
+  modules:
+    - identifier: concepts
+    - identifier: classifications
+    - identifier: operations
+    - identifier: structures
+    - identifier: codelists
+    - identifier: datasets
+    - identifier: ddi

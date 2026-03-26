@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.Collection;
-import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import jakarta.servlet.http.HttpServletResponse;

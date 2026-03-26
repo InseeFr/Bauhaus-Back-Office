@@ -4,7 +4,7 @@ import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

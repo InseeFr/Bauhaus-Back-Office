@@ -4,17 +4,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import java.util.Map;
 
-/**
- * Condition that checks if a specific module is active based on the
- * {@code fr.insee.rmes.bauhaus.activeModules} property.
- */
 public class OnModuleCondition extends SpringBootCondition {
 
-    private static final String ACTIVE_MODULES_PROPERTY = "fr.insee.rmes.bauhaus.activeModules";
+    private static final String MODULES_PROPERTY = "fr.insee.rmes.bauhaus.modules";
 
     @Override
     public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
@@ -26,14 +23,28 @@ public class OnModuleCondition extends SpringBootCondition {
         }
 
         String requiredModule = (String) attributes.get("value");
-        String activeModules = context.getEnvironment().getProperty(ACTIVE_MODULES_PROPERTY, "");
+        Environment environment = context.getEnvironment();
 
-        if (activeModules.contains(requiredModule)) {
-            return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnModule.class)
-                    .foundExactly("module '" + requiredModule + "' in active modules: " + activeModules));
-        } else {
-            return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnModule.class)
-                    .because("module '" + requiredModule + "' not found in active modules: " + activeModules));
+        int i = 0;
+        while (true) {
+            String identifier = environment.getProperty(MODULES_PROPERTY + "[" + i + "].identifier");
+            if (identifier == null) {
+                break;
+            }
+            if (identifier.equals(requiredModule)) {
+                boolean disabled = Boolean.parseBoolean(environment.getProperty(MODULES_PROPERTY + "[" + i + "].disabled", "false"));
+                if (!disabled) {
+                    return ConditionOutcome.match(ConditionMessage.forCondition(ConditionalOnModule.class)
+                            .foundExactly("module '" + requiredModule + "' found and enabled"));
+                } else {
+                    return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnModule.class)
+                            .because("module '" + requiredModule + "' is disabled"));
+                }
+            }
+            i++;
         }
+
+        return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnModule.class)
+                .because("module '" + requiredModule + "' not found in modules"));
     }
 }

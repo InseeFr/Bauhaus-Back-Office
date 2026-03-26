@@ -38,22 +38,6 @@ class ConceptsCollectionsResourcesTest {
 
 
     @Test
-    void shouldGetCollectionExport() throws RmesException {
-        // Given
-        String id = "c1";
-        String accept = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-        ResponseEntity<?> expectedResponse = ResponseEntity.ok().build();
-        when(conceptsService.getCollectionExport(id, accept)).thenReturn((ResponseEntity) expectedResponse);
-
-        // When
-        ResponseEntity<?> result = resources.getCollectionExport(id, accept);
-
-        // Then
-        assertEquals(expectedResponse, result);
-        verify(conceptsService, times(1)).getCollectionExport(id, accept);
-    }
-
-    @Test
     void shouldExportZipCollection() throws RmesException {
         // Given
         String id = "c1";

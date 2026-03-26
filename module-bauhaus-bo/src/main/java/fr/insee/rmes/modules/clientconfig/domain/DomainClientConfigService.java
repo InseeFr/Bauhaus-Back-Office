@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.clientconfig.domain;
 
+import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
 import fr.insee.rmes.modules.clientconfig.domain.port.clientside.ClientConfigService;
 
@@ -13,8 +14,7 @@ public class DomainClientConfigService implements ClientConfigService {
     private final String lg1;
     private final String lg2;
     private final String env;
-    private final List<String> activeModules;
-    private final List<String> modules;
+    private final List<ModuleConfig> modules;
     private final String version;
     private final List<String> extraMandatoryFields;
     private final String defaultAgencyId;
@@ -28,8 +28,7 @@ public class DomainClientConfigService implements ClientConfigService {
             String lg1,
             String lg2,
             String env,
-            List<String> activeModules,
-            List<String> modules,
+            List<ModuleConfig> modules,
             String version,
             List<String> extraMandatoryFields,
             String defaultAgencyId,
@@ -41,7 +40,6 @@ public class DomainClientConfigService implements ClientConfigService {
         this.lg1 = lg1;
         this.lg2 = lg2;
         this.env = env;
-        this.activeModules = activeModules;
         this.modules = modules;
         this.version = version;
         this.extraMandatoryFields = extraMandatoryFields;
@@ -59,7 +57,6 @@ public class DomainClientConfigService implements ClientConfigService {
                 lg1,
                 lg2,
                 getAuthType(env),
-                activeModules,
                 modules,
                 version,
                 extraMandatoryFields,

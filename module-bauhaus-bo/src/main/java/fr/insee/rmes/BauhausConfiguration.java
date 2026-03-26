@@ -1,5 +1,6 @@
 package fr.insee.rmes;
 
+import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
@@ -11,8 +12,7 @@ public record BauhausConfiguration(
         String lg2,
         boolean enableDevTools,
         String appHost,
-        List<String> activeModules,
-        List<String> modules,
+        List<ModuleConfig> modules,
         String version,
         String baseGraph
 ) {

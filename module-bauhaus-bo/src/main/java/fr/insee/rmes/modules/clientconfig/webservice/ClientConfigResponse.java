@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.clientconfig.webservice;
 
+import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
 
 import java.util.List;
@@ -11,8 +12,7 @@ public record ClientConfigResponse(
         String lg1,
         String lg2,
         String authType,
-        List<String> activeModules,
-        List<String> modules,
+        List<ModuleConfig> modules,
         String version,
         List<String> extraMandatoryFields,
         String defaultAgencyId,
@@ -27,7 +27,6 @@ public record ClientConfigResponse(
                 properties.lg1(),
                 properties.lg2(),
                 properties.authType(),
-                properties.activeModules(),
                 properties.modules(),
                 properties.version(),
                 properties.extraMandatoryFields(),

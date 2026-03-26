@@ -10,20 +10,22 @@ import java.lang.annotation.Target;
 
 /**
  * Conditional annotation that checks if a specific module is active.
- * A module is considered active if it is contained in the property
- * {@code fr.insee.rmes.bauhaus.activeModules}.
+ * A module is considered active if it appears in {@code fr.insee.rmes.bauhaus.modules}
+ * with {@code disabled} not set to {@code true}.
  *
  * <p>Example usage:</p>
  * <pre>
  * {@literal @}ConditionalOnModule("ddi")
  * public class DdiResources {
- *     // This class will only be loaded if 'ddi' is in activeModules
+ *     // This class will only be loaded if 'ddi' is in modules and not disabled
  * }
  * </pre>
  *
- * <p>The property can contain multiple modules separated by commas:</p>
+ * <p>Example configuration:</p>
  * <pre>
- * fr.insee.rmes.bauhaus.activeModules=concepts,ddi,operations
+ * fr.insee.rmes.bauhaus.modules[0].identifier=concepts
+ * fr.insee.rmes.bauhaus.modules[1].identifier=ddi
+ * fr.insee.rmes.bauhaus.modules[1].disabled=true
  * </pre>
  */
 @Target({ElementType.TYPE, ElementType.METHOD})

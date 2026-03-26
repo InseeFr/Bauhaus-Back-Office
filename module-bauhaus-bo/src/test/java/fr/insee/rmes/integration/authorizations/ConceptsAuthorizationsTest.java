@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers = ConceptsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.activeModules=concepts",
+                "fr.insee.rmes.bauhaus.modules[0].identifier=concepts",
                 "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         }
 )

@@ -5,8 +5,7 @@ import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
-import fr.insee.rmes.model.concepts.Collection;
-import fr.insee.rmes.model.concepts.ConceptForAdvancedSearch;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
 import fr.insee.rmes.model.concepts.PartialConcept;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.concept.webservice.response.ConceptForAdvancedSearchResponse;
@@ -14,9 +13,6 @@ import fr.insee.rmes.modules.concepts.concept.webservice.response.PartialConcept
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -145,6 +141,15 @@ public class ConceptsResources  {
 		return ResponseEntity.noContent().build();
 	}
 
+	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
+	@PutMapping(value= "/collections/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> setCollectionsValidation(
+			@PathVariable(Constants.ID) String id,
+			@RequestBody String body) throws RmesException {
+		conceptsService.setCollectionsValidation(body);
+		return ResponseEntity.noContent().build();
+	}
+
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
@@ -170,12 +175,5 @@ public class ConceptsResources  {
 	}
 
 
-	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-	@PutMapping(value= "/collections/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setCollectionsValidation(
-			@PathVariable(Constants.ID) String id,
-			@RequestBody String body) throws RmesException {
-		conceptsService.setCollectionsValidation(body);
-		return ResponseEntity.noContent().build();
-	}
+
 }
