@@ -16,6 +16,7 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;

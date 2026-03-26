@@ -17,7 +17,10 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = DdiResourcesDisabledIntegrationTest.TestConfiguration.class)
-@TestPropertySource(properties = "fr.insee.rmes.bauhaus.activeModules=concepts")
+@TestPropertySource(properties = {
+        "fr.insee.rmes.bauhaus.modules[0].identifier=concepts",
+        "fr.insee.rmes.bauhaus.modules[6].disabled=true"
+})
 class DdiResourcesDisabledIntegrationTest {
 
     @Configuration

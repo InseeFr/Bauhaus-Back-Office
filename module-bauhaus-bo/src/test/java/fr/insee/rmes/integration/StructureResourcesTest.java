@@ -1,6 +1,7 @@
 package fr.insee.rmes.integration;
 
 
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
@@ -33,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers = StructureResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.activeModules=operations",
+                "fr.insee.rmes.bauhaus.modules[0].identifier=structures",
                 "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         }
 )
@@ -66,6 +67,11 @@ class StructureResourcesTest extends AbstractResourcesEnvProd{
         @Bean
         StructureService structureService() {
             return Mockito.mock(StructureService.class);
+        }
+
+        @Bean
+        StructureComponent structureComponentService() {
+            return Mockito.mock(StructureComponent.class);
         }
     }
 

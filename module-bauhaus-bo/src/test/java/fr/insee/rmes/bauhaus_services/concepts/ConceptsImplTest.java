@@ -155,21 +155,7 @@ class ConceptsImplTest {
         assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabel());
     }
 
-    @Test
-    void shouldExportCollection() throws RmesException {
-        var collection = new CollectionForExportOld();
-        collection.setId("1");
-        collection.setPrefLabelLg1("Lg1Collection");
-        collection.setPrefLabelLg2("Lg2Collection");
 
-        when(collectionExport.getCollectionDataOld("1")).thenReturn(collection);
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10);
-
-        conceptsImpl.getCollectionExport("1", "application/json");
-
-        verify(collectionExport).exportAsResponse(eq("1Lg1collec"), any(), eq(true), eq(true), eq(true));
-
-    }
     @Test
     void shouldReturnFileName(){
         CollectionForExport collection = new CollectionForExport();

@@ -13,7 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = CollectionsResourcesEnabledIntegrationTest.TestConfiguration.class)
-@TestPropertySource(properties = "fr.insee.rmes.bauhaus.activeModules=concepts")
+@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules[0].identifier=concepts")
 class CollectionsResourcesEnabledIntegrationTest {
 
     @Configuration

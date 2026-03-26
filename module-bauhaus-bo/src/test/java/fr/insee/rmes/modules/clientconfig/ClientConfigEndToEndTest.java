@@ -40,7 +40,6 @@ class ClientConfigEndToEndTest {
         assertThat(props.has("lg1")).isTrue();
         assertThat(props.has("lg2")).isTrue();
         assertThat(props.has("authType")).isTrue();
-        assertThat(props.has("activeModules")).isTrue();
         assertThat(props.has("modules")).isTrue();
         assertThat(props.has("version")).isTrue();
         assertThat(props.has("extraMandatoryFields")).isTrue();

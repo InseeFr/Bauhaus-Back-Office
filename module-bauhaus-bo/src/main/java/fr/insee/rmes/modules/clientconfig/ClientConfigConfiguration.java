@@ -27,7 +27,6 @@ public class ClientConfigConfiguration {
                 bauhausConfiguration.lg1(),
                 bauhausConfiguration.lg2(),
                 bauhausConfiguration.env(),
-                bauhausConfiguration.activeModules(),
                 bauhausConfiguration.modules(),
                 bauhausConfiguration.version(),
                 extraMandatoryFields,
