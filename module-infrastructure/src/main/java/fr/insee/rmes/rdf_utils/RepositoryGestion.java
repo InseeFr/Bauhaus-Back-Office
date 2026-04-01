@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -411,6 +413,22 @@ public class RepositoryGestion {
 		} catch (RepositoryException e) {
             throw new RmesException("Failure override triplets" + simsUri, e);
 		}
+	}
+
+	public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
+		Model combinedModel = new LinkedHashModel();
+		try (RepositoryConnection connection = repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()).getConnection()) {
+			connection.begin();
+			for (SubjectModelGraph update : updates) {
+				update.model().predicates().forEach(predicate -> connection.remove(update.subject(), predicate, null, update.graph()));
+				combinedModel.addAll(update.model());
+			}
+			connection.add(combinedModel);
+			connection.commit();
+		} catch (RepositoryException e) {
+			throw new RmesException("Failure bulk override triplets", e);
+		}
+
 	}
 
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {

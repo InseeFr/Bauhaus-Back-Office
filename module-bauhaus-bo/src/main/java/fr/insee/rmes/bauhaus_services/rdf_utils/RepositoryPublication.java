@@ -3,10 +3,12 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -183,6 +185,22 @@ public class RepositoryPublication{
 		try (RepositoryConnection conn = repo.getConnection()) {
 			model.predicates().forEach(predicate -> conn.remove(subject, predicate, null, graph));
 			conn.add(model);
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+		}
+	}
+
+	public void bulkOverrideTriplets(List<SubjectModelGraph> updates) throws RmesException {
+		Model combinedModel = new LinkedHashModel();
+		Repository repo = repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
+		try (RepositoryConnection conn = repo.getConnection()) {
+			conn.begin();
+			for (SubjectModelGraph update : updates) {
+				update.model().predicates().forEach(predicate -> conn.remove(update.subject(), predicate, null, update.graph()));
+				combinedModel.addAll(update.model());
+			}
+			conn.add(combinedModel);
+			conn.commit();
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}

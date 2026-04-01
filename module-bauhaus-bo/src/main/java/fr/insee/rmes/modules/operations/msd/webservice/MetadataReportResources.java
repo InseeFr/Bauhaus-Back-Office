@@ -194,14 +194,14 @@ public class MetadataReportResources {
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
-	@PostMapping(value = "/metadataReport/migrate/htmlToMarkdown")
+	@GetMapping(value = "/metadataReport/migrate/htmlToMarkdown")
 	public ResponseEntity<Object> migrateSimsHtmlToMarkdown() throws GenericInternalServerException {
 		int count = simsMigrationService.migrateHtmlToMarkdown();
 		return ResponseEntity.ok(count);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
-	@PostMapping(value = "/metadataReport/migrate/publication/htmlToMarkdown")
+	@GetMapping(value = "/metadataReport/migrate/publication/htmlToMarkdown")
 	public ResponseEntity<Object> migratePublicationSimsHtmlToMarkdown() throws GenericInternalServerException {
 		int count = simsMigrationService.migratePublicationHtmlToMarkdown();
 		return ResponseEntity.ok(count);
