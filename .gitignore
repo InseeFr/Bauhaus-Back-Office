@@ -12,4 +12,5 @@ node_modules
 # Local Netlify folder
 .netlify
 CLAUDE.md
-fr/
+/fr/
+.DS_Store
