@@ -37,7 +37,7 @@ public class SimsMigrationServiceImpl implements SimsMigrationService {
 
             long tConvert = System.currentTimeMillis();
             List<SimsConvertedTextNode> converted = batch.stream()
-                    .map(node -> new SimsConvertedTextNode(node.graph(), node.uri(), node.predicate(), false, XhtmlToMarkdownUtils.xhtmlToMarkdown(node.value()), null))
+                    .map(node -> new SimsConvertedTextNode(node.graph(), node.uri(), node.predicate(), false, XhtmlToMarkdownUtils.xhtmlToMarkdown(node.value()), null, node.lang()))
                     .toList();
             logger.info("Gestion Flexmark conversion took {}ms for {} nodes", System.currentTimeMillis() - tConvert, batch.size());
 
@@ -67,7 +67,7 @@ public class SimsMigrationServiceImpl implements SimsMigrationService {
 
             long tConvert = System.currentTimeMillis();
             List<SimsConvertedTextNode> converted = batch.stream()
-                    .map(node -> new SimsConvertedTextNode(node.graph(), node.uri(), node.predicate(), node.needHTML(), XhtmlToMarkdownUtils.xhtmlToMarkdown(node.value()), node.value()))
+                    .map(node -> new SimsConvertedTextNode(node.graph(), node.uri(), node.predicate(), node.needHTML(), XhtmlToMarkdownUtils.xhtmlToMarkdown(node.value()), node.value(), node.lang()))
                     .toList();
             logger.info("Publication Flexmark conversion took {}ms for {} nodes", System.currentTimeMillis() - tConvert, batch.size());
 

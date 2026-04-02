@@ -1,4 +1,4 @@
-SELECT ?graph ?uri ?predicate ?value ?needHTML
+SELECT ?graph ?uri ?predicate ?value ?needHTML ?lang
 WHERE {
   {
     GRAPH ?graph {
@@ -13,6 +13,7 @@ WHERE {
     }
     BIND(rdf:value AS ?predicate)
     BIND(true AS ?needHTML)
+    BIND("" AS ?lang)
   }
   UNION {
     GRAPH ?graph {
@@ -23,6 +24,7 @@ WHERE {
       ?predicate rdfs:range xsd:string .
     }
     BIND(false AS ?needHTML)
+    BIND(LANG(?value) AS ?lang)
   }
 }
 ORDER BY ?graph ?uri

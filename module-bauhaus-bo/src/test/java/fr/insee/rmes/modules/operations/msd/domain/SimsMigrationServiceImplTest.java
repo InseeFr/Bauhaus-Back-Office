@@ -32,8 +32,8 @@ class SimsMigrationServiceImplTest {
     @Test
     void migrateHtmlToMarkdown_callsBulkUpdatePerBatch() throws GenericInternalServerException {
         List<SimsTextNode> nodes = List.of(
-                new SimsTextNode("graph1", "uri1", "pred1", "<p>Hello</p>", false),
-                new SimsTextNode("graph2", "uri2", "pred2", "<b>World</b>", false)
+                new SimsTextNode("graph1", "uri1", "pred1", "<p>Hello</p>", false, ""),
+                new SimsTextNode("graph2", "uri2", "pred2", "<b>World</b>", false, "")
         );
         when(repository.findHtmlTextNodes(anyInt(), eq(0))).thenReturn(nodes);
         when(repository.findHtmlTextNodes(anyInt(), eq(500))).thenReturn(List.of());
@@ -48,7 +48,7 @@ class SimsMigrationServiceImplTest {
     @Test
     void migrateHtmlToMarkdown_convertsAllNodesToMarkdown() throws GenericInternalServerException {
         List<SimsTextNode> nodes = List.of(
-                new SimsTextNode("graph1", "uri1", "pred1", "<p>Hello</p>", false)
+                new SimsTextNode("graph1", "uri1", "pred1", "<p>Hello</p>", false, "")
         );
         when(repository.findHtmlTextNodes(anyInt(), eq(0))).thenReturn(nodes);
         when(repository.findHtmlTextNodes(anyInt(), eq(500))).thenReturn(List.of());
@@ -71,8 +71,8 @@ class SimsMigrationServiceImplTest {
     @Test
     void migratePublicationHtmlToMarkdown_callsBulkUpdatePerBatch() throws GenericInternalServerException {
         List<SimsTextNode> nodes = List.of(
-                new SimsTextNode("graph1", "uri1", "pred1", "<p>Hello</p>", true),
-                new SimsTextNode("graph2", "uri2", "pred2", "<b>World</b>", false)
+                new SimsTextNode("graph1", "uri1", "pred1", "<p>Hello</p>", true, ""),
+                new SimsTextNode("graph2", "uri2", "pred2", "<b>World</b>", false, "")
         );
         when(repository.findPublicationHtmlTextNodes(anyInt(), eq(0))).thenReturn(nodes);
         when(repository.findPublicationHtmlTextNodes(anyInt(), eq(500))).thenReturn(List.of());
@@ -88,7 +88,7 @@ class SimsMigrationServiceImplTest {
     void migratePublicationHtmlToMarkdown_preservesHtmlAndNeedHtmlFlag() throws GenericInternalServerException {
         String html = "<p>Hello</p>";
         List<SimsTextNode> nodes = List.of(
-                new SimsTextNode("graph1", "uri1", "pred1", html, true)
+                new SimsTextNode("graph1", "uri1", "pred1", html, true, "")
         );
         when(repository.findPublicationHtmlTextNodes(anyInt(), eq(0))).thenReturn(nodes);
         when(repository.findPublicationHtmlTextNodes(anyInt(), eq(500))).thenReturn(List.of());

@@ -61,7 +61,8 @@ public class GraphDBSimsMigrationRepository implements SimsMigrationRepository {
                     row.getString("uri"),
                     row.getString("predicate"),
                     row.getString("value"),
-                    row.optBoolean("needHTML", false)
+                    row.optBoolean("needHTML", false),
+                    row.optString("lang", "")
             ));
         }
         return nodes;
@@ -73,7 +74,10 @@ public class GraphDBSimsMigrationRepository implements SimsMigrationRepository {
             var graphIri = Values.iri(node.graph());
             var uriIri = Values.iri(node.uri());
             Model model = new LinkedHashModel();
-            model.add(uriIri, Values.iri(node.predicate()), Values.literal(node.markdown()), graphIri);
+            var literal = node.lang() != null && !node.lang().isEmpty()
+                    ? Values.literal(node.markdown(), node.lang())
+                    : Values.literal(node.markdown());
+            model.add(uriIri, Values.iri(node.predicate()), literal, graphIri);
             return new SubjectModelGraph(uriIri, model, graphIri);
         }).toList();
         try {
@@ -89,7 +93,10 @@ public class GraphDBSimsMigrationRepository implements SimsMigrationRepository {
             var graphIri = Values.iri(node.graph());
             var uriIri = Values.iri(node.uri());
             Model model = new LinkedHashModel();
-            model.add(uriIri, Values.iri(node.predicate()), Values.literal(node.markdown()), graphIri);
+            var literal = node.lang() != null && !node.lang().isEmpty()
+                    ? Values.literal(node.markdown(), node.lang())
+                    : Values.literal(node.markdown());
+            model.add(uriIri, Values.iri(node.predicate()), literal, graphIri);
             if (node.needHTML()) {
                 model.add(uriIri, INSEE.HTML, Values.literal(node.html()), graphIri);
             }
