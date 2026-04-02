@@ -1,0 +1,23 @@
+<http://rdf.insee.fr/graphes/concepts/definitions> {
+    <http://id.insee.fr/concepts/theme/t001>
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Agriculture"@fr ;
+        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/inseeTheme> .
+
+    <http://id.insee.fr/concepts/theme/t002>
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Économie"@fr ;
+        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/inseeTheme> .
+
+    <http://id.insee.fr/concepts/scheme/inseeTheme>
+        <http://www.w3.org/2004/02/skos/core#notation> "inseeTheme" .
+
+    <http://id.insee.fr/concepts/theme/t003>
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Démographie"@fr ;
+        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/classificationOfStatisticalDomain> .
+
+    <http://id.insee.fr/concepts/theme/t004>
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Emploi"@fr ;
+        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/classificationOfStatisticalDomain> .
+
+    <http://id.insee.fr/concepts/scheme/classificationOfStatisticalDomain>
+        <http://www.w3.org/2004/02/skos/core#notation> "classificationOfStatisticalDomain" .
+}
