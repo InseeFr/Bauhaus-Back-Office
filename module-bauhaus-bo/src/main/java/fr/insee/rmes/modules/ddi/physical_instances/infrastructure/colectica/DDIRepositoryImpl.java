@@ -697,7 +697,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             id,
             version,
             citation,
-            (operationIri == null || operationIri.isEmpty()) ? null : operationIri
+            (operationIri == null || operationIri.isEmpty()) ? null : operationIri,
+            null
         );
     }
 

@@ -357,7 +357,8 @@ class Ddi3XmlWriterTest {
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(new Title(new StringValue("fr-FR", "BPE 2021 StudyUnit"))),
-                "http://id.insee.fr/operations/operation/s1001a1"
+                "http://id.insee.fr/operations/operation/s1001a1",
+                null
         );
 
         // When
@@ -383,6 +384,7 @@ class Ddi3XmlWriterTest {
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(new Title(new StringValue("fr-FR", "Test SU"))),
+                null,
                 null
         );
 

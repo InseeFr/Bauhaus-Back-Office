@@ -62,7 +62,8 @@ class StudyUnitResourcesTest {
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(new Title(new StringValue("fr-FR", "Test StudyUnit"))),
-                "http://id.insee.fr/operations/operation/op1"
+                "http://id.insee.fr/operations/operation/op1",
+                null
         );
 
         ResponseEntity<Void> response = studyUnitResources.createOrUpdateStudyUnit(studyUnit);
@@ -77,7 +78,8 @@ class StudyUnitResourcesTest {
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(new Title(new StringValue("fr-FR", "Test StudyUnit"))),
-                "http://id.insee.fr/operations/operation/op1"
+                "http://id.insee.fr/operations/operation/op1",
+                null
         );
 
         doThrow(new RuntimeException("Colectica error")).when(studyUnitService).createOrUpdate(studyUnit);

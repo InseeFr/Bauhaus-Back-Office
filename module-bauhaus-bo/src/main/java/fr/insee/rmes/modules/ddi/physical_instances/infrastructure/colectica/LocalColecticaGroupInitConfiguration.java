@@ -3,11 +3,17 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StringValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Title;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaItem;
@@ -62,6 +68,7 @@ public class LocalColecticaGroupInitConfiguration {
     CommandLineRunner initColecticaGroups(
             GroupService groupService,
             StudyUnitService studyUnitService,
+            DDIService ddiService,
             RepositoryGestion repositoryGestion,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator colecticaAuthenticator,
@@ -87,13 +94,13 @@ public class LocalColecticaGroupInitConfiguration {
             logger.info("Found {} series", seriesData.size());
 
             // Step 3: Create study units and groups
-            // Step 3a: Create StudyUnits FIRST so they exist with full content
-            // before Groups reference them. If Groups are created first, Colectica
-            // auto-creates empty StudyUnit stubs (Version=1) from the references,
-            // and RegisterOrReplace with Version=1 cannot overwrite those stubs.
-            logger.info("Step 3a: Creating study units in Colectica FIRST");
+            // Step 3a: Create PhysicalInstances and StudyUnits FIRST so they exist with full content
+            // before Groups reference them. PhysicalInstances are created before StudyUnits so that
+            // StudyUnits can embed a PhysicalInstanceReference pointing to the already-created PI.
+            logger.info("Step 3a: Creating physical instances and study units in Colectica FIRST");
             int groupsCreated = 0;
             int studyUnitsCreated = 0;
+            int physicalInstancesCreated = 0;
 
             for (SeriesWithOperations series : seriesData) {
                 for (OperationInfo operation : series.operations()) {
@@ -110,7 +117,8 @@ public class LocalColecticaGroupInitConfiguration {
                                 studyUnitId,
                                 "1",
                                 new Citation(new Title(new StringValue(defaultLang, studyUnitLabel))),
-                                operation.operationIri()
+                                operation.operationIri(),
+                                null
                         );
 
                         logger.info("Creating study unit: operationId={}, uri={}, generatedUuid={}, label='{}'",
@@ -118,8 +126,16 @@ public class LocalColecticaGroupInitConfiguration {
                         studyUnitService.createOrUpdate(studyUnit);
                         studyUnitsCreated++;
                         logger.info("Study unit created successfully: operationId={}", operation.operationId());
+
+                        String physicalInstanceLabel = operation.operationLabel() + " Physical Instance";
+                        logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
+                        Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null));
+                        Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
+                        studyUnitService.addPhysicalInstance(studyUnit, new DDIReference(pi.agency(), pi.id(), pi.version()));
+                        physicalInstancesCreated++;
+                        logger.info("Physical instance created and linked to study unit: operationId={}, piId={}", operation.operationId(), pi.id());
                     } catch (Exception e) {
-                        logger.error("Failed to create study unit for operation: id={}, uri={}", operation.operationId(), operation.operationIri(), e);
+                        logger.error("Failed to create study unit or physical instance for operation: id={}, uri={}", operation.operationId(), operation.operationIri(), e);
                     }
                 }
             }
@@ -166,7 +182,7 @@ public class LocalColecticaGroupInitConfiguration {
                 }
             }
 
-            logger.info("=== Colectica initialization complete: {} groups, {} study units created ===", groupsCreated, studyUnitsCreated);
+            logger.info("=== Colectica initialization complete: {} groups, {} study units, {} physical instances created ===", groupsCreated, studyUnitsCreated, physicalInstancesCreated);
 
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
