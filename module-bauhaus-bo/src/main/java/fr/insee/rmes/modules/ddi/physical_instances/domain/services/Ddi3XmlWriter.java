@@ -23,9 +23,77 @@ public class Ddi3XmlWriter {
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
     private static final String DDI_PHYSICAL_INSTANCE_NS = "ddi:physicalinstance:3_3";
     private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
+    private static final String DDI_GROUP_NS = "ddi:group:3_3";
+    private static final String DDI_STUDY_UNIT_NS = "ddi:studyunit:3_3";
 
     public Ddi3XmlWriter(Map<String, String> itemTypes) {
         this.itemTypes = itemTypes;
+    }
+
+    public String buildGroupXml(Ddi4Group group) throws XMLStreamException {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var groupType = doc.addNewFragment().addNewGroup();
+
+        groupType.setIsUniversallyUnique(Boolean.parseBoolean(group.isUniversallyUnique()));
+        groupType.setVersionDate(group.versionDate());
+        groupType.addNewURN().setStringValue(group.urn());
+        groupType.addAgency(group.agency());
+        groupType.addNewID().setStringValue(group.id());
+        groupType.addVersion(group.version());
+
+        if (group.seriesIri() != null && !group.seriesIri().isEmpty()) {
+            var userId = groupType.addNewUserID();
+            userId.setTypeOfUserID("URI");
+            userId.setStringValue(group.seriesIri());
+        }
+
+        if (group.typeOfGroup() != null && !group.typeOfGroup().isEmpty()) {
+            groupType.addNewTypeOfGroup().setStringValue(group.typeOfGroup());
+        }
+
+        if (group.citation() != null && group.citation().title() != null) {
+            StringType titleStr = groupType.addNewCitation().addNewTitle().addNewString();
+            titleStr.setLang(group.citation().title().string().xmlLang());
+            titleStr.setStringValue(group.citation().title().string().text());
+        }
+
+        if (group.studyUnitReference() != null) {
+            for (StudyUnitReference suRef : group.studyUnitReference()) {
+                ReferenceType refType = groupType.addNewStudyUnitReference();
+                refType.addAgency(suRef.agency());
+                refType.addNewID().setStringValue(suRef.id());
+                refType.addVersion(suRef.version());
+                refType.setTypeOfObject(TypeOfObjectType.Enum.forString(suRef.typeOfObject()));
+            }
+        }
+
+        return doc.xmlText(fragmentXmlOptions(DDI_GROUP_NS));
+    }
+
+    public String buildStudyUnitXml(Ddi4StudyUnit studyUnit) throws XMLStreamException {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var suType = doc.addNewFragment().addNewStudyUnit();
+
+        suType.setIsUniversallyUnique(Boolean.parseBoolean(studyUnit.isUniversallyUnique()));
+        suType.setVersionDate(studyUnit.versionDate());
+        suType.addNewURN().setStringValue(studyUnit.urn());
+        suType.addAgency(studyUnit.agency());
+        suType.addNewID().setStringValue(studyUnit.id());
+        suType.addVersion(studyUnit.version());
+
+        if (studyUnit.operationIri() != null && !studyUnit.operationIri().isEmpty()) {
+            var userId = suType.addNewUserID();
+            userId.setTypeOfUserID("URI");
+            userId.setStringValue(studyUnit.operationIri());
+        }
+
+        if (studyUnit.citation() != null && studyUnit.citation().title() != null) {
+            StringType titleStr = suType.addNewCitation().addNewTitle().addNewString();
+            titleStr.setLang(studyUnit.citation().title().string().xmlLang());
+            titleStr.setStringValue(studyUnit.citation().title().string().text());
+        }
+
+        return doc.xmlText(fragmentXmlOptions(DDI_STUDY_UNIT_NS));
     }
 
     public String buildPhysicalInstanceXml(Ddi4PhysicalInstance pi) throws XMLStreamException {

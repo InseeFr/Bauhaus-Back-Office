@@ -5,8 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Ddi3XmlWriterTest {
@@ -291,5 +293,105 @@ class Ddi3XmlWriterTest {
 
         // Then
         assertEquals("<Fragment xmlns=\"ddi:instance:3_3\"><ddi:Variable isUniversallyUnique=\"true\" versionDate=\"2025-12-23T09:52:06.355Z\" xmlns:ddi=\"ddi:logicalproduct:3_3\"><r:URN xmlns:r=\"ddi:reusable:3_3\">urn:ddi:fr.insee:new-var-id:1</r:URN><r:Agency xmlns:r=\"ddi:reusable:3_3\">fr.insee</r:Agency><r:ID xmlns:r=\"ddi:reusable:3_3\">new-var-id</r:ID><r:Version xmlns:r=\"ddi:reusable:3_3\">1</r:Version><r:BasedOnObject xmlns:r=\"ddi:reusable:3_3\"><r:BasedOnReference><r:Agency>fr.insee</r:Agency><r:ID>original-var-id</r:ID><r:Version>1</r:Version><r:TypeOfObject>Variable</r:TypeOfObject></r:BasedOnReference></r:BasedOnObject><ddi:VariableName><r:String xml:lang=\"fr-FR\" xmlns:r=\"ddi:reusable:3_3\">TEST_VAR</r:String></ddi:VariableName><r:Label xmlns:r=\"ddi:reusable:3_3\"><r:Content xml:lang=\"fr-FR\">Test Variable</r:Content></r:Label><ddi:VariableRepresentation/></ddi:Variable></Fragment>", xml);
+    }
+
+    @Test
+    void shouldWriteGroupXml() throws XMLStreamException {
+        // Given
+        Ddi4Group group = new Ddi4Group(
+                "true", "2026-04-03T12:00:00Z",
+                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "bauhaus-test",
+                new Citation(new Title(new StringValue("fr-FR", "Enquête innovation Group"))),
+                List.of(new StudyUnitReference("fr.insee", "su-id-1", "1", "StudyUnit")),
+                "http://id.insee.fr/operations/serie/s1001",
+                "insee:StatisticalOperationSeries"
+        );
+
+        // When
+        String xml = writer.buildGroupXml(group);
+
+        // Then
+        assertThat(xml).contains("<Fragment");
+        assertThat(xml).contains("isUniversallyUnique=\"true\"");
+        assertThat(xml).contains("versionDate=\"2026-04-03T12:00:00Z\"");
+        assertThat(xml).contains(">urn:ddi:fr.insee:group-id:1<");
+        assertThat(xml).contains(">fr.insee<");
+        assertThat(xml).contains(">group-id<");
+        assertThat(xml).contains(">1<");
+        assertThat(xml).contains("typeOfUserID=\"URI\"");
+        assertThat(xml).contains(">http://id.insee.fr/operations/serie/s1001<");
+        assertThat(xml).contains(">insee:StatisticalOperationSeries<");
+        assertThat(xml).contains("xml:lang=\"fr-FR\"");
+        assertThat(xml).contains(">Enquête innovation Group<");
+        assertThat(xml).contains(">su-id-1<");
+        assertThat(xml).contains(">StudyUnit<");
+    }
+
+    @Test
+    void shouldWriteGroupXmlWithoutOptionalFields() throws XMLStreamException {
+        // Given
+        Ddi4Group group = new Ddi4Group(
+                "true", "2026-04-03T12:00:00Z",
+                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "bauhaus-test",
+                new Citation(new Title(new StringValue("fr-FR", "Test Group"))),
+                List.of(),
+                null, null
+        );
+
+        // When
+        String xml = writer.buildGroupXml(group);
+
+        // Then
+        assertThat(xml).contains("<Fragment");
+        assertThat(xml).contains(">Test Group<");
+        assertThat(xml).doesNotContain("typeOfUserID");
+        assertThat(xml).doesNotContain("TypeOfGroup");
+    }
+
+    @Test
+    void shouldWriteStudyUnitXml() throws XMLStreamException {
+        // Given
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                "true", "2026-04-03T12:00:00Z",
+                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                new Citation(new Title(new StringValue("fr-FR", "BPE 2021 StudyUnit"))),
+                "http://id.insee.fr/operations/operation/s1001a1"
+        );
+
+        // When
+        String xml = writer.buildStudyUnitXml(studyUnit);
+
+        // Then
+        assertThat(xml).contains("<Fragment");
+        assertThat(xml).contains("isUniversallyUnique=\"true\"");
+        assertThat(xml).contains("versionDate=\"2026-04-03T12:00:00Z\"");
+        assertThat(xml).contains(">urn:ddi:fr.insee:su-id:1<");
+        assertThat(xml).contains(">fr.insee<");
+        assertThat(xml).contains(">su-id<");
+        assertThat(xml).contains("typeOfUserID=\"URI\"");
+        assertThat(xml).contains(">http://id.insee.fr/operations/operation/s1001a1<");
+        assertThat(xml).contains("xml:lang=\"fr-FR\"");
+        assertThat(xml).contains(">BPE 2021 StudyUnit<");
+    }
+
+    @Test
+    void shouldWriteStudyUnitXmlWithoutOperationIri() throws XMLStreamException {
+        // Given
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                "true", "2026-04-03T12:00:00Z",
+                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                new Citation(new Title(new StringValue("fr-FR", "Test SU"))),
+                null
+        );
+
+        // When
+        String xml = writer.buildStudyUnitXml(studyUnit);
+
+        // Then
+        assertThat(xml).contains("<Fragment");
+        assertThat(xml).contains(">Test SU<");
+        assertThat(xml).doesNotContain("typeOfUserID");
     }
 }

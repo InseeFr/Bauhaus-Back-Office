@@ -2,7 +2,7 @@ fr.insee.rmes.bauhaus.colectica:
   langs:
     - fr-FR
     - en-GB
-
+  init: true
   mock-server-enabled: false
 
   server:
@@ -15,7 +15,7 @@ fr.insee.rmes.bauhaus.colectica:
       Category: 7e47c269-bcab-40f7-a778-af7bbc4e3d00
     versionResponsibility: abcde
     itemFormat: DC337820-AF3A-4C0B-82F9-CF02535CDE83
-    baseUrl: https://proxy-6ihxddcaqa-uc.a.run.app
+    baseUrl: https://metadonnees-operations-demo.insee.fr/
     apiPath: /api/v1/
     defaultAgencyId: fr.insee
 
@@ -28,8 +28,8 @@ fr.insee.rmes.bauhaus.colectica:
 
     # Credentials for "password" authentication mode
     # Override these values in environment-specific configuration files
-    username: ""
-    password: ""
+    username:
+    password:
 
     # Static token for "token" authentication mode
     # Override this value when using token-based authentication

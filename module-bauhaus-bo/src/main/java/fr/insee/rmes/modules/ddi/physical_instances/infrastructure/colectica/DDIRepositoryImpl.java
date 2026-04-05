@@ -151,6 +151,42 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<PartialStudyUnit> getStudyUnits() {
+        logger.info("Getting study units from Colectica API via HTTP");
+
+        return authenticator.executeWithAuth(token -> {
+            String url = instanceConfiguration.baseApiUrl() + "_query";
+
+            QueryRequest requestBody = new QueryRequest(List.of("30ea0200-7121-4f01-8d21-a931a182b86d"));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+
+            return response.results().stream()
+                    .map(item -> {
+                        String id = item.identifier();
+                        String label = extractLabelFromItem(item);
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                        Date date = null;
+                        try {
+                            date = formatter.parse(item.versionDate());
+                        } catch (ParseException | NullPointerException _) {
+                            logger.debug("Impossible to parse {}", item.versionDate());
+                        }
+                        String agency = item.agencyId();
+                        return new PartialStudyUnit(id, label, date, agency);
+                    })
+                    .toList();
+        });
+    }
+
+    @Override
     public List<PartialCodesList> getCodesLists() {
         logger.info("Getting codes lists from Colectica API via HTTP");
 
@@ -616,6 +652,10 @@ public class DDIRepositoryImpl implements DDIRepository {
         // Parse StudyUnitReferences
         List<StudyUnitReference> studyUnitReferences = parseStudyUnitReferences(groupElement);
 
+        // Parse UserID (seriesIri) and TypeOfGroup
+        String seriesIri = getElementTextContent(groupElement, "ddi:reusable:3_3", "UserID");
+        String typeOfGroup = getElementTextContent(groupElement, "ddi:group:3_3", "TypeOfGroup");
+
         return new Ddi4Group(
             isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
             versionDate.isEmpty() ? null : versionDate,
@@ -625,7 +665,9 @@ public class DDIRepositoryImpl implements DDIRepository {
             version,
             versionResponsibility,
             citation,
-            studyUnitReferences
+            studyUnitReferences,
+            (seriesIri == null || seriesIri.isEmpty()) ? null : seriesIri,
+            (typeOfGroup == null || typeOfGroup.isEmpty()) ? null : typeOfGroup
         );
     }
 
@@ -644,14 +686,18 @@ public class DDIRepositoryImpl implements DDIRepository {
         // Parse Citation
         Citation citation = parseCitation(studyUnitElement);
 
+        // Parse UserID (operationIri)
+        String operationIri = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "UserID");
+
         return new Ddi4StudyUnit(
-            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
-            versionDate.isEmpty() ? null : versionDate,
+            (isUniversallyUnique == null || isUniversallyUnique.isEmpty()) ? null : isUniversallyUnique,
+            (versionDate == null || versionDate.isEmpty()) ? null : versionDate,
             urn,
             agency,
             id,
             version,
-            citation
+            citation,
+            (operationIri == null || operationIri.isEmpty()) ? null : operationIri
         );
     }
 
