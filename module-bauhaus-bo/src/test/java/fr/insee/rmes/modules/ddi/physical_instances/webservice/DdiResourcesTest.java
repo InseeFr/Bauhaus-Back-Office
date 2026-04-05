@@ -515,7 +515,9 @@ class DdiResourcesTest {
             "true", "2025-01-09T09:00:00.000000Z",
             "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
             "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
-            "abcde", citation, List.of(suRef1, suRef2)
+            "abcde", citation, List.of(suRef1, suRef2),
+            "http://id.insee.fr/operations/serie/s1001",
+            "insee:StatisticalOperationSeries"
         );
 
         // Create StudyUnits
@@ -527,7 +529,8 @@ class DdiResourcesTest {
             "true", "2025-01-09T09:00:00.000000Z",
             "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
             "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
-            su1Citation
+            su1Citation,
+            "http://id.insee.fr/operations/operation/op1"
         );
 
         StringValue su2TitleStringValue = new StringValue("fr-FR", "BPE 2022");
@@ -538,7 +541,8 @@ class DdiResourcesTest {
             "true", "2025-01-09T09:00:00.000000Z",
             "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
             "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
-            su2Citation
+            su2Citation,
+            "http://id.insee.fr/operations/operation/op2"
         );
 
         // Create TopLevelReference

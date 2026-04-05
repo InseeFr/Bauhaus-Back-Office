@@ -191,21 +191,25 @@ class DDIServiceImplTest {
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:" + groupId + ":1",
             agencyId, groupId, "1",
-            "bauhaus", citation, List.of(suRef1, suRef2)
+            "bauhaus", citation, List.of(suRef1, suRef2),
+            "http://id.insee.fr/operations/serie/s1001",
+            "insee:StatisticalOperationSeries"
         );
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:su-1:1",
             agencyId, "su-1", "1",
-            new Citation(new Title(new StringValue("fr-FR", "BPE 2021")))
+            new Citation(new Title(new StringValue("fr-FR", "BPE 2021"))),
+            "http://id.insee.fr/operations/operation/op1"
         );
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:su-2:1",
             agencyId, "su-2", "1",
-            new Citation(new Title(new StringValue("fr-FR", "BPE 2022")))
+            new Citation(new Title(new StringValue("fr-FR", "BPE 2022"))),
+            "http://id.insee.fr/operations/operation/op2"
         );
 
         TopLevelReference topLevelRef = new TopLevelReference(agencyId, groupId, "1", "Group");
