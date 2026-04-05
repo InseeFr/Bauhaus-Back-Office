@@ -201,7 +201,8 @@ class DDIServiceImplTest {
             "urn:ddi:fr.insee:su-1:1",
             agencyId, "su-1", "1",
             new Citation(new Title(new StringValue("fr-FR", "BPE 2021"))),
-            "http://id.insee.fr/operations/operation/op1"
+            "http://id.insee.fr/operations/operation/op1",
+            null
         );
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
@@ -209,7 +210,8 @@ class DDIServiceImplTest {
             "urn:ddi:fr.insee:su-2:1",
             agencyId, "su-2", "1",
             new Citation(new Title(new StringValue("fr-FR", "BPE 2022"))),
-            "http://id.insee.fr/operations/operation/op2"
+            "http://id.insee.fr/operations/operation/op2",
+            null
         );
 
         TopLevelReference topLevelRef = new TopLevelReference(agencyId, groupId, "1", "Group");

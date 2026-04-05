@@ -1,9 +1,13 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +43,27 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     public List<PartialStudyUnit> getAll() {
         logger.info("Getting all study units from Colectica");
         return ddiRepository.getStudyUnits();
+    }
+
+    @Override
+    public void addPhysicalInstance(Ddi4StudyUnit studyUnit, DDIReference physicalInstanceReference) {
+        logger.info("Linking physical instance piId={} to study unit id={}", physicalInstanceReference.id(), studyUnit.id());
+        List<DDIReference> refs = new ArrayList<>(
+                studyUnit.physicalInstanceReferences() != null ? studyUnit.physicalInstanceReferences() : List.of()
+        );
+        refs.add(physicalInstanceReference);
+        Ddi4StudyUnit updated = new Ddi4StudyUnit(
+                studyUnit.isUniversallyUnique(),
+                studyUnit.versionDate(),
+                studyUnit.urn(),
+                studyUnit.agency(),
+                studyUnit.id(),
+                studyUnit.version(),
+                studyUnit.citation(),
+                studyUnit.operationIri(),
+                refs
+        );
+        createOrUpdate(updated);
     }
 
     @Override

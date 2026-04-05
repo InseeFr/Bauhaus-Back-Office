@@ -163,7 +163,8 @@ class DDIRepositoryImplGroupTest {
                     "true", "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:su-uuid:1", "fr.insee", "su-uuid", "1",
                     new Citation(new Title(new StringValue("fr-FR", "op1 Study Unit"))),
-                    "http://id.insee.fr/operations/operation/op1"
+                    "http://id.insee.fr/operations/operation/op1",
+                    null
             );
 
             when(ddi3XmlWriter.buildStudyUnitXml(studyUnit)).thenReturn("<Fragment>studyunit-xml</Fragment>");

@@ -530,7 +530,8 @@ class DdiResourcesTest {
             "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
             "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
             su1Citation,
-            "http://id.insee.fr/operations/operation/op1"
+            "http://id.insee.fr/operations/operation/op1",
+            null
         );
 
         StringValue su2TitleStringValue = new StringValue("fr-FR", "BPE 2022");
@@ -542,7 +543,8 @@ class DdiResourcesTest {
             "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
             "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
             su2Citation,
-            "http://id.insee.fr/operations/operation/op2"
+            "http://id.insee.fr/operations/operation/op2",
+            null
         );
 
         // Create TopLevelReference

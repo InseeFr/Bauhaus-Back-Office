@@ -1,7 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -32,6 +35,9 @@ class LocalColecticaGroupInitConfigurationTest {
     private StudyUnitService studyUnitService;
 
     @Mock
+    private DDIService ddiService;
+
+    @Mock
     private RepositoryGestion repositoryGestion;
 
     @Mock
@@ -39,6 +45,12 @@ class LocalColecticaGroupInitConfigurationTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    private Ddi4Response piResponse(String agency, String id) {
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance("true", "2026-01-01T00:00:00Z",
+                "urn:ddi:%s:%s:1".formatted(agency, id), agency, id, "1", null, null, null);
+        return new Ddi4Response(null, null, List.of(pi), null, null, null, null);
+    }
 
     private ColecticaConfiguration createColecticaConfig() {
         var instanceConfig = new ColecticaConfiguration.ColecticaInstanceConfiguration(
@@ -69,10 +81,13 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("operationLabel", "Enquête innovation 2021"));
 
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(ddiService.createPhysicalInstance(any()))
+                .thenReturn(piResponse("fr.insee", "pi-uuid-1"))
+                .thenReturn(piResponse("fr.insee", "pi-uuid-2"));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, repositoryGestion,
+                groupService, studyUnitService, ddiService, repositoryGestion,
                 createColecticaConfig(), colecticaAuthenticator, restTemplate,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
@@ -116,7 +131,7 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, repositoryGestion,
+                groupService, studyUnitService, ddiService, repositoryGestion,
                 createColecticaConfig(), colecticaAuthenticator, restTemplate,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
@@ -154,6 +169,9 @@ class LocalColecticaGroupInitConfigurationTest {
 
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
+        when(ddiService.createPhysicalInstance(any()))
+                .thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+
         // First study unit creation fails
         doThrow(new RuntimeException("API error"))
                 .doNothing()
@@ -161,7 +179,7 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, repositoryGestion,
+                groupService, studyUnitService, ddiService, repositoryGestion,
                 createColecticaConfig(), colecticaAuthenticator, restTemplate,
                 "http://rdf.insee.fr/graphes/", "operations"
         );

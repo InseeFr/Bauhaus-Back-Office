@@ -2,6 +2,8 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * DDI4 StudyUnit domain model.
  * <p>
@@ -17,6 +19,7 @@ public record Ddi4StudyUnit(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("Citation") Citation citation,
-        String operationIri
+        String operationIri,
+        List<DDIReference> physicalInstanceReferences
 ) implements Ddi4Item {
 }

@@ -93,6 +93,16 @@ public class Ddi3XmlWriter {
             titleStr.setStringValue(studyUnit.citation().title().string().text());
         }
 
+        if (studyUnit.physicalInstanceReferences() != null) {
+            for (DDIReference piRef : studyUnit.physicalInstanceReferences()) {
+                ReferenceType refType = suType.addNewPhysicalInstanceReference();
+                refType.addAgency(piRef.agency());
+                refType.addNewID().setStringValue(piRef.id());
+                refType.addVersion(piRef.version());
+                refType.setTypeOfObject(TypeOfObjectType.Enum.forString("PhysicalInstance"));
+            }
+        }
+
         return doc.xmlText(fragmentXmlOptions(DDI_STUDY_UNIT_NS));
     }
 
