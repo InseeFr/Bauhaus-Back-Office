@@ -1,6 +1,6 @@
 rbac:
   config:
-    Administrateur_RMESGNCS:
+    bauhaus_administrateur_RMES:
       structure_structure:
         create: ALL
         read: ALL
@@ -116,7 +116,7 @@ rbac:
         update: ALL
         delete: ALL
         publish: ALL
-    Gestionnaire_structures_RMESGNCS:
+    bauhaus_gestionnaire_structures_RMES:
       structure_structure:
         create: ALL
         read: ALL
@@ -161,7 +161,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Proprietaire_collection_concepts_RMESGNCS:
+    bauhaus_proprietaire_collection_concepts_RMES:
       concept_concept:
         read: ALL
         delete: ALL
@@ -201,7 +201,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Proprietaire_concept_RMESGNCS:
+    bauhaus_proprietaire_concept_RMES:
       concept_concept:
         create: ALL
         read: ALL
@@ -246,7 +246,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Utilisateur_RMESGNCS:
+    bauhaus_utilisateur_RMES:
       structure_structure:
         read: ALL
       structure_component:
@@ -281,7 +281,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Gestionnaire_concept_RMESGNCS:
+    bauhaus_gestionnaire_concept_RMES:
       concept_concept:
         create: STAMP
         read: ALL
@@ -321,7 +321,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Gestionnaire_ensemble_concepts_RMESGNCS:
+    bauhaus_gestionnaire_ensemble_concepts_RMES:
       concept_concept:
         create: STAMP
         read: ALL
@@ -362,7 +362,7 @@ rbac:
       codeslist_partialcodeslist:
         read: ALL
 
-    Gestionnaire_serie_RMESGNCS:
+    bauhaus_gestionnaire_serie_RMES:
       operation_family:
         read: ALL
       operation_series:
@@ -411,7 +411,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Gestionnaire_liste_codes_RMESGNCS:
+    bauhaus_gestionnaire_liste_codes_RMES:
       codeslist_codeslist:
         create: ALL
         read: ALL
@@ -456,7 +456,7 @@ rbac:
         read: ALL
       geography:
         read: ALL
-    Gestionnaire_indicateur_RMESGNCS:
+    bauhaus_gestionnaire_indicateur_RMES:
       operation_family:
         read: STAMP
       operation_series:
@@ -505,7 +505,7 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-    Gestionnaire_jeu_donnees_RMESGNCS:
+    bauhaus_gestionnaire_jeu_donnees_RMES:
       dataset_dataset:
         create: ALL
         read: ALL
