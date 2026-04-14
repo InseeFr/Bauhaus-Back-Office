@@ -12,8 +12,6 @@
   <packaging>pom</packaging>
   <version>1.0.0</version>
   <properties>
-    <!-- TODO : a supprimer après une mise à jour de spring boot > 3.5.10 -->
-    <!-- Fin des dépendances à supprimer pour la maj -->
     <java.version>25</java.version>
     <springdoc.version>2.8.3</springdoc.version>
     <rdf4j.version>5.1.0</rdf4j.version>
