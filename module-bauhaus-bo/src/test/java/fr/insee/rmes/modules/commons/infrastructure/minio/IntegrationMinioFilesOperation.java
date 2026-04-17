@@ -4,7 +4,7 @@ import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
-import io.minio.errors.*;
+import io.minio.errors.MinioException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,8 +14,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,7 +32,7 @@ class IntegrationMinioFilesOperation {
     }
 
     @Test
-    void testWritingThenCheckExistThenCopyThenRead_shouldBeOK() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    void testWritingThenCheckExistThenCopyThenRead_shouldBeOK() throws MinioException, IOException {
         var nomFichier = "test.txt";
         MinioClient minioClient = MinioClient
                 .builder()
@@ -57,7 +55,7 @@ class IntegrationMinioFilesOperation {
     }
 
     @Test
-    void testDelete_shouldRemoveDocument() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    void testDelete_shouldRemoveDocument() throws MinioException, IOException {
         var nomFichier = "file-to-delete.txt";
         MinioClient minioClient = MinioClient
                 .builder()
@@ -77,7 +75,7 @@ class IntegrationMinioFilesOperation {
     }
 
     @Test
-    void testExists_shouldReturnFalse_whenDocumentDoesNotExist() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    void testExists_shouldReturnFalse_whenDocumentDoesNotExist() throws MinioException {
         MinioClient minioClient = MinioClient
                 .builder()
                 .endpoint(container.getS3URL())
@@ -91,7 +89,7 @@ class IntegrationMinioFilesOperation {
     }
 
     @Test
-    void testRead_shouldThrowException_whenDocumentDoesNotExist() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    void testRead_shouldThrowException_whenDocumentDoesNotExist() throws MinioException {
         MinioClient minioClient = MinioClient
                 .builder()
                 .endpoint(container.getS3URL())
@@ -107,7 +105,7 @@ class IntegrationMinioFilesOperation {
     }
 
     @Test
-    void testCopy_shouldThrowException_whenSourceDocumentDoesNotExist() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    void testCopy_shouldThrowException_whenSourceDocumentDoesNotExist() throws MinioException {
         MinioClient minioClient = MinioClient
                 .builder()
                 .endpoint(container.getS3URL())
@@ -123,7 +121,7 @@ class IntegrationMinioFilesOperation {
                 .hasMessageContaining("Error copying file");
     }
 
-    private void createBucket(String bucketName, MinioClient minioClient) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    private void createBucket(String bucketName, MinioClient minioClient) throws MinioException {
         minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     }
 

@@ -43,7 +43,7 @@
     <jaxb.version>4.0.5</jaxb.version>
     <zt.version>1.17</zt.version>
     <saxon.version>12.5</saxon.version>
-    <minio.version>8.5.17</minio.version>
+    <minio.version>9.0.0</minio.version>
     <record.builder.version>44</record.builder.version>
     <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
     <!-- SONAR -->
@@ -59,6 +59,11 @@
         <groupId>io.github.fbibonne</groupId>
         <artifactId>boot-properties-logger-starter</artifactId>
         <version>${boot-properties-logger-starter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>17.0.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -80,6 +85,17 @@
       <groupId>io.minio</groupId>
       <artifactId>minio</artifactId>
       <version>${minio.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>okhttp</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp-jvm</artifactId>
+      <version>5.2.1</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>

@@ -13,9 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
 
 import static org.mockito.Mockito.mock;
 
@@ -58,7 +56,7 @@ class MinioFilesOperationTest {
     void test_read_should_throw_rmes_file_exception_when_minio_client_throws_exception() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(new IOException("Minio error"))
+        doThrow(new MinioException("Minio error"))
             .when(minioClient).getObject(any(GetObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.read(document))
@@ -84,7 +82,7 @@ class MinioFilesOperationTest {
         Document document = new Document("test/path", "file.txt");
         InputStream content = new ByteArrayInputStream("test content".getBytes());
 
-        doThrow(new IOException("Minio error"))
+        doThrow(new MinioException("Minio error"))
             .when(minioClient).putObject(any(PutObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.write(content, document))
@@ -110,7 +108,7 @@ class MinioFilesOperationTest {
         Document srcDocument = new Document("source/path", "source.txt");
         Document targetDocument = new Document("target/path", "target.txt");
 
-        doThrow(new IOException("Minio error"))
+        doThrow(new MinioException("Minio error"))
             .when(minioClient).copyObject(any(CopyObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.copy(srcDocument, targetDocument))
@@ -148,10 +146,10 @@ class MinioFilesOperationTest {
     }
 
     @Test
-    void test_exists_should_return_false_when_minio_throws_io_exception() throws Exception {
+    void test_exists_should_return_false_when_minio_throws_minio_exception() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(new IOException("Connection error"))
+        doThrow(new MinioException("Connection error"))
             .when(minioClient).statObject(any(StatObjectArgs.class));
 
         boolean result = minioFilesOperation.exists(document);
@@ -181,7 +179,7 @@ class MinioFilesOperationTest {
     void test_delete_should_throw_rmes_file_exception_when_minio_client_throws_exception() throws Exception {
         Document document = new Document("test/path", "file.txt");
 
-        doThrow(new IOException("Minio error"))
+        doThrow(new MinioException("Minio error"))
             .when(minioClient).removeObject(any(RemoveObjectArgs.class));
 
         assertThatThrownBy(() -> minioFilesOperation.delete(document))
