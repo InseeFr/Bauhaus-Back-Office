@@ -706,10 +706,10 @@
                             <xsl:with-param name="text" select="substring-after($text,'/&gt;')"/>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="$tag='p' or $tag='strong' or $tag='em' or $tag='ul' or $tag='ol'">
+                    <xsl:when test="$tag='p' or $tag='strong' or $tag='em' or $tag='ul' or $tag='ol' or $tag='h1' or $tag='h2' or $tag='h3' or $tag='h4' or $tag='h5' or $tag='h6'">
                         <xsl:variable name="element-name">
                             <xsl:choose>
-                                <xsl:when test="$tag='p'">p</xsl:when>
+                                <xsl:when test="$tag='p' or starts-with($tag,'h')">p</xsl:when>
                                 <xsl:when test="$tag = 'strong' or $tag='em'">span</xsl:when>
                                 <xsl:when test="$tag='ul' or $tag='ol'">list</xsl:when>
                             </xsl:choose>
@@ -717,6 +717,12 @@
                         <xsl:variable name="attribute-value">
                             <xsl:choose>
                                 <xsl:when test="$tag='p'"><xsl:value-of select="$style"/></xsl:when>
+                                <xsl:when test="$tag='h1'">Heading_20_1</xsl:when>
+                                <xsl:when test="$tag='h2'">Heading_20_2</xsl:when>
+                                <xsl:when test="$tag='h3'">Heading_20_3</xsl:when>
+                                <xsl:when test="$tag='h4'">Heading_20_4</xsl:when>
+                                <xsl:when test="$tag='h5'">Heading_20_5</xsl:when>
+                                <xsl:when test="$tag='h6'">Heading_20_6</xsl:when>
                                 <xsl:when test="$tag = 'strong'">Bold</xsl:when>
                                 <xsl:when test="$tag = 'em'">Italic</xsl:when>
                                 <xsl:when test="$tag='ul'">L1</xsl:when>

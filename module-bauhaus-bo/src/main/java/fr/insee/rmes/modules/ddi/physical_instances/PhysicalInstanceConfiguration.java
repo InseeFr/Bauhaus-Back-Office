@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI4toDDI3ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIServiceImpl;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,12 +19,12 @@ public class PhysicalInstanceConfiguration {
     }
 
     @Bean
-    DDI4toDDI3ConverterService ddi4toDdi3ConverterService(){
-        return new DDI4toDDI3ConverterServiceImpl();
+    DDI4toDDI3ConverterService ddi4toDdi3ConverterService(ColecticaConfiguration colecticaConfiguration){
+        return new DDI4toDDI3ConverterServiceImpl(colecticaConfiguration.server().itemTypes());
     }
 
     @Bean
-    DDI3toDDI4ConverterService ddi3toDdi4ConverterService(){
-        return new DDI3toDDI4ConverterServiceImpl();
+    DDI3toDDI4ConverterService ddi3toDdi4ConverterService(ColecticaConfiguration colecticaConfiguration){
+        return new DDI3toDDI4ConverterServiceImpl(colecticaConfiguration.server().itemTypes());
     }
 }
