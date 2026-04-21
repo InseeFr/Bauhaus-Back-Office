@@ -4,6 +4,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
@@ -20,12 +21,17 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,11 +50,14 @@ class DdiResourcesTest {
     @Mock
     private DDI3toDDI4ConverterService ddi3toDdi4ConverterService;
 
+    @Mock
+    private DDIItemConvertService ddiItemConvertService;
+
     private DdiResources ddiResources;
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService);
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService);
 
         // Setup mock request context for ServletUriComponentsBuilder
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -417,6 +426,112 @@ class DdiResourcesTest {
         assertEquals("file:/jsonSchema.json", responseBody.schema());
 
         verify(ddi3toDdi4ConverterService).convertDdi3ToDdi4(eq(emptyDdi3), anyString());
+    }
+
+    @Test
+    void getItemXmlByVersion_shouldReturn200WithXml_whenItemExists() {
+        String agency = "fr.insee";
+        String id = "c05c0443-fc56-4069-9bea-a9c7300ae0a0";
+        String version = "1";
+        String xml = "<Fragment><PhysicalInstance/></Fragment>";
+        when(ddiService.getItemXml(agency, id, version)).thenReturn(xml);
+
+        ResponseEntity<String> response = ddiResources.getItemXmlByVersion(agency, id, version);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
+        assertEquals(xml, response.getBody());
+        verify(ddiService).getItemXml(agency, id, version);
+    }
+
+    @Test
+    void getItemXmlByVersion_shouldReturn404_whenItemNotFound() {
+        when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
+
+        ResponseEntity<String> response = ddiResources.getItemXmlByVersion("fr.insee", "unknown-id", "1");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getItemJsonByVersion_shouldReturn200WithJson_whenItemExists() {
+        String agency = "fr.insee";
+        String id = "c05c0443-fc56-4069-9bea-a9c7300ae0a0";
+        String version = "1";
+        String xml = "<Fragment><PhysicalInstance/></Fragment>";
+        ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
+        when(ddiService.getItemXml(agency, id, version)).thenReturn(xml);
+        when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
+
+        ResponseEntity<JsonNode> response = ddiResources.getItemJsonByVersion(agency, id, version);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertEquals(expectedJson, response.getBody());
+        verify(ddiItemConvertService).convert(xml);
+    }
+
+    @Test
+    void getItemJsonByVersion_shouldReturn404_whenItemNotFound() {
+        when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
+
+        ResponseEntity<JsonNode> response = ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getItemXml_shouldReturn200WithXml_whenItemExists() {
+        String agency = "fr.insee";
+        String id = "c05c0443-fc56-4069-9bea-a9c7300ae0a0";
+        String xml = "<Fragment><PhysicalInstance/></Fragment>";
+        when(ddiService.getItemXml(agency, id)).thenReturn(xml);
+
+        ResponseEntity<String> response = ddiResources.getItemXml(agency, id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
+        assertEquals(xml, response.getBody());
+        verify(ddiService).getItemXml(agency, id);
+    }
+
+    @Test
+    void getItemXml_shouldReturn404_whenItemNotFound() {
+        when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
+
+        ResponseEntity<String> response = ddiResources.getItemXml("fr.insee", "unknown-id");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getItemJson_shouldReturn200WithJson_whenItemExists() {
+        String agency = "fr.insee";
+        String id = "c05c0443-fc56-4069-9bea-a9c7300ae0a0";
+        String xml = "<Fragment><PhysicalInstance/></Fragment>";
+        ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
+        when(ddiService.getItemXml(agency, id)).thenReturn(xml);
+        when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
+
+        ResponseEntity<JsonNode> response = ddiResources.getItemJson(agency, id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertEquals(expectedJson, response.getBody());
+        verify(ddiItemConvertService).convert(xml);
+    }
+
+    @Test
+    void getItemJson_shouldReturn404_whenItemNotFound() {
+        when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
+
+        ResponseEntity<JsonNode> response = ddiResources.getItemJson("fr.insee", "unknown-id");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
     private Ddi4Response createMockDdi4Response() {

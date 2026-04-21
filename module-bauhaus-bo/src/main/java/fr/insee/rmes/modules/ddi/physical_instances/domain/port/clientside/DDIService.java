@@ -21,4 +21,6 @@ public interface DDIService {
     Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
     List<PartialCodesList> getMutualizedCodesLists();
+    String getItemXml(String agency, String id, String version);
+    String getItemXml(String agency, String id);
 }

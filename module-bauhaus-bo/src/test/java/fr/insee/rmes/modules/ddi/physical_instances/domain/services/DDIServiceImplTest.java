@@ -27,6 +27,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -263,5 +264,41 @@ class DDIServiceImplTest {
         assertEquals("Another Code List", result.get(1).label());
 
         verify(ddiRepository).getMutualizedCodesLists();
+    }
+
+    @Test
+    void shouldGetItemXmlWithVersion() {
+        String agency = "fr.insee";
+        String id = "c05c0443-fc56-4069-9bea-a9c7300ae0a0";
+        String version = "1";
+        String expectedXml = "<Fragment><PhysicalInstance/></Fragment>";
+        when(ddiRepository.getItemXml(agency, id, version)).thenReturn(expectedXml);
+
+        String result = ddiService.getItemXml(agency, id, version);
+
+        assertEquals(expectedXml, result);
+        verify(ddiRepository).getItemXml(agency, id, version);
+    }
+
+    @Test
+    void shouldGetItemXmlLatestVersion() {
+        String agency = "fr.insee";
+        String id = "c05c0443-fc56-4069-9bea-a9c7300ae0a0";
+        String expectedXml = "<Fragment><PhysicalInstance/></Fragment>";
+        when(ddiRepository.getItemXml(agency, id)).thenReturn(expectedXml);
+
+        String result = ddiService.getItemXml(agency, id);
+
+        assertEquals(expectedXml, result);
+        verify(ddiRepository).getItemXml(agency, id);
+    }
+
+    @Test
+    void shouldReturnNullWhenItemXmlNotFound() {
+        when(ddiRepository.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
+
+        String result = ddiService.getItemXml("fr.insee", "unknown-id", "1");
+
+        assertNull(result);
     }
 }

@@ -22,6 +22,7 @@ import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
@@ -59,13 +60,16 @@ public class DdiResources {
     private final DDIService ddiService;
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
     private final DDI3toDDI4ConverterService ddi3toDdi4ConverterService;
+    private final DDIItemConvertService ddiItemConvertService;
 
     public DdiResources(DDIService ddiService,
                         DDI4toDDI3ConverterService ddi4toDdi3ConverterService,
-                        DDI3toDDI4ConverterService ddi3toDdi4ConverterService) {
+                        DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
+                        DDIItemConvertService ddiItemConvertService) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
         this.ddi3toDdi4ConverterService = ddi3toDdi4ConverterService;
+        this.ddiItemConvertService = ddiItemConvertService;
     }
 
     @GetMapping("/physical-instance")
@@ -257,6 +261,64 @@ public class DdiResources {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(schema);
+    }
+
+    @GetMapping(value = "/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<String> getItemXmlByVersion(
+            @PathVariable String agency,
+            @PathVariable String id,
+            @PathVariable String version) {
+        String xml = ddiService.getItemXml(agency, id, version);
+        if (xml == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .body(xml);
+    }
+
+    @GetMapping(value = "/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<JsonNode> getItemJsonByVersion(
+            @PathVariable String agency,
+            @PathVariable String id,
+            @PathVariable String version) {
+        String xml = ddiService.getItemXml(agency, id, version);
+        if (xml == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ddiItemConvertService.convert(xml));
+    }
+
+    @GetMapping(value = "/item/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<String> getItemXml(
+            @PathVariable String agency,
+            @PathVariable String id) {
+        String xml = ddiService.getItemXml(agency, id);
+        if (xml == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .body(xml);
+    }
+
+    @GetMapping(value = "/item/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<JsonNode> getItemJson(
+            @PathVariable String agency,
+            @PathVariable String id) {
+        String xml = ddiService.getItemXml(agency, id);
+        if (xml == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ddiItemConvertService.convert(xml));
     }
 
     @PostMapping("/validate")

@@ -1153,4 +1153,36 @@ public class DDIRepositoryImpl implements DDIRepository {
                 : defaultLang;
         return new Label(new Content(lang, newText));
     }
+
+    @Override
+    public String getItemXml(String agency, String id, String version) {
+        ColecticaItemResponse response = fetchColecticaItem(agency, id, version);
+        return response != null ? response.item() : null;
+    }
+
+    @Override
+    public String getItemXml(String agency, String id) {
+        ColecticaItemResponse response = fetchColecticaItem(agency, id, null);
+        return response != null ? response.item() : null;
+    }
+
+    private ColecticaItemResponse fetchColecticaItem(String agency, String id, String version) {
+        return authenticator.executeWithAuth(token -> {
+            String encodedAgency = URLEncoder.encode(agency, StandardCharsets.UTF_8);
+            String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
+
+            String url = instanceConfiguration.baseApiUrl() + "item/" + encodedAgency + "/" + encodedId;
+            if (version != null && !version.isBlank()) {
+                url += "/" + URLEncoder.encode(version, StandardCharsets.UTF_8);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, ColecticaItemResponse.class).getBody();
+        });
+    }
 }

@@ -2,7 +2,7 @@ fr.insee.rmes.bauhaus.colectica:
   langs:
     - fr-FR
     - en-GB
-  init: true
+  init: false
   mock-server-enabled: false
 
   server:

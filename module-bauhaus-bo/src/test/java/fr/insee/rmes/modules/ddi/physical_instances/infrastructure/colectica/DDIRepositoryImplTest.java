@@ -1649,4 +1649,89 @@ class DDIRepositoryImplTest {
         assertEquals("es-ES", updatedDr.logicalRecord().label().content().xmlLang()); // Should preserve existing lang
         assertEquals("Updated LR Label", updatedDr.logicalRecord().label().content().text()); // But update text
     }
+
+    @Test
+    void shouldGetItemXmlWithVersion() {
+        // Given
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agency = "fr.insee";
+        String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
+        String version = "1";
+        String expectedXml = "<CodeList><URN>urn:ddi:fr.insee:3b317f4c-79ae-422c-8cd4-04ba9d2e4be4:1</URN></CodeList>";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaItemResponse itemResponse = new ColecticaItemResponse(
+                "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+                agency, 1, id, expectedXml,
+                "2025-01-01T00:00:00", null, true, false, false, "DDI"
+        );
+
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "item/fr.insee/" + id + "/" + version),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)
+        )).thenReturn(ResponseEntity.ok(itemResponse));
+
+        // When
+        String result = ddiRepository.getItemXml(agency, id, version);
+
+        // Then
+        assertEquals(expectedXml, result);
+    }
+
+    @Test
+    void shouldGetItemXmlLatestVersion() {
+        // Given
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agency = "fr.insee";
+        String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
+        String expectedXml = "<CodeList><URN>urn:ddi:fr.insee:3b317f4c-79ae-422c-8cd4-04ba9d2e4be4:2</URN></CodeList>";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaItemResponse itemResponse = new ColecticaItemResponse(
+                "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+                agency, 2, id, expectedXml,
+                "2025-06-01T00:00:00", null, true, false, false, "DDI"
+        );
+
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "item/fr.insee/" + id),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)
+        )).thenReturn(ResponseEntity.ok(itemResponse));
+
+        // When
+        String result = ddiRepository.getItemXml(agency, id);
+
+        // Then
+        assertEquals(expectedXml, result);
+    }
+
+    @Test
+    void shouldReturnNullWhenItemXmlResponseIsNull() {
+        // Given
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agency = "fr.insee";
+        String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
+        String version = "1";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)
+        )).thenReturn(ResponseEntity.ok(null));
+
+        // When
+        String result = ddiRepository.getItemXml(agency, id, version);
+
+        // Then
+        assertNull(result);
+    }
+
 }
