@@ -20,7 +20,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @AnalyzeClasses(packages = {
         "fr.insee.rmes.modules.concepts.collections",
-        "fr.insee.rmes.modules.users"
+        "fr.insee.rmes.modules.users",
+        "fr.insee.rmes.modules.clientconfig"
 }, importOptions = ImportOption.DoNotIncludeTests.class)
 public class HexagonaleArchTest {
 

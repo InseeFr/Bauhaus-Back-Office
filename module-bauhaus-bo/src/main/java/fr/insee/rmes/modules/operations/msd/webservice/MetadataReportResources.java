@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
+import fr.insee.rmes.modules.operations.msd.domain.port.clientside.SimsMigrationService;
 import fr.insee.rmes.modules.operations.msd.webservice.response.DocumentationAttributeResponse;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
@@ -39,10 +40,13 @@ public class MetadataReportResources {
 
 	protected final DocumentationService documentationService;
 
-	public MetadataReportResources(OperationsService operationsService, OperationsDocumentationsService documentationsService, DocumentationService documentationService) {
+	protected final SimsMigrationService simsMigrationService;
+
+	public MetadataReportResources(OperationsService operationsService, OperationsDocumentationsService documentationsService, DocumentationService documentationService, SimsMigrationService simsMigrationService) {
 		this.operationsService = operationsService;
 		this.documentationsService = documentationsService;
         this.documentationService = documentationService;
+        this.simsMigrationService = simsMigrationService;
     }
 
 
@@ -187,6 +191,20 @@ public class MetadataReportResources {
 	public ResponseEntity<?> getSimsExportForLabel(@PathVariable(Constants.ID) String id) throws RmesException {
 
 		return documentationsService.exportMetadataReportForLabel(id);
+	}
+
+	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
+	@GetMapping(value = "/metadataReport/migrate/htmlToMarkdown")
+	public ResponseEntity<Object> migrateSimsHtmlToMarkdown() throws GenericInternalServerException {
+		int count = simsMigrationService.migrateHtmlToMarkdown();
+		return ResponseEntity.ok(count);
+	}
+
+	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
+	@GetMapping(value = "/metadataReport/migrate/publication/htmlToMarkdown")
+	public ResponseEntity<Object> migratePublicationSimsHtmlToMarkdown() throws GenericInternalServerException {
+		int count = simsMigrationService.migratePublicationHtmlToMarkdown();
+		return ResponseEntity.ok(count);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)

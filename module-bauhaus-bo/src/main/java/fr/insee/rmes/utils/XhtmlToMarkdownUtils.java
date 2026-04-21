@@ -12,20 +12,21 @@ import org.json.JSONObject;
 
 public class XhtmlToMarkdownUtils {
 	
-	private static MutableDataSet optionsXhtmlToMd;
-	
+	private static FlexmarkHtmlConverter converter;
+
 	private static void init(){
-		if (optionsXhtmlToMd==null || optionsXhtmlToMd.getKeys().isEmpty()) {
-			optionsXhtmlToMd = new MutableDataSet();
-			optionsXhtmlToMd.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE, true);
-			optionsXhtmlToMd.set(FlexmarkHtmlConverter.TYPOGRAPHIC_QUOTES, false);
-			optionsXhtmlToMd.set(FlexmarkHtmlConverter.TYPOGRAPHIC_SMARTS, false);
+		if (converter == null) {
+			var options = new MutableDataSet();
+			options.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE, true);
+			options.set(FlexmarkHtmlConverter.TYPOGRAPHIC_QUOTES, false);
+			options.set(FlexmarkHtmlConverter.TYPOGRAPHIC_SMARTS, false);
+			converter = FlexmarkHtmlConverter.builder(options).build();
 		}
 	}
 	
-	private static String xhtmlToMarkdown(String xhtml) {
+	public static String xhtmlToMarkdown(String xhtml) {
 		init();
-      	String md = FlexmarkHtmlConverter.builder(optionsXhtmlToMd).build().convert(xhtml);
+      	String md = converter.convert(xhtml);
 		if (md.endsWith("\n")){
 			return md.substring(0,md.length()-1);
 		}
