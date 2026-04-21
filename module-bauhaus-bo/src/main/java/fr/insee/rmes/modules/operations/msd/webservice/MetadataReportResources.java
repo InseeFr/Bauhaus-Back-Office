@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -41,6 +42,9 @@ public class MetadataReportResources {
 	protected final DocumentationService documentationService;
 
 	protected final SimsMigrationService simsMigrationService;
+
+	private final AtomicBoolean migrationInProgress = new AtomicBoolean(false);
+	private final AtomicBoolean publicationMigrationInProgress = new AtomicBoolean(false);
 
 	public MetadataReportResources(OperationsService operationsService, OperationsDocumentationsService documentationsService, DocumentationService documentationService, SimsMigrationService simsMigrationService) {
 		this.operationsService = operationsService;
@@ -196,15 +200,29 @@ public class MetadataReportResources {
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
 	@GetMapping(value = "/metadataReport/migrate/htmlToMarkdown")
 	public ResponseEntity<Object> migrateSimsHtmlToMarkdown() throws GenericInternalServerException {
-		int count = simsMigrationService.migrateHtmlToMarkdown();
-		return ResponseEntity.ok(count);
+		if (!migrationInProgress.compareAndSet(false, true)) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body("Migration already in progress");
+		}
+		try {
+			int count = simsMigrationService.migrateHtmlToMarkdown();
+			return ResponseEntity.ok(count);
+		} finally {
+			migrationInProgress.set(false);
+		}
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.UPDATE)
 	@GetMapping(value = "/metadataReport/migrate/publication/htmlToMarkdown")
 	public ResponseEntity<Object> migratePublicationSimsHtmlToMarkdown() throws GenericInternalServerException {
-		int count = simsMigrationService.migratePublicationHtmlToMarkdown();
-		return ResponseEntity.ok(count);
+		if (!publicationMigrationInProgress.compareAndSet(false, true)) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body("Publication migration already in progress");
+		}
+		try {
+			int count = simsMigrationService.migratePublicationHtmlToMarkdown();
+			return ResponseEntity.ok(count);
+		} finally {
+			publicationMigrationInProgress.set(false);
+		}
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
