@@ -85,11 +85,12 @@ public abstract class AbstractTokenService implements TokenService {
         var now = nowPlus1Second();
         try {
             DecodedJWT jwt = JWT.decode(token);
-            if (jwt.getExpiresAt().after(now)) {
+            Date expiresAt = jwt.getExpiresAt();
+            if (expiresAt != null && expiresAt.after(now)) {
                 isValid = true;
-                logger.debug("Token is valid, expires at: {}", jwt.getExpiresAt());
+                logger.debug("Token is valid, expires at: {}", expiresAt);
             } else {
-                logger.debug("Token has expired at: {}", jwt.getExpiresAt());
+                logger.debug("Token has expired or has no expiry claim: {}", expiresAt);
             }
         } catch (JWTDecodeException exception) {
             logger.debug("Token decoding failed: {}", exception.getMessage());

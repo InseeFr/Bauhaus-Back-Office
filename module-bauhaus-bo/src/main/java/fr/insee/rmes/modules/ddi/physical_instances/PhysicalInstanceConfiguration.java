@@ -2,6 +2,8 @@ package fr.insee.rmes.modules.ddi.physical_instances;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
@@ -10,13 +12,19 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI4toDDI3ConverterServiceImpl;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIItemConvertServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.GroupServiceImpl;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.PhysicalInstanceDDIItemConverter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.StudyUnitServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class PhysicalInstanceConfiguration {
@@ -49,5 +57,25 @@ public class PhysicalInstanceConfiguration {
     @Bean
     StudyUnitService studyUnitService(StudyUnitRepository studyUnitRepository) {
         return new StudyUnitServiceImpl(studyUnitRepository);
+    }
+
+    @Bean
+    DDIItemConverter groupDDIItemConverter() {
+        return new GroupDDIItemConverter();
+    }
+
+    @Bean
+    DDIItemConverter studyUnitDDIItemConverter() {
+        return new StudyUnitDDIItemConverter();
+    }
+
+    @Bean
+    DDIItemConverter physicalInstanceDDIItemConverter() {
+        return new PhysicalInstanceDDIItemConverter();
+    }
+
+    @Bean
+    DDIItemConvertService ddiItemConvertService(List<DDIItemConverter> converters) {
+        return new DDIItemConvertServiceImpl(converters);
     }
 }

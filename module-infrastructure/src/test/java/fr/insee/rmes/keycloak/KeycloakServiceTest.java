@@ -1,5 +1,7 @@
 package fr.insee.rmes.keycloak;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -8,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Instant;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,5 +82,37 @@ class KeycloakServiceTest {
         KeycloakService serviceWithNullServer = new KeycloakService(propertiesWithNullServer);
 
         assertThrows(MissingKeycloakConfigurationException.class, serviceWithNullServer::getAccessToken);
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalse_whenTokenIsNull() {
+        assertFalse(keycloakService.isTokenValid(null));
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalse_whenTokenIsNotAJwt() {
+        assertFalse(keycloakService.isTokenValid("not-a-jwt"));
+    }
+
+    @Test
+    void isTokenValid_shouldReturnTrue_whenTokenHasFutureExpiry() {
+        String token = JWT.create()
+                .withExpiresAt(Date.from(Instant.now().plusSeconds(300)))
+                .sign(Algorithm.HMAC256("secret"));
+        assertTrue(keycloakService.isTokenValid(token));
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalse_whenTokenIsExpired() {
+        String token = JWT.create()
+                .withExpiresAt(Date.from(Instant.now().minusSeconds(300)))
+                .sign(Algorithm.HMAC256("secret"));
+        assertFalse(keycloakService.isTokenValid(token));
+    }
+
+    @Test
+    void isTokenValid_shouldReturnFalse_whenTokenHasNoExpiryClaim() {
+        String token = JWT.create().sign(Algorithm.HMAC256("secret"));
+        assertFalse(keycloakService.isTokenValid(token));
     }
 }

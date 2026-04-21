@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ class DdiResourcesEnabledIntegrationTest {
 
     @MockBean
     private DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
+
+    @MockBean
+    private DDIItemConvertService ddiItemConvertService;
 
     @Autowired
     private DdiResources ddiResources;

@@ -75,4 +75,16 @@ public class DDIServiceImpl implements DDIService {
         logger.info("Starting to get mutualized codes lists");
         return ddiRepository.getMutualizedCodesLists();
     }
+
+    @Override
+    public String getItemXml(String agency, String id, String version) {
+        logger.info("Getting DDI 3.3 XML for {}/{}/{}", agency, id, version);
+        return ddiRepository.getItemXml(agency, id, version);
+    }
+
+    @Override
+    public String getItemXml(String agency, String id) {
+        logger.info("Getting DDI 3.3 XML (latest version) for {}/{}", agency, id);
+        return ddiRepository.getItemXml(agency, id);
+    }
 }
