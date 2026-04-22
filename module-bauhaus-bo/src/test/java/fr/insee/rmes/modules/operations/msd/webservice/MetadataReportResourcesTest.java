@@ -34,7 +34,7 @@ class MetadataReportResourcesTest {
 
     @Test
     void shouldReturnMetadataAttributesWithHateoasLinks() throws RmesException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
-        MetadataReportResources metadataReportResources = new MetadataReportResources(operationsService, documentationsService, documentationService, null);
+        MetadataReportResources metadataReportResources = new MetadataReportResources(operationsService, documentationsService, documentationService);
 
         DocumentationAttribute attr1 = new DocumentationAttribute("text", "Label 1", "Label 1 EN", "attr-1", "1", false, false, null);
         DocumentationAttribute attr2 = new DocumentationAttribute("richText", "Label 2", "Label 2 EN", "attr-2", "n", true, false, "codeList1");
