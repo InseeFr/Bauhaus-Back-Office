@@ -9,7 +9,6 @@ import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
-import fr.insee.rmes.modules.operations.msd.domain.port.clientside.SimsMigrationService;
 import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.utils.XMLUtils;
@@ -67,11 +66,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     @MockitoBean
     private DocumentationService documentationService;
 
-    @MockitoBean
-    private SimsMigrationService simsMigrationService;
-
-
-    @Test
+   @Test
     void testGetMSDJson() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
