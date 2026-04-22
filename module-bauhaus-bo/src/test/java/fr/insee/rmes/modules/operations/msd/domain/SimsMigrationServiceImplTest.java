@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.operations.msd.domain;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.model.SimsConvertedTextNode;
 import fr.insee.rmes.modules.operations.msd.domain.model.SimsTextNode;
-import fr.insee.rmes.modules.operations.msd.domain.port.serverside.SimsMigrationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

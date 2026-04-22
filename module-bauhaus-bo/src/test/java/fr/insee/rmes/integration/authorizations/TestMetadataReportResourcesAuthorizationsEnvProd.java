@@ -9,7 +9,6 @@ import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
-import fr.insee.rmes.modules.operations.msd.domain.port.clientside.SimsMigrationService;
 import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.utils.XMLUtils;
