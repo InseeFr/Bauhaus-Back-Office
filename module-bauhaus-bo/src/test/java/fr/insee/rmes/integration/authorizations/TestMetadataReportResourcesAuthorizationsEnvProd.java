@@ -66,11 +66,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     @MockitoBean
     private DocumentationService documentationService;
 
-    @MockitoBean
-    private SimsMigrationService simsMigrationService;
-
-
-    @Test
+   @Test
     void testGetMSDJson() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
