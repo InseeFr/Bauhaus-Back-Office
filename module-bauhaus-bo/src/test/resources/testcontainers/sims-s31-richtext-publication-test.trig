@@ -1,0 +1,35 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sdmx-mm: <http://www.w3.org/ns/sdmx-mm#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dctype: <http://purl.org/dc/dcmitype/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# SIMS 8888 : rapport avec la rubrique S.3.1 de type RICHTEXT (dctype:Text)
+<http://rdf.insee.fr/graphes/qualite/rapport/8888> {
+    <http://bauhaus/qualite/rapport/8888>
+        a                   sdmx-mm:MetadataReport ;
+        rdfs:label          "Rapport test rubrique S.3.1"@fr ;
+        sdmx-mm:target      <http://bauhaus/operations/operation/s8888> ;
+        insee:validationState "Unpublished" .
+
+    <http://bauhaus/qualite/attribut/8888/S.3.1>
+        a                   sdmx-mm:ReportedAttribute ;
+        simsv2fr:S.3.1      <http://bauhaus/qualite/attribut/8888/S.3.1/texte> ;
+        sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/8888> .
+
+    # Rubrique RICHTEXT : contenu Markdown à convertir en HTML lors de la publication
+    <http://bauhaus/qualite/attribut/8888/S.3.1/texte>
+        a                   dctype:Text ;
+        rdf:value           "**Champ de l'enquête**"@fr ;
+        dcterms:language    <http://bauhaus/codes/langue/fr> .
+}
+
+# Opération cible du SIMS : doit être publiée pour autoriser la publication du SIMS
+<http://rdf.insee.fr/graphes/operations> {
+    <http://bauhaus/operations/operation/s8888>
+        a                   <http://bauhaus/def/base#Operation> ;
+        rdfs:label          "Opération test S.3.1"@fr ;
+        insee:validationState "Validated" .
+}
