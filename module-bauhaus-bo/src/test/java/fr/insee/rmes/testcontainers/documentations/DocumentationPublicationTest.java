@@ -239,13 +239,8 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
         var resultHtml = repositoryPublication.getResponseAsArray(queryHtmlVersion);
 
-        // If there are RICHTEXT rubrics with content, they should have HTML versions
-        // The test data should have at least one RICHTEXT rubric to properly test this
-        if (resultHtml.length() > 0) {
-            String htmlContent = resultHtml.getJSONObject(0).getString("html");
-            assertThat(htmlContent).isNotEmpty();
-            // HTML content should contain HTML tags (not markdown)
-            // If the original was markdown like "**bold**", HTML should be "<strong>bold</strong>" or similar
-        }
+        assertThat(resultHtml).hasSizeGreaterThan(0);
+        String htmlContent = resultHtml.getJSONObject(0).getString("html");
+        assertThat(htmlContent).isNotEmpty();
     }
 }
