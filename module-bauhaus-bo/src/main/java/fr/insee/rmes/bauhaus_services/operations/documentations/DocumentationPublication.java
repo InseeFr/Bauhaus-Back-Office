@@ -98,7 +98,7 @@ public class DocumentationPublication {
 			}
 
 			// Add HTML version for RICHTEXT rubrics (single pass)
-			addHtmlVersionForRichText(model, richTextResources, markdownValues);
+			addHtmlVersionForRichText(model, richTextResources, markdownValues, simsId);
 
 			documentsPublication.publishAllDocumentsInSims(simsId);
 		} catch (RepositoryException e) {
@@ -204,24 +204,18 @@ public class DocumentationPublication {
 	 * @param richTextResources Set of TEXT type resources
 	 * @param markdownValues Map of TEXT resources to their Markdown content
 	 */
-	private void addHtmlVersionForRichText(Model model, Set<Resource> richTextResources, Map<Resource, String> markdownValues) {
+	private void addHtmlVersionForRichText(Model model, Set<Resource> richTextResources, Map<Resource, String> markdownValues, String simsId) {
 		for (Resource textResource : richTextResources) {
 			String markdownContent = markdownValues.get(textResource);
 
 			if (markdownContent != null) {
 				try {
-					// Convert Markdown to HTML
 					String htmlContent = XhtmlToMarkdownUtils.markdownToXhtml(markdownContent);
-
-					// Transform URIs for publication
 					Resource publishedSubject = publicationUtils.tranformBaseURIToPublish(textResource);
-
-					// Add the HTML version with insee:html predicate
 					model.add(publishedSubject, INSEE.HTML,
 							RdfUtils.setLiteralString(htmlContent),
-							publicationUtils.tranformBaseURIToPublish(RdfUtils.simsGraph(null)));
+							publicationUtils.tranformBaseURIToPublish(RdfUtils.simsGraph(simsId)));
 				} catch (Exception e) {
-					// Log error but continue processing other resources
 					logger.error("Error processing TEXT resource {}: {}", textResource, e.getMessage());
 				}
 			}
