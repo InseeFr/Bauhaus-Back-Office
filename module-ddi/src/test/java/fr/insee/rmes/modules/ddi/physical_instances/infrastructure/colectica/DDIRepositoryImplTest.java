@@ -172,73 +172,37 @@ class DDIRepositoryImplTest {
         String agencyId = "fr.inserm.constances";
         int version = 1;
 
-        // Mock configuration
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
-        // Mock DDI set response with complete FragmentInstance XML (including Variables)
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
-                "    <ddi:TopLevelReference>\n" +
-                "        <r:Agency>fr.inserm.constances</r:Agency>\n" +
-                "        <r:ID>2514afe4-7b08-4500-be25-7a852a10fd8c</r:ID>\n" +
-                "        <r:Version>1</r:Version>\n" +
-                "        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>\n" +
-                "    </ddi:TopLevelReference>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.615878Z\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1</r:URN>\n" +
-                "            <r:Agency>fr.inserm.constances</r:Agency>\n" +
-                "            <r:ID>2514afe4-7b08-4500-be25-7a852a10fd8c</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <r:Citation>\n" +
-                "                <r:Title>\n" +
-                "                    <r:String xml:lang=\"fr-FR\">Radon et gamma</r:String>\n" +
-                "                </r:Title>\n" +
-                "            </r:Citation>\n" +
-                "            <r:DataRelationshipReference>\n" +
-                "                <r:Agency>fr.inserm.constances</r:Agency>\n" +
-                "                <r:ID>dr-123</r:ID>\n" +
-                "                <r:Version>1</r:Version>\n" +
-                "                <r:TypeOfObject>DataRelationship</r:TypeOfObject>\n" +
-                "            </r:DataRelationshipReference>\n" +
-                "        </PhysicalInstance>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <Variable isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.608412Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.inserm.constances:var-1:1</r:URN>\n" +
-                "            <r:Agency>fr.inserm.constances</r:Agency>\n" +
-                "            <r:ID>var-1</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <VariableName>\n" +
-                "                <r:String xml:lang=\"fr\">TEST_VAR</r:String>\n" +
-                "            </VariableName>\n" +
-                "            <VariableRepresentation>\n" +
-                "                <r:TextRepresentation blankIsMissingValue=\"false\" />\n" +
-                "            </VariableRepresentation>\n" +
-                "        </Variable>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-10-23T12:28:43.608394Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.inserm.constances:dr-123:1</r:URN>\n" +
-                "            <r:Agency>fr.inserm.constances</r:Agency>\n" +
-                "            <r:ID>dr-123</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <DataRelationshipName>\n" +
-                "                <r:String xml:lang=\"en-US\">DataRelationshipName</r:String>\n" +
-                "            </DataRelationshipName>\n" +
-                "        </DataRelationship>\n" +
-                "    </Fragment>\n" +
-                "</ddi:FragmentInstance>";
-
-        // Mock the direct call to /ddiset/{agencyId}/{identifier}
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(instanceId, version, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("dr-123", 1, agencyId)
+        };
         when(restTemplate.exchange(
-                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
+                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+                eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(setItems));
 
-        // Mock DDI3 to DDI4 conversion
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, version, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("683889c6-f74b-4d5e-92ed-908c0a42bb2d", agencyId, 1, "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("f39ff278-8500-45fe-a850-3906da2d242b", agencyId, 1, "dr-123",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(
+                eq(baseApiUrl + "item/_getList"),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse[].class)))
+                .thenReturn(itemResponses);
+
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
                 "true", "2025-10-23T12:28:43.615773Z",
                 "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
@@ -269,14 +233,15 @@ class DDIRepositoryImplTest {
         assertEquals(agencyId, result.physicalInstance().get(0).agency());
         assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().string().text());
 
-        // Verify ddiset endpoint was called
         verify(restTemplate).exchange(
-                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
+                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(String.class));
-
-        // Verify converter was called
+                eq(ColecticaSetItem[].class));
+        verify(restTemplate).postForObject(
+                eq(baseApiUrl + "item/_getList"),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse[].class));
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
     }
 
@@ -425,27 +390,27 @@ class DDIRepositoryImplTest {
         when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
                 .thenReturn("{}");
 
-        // Mock ddiset response for getPhysicalInstance call after creation
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <PhysicalInstance isUniversallyUnique=\"true\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
-                "            <r:Citation>\n" +
-                "                <r:Title>\n" +
-                "                    <r:String xml:lang=\"fr-FR\">" + physicalInstanceLabel + "</r:String>\n" +
-                "                </r:Title>\n" +
-                "            </r:Citation>\n" +
-                "        </PhysicalInstance>\n" +
-                "    </Fragment>\n" +
-                "</ddi:FragmentInstance>";
-
+        // Mock set and _getList responses for getPhysicalInstance call after creation
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem("test-id", 1, "fr.insee")
+        };
         when(restTemplate.exchange(
                 any(String.class),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+                eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(setItems));
 
+        ColecticaItemResponse[] getListResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", "fr.insee", 1, "test-id",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(
+                eq(baseApiUrl + "item/_getList"),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse[].class)))
+                .thenReturn(getListResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
                 "true", "2025-01-01T00:00:00",
@@ -515,53 +480,31 @@ class DDIRepositoryImplTest {
         // Mock configuration
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
-        // Mock existing instance (for getPhysicalInstance call)
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <PhysicalInstance isUniversallyUnique=\"true\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>" + instanceId + "</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <r:Citation>\n" +
-                "                <r:Title>\n" +
-                "                    <r:String xml:lang=\"fr-FR\">Old Label</r:String>\n" +
-                "                </r:Title>\n" +
-                "            </r:Citation>\n" +
-                "            <r:DataRelationshipReference>\n" +
-                "                <r:Agency>fr.insee</r:Agency>\n" +
-                "                <r:ID>dr-123</r:ID>\n" +
-                "                <r:Version>1</r:Version>\n" +
-                "            </r:DataRelationshipReference>\n" +
-                "        </PhysicalInstance>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <DataRelationship isUniversallyUnique=\"true\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>dr-123</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <DataRelationshipName>\n" +
-                "                <r:String xml:lang=\"en-US\">Old DR Name</r:String>\n" +
-                "            </DataRelationshipName>\n" +
-                "            <LogicalRecord isUniversallyUnique=\"true\">\n" +
-                "                <r:Agency>fr.insee</r:Agency>\n" +
-                "                <r:ID>lr-123</r:ID>\n" +
-                "                <r:Version>1</r:Version>\n" +
-                "                <LogicalRecordName>\n" +
-                "                    <r:String xml:lang=\"fr\">Old LR Name</r:String>\n" +
-                "                </LogicalRecordName>\n" +
-                "            </LogicalRecord>\n" +
-                "        </DataRelationship>\n" +
-                "    </Fragment>\n" +
-                "</ddi:FragmentInstance>";
-
+        // Mock set and _getList responses for getPhysicalInstance call
+        ColecticaSetItem[] existingSetItems = {
+            new ColecticaSetItem(instanceId, 1, agencyId),
+            new ColecticaSetItem("dr-123", 1, agencyId)
+        };
         when(restTemplate.exchange(
                 any(String.class),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+                eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(existingSetItems));
 
+        ColecticaItemResponse[] existingItemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("f39ff278-8500-45fe-a850-3906da2d242b", agencyId, 1, "dr-123",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(
+                eq(baseApiUrl + "item/_getList"),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse[].class)))
+                .thenReturn(existingItemResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
                 "true", "2025-01-01T00:00:00",
@@ -844,139 +787,45 @@ class DDIRepositoryImplTest {
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
 
-        // Mock configuration
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
-                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"
-        ));
 
-        // Mock DDI set response with complete FragmentInstance XML (including Variables, CodeLists, Categories)
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
-                "    <ddi:TopLevelReference>\n" +
-                "        <r:Agency>fr.insee</r:Agency>\n" +
-                "        <r:ID>32799021-0663-41cd-aca6-3ad8dbdae3e3</r:ID>\n" +
-                "        <r:Version>1</r:Version>\n" +
-                "        <r:TypeOfObject>PhysicalInstance</r:TypeOfObject>\n" +
-                "    </ddi:TopLevelReference>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:14.251595Z\" xmlns=\"ddi:physicalinstance:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1</r:URN>\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>32799021-0663-41cd-aca6-3ad8dbdae3e3</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <r:Citation>\n" +
-                "                <r:Title>\n" +
-                "                    <r:String xml:lang=\"fr-FR\">test</r:String>\n" +
-                "                </r:Title>\n" +
-                "            </r:Citation>\n" +
-                "            <r:DataRelationshipReference>\n" +
-                "                <r:Agency>fr.insee</r:Agency>\n" +
-                "                <r:ID>795aa4b8-acec-4ef8-8f08-3a200c7bdb10</r:ID>\n" +
-                "                <r:Version>1</r:Version>\n" +
-                "                <r:TypeOfObject>DataRelationship</r:TypeOfObject>\n" +
-                "            </r:DataRelationshipReference>\n" +
-                "        </PhysicalInstance>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <Variable isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:33.138Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.insee:2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d:1</r:URN>\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <VariableName>\n" +
-                "                <r:String xml:lang=\"fr-FR\">name</r:String>\n" +
-                "            </VariableName>\n" +
-                "            <r:Label>\n" +
-                "                <r:Content xml:lang=\"fr-FR\">Test Label</r:Content>\n" +
-                "            </r:Label>\n" +
-                "            <VariableRepresentation>\n" +
-                "                <r:CodeRepresentation blankIsMissingValue=\"false\">\n" +
-                "                    <r:CodeListReference>\n" +
-                "                        <r:Agency>fr.insee</r:Agency>\n" +
-                "                        <r:ID>2f70f505-4a9e-4abe-82d4-c4ddfed25d52</r:ID>\n" +
-                "                        <r:Version>1</r:Version>\n" +
-                "                        <r:TypeOfObject>CodeList</r:TypeOfObject>\n" +
-                "                    </r:CodeListReference>\n" +
-                "                </r:CodeRepresentation>\n" +
-                "            </VariableRepresentation>\n" +
-                "        </Variable>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <DataRelationship isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:14.251595Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1</r:URN>\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>795aa4b8-acec-4ef8-8f08-3a200c7bdb10</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <DataRelationshipName>\n" +
-                "                <r:String xml:lang=\"en-US\">DataRelationShip Name:test</r:String>\n" +
-                "            </DataRelationshipName>\n" +
-                "            <LogicalRecord isUniversallyUnique=\"true\">\n" +
-                "                <r:URN>urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1</r:URN>\n" +
-                "                <r:Agency>fr.insee</r:Agency>\n" +
-                "                <r:ID>8585972f-2dc2-4125-87b2-60fd3f243cf3</r:ID>\n" +
-                "                <r:Version>1</r:Version>\n" +
-                "                <LogicalRecordName>\n" +
-                "                    <r:String xml:lang=\"fr\">test</r:String>\n" +
-                "                </LogicalRecordName>\n" +
-                "                <VariablesInRecord>\n" +
-                "                    <VariableUsedReference>\n" +
-                "                        <r:Agency>fr.insee</r:Agency>\n" +
-                "                        <r:ID>2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d</r:ID>\n" +
-                "                        <r:Version>1</r:Version>\n" +
-                "                        <r:TypeOfObject>Variable</r:TypeOfObject>\n" +
-                "                    </VariableUsedReference>\n" +
-                "                </VariablesInRecord>\n" +
-                "            </LogicalRecord>\n" +
-                "        </DataRelationship>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <CodeList isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:28.140Z\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1</r:URN>\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>2f70f505-4a9e-4abe-82d4-c4ddfed25d52</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <r:Label>\n" +
-                "                <r:Content xml:lang=\"fr-FR\">cl</r:Content>\n" +
-                "            </r:Label>\n" +
-                "            <Code isUniversallyUnique=\"true\">\n" +
-                "                <r:URN>urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1</r:URN>\n" +
-                "                <r:Agency>fr.insee</r:Agency>\n" +
-                "                <r:ID>6a290143-b9f6-43d3-92ac-70c3b2f516c1</r:ID>\n" +
-                "                <r:Version>1</r:Version>\n" +
-                "                <r:CategoryReference>\n" +
-                "                    <r:Agency>fr.insee</r:Agency>\n" +
-                "                    <r:ID>d363a730-14d4-4c54-9464-982312cf9330</r:ID>\n" +
-                "                    <r:Version>1</r:Version>\n" +
-                "                    <r:TypeOfObject>Category</r:TypeOfObject>\n" +
-                "                </r:CategoryReference>\n" +
-                "                <r:Value>a</r:Value>\n" +
-                "            </Code>\n" +
-                "        </CodeList>\n" +
-                "    </Fragment>\n" +
-                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
-                "        <Category isUniversallyUnique=\"true\" versionDate=\"2025-12-10T11:55:28.140Z\" isMissing=\"false\" xmlns=\"ddi:logicalproduct:3_3\">\n" +
-                "            <r:URN>urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1</r:URN>\n" +
-                "            <r:Agency>fr.insee</r:Agency>\n" +
-                "            <r:ID>d363a730-14d4-4c54-9464-982312cf9330</r:ID>\n" +
-                "            <r:Version>1</r:Version>\n" +
-                "            <r:Label>\n" +
-                "                <r:Content xml:lang=\"fr-FR\">aq</r:Content>\n" +
-                "            </r:Label>\n" +
-                "        </Category>\n" +
-                "    </Fragment>\n" +
-                "</ddi:FragmentInstance>";
-
-        // Mock the direct call to /ddiset/{agencyId}/{identifier}
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(instanceId, 1, agencyId),
+            new ColecticaSetItem("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", 1, agencyId),
+            new ColecticaSetItem("795aa4b8-acec-4ef8-8f08-3a200c7bdb10", 1, agencyId),
+            new ColecticaSetItem("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", 1, agencyId),
+            new ColecticaSetItem("d363a730-14d4-4c54-9464-982312cf9330", 1, agencyId)
+        };
         when(restTemplate.exchange(
-                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
+                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+                eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(setItems));
 
-        // Mock DDI3 to DDI4 conversion with CodeLists and Categories
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("683889c6-f74b-4d5e-92ed-908c0a42bb2d", agencyId, 1, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("f39ff278-8500-45fe-a850-3906da2d242b", agencyId, 1, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("7e47c269-bcab-40f7-a778-af7bbc4e3d00", agencyId, 1, "d363a730-14d4-4c54-9464-982312cf9330",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(
+                eq(baseApiUrl + "item/_getList"),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse[].class)))
+                .thenReturn(itemResponses);
+
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
@@ -1060,32 +909,31 @@ class DDIRepositoryImplTest {
         assertEquals(instanceId, result.physicalInstance().get(0).id());
         assertEquals("test", result.physicalInstance().get(0).citation().title().string().text());
 
-        // Verify Variables are present
         assertNotNull(result.variable());
         assertEquals(1, result.variable().size());
         assertEquals("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", result.variable().get(0).id());
         assertEquals("name", result.variable().get(0).variableName().string().text());
 
-        // Verify CodeLists are present
         assertNotNull(result.codeList());
         assertEquals(1, result.codeList().size());
         assertEquals("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", result.codeList().get(0).id());
         assertEquals("cl", result.codeList().get(0).label().content().text());
 
-        // Verify Categories are present
         assertNotNull(result.category());
         assertEquals(1, result.category().size());
         assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
         assertEquals("aq", result.category().get(0).label().content().text());
 
-        // Verify ddiset endpoint was called
         verify(restTemplate).exchange(
-                eq(baseApiUrl + "ddiset/" + agencyId + "/" + instanceId),
+                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
-                eq(String.class));
+                eq(ColecticaSetItem[].class));
+        verify(restTemplate).postForObject(
+                eq(baseApiUrl + "item/_getList"),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse[].class));
 
-        // Verify converter was called with all item types
         ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
 
@@ -1457,9 +1305,16 @@ class DDIRepositoryImplTest {
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );
 
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n</ddi:FragmentInstance>";
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+        ColecticaSetItem[] updateSetItems = { new ColecticaSetItem(instanceId, 1, agencyId) };
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(updateSetItems));
+        ColecticaItemResponse[] updateItemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+                .thenReturn(updateItemResponses);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
 
@@ -1534,9 +1389,16 @@ class DDIRepositoryImplTest {
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );
 
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n</ddi:FragmentInstance>";
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+        ColecticaSetItem[] updateSetItems = { new ColecticaSetItem(instanceId, 1, agencyId) };
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(updateSetItems));
+        ColecticaItemResponse[] updateItemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+                .thenReturn(updateItemResponses);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
 
@@ -1617,9 +1479,16 @@ class DDIRepositoryImplTest {
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );
 
-        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n</ddi:FragmentInstance>";
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+        ColecticaSetItem[] updateSetItems = { new ColecticaSetItem(instanceId, 1, agencyId) };
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(updateSetItems));
+        ColecticaItemResponse[] updateItemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+                .thenReturn(updateItemResponses);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
 

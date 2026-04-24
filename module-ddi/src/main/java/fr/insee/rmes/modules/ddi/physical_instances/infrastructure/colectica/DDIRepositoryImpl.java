@@ -450,64 +450,57 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return authenticator.executeWithAuth(token -> {
             try {
-
-                String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
-                String encodedAgencyId = URLEncoder.encode(agencyId, StandardCharsets.UTF_8);
-                URL url = new URL(instanceConfiguration.baseApiUrl() + "ddiset/" + encodedAgencyId + "/" + encodedId);
-
-
-                // Create headers with Bearer token
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 headers.setBearerAuth(token);
 
+                String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
                 HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
-
-                // The response from Colectica ddiset endpoint contains XML with PhysicalInstance and DataRelationship
-                String ddisetXml = restTemplate.exchange(
-                        url.toString(),
+                ColecticaSetItem[] setItems = restTemplate.exchange(
+                        setUrl,
                         HttpMethod.GET,
                         getRequestEntity,
-                        String.class
+                        ColecticaSetItem[].class
                 ).getBody();
 
-                if (ddisetXml == null || ddisetXml.isEmpty()) {
+                if (setItems == null || setItems.length == 0) {
                     return null;
                 }
 
+                List<GetDescriptionsRequest.IdentifierRef> identifiers = Arrays.stream(setItems)
+                        .map(item -> new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                        .toList();
 
-                // Clean the XML - remove all leading invisible/control characters until we hit '<'
-                // This handles BOM, zero-width spaces, and other invisible characters
-                int startIndex = 0;
-                while (startIndex < ddisetXml.length() && ddisetXml.charAt(startIndex) != '<') {
-                    char c = ddisetXml.charAt(startIndex);
-                    if (c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c) || !Character.isDefined(c)) {
-                        startIndex++;
-                    } else {
-                        // Found a non-whitespace, non-control character that's not '<'
-                        startIndex++;
-                    }
-                }
-
-                if (startIndex > 0) {
-                    ddisetXml = ddisetXml.substring(startIndex);
-                }
-
-                // Final trim for any trailing whitespace
-                ddisetXml = ddisetXml.trim();
-
-                logger.debug("Received DDI set XML from Colectica for Physical Instance and DataRelationship");
-
-                // Parse the FragmentInstance XML and extract each Fragment
-                // The ddiset endpoint returns a FragmentInstance containing multiple Fragment elements
-                List<Ddi3Response.Ddi3Item> ddi3Items = parseFragmentInstanceToItems(ddisetXml, agencyId, id);
-
-                Ddi3Response ddi3Response = new Ddi3Response(
-                    null,  // options
-                    ddi3Items
+                String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
+                HttpEntity<GetDescriptionsRequest> postRequestEntity = new HttpEntity<>(new GetDescriptionsRequest(identifiers), headers);
+                ColecticaItemResponse[] itemResponses = restTemplate.postForObject(
+                        getListUrl,
+                        postRequestEntity,
+                        ColecticaItemResponse[].class
                 );
 
-                // Use the converter service to convert DDI3 to DDI4
+                if (itemResponses == null || itemResponses.length == 0) {
+                    return null;
+                }
+
+                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(itemResponses)
+                        .map(item -> new Ddi3Response.Ddi3Item(
+                                item.itemType(),
+                                item.agencyId(),
+                                String.valueOf(item.version()),
+                                item.identifier(),
+                                item.item(),
+                                item.versionDate(),
+                                item.versionResponsibility(),
+                                item.isPublished(),
+                                item.isDeprecated(),
+                                item.isProvisional(),
+                                item.itemFormat()
+                        ))
+                        .toList();
+
+                Ddi3Response ddi3Response = new Ddi3Response(null, ddi3Items);
+
                 logger.info("Converting DDI3 to DDI4 using converter service");
                 var response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
 
