@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
@@ -25,16 +25,16 @@ class DdiResourcesEnabledIntegrationTest {
     static class TestConfiguration {
     }
 
-    @MockBean
+    @MockitoBean
     private DDIService ddiService;
 
-    @MockBean
+    @MockitoBean
     private DDI3toDDI4ConverterService ddi3toDdi4ConverterService;
 
-    @MockBean
+    @MockitoBean
     private DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
 
-    @MockBean
+    @MockitoBean
     private DDIItemConvertService ddiItemConvertService;
 
     @Autowired
