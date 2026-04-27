@@ -27,12 +27,15 @@ import java.util.List;
 public class GraphDbStampChecker implements StampChecker {
     private final RepositoryGestion repositoryGestion;
     private final DatasetQueries datasetQueries;
+    private final StructureQueries structureQueries;
 
     public GraphDbStampChecker(
             RepositoryGestion repositoryGestion,
-            DatasetQueries datasetQueries) {
+            DatasetQueries datasetQueries,
+            StructureQueries structureQueries) {
         this.repositoryGestion = repositoryGestion;
         this.datasetQueries = datasetQueries;
+        this.structureQueries = structureQueries;
     }
 
 
@@ -62,11 +65,11 @@ public class GraphDbStampChecker implements StampChecker {
             var query = switch (module) {
                 case STRUCTURE_STRUCTURE -> {
                     var iri = RdfUtils.objectIRI(ObjectType.STRUCTURE, id);
-                    yield StructureQueries.getContributorsByStructureUri(iri.toString());
+                    yield structureQueries.getContributorsByStructureUri(iri.toString());
                 }
                 case STRUCTURE_COMPONENT -> {
                     var iri = findStructureComponentIri(id);
-                    yield StructureQueries.getContributorsByComponentUri(iri.toString());
+                    yield structureQueries.getContributorsByComponentUri(iri.toString());
                 }
                 case DATASET_DISTRIBUTION -> {
                     var iri = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
@@ -85,7 +88,7 @@ public class GraphDbStampChecker implements StampChecker {
     }
 
     private IRI findStructureComponentIri(String componentId) throws RmesException {
-        JSONObject type = repositoryGestion.getResponseAsObject(StructureQueries.getComponentType(componentId));
+        JSONObject type = repositoryGestion.getResponseAsObject(structureQueries.getComponentType(componentId));
         String componentType = type.getString("type");
         if (componentType.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
             return RdfUtils.structureComponentAttributeIRI(componentId);

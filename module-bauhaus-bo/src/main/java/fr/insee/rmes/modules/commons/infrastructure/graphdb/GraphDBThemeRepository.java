@@ -16,15 +16,17 @@ import java.util.List;
 public class GraphDBThemeRepository implements ThemeRepository {
 
     private final RepositoryGestion repositoryGestion;
+    private final ThemeQueries themeQueries;
 
-    public GraphDBThemeRepository(RepositoryGestion repositoryGestion) {
+    public GraphDBThemeRepository(RepositoryGestion repositoryGestion, ThemeQueries themeQueries) {
         this.repositoryGestion = repositoryGestion;
+        this.themeQueries = themeQueries;
     }
 
     @Override
     public List<Theme> getThemes(String conceptSchemeFilter) throws ThemeFetchException {
         try {
-            var results = repositoryGestion.getResponseAsArray(ThemeQueries.getThemesQuery(conceptSchemeFilter));
+            var results = repositoryGestion.getResponseAsArray(themeQueries.getThemesQuery(conceptSchemeFilter));
             return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBTheme[].class))
                     .map(GraphDBTheme::toDomain)
                     .toList();

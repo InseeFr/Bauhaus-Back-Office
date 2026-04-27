@@ -21,13 +21,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ParentUtils extends RdfService{
 
-	
 	static final Logger logger = LoggerFactory.getLogger(ParentUtils.class);
+
+	@Autowired
+	private OperationIndicatorsQueries operationIndicatorsQueries;
+
+	@Autowired
+	private OperationsOperationQueries operationsOperationQueries;
 
 	
 	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
@@ -55,7 +61,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public IRI getSeriesUriByOperationId(String idOperation) throws RmesException{
-		JSONObject series = repoGestion.getResponseAsObject(OperationsOperationQueries.seriesQuery(idOperation));
+		JSONObject series = repoGestion.getResponseAsObject(operationsOperationQueries.seriesQuery(idOperation));
 		if (series != null && series.has(Constants.ID))		
 			return RdfUtils.objectIRI(ObjectType.SERIES, series.getString(Constants.ID));
 		return null;
@@ -91,7 +97,7 @@ public class ParentUtils extends RdfService{
 	
 	public String getIndicatorsValidationStatus(String id) throws RmesException{
 		try {
-			return repoGestion.getResponseAsObject(OperationIndicatorsQueries.getPublicationState(id)).getString("state");
+			return repoGestion.getResponseAsObject(operationIndicatorsQueries.getPublicationState(id)).getString("state");
 		}
 		catch (JSONException _) {
 			return Constants.UNDEFINED;
@@ -108,7 +114,7 @@ public class ParentUtils extends RdfService{
 	
 	
 	public JSONArray getIndicatorCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(OperationIndicatorsQueries.getCreatorsById(id));
+		return  repoGestion.getResponseAsJSONList(operationIndicatorsQueries.getCreatorsById(id));
 	}
 	
 	
