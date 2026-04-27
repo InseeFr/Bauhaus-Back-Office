@@ -20,8 +20,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +38,9 @@ class IndicatorsUtilsTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
+    @Mock
+    private OperationIndicatorsQueries operationIndicatorsQueries;
+
     @Autowired
     private FamOpeSerIndUtils famOpeSerIndUtils;
 
@@ -47,7 +48,7 @@ class IndicatorsUtilsTest {
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
         JSONObject indicator = new JSONObject();
 
-        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en"));
+        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null));
         doReturn("p1000").when(indicatorsUtils).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
@@ -60,7 +61,7 @@ class IndicatorsUtilsTest {
     void shouldThrowExceptionIfWasGeneratedByEmpty() throws RmesException {
         JSONObject indicator = new JSONObject().put("wasGeneratedBy", new JSONArray());
 
-        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en"));
+        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null));
         doReturn("p1000").when(indicatorsUtils).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
@@ -77,16 +78,13 @@ class IndicatorsUtilsTest {
                 .put("prefLabelLg1", "prefLabelLg1")
                 .put("prefLabelLg2", "prefLabelLg2");
 
-        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
-            mockedFactory.when(() -> OperationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query");
+        when(operationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query");
+        when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
+        when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-            when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
-            when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
-
-            IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
-            RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-            assertThat(exception.getDetails()).contains("This prefLabelLg1 is already used by another indicator.");
-        }
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries);
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
+        assertThat(exception.getDetails()).contains("This prefLabelLg1 is already used by another indicator.");
     }
 
     @Test
@@ -97,24 +95,21 @@ class IndicatorsUtilsTest {
                 .put("prefLabelLg1", "prefLabelLg1")
                 .put("prefLabelLg2", "prefLabelLg2");
 
-        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
-            mockedFactory.when(() -> OperationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query1");
-            mockedFactory.when(() -> OperationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg2"), eq("en"))).thenReturn("query2");
+        when(operationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query1");
+        when(operationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg2"), eq("en"))).thenReturn("query2");
+        when(repositoryGestion.getResponseAsBoolean("query1")).thenReturn(false);
+        when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
+        when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-            when(repositoryGestion.getResponseAsBoolean("query1")).thenReturn(false);
-            when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
-            when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
-
-            IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
-            RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-            assertThat(exception.getDetails()).contains("This prefLabelLg2 is already used by another indicator.");
-        }
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries);
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
+        assertThat(exception.getDetails()).contains("This prefLabelLg2 is already used by another indicator.");
     }
 
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null);
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -135,7 +130,7 @@ class IndicatorsUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null);
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -163,7 +158,7 @@ class IndicatorsUtilsTest {
         JSONObject jsonIndicator = new JSONObject(json);
         Indicator indicator = initIndicator();
 
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null);
 
 
         Indicator indicatorByApp = indicatorsUtils.buildIndicatorFromJson(jsonIndicator);

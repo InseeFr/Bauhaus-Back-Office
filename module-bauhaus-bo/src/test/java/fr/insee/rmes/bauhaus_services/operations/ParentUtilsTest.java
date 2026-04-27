@@ -1,14 +1,13 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -18,10 +17,10 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Arrays;
 
@@ -29,14 +28,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@AppSpringBootTest
 class ParentUtilsTest {
 
     @InjectMocks
     ParentUtils parentUtils = new ParentUtils();
 
-    @MockitoBean
+    @Mock
     RepositoryGestion repoGestion;
+
+    @Mock
+    OperationIndicatorsQueries operationIndicatorsQueries;
 
     String id = "2025";
 
@@ -80,12 +81,10 @@ class ParentUtilsTest {
 
     @Test
     void shouldGetIndicatorCreators() throws RmesException {
-        var creators = new JSONArray().put(new JSONObject("creators", "stamp"));
-        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
-            mockedFactory.when(() -> OperationIndicatorsQueries.getCreatorsById(id)).thenReturn("query");
-            when(repoGestion.getResponseAsJSONList("query")).thenReturn(creators);
-            assertEquals(creators, parentUtils.getIndicatorCreators(id));
-        }
+        var creators = new JSONArray().put(new JSONObject().put("creators", "stamp"));
+        when(operationIndicatorsQueries.getCreatorsById(id)).thenReturn("query");
+        when(repoGestion.getResponseAsJSONList("query")).thenReturn(creators);
+        assertEquals(creators, parentUtils.getIndicatorCreators(id));
     }
 
     @Test

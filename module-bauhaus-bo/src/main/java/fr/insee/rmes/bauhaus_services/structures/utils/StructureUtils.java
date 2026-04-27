@@ -55,6 +55,9 @@ public class StructureUtils extends RdfService {
     StructureComponent structureComponent;
 
     @Autowired
+    StructureQueries structureQueries;
+
+    @Autowired
     StructureComponentUtils structureComponentUtils;
 
     @Autowired
@@ -63,7 +66,7 @@ public class StructureUtils extends RdfService {
     public JSONArray formatStructuresForSearch(JSONArray structures) throws RmesException {
         for (int i = 0; i < structures.length(); i++) {
             JSONObject current = structures.getJSONObject(i);
-            current.put("components", repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(current.get(Constants.ID))));
+            current.put("components", repoGestion.getResponseAsArray(structureQueries.getComponentsForStructure(current.get(Constants.ID))));
         }
         return structures;
     }
@@ -73,11 +76,11 @@ public class StructureUtils extends RdfService {
 
         JSONArray componentDefinitions = new JSONArray();
 
-        JSONArray componentDefinitionsFlat = repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(id));
+        JSONArray componentDefinitionsFlat = repoGestion.getResponseAsArray(structureQueries.getComponentsForStructure(id));
 
         for (int i = 0; i < componentDefinitionsFlat.length(); i++) {
             JSONObject componentDefinitionFlat = componentDefinitionsFlat.getJSONObject(i);
-            JSONArray attachmentsArray = repoGestion.getResponseAsArray(StructureQueries.getStructuresAttachments(id, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID)));
+            JSONArray attachmentsArray = repoGestion.getResponseAsArray(structureQueries.getStructuresAttachments(id, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID)));
 
             List<String> attachments = new ArrayList<>();
             for(int j = 0; j < attachmentsArray.length(); j++){
@@ -127,7 +130,7 @@ public class StructureUtils extends RdfService {
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
 
-            this.repoGestion.getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
+            this.repoGestion.getMultipleTripletsForObject(componentDefinitionFlat, "contributor", structureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
             componentDefinitionFlat.remove("component");
             componentDefinition.put("component", componentDefinitionFlat);
 
@@ -161,7 +164,7 @@ public class StructureUtils extends RdfService {
     private String generateNextId() throws RmesException {
         String prefix = "dsd";
         logger.info("Generate id for structure");
-        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastStructureId());
+        JSONObject json = repoGestion.getResponseAsObject(structureQueries.lastStructureId());
         logger.debug("JSON when generating the id of a structure : {}", json);
         if (json.isEmpty()) {
             return prefix + "1000";
@@ -174,7 +177,7 @@ public class StructureUtils extends RdfService {
     }
 
     private String getValidationStatus(String id) throws RmesException {
-        return repoGestion.getResponseAsObject(StructureQueries.getValidationStatus(id)).getString("state");
+        return repoGestion.getResponseAsObject(structureQueries.getValidationStatus(id)).getString("state");
     }
 
     public String setStructure(String id, String body) throws RmesException {
@@ -228,7 +231,7 @@ public class StructureUtils extends RdfService {
         if(componentsWithoutId.isEmpty()){
             String[] ids = structure.getComponentDefinitions().stream().map(cd -> cd.getComponent().getId())
             		.map(Object::toString).toList().toArray(new String[0]);
-            boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
+            boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(structureQueries.checkUnicityStructure(structure.getId(), ids));
             if(structureWithSameComponents){
                 throw new RmesBadRequestException(ErrorCodes.STRUCTURE_UNICITY,
                         "A structure with the same components already exists", "");
@@ -400,7 +403,7 @@ public class StructureUtils extends RdfService {
         }
 
         String id = structure.getString(Constants.ID);
-        JSONArray ids = repoGestion.getResponseAsArray(StructureQueries.getUnValidatedComponent(id));
+        JSONArray ids = repoGestion.getResponseAsArray(structureQueries.getUnValidatedComponent(id));
         for (int i = 0; i < ids.length(); i++) {
             String idComponent = ((JSONObject) ids.get(i)).getString(Constants.ID);
             try {

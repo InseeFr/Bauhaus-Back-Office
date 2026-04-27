@@ -66,6 +66,7 @@ public class IndicatorsUtils {
 	private final String lg1;
 	private final String lg2;
 	private final boolean indicatorsRichTextNexStructure;
+	private final OperationIndicatorsQueries operationIndicatorsQueries;
 
 	public IndicatorsUtils(
 			@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.indicators-rich-text-new-structure}") boolean indicatorsRichTextNexStructure,
@@ -78,7 +79,8 @@ public class IndicatorsUtils {
 			DocumentationsUtils documentationsUtils,
 			UriUtils uriUtils,
 			@Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2) {
+			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+			OperationIndicatorsQueries operationIndicatorsQueries) {
 		this.indicatorsRichTextNexStructure = indicatorsRichTextNexStructure;
 		this.repositoryGestion = repositoryGestion;
 		this.codeListService = codeListService;
@@ -90,16 +92,17 @@ public class IndicatorsUtils {
 		this.uriUtils = uriUtils;
 		this.lg1 = lg1;
 		this.lg2 = lg2;
+		this.operationIndicatorsQueries = operationIndicatorsQueries;
 	}
 
 	private void validate(Indicator indicator) throws RmesException {
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){
+		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){
 			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
+		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
 			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
 		}
 	}
@@ -170,7 +173,7 @@ public class IndicatorsUtils {
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
 		}
-		JSONObject indicator = repositoryGestion.getResponseAsObject(OperationIndicatorsQueries.indicatorQuery(id, this.indicatorsRichTextNexStructure));
+		JSONObject indicator = repositoryGestion.getResponseAsObject(operationIndicatorsQueries.indicatorQuery(id, this.indicatorsRichTextNexStructure));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
@@ -185,7 +188,7 @@ public class IndicatorsUtils {
 
 
 	private void addIndicatorPublishers(String id, JSONObject indicator) throws RmesException {
-		JSONArray publishers = repositoryGestion.getResponseAsJSONList(OperationIndicatorsQueries.getPublishersById(id));
+		JSONArray publishers = repositoryGestion.getResponseAsJSONList(operationIndicatorsQueries.getPublishersById(id));
 		indicator.put(Constants.PUBLISHERS, publishers);
 	}
 
@@ -206,7 +209,7 @@ public class IndicatorsUtils {
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject object, IRI predicate) throws RmesException {
-		JSONArray links = repositoryGestion.getResponseAsArray(OperationIndicatorsQueries.indicatorLinks(id, predicate));
+		JSONArray links = repositoryGestion.getResponseAsArray(operationIndicatorsQueries.indicatorLinks(id, predicate));
 		if (!links.isEmpty()) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			object.put(predicate.getLocalName(), links);
@@ -214,7 +217,7 @@ public class IndicatorsUtils {
 	}
 
 	private void addOneOrganizationLink(String id, JSONObject object, IRI predicate) throws RmesException {
-		JSONArray organizations = repositoryGestion.getResponseAsArray(OperationIndicatorsQueries.getMultipleOrganizations(id, predicate));
+		JSONArray organizations = repositoryGestion.getResponseAsArray(operationIndicatorsQueries.getMultipleOrganizations(id, predicate));
 		if (!organizations.isEmpty()) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);
@@ -290,7 +293,7 @@ public class IndicatorsUtils {
 	public String getIndicatorsForSearch() throws RmesException {
 		logger.info("Starting to get indicators list");
 
-		JSONArray resQuery = repositoryGestion.getResponseAsArray(OperationIndicatorsQueries.indicatorsQueryForSearch());
+		JSONArray resQuery = repositoryGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsQueryForSearch());
 
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
@@ -420,7 +423,7 @@ public class IndicatorsUtils {
 
 	public String createID() throws RmesException {
 		logger.info("Generate indicator id");
-		JSONObject json = repositoryGestion.getResponseAsObject(OperationIndicatorsQueries.lastID());
+		JSONObject json = repositoryGestion.getResponseAsObject(operationIndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : {}" , json);
 		if (json.isEmpty()) {return null;}
 		String id = json.getString(Constants.ID);
@@ -430,7 +433,7 @@ public class IndicatorsUtils {
 	}
 
 	public boolean checkIfIndicatorExists(String id) throws RmesException {
-		return repositoryGestion.getResponseAsBoolean(OperationIndicatorsQueries.checkIfExists(id));
+		return repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkIfExists(id));
 	}
 
 

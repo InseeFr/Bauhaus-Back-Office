@@ -5,7 +5,6 @@ import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Tag("integration")
 class OperationsOperationQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    OperationsOperationQueries operationsOperationQueries = new OperationsOperationQueries(new ConfigStub());
 
     @BeforeAll
     static void initData(){
@@ -28,8 +28,7 @@ class OperationsOperationQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_all_operations() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationsOperationQueries.operationsQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(operationsOperationQueries.operationsQuery());
         assertEquals(390, result.length());
 
         for (var i = 0; i < result.length(); i++){
@@ -39,9 +38,7 @@ class OperationsOperationQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_operation() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-
-        JSONObject result = repositoryGestion.getResponseAsObject(OperationsOperationQueries.operationQuery("s1447"));
+        JSONObject result = repositoryGestion.getResponseAsObject(operationsOperationQueries.operationQuery("s1447"));
         assertThat(result.getString("id")).hasToString("s1447");
         assertThat(result.getString("prefLabelLg1")).hasToString("Dispositif d'enquêtes permanentes des conditions de vie 2008");
         assertThat(result.getString("prefLabelLg2")).hasToString("Permanent living conditions survey 2008");
@@ -49,6 +46,5 @@ class OperationsOperationQueriesTest extends WithGraphDBContainer {
         assertThat(result.getString("altLabelLg1")).hasToString("EPCV 2008");
         assertThat(result.getString("validationState")).hasToString("Validated");
         assertEquals("2024", result.getString("year"));
-
     }
 }

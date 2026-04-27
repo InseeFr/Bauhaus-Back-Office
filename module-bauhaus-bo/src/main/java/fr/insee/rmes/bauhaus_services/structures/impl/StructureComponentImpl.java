@@ -26,6 +26,9 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     @Autowired
     StructureComponentUtils structureComponentUtils;
 
+    @Autowired
+    StructureQueries structureQueries;
+
     /**
      * Return all mutualized components
      * @return
@@ -33,20 +36,20 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     @Override
     public String getComponentsForSearch() throws RmesException {
         logger.info("Getting all mutualized components");
-        return repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true)).toString();
+        return repoGestion.getResponseAsArray(structureQueries.getComponents(true, true, true)).toString();
     }
 
     @Override
     public String getAttributes() throws RmesException {
         logger.info("Getting all mutualized attributes");
-        return repoGestion.getResponseAsArray(StructureQueries.getComponents(true, false, false)).toString();
+        return repoGestion.getResponseAsArray(structureQueries.getComponents(true, false, false)).toString();
     }
 
     @Override
     public List<PartialStructureComponent> getComponents() throws RmesException {
 
         logger.info("Getting all mutualized components");
-        var components = repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true));
+        var components = repoGestion.getResponseAsArray(structureQueries.getComponents(true, true, true));
         return DiacriticSorter.sort(components,
                 PartialStructureComponent[].class,
                 PartialStructureComponent::labelLg1);
@@ -55,7 +58,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public JSONObject getComponentObject(String id) throws RmesException {
 
         logger.info("Starting to get one mutualized component");
-        JSONArray response = repoGestion.getResponseAsArray(StructureQueries.getComponent(id));
+        JSONArray response = repoGestion.getResponseAsArray(structureQueries.getComponent(id));
 
 
         if(response.isEmpty()){
@@ -65,7 +68,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
         // We first format linked attributes if they exists
         JSONObject component = new JSONObject(response.getJSONObject(0).toMap());
 
-        this.repoGestion.getMultipleTripletsForObject(component, "contributor", StructureQueries.getComponentContributors(component.getString("component")), "contributor");
+        this.repoGestion.getMultipleTripletsForObject(component, "contributor", structureQueries.getComponentContributors(component.getString("component")), "contributor");
         component.remove("component");
 
         if(component.has(ATTRIBUTE_IRI)){

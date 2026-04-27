@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,6 +45,9 @@ class StructureUtilsTest {
     @MockitoBean
     RepositoryGestion repositoryGestion;
 
+    @Mock
+    StructureQueries structureQueries;
+
     @Autowired
     Config config;
 
@@ -53,7 +57,7 @@ class StructureUtilsTest {
     @Test
     void shouldReturnBadRequestExceptionIfPublishedStructure() throws RmesException {
         JSONObject mockJSON = new JSONObject(VALIDATION_STATUS);
-        StructureQueries.setConfig(config);
+        when(structureQueries.getValidationStatus(anyString())).thenReturn("validation-status-query");
         Structure structure = new Structure();
         structure.setId("id");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
@@ -126,7 +130,6 @@ class StructureUtilsTest {
             structure.setContributor(List.of("http://contributor-uri"));
             structure.setComponentDefinitions(List.of());
 
-            StructureQueries.setConfig(config);
             structureUtils.createRdfStructure(structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
 
             ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);

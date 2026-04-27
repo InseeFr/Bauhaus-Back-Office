@@ -15,10 +15,6 @@ public class GenericQueries {
 	public static void setConfig(Config config) {
 		GenericQueries.config = config;
 	}
-	
-	public static String getAllGraphs() throws RmesException {
-		return FreeMarkerUtils.buildRequest("","getAllGraphs.ftlh", null);
-	}
-		
+
 
 }

@@ -24,20 +24,24 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 public class GeographyServiceImpl extends RdfService implements GeographyService {
-	
+
 	private static final String HAS_COMPOSITION = "hasComposition";
 	static final Logger logger = LoggerFactory.getLogger(GeographyServiceImpl.class);
+
+	@Autowired
+	private GeographyQueries geographyQueries;
 
 	@Override
 	public String getGeoFeatures() throws RmesException {
 		logger.info("Starting to get geo features");
-		JSONArray resQuery = repoGestion.getResponseAsArray(GeographyQueries.getFeaturesQuery());
+		JSONArray resQuery = repoGestion.getResponseAsArray(geographyQueries.getFeaturesQuery());
 		if (!resQuery.isEmpty()) {
 			for (int i = resQuery.length() - 1; i >= 0; i--) {
 				JSONObject feature = resQuery.getJSONObject(i);
@@ -57,7 +61,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	public JSONObject getGeoFeature(IRI uri) throws RmesException {
 		logger.info("Starting to get geo feature");
 
-		JSONObject feature = repoGestion.getResponseAsObject(GeographyQueries.getFeatureQuery(uri.stringValue()));
+		JSONObject feature = repoGestion.getResponseAsObject(geographyQueries.getFeatureQuery(uri.stringValue()));
 		if (feature.has(HAS_COMPOSITION)) {
 			if (feature.getBoolean(HAS_COMPOSITION)) {
 				addUnionsAndDifferenceToJsonObject(feature);
@@ -82,7 +86,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	 */
 	private IRI getGeoUriFromId(String id) throws RmesException {
 		IRI uri ;
-		JSONObject uriInCog = repoGestion.getResponseAsObject(GeographyQueries.getGeoUriIfExists(id));
+		JSONObject uriInCog = repoGestion.getResponseAsObject(geographyQueries.getGeoUriIfExists(id));
 		if (uriInCog.has(Constants.URI) && StringUtils.isNotBlank(uriInCog.get(Constants.URI).toString())) {
 			uri = RdfUtils.createIRI(uriInCog.get(Constants.URI).toString());
 		}else {
@@ -93,9 +97,9 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
 	private void addUnionsAndDifferenceToJsonObject(JSONObject feature) throws RmesException {
 		String uriFeature = feature.getString(Constants.URI);
-		JSONArray unions = repoGestion.getResponseAsArray(GeographyQueries.getUnionsForAFeatureQuery(uriFeature));
+		JSONArray unions = repoGestion.getResponseAsArray(geographyQueries.getUnionsForAFeatureQuery(uriFeature));
 		feature.put("unions", unions);
-		JSONArray diff = repoGestion.getResponseAsArray(GeographyQueries.getDifferenceForAFeatureQuery(uriFeature));
+		JSONArray diff = repoGestion.getResponseAsArray(geographyQueries.getDifferenceForAFeatureQuery(uriFeature));
 		feature.put("difference", diff);
 	}
 
@@ -144,7 +148,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 
 		//We check the unicity of the value
-		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(GeographyQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
+		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(geographyQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
 		if(checkUnicityTerritory.has("territory") && !checkUnicityTerritory.getString("territory").equalsIgnoreCase(geoFeature.getUri())){
 			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The labelLg1 already exists");
 		}

@@ -47,6 +47,9 @@ public class StructureComponentUtils extends RdfService {
     @Autowired
     ComponentPublication componentPublication;
 
+    @Autowired
+    StructureQueries structureQueries;
+
     public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
         addCodeListRange(response);
@@ -56,7 +59,7 @@ public class StructureComponentUtils extends RdfService {
     }
 
     private void addStructures(JSONObject response, String id) throws RmesException {
-        JSONArray structures = repoGestion.getResponseAsArray(StructureQueries.getStructuresForComponent(id));
+        JSONArray structures = repoGestion.getResponseAsArray(structureQueries.getStructuresForComponent(id));
         response.put("structures", structures);
     }
 
@@ -67,7 +70,7 @@ public class StructureComponentUtils extends RdfService {
     }
 
     private String getValidationStatus(String id) throws RmesException {
-        return repoGestion.getResponseAsObject(StructureQueries.getValidationStatus(id)).getString("state");
+        return repoGestion.getResponseAsObject(structureQueries.getValidationStatus(id)).getString("state");
     }
 
     public String updateComponent(String componentId, String body) throws RmesException {
@@ -139,7 +142,7 @@ public class StructureComponentUtils extends RdfService {
 
 
         if(StringUtils.isNotEmpty(component.getConcept()) && StringUtils.isNotEmpty(component.getCodeList())){
-            boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
+            boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(structureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
 
             if(componentsWithSameCodelistAndConcept){
                 throw new RmesBadRequestException(ErrorCodes.COMPONENT_UNICITY,
@@ -203,7 +206,7 @@ public class StructureComponentUtils extends RdfService {
         if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(INSEE.CODELIST))) {
             RdfUtils.addTripleUri(componentURI, RDF.TYPE, QB.CODED_PROPERTY, model, graph);
 
-            JSONObject object = repoGestion.getResponseAsObject(StructureQueries.getUriClasseOwl(component.getFullCodeListValue()));
+            JSONObject object = repoGestion.getResponseAsObject(structureQueries.getUriClasseOwl(component.getFullCodeListValue()));
 
             if(object.has("uriClasseOwl")){
                 RdfUtils.addTripleUri(componentURI, RDFS.RANGE, object.getString("uriClasseOwl"), model, graph);
@@ -257,7 +260,7 @@ public class StructureComponentUtils extends RdfService {
 
     private String generateNextId(String prefix, String namespaceSuffix, IRI type) throws RmesException {
         logger.info("Generate id for component");
-        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, RdfUtils.toString(type)));
+        JSONObject json = repoGestion.getResponseAsObject(structureQueries.lastId(namespaceSuffix, RdfUtils.toString(type)));
         logger.debug("JSON when generating the id of a component : {}", json);
         if (json.isEmpty()) {
             return prefix + "1000";

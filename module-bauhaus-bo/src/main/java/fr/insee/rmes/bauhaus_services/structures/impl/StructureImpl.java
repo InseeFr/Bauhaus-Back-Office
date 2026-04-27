@@ -33,10 +33,13 @@ public class StructureImpl  extends RdfService implements StructureService {
 	@Autowired
 	CodeListService codeListService;
 
+	@Autowired
+	StructureQueries structureQueries;
+
 	@Override
 	public List<PartialStructure> getStructures() throws RmesException {
 		logger.info("Starting to get structures");
-		var structures = repoGestion.getResponseAsArray(StructureQueries.getStructures());
+		var structures = repoGestion.getResponseAsArray(structureQueries.getStructures());
 		return DiacriticSorter.sort(structures,
 				PartialStructure[].class,
 				PartialStructure::labelLg1);
@@ -46,17 +49,17 @@ public class StructureImpl  extends RdfService implements StructureService {
 	@Override
 	public String getStructuresForSearch() throws RmesException {
 		logger.info("Starting to get Structures for advanced Search");
-		JSONArray structures = repoGestion.getResponseAsArray(StructureQueries.getStructures());
+		JSONArray structures = repoGestion.getResponseAsArray(structureQueries.getStructures());
 		return structureUtils.formatStructuresForSearch(structures).toString();
 	}
 	
 	@Override
 	public String getStructureById(String id) throws RmesException {
 		logger.info("Starting to get structure");
-		JSONObject structure = repoGestion.getResponseAsObject(StructureQueries.getStructureById(id));
+		JSONObject structure = repoGestion.getResponseAsObject(structureQueries.getStructureById(id));
 
 		IRI iri = RdfUtils.structureIRI(id);
-		this.repoGestion.getMultipleTripletsForObject(structure, "contributor", StructureQueries.getStructureContributors(iri), "contributor");
+		this.repoGestion.getMultipleTripletsForObject(structure, "contributor", structureQueries.getStructureContributors(iri), "contributor");
 
 		return structureUtils.formatStructure(structure, id).toString();
 	}
@@ -69,7 +72,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	@Override
 	public String getStructureByIdWithDetails(String id) throws RmesException {
 		logger.info("Starting to get all details of a structure");
-		JSONObject structure = repoGestion.getResponseAsObject(StructureQueries.getStructureById(id));
+		JSONObject structure = repoGestion.getResponseAsObject(structureQueries.getStructureById(id));
 		JSONObject structureWithComponentSpecifications = structureUtils.formatStructure(structure, id);
 		JSONArray componentDefinitions = (JSONArray) structureWithComponentSpecifications.get("componentDefinitions");
 		componentDefinitions.forEach(o -> {

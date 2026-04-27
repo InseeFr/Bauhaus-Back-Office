@@ -58,6 +58,12 @@ public class OperationsImpl  implements OperationsService {
     @Autowired
     UserDecoder userDecoder;
 
+	@Autowired
+	OperationIndicatorsQueries operationIndicatorsQueries;
+
+	@Autowired
+	OperationsOperationQueries operationsOperationQueries;
+
 
 	/***************************************************************************************************
 	 * SERIES
@@ -144,14 +150,14 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String getOperationsWithoutReport(String idSeries) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsOperationQueries.operationsWithoutSimsQuery(idSeries));
+		JSONArray resQuery = repoGestion.getResponseAsArray(operationsOperationQueries.operationsWithoutSimsQuery(idSeries));
 		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
 	@Override
 	public String getOperationsWithReport(String idSeries) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsOperationQueries.operationsWithSimsQuery(idSeries));
+		JSONArray resQuery = repoGestion.getResponseAsArray(operationsOperationQueries.operationsWithSimsQuery(idSeries));
 		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -175,7 +181,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public List<PartialOperation> getOperations() throws RmesException  {
 		logger.info("Starting to get operations list");
-		var operations = repoGestion.getResponseAsArray(OperationsOperationQueries.operationsQuery());
+		var operations = repoGestion.getResponseAsArray(operationsOperationQueries.operationsQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(operations,
 				PartialOperation[].class,
@@ -232,7 +238,7 @@ public class OperationsImpl  implements OperationsService {
 	}
 
 	public String getSeriesWithReport(String idFamily) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsOperationQueries.seriesWithSimsQuery(idFamily));
+		JSONArray resQuery = repoGestion.getResponseAsArray(operationsOperationQueries.seriesWithSimsQuery(idFamily));
 		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -247,7 +253,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public List<PartialOperationIndicator> getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
-		var indicators = repoGestion.getResponseAsArray(OperationIndicatorsQueries.indicatorsQuery());
+		var indicators = repoGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(indicators,
 				PartialOperationIndicator[].class,
@@ -257,7 +263,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public String getIndicatorsWithSims() throws RmesException {
 		logger.info("Starting to get indicators list with sims");
-		String resQuery = repoGestion.getResponseAsArray(OperationIndicatorsQueries.indicatorsWithSimsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsWithSimsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 

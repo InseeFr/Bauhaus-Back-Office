@@ -30,6 +30,12 @@ class OperationsImplTest {
     @Mock
     RepositoryGestion repoGestion;
 
+    @Mock
+    OperationIndicatorsQueries operationIndicatorsQueries;
+
+    @Mock
+    OperationsOperationQueries operationsOperationQueries;
+
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
@@ -73,75 +79,68 @@ class OperationsImplTest {
 
     @Test
     void shouldGetOperationsList() throws RmesException {
+        when(operationsOperationQueries.operationsQuery()).thenReturn("query");
 
-        try (MockedStatic<OperationsOperationQueries> mockedFactory = Mockito.mockStatic(OperationsOperationQueries.class)) {
-            mockedFactory.when(OperationsOperationQueries::operationsQuery).thenReturn("query");
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
+        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
+        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
+        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
+        when(repoGestion.getResponseAsArray("query")).thenReturn(array);
+        var series = operationsImpl.getOperations().stream().toList();
 
-            JSONArray array = new JSONArray();
-            array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-            array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-            array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-            array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-            array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-            when(repoGestion.getResponseAsArray("query")).thenReturn(array);
-            var series = operationsImpl.getOperations().stream().toList();
+        assertEquals(4, series.size());
 
-            assertEquals(4, series.size());
+        assertEquals("3", series.getFirst().id());
+        assertEquals("alabel 1", series.get(0).label());
+        assertEquals("alatLabel1", series.get(0).altLabel());
 
-            assertEquals("3", series.getFirst().id());
-            assertEquals("alabel 1", series.get(0).label());
-            assertEquals("alatLabel1", series.get(0).altLabel());
+        assertEquals("2", series.get(1).id());
+        assertEquals("elabel 1", series.get(1).label());
+        assertEquals("elatLabel1", series.get(1).altLabel());
 
-            assertEquals("2", series.get(1).id());
-            assertEquals("elabel 1", series.get(1).label());
-            assertEquals("elatLabel1", series.get(1).altLabel());
+        assertEquals("4", series.get(2).id());
+        assertEquals("élabel 1", series.get(2).label());
+        assertEquals("élatLabel1", series.get(2).altLabel());
 
-            assertEquals("4", series.get(2).id());
-            assertEquals("élabel 1", series.get(2).label());
-            assertEquals("élatLabel1", series.get(2).altLabel());
-
-            assertEquals("1", series.get(3).id());
-            assertEquals("label 1", series.get(3).label());
-            assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
-        }
-
+        assertEquals("1", series.get(3).id());
+        assertEquals("label 1", series.get(3).label());
+        assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
     }
 
 
 
     @Test
     void shouldGetIndicatorsList() throws RmesException {
+        when(operationIndicatorsQueries.indicatorsQuery()).thenReturn("query");
 
-        try (MockedStatic<OperationIndicatorsQueries> mockedFactory = Mockito.mockStatic(OperationIndicatorsQueries.class)) {
-            mockedFactory.when(OperationIndicatorsQueries::indicatorsQuery).thenReturn("query");
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
+        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
+        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
+        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
+        when(repoGestion.getResponseAsArray("query")).thenReturn(array);
+        var series = operationsImpl.getIndicators().stream().toList();
 
-            JSONArray array = new JSONArray();
-            array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-            array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
-            array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
-            array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
-            array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-            when(repoGestion.getResponseAsArray("query")).thenReturn(array);
-            var series = operationsImpl.getIndicators().stream().toList();
+        assertEquals(4, series.size());
 
-            assertEquals(4, series.size());
+        assertEquals("3", series.getFirst().id());
+        assertEquals("alabel 1", series.get(0).label());
+        assertEquals("alatLabel1", series.get(0).altLabel());
 
-            assertEquals("3", series.getFirst().id());
-            assertEquals("alabel 1", series.get(0).label());
-            assertEquals("alatLabel1", series.get(0).altLabel());
+        assertEquals("2", series.get(1).id());
+        assertEquals("elabel 1", series.get(1).label());
+        assertEquals("elatLabel1", series.get(1).altLabel());
 
-            assertEquals("2", series.get(1).id());
-            assertEquals("elabel 1", series.get(1).label());
-            assertEquals("elatLabel1", series.get(1).altLabel());
+        assertEquals("4", series.get(2).id());
+        assertEquals("élabel 1", series.get(2).label());
+        assertEquals("élatLabel1", series.get(2).altLabel());
 
-            assertEquals("4", series.get(2).id());
-            assertEquals("élabel 1", series.get(2).label());
-            assertEquals("élatLabel1", series.get(2).altLabel());
-
-            assertEquals("1", series.get(3).id());
-            assertEquals("label 1", series.get(3).label());
-            assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
-        }
+        assertEquals("1", series.get(3).id());
+        assertEquals("label 1", series.get(3).label());
+        assertEquals("latLabel1 || latLabel2", series.get(3).altLabel());
     }
 
     @Test
@@ -156,7 +155,8 @@ class OperationsImplTest {
         JSONObject firstJsonObject = new JSONObject().put("firstExample","mockedFirstExample");
         JSONObject secondJsonObject = new JSONObject().put("secondExample","mockedSecondExample");
         JSONArray jsonArrayTwoElements = new JSONArray().put(firstJsonObject).put(secondJsonObject);
-        when(repoGestion.getResponseAsArray(OperationsOperationQueries.operationsWithoutSimsQuery("2025"))).thenReturn(jsonArrayTwoElements);
+        when(operationsOperationQueries.operationsWithoutSimsQuery("2025")).thenReturn("query");
+        when(repoGestion.getResponseAsArray("query")).thenReturn(jsonArrayTwoElements);
         assertEquals("[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",operationsImpl.getOperationsWithoutReport("2025"));
     }
 }
