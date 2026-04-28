@@ -10,12 +10,14 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StringValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Title;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,11 +41,14 @@ class DDIServiceImplTest {
     @Mock
     private DDIRepository ddiRepository;
 
+    @Mock
+    private SeriesCreatorsPort seriesCreatorsPort;
+
     private DDIServiceImpl ddiService;
 
     @BeforeEach
     void setUp() {
-        ddiService = new DDIServiceImpl(ddiRepository);
+        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort);
     }
 
     @Test
@@ -133,7 +140,8 @@ class DDIServiceImplTest {
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
             "New Physical Instance Label",
             "New DataRelationship Label",
-            "New LogicalRecord Label"
+            "New LogicalRecord Label",
+            null, null, null, null
         );
         Ddi4Response expectedResponse = new Ddi4Response(
             "new-schema",
@@ -159,8 +167,8 @@ class DDIServiceImplTest {
     void shouldGetGroups() {
         // Given
         List<PartialGroup> expectedGroups = List.of(
-                new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee"),
-                new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee")
+                new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of()),
+                new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee", List.of())
         );
         when(ddiRepository.getGroups()).thenReturn(expectedGroups);
 
@@ -193,7 +201,7 @@ class DDIServiceImplTest {
             "urn:ddi:fr.insee:" + groupId + ":1",
             agencyId, groupId, "1",
             "bauhaus", citation, List.of(suRef1, suRef2),
-            "http://id.insee.fr/operations/serie/s1001",
+            List.of("http://id.insee.fr/operations/serie/s1001"),
             "insee:StatisticalOperationSeries"
         );
 
@@ -294,11 +302,65 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetPhysicalInstanceParents() {
+        String agencyId = "fr.insee";
+        String id = "pi-123";
+        PhysicalInstanceParents expected = new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789");
+        when(ddiRepository.getPhysicalInstanceParents(agencyId, id)).thenReturn(expected);
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
+
+        assertNotNull(result);
+        assertEquals("su-456", result.studyUnitId());
+        assertEquals("grp-789", result.groupId());
+        verify(ddiRepository).getPhysicalInstanceParents(agencyId, id);
+    }
+
+    @Test
     void shouldReturnNullWhenItemXmlNotFound() {
         when(ddiRepository.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
 
         String result = ddiService.getItemXml("fr.insee", "unknown-id", "1");
 
         assertNull(result);
+    }
+
+    @Test
+    void shouldGetGroupsFilteredByStamp_returnsMatchingGroups() {
+        String iri1 = "http://id.insee.fr/operations/serie/s1001";
+        String iri2 = "http://id.insee.fr/operations/serie/s1002";
+
+        List<PartialGroup> allGroups = List.of(
+                new PartialGroup("g1", "Group 1", null, "fr.insee", List.of(iri1)),
+                new PartialGroup("g2", "Group 2", null, "fr.insee", List.of(iri2))
+        );
+        when(ddiRepository.getGroups()).thenReturn(allGroups);
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2)))
+                .thenReturn(Map.of(iri1, List.of("stamp-A")));
+
+        List<PartialGroup> result = ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"));
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("g1", result.getFirst().id());
+    }
+
+    @Test
+    void shouldGetGroupsFilteredByStamp_returnsAllGroups_whenAdmin() {
+        String iri1 = "http://id.insee.fr/operations/serie/s1001";
+        String iri2 = "http://id.insee.fr/operations/serie/s1002";
+
+        List<PartialGroup> allGroups = List.of(
+                new PartialGroup("g1", "Group 1", null, "fr.insee", List.of(iri1)),
+                new PartialGroup("g2", "Group 2", null, "fr.insee", List.of(iri2))
+        );
+        when(ddiRepository.getGroups()).thenReturn(allGroups);
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri1, iri2)))
+                .thenReturn(Map.of(iri1, List.of("stamp-A"), iri2, List.of("stamp-B")));
+
+        List<PartialGroup> result = ddiService.getGroupsFilteredByStamp(Set.of("stamp-A", "stamp-B"));
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
     }
 }

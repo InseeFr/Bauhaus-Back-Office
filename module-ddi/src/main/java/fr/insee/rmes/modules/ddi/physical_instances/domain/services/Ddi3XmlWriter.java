@@ -41,10 +41,12 @@ public class Ddi3XmlWriter {
         groupType.addNewID().setStringValue(group.id());
         groupType.addVersion(group.version());
 
-        if (group.seriesIri() != null && !group.seriesIri().isEmpty()) {
-            var userId = groupType.addNewUserID();
-            userId.setTypeOfUserID("URI");
-            userId.setStringValue(group.seriesIri());
+        if (group.seriesIris() != null) {
+            for (String seriesIri : group.seriesIris()) {
+                var userId = groupType.addNewUserID();
+                userId.setTypeOfUserID("URI");
+                userId.setStringValue(seriesIri);
+            }
         }
 
         if (group.typeOfGroup() != null && !group.typeOfGroup().isEmpty()) {

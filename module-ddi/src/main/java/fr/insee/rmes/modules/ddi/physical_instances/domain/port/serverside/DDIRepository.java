@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 
@@ -25,4 +26,5 @@ public interface DDIRepository {
     List<PartialCodesList> getMutualizedCodesLists();
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
+    PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
 }

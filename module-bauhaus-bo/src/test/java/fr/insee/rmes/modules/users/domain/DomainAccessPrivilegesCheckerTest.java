@@ -290,6 +290,43 @@ class DomainAccessPrivilegesCheckerTest {
     }
 
     @Test
+    void should_grant_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_matches() throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+        var user = new User("user123", List.of("USER"), Set.of("stamp-A"), "ssm");
+        Object principal = "somePrincipal";
+
+        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DDI_PHYSICALINSTANCE, Set.of(privilege));
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+        when(stampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id"))
+                .thenReturn(List.of("stamp-A", "stamp-B"));
+
+        boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", "fr.insee|group-id", principal);
+
+        assertThat(hasAccess).isTrue();
+        verify(stampChecker).getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
+    }
+
+    @Test
+    void should_deny_access_for_ddi_physicalinstance_with_stamp_strategy_when_stamp_does_not_match() throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
+        var user = new User("user123", List.of("USER"), Set.of("stamp-X"), "ssm");
+        Object principal = "somePrincipal";
+
+        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.CREATE, RBAC.Strategy.STAMP);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DDI_PHYSICALINSTANCE, Set.of(privilege));
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+        when(stampChecker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id"))
+                .thenReturn(List.of("stamp-A", "stamp-B"));
+
+        boolean hasAccess = accessChecker.hasAccess("DDI_PHYSICALINSTANCE", "CREATE", "fr.insee|group-id", principal);
+
+        assertThat(hasAccess).isFalse();
+    }
+
+    @Test
     void should_deny_access_when_user_has_multiple_stamps_but_none_matches() throws Exception, StampFetchException, UnsupportedModuleException, MissingUserInformationException {
         // User has multiple stamps but none match the resource
         var user = new User("user123", List.of("USER"), Set.of("STAMP-01", "STAMP-02"), "ssm");

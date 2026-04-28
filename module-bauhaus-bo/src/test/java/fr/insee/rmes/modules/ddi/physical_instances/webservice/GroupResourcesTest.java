@@ -35,8 +35,8 @@ class GroupResourcesTest {
     @Test
     void getGroups_shouldReturn200WithList() {
         List<PartialGroup> groups = List.of(
-                new PartialGroup("group-1", "Group 1", new Date(), "fr.insee"),
-                new PartialGroup("group-2", "Group 2", new Date(), "fr.insee")
+                new PartialGroup("group-1", "Group 1", new Date(), "fr.insee", List.of()),
+                new PartialGroup("group-2", "Group 2", new Date(), "fr.insee", List.of())
         );
         when(groupService.getAll()).thenReturn(groups);
 
@@ -65,7 +65,7 @@ class GroupResourcesTest {
                 "bauhaus-test",
                 new Citation(new Title(new StringValue("fr-FR", "Test Group"))),
                 List.of(new StudyUnitReference("fr.insee", "su-id", "1", "StudyUnit")),
-                "http://id.insee.fr/operations/serie/s1001",
+                List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries"
         );
 
@@ -83,7 +83,7 @@ class GroupResourcesTest {
                 "bauhaus-test",
                 new Citation(new Title(new StringValue("fr-FR", "Test Group"))),
                 List.of(),
-                "http://id.insee.fr/operations/serie/s1001",
+                List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries"
         );
 

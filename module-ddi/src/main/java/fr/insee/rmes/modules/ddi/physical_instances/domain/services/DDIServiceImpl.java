@@ -7,21 +7,28 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DDIServiceImpl implements DDIService {
     static final Logger logger = LoggerFactory.getLogger(DDIServiceImpl.class);
 
     private final DDIRepository ddiRepository;
+    private final SeriesCreatorsPort seriesCreatorsPort;
 
-    public DDIServiceImpl(DDIRepository ddiRepository) {
+    public DDIServiceImpl(DDIRepository ddiRepository, SeriesCreatorsPort seriesCreatorsPort) {
         this.ddiRepository = ddiRepository;
+        this.seriesCreatorsPort = seriesCreatorsPort;
     }
 
     @Override
@@ -40,6 +47,26 @@ public class DDIServiceImpl implements DDIService {
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
         return ddiRepository.getGroups();
+    }
+
+    @Override
+    public List<PartialGroup> getGroupsFilteredByStamp(Set<String> userStamps) {
+        logger.info("Starting to get groups filtered by stamp");
+        List<PartialGroup> allGroups = ddiRepository.getGroups();
+
+        Set<String> allSeriesIris = allGroups.stream()
+                .flatMap(g -> g.seriesIris().stream())
+                .collect(Collectors.toSet());
+
+        Map<String, List<String>> creatorsByIri = seriesCreatorsPort.getCreatorsForSeries(allSeriesIris);
+
+        return allGroups.stream()
+                .filter(group -> group.seriesIris().stream()
+                        .anyMatch(iri -> {
+                            List<String> creators = creatorsByIri.getOrDefault(iri, List.of());
+                            return creators.stream().anyMatch(userStamps::contains);
+                        }))
+                .toList();
     }
 
     @Override
@@ -86,5 +113,11 @@ public class DDIServiceImpl implements DDIService {
     public String getItemXml(String agency, String id) {
         logger.info("Getting DDI 3.3 XML (latest version) for {}/{}", agency, id);
         return ddiRepository.getItemXml(agency, id);
+    }
+
+    @Override
+    public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
+        logger.info("Getting parents for physical instance {}/{}", agencyId, id);
+        return ddiRepository.getPhysicalInstanceParents(agencyId, id);
     }
 }

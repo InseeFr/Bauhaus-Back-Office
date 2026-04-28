@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
@@ -17,9 +18,15 @@ import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeList
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodesListResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.domain.model.User;
+import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.infrastructure.UserProvider;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
@@ -61,15 +68,21 @@ public class DdiResources {
     private final DDI4toDDI3ConverterService ddi4toDdi3ConverterService;
     private final DDI3toDDI4ConverterService ddi3toDdi4ConverterService;
     private final DDIItemConvertService ddiItemConvertService;
+    private final UserProvider userProvider;
+    private final RbacFetcher rbacFetcher;
 
     public DdiResources(DDIService ddiService,
                         DDI4toDDI3ConverterService ddi4toDdi3ConverterService,
                         DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
-                        DDIItemConvertService ddiItemConvertService) {
+                        DDIItemConvertService ddiItemConvertService,
+                        UserProvider userProvider,
+                        RbacFetcher rbacFetcher) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
         this.ddi3toDdi4ConverterService = ddi3toDdi4ConverterService;
         this.ddiItemConvertService = ddiItemConvertService;
+        this.userProvider = userProvider;
+        this.rbacFetcher = rbacFetcher;
     }
 
     @GetMapping("/physical-instance")
@@ -137,7 +150,7 @@ public class DdiResources {
     @GetMapping("/group")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialGroupResponse>> getGroups() {
-        List<PartialGroup> groups = ddiService.getGroups();
+        List<PartialGroup> groups = resolveGroups();
 
         List<PartialGroupResponse> responses = groups.stream()
                 .map(group -> {
@@ -156,6 +169,20 @@ public class DdiResources {
                 .body(responses);
     }
 
+    private List<PartialGroup> resolveGroups() {
+        try {
+            User user = userProvider.findUser().orElse(User.EMPTY_USER);
+            RBAC.Strategy strategy = rbacFetcher.getApplicationActionStrategyByRole(
+                    user.roles(), RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
+            if (strategy == RBAC.Strategy.STAMP) {
+                return ddiService.getGroupsFilteredByStamp(user.getStamps());
+            }
+        } catch (MissingUserInformationException | RmesException e) {
+            // fall through to unfiltered
+        }
+        return ddiService.getGroups();
+    }
+
     @GetMapping("/group/{agencyId}/{id}")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<Ddi4GroupResponse> getDdi4Group(
@@ -168,7 +195,7 @@ public class DdiResources {
     }
 
     @PostMapping("/physical-instance")
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.CREATE)
+    @PreAuthorize("@propertiesAccessPrivilegesChecker.hasAccess('DDI_PHYSICALINSTANCE', 'CREATE', #request.groupAgency + '|' + #request.groupId, authentication.principal)")
     public ResponseEntity<Ddi4Response> createPhysicalInstance(
             @RequestBody CreatePhysicalInstanceRequest request) {
         Ddi4Response response = ddiService.createPhysicalInstance(request);
@@ -183,6 +210,18 @@ public class DdiResources {
             @PathVariable String agencyId,
             @PathVariable(Constants.ID) String id) {
         Ddi4Response response = ddiService.getDdi4PhysicalInstance(agencyId, id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
+    }
+
+    @GetMapping("/physical-instance/{agencyId}/{id}/parents")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<PhysicalInstanceParentsResponse> getPhysicalInstanceParents(
+            @PathVariable String agencyId,
+            @PathVariable(Constants.ID) String id) {
+        PhysicalInstanceParentsResponse response = PhysicalInstanceParentsResponse.fromDomain(
+                ddiService.getPhysicalInstanceParents(agencyId, id));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(response);

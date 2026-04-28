@@ -41,7 +41,7 @@ class GroupServiceImplTest {
                 "bauhaus-test",
                 new Citation(new Title(new StringValue("fr-FR", "Test Group"))),
                 List.of(new StudyUnitReference("fr.insee", "su-id", "1", "StudyUnit")),
-                "http://id.insee.fr/operations/serie/s1001",
+                List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries"
         );
 
@@ -53,7 +53,7 @@ class GroupServiceImplTest {
     @Test
     void getAll_shouldDelegateToRepository() {
         List<PartialGroup> expected = List.of(
-                new PartialGroup("g1", "Group 1", new Date(), "fr.insee")
+                new PartialGroup("g1", "Group 1", new Date(), "fr.insee", List.of())
         );
         when(groupRepository.getAll()).thenReturn(expected);
 

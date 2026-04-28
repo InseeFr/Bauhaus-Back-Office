@@ -5,6 +5,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
+import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,12 @@ class DdiResourcesValidationTest {
     @Mock
     private DDIItemConvertService ddiItemConvertService;
 
+    @Mock
+    private UserProvider userProvider;
+
+    @Mock
+    private RbacFetcher rbacFetcher;
+
     private DdiResources ddiResources;
 
     // Simple test schema
@@ -74,7 +82,7 @@ class DdiResourcesValidationTest {
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService);
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher);
 
         // Setup mock request context
         MockHttpServletRequest request = new MockHttpServletRequest();

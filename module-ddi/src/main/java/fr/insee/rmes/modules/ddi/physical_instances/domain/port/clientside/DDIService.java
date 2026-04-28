@@ -7,14 +7,17 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 
 import java.util.List;
+import java.util.Set;
 
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
     List<PartialCodesList> getCodesLists();
     List<PartialGroup> getGroups();
+    List<PartialGroup> getGroupsFilteredByStamp(Set<String> userStamps);
     Ddi4Response getDdi4PhysicalInstance(String agencyId, String id);
     Ddi4GroupResponse getDdi4Group(String agencyId, String id);
     Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
@@ -23,4 +26,5 @@ public interface DDIService {
     List<PartialCodesList> getMutualizedCodesLists();
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
+    PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
 }

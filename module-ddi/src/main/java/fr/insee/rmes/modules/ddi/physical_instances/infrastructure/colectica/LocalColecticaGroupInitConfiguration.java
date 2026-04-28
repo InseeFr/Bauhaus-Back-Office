@@ -129,7 +129,7 @@ public class LocalColecticaGroupInitConfiguration {
 
                         String physicalInstanceLabel = operation.operationLabel() + " Physical Instance";
                         logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
-                        Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null));
+                        Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null));
                         Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
                         studyUnitService.addPhysicalInstance(studyUnit, new DDIReference(pi.agency(), pi.id(), pi.version()));
                         physicalInstancesCreated++;
@@ -170,7 +170,7 @@ public class LocalColecticaGroupInitConfiguration {
                             versionResponsibility,
                             new Citation(new Title(new StringValue(defaultLang, groupLabel))),
                             studyUnitRefs,
-                            series.seriesIri(),
+                            List.of(series.seriesIri()),
                             "insee:StatisticalOperationSeries"
                     );
 
