@@ -13,6 +13,7 @@ fr.insee.rmes.bauhaus.colectica:
       Variable: 683889c6-f74b-4d5e-92ed-908c0a42bb2d
       CodeList: 8b108ef8-b642-4484-9c49-f88e4bf7cf1d
       Category: 7e47c269-bcab-40f7-a778-af7bbc4e3d00
+      StudyUnit: 30ea0200-7121-4f01-8d21-a931a182b86d
     versionResponsibility: abcde
     itemFormat: DC337820-AF3A-4C0B-82F9-CF02535CDE83
     baseUrl: https://metadonnees-operations-demo.insee.fr/
