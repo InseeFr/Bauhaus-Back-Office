@@ -112,7 +112,7 @@ class LocalColecticaGroupInitConfigurationTest {
         verify(groupService).createOrUpdate(groupCaptor.capture());
         Ddi4Group createdGroup = groupCaptor.getValue();
         assertThat(createdGroup.citation().title().string().text()).isEqualTo("Enquête innovation Group");
-        assertThat(createdGroup.seriesIri()).isEqualTo("http://id.insee.fr/operations/serie/s1001");
+        assertThat(createdGroup.seriesIris()).containsExactly("http://id.insee.fr/operations/serie/s1001");
         assertThat(createdGroup.typeOfGroup()).isEqualTo("insee:StatisticalOperationSeries");
         assertThat(createdGroup.studyUnitReference()).hasSize(2);
         assertThat(createdGroup.agency()).isEqualTo("fr.insee");

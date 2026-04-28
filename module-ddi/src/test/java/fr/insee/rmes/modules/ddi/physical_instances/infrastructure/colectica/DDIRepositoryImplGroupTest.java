@@ -81,7 +81,7 @@ class DDIRepositoryImplGroupTest {
                     "bauhaus",
                     new Citation(new Title(new StringValue("fr-FR", "s1001 Group"))),
                     List.of(new StudyUnitReference("fr.insee", "su-uuid-1", "1", "StudyUnit")),
-                    "http://id.insee.fr/operations/serie/s1001",
+                    List.of("http://id.insee.fr/operations/serie/s1001"),
                     "insee:StatisticalOperationSeries"
             );
 
@@ -112,8 +112,8 @@ class DDIRepositoryImplGroupTest {
             ColecticaItem item2 = createColecticaItem("group-id-2", "Groupe 2");
 
             when(ddiRepository.getGroups()).thenReturn(List.of(
-                    new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee"),
-                    new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee")
+                    new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of()),
+                    new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee", List.of())
             ));
 
             groupRepository.deprecateAll();

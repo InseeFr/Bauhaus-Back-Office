@@ -8,8 +8,9 @@ import java.util.List;
  * DDI4 Group domain model.
  * <p>
  * A Group represents a collection of related StudyUnits (e.g. a statistical operation series).
- * It includes a {@code seriesIri} pointing to the RDF URI of the series and a {@code typeOfGroup}
- * describing the nature of the group (e.g. {@code insee:StatisticalOperationSeries}).
+ * It includes {@code seriesIris} pointing to the RDF URIs of the associated series and a
+ * {@code typeOfGroup} describing the nature of the group (e.g. {@code insee:StatisticalOperationSeries}).
+ * A group may reference more than one series.
  */
 public record Ddi4Group(
         @JsonProperty("@isUniversallyUnique") String isUniversallyUnique,
@@ -21,7 +22,7 @@ public record Ddi4Group(
         @JsonProperty("VersionResponsibility") String versionResponsibility,
         @JsonProperty("Citation") Citation citation,
         @JsonProperty("StudyUnitReference") List<StudyUnitReference> studyUnitReference,
-        String seriesIri,
+        List<String> seriesIris,
         String typeOfGroup
 ) implements Ddi4Item {
 }

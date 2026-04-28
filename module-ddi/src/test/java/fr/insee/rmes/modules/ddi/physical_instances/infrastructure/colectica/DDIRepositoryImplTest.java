@@ -368,6 +368,8 @@ class DDIRepositoryImplTest {
         // Given
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String itemUrl = baseApiUrl + "item";
+        String studyUnitId = "su-uuid-1";
+        String studyUnitAgency = "fr.insee";
 
         String physicalInstanceLabel = "Test Physical Instance";
         String dataRelationshipLabel = "Test Data Relationship Label";
@@ -375,7 +377,11 @@ class DDIRepositoryImplTest {
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
                 physicalInstanceLabel,
                 dataRelationshipLabel,
-                logicalRecordLabel
+                logicalRecordLabel,
+                studyUnitId,
+                studyUnitAgency,
+                null,
+                null
         );
 
         // Mock configuration
@@ -383,8 +389,24 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
                 "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
-                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                "StudyUnit", "30ea0200-7121-4f01-8d21-a931a182b86d"
         ));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+
+        // Mock StudyUnit fetch
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\" versionDate=\"2025-01-01T00:00:00\"/>"
+                + "</Fragment>";
+        ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d", studyUnitAgency, 2, studyUnitId,
+                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, null);
+        when(restTemplate.exchange(
+                any(String.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)))
+                .thenReturn(ResponseEntity.ok(studyUnitResponse));
 
         // Mock item creation (POST /item)
         when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
@@ -447,7 +469,7 @@ class DDIRepositoryImplTest {
         HttpEntity<?> capturedEntity = entityCaptor.getValue();
         ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) capturedEntity.getBody();
         assertNotNull(createRequest);
-        assertEquals(2, createRequest.items().size()); // PhysicalInstance + DataRelationship
+        assertEquals(3, createRequest.items().size()); // PhysicalInstance + DataRelationship + StudyUnit
 
         // Verify first item is PhysicalInstance
         ColecticaItemResponse piItem = createRequest.items().get(0);
@@ -458,6 +480,79 @@ class DDIRepositoryImplTest {
         ColecticaItemResponse drItem = createRequest.items().get(1);
         assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
         assertTrue(drItem.item().contains(dataRelationshipLabel));
+
+        // Verify third item is the updated StudyUnit with the PI reference injected
+        ColecticaItemResponse suItem = createRequest.items().get(2);
+        assertEquals("30ea0200-7121-4f01-8d21-a931a182b86d", suItem.itemType()); // StudyUnit UUID
+        assertEquals(2, suItem.version()); // version preserved, not incremented
+        assertTrue(suItem.item().contains("PhysicalInstanceReference"));
+        assertTrue(suItem.item().contains("PhysicalInstance")); // TypeOfObject
+    }
+
+    @Test
+    void shouldPreserveExistingPhysicalInstanceReferencesInStudyUnit() {
+        // Given: a StudyUnit that already contains one PhysicalInstanceReference
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String itemUrl = baseApiUrl + "item";
+        String studyUnitId = "su-uuid-existing";
+        String studyUnitAgency = "fr.insee";
+        String existingPiId = "existing-pi-uuid";
+
+        CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
+                "New PI", "New DR", "New LR",
+                studyUnitId, studyUnitAgency, null, null
+        );
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                "StudyUnit", "30ea0200-7121-4f01-8d21-a931a182b86d"
+        ));
+        when(instanceConfiguration.itemFormat()).thenReturn("dc337820-af3a-4c0b-82f9-cf02535cde83");
+
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\">"
+                + "<r:PhysicalInstanceReference xmlns:r=\"ddi:reusable:3_3\">"
+                + "<r:Agency>fr.insee</r:Agency>"
+                + "<r:ID>" + existingPiId + "</r:ID>"
+                + "<r:Version>1</r:Version>"
+                + "<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"
+                + "</r:PhysicalInstanceReference>"
+                + "</StudyUnit>"
+                + "</Fragment>";
+        ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d", studyUnitAgency, 3, studyUnitId,
+                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, null);
+        when(restTemplate.exchange(
+                any(String.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)))
+                .thenReturn(ResponseEntity.ok(studyUnitResponse));
+
+        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+                .thenReturn("{}");
+        when(restTemplate.exchange(
+                any(String.class),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaSetItem[].class)))
+                .thenReturn(ResponseEntity.ok(new ColecticaSetItem[0]));
+
+        // When
+        ddiRepository.createPhysicalInstance(request);
+
+        // Then: the StudyUnit item in the POST contains both the existing and the new PhysicalInstanceReference
+        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
+        ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) entityCaptor.getValue().getBody();
+
+        ColecticaItemResponse suItem = createRequest.items().get(2);
+        // Each PhysicalInstanceReference element contributes one open + one close tag = 2 occurrences per reference
+        assertEquals(4, suItem.item().split("PhysicalInstanceReference").length - 1); // two references × 2 tags each
+        assertTrue(suItem.item().contains(existingPiId)); // existing reference preserved
     }
 
     @Test
@@ -1008,6 +1103,10 @@ class DDIRepositoryImplTest {
         // Mock query call - should query for Group itemType (4bd6eef6-99df-40e6-9b11-5b8f64e5cb23)
         when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
+
+        // Mock second call to _getList for extracting UserID (seriesIris) from full XML
+        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+                .thenReturn(new ColecticaItemResponse[0]);
 
         // When
         List<PartialGroup> result = ddiRepository.getGroups();
@@ -1601,6 +1700,45 @@ class DDIRepositoryImplTest {
 
         // Then
         assertNull(result);
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents() {
+        // Given
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String relUrl = baseApiUrl + "_query/relationship/byobject/descriptions";
+        String agencyId = "fr.insee";
+        String piId = "pi-111";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaItem studyUnitItem = new ColecticaItem(
+            null, Map.of(), Map.of(), null, null, 0, "repo", true, List.of(),
+            "30ea0200-7121-4f01-8d21-a931a182b86d", "fr.insee", 1, "su-222",
+            null, null, null, null, true, false, false, "DDI", 1L, 0
+        );
+        ColecticaItem[] studyUnitItems = new ColecticaItem[]{studyUnitItem};
+
+        ColecticaItem groupItem = new ColecticaItem(
+            null, Map.of(), Map.of(), null, null, 0, "repo", true, List.of(),
+            "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23", "fr.insee", 1, "grp-333",
+            null, null, null, null, true, false, false, "DDI", 2L, 0
+        );
+        ColecticaItem[] groupItems = new ColecticaItem[]{groupItem};
+
+        when(restTemplate.postForObject(eq(relUrl), any(HttpEntity.class), eq(ColecticaItem[].class)))
+            .thenReturn(studyUnitItems, groupItems);
+
+        // When
+        PhysicalInstanceParents result = ddiRepository.getPhysicalInstanceParents(agencyId, piId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("su-222", result.studyUnitId());
+        assertEquals("fr.insee", result.studyUnitAgency());
+        assertEquals("grp-333", result.groupId());
+        assertEquals("fr.insee", result.groupAgency());
+        verify(restTemplate, times(2)).postForObject(eq(relUrl), any(HttpEntity.class), eq(ColecticaItem[].class));
     }
 
 }

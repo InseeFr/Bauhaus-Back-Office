@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Study
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
+import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI4toDDI3ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIItemConvertServiceImpl;
@@ -30,8 +31,8 @@ import java.util.List;
 public class PhysicalInstanceConfiguration {
 
     @Bean
-    DDIService ddiService(DDIRepository repository) {
-        return new DDIServiceImpl(repository);
+    DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort) {
+        return new DDIServiceImpl(repository, seriesCreatorsPort);
     }
 
     @Bean

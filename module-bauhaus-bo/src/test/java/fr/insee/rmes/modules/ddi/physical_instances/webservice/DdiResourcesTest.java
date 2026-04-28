@@ -8,6 +8,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIIt
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
+import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.domain.model.User;
+import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
+import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,11 +33,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -53,11 +61,17 @@ class DdiResourcesTest {
     @Mock
     private DDIItemConvertService ddiItemConvertService;
 
+    @Mock
+    private UserProvider userProvider;
+
+    @Mock
+    private RbacFetcher rbacFetcher;
+
     private DdiResources ddiResources;
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService);
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher);
 
         // Setup mock request context for ServletUriComponentsBuilder
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -108,10 +122,13 @@ class DdiResourcesTest {
     }
 
     @Test
-    void shouldGetGroups() {
+    void shouldGetGroups() throws Exception, MissingUserInformationException {
         List<PartialGroup> expectedGroups = new ArrayList<>();
-        expectedGroups.add(new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee"));
-        expectedGroups.add(new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee"));
+        expectedGroups.add(new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of()));
+        expectedGroups.add(new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee", List.of()));
+        when(userProvider.findUser()).thenReturn(Optional.empty());
+        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(RBAC.Strategy.ALL);
         when(ddiService.getGroups()).thenReturn(expectedGroups);
 
         ResponseEntity<List<PartialGroupResponse>> response = ddiResources.getGroups();
@@ -277,7 +294,8 @@ class DdiResourcesTest {
         CreatePhysicalInstanceRequest request = new CreatePhysicalInstanceRequest(
             "New Physical Instance Label",
             "New DataRelationship Label",
-            "New LogicalRecord Label"
+            "New LogicalRecord Label",
+            null, null, null, null
         );
         Ddi4Response expectedResponse = createMockDdi4Response();
         when(ddiService.createPhysicalInstance(request)).thenReturn(expectedResponse);
@@ -534,6 +552,30 @@ class DdiResourcesTest {
         assertNull(response.getBody());
     }
 
+    @Test
+    void shouldGetGroupsFilteredByStamp() throws Exception, MissingUserInformationException {
+        String iri = "http://id.insee.fr/operations/serie/s1001";
+        List<PartialGroup> filteredGroups = List.of(
+                new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of(iri))
+        );
+        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
+        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(RBAC.Strategy.STAMP);
+        when(ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredGroups);
+
+        ResponseEntity<List<PartialGroupResponse>> response = ddiResources.getGroups();
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        List<PartialGroupResponse> result = response.getBody();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("group-1", result.getFirst().getId());
+
+        verify(ddiService).getGroupsFilteredByStamp(Set.of("stamp-A"));
+    }
+
     private Ddi4Response createMockDdi4Response() {
         // Create mock objects
         StringValue titleStringValue = new StringValue("fr-FR", "Fichier thl-CASD");
@@ -631,7 +673,7 @@ class DdiResourcesTest {
             "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
             "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
             "abcde", citation, List.of(suRef1, suRef2),
-            "http://id.insee.fr/operations/serie/s1001",
+            List.of("http://id.insee.fr/operations/serie/s1001"),
             "insee:StatisticalOperationSeries"
         );
 
