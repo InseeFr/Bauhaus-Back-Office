@@ -79,7 +79,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenIdIsAbsent(){
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null,null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en", null);
         Family familyCreate = new Family();
         familyCreate.setCreated("today");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
@@ -88,7 +88,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenPrefLabelLg1IsAbsent() {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null,null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en", null);
         Family familyCreate = new Family();
         familyCreate.setId("idExample");
         familyCreate.setAbstractLg1("");

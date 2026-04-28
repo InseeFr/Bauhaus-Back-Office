@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.reflect.Field;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +34,13 @@ class MetadataStructureDefUtilsTest {
 
     @InjectMocks
     MetadataStructureDefUtils metadataStructureDefUtils;
+
+    @BeforeEach
+    void injectRepoGestion() throws Exception {
+        Field field = RdfService.class.getDeclaredField("repoGestion");
+        field.setAccessible(true);
+        field.set(metadataStructureDefUtils, repoGestion);
+    }
 
     JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
     JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");

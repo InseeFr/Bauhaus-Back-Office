@@ -113,9 +113,9 @@ class ConceptsUtilsTest {
     @Test
     void shouldReturnGetConceptExportFileName() {
 
-        ConceptsPublication conceptsPublication =  new ConceptsPublication();
+        ConceptsPublication conceptsPublication =  new ConceptsPublication(null);
         NoteManager noteManager = new NoteManager(null);
-        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication,noteManager,19);
+        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication,noteManager,19, null);
 
         ConceptForExport conceptForExport = new ConceptForExport();
         conceptForExport.setId("id");

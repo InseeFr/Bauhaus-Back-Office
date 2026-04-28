@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.Stubber;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
@@ -10,13 +9,13 @@ import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,16 +50,14 @@ class ConceptsExportBuilderTest {
     @Mock
     private OrganisationsService organisationsService;
 
-    private ConceptsExportBuilder conceptsExportBuilder;
+    @Mock
+    private ConceptConceptsQueries conceptConceptsQueries;
 
-    @BeforeAll
-    static void initGenericQueries() {
-        GenericQueries.setConfig(new ConfigStub());
-    }
+    private ConceptsExportBuilder conceptsExportBuilder;
 
     @BeforeEach
     void setUp() {
-        conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, organisationsService, exportUtils);
+        conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, organisationsService, exportUtils, conceptConceptsQueries);
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
     }
 
@@ -100,8 +97,8 @@ class ConceptsExportBuilderTest {
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
         when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
         when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(links);
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(notes);
+        when(repoGestion.getResponseAsArray(any())).thenReturn(links);
+        when(repoGestion.getResponseAsObject(any())).thenReturn(notes);
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -112,8 +109,8 @@ class ConceptsExportBuilderTest {
         assertEquals("Concept FR", result.getPrefLabelLg1());
         assertEquals("Concept EN", result.getPrefLabelLg2());
         verify(conceptsUtils, times(1)).getConceptById(id);
-        verify(repoGestion, times(1)).getResponseAsArray(anyString());
-        verify(repoGestion, times(1)).getResponseAsObject(anyString());
+        verify(repoGestion, times(1)).getResponseAsArray(any());
+        verify(repoGestion, times(1)).getResponseAsObject(any());
     }
 
     @Test
@@ -141,8 +138,8 @@ class ConceptsExportBuilderTest {
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
         when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
         when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -268,8 +265,8 @@ class ConceptsExportBuilderTest {
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
         when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
         when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -302,8 +299,8 @@ class ConceptsExportBuilderTest {
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
         when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
         when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -336,8 +333,8 @@ class ConceptsExportBuilderTest {
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
         when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
         when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);
@@ -372,8 +369,8 @@ class ConceptsExportBuilderTest {
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
         when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
         when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
         // When
         ConceptForExport result = conceptsExportBuilder.getConceptData(id);

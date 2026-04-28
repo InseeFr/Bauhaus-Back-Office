@@ -266,6 +266,7 @@ class DistributionServiceImplTest {
     @Test
     void getDistributionByID_shouldReturn404IfInexistentId() throws RmesException {
         JSONObject mockJSON = new JSONObject(EMPTY_JSON_OBJECT);
+        when(datasetDistributionQueries.getDistribution(any(), any())).thenReturn("distribution-query");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
         RmesException exception = assertThrows(RmesNotFoundException.class, () -> distributionService.getDistributionByID("1"));
         Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This distribution does not exist\"}", exception.getDetails());
@@ -276,6 +277,7 @@ class DistributionServiceImplTest {
     void shouldPatchDistributionReturn400IfNoOneOfRequiredAttributes() throws RmesException {
         PatchDistribution patch = new PatchDistribution();
         JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
+        when(datasetDistributionQueries.getDistribution(any(), any())).thenReturn("distribution-query");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);
         RmesException exception = assertThrows(RmesBadRequestException.class, () ->distributionService.patchDistribution("d1004", patch));
         Assertions.assertEquals("{\"code\":1201,\"message\":\"One of these attributes is required : updated, byteSize or url\"}", exception.getDetails());
@@ -286,6 +288,7 @@ class DistributionServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/d1004");
         PatchDistribution patch = new PatchDistribution("2024-04-05T16:34:09.651166561", "5","http://test2");
         JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
+        when(datasetDistributionQueries.getDistribution(any(), any())).thenReturn("distribution-query");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);
         distributionService.patchDistribution("d1004", patch);
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
@@ -301,6 +304,7 @@ class DistributionServiceImplTest {
                   "id": "idTest",
                   "validationState": "Not Unpublished"
                 }""");
+        when(datasetDistributionQueries.getDistribution(any(), any())).thenReturn("distribution-query");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.deleteDistributionId("idTest"));
         Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished distributions can be deleted\"}", exception.getDetails());

@@ -33,7 +33,6 @@ class CollectionsUtilsTest {
 
     @BeforeAll
     static void initConfig() {
-        GenericQueries.setConfig(new ConfigStub());
         RdfUtils.setConfig(new ConfigStub());
         RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
     }
