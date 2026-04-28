@@ -327,6 +327,7 @@
     <module>module-infrastructure</module>
     <module>module-testcontainer-graphdb</module>
     <module>module-infrastructure-graphdb</module>
+    <module>module-operation</module>
     <module>module-ddi</module>
     <module>module-bauhaus-bo</module>
   </modules>
