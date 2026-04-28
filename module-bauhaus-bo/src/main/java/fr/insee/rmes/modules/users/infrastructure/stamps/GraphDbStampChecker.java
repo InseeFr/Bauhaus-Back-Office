@@ -5,6 +5,9 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;
@@ -20,7 +23,9 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @ServerSideAdaptor
 @Repository
@@ -28,32 +33,58 @@ public class GraphDbStampChecker implements StampChecker {
     private final RepositoryGestion repositoryGestion;
     private final DatasetQueries datasetQueries;
     private final StructureQueries structureQueries;
+    private final OperationSeriesQueries operationSeriesQueries;
+    private final DDIRepository ddiRepository;
+    private final SeriesCreatorsPort seriesCreatorsPort;
+    private final DatasetDistributionQueries datasetDistributionQueries;
 
     public GraphDbStampChecker(
             RepositoryGestion repositoryGestion,
             DatasetQueries datasetQueries,
-            StructureQueries structureQueries) {
+            StructureQueries structureQueries,
+            OperationSeriesQueries operationSeriesQueries,
+            DDIRepository ddiRepository,
+            SeriesCreatorsPort seriesCreatorsPort,
+            DatasetDistributionQueries datasetDistributionQueries) {
         this.repositoryGestion = repositoryGestion;
         this.datasetQueries = datasetQueries;
         this.structureQueries = structureQueries;
+        this.operationSeriesQueries = operationSeriesQueries;
+        this.ddiRepository = ddiRepository;
+        this.seriesCreatorsPort = seriesCreatorsPort;
+        this.datasetDistributionQueries = datasetDistributionQueries;
     }
 
 
     @Override
     public List<String> getCreatorsStamps(RBAC.Module module, String id) throws UnsupportedModuleException, StampFetchException {
         try {
-        var query = switch (module) {
-            case OPERATION_SERIES -> {
-                var iri = RdfUtils.objectIRI(ObjectType.SERIES, id);
-
-                    yield OperationSeriesQueries.getCreatorsBySeriesUri(iri.toString());
-
-            }
-            default -> throw new UnsupportedModuleException(module);
-        };
-
-        return this.getStamps("creators", query);
-
+            return switch (module) {
+                case OPERATION_SERIES -> {
+                    var iri = RdfUtils.objectIRI(ObjectType.SERIES, id);
+                    yield this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString()));
+                }
+                case DDI_PHYSICALINSTANCE -> {
+                    if (id == null) yield List.of();
+                    String[] parts = id.split("\\|", 2);
+                    if (parts.length < 2) yield List.of();
+                    String agency = parts[0];
+                    String groupId = parts[1];
+                    Ddi4GroupResponse groupResponse = ddiRepository.getGroup(agency, groupId);
+                    List<String> seriesIris = groupResponse.group() == null ? List.of() :
+                            groupResponse.group().stream()
+                                    .filter(g -> g.seriesIris() != null)
+                                    .flatMap(g -> g.seriesIris().stream())
+                                    .toList();
+                    if (seriesIris.isEmpty()) yield List.of();
+                    Map<String, List<String>> creatorsByIri = seriesCreatorsPort.getCreatorsForSeries(seriesIris);
+                    yield creatorsByIri.values().stream()
+                            .flatMap(Collection::stream)
+                            .distinct()
+                            .toList();
+                }
+                default -> throw new UnsupportedModuleException(module);
+            };
         } catch (RmesException e) {
             throw new StampFetchException(module, id);
         }
@@ -73,7 +104,7 @@ public class GraphDbStampChecker implements StampChecker {
                 }
                 case DATASET_DISTRIBUTION -> {
                     var iri = RdfUtils.objectIRI(ObjectType.DISTRIBUTION, id);
-                    yield DatasetDistributionQueries.getContributorsByDistributionUri(iri.toString());
+                    yield datasetDistributionQueries.getContributorsByDistributionUri(iri.toString());
                 }
                 case DATASET_DATASET -> {
                     var iri = RdfUtils.objectIRI(ObjectType.DATASET, id);

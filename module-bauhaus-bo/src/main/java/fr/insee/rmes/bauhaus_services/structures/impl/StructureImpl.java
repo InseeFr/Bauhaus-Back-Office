@@ -36,6 +36,9 @@ public class StructureImpl  extends RdfService implements StructureService {
 	@Autowired
 	StructureQueries structureQueries;
 
+	@Autowired
+	ConceptConceptsQueries conceptConceptsQueries;
+
 	@Override
 	public List<PartialStructure> getStructures() throws RmesException {
 		logger.info("Starting to get structures");
@@ -113,7 +116,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 
 			if(!component.isNull(Constants.CONCEPT)){
 				try {
-					JSONObject concept = repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
+					JSONObject concept = repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
 					component.put(Constants.CONCEPT, concept);
 				} catch (RmesException e) {
 					logger.error("Cannot fetch concept of the structure " +id, e);

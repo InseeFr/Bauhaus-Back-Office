@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 public class CodesListExportImpl implements  CodesListExport {
 
     private final RepositoryGestion repositoryGestion;
+    private final CodeListsQueries codeListsQueries;
 
-    public CodesListExportImpl(RepositoryGestion repositoryGestion) {
+    public CodesListExportImpl(RepositoryGestion repositoryGestion, CodeListsQueries codeListsQueries) {
         this.repositoryGestion = repositoryGestion;
+        this.codeListsQueries = codeListsQueries;
     }
 
     @Override
@@ -26,11 +28,11 @@ public class CodesListExportImpl implements  CodesListExport {
     }
 
     private JSONObject getCodesList(String notation) throws RmesException {
-        JSONObject codeList = this.repositoryGestion.getResponseAsObject(CodeListsQueries.getCodeListLabelByNotation(notation));
+        JSONObject codeList = this.repositoryGestion.getResponseAsObject(codeListsQueries.getCodeListLabelByNotation(notation));
         return codeList.put(Constants.NOTATION, notation);
     }
 
     private JSONArray getCodes(String notation) throws RmesException {
-        return this.repositoryGestion.getResponseAsArray(CodeListsQueries.getCodeListItemsByNotation(notation, 1, 0));
+        return this.repositoryGestion.getResponseAsArray(codeListsQueries.getCodeListItemsByNotation(notation, 1, 0));
     }
 }

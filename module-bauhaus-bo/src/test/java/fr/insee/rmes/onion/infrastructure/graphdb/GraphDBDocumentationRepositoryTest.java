@@ -8,7 +8,7 @@ import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentationsQueries;
+import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.Assertions;
@@ -22,12 +22,12 @@ import java.util.List;
 class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
 
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+    DocumentationQueries documentationQueries = new DocumentationQueries(new ConfigStub());
 
-    GraphDBDocumentationRepository repository = new GraphDBDocumentationRepository(repositoryGestion);
+    GraphDBDocumentationRepository repository = new GraphDBDocumentationRepository(repositoryGestion, documentationQueries);
 
     @BeforeAll
     static void initData(){
-        OperationDocumentationsQueries.setConfig(new ConfigStub());
         container.withTrigFiles("sims-metadata.trig");
     }
 

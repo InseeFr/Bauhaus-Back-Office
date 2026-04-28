@@ -32,6 +32,9 @@ class ClassificationItemUtilsTest {
     @Mock
     ClassificationNoteService classificationNoteService;
 
+    @Mock
+    ClassificationItemsQueries classificationItemsQueries;
+
     @Test
     void shouldThrowExceptionIfPrefLabelLg1Null() {
         ClassificationItem item = new ClassificationItem();
@@ -47,7 +50,7 @@ class ClassificationItemUtilsTest {
 
     @Test
     void shouldThrowExceptionIfPrefLabelLg2Null() {
-        ClassificationItemsQueries.setConfig(config);
+
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
         item.setPrefLabelLg1("label1");
@@ -68,7 +71,7 @@ class ClassificationItemUtilsTest {
         when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
 
         RdfUtils.setConfig(config);
-        ClassificationItemsQueries.setConfig(config);
+
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
         item.setPrefLabelLg1("label1");

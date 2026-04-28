@@ -25,6 +25,7 @@ import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -51,6 +52,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Autowired
     SeriesUtils seriesUtils;
+
+    @Autowired
+    @Qualifier("sparqlDatasetQueries")
+    DatasetQueries datasetQueries;
+
+    @Autowired
+    DatasetDistributionQueries datasetDistributionQueries;
 
     @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
     private String datasetsGraphSuffix;
@@ -132,7 +140,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private List<PartialDataset> getDatasets(Set<String> stamps) throws RmesException {
-        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamps));
+        var datasets = this.repoGestion.getResponseAsArray(datasetQueries.getDatasets(getDatasetsGraph(), stamps));
         return DiacriticSorter.sort(datasets,
                 PartialDataset[].class,
                 PartialDataset::label);
@@ -140,7 +148,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public List<DatasetsForSearch> getDatasetsForSearch() throws RmesException {
-        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetsForSearch(getDatasetsGraph()));
+        var datasets = this.repoGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch(getDatasetsGraph()));
         return DiacriticSorter.sort(datasets,
                 DatasetsForSearch[].class,
                 DatasetsForSearch::labelLg1);
@@ -148,7 +156,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public Dataset getDatasetByID(String id) throws RmesException {
-        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
+        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(datasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
             throw new RmesNotFoundException("This dataset does not exist");
@@ -165,17 +173,17 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("themes", themes);
         dataset.remove(THEME);
 
-        this.repoGestion.getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
-        this.repoGestion.getMultipleTripletsForObject(dataset, "wasGeneratedIRIs", DatasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "creators", datasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
+        this.repoGestion.getMultipleTripletsForObject(dataset, "wasGeneratedIRIs", datasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
-        this.repoGestion.getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
-        this.repoGestion.getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
-        this.repoGestion.getMultipleTripletsForObject(dataset, "linkedDocuments", DatasetQueries.getLinkedDocuments(id, getDatasetsGraph()), "linkedDocument");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "spacialResolutions", datasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "statisticalUnit", datasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
+        this.repoGestion.getMultipleTripletsForObject(dataset, "linkedDocuments", datasetQueries.getLinkedDocuments(id, getDatasetsGraph()), "linkedDocument");
         addKeywordsToDataset(id, dataset);
 
 
         JSONObject catalogRecord = new JSONObject();
-        this.repoGestion.getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
+        this.repoGestion.getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, datasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
 
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
@@ -195,7 +203,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private void addKeywordsToDataset(String id, JSONObject dataset) throws RmesException {
-        JSONArray keywords = this.repoGestion.getResponseAsArray(DatasetQueries.getKeywords(id, getDatasetsGraph()));
+        JSONArray keywords = this.repoGestion.getResponseAsArray(datasetQueries.getKeywords(id, getDatasetsGraph()));
 
 
 
@@ -265,12 +273,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDistributions(String id) throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetDistributionQueries.getDatasetDistributions(id, getDatasetsGraph())).toString();
+        return this.repoGestion.getResponseAsArray(datasetDistributionQueries.getDatasetDistributions(id, getDatasetsGraph())).toString();
     }
 
     @Override
     public String getArchivageUnits() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetQueries.getArchivageUnits()).toString();
+        return this.repoGestion.getResponseAsArray(datasetQueries.getArchivageUnits()).toString();
     }
 
     @Override
@@ -353,7 +361,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private boolean hasDerivedDataset(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
-        JSONObject datasetDerivation =  this.repoGestion.getResponseAsObject(DatasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
+        JSONObject datasetDerivation =  this.repoGestion.getResponseAsObject(datasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
         return (datasetDerivation.has("id"));
     }
 
@@ -362,17 +370,17 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private void deleteTemporalWhiteNode(String id) throws RmesException {
-        repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
+        repoGestion.executeUpdate(datasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
     }
 
     private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
-        JSONObject datasetDerivedFrom =  this.repoGestion.getResponseAsObject(DatasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
+        JSONObject datasetDerivedFrom =  this.repoGestion.getResponseAsObject(datasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
         return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
     }
 
     private void deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
-        repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
+        repoGestion.executeUpdate(datasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {

@@ -1,22 +1,30 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.GenericQueries;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 
-public class ClassificationLevelsQueries extends GenericQueries{
-	
-	public static String levelsQuery(String classificationId) throws RmesException {
+@Component
+public class ClassificationLevelsQueries {
+
+	private final Config config;
+
+	public ClassificationLevelsQueries(Config config) {
+		this.config = config;
+	}
+
+	public String levelsQuery(String classificationId) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("ID", classificationId);
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationLevels.ftlh", params);
 	}
-	
-	public static String levelQuery(String classificationId, String levelId) {
+
+	public String levelQuery(String classificationId, String levelId) {
 		return "SELECT ?classificationId ?levelId ?prefLabelLg1 ?prefLabelLg2 ?depth ?notation \n"
 			+ "?notationPattern ?broaderLg1 ?broaderLg2 ?idBroader ?narrowerLg1 ?narrowerLg2 ?idNarrower \n"
 			+ "WHERE { \n"
@@ -47,10 +55,10 @@ public class ClassificationLevelsQueries extends GenericQueries{
 					+ "FILTER (lang(?broaderLg2) = '" + config.getLg2() + "') } \n"
 				+ "BIND(STRAFTER(STRAFTER(STR(?previousLevel),'/codes/'), '/') AS ?idBroader) } \n"
 			+ "} \n"
-			+ "} \n";	
+			+ "} \n";
 	}
-	
-	public static String levelMembersQuery(String classificationId, String levelId) {
+
+	public String levelMembersQuery(String classificationId, String levelId) {
 		return "SELECT DISTINCT ?item ?id ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n"
 				+ "?level rdf:type xkos:ClassificationLevel . \n"
@@ -64,9 +72,4 @@ public class ClassificationLevelsQueries extends GenericQueries{
 				+ "} \n"
 				+ "ORDER BY ?id ";
 	}
-	
-	  private ClassificationLevelsQueries() {
-		    throw new IllegalStateException("Utility class");
-	}
-
 }

@@ -30,15 +30,17 @@ public class ConceptsExportBuilder extends RdfService {
     private final ConceptsUtils conceptsUtils;
     private final OrganisationsService organisationsService;
     private final ExportUtils exportUtils;
+    private final ConceptConceptsQueries conceptConceptsQueries;
 
     private static final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
     private static final String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
     private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
-    public ConceptsExportBuilder(ConceptsUtils conceptsUtils, OrganisationsService organisationsService, ExportUtils exportUtils) {
+    public ConceptsExportBuilder(ConceptsUtils conceptsUtils, OrganisationsService organisationsService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
         this.conceptsUtils = conceptsUtils;
         this.organisationsService = organisationsService;
         this.exportUtils = exportUtils;
+        this.conceptConceptsQueries = conceptConceptsQueries;
     }
 
     private void transformAltLabelListInString(JSONObject general) {
@@ -62,9 +64,9 @@ public class ConceptsExportBuilder extends RdfService {
         transformAltLabelListInString(general);
 
 
-        JSONArray links = repoGestion.getResponseAsArray(ConceptConceptsQueries.conceptLinks(id));
+        JSONArray links = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptLinks(id));
         JSONObject notes = repoGestion.getResponseAsObject(
-                ConceptConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
+                conceptConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
 
         // Deserialization in the `ConceptForExport` class
         ObjectMapper mapper = new ObjectMapper();

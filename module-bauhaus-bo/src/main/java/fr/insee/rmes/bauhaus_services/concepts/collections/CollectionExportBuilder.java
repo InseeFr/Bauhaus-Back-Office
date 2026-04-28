@@ -38,6 +38,9 @@ public class CollectionExportBuilder extends RdfService {
 	@Autowired
 	ExportUtils exportUtils;
 
+	@Autowired
+	ConceptCollectionsQueries conceptCollectionsQueries;
+
 	private static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
 	private static final String XML_PATERN = "/xslTransformerFiles/collection/collectionPatternContent.xml";
 	private static final String ZIP = "/xslTransformerFiles/collection/toZipForCollection.zip";
@@ -54,8 +57,8 @@ public class CollectionExportBuilder extends RdfService {
 
 	public CollectionForExport getCollectionData(String id) throws RmesException {
 		CollectionForExport collection;
-		JSONObject json = repoGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery(id));
-		JSONArray members = repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionConceptsQuery(id));
+		JSONObject json = repoGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id));
+		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
 		for (int i = 0; i < members.length(); i++) {
@@ -194,8 +197,8 @@ public class CollectionExportBuilder extends RdfService {
 
 	public CollectionForExportOld getCollectionDataOld(String id) throws RmesException {
 		CollectionForExportOld collection;
-		JSONObject json = repoGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery(id));
-		JSONArray members = repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id));
+		JSONObject json = repoGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id));
+		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
 		for (int i = 0; i < members.length(); i++) {

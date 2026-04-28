@@ -44,11 +44,13 @@ public class ConceptsUtils extends RdfService {
 	private final ConceptsPublication conceptsPublication;
 	private final NoteManager noteManager;
 	private final int maxLength;
+	private final ConceptConceptsQueries conceptConceptsQueries;
 
-	public ConceptsUtils(ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
+	public ConceptsUtils(ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries) {
 		this.conceptsPublication = conceptsPublication;
 		this.noteManager = noteManager;
 		this.maxLength = maxLength;
+		this.conceptConceptsQueries = conceptConceptsQueries;
 	}
 
 	public String getConceptExportFileName(ConceptForExport concept) {
@@ -68,7 +70,7 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public String createID() throws RmesException {
-		JSONObject json = repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID());
+		JSONObject json = repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID());
 		if (json != null && !json.isEmpty()) {
 			String notation = json.getString(Constants.NOTATION);
 			int id = Integer.parseInt(notation.substring(1))+1;
@@ -81,9 +83,9 @@ public class ConceptsUtils extends RdfService {
 		if (!checkIfConceptExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
 		}
-		JSONObject concept = repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptQuery(id));
-		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptConceptsQueries.altLabel(id, config.getLg1()));
-		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptConceptsQueries.altLabel(id, config.getLg2()));
+		JSONObject concept = repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id));
+		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(conceptConceptsQueries.altLabel(id, config.getLg1()));
+		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(conceptConceptsQueries.altLabel(id, config.getLg2()));
 		if(!altLabelLg1.isEmpty()) {
 			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
 		}
@@ -197,23 +199,23 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public JSONArray getGraphsWithConcept(String id) throws RmesException {
-		return repoGestion.getResponseAsArray(ConceptConceptsQueries.getGraphWithConceptQuery(id));
+		return repoGestion.getResponseAsArray(conceptConceptsQueries.getGraphWithConceptQuery(id));
 	}
 
 	public JSONArray getRelatedConcepts(String id)  throws RmesException{
-		return repoGestion.getResponseAsArray(ConceptConceptsQueries.getRelatedConceptsQuery(id));
+		return repoGestion.getResponseAsArray(conceptConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
 	public HttpStatus deleteConcept(String id) throws RmesException{
-		HttpStatus result =  repoGestion.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+		HttpStatus result =  repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		if (result.equals(HttpStatus.OK)) {
-			result = repositoryPublication.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+			result = repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		}
 		return result;
 	}
 
 	public boolean checkIfConceptExists(String id) throws RmesException {
-		return repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id));
+		return repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id));
 	}
 
 

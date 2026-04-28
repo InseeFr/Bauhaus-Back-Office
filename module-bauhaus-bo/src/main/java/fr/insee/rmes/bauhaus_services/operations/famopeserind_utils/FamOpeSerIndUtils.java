@@ -26,9 +26,15 @@ public class FamOpeSerIndUtils  extends RdfService {
 
 	static final Logger logger = LoggerFactory.getLogger(FamOpeSerIndUtils.class);
 
+	private final OperationQueries operationQueries;
+
+	public FamOpeSerIndUtils(OperationQueries operationQueries) {
+		this.operationQueries = operationQueries;
+	}
+
 	public String createId() throws RmesException {
 		logger.info("Generate famOpeSer id");
-		JSONObject json = repoGestion.getResponseAsObject(OperationQueries.lastId());
+		JSONObject json = repoGestion.getResponseAsObject(operationQueries.lastId());
 		logger.debug("JSON for famOpeSer id : {}", json);
 		if (json.isEmpty()) {return "1000";}
 		String id = json.getString(Constants.ID);
@@ -37,7 +43,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 	}
 
 	public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
-		return repoGestion.getResponseAsBoolean(OperationQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
+		return repoGestion.getResponseAsBoolean(operationQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {

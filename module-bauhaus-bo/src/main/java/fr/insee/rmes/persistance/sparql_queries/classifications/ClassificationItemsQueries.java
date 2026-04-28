@@ -1,26 +1,30 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.GenericQueries;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClassificationItemsQueries extends GenericQueries{
+@Component
+public class ClassificationItemsQueries {
 
 	public static final String CLASSIFICATION_ID = "CLASSIFICATION_ID";
 	public static final String ITEM_ID = "ITEM_ID";
 
-	private ClassificationItemsQueries() {
-		throw new IllegalStateException("Utility class");
+	private final Config config;
+
+	public ClassificationItemsQueries(Config config) {
+		this.config = config;
 	}
 
-	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
+	private String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("classifications/", fileName, params);
 	}
 
-	public static String itemQuery(String classificationId, String itemId) throws RmesException {
+	public String itemQuery(String classificationId, String itemId) throws RmesException {
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
@@ -30,7 +34,7 @@ public class ClassificationItemsQueries extends GenericQueries{
 		return buildRequest("getClassificationItem.ftlh", params);
 	}
 
-	public static String itemAltQuery(String classificationId, String itemId) throws RmesException {
+	public String itemAltQuery(String classificationId, String itemId) throws RmesException {
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
@@ -39,8 +43,8 @@ public class ClassificationItemsQueries extends GenericQueries{
 
 		return buildRequest("getClassificationItemAltLabels.ftlh", params);
 	}
-	
-	public static String itemNotesQuery(String classificationId, String itemId, int conceptVersion) throws RmesException {
+
+	public String itemNotesQuery(String classificationId, String itemId, int conceptVersion) throws RmesException {
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
@@ -50,8 +54,8 @@ public class ClassificationItemsQueries extends GenericQueries{
 
 		return buildRequest("getClassificationItemNotes.ftlh", params);
 	}
-	
-	public static String itemNarrowersQuery(String classificationId, String itemId) throws RmesException {
+
+	public String itemNarrowersQuery(String classificationId, String itemId) throws RmesException {
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());

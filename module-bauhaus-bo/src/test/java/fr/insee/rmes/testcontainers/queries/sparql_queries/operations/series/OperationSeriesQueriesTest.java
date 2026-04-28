@@ -11,6 +11,7 @@ import fr.insee.rmes.utils.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,30 +26,34 @@ import static org.junit.jupiter.api.Assertions.*;
 class OperationSeriesQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
+    private OperationSeriesQueries operationSeriesQueries;
+
     @BeforeAll
     static void initData(){
         container.withTrigFiles("all-operations-and-indicators.trig");
         container.withTrigFiles("sims-all.trig");
     }
 
+    @BeforeEach
+    void setUp() {
+        operationSeriesQueries = new OperationSeriesQueries(new ConfigStub());
+    }
+
     @Test
     void should_return_true_if_series_if_label_exist() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean result = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkPrefLabelUnicity("1", "Enquête Loyers et charges", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity("1", "Enquête Loyers et charges", "fr"));
         assertTrue(result);
     }
 
     @Test
     void should_return_false_series_if_label_does_not_exist() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean result = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkPrefLabelUnicity("1", "label", "fr"));
+        boolean result = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity("1", "label", "fr"));
         assertFalse(result);
     }
 
     @Test
     void should_return_series() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONObject result = repositoryGestion.getResponseAsObject(OperationSeriesQueries.oneSeriesQuery("s1226", false));
+        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("s1226", false));
         assertThat(result.getString("validationState")).hasToString("Validated");
         assertThat(result.getString("altLabelLg1")).hasToString("EVA");
         assertThat(result.getString("altLabelLg2")).hasToString("EVA");
@@ -68,15 +73,13 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
     })
     @ParameterizedTest
     void should_series_for_search_based_on_stamp(String stamp, int expectedLength) throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getSeriesForSearch(stamp));
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.getSeriesForSearch(stamp));
         assertEquals(expectedLength, result.length());
     }
 
     @Test
     void should_return_series_family() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONObject family = repositoryGestion.getResponseAsObject(OperationSeriesQueries.getFamily("s1028"));
+        JSONObject family = repositoryGestion.getResponseAsObject(operationSeriesQueries.getFamily("s1028"));
         assertEquals("Housing", family.getString("labelLg2"));
         assertEquals("Logement", family.getString("labelLg1"));
         assertEquals("s60", family.getString("id"));
@@ -84,81 +87,70 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_series_crators() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray creators = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
+        JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsBySeriesUri("http://bauhaus/operations/serie/s1236"));
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
         assertEquals(1, creators.length());
     }
 
     @Test
     void should_return_true_if_series_has_sims() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s1236"));
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s1236"));
         assertTrue(hasSims);
     }
 
     @Test
     void should_return_false_if_series_does_not_have_sims() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s12361"));
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s12361"));
         assertFalse(hasSims);
     }
 
     @Test
     void should_return_true_if_series_has_operation() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1228"));
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1228"));
         assertTrue(hasSims);
     }
 
     @Test
     void should_return_false_if_series_does_not_have_operation() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1236"));
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1236"));
         assertFalse(hasSims);
     }
 
     @Test
     void should_get_creators() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray creators = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getCreatorsById("s1236"));
+        JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsById("s1236"));
         assertEquals(1, creators.length());
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
     }
 
     @Test
     void should_get_operations() throws RmesException {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray operations = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getOperations("s1207"));
+        JSONArray operations = repositoryGestion.getResponseAsArray(operationSeriesQueries.getOperations("s1207"));
         assertEquals(13, operations.length());
     }
 
     @Test
     void should_return_all_series() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationSeriesQueries.seriesWithSimsQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesWithSimsQuery());
         assertEquals(174, result.length());
         JSONUtils.stream(result).forEach(object -> assertNotNull(object.getString("iri")));
     }
 
     @Test
     void should_return_all_series_and_operators() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/s1028", "http://bauhaus/operations/operation/s1489")));
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/s1028", "http://bauhaus/operations/operation/s1489")));
         assertEquals(2, result.length());
     }
 
     @Test
     void should_return_filter_missing_objects() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/unknown", "http://bauhaus/operations/operation/s1489")));
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/unknown", "http://bauhaus/operations/operation/s1489")));
         assertEquals(1, result.length());
     }
 
     @Test
     void should_return_published_operations_for_series() throws Exception {
-        OperationSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getPublishedOperationsForSeries("http://bauhaus/operations/serie/s1227"));
+        JSONArray result = repositoryGestion.getResponseAsArray(operationSeriesQueries.getPublishedOperationsForSeries("http://bauhaus/operations/serie/s1227"));
         assertEquals(1, result.length());
     }
 }

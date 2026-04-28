@@ -35,11 +35,23 @@ public class ParentUtils extends RdfService{
 	@Autowired
 	private OperationsOperationQueries operationsOperationQueries;
 
-	
+	@Autowired
+	private DocumentationQueries documentationQueries;
+
+	@Autowired
+	private ParentQueries parentQueries;
+
+	@Autowired
+	private OperationQueries operationQueries;
+
+	@Autowired
+	private OperationSeriesQueries operationSeriesQueries;
+
+
 	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
 		logger.info("Search Sims Owners' Stamps");
 		String stamps = null;
-		JSONObject target = repoGestion.getResponseAsObject(DocumentationQueries.getTargetByIdSims(idSims));
+		JSONObject target = repoGestion.getResponseAsObject(documentationQueries.getTargetByIdSims(idSims));
 		if (target != null) {
 			String idOperation = target.getString(Constants.ID_OPERATION);
 			String idSerie = target.getString(Constants.ID_SERIES);
@@ -59,34 +71,34 @@ public class ParentUtils extends RdfService{
 		}
 		return stamps;
 	}
-	
+
 	public IRI getSeriesUriByOperationId(String idOperation) throws RmesException{
 		JSONObject series = repoGestion.getResponseAsObject(operationsOperationQueries.seriesQuery(idOperation));
-		if (series != null && series.has(Constants.ID))		
+		if (series != null && series.has(Constants.ID))
 			return RdfUtils.objectIRI(ObjectType.SERIES, series.getString(Constants.ID));
 		return null;
 	}
-	
+
 
 	public boolean checkIfSeriesHasSims(String uriSeries) throws RmesException {
-		return repoGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasSims(uriSeries));
+		return repoGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasSims(uriSeries));
 	}
-	
+
 	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
 		String uriParent = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.SERIES, idParent));
 		if (checkIfParentExists(uriParent) && checkIfSeriesHasOperation(uriParent)) throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
 				"Cannot create Sims for a series which already has operations", idParent);
 	}
-	
+
 	public boolean checkIfParentExists(String uriParent) throws RmesException {
-		return repoGestion.getResponseAsBoolean(ParentQueries.checkIfExists(uriParent));
+		return repoGestion.getResponseAsBoolean(parentQueries.checkIfExists(uriParent));
 	}
-	
+
 	public boolean checkIfSeriesHasOperation(String uriParent) throws RmesException {
-		return repoGestion.getResponseAsBoolean(OperationSeriesQueries.checkIfSeriesHasOperation(uriParent));
+		return repoGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasOperation(uriParent));
 	}
-	
-	
+
+
 	public String getValidationStatus(String targetId) throws RmesException {
 		String status = getFamOpSerValidationStatus(targetId);
 		if (status.equals(Constants.UNDEFINED)) {
@@ -94,7 +106,7 @@ public class ParentUtils extends RdfService{
 		}
 		return status;
 	}
-	
+
 	public String getIndicatorsValidationStatus(String id) throws RmesException{
 		try {
 			return repoGestion.getResponseAsObject(operationIndicatorsQueries.getPublicationState(id)).getString("state");
@@ -103,33 +115,33 @@ public class ParentUtils extends RdfService{
 			return Constants.UNDEFINED;
 		}
 	}
-	
+
 	public String getFamOpSerValidationStatus(String id) throws RmesException {
-		try {		
-			return repoGestion.getResponseAsObject(OperationQueries.getPublicationState(id)).getString("state"); }
+		try {
+			return repoGestion.getResponseAsObject(operationQueries.getPublicationState(id)).getString("state"); }
 		catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
 	}
-	
-	
+
+
 	public JSONArray getIndicatorCreators(String id) throws RmesException {
 		return  repoGestion.getResponseAsJSONList(operationIndicatorsQueries.getCreatorsById(id));
 	}
-	
-	
+
+
 	public JSONArray getSeriesCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsById(id));
+		return  repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsById(id));
 	}
-	
+
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
+		return repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
 	}
-	
+
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
 		logger.info("Search Sims Target Type and id");
 
-		JSONObject existingIdTarget =  repoGestion.getResponseAsObject(DocumentationQueries.getTargetByIdSims(idSims));
+		JSONObject existingIdTarget = repoGestion.getResponseAsObject(documentationQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
 		String targetType = null;
 		if (existingIdTarget != null ) {
@@ -148,6 +160,6 @@ public class ParentUtils extends RdfService{
 				targetType = Constants.OPERATION_UP;
 			}
 		}
-		return new String[] { targetType, idDatabase };	
+		return new String[] { targetType, idDatabase };
 	}
 }

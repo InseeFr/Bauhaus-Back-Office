@@ -25,20 +25,25 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     @Autowired
     ClassificationItemRepository classificationItemUtils;
 
+    @Autowired
+    ClassificationsQueries classificationsQueries;
+
+    @Autowired
+    ClassificationItemsQueries classificationItemsQueries;
 
     static final Logger logger = LoggerFactory.getLogger(ClassificationItemServiceImpl.class);
 
     @Override
     public String getClassificationItems(String id) throws RmesException{
         logger.info("Starting to get a classification scheme");
-        return repoGestion.getResponseAsArray(ClassificationsQueries.classificationItemsQuery(id)).toString();
+        return repoGestion.getResponseAsArray(classificationsQueries.classificationItemsQuery(id)).toString();
     }
 
     @Override
     public String getClassificationItem(String classificationId, String itemId) throws RmesException{
         logger.info("Starting to get classification item {} from {}", itemId, classificationId);
-        JSONObject item = repoGestion.getResponseAsObject(ClassificationItemsQueries.itemQuery(classificationId, itemId));
-        JSONArray altLabels = repoGestion.getResponseAsArray(ClassificationItemsQueries.itemAltQuery(classificationId, itemId));
+        JSONObject item = repoGestion.getResponseAsObject(classificationItemsQueries.itemQuery(classificationId, itemId));
+        JSONArray altLabels = repoGestion.getResponseAsArray(classificationItemsQueries.itemAltQuery(classificationId, itemId));
         if(!altLabels.isEmpty()) {
             item.put("altLabels", altLabels);
         }
@@ -48,14 +53,14 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     @Override
     public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
         logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
-        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(ClassificationItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
+        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(classificationItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
         return classificationItemNotes.toString();
     }
 
     @Override
     public String getClassificationItemNarrowers(String classificationId, String itemId) throws RmesException {
         logger.info("Starting to get classification item members {} from {}", itemId, classificationId);
-        return repoGestion.getResponseAsArray(ClassificationItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
+        return repoGestion.getResponseAsArray(classificationItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
     }
 
     @Override
@@ -73,7 +78,7 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
         }
 
 
-        String itemUri = repoGestion.getResponseAsObject(ClassificationsQueries.classificationItemQueryUri(classificationId, itemId)).getString("item");
+        String itemUri = repoGestion.getResponseAsObject(classificationsQueries.classificationItemQueryUri(classificationId, itemId)).getString("item");
         classificationItemUtils.updateClassificationItem(item, itemUri, classificationId);
     }
 }

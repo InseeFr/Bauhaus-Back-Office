@@ -3,18 +3,16 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Stubber;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
-import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +43,9 @@ class CollectionExportBuilderTest {
     @Mock
     private HttpServletResponse response;
 
+    @Mock
+    private ConceptCollectionsQueries conceptCollectionsQueries;
+
     private CollectionExportBuilder collectionExportBuilder;
 
     String keyName = "prefLabelLg1";
@@ -53,16 +54,15 @@ class CollectionExportBuilderTest {
     JSONObject members3 = new JSONObject().put("id","members3").put(keyName,"en");
     JSONObject members4 = new JSONObject().put("id","members4").put(keyName,"fr");
 
-    @BeforeAll
-    static void initGenericQueries() {
-        GenericQueries.setConfig(new ConfigStub());
-    }
-
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         collectionExportBuilder = new CollectionExportBuilder();
         Stubber.forRdfService(collectionExportBuilder).injectRepoGestion(repoGestion);
         collectionExportBuilder.exportUtils = exportUtils;
+        collectionExportBuilder.conceptCollectionsQueries = conceptCollectionsQueries;
+        lenient().when(conceptCollectionsQueries.collectionQuery(anyString())).thenReturn("mock-query");
+        lenient().when(conceptCollectionsQueries.collectionConceptsQuery(anyString())).thenReturn("mock-query");
+        lenient().when(conceptCollectionsQueries.collectionMembersQuery(anyString())).thenReturn("mock-query");
     }
 
     @Test

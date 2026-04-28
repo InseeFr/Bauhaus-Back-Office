@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.utils.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
@@ -56,6 +57,9 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     @Value("${fr.insee.rmes.bauhaus.adms.graph}")
     private String admsGraphSuffix;
 
+    @Autowired
+    DatasetDistributionQueries datasetDistributionQueries;
+
     private String getAdmsGraph(){
         return baseGraph + admsGraphSuffix;
     }
@@ -82,7 +86,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public List<PartialDistribution> getDistributions() throws RmesException {
-        var distributions =  this.repoGestion.getResponseAsArray(DatasetDistributionQueries.getDistributions(getDistributionGraph()));
+        var distributions =  this.repoGestion.getResponseAsArray(datasetDistributionQueries.getDistributions(getDistributionGraph()));
         return DiacriticSorter.sort(distributions,
                 PartialDistribution[].class,
                 PartialDistribution::labelLg1);
@@ -90,7 +94,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public List<DistributionsForSearch> getDistributionsForSearch() throws RmesException {
-        var distributions = this.repoGestion.getResponseAsArray(DatasetDistributionQueries.getDistributionsForSearch(getDistributionGraph(), getAdmsGraph()));
+        var distributions = this.repoGestion.getResponseAsArray(datasetDistributionQueries.getDistributionsForSearch(getDistributionGraph(), getAdmsGraph()));
         return DiacriticSorter.sort(distributions,
                 DistributionsForSearch[].class,
                 DistributionsForSearch::labelLg1);
@@ -98,7 +102,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public Distribution getDistributionByID(String id) throws RmesException {
-        JSONObject distributionRaw = repoGestion.getResponseAsObject(DatasetDistributionQueries.getDistribution(id, getDistributionGraph()));
+        JSONObject distributionRaw = repoGestion.getResponseAsObject(datasetDistributionQueries.getDistribution(id, getDistributionGraph()));
 
         if (distributionRaw.isEmpty()){
             throw new RmesNotFoundException("This distribution does not exist");

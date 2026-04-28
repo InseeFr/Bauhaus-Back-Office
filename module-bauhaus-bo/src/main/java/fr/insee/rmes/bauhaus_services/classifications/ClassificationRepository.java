@@ -28,9 +28,11 @@ import java.util.List;
 public class ClassificationRepository extends RdfService {
 
     private final ClassificationNoteService classificationNoteService;
+    private final ClassificationsQueries classificationsQueries;
 
-    public ClassificationRepository(ClassificationNoteService classificationNoteService) {
+    public ClassificationRepository(ClassificationNoteService classificationNoteService, ClassificationsQueries classificationsQueries) {
         this.classificationNoteService = classificationNoteService;
+        this.classificationsQueries = classificationsQueries;
     }
 
     public void updateClassification(Classification classification, String uri) throws RmesException {
@@ -121,7 +123,7 @@ public class ClassificationRepository extends RdfService {
         for (int i = 0; i < ids.size(); i++) {
             idsArray[i] = ids.get(i);
         }
-        JSONArray codes = repoGestion.getResponseAsArray(ClassificationsQueries.classificationsUriById(idsArray));
+        JSONArray codes = repoGestion.getResponseAsArray(classificationsQueries.classificationsUriById(idsArray));
 
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.BEFORE, graph, null);
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.AFTER, graph, null);

@@ -50,12 +50,14 @@ public class SeriesPublication {
     private final PublicationUtils publicationUtils;
     private final RepositoryGestion repoGestion;
     private final RepositoryPublication repositoryPublication;
+    private final OperationSeriesQueries operationSeriesQueries;
 
-    public SeriesPublication(ParentUtils ownersUtils, PublicationUtils publicationUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication) {
+    public SeriesPublication(ParentUtils ownersUtils, PublicationUtils publicationUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, OperationSeriesQueries operationSeriesQueries) {
         this.ownersUtils = ownersUtils;
         this.publicationUtils = publicationUtils;
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
+        this.operationSeriesQueries = operationSeriesQueries;
     }
 
     private static void checkIfSeriesExist(String id, RepositoryResult<Statement> statements) throws RmesNotFoundException {
@@ -127,7 +129,7 @@ public class SeriesPublication {
 
 
     private void addOperationsWhoHavePartWithToModel(Resource resource, Model model) throws RmesException {
-        JSONArray operations = repoGestion.getResponseAsArray(OperationSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
+        JSONArray operations = repoGestion.getResponseAsArray(operationSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
         JSONUtils.stream(operations)
                 .map(operation -> operation.getString("operation"))
                 .forEach(iri -> model.add(

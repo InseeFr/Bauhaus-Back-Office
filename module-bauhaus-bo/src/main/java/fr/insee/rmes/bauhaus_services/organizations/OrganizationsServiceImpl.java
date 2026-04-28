@@ -29,6 +29,9 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;
 
+	@Autowired
+	OrganizationQueries organizationQueries;
+
 	static final Logger logger = LoggerFactory.getLogger(OrganizationsServiceImpl.class);
 	
 	@Override
@@ -46,20 +49,20 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	@Override
 	public String getOrganizationUriById(String organizationIdentifier) throws RmesException {
 		if (StringUtils.isEmpty(organizationIdentifier)) {return null;}
-		JSONObject orga = repoGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
+		JSONObject orga = repoGestion.getResponseAsObject(organizationQueries.getUriById(organizationIdentifier));
 		return QueryUtils.correctEmptyGroupConcat(orga.getString(Constants.URI));
 	}
 
 	@Override
 	public String getOrganizationsJson() throws RmesException {
 		logger.info("Starting to get organizations list");
-		String resQuery = repoGestion.getResponseAsArray(OrganizationQueries.organizationsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(organizationQueries.organizationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
 	public List<Organization> getOrganizations() throws RmesException {
-		JSONArray orgsJson = repoGestion.getResponseAsArray(OrganizationQueries.organizationsTwoLangsQuery());
+		JSONArray orgsJson = repoGestion.getResponseAsArray(organizationQueries.organizationsTwoLangsQuery());
 		List<Object> objects = 	famOpeSerUtils.buildObjectListFromJson(
 				orgsJson,
 				Organization.getClassOperationsLink());

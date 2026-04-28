@@ -7,8 +7,10 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -39,44 +41,51 @@ class ParentUtilsTest {
     @Mock
     OperationIndicatorsQueries operationIndicatorsQueries;
 
+    @Mock
+    DocumentationQueries documentationQueries;
+
+    @Mock
+    ParentQueries parentQueries;
+
+    @Mock
+    OperationQueries operationQueries;
+
+    @Mock
+    OperationSeriesQueries operationSeriesQueries;
+
+    @Mock
+    OperationsOperationQueries operationsOperationQueries;
+
     String id = "2025";
 
     @Test
     void shouldThrowRmesExceptionWhenGetDocumentationOwnersByIdSims() throws RmesException {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"").put(Constants.ID_INDICATOR,"");
-        try (MockedStatic<DocumentationQueries> mockedQueries = Mockito.mockStatic(DocumentationQueries.class)) {
-            mockedQueries.when(() -> DocumentationQueries.getTargetByIdSims(id)).thenReturn("mock-target-query");
-            when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-            RmesException exception = assertThrows(RmesException.class, () -> parentUtils.getDocumentationOwnersByIdSims(id));
-            assertTrue(exception.getDetails().contains("Documentation has no target"));
-        }
+        when(documentationQueries.getTargetByIdSims(id)).thenReturn("mock-target-query");
+        when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
+        RmesException exception = assertThrows(RmesException.class, () -> parentUtils.getDocumentationOwnersByIdSims(id));
+        assertTrue(exception.getDetails().contains("Documentation has no target"));
     }
 
     @Test
     void shouldCheckIfSeriesHasSims() throws RmesException {
-        try (MockedStatic<OperationSeriesQueries> mockedQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
-            mockedQueries.when(() -> OperationSeriesQueries.checkIfSeriesHasSims("uriSeries")).thenReturn("mock-sims-query");
-            when(repoGestion.getResponseAsBoolean("mock-sims-query")).thenReturn(true);
-            parentUtils.checkIfSeriesHasSims("uriSeries");
-        }
+        when(operationSeriesQueries.checkIfSeriesHasSims("uriSeries")).thenReturn("mock-sims-query");
+        when(repoGestion.getResponseAsBoolean("mock-sims-query")).thenReturn(true);
+        parentUtils.checkIfSeriesHasSims("uriSeries");
     }
 
     @Test
     void shouldCheckIfParentExists() throws RmesException {
-        try (MockedStatic<ParentQueries> mockedQueries = Mockito.mockStatic(ParentQueries.class)) {
-            mockedQueries.when(() -> ParentQueries.checkIfExists("uriParent")).thenReturn("mock-parent-exists-query");
-            when(repoGestion.getResponseAsBoolean("mock-parent-exists-query")).thenReturn(true);
-            parentUtils.checkIfParentExists("uriParent");
-        }
+        when(parentQueries.checkIfExists("uriParent")).thenReturn("mock-parent-exists-query");
+        when(repoGestion.getResponseAsBoolean("mock-parent-exists-query")).thenReturn(true);
+        parentUtils.checkIfParentExists("uriParent");
     }
 
     @Test
     void shouldGetDocumentationOwnersByIdSims() throws RmesException {
-        try (MockedStatic<DocumentationQueries> mockedQueries = Mockito.mockStatic(DocumentationQueries.class)) {
-            mockedQueries.when(() -> DocumentationQueries.getTargetByIdSims(id)).thenReturn("mock-target-query");
-            when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(null);
-            assertNull(parentUtils.getDocumentationOwnersByIdSims(id));
-        }
+        when(documentationQueries.getTargetByIdSims(id)).thenReturn("mock-target-query");
+        when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(null);
+        assertNull(parentUtils.getDocumentationOwnersByIdSims(id));
     }
 
     @Test
@@ -89,11 +98,9 @@ class ParentUtilsTest {
 
     @Test
     void shouldGetSeriesCreatorsWithIri() throws RmesException {
-        try (MockedStatic<OperationSeriesQueries> mockedQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
-            mockedQueries.when(() -> OperationSeriesQueries.getCreatorsById(id)).thenReturn("mock-query");
-            when(repoGestion.getResponseAsJSONList("mock-query")).thenReturn(null);
-            assertNull(parentUtils.getSeriesCreators(id));
-        }
+        when(operationSeriesQueries.getCreatorsById(id)).thenReturn("mock-query");
+        when(repoGestion.getResponseAsJSONList("mock-query")).thenReturn(null);
+        assertNull(parentUtils.getSeriesCreators(id));
     }
 
     @Test
@@ -102,20 +109,18 @@ class ParentUtilsTest {
         String uriParent = "http://bauhaus/operations/series/id";
         ValueFactory factory = SimpleValueFactory.getInstance();
         IRI seriesIRI = factory.createIRI(uriParent);
-        
-        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class);
-             MockedStatic<ParentQueries> mockedParentQueries = Mockito.mockStatic(ParentQueries.class);
-             MockedStatic<OperationSeriesQueries> mockedOpSeriesQueries = Mockito.mockStatic(OperationSeriesQueries.class)) {
+
+        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class)) {
 
             mockedRdfUtils.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, testId)).thenReturn(seriesIRI);
             mockedRdfUtils.when(() -> RdfUtils.toString(seriesIRI)).thenReturn(uriParent);
-            
-            mockedParentQueries.when(() -> ParentQueries.checkIfExists(uriParent)).thenReturn("mock-parent-query");
-            mockedOpSeriesQueries.when(() -> OperationSeriesQueries.checkIfSeriesHasOperation(uriParent)).thenReturn("mock-operation-query");
+
+            when(parentQueries.checkIfExists(uriParent)).thenReturn("mock-parent-query");
+            when(operationSeriesQueries.checkIfSeriesHasOperation(uriParent)).thenReturn("mock-operation-query");
 
             when(repoGestion.getResponseAsBoolean("mock-parent-query")).thenReturn(true);
             when(repoGestion.getResponseAsBoolean("mock-operation-query")).thenReturn(true);
-            
+
             RmesException exception = assertThrows(RmesException.class, () -> parentUtils.checkIfParentIsASeriesWithOperations(testId));
             assertTrue(exception.getDetails().contains("Cannot create Sims for a series which already has operations"));
         }
@@ -124,45 +129,36 @@ class ParentUtilsTest {
     @Test
     void shouldGetDocumentationTargetTypeAndId() throws RmesException {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"A");
-        try (MockedStatic<DocumentationQueries> mockedQueries = Mockito.mockStatic(DocumentationQueries.class)) {
-            mockedQueries.when(() -> DocumentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
-            when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-            String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
-            assertEquals("[OPERATION, A]",actual);
-        }
+        when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
+        when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[OPERATION, A]",actual);
     }
 
     @Test
     void shouldGetDocumentationTargetTypeAndWhenOneJsonKeysNull() throws RmesException {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"A");
-        try (MockedStatic<DocumentationQueries> mockedQueries = Mockito.mockStatic(DocumentationQueries.class)) {
-            mockedQueries.when(() -> DocumentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
-            when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-            String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
-            assertEquals("[SERIES, A]",actual);
-        }
+        when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
+        when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[SERIES, A]",actual);
     }
 
     @Test
     void shouldGetDocumentationTargetTypeAndWhenTwoJsonKeysNull() throws RmesException {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"").put(Constants.ID_INDICATOR,"A").put(Constants.INDICATOR_UP,"B");
-        try (MockedStatic<DocumentationQueries> mockedQueries = Mockito.mockStatic(DocumentationQueries.class)) {
-            mockedQueries.when(() -> DocumentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
-            when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-            String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
-            assertEquals("[INDICATOR, A]",actual);
-        }
+        when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
+        when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[INDICATOR, A]",actual);
     }
 
     @Test
     void shouldGetDocumentationTargetTypeAndWhenAllJsonKeysNull() throws RmesException {
         JSONObject jsonObject = null;
-        try (MockedStatic<DocumentationQueries> mockedQueries = Mockito.mockStatic(DocumentationQueries.class)) {
-            mockedQueries.when(() -> DocumentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
-            when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-            String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
-            assertEquals("[null, null]",actual);
-        }
+        when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
+        when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
+        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        assertEquals("[null, null]",actual);
     }
 }
-

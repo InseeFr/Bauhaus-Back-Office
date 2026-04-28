@@ -50,6 +50,9 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	@Autowired
 	DocumentationRepository documentationRepository;
 
+	@Autowired
+	DocumentationQueries documentationQueries;
+
 
 	/***************************************************************************************************
 	 * DOCUMENTATION
@@ -58,7 +61,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Override
 	public String getMSDJson() throws RmesException {
-		String resQuery = repoGestion.getResponseAsArray(DocumentationQueries.msdQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(documentationQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 

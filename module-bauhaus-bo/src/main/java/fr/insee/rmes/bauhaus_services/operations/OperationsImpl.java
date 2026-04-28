@@ -14,7 +14,6 @@ import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
@@ -64,6 +63,9 @@ public class OperationsImpl  implements OperationsService {
 	@Autowired
 	OperationsOperationQueries operationsOperationQueries;
 
+	@Autowired
+	OperationSeriesQueries operationSeriesQueries;
+
 
 	/***************************************************************************************************
 	 * SERIES
@@ -74,7 +76,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public List<PartialOperationSeries> getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		var series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesQuery());
+		var series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series,
 				PartialOperationSeries[].class,
@@ -89,7 +91,7 @@ public class OperationsImpl  implements OperationsService {
 	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray seriesArray = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithSimsQuery());
+		JSONArray seriesArray = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithSimsQuery());
 		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
 	}
 
@@ -110,7 +112,7 @@ public class OperationsImpl  implements OperationsService {
         }
 
 
-        JSONArray series = repoGestion.getResponseAsArray(OperationSeriesQueries.seriesWithStampQuery(stamps, isAdmin));
+        JSONArray series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithStampQuery(stamps, isAdmin));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));

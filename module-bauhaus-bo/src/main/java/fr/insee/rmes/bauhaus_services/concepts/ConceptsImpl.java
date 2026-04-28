@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSea
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
+
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
@@ -54,19 +55,26 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	private final int maxLength;
 
+    private final ConceptCollectionsQueries conceptCollectionsQueries;
+    private final ConceptConceptsQueries conceptConceptsQueries;
+
     public ConceptsImpl(
             ConceptsUtils conceptsUtils,
             CollectionsUtils collectionsUtils,
             ConceptsExportBuilder conceptsExport,
             CollectionExportBuilder collectionExport,
             CollectionRepository collectionRepository,
-            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
+            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
+            ConceptCollectionsQueries conceptCollectionsQueries,
+            ConceptConceptsQueries conceptConceptsQueries) {
         this.conceptsUtils = conceptsUtils;
         this.collectionsUtils = collectionsUtils;
         this.conceptsExport = conceptsExport;
         this.collectionExport = collectionExport;
 		this.collectionRepository = collectionRepository;
         this.maxLength = maxLength;
+        this.conceptCollectionsQueries = conceptCollectionsQueries;
+        this.conceptConceptsQueries = conceptConceptsQueries;
     }
 
 
@@ -74,7 +82,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	public List<PartialConcept> getConcepts()  throws RmesException {
 		logger.info("Starting to get concepts list");
 
-		var concepts = repoGestion.getResponseAsArray(ConceptConceptsQueries.conceptsQuery());
+		var concepts = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts,
 				PartialConcept[].class,
@@ -85,7 +93,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	@Override
 	public List<ConceptForAdvancedSearch> getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		var concepts = repoGestion.getResponseAsArray(ConceptConceptsQueries.conceptsSearchQuery());
+		var concepts = repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsSearchQuery());
 
 		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts,
 				ConceptForAdvancedSearch[].class,
@@ -95,7 +103,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	@Override
 	public String getConceptsToValidate()  throws RmesException{
 		logger.info("Starting to get provisionals concepts list");
-		return repoGestion.getResponseAsArray(ConceptConceptsQueries.conceptsToValidateQuery()).toString();
+		return repoGestion.getResponseAsArray(conceptConceptsQueries.conceptsToValidateQuery()).toString();
 	}
 	
 	@Override
@@ -160,17 +168,17 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	@Override
 	public String getConceptLinksByID(String id)  throws RmesException{
-		return repoGestion.getResponseAsArray(ConceptConceptsQueries.conceptLinks(id)).toString();
+		return repoGestion.getResponseAsArray(conceptConceptsQueries.conceptLinks(id)).toString();
 	}
 
 	@Override
 	public String getConceptNotesByID(String id, int conceptVersion)  throws RmesException{
-		return repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptNotesQuery(id, conceptVersion)).toString();
+		return repoGestion.getResponseAsObject(conceptConceptsQueries.conceptNotesQuery(id, conceptVersion)).toString();
 	}
 
 	@Override
 	public String getCollectionsToValidate()  throws RmesException{
-		return repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsToValidateQuery()).toString();
+		return repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionsToValidateQuery()).toString();
 	}
 
 

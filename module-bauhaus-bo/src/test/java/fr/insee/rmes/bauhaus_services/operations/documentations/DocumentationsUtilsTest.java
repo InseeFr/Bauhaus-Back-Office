@@ -9,11 +9,11 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,8 +28,6 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +51,9 @@ class DocumentationsUtilsTest {
 	@Mock
 	private DocumentationPublication documentationPublication;
 
+	@Mock
+	private DocumentationQueries documentationQueries;
+
 	@InjectMocks
 	private DocumentationsUtils documentationsUtils;
 
@@ -60,18 +61,9 @@ class DocumentationsUtilsTest {
 	@Test
 	void shouldThrowRmesNotFoundExceptionWhenGetDocumentationByIdSims() throws RmesException {
 
-		when(config.getLg1()).thenReturn("fr");
-		when(config.getLg2()).thenReturn("en");
-		when(config.getDocumentationsGraph()).thenReturn("http://rdf.insee.fr/graphes/documentations");
-		when(config.getMsdGraph()).thenReturn("http://rdf.insee.fr/graphes/msd");
-		when(config.getCodeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codelists");
-		when(config.getMsdConceptsGraph()).thenReturn("http://rdf.insee.fr/graphes/msd-concepts");
-
-		// Configurer la variable statique dans GenericQueries
-		GenericQueries.setConfig(config);
-
 		String idSims ="2025";
-		when(repoGestion.getResponseAsObject(DocumentationQueries.getDocumentationTitleQuery(idSims))).thenReturn(new JSONObject());
+		when(documentationQueries.getDocumentationTitleQuery(idSims)).thenReturn("mock-title-query");
+		when(repoGestion.getResponseAsObject("mock-title-query")).thenReturn(new JSONObject());
 		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.getDocumentationByIdSims(idSims));
 		assertTrue(exception.getDetails().contains("Documentation not found"));
 	}

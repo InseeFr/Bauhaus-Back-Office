@@ -70,6 +70,8 @@ public class SeriesUtils {
 
     private final SeriesValidator validator;
 
+    private final OperationSeriesQueries operationSeriesQueries;
+
     public SeriesUtils(
             @Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.series-rich-text-new-structure}") boolean seriesRichTextNexStructure,
             @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
@@ -82,7 +84,8 @@ public class SeriesUtils {
             SeriesPublication seriesPublication,
             DocumentationsUtils documentationsUtils,
             UriUtils uriUtils,
-            SeriesValidator validator) {
+            SeriesValidator validator,
+            OperationSeriesQueries operationSeriesQueries) {
         this.seriesRichTextNexStructure = seriesRichTextNexStructure;
         this.lg1 = lg1;
         this.lg2 = lg2;
@@ -95,6 +98,7 @@ public class SeriesUtils {
         this.documentationsUtils = documentationsUtils;
         this.uriUtils = uriUtils;
         this.validator = validator;
+        this.operationSeriesQueries = operationSeriesQueries;
     }
 
     /*READ*/
@@ -134,7 +138,7 @@ public class SeriesUtils {
 
 
     public JSONObject getSeriesJsonById(String id, EncodingType encode) throws RmesException {
-        JSONObject series = repositoryGestion.getResponseAsObject(OperationSeriesQueries.oneSeriesQuery(id, seriesRichTextNexStructure));
+        JSONObject series = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery(id, seriesRichTextNexStructure));
         // check that the series exist
         if (JSONUtils.isEmpty(series)) {
             throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found",
@@ -154,7 +158,7 @@ public class SeriesUtils {
 
 
     public String getSeriesForSearch(String stamp) throws RmesException {
-        JSONArray resQuery = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getSeriesForSearch(stamp));
+        JSONArray resQuery = repositoryGestion.getResponseAsArray(operationSeriesQueries.getSeriesForSearch(stamp));
         JSONArray result = new JSONArray();
         Map<String, List<String>> creators = getAllSeriesCreators();
         Map<String, JSONArray> contribs = getOneTypeOfLink(DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
@@ -186,14 +190,14 @@ public class SeriesUtils {
     }
 
     private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
-        JSONArray operations = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getOperations(idSeries));
+        JSONArray operations = repositoryGestion.getResponseAsArray(operationSeriesQueries.getOperations(idSeries));
         if (!operations.isEmpty()) {
             series.put(Constants.OPERATIONS, operations);
         }
     }
 
     private void addGeneratedWith(String idSeries, JSONObject series) throws RmesException {
-        JSONArray generated = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getGeneratedWith(idSeries));
+        JSONArray generated = repositoryGestion.getResponseAsArray(operationSeriesQueries.getGeneratedWith(idSeries));
         if (!generated.isEmpty()) {
             generated = QueryUtils.transformRdfTypeInString(generated);
             series.put("generate", generated);
@@ -201,7 +205,7 @@ public class SeriesUtils {
     }
 
     private void addSeriesFamily(String idSeries, JSONObject series) throws RmesException {
-        JSONObject family = repositoryGestion.getResponseAsObject(OperationSeriesQueries.getFamily(idSeries));
+        JSONObject family = repositoryGestion.getResponseAsObject(operationSeriesQueries.getFamily(idSeries));
         series.put(Constants.FAMILY, family);
     }
 
@@ -227,7 +231,7 @@ public class SeriesUtils {
      */
     private void addOneTypeOfLink(String id, JSONObject series, IRI predicate, String resultType) throws RmesException {
 
-        JSONArray links = repositoryGestion.getResponseAsArray(OperationSeriesQueries.seriesLinks(id, predicate, resultType));
+        JSONArray links = repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesLinks(id, predicate, resultType));
         if (!links.isEmpty()) {
             links = QueryUtils.transformRdfTypeInString(links);
         }
@@ -235,7 +239,7 @@ public class SeriesUtils {
     }
 
     private Map<String, JSONArray> getOneTypeOfLink(IRI predicate, String resultType) throws RmesException {
-        JSONArray links = repositoryGestion.getResponseAsArray(OperationSeriesQueries.seriesLinks("", predicate, resultType));
+        JSONArray links = repositoryGestion.getResponseAsArray(operationSeriesQueries.seriesLinks("", predicate, resultType));
         Map<String, JSONArray> map = new HashMap<>();
 
         if (!links.isEmpty()) {
@@ -260,13 +264,13 @@ public class SeriesUtils {
     }
 
     private void addSeriesCreators(String id, JSONObject series) throws RmesException {
-        JSONArray creators = repositoryGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsById(id));
+        JSONArray creators = repositoryGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsById(id));
         series.put(Constants.CREATORS, creators);
     }
 
     private Map<String, List<String>> getAllSeriesCreators() throws RmesException {
         Map<String, List<String>> map = new HashMap<>();
-        JSONArray creators = repositoryGestion.getResponseAsArray(OperationSeriesQueries.getCreatorsById(""));
+        JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsById(""));
         if (!creators.isEmpty()) {
             for (int i = 0; i < creators.length(); i++) {
                 JSONObject crea = creators.getJSONObject(i);
@@ -495,7 +499,7 @@ public class SeriesUtils {
     }
 
     public boolean isSeriesAndOperationsExist(List<String> iris) throws RmesException {
-        var length = repositoryGestion.getResponseAsArray(OperationSeriesQueries.checkIfSeriesExists(iris)).length();
+        var length = repositoryGestion.getResponseAsArray(operationSeriesQueries.checkIfSeriesExists(iris)).length();
         return length == iris.size();
     }
 

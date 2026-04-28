@@ -27,7 +27,7 @@ class FamiliesUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en", null);
 
         var family = new Family();
         family.setId("1");
@@ -48,7 +48,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en", null);
 
         var family = new Family();
         family.setId("1");
@@ -72,7 +72,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenFamilyIsNull()  {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en");
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en", null);
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
         org.assertj.core.api.Assertions.assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
     }

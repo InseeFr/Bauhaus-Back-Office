@@ -19,9 +19,15 @@ import java.util.Map;
 
 @Component
 public class MetadataStructureDefUtils  extends RdfService {
-	
+
 		private static final String RANGE = "range";
 		static final Logger logger = LoggerFactory.getLogger(MetadataStructureDefUtils.class);
+
+		private final DocumentationQueries documentationQueries;
+
+		public MetadataStructureDefUtils(DocumentationQueries documentationQueries) {
+			this.documentationQueries = documentationQueries;
+		}
 
 
 	public void transformRangeType(JSONObject mas) throws RmesException {
@@ -39,7 +45,7 @@ public class MetadataStructureDefUtils  extends RdfService {
 
 	public Map<String,String> getMetadataAttributesUri() throws RmesException {
 		Map<String,String> attributes = new HashMap<>();
-		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationQueries.getAttributesUriQuery());
+		JSONArray attributesList = repoGestion.getResponseAsArray(documentationQueries.getAttributesUriQuery());
 		if (!attributesList.isEmpty()) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);

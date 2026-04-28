@@ -24,7 +24,7 @@ class FamOpeSerIndUtilsTest {
 
         jsonObject.put(Constants.CREATORS,creators);
 
-        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils();
+        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils(null);
 
         IdLabelTwoLangs labelTwoLangs  = famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(jsonObject);
 
@@ -54,7 +54,7 @@ class FamOpeSerIndUtilsTest {
         jsonObjectAfter.put(Constants.CONTRIBUTORS,"contributorsExample");
         jsonObjectAfter.put(Constants.DATA_COLLECTORS,"dataCollectorsExample");
 
-        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils();
+        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils(null);
         famOpeSerIndUtils.fixOrganizationsNames(jsonObjectBefore);
 
         assertEquals(jsonObjectAfter.toString(),jsonObjectBefore.toString());
@@ -65,7 +65,7 @@ class FamOpeSerIndUtilsTest {
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(Constants.ID).put(Constants.UNDEFINED).put(Constants.LABEL_LG1);
-        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils();
+        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils(null);
 
         String actual= famOpeSerIndUtils.buildStringListFromJson(jsonArray).toString();
         String expected = "[id, undefined, labelLg1]";

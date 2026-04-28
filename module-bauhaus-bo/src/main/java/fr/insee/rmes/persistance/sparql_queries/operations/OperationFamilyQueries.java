@@ -1,21 +1,24 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.GenericQueries;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.Map;
 
-public class OperationFamilyQueries extends GenericQueries{
+@Component("legacyOperationFamilyQueries")
+public class OperationFamilyQueries {
 
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 
-	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
-		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
+	private final Config config;
+
+	public OperationFamilyQueries(Config config) {
+		this.config = config;
 	}
 
-	public static String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
+	public String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LANG", lang);
@@ -25,11 +28,5 @@ public class OperationFamilyQueries extends GenericQueries{
 		params.put("TYPE", "insee:StatisticalOperationFamily");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
-
-
-	  private OperationFamilyQueries() {
-		    throw new IllegalStateException("Utility class");
-	}
-
 
 }

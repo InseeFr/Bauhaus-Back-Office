@@ -9,6 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -30,8 +31,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +47,9 @@ class SeriesPublicationTest {
 
     @Mock
     RepositoryPublication repositoryPublication;
+
+    @Mock
+    OperationSeriesQueries operationSeriesQueries;
 
     @Mock
     RepositoryConnection repositoryConnection;
@@ -78,7 +80,7 @@ class SeriesPublicationTest {
 
     @BeforeEach
     void setUp() {
-        seriesPublication = new SeriesPublication(parentUtils, publicationUtils, repoGestion, repositoryPublication);
+        seriesPublication = new SeriesPublication(parentUtils, publicationUtils, repoGestion, repositoryPublication, operationSeriesQueries);
         
         JSONObject familyJson = new JSONObject();
         familyJson.put(Constants.ID, "family123");
@@ -145,7 +147,6 @@ class SeriesPublicationTest {
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
              MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class);
-             MockedStatic<OperationSeriesQueries> mockedQueries = mockStatic(OperationSeriesQueries.class);
              MockedStatic<JSONUtils> mockedJSONUtils = mockStatic(JSONUtils.class)) {
 
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(ValidationStatus.VALIDATED.getValue()))
@@ -154,10 +155,10 @@ class SeriesPublicationTest {
             mockedRdfUtils.when(RdfUtils::operationsGraph).thenReturn(resource);
             mockedRdfUtils.when(() -> RdfUtils.createIRI(anyString())).thenReturn(iri);
             mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/predicate");
-            
-            mockedQueries.when(() -> OperationSeriesQueries.getPublishedOperationsForSeries(anyString()))
+
+            when(operationSeriesQueries.getPublishedOperationsForSeries(anyString()))
                     .thenReturn("SELECT * WHERE { }");
-            
+
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))
                     .thenReturn(java.util.stream.Stream.empty());
 
@@ -240,7 +241,7 @@ class SeriesPublicationTest {
 
     @Test
     void constructor_shouldCreateInstanceWithAllDependencies() {
-        SeriesPublication publication = new SeriesPublication(parentUtils, publicationUtils, repoGestion, repositoryPublication);
+        SeriesPublication publication = new SeriesPublication(parentUtils, publicationUtils, repoGestion, repositoryPublication, operationSeriesQueries);
         
         assertThat(publication).isNotNull();
     }
@@ -299,7 +300,6 @@ class SeriesPublicationTest {
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
              MockedStatic<RdfUtils> mockedRdfUtils = mockStatic(RdfUtils.class);
-             MockedStatic<OperationSeriesQueries> mockedQueries = mockStatic(OperationSeriesQueries.class);
              MockedStatic<JSONUtils> mockedJSONUtils = mockStatic(JSONUtils.class)) {
 
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(ValidationStatus.VALIDATED.getValue()))
@@ -307,7 +307,7 @@ class SeriesPublicationTest {
             mockedRdfUtils.when(() -> RdfUtils.seriesIRI(seriesId)).thenReturn(resource);
             mockedRdfUtils.when(() -> RdfUtils.toString(any())).thenReturn("http://example.org/isPartOf");
 
-            mockedQueries.when(() -> OperationSeriesQueries.getPublishedOperationsForSeries(anyString()))
+            when(operationSeriesQueries.getPublishedOperationsForSeries(anyString()))
                     .thenReturn("SELECT * WHERE { }");
 
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))

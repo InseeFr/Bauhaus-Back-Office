@@ -24,16 +24,18 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
     private static final String RANGE = "range";
 
     private final RepositoryGestion repositoryGestion;
+    private final DocumentationQueries documentationQueries;
 
-    public GraphDBDocumentationRepository(RepositoryGestion repositoryGestion) {
+    public GraphDBDocumentationRepository(RepositoryGestion repositoryGestion, DocumentationQueries documentationQueries) {
         this.repositoryGestion = repositoryGestion;
+        this.documentationQueries = documentationQueries;
     }
 
     @Override
     public List<DocumentationAttribute> getAttributesSpecification() throws GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
         JSONArray attributesList;
         try {
-            attributesList = repositoryGestion.getResponseAsArray(DocumentationQueries.getAttributesQuery());
+            attributesList = repositoryGestion.getResponseAsArray(documentationQueries.getAttributesQuery());
         } catch (RmesException e) {
             throw new GenericInternalServerException(e.getDetails());
         }
@@ -54,7 +56,7 @@ public class GraphDBDocumentationRepository implements DocumentationRepository {
     public DocumentationAttribute getAttributeSpecification(String id) throws GenericInternalServerException, OperationDocumentationRubricWithoutRangeException, NotFoundAttributeException {
         JSONObject mas;
         try {
-            mas = repositoryGestion.getResponseAsObject(DocumentationQueries.getAttributeSpecificationQuery(id));
+            mas = repositoryGestion.getResponseAsObject(documentationQueries.getAttributeSpecificationQuery(id));
         } catch (RmesException e) {
             throw new GenericInternalServerException(e.getDetails());
         }

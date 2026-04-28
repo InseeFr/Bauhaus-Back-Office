@@ -64,10 +64,13 @@ public class DocumentsUtils extends RdfService {
     private final FilesOperations filesOperations;
     private final StorageProperties storageProperties;
 
-    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations, StorageProperties storageProperties) {
+    private final OperationDocumentsQueries operationDocumentsQueries;
+
+    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations, StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries) {
         this.ownersUtils = ownersUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
+        this.operationDocumentsQueries = operationDocumentsQueries;
     }
 
     /*
@@ -99,7 +102,7 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-        JSONArray allDocs = repoGestion.getResponseAsArray(OperationDocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
+        JSONArray allDocs = repoGestion.getResponseAsArray(operationDocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
         formatDateInJsonArray(allDocs);
         return allDocs;
     }
@@ -112,7 +115,7 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public JSONArray getListDocumentSims(String idSims) throws RmesException {
-        JSONArray allDocs = repoGestion.getResponseAsArray(OperationDocumentsQueries.getDocumentsForSimsQuery(idSims));
+        JSONArray allDocs = repoGestion.getResponseAsArray(operationDocumentsQueries.getDocumentsForSimsQuery(idSims));
         formatDateInJsonArray(allDocs);
         return allDocs;
     }
@@ -125,7 +128,7 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public JSONArray getListLinksSims(String idSims) throws RmesException {
-        JSONArray allLinks = repoGestion.getResponseAsArray(OperationDocumentsQueries.getLinksForSimsQuery(idSims));
+        JSONArray allLinks = repoGestion.getResponseAsArray(operationDocumentsQueries.getLinksForSimsQuery(idSims));
         formatDateInJsonArray(allLinks);
         return allLinks;
     }
@@ -139,7 +142,7 @@ public class DocumentsUtils extends RdfService {
     public JSONArray getAllDocuments() throws RmesException {
         JSONArray allDocs = new JSONArray();
         try {
-            allDocs = repoGestion.getResponseAsArray(OperationDocumentsQueries.getAllDocumentsQuery());
+            allDocs = repoGestion.getResponseAsArray(operationDocumentsQueries.getAllDocumentsQuery());
             formatDateInJsonArray(allDocs);
         } catch (RmesException e) {
             logger.error(e.getMessage());
@@ -174,10 +177,10 @@ public class DocumentsUtils extends RdfService {
     protected String createDocumentID() throws RmesException {
         logger.info("Generate document id");
 
-        JSONObject json = repoGestion.getResponseAsObject(OperationDocumentsQueries.lastDocumentID());
+        JSONObject json = repoGestion.getResponseAsObject(operationDocumentsQueries.lastDocumentID());
         int id = getIdFromJson(json) == null ? 999 : getIdFromJson(json);
 
-        json = repoGestion.getResponseAsObject(OperationDocumentsQueries.lastLinkID());
+        json = repoGestion.getResponseAsObject(operationDocumentsQueries.lastLinkID());
         id = (getIdFromJson(json) == null ? id : Math.max(getIdFromJson(json), id)) + 1;
         return Integer.toString(id);
     }
@@ -276,7 +279,7 @@ public class DocumentsUtils extends RdfService {
 
 
     private void checkUrlDoesNotExist(String id, String url, int errorCode, String errorMessage) throws RmesException {
-        JSONObject existingUriJson = repoGestion.getResponseAsObject(OperationDocumentsQueries.getDocumentUriQuery(url));
+        JSONObject existingUriJson = repoGestion.getResponseAsObject(operationDocumentsQueries.getDocumentUriQuery(url));
         if (!existingUriJson.isEmpty()) {
             String uri = existingUriJson.getString(Constants.DOCUMENT);
             String existingId = getDocumentNameFromUrl(uri);
@@ -313,7 +316,7 @@ public class DocumentsUtils extends RdfService {
 
     public JSONArray getDocumentsUriAndUrlForSims(String id) throws RmesException {
         logger.debug("Querrying the list of uri and url for all documents for the SIMS {}", id);
-        return repoGestion.getResponseAsArray(OperationDocumentsQueries.getDocumentsUriAndUrlForSims(id));
+        return repoGestion.getResponseAsArray(operationDocumentsQueries.getDocumentsUriAndUrlForSims(id));
     }
 
     /**
@@ -329,7 +332,7 @@ public class DocumentsUtils extends RdfService {
         logger.debug("Querrying the Database in order to get the document/link {}", id);
         JSONObject jsonDocs = new JSONObject();
         try {
-            jsonDocs = repoGestion.getResponseAsObject(OperationDocumentsQueries.getDocumentQuery(id, isLink));
+            jsonDocs = repoGestion.getResponseAsObject(operationDocumentsQueries.getDocumentQuery(id, isLink));
         } catch (RmesException _) {
             logger.error("Error when querrying the database for the document/link {}", id);
         }
@@ -344,7 +347,7 @@ public class DocumentsUtils extends RdfService {
     }
 
     private JSONArray getSimsByDocument(String id, Boolean isLink) throws RmesException {
-        JSONArray sims = repoGestion.getResponseAsArray(OperationDocumentsQueries.getSimsByDocument(id, isLink));
+        JSONArray sims = repoGestion.getResponseAsArray(operationDocumentsQueries.getSimsByDocument(id, isLink));
 
         for (int i = 0; i < sims.length(); i++) {
             JSONObject sim = sims.getJSONObject(i);
@@ -373,12 +376,12 @@ public class DocumentsUtils extends RdfService {
             filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(uri)));
         }
         // delete the Document in the rdf base
-        return repoGestion.executeUpdate(OperationDocumentsQueries.deleteDocumentQuery(docUri));
+        return repoGestion.executeUpdate(operationDocumentsQueries.deleteDocumentQuery(docUri));
     }
 
     // Check that the document is not referred to by any sims
     private void checkDocumentReference(String docId, String uri) throws RmesException {
-        JSONArray jsonResultat = repoGestion.getResponseAsArray(OperationDocumentsQueries.getLinksToDocumentQuery(docId));
+        JSONArray jsonResultat = repoGestion.getResponseAsArray(operationDocumentsQueries.getLinksToDocumentQuery(docId));
         if (!jsonResultat.isEmpty()) {
             throw new RmesBadRequestException(ErrorCodes.DOCUMENT_DELETION_LINKED,
                     "The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
@@ -451,10 +454,10 @@ public class DocumentsUtils extends RdfService {
 
 
     private void validate(Document document) throws RmesException {
-        if (repoGestion.getResponseAsBoolean(OperationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), config.getLg1()))) {
+        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), config.getLg1()))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
         }
-        if (repoGestion.getResponseAsBoolean(OperationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), config.getLg2()))) {
+        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), config.getLg2()))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
         }
     }
@@ -499,7 +502,7 @@ public class DocumentsUtils extends RdfService {
     }
 
     private void changeDocumentsURL(String iri, String docUrl, String newUrl) throws RmesException {
-        repoGestion.executeUpdate(OperationDocumentsQueries.changeDocumentUrlQuery(iri, docUrl, newUrl));
+        repoGestion.executeUpdate(operationDocumentsQueries.changeDocumentUrlQuery(iri, docUrl, newUrl));
     }
 
     public static String getDocumentNameFromUrl(String docUrl) {
@@ -531,7 +534,7 @@ public class DocumentsUtils extends RdfService {
      */
     private IRI getDocumentUri(IRI url) throws RmesException {
         JSONObject uri = repoGestion
-                .getResponseAsObject(OperationDocumentsQueries.getDocumentUriQuery(getDocumentNameFromUrl(url.stringValue())));
+                .getResponseAsObject(operationDocumentsQueries.getDocumentUriQuery(getDocumentNameFromUrl(url.stringValue())));
         if (uri.isEmpty() || !uri.has(Constants.DOCUMENT)) {
             String id = createDocumentID();
             return RdfUtils.objectIRI(ObjectType.DOCUMENT, id);

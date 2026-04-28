@@ -52,6 +52,9 @@ public class OperationsUtils extends RdfService{
 	@Autowired
 	private OperationsOperationQueries operationsOperationQueries;
 
+	@Autowired
+	private OperationSeriesQueries operationSeriesQueries;
+
 	private void validate(Operation operation) throws RmesException {
 		if(repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg1(), config.getLg1()))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another operation.");
@@ -73,7 +76,7 @@ public class OperationsUtils extends RdfService{
 
 	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(operationsOperationQueries.seriesQuery(id));
-		JSONArray creators = repoGestion.getResponseAsJSONList(OperationSeriesQueries.getCreatorsById(series.getString(Constants.ID)));
+		JSONArray creators = repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsById(series.getString(Constants.ID)));
 		series.put(Constants.CREATORS, creators);
 		operation.put("series", series);
 	}

@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -8,11 +7,12 @@ import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.Documentati
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,14 +21,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@AppSpringBootTest
 class MetadataStructureDefUtilsTest {
 
-    @InjectMocks
-    MetadataStructureDefUtils metadataStructureDefUtils = new MetadataStructureDefUtils();
-
-    @MockitoBean
+    @Mock
     RepositoryGestion repoGestion;
+
+    @Mock
+    DocumentationQueries documentationQueries;
+
+    @InjectMocks
+    MetadataStructureDefUtils metadataStructureDefUtils;
 
     JSONObject correctJsonObject = new JSONObject().put(Constants.ID,"Constants.ID").put(Constants.URI,"Constants.URI");
     JSONObject falseJsonObject = new JSONObject().put(Constants.ID,"Constants.ID");
@@ -60,15 +62,17 @@ class MetadataStructureDefUtilsTest {
 
     @Test
     void shouldGetMetadataAttributesUriWhenAttributesEmpty() throws RmesException {
-        when(repoGestion.getResponseAsArray(DocumentationQueries.getAttributesUriQuery())).thenReturn(new JSONArray());
+        when(documentationQueries.getAttributesUriQuery()).thenReturn("mock-attributes-query");
+        when(repoGestion.getResponseAsArray("mock-attributes-query")).thenReturn(new JSONArray());
         Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
         assertEquals(new HashMap<>(),actual);
     }
 
     @Test
     void shouldGetMetadataAttributesUriWhenAttributesNotEmpty() throws RmesException {
-       when(repoGestion.getResponseAsArray(DocumentationQueries.getAttributesUriQuery())).thenReturn(array);
-       Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
-       assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
+        when(documentationQueries.getAttributesUriQuery()).thenReturn("mock-attributes-query");
+        when(repoGestion.getResponseAsArray("mock-attributes-query")).thenReturn(array);
+        Map<String,String> actual = metadataStructureDefUtils.getMetadataAttributesUri();
+        assertEquals("{CONSTANTS.ID=Constants.URI}",actual.toString());
     }
 }
