@@ -310,6 +310,7 @@ class DatasetServiceImplTest {
         JSONObject d = new JSONObject();
         d.put("id", "d1000");
         distributions.put(d);
+        when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
         JSONArray array = new JSONArray().put(object);
@@ -421,6 +422,7 @@ class DatasetServiceImplTest {
 
 
             JSONArray distributions = new JSONArray();
+            when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
             when(seriesUtils.isSeriesAndOperationsExist(anyList())).thenReturn(true);
@@ -498,6 +500,7 @@ class DatasetServiceImplTest {
             JSONObject d = new JSONObject();
             d.put("id", "d1000");
             distributions.put(d);
+            when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
             when(seriesUtils.isSeriesAndOperationsExist(any())).thenReturn(true);

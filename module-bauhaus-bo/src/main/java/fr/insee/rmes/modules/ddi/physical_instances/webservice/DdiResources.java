@@ -303,7 +303,6 @@ public class DdiResources {
     }
 
     @GetMapping(value = "/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<String> getItemXmlByVersion(
             @PathVariable String agency,
             @PathVariable String id,
@@ -318,7 +317,6 @@ public class DdiResources {
     }
 
     @GetMapping(value = "/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<JsonNode> getItemJsonByVersion(
             @PathVariable String agency,
             @PathVariable String id,

@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsS
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
@@ -71,6 +72,9 @@ class ConceptsImplTest {
     @Mock
     OrganisationsService organisationsService;
 
+    @Mock
+    ConceptConceptsQueries conceptConceptsQueries;
+
     @Test
     void shouldReturnFileNameForExport()  {
         when(collectionForExport.getId()).thenReturn("421");
@@ -82,7 +86,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsList() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10, null);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
         Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
 
         JSONArray array = new JSONArray();
@@ -91,7 +95,7 @@ class ConceptsImplTest {
         array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
         array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
         array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
+        when(repoGestion.getResponseAsArray(any())).thenReturn(array);
         var concepts = conceptsImpl.getConcepts().stream().toList();
 
         assertEquals(4, concepts.size());
@@ -115,7 +119,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsListForAdvancedSearch() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10, null);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
         Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
 
         JSONArray array = new JSONArray();
@@ -124,7 +128,7 @@ class ConceptsImplTest {
         array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
         array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
         array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
+        when(repoGestion.getResponseAsArray(any())).thenReturn(array);
         var concepts = conceptsImpl.getConceptsSearch().stream().toList();
 
         assertEquals(4, concepts.size());
@@ -154,7 +158,7 @@ class ConceptsImplTest {
         collection.setPrefLabelLg1("Lg1Collection");
         collection.setPrefLabelLg2("Lg2Collection");
 
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, 10, null);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, 10, null, null);
 
         assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, Language.lg1));
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
@@ -163,10 +167,10 @@ class ConceptsImplTest {
     void exportConceptTest() throws RmesException, IOException, URISyntaxException, OrganisationFetchException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, organisationsService, new ExportUtils(200, null));
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, organisationsService, new ExportUtils(200, null), conceptConceptsQueries);
 
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, null, 10, null);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
 
         JSONObject jsonConcept = new JSONObject("""
                 {
@@ -192,8 +196,8 @@ class ConceptsImplTest {
         when(conceptsUtils.getConceptById(idConcept)).thenReturn(jsonConcept);
         when(organisationsService.getCompactOrganisation("SSM-SDES")).thenReturn(org1);
         when(organisationsService.getCompactOrganisation("DG75-L201")).thenReturn(org2);
-        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject(
         """
                 {
                     "definitionLg2": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.<\\/p><\\/div>",
