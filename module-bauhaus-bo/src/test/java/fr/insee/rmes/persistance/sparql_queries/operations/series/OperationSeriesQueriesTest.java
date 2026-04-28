@@ -4,8 +4,8 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.ConfigStub;
-import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -18,13 +18,17 @@ class OperationSeriesQueriesTest {
     public static final String SERIES_BASE_URI="operations/serie";
 
     private String actualRequest;
+    private OperationSeriesQueries operationSeriesQueries;
 
+    @BeforeEach
+    void setUp() {
+        operationSeriesQueries = new OperationSeriesQueries(new ConfigStub());
+    }
 
     @Test
     void getCreatorsBySeriesUri_requestIsWellGenerated() {
         var id="s2132";
         prepareRdfUtils();
-        prepareGenericQueries();
         String expectedGeneratedQuery= """
                 SELECT ?creators\s
                 FROM <http://rdf.insee.fr/graphes/operations>
@@ -39,13 +43,9 @@ class OperationSeriesQueriesTest {
                 			?series dcterms:hasPart <http://bauhaus/operations/serie/s2132>
                 		}
                 	}""";
-        assertThatCode(()->actualRequest= OperationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.objectIRI(ObjectType.SERIES,id).toString()))
+        assertThatCode(()->actualRequest= operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.objectIRI(ObjectType.SERIES,id).toString()))
                 .doesNotThrowAnyException();
         assertThat(actualRequest).isEqualToIgnoringNewLines(expectedGeneratedQuery);
-    }
-
-    private void prepareGenericQueries() {
-        GenericQueries.setConfig(new ConfigStub());
     }
 
     private void prepareRdfUtils() {

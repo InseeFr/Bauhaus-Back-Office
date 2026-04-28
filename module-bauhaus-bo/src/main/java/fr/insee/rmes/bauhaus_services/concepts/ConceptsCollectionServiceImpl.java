@@ -31,13 +31,17 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     private final CollectionExportBuilder collectionExport;
     private final ConceptsService conceptsService;
 
+    private final ConceptCollectionsQueries conceptCollectionsQueries;
+
     public ConceptsCollectionServiceImpl(
             CollectionExportBuilder collectionExport,
             ConceptsService conceptsService,
-            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
+            @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
+            ConceptCollectionsQueries conceptCollectionsQueries) {
         this.collectionExport = collectionExport;
         this.conceptsService = conceptsService;
         this.maxLength = maxLength;
+        this.conceptCollectionsQueries = conceptCollectionsQueries;
     }
 
 
@@ -50,7 +54,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     private List<String> getCollectionConceptsIds(String collectionId) throws RmesException {
         List<String> conceptsIds = new ArrayList<>();
-        JSONArray concepts = repoGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(collectionId));
+        JSONArray concepts = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(collectionId));
         for(int i = 0; i < concepts.length(); i++){
             conceptsIds.add(concepts.getJSONObject(i).getString("id"));
         }

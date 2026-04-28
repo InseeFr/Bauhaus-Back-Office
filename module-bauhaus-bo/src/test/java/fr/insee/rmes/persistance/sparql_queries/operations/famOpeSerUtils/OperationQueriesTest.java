@@ -19,11 +19,12 @@ import static org.mockito.Mockito.mockStatic;
 class OperationQueriesTest {
 
     private Config config;
+    private OperationQueries operationQueries;
 
     @BeforeEach
     void setUp() {
         config = new ConfigStub();
-        OperationQueries.setConfig(config);
+        operationQueries = new OperationQueries(config);
     }
 
     @Test
@@ -32,11 +33,11 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s dcterms:identifier ?lastId }");
 
-            String result = OperationQueries.lastId();
+            String result = operationQueries.lastId();
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?s dcterms:identifier ?lastId }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return config.getLg1().equals(map.get("LG1")) &&
@@ -53,11 +54,11 @@ class OperationQueriesTest {
                     .thenReturn("ASK { <http://example.org/operation/123> ?p ?o }");
 
             String testUri = "http://example.org/operation/123";
-            String result = OperationQueries.checkIfFamOpeSerExists(testUri);
+            String result = operationQueries.checkIfFamOpeSerExists(testUri);
 
             assertNotNull(result);
             assertEquals("ASK { <http://example.org/operation/123> ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return testUri.equals(map.get(Constants.URI)) &&
@@ -74,11 +75,11 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?state WHERE { ?s insee:validationState ?state }");
 
-            String result = OperationQueries.getPublicationState("op123");
+            String result = operationQueries.getPublicationState("op123");
 
             assertNotNull(result);
             assertEquals("SELECT ?state WHERE { ?s insee:validationState ?state }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "op123".equals(map.get(Constants.ID)) &&
@@ -95,11 +96,11 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s ?p ?o }");
 
-            String result = OperationQueries.checkIfFamOpeSerExists(null);
+            String result = operationQueries.checkIfFamOpeSerExists(null);
 
             assertNotNull(result);
             assertEquals("ASK { ?s ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return map.get(Constants.URI) == null &&
@@ -116,11 +117,11 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?state WHERE { ?s insee:validationState ?state }");
 
-            String result = OperationQueries.getPublicationState("");
+            String result = operationQueries.getPublicationState("");
 
             assertNotNull(result);
             assertEquals("SELECT ?state WHERE { ?s insee:validationState ?state }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "".equals(map.get(Constants.ID));
@@ -134,9 +135,9 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s dcterms:identifier ?lastId }");
 
-            OperationQueries.lastId();
+            operationQueries.lastId();
 
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), 
+            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         // Verify all required parameters from initParams are present
@@ -156,9 +157,9 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), any(String.class), any(Map.class)))
                     .thenReturn("QUERY_RESULT");
 
-            String lastIdResult = OperationQueries.lastId();
-            String existsResult = OperationQueries.checkIfFamOpeSerExists("test");
-            String stateResult = OperationQueries.getPublicationState("test");
+            String lastIdResult = operationQueries.lastId();
+            String existsResult = operationQueries.checkIfFamOpeSerExists("test");
+            String stateResult = operationQueries.getPublicationState("test");
 
             assertEquals("QUERY_RESULT", lastIdResult);
             assertEquals("QUERY_RESULT", existsResult);
@@ -177,11 +178,11 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s dcterms:identifier ?lastId }");
 
-            String result = OperationQueries.lastId();
+            String result = operationQueries.lastId();
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?s dcterms:identifier ?lastId }", result);
-            
+
             // Verify that buildOperationRequest uses the correct path (operations/famOpeSer/)
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), any(Map.class)));
         }
@@ -194,8 +195,7 @@ class OperationQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"), any(Map.class)))
                     .thenThrow(testException);
 
-            RmesException exception = assertThrows(RmesException.class, OperationQueries::lastId
-            );
+            RmesException exception = assertThrows(RmesException.class, operationQueries::lastId);
 
             assertEquals(testException, exception);
         }

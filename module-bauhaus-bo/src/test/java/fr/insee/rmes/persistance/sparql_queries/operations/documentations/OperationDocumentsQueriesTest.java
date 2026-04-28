@@ -21,11 +21,12 @@ import static org.mockito.Mockito.mockStatic;
 class OperationDocumentsQueriesTest {
 
     private Config config;
+    private OperationDocumentsQueries operationDocumentsQueries;
 
     @BeforeEach
     void setUp() {
         config = new ConfigStub();
-        OperationDocumentsQueries.setConfig(config);
+        operationDocumentsQueries = new OperationDocumentsQueries(config);
     }
 
     @Test
@@ -34,7 +35,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s foaf:name 'Test Document'@en }");
 
-            String result = OperationDocumentsQueries.checkLabelUnicity("doc123", "Test Document", "en");
+            String result = operationDocumentsQueries.checkLabelUnicity("doc123", "Test Document", "en");
 
             assertNotNull(result);
             assertEquals("ASK { ?s foaf:name 'Test Document'@en }", result);
@@ -58,7 +59,7 @@ class OperationDocumentsQueriesTest {
                     .thenReturn("DELETE WHERE { <http://example.org/doc/123> ?p ?o }");
 
             IRI uri = SimpleValueFactory.getInstance().createIRI("http://example.org/doc/123");
-            String result = OperationDocumentsQueries.deleteDocumentQuery(uri);
+            String result = operationDocumentsQueries.deleteDocumentQuery(uri);
 
             assertNotNull(result);
             assertEquals("DELETE WHERE { <http://example.org/doc/123> ?p ?o }", result);
@@ -76,7 +77,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentUriFromUrlQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?uri WHERE { ?uri foaf:page 'test.pdf' }");
 
-            String result = OperationDocumentsQueries.getDocumentUriQuery("Test.PDF");
+            String result = operationDocumentsQueries.getDocumentUriQuery("Test.PDF");
 
             assertNotNull(result);
             assertEquals("SELECT ?uri WHERE { ?uri foaf:page 'test.pdf' }", result);
@@ -94,7 +95,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document ?p ?o }");
 
-            String result = OperationDocumentsQueries.getDocumentsForSimsRubricQuery("sims123", "rubric456", "fr");
+            String result = operationDocumentsQueries.getDocumentsForSimsRubricQuery("sims123", "rubric456", "fr");
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document ?p ?o }", result);
@@ -115,7 +116,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document ?p ?o }");
 
-            String result = OperationDocumentsQueries.getDocumentsForSimsQuery("sims123");
+            String result = operationDocumentsQueries.getDocumentsForSimsQuery("sims123");
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document ?p ?o }", result);
@@ -137,7 +138,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?link WHERE { ?link ?p ?o }");
 
-            String result = OperationDocumentsQueries.getLinksForSimsQuery("sims123");
+            String result = operationDocumentsQueries.getLinksForSimsQuery("sims123");
 
             assertNotNull(result);
             assertEquals("SELECT ?link WHERE { ?link ?p ?o }", result);
@@ -160,7 +161,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document dcterms:identifier 'doc123' }");
 
-            String result = OperationDocumentsQueries.getDocumentQuery("doc123", false);
+            String result = operationDocumentsQueries.getDocumentQuery("doc123", false);
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document dcterms:identifier 'doc123' }", result);
@@ -180,7 +181,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?link WHERE { ?link dcterms:identifier 'link123' }");
 
-            String result = OperationDocumentsQueries.getDocumentQuery("link123", true);
+            String result = operationDocumentsQueries.getDocumentQuery("link123", true);
 
             assertNotNull(result);
             assertEquals("SELECT ?link WHERE { ?link dcterms:identifier 'link123' }", result);
@@ -201,7 +202,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document a foaf:Document }");
 
-            String result = OperationDocumentsQueries.getAllDocumentsQuery();
+            String result = operationDocumentsQueries.getAllDocumentsQuery();
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document a foaf:Document }", result);
@@ -222,7 +223,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getLinksToDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?link WHERE { ?link ?p ?document }");
 
-            String result = OperationDocumentsQueries.getLinksToDocumentQuery("doc123");
+            String result = operationDocumentsQueries.getLinksToDocumentQuery("doc123");
 
             assertNotNull(result);
             assertEquals("SELECT ?link WHERE { ?link ?p ?document }", result);
@@ -240,7 +241,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("changeDocumentUrlQuery.ftlh"), any(Map.class)))
                     .thenReturn("DELETE/INSERT query");
 
-            String result = OperationDocumentsQueries.changeDocumentUrlQuery("http://example.org/doc/123", "old.pdf", "new.pdf");
+            String result = operationDocumentsQueries.changeDocumentUrlQuery("http://example.org/doc/123", "old.pdf", "new.pdf");
 
             assertNotNull(result);
             assertEquals("DELETE/INSERT query", result);
@@ -260,7 +261,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("lastDocumentIdQuery.ftlh"), isNull()))
                     .thenReturn("SELECT ?lastId WHERE { ?doc dcterms:identifier ?lastId }");
 
-            String result = OperationDocumentsQueries.lastDocumentID();
+            String result = operationDocumentsQueries.lastDocumentID();
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?doc dcterms:identifier ?lastId }", result);
@@ -274,7 +275,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("lastLinkIdQuery.ftlh"), isNull()))
                     .thenReturn("SELECT ?lastId WHERE { ?link dcterms:identifier ?lastId }");
 
-            String result = OperationDocumentsQueries.lastLinkID();
+            String result = operationDocumentsQueries.lastLinkID();
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?link dcterms:identifier ?lastId }", result);
@@ -288,7 +289,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentsUriAndUrlForSims.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?uri ?url WHERE { ?uri foaf:page ?url }");
 
-            String result = OperationDocumentsQueries.getDocumentsUriAndUrlForSims("sims123");
+            String result = operationDocumentsQueries.getDocumentsUriAndUrlForSims("sims123");
 
             assertNotNull(result);
             assertEquals("SELECT ?uri ?url WHERE { ?uri foaf:page ?url }", result);
@@ -309,7 +310,7 @@ class OperationDocumentsQueriesTest {
                     .thenThrow(testException);
 
             RmesException exception = assertThrows(RmesException.class, () -> 
-                OperationDocumentsQueries.getDocumentQuery("test", false)
+                operationDocumentsQueries.getDocumentQuery("test", false)
             );
 
             assertEquals(testException, exception);

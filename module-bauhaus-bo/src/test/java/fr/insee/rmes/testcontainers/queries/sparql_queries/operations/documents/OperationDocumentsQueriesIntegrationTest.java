@@ -8,6 +8,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -22,10 +23,16 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
             new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)
     );
 
+    private OperationDocumentsQueries operationDocumentsQueries;
+
     @BeforeAll
     static void initData() {
-        OperationDocumentsQueries.setConfig(new ConfigStub());
         container.withTrigFiles("documents-url-bug.trig");
+    }
+
+    @BeforeEach
+    void setUp() {
+        operationDocumentsQueries = new OperationDocumentsQueries(new ConfigStub());
     }
 
     @Test
@@ -38,7 +45,7 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
         String urlToSearch = "http://example.org/document.pdf";
 
         // WHEN: On execute la requete
-        String query = OperationDocumentsQueries.getDocumentUriQuery(urlToSearch);
+        String query = operationDocumentsQueries.getDocumentUriQuery(urlToSearch);
         JSONArray result = repositoryGestion.getResponseAsArray(query);
 
         // THEN: On devrait avoir UN SEUL document
@@ -65,7 +72,7 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
         String urlToSearch = "http://example.org/inexistant.pdf";
 
         // WHEN: On execute la requete
-        String query = OperationDocumentsQueries.getDocumentUriQuery(urlToSearch);
+        String query = operationDocumentsQueries.getDocumentUriQuery(urlToSearch);
         JSONArray result = repositoryGestion.getResponseAsArray(query);
 
         // THEN: On ne devrait avoir aucun document
@@ -81,7 +88,7 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
         String urlToSearch = "http://example.org/autre-fichier.pdf";
 
         // WHEN: On execute la requete
-        String query = OperationDocumentsQueries.getDocumentUriQuery(urlToSearch);
+        String query = operationDocumentsQueries.getDocumentUriQuery(urlToSearch);
         JSONArray result = repositoryGestion.getResponseAsArray(query);
 
         // THEN: On devrait avoir exactement un document

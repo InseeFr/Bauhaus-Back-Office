@@ -5,6 +5,7 @@ import fr.insee.rmes.Config;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,13 +26,19 @@ class CodeListsQueriesTest {
     @Mock
     Config config;
 
+    CodeListsQueries codeListsQueries;
+
+    @BeforeEach
+    void setUp() {
+        codeListsQueries = new CodeListsQueries(config);
+    }
+
     @Test
     void getCodeListItemsByNotation() throws RmesException {
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
         when(config.getPerPage()).thenReturn(5);
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -42,7 +49,7 @@ class CodeListsQueriesTest {
                 put("PER_PAGE", "5");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null);
+            String query = codeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null);
             Assertions.assertEquals("request", query);
         }
     }
@@ -53,7 +60,6 @@ class CodeListsQueriesTest {
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
         when(config.getPerPage()).thenReturn(0);
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -62,8 +68,8 @@ class CodeListsQueriesTest {
                 put("LG2", "en");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals("request",query);
+            String query = codeListsQueries.getCodeListItemsByNotation("NOTATION", 2, null);
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -72,7 +78,6 @@ class CodeListsQueriesTest {
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -82,7 +87,7 @@ class CodeListsQueriesTest {
                 put("SEARCH_CODE", "code");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("countNumberOfCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.countCodesForCodeList("NOTATION", List.of("code:code"));
+            String query = codeListsQueries.countCodesForCodeList("NOTATION", List.of("code:code"));
             Assertions.assertEquals("request", query);
         }
     }
@@ -94,7 +99,6 @@ class CodeListsQueriesTest {
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
         when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
         when(config.getPerPage()).thenReturn(5);
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -109,7 +113,7 @@ class CodeListsQueriesTest {
                 put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null, "labelLg1");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null, "labelLg1");
             Assertions.assertEquals("request", query);
         }
     }
@@ -120,7 +124,6 @@ class CodeListsQueriesTest {
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
         when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -134,7 +137,7 @@ class CodeListsQueriesTest {
 
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0, "labelLg1");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0, "labelLg1");
             Assertions.assertEquals("request", query);
         }
     }
@@ -144,7 +147,6 @@ class CodeListsQueriesTest {
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -153,7 +155,7 @@ class CodeListsQueriesTest {
                 put("NOTATION", "NOTATION");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getBroaderNarrowerCloseMatch.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.getBroaderNarrowerCloseMatch("NOTATION");
+            String query = codeListsQueries.getBroaderNarrowerCloseMatch("NOTATION");
             Assertions.assertEquals("request", query);
         }
     }
@@ -164,7 +166,6 @@ class CodeListsQueriesTest {
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("codelist-graph");
         when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
-        CodeListsQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -176,7 +177,7 @@ class CodeListsQueriesTest {
                 put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListsQueries.getDetailedCodes("NOTATION", true,null, 0, 0, "labelLg1");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", true, null, 0, 0, "labelLg1");
             Assertions.assertEquals("request", query);
         }
     }

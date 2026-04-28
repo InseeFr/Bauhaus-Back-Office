@@ -26,17 +26,19 @@ public class ClassificationItemRepository {
     ClassificationNoteService classificationNoteService;
     RepositoryGestion repoGestion;
     Config config;
+    ClassificationItemsQueries classificationItemsQueries;
 
-    public ClassificationItemRepository(ClassificationNoteService classificationNoteService, RepositoryGestion repoGestion, Config config) {
+    public ClassificationItemRepository(ClassificationNoteService classificationNoteService, RepositoryGestion repoGestion, Config config, ClassificationItemsQueries classificationItemsQueries) {
         this.classificationNoteService = classificationNoteService;
         this.repoGestion = repoGestion;
         this.config = config;
+        this.classificationItemsQueries = classificationItemsQueries;
     }
 
     public void updateClassificationItem(ClassificationItem item, String itemUri, String classificationId) throws RmesException {
         this.validate(item);
 
-        JSONObject previousItem = repoGestion.getResponseAsObject(ClassificationItemsQueries.itemQuery(classificationId, item.getId()));
+        JSONObject previousItem = repoGestion.getResponseAsObject(classificationItemsQueries.itemQuery(classificationId, item.getId()));
 
         Model model = new LinkedHashModel();
 

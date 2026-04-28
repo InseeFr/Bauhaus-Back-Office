@@ -50,6 +50,12 @@ public class StructureComponentUtils extends RdfService {
     @Autowired
     StructureQueries structureQueries;
 
+    @Autowired
+    CodeListsQueries codeListsQueries;
+
+    @Autowired
+    ConceptConceptsQueries conceptConceptsQueries;
+
     public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
         addCodeListRange(response);
@@ -342,11 +348,11 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(conceptConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
                 throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(CodeListsQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(codeListsQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
                 throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
         }
 

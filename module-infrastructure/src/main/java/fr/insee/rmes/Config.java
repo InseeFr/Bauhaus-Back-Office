@@ -1,6 +1,5 @@
 package fr.insee.rmes;
 
-import fr.insee.rmes.graphdb.GenericQueries;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -119,14 +118,6 @@ public class Config {
     @Value("${" + PropertiesKeys.DOCUMENTS_BASE_URI + "}")
     private String documentsBaseUri;
 
-
-    /******************************************************/
-    /** INIT STATIC		***********************************/
-    /******************************************************/
-    @PostConstruct
-    private void init() {
-        GenericQueries.setConfig(this);
-    }
 
     /******************************************************/
     /** GETTERS 		***********************************/

@@ -51,6 +51,9 @@ DocumentationsRubricsUtils extends RdfService {
 	private MetadataStructureDefUtils msdUtils;
 
 	@Autowired
+	private DocumentationQueries documentationQueries;
+
+	@Autowired
 	private DocumentsUtils docUtils;
 
 	@Autowired
@@ -77,7 +80,7 @@ DocumentationsRubricsUtils extends RdfService {
 	 */
 	public void getAllRubricsJson(String idSims, JSONObject jsonSims) throws RmesException {
 		JSONArray docRubrics = repoGestion
-				.getResponseAsArray(DocumentationQueries.getDocumentationRubricsQuery(idSims, langService.getLanguage1(), langService.getLanguage2()));
+				.getResponseAsArray(documentationQueries.getDocumentationRubricsQuery(idSims, langService.getLanguage1(), langService.getLanguage2()));
 		if (!docRubrics.isEmpty()) {
 			clearRubrics(idSims, docRubrics);
 			jsonSims.put("rubrics", docRubrics);

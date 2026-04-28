@@ -1,13 +1,10 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.utils.XMLUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,11 +20,6 @@ class ConceptsCollectionServiceImplTest {
     @Mock
     RepositoryGestion repoGestion;
 
-
-    @BeforeAll
-    static void initGenericQueries(){
-        GenericQueries.setConfig(new ConfigStub());
-    }
 
     @Test
     void shouldConvertCollectionInXml() {

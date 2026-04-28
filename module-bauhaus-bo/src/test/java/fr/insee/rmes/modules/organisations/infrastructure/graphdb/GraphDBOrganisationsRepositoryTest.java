@@ -1,14 +1,11 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +17,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -29,16 +27,18 @@ class GraphDBOrganisationsRepositoryTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
+    @Mock
+    private OrganizationQueries organizationQueries;
+
     private GraphDBOrganisationsRepository repository;
 
-    @BeforeAll
-    static void initGenericQueries() {
-        GenericQueries.setConfig(new ConfigStub());
-    }
-
     @BeforeEach
-    void setUp() {
-        repository = new GraphDBOrganisationsRepository(repositoryGestion);
+    void setUp() throws RmesException {
+        repository = new GraphDBOrganisationsRepository(repositoryGestion, organizationQueries);
+        lenient().when(organizationQueries.generateCompactOrganisationQuery(anyString())).thenReturn("mock-query");
+        lenient().when(organizationQueries.generateCompactOrganisationsQuery(any())).thenReturn("mock-query");
+        lenient().when(organizationQueries.checkIfOrganisationExistsQuery(anyString())).thenReturn("mock-query");
+        lenient().when(organizationQueries.getOrganizationIdenfier(any(), anyString(), any())).thenReturn("mock-query");
     }
 
     @Test
@@ -86,7 +86,6 @@ class GraphDBOrganisationsRepositoryTest {
     void shouldThrowOrganisationFetchExceptionWhenJsonParsingFails() throws RmesException {
         // Given
         String organisationId = "ORG-001";
-        // Valid JSON but missing required fields for GraphDbCompactOrganisation
         String incompleteJson = """
             {
                 "iri": "http://rdf.insee.fr/def/base#OrganismUnit_1234"
@@ -234,7 +233,6 @@ class GraphDBOrganisationsRepositoryTest {
         // Given
         List<String> organisationIds = Arrays.asList("ORG-001", "ORG-002");
         JSONArray jsonArray = new JSONArray();
-        // Valid JSON but missing required fields
         jsonArray.put(new JSONObject("""
             {
                 "iri": "http://rdf.insee.fr/def/base#OrganismUnit_1234"

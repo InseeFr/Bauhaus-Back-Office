@@ -32,6 +32,9 @@ class CodeListServiceImplTest {
     RepositoryGestion repositoryGestion;
 
     @Mock
+    CodeListsQueries codeListsQueries;
+
+    @Mock
     JSONObject counter;
 
     @Spy
@@ -43,92 +46,87 @@ class CodeListServiceImplTest {
 
     @Test
     void getAllCodesLists() throws RmesException, JsonProcessingException {
-        try (MockedStatic<CodeListsQueries> mockedFactory = Mockito.mockStatic(CodeListsQueries.class)) {
-            mockedFactory.when(() -> CodeListsQueries.getAllCodesLists(false)).thenReturn("query");
+        when(codeListsQueries.getAllCodesLists(false)).thenReturn("query");
 
-            JSONArray response = new JSONArray();
-            response.put(new JSONObject()
-                    .put("id", "1")
-                    .put("uri", "uri")
-                    .put("labelLg1", "labelLg1")
-                    .put("labelLg2", "labelLg2")
-                    .put("range", "range")
-            );
+        JSONArray response = new JSONArray();
+        response.put(new JSONObject()
+                .put("id", "1")
+                .put("uri", "uri")
+                .put("labelLg1", "labelLg1")
+                .put("labelLg2", "labelLg2")
+                .put("range", "range")
+        );
 
-            response.put(new JSONObject()
-                    .put("id", "1")
-                    .put("uri", "uri")
-                    .put("labelLg1", "élabelLg1")
-                    .put("labelLg2", "labelLg2")
-                    .put("range", "range")
-            );
+        response.put(new JSONObject()
+                .put("id", "1")
+                .put("uri", "uri")
+                .put("labelLg1", "élabelLg1")
+                .put("labelLg2", "labelLg2")
+                .put("range", "range")
+        );
 
-            response.put(new JSONObject()
-                    .put("id", "1")
-                    .put("uri", "uri")
-                    .put("labelLg1", "alabelLg1")
-                    .put("labelLg2", "labelLg2")
-                    .put("range", "range")
-            );
-            when(repositoryGestion.getResponseAsArray("query")).thenReturn(response);
+        response.put(new JSONObject()
+                .put("id", "1")
+                .put("uri", "uri")
+                .put("labelLg1", "alabelLg1")
+                .put("labelLg2", "labelLg2")
+                .put("range", "range")
+        );
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(response);
 
-            var codesLists = codeListService.getAllCodesLists(false);
-            assertEquals(3, codesLists.size());
-            assertEquals("alabelLg1", codesLists.get(0).labelLg1());
-            assertEquals("élabelLg1", codesLists.get(1).labelLg1());
-            assertEquals("labelLg1", codesLists.get(2).labelLg1());
-        }
+        var codesLists = codeListService.getAllCodesLists(false);
+        assertEquals(3, codesLists.size());
+        assertEquals("alabelLg1", codesLists.get(0).labelLg1());
+        assertEquals("élabelLg1", codesLists.get(1).labelLg1());
+        assertEquals("labelLg1", codesLists.get(2).labelLg1());
     }
+
     @Test
     void getCodesJson() throws RmesException {
-        try (MockedStatic<CodeListsQueries> mockedFactory = Mockito.mockStatic(CodeListsQueries.class)) {
-            mockedFactory.when(() -> CodeListsQueries.countCodesForCodeList("notation", null)).thenReturn("query");
-            mockedFactory.when(() -> CodeListsQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
+        when(codeListsQueries.countCodesForCodeList("notation", null)).thenReturn("query");
+        when(codeListsQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
 
-            JSONObject count = new JSONObject();
-            count.put("count", 5);
-            when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
+        JSONObject count = new JSONObject();
+        count.put("count", 5);
+        when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
 
-            JSONObject item = new JSONObject();
-            item.put("id", "id");
-            JSONArray items = new JSONArray();
-            items.put(item);
-            when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
+        JSONObject item = new JSONObject();
+        item.put("id", "id");
+        JSONArray items = new JSONArray();
+        items.put(item);
+        when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
-        }
+        assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
     }
 
 
     @Test
     void getCodesForCodeList() throws RmesException, JsonProcessingException {
-        try (MockedStatic<CodeListsQueries> mockedFactory = Mockito.mockStatic(CodeListsQueries.class)) {
-            mockedFactory.when(() -> CodeListsQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
-            mockedFactory.when(() -> CodeListsQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
-            mockedFactory.when(() -> CodeListsQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
+        when(codeListsQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
+        when(codeListsQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
+        when(codeListsQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
 
-            JSONObject count = new JSONObject();
-            count.put("count", 5);
-            when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
+        JSONObject count = new JSONObject();
+        count.put("count", 5);
+        when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
 
-            JSONObject item = new JSONObject();
-            item.put("code", "A");
-            JSONArray items = new JSONArray();
-            items.put(item);
-            when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
+        JSONObject item = new JSONObject();
+        item.put("code", "A");
+        JSONArray items = new JSONArray();
+        items.put(item);
+        when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
-            JSONObject related = new JSONObject();
-            related.put("code", "A");
-            related.put("linkCode", "A1");
-            related.put("linkType", "broader");
-            JSONArray relatedList = new JSONArray();
-            relatedList.put(related);
-            when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
-            Page response = codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code");
-            String responseJson = objectMapper.writeValueAsString(response);
-            String expectedJson = "{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
-            assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(responseJson));
-        }
+        JSONObject related = new JSONObject();
+        related.put("code", "A");
+        related.put("linkCode", "A1");
+        related.put("linkType", "broader");
+        JSONArray relatedList = new JSONArray();
+        relatedList.put(related);
+        when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
+        Page response = codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code");
+        String responseJson = objectMapper.writeValueAsString(response);
+        String expectedJson = "{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
+        assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(responseJson));
     }
 
     @Test

@@ -28,6 +28,12 @@ import java.util.List;
 @Component
 public class ConceptsPublication extends RdfService{
 
+	private final ConceptConceptsQueries conceptConceptsQueries;
+
+	public ConceptsPublication(ConceptConceptsQueries conceptConceptsQueries) {
+		this.conceptConceptsQueries = conceptConceptsQueries;
+	}
+
 	String[] notes = {"scopeNote","definition","editorialNote"} ;
 	String[] links = {"inScheme","disseminationStatus","references",Constants.ISREPLACEDBY};
 	String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
@@ -127,10 +133,10 @@ public class ConceptsPublication extends RdfService{
 
 
 	private void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
-		JSONArray conceptsToCheck = repositoryPublication.getResponseAsArray(ConceptConceptsQueries.getNarrowers(conceptId));
+		JSONArray conceptsToCheck = repositoryPublication.getResponseAsArray(conceptConceptsQueries.getNarrowers(conceptId));
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
-			if (!repoGestion.getResponseAsBoolean(ConceptConceptsQueries.hasBroader(id))) {
+			if (!repoGestion.getResponseAsBoolean(conceptConceptsQueries.hasBroader(id))) {
 				model.add(publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
 						SKOS.TOP_CONCEPT_OF, publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
 						RdfUtils.conceptGraph());

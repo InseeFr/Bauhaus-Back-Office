@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.code_list.export;
 
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,14 +21,17 @@ class CodesListExportImplTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
+    @Mock
+    private CodeListsQueries codeListsQueries;
+
     @InjectMocks
     private CodesListExportImpl codesListExport;
 
 
     @Test
     void exportCodesList_shouldReturnExportedCodesList() throws Exception {
-
-        CodeListsQueries.setConfig(new ConfigStub());
+        when(codeListsQueries.getCodeListLabelByNotation("CL_001")).thenReturn("query");
+        when(codeListsQueries.getCodeListItemsByNotation("CL_001", 1, 0)).thenReturn("query2");
 
         JSONObject codeList = new JSONObject().put("labelLg1", "My Code List");
         JSONArray codesArray = new JSONArray()

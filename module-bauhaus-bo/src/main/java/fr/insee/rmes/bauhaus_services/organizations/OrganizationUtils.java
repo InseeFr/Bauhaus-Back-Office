@@ -17,10 +17,13 @@ public class OrganizationUtils  extends RdfService {
 	
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;
+
+	@Autowired
+	OrganizationQueries organizationQueries;
 	
 	public String getUri(String code) throws RmesException{
 		if (StringUtils.isEmpty(code) ) {return null;}
-		JSONObject orga = repoGestion.getResponseAsObject(OrganizationQueries.getUriById(code));
+		JSONObject orga = repoGestion.getResponseAsObject(organizationQueries.getUriById(code));
 		return QueryUtils.correctEmptyGroupConcat(orga.getString(Constants.URI));
 	}
 
@@ -29,7 +32,7 @@ public class OrganizationUtils  extends RdfService {
 	}
 	
 	public JSONObject getOrganizationJson(String organizationIdentifier) throws RmesException {
-		JSONObject orga = repoGestion.getResponseAsObject(OrganizationQueries.organizationQuery(organizationIdentifier));
+		JSONObject orga = repoGestion.getResponseAsObject(organizationQueries.organizationQuery(organizationIdentifier));
 		orga.put(Constants.ID, organizationIdentifier);
 		return orga;
 

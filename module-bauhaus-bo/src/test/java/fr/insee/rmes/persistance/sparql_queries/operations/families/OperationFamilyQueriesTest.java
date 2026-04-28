@@ -18,11 +18,12 @@ import static org.mockito.Mockito.mockStatic;
 class OperationFamilyQueriesTest {
 
     private Config config;
+    private OperationFamilyQueries operationFamilyQueries;
 
     @BeforeEach
     void setUp() {
         config = new ConfigStub();
-        OperationFamilyQueries.setConfig(config);
+        operationFamilyQueries = new OperationFamilyQueries(config);
     }
 
     @Test
@@ -31,7 +32,7 @@ class OperationFamilyQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s skos:prefLabel 'Test Family'@en }");
 
-            String result = OperationFamilyQueries.checkPrefLabelUnicity("fam123", "Test Family", "en");
+            String result = operationFamilyQueries.checkPrefLabelUnicity("fam123", "Test Family", "en");
 
             assertNotNull(result);
             assertEquals("ASK { ?s skos:prefLabel 'Test Family'@en }", result);
@@ -56,7 +57,7 @@ class OperationFamilyQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s skos:prefLabel ?label }");
 
-            String result = OperationFamilyQueries.checkPrefLabelUnicity(null, null, null);
+            String result = operationFamilyQueries.checkPrefLabelUnicity(null, null, null);
 
             assertNotNull(result);
             assertEquals("ASK { ?s skos:prefLabel ?label }", result);
@@ -76,7 +77,7 @@ class OperationFamilyQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s skos:prefLabel ''@'' }");
 
-            String result = OperationFamilyQueries.checkPrefLabelUnicity("", "", "");
+            String result = operationFamilyQueries.checkPrefLabelUnicity("", "", "");
 
             assertNotNull(result);
             assertEquals("ASK { ?s skos:prefLabel ''@'' }", result);
@@ -100,7 +101,7 @@ class OperationFamilyQueriesTest {
                     .thenThrow(testException);
 
             RmesException exception = assertThrows(RmesException.class, () -> 
-                OperationFamilyQueries.checkPrefLabelUnicity("test", "Test", "en")
+                operationFamilyQueries.checkPrefLabelUnicity("test", "Test", "en")
             );
 
             assertEquals(testException, exception);
@@ -113,7 +114,7 @@ class OperationFamilyQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s skos:prefLabel 'Test'@fr }");
 
-            OperationFamilyQueries.checkPrefLabelUnicity("fam456", "Test", "fr");
+            operationFamilyQueries.checkPrefLabelUnicity("fam456", "Test", "fr");
 
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
                     argThat(params -> {

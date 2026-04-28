@@ -64,11 +64,14 @@ class ConceptsUtilsTest {
     private ConceptsUtils conceptsUtils;
     private ConceptsPublication conceptsPublication;
     private NoteManager noteManager;
+    private ConceptConceptsQueries conceptConceptsQueries;
 
     @BeforeEach
     void setUp() throws Exception {
+        conceptConceptsQueries = new ConceptConceptsQueries(new ConfigStub());
+
         // Create ConceptsPublication and inject its dependencies
-        conceptsPublication = new ConceptsPublication();
+        conceptsPublication = new ConceptsPublication(conceptConceptsQueries);
         injectField(conceptsPublication, "repoGestion", repoGestion);
         injectField(conceptsPublication, "repositoryPublication", repositoryPublication);
         injectField(conceptsPublication, "idGenerator", idGenerator);
@@ -79,7 +82,7 @@ class ConceptsUtilsTest {
         noteManager = new NoteManager(notesUtils);
 
         // Create ConceptsUtils with necessary dependencies
-        conceptsUtils = new ConceptsUtils(conceptsPublication, noteManager, 5);
+        conceptsUtils = new ConceptsUtils(conceptsPublication, noteManager, 5, conceptConceptsQueries);
 
         // Inject mocks using reflection for fields from RdfService
         injectField(conceptsUtils, "repoGestion", repoGestion);
@@ -130,7 +133,7 @@ class ConceptsUtilsTest {
         List<String> actual = new ArrayList<>();
             for (String element : identifiers ){
                 JSONObject json = new JSONObject().put(Constants.NOTATION,element);
-                when(repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID())).thenReturn(json);
+                when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID())).thenReturn(json);
                 actual.add(conceptsUtils.createID());
                 }
         List<String> expected = List.of("c8","c9","c10");
@@ -140,29 +143,29 @@ class ConceptsUtilsTest {
     @Test
     void shouldReturnFalseWhenCheckIfConceptExists() throws RmesException {
         String id= "2025";
-        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id))).thenReturn(false);
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(false);
         assertFalse(conceptsUtils.checkIfConceptExists(id));
     }
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenGetConceptById() throws RmesException {
         String id= "2025";
-        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id))).thenReturn(false);
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(false);
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->conceptsUtils.getConceptById(id));
         Assertions.assertTrue(exception.getDetails().contains("This concept cannot be found in database"));
     }
 
     @Test
     void shouldCheckIfConceptExists() throws RmesException {
-        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists("mocked id"))).thenReturn(true);
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists("mocked id"))).thenReturn(true);
         Assertions.assertTrue(conceptsUtils.checkIfConceptExists("mocked id"));
     }
 
     @Test
     void shouldDeleteConcept() throws RmesException {
         RdfUtils.setConfig(new ConfigStub());
-        when(repoGestion.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
-        when(repositoryPublication.executeUpdate(ConceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
+        when(repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
+        when(repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
         HttpStatus actual = conceptsUtils.deleteConcept("mocked id");
         assertEquals(HttpStatus.BAD_REQUEST,actual);
     }
@@ -170,7 +173,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldGetRelatedConcepts() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
-        when(repoGestion.getResponseAsArray(ConceptConceptsQueries.getRelatedConceptsQuery("mocked id"))).thenReturn(jsonArray);
+        when(repoGestion.getResponseAsArray(conceptConceptsQueries.getRelatedConceptsQuery("mocked id"))).thenReturn(jsonArray);
         JSONArray actual = conceptsUtils.getRelatedConcepts("mocked id");
         assertEquals(jsonArray,actual);
     }
@@ -178,7 +181,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldGetGraphsWithConcept() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
-        when(repoGestion.getResponseAsArray(ConceptConceptsQueries.getGraphWithConceptQuery("mocked id"))).thenReturn(jsonArray);
+        when(repoGestion.getResponseAsArray(conceptConceptsQueries.getGraphWithConceptQuery("mocked id"))).thenReturn(jsonArray);
         JSONArray actual = conceptsUtils.getGraphsWithConcept("mocked id");
         assertEquals(jsonArray,actual);
     }
@@ -189,7 +192,7 @@ class ConceptsUtilsTest {
         String body = "{\"prefLabelLg1\":\"Test Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
 
         JSONObject json = new JSONObject().put(Constants.NOTATION, "c0010");
-        when(repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID())).thenReturn(json);
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID())).thenReturn(json);
 
         // When
         String id = conceptsUtils.setConcept(body);
@@ -240,7 +243,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldCreateIDWhenNoConceptExists() throws RmesException {
         // Given
-        when(repoGestion.getResponseAsObject(ConceptConceptsQueries.lastConceptID())).thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID())).thenReturn(new JSONObject());
 
         // When
         String id = conceptsUtils.createID();
@@ -265,8 +268,8 @@ class ConceptsUtilsTest {
         JSONArray altLabelLg2 = new JSONArray()
                 .put(new JSONObject().put("altLabel", "Alt EN 1"));
 
-        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id))).thenReturn(true);
-        when(repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptQuery(id))).thenReturn(conceptJson);
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(true);
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id))).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(anyString())).thenAnswer(invocation -> {
             String query = invocation.getArgument(0);
             if (query.contains("lg1")) {
@@ -295,8 +298,8 @@ class ConceptsUtilsTest {
 
         JSONArray emptyArray = new JSONArray();
 
-        when(repoGestion.getResponseAsBoolean(ConceptConceptsQueries.checkIfExists(id))).thenReturn(true);
-        when(repoGestion.getResponseAsObject(ConceptConceptsQueries.conceptQuery(id))).thenReturn(conceptJson);
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(true);
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id))).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(emptyArray);
 
         // When

@@ -17,24 +17,27 @@ public class SeriesDefaultValidator implements SeriesValidator {
     private final RepositoryGestion repositoryGestion;
     private final String lg1;
     private final String lg2;
+    private final OperationSeriesQueries operationSeriesQueries;
 
     public SeriesDefaultValidator(
             RepositoryGestion repositoryGestion,
             @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2
+            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+            OperationSeriesQueries operationSeriesQueries
     ) {
 
         this.repositoryGestion = repositoryGestion;
         this.lg1 = lg1;
         this.lg2 = lg2;
+        this.operationSeriesQueries = operationSeriesQueries;
     }
 
     @Override
     public void validate(Series series) throws RmesException {
-        if (repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), lg1))) {
+        if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), lg1))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
         }
-        if (repositoryGestion.getResponseAsBoolean(OperationSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), lg2))) {
+        if (repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), lg2))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
         }
     }

@@ -56,14 +56,16 @@ public class DocumentationsUtils  {
 	private final DocumentationsRubricsUtils documentationsRubricsUtils;
 	private final DocumentationPublication documentationPublication;
 	private final ParentUtils parentUtils;
+	private final DocumentationQueries documentationQueries;
 
-    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, Config config, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils) {
+    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, Config config, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils, DocumentationQueries documentationQueries) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.config = config;
         this.documentationsRubricsUtils = documentationsRubricsUtils;
         this.documentationPublication = documentationPublication;
         this.parentUtils = parentUtils;
+        this.documentationQueries = documentationQueries;
     }
 
     /**
@@ -75,7 +77,7 @@ public class DocumentationsUtils  {
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
 
 		// Get general informations
-		JSONObject doc = repoGestion.getResponseAsObject(DocumentationQueries.getDocumentationTitleQuery(idSims));
+		JSONObject doc = repoGestion.getResponseAsObject(documentationQueries.getDocumentationTitleQuery(idSims));
 		if (doc.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Documentation not found", idSims);
 		}
@@ -187,7 +189,7 @@ public class DocumentationsUtils  {
 
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {
-			return repoGestion.getResponseAsObject(DocumentationQueries.getPublicationState(id)).getString("state");
+			return repoGestion.getResponseAsObject(documentationQueries.getPublicationState(id)).getString("state");
 		} catch (JSONException _) {
 			return Constants.UNDEFINED;
 		}
@@ -280,7 +282,7 @@ public class DocumentationsUtils  {
 			throw new RmesException(HttpStatus.BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
 					"id Operation/Serie/Indicator or id is null");
 		}
-		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationQueries.getTargetByIdSims(idSims));
+		JSONObject existingIdTarget = repoGestion.getResponseAsObject(documentationQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
 		if (existingIdTarget != null) {
 			idDatabase = (String) existingIdTarget.get(Constants.ID_OPERATION);
@@ -316,7 +318,7 @@ public class DocumentationsUtils  {
 			throw new RmesException(HttpStatus.BAD_REQUEST, "id operation/serie/indicator can't be null",
 					"id is null");
 		}
-		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationQueries.getSimsByTarget(idTarget));
+		JSONObject existingIdSims = repoGestion.getResponseAsObject(documentationQueries.getSimsByTarget(idTarget));
 		if (existingIdSims != null && existingIdSims.has(Constants.ID_SIMS)) {
 			logger.error("Documentation already exists");
 			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
@@ -360,7 +362,7 @@ public class DocumentationsUtils  {
 	 */
 	private String createSimsID() throws RmesException {
 		logger.info("Generate documentation id");
-		JSONObject json = repoGestion.getResponseAsObject(DocumentationQueries.lastID());
+		JSONObject json = repoGestion.getResponseAsObject(documentationQueries.lastID());
 		logger.debug("JSON for documentation id : {}", json);
 		if (json.isEmpty()) {
 			return "1000";
@@ -411,7 +413,7 @@ public class DocumentationsUtils  {
 	
 
 	public MSD getMSD() throws RmesException {
-		return buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationQueries.msdQuery()));
+		return buildMSDFromJson(repoGestion.getResponseAsArray(documentationQueries.msdQuery()));
 	}
 
 
@@ -425,9 +427,9 @@ public class DocumentationsUtils  {
 
 		Resource graph = RdfUtils.simsGraph(id);
 
-		HttpStatus result =  repoGestion.executeUpdate(DocumentationQueries.deleteGraph(graph));
+		HttpStatus result =  repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
 		if (result.equals(HttpStatus.OK)) {
-			result = repositoryPublication.executeUpdate(DocumentationQueries.deleteGraph(graph));
+			result = repositoryPublication.executeUpdate(documentationQueries.deleteGraph(graph));
 		}
 
 		return result;

@@ -1,71 +1,74 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.GenericQueries;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConceptCollectionsQueries extends GenericQueries{
+@Component
+public class ConceptCollectionsQueries {
 
-	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
+	private final Config config;
+
+	public ConceptCollectionsQueries(Config config) {
+		this.config = config;
+	}
+
+	private String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("collections/", fileName, params);
 	}
 
-	public static String collectionsQuery() throws RmesException {
+	public String collectionsQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
-		return  buildRequest("getCollections.ftlh", params);
+		return buildRequest("getCollections.ftlh", params);
 	}
-	
-	public static String collectionsDashboardQuery() throws RmesException {
+
+	public String collectionsDashboardQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		return buildRequest("getCollectionsDashboard.ftlh", params);
 	}
-	
-	public static String collectionsToValidateQuery() throws RmesException {
+
+	public String collectionsToValidateQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		return buildRequest("getCollectionsToValidate.ftlh", params);
 	}
-	
-	public static String collectionQuery(String id) throws RmesException {
+
+	public String collectionQuery(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("ID", id);
-		return  buildRequest("getCollection.ftlh", params);
-	}
-	
-	public static String collectionMembersQuery(String id) throws RmesException {
-		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put("ID", id);
-		return  buildRequest("getCollectionMembers.ftlh", params);
+		return buildRequest("getCollection.ftlh", params);
 	}
 
-	public static String collectionConceptsQuery(String id) throws RmesException {
+	public String collectionMembersQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		return buildRequest("getCollectionMembers.ftlh", params);
+	}
+
+	public String collectionConceptsQuery(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("CONCEPT_GRAPH", config.getConceptsGraph());
 		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
 		params.put("COLLECTION_ID", id);
-		return  buildRequest("getCollectionConcepts.ftlh", params);
+		return buildRequest("getCollectionConcepts.ftlh", params);
 	}
 
-	public static String isCollectionExist(String id) throws RmesException {
+	public String isCollectionExist(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("ID", id);
 		return buildRequest("isCollectionExist.ftlh", params);
 	}
-	
-	  private ConceptCollectionsQueries() {
-		    throw new IllegalStateException("Utility class");
-	}
-
 
 }

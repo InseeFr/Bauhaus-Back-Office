@@ -20,16 +20,18 @@ import java.util.Optional;
 @Repository
 public class GraphDBOrganisationsRepository implements OrganisationsRepository {
     private final RepositoryGestion repositoryGestion;
+    private final OrganizationQueries organizationQueries;
 
-    public GraphDBOrganisationsRepository(RepositoryGestion repositoryGestion) {
+    public GraphDBOrganisationsRepository(RepositoryGestion repositoryGestion, OrganizationQueries organizationQueries) {
         this.repositoryGestion = repositoryGestion;
+        this.organizationQueries = organizationQueries;
     }
 
 
     @Override
     public CompactOrganisation getCompactOrganisation(String id) throws OrganisationFetchException {
         try {
-            var organisation = this.repositoryGestion.getResponseAsObject(OrganizationQueries.generateCompactOrganisationQuery(id));
+            var organisation = this.repositoryGestion.getResponseAsObject(organizationQueries.generateCompactOrganisationQuery(id));
             var graphDbOrganisation = Deserializer.deserializeJSONObject(organisation, GraphDbCompactOrganisation.class);
             return graphDbOrganisation.toDomain();
 
@@ -41,7 +43,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
     @Override
     public List<CompactOrganisation> getCompactOrganisations(List<String> ids) throws OrganisationFetchException {
         try {
-            JSONArray organisations = this.repositoryGestion.getResponseAsArray(OrganizationQueries.generateCompactOrganisationsQuery(ids));
+            JSONArray organisations = this.repositoryGestion.getResponseAsArray(organizationQueries.generateCompactOrganisationsQuery(ids));
             List<CompactOrganisation> result = new ArrayList<>();
 
             for (int i = 0; i < organisations.length(); i++) {
@@ -59,7 +61,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
     @Override
     public boolean checkIfOrganisationExists(String iri) throws OrganisationFetchException {
         try {
-            return this.repositoryGestion.getResponseAsBoolean(OrganizationQueries.checkIfOrganisationExistsQuery(iri));
+            return this.repositoryGestion.getResponseAsBoolean(organizationQueries.checkIfOrganisationExistsQuery(iri));
         } catch (Exception e) {
             throw new OrganisationFetchException();
         }
@@ -68,7 +70,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
     @Override
     public Optional<String> getDctermsIdentifier(String admsIdentifier) throws OrganisationFetchException {
         try {
-            return getOrganisationIdentifier(OrganizationQueries.getOrganizationIdenfier(ADMS.HAS_IDENTIFIER, admsIdentifier, DCTERMS.IDENTIFIER));
+            return getOrganisationIdentifier(organizationQueries.getOrganizationIdenfier(ADMS.HAS_IDENTIFIER, admsIdentifier, DCTERMS.IDENTIFIER));
         } catch (RmesException e) {
             throw new OrganisationFetchException();
         }
@@ -90,7 +92,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
     @Override
     public Optional<String> getAdmsIdentifier(String dctermsIdentifier) throws OrganisationFetchException {
         try {
-            return getOrganisationIdentifier(OrganizationQueries.getOrganizationIdenfier(DCTERMS.IDENTIFIER, dctermsIdentifier, ADMS.HAS_IDENTIFIER));
+            return getOrganisationIdentifier(organizationQueries.getOrganizationIdenfier(DCTERMS.IDENTIFIER, dctermsIdentifier, ADMS.HAS_IDENTIFIER));
         } catch (RmesException e) {
             throw new OrganisationFetchException();
         }

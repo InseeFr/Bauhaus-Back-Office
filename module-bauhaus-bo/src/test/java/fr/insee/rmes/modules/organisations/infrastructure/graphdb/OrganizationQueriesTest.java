@@ -8,6 +8,7 @@ import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -21,23 +22,28 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class OrganizationQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
+    private OrganizationQueries organizationQueries;
+
     @BeforeAll
     static void initData(){
         container.withTrigFiles("organizations.trig");
     }
 
+    @BeforeEach
+    void setUp() {
+        organizationQueries = new OrganizationQueries(new ConfigStub());
+    }
+
     @Test
     void should_return_organization() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
-        JSONObject result = repositoryGestion.getResponseAsObject(OrganizationQueries.organizationQuery("HIE2000069"));
+        JSONObject result = repositoryGestion.getResponseAsObject(organizationQueries.organizationQuery("HIE2000069"));
         assertNotNull(result.getString("labelLg1"));
         assertEquals("Direction régionale de Nouvelle-Aquitaine - siège de Poitiers (DR86-ETB86)", result.getString("labelLg1"));
     }
 
     @Test
     void should_return_organizations() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OrganizationQueries.organizationsQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
         assertEquals(220, result.length());
 
         JSONObject hieOrg = null;
@@ -58,8 +64,7 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_organizations_two_langs() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OrganizationQueries.organizationsTwoLangsQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsTwoLangsQuery());
         assertEquals(219, result.length());
 
         JSONObject hieOrg = null;
@@ -80,15 +85,13 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_organization_uri() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
-        JSONObject result = repositoryGestion.getResponseAsObject(OrganizationQueries.getUriById("HIE2000069"));
+        JSONObject result = repositoryGestion.getResponseAsObject(organizationQueries.getUriById("HIE2000069"));
         assertEquals("http://bauhaus/organisations/insee/HIE2000069", result.getString("uri"));
     }
 
     @Test
     void should_return_compact_organization() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
-        JSONObject result = repositoryGestion.getResponseAsObject(OrganizationQueries.generateCompactOrganisationQuery("HIE2000069"));
+        JSONObject result = repositoryGestion.getResponseAsObject(organizationQueries.generateCompactOrganisationQuery("HIE2000069"));
 
         assertNotNull(result);
         assertEquals("HIE2000069", result.getString("identifier"));
@@ -99,14 +102,12 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_compact_organizations() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
         List<String> identifiers = Arrays.asList("HIE2000069", "HIE2000070", "HIE2000071");
-        JSONArray result = repositoryGestion.getResponseAsArray(OrganizationQueries.generateCompactOrganisationsQuery(identifiers));
+        JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.generateCompactOrganisationsQuery(identifiers));
 
         assertNotNull(result);
         assertTrue(result.length() >= 3, "Should return at least 3 organizations");
 
-        // Verify that we got the expected organizations
         boolean foundHIE69 = false;
         boolean foundHIE70 = false;
         boolean foundHIE71 = false;
@@ -130,18 +131,16 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_true_when_organization_exists() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
         String iri = "http://bauhaus/organisations/insee/HIE2000069";
-        boolean result = repositoryGestion.getResponseAsBoolean(OrganizationQueries.checkIfOrganisationExistsQuery(iri));
+        boolean result = repositoryGestion.getResponseAsBoolean(organizationQueries.checkIfOrganisationExistsQuery(iri));
 
         assertTrue(result, "Organization with IRI " + iri + " should exist");
     }
 
     @Test
     void should_return_false_when_organization_does_not_exist() throws Exception {
-        OrganizationQueries.setConfig(new ConfigStub());
         String iri = "http://bauhaus/organisations/insee/NON_EXISTENT";
-        boolean result = repositoryGestion.getResponseAsBoolean(OrganizationQueries.checkIfOrganisationExistsQuery(iri));
+        boolean result = repositoryGestion.getResponseAsBoolean(organizationQueries.checkIfOrganisationExistsQuery(iri));
 
         assertFalse(result, "Organization with IRI " + iri + " should not exist");
     }

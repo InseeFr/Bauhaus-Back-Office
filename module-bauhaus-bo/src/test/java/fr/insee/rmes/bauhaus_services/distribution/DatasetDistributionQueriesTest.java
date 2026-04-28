@@ -5,7 +5,6 @@ import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -16,10 +15,9 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.eq;
 
 class DatasetDistributionQueriesTest {
-    @BeforeAll
-    static void init(){
-        DatasetDistributionQueries.setConfig(new ConfigStub());
-    }
+
+    DatasetDistributionQueries datasetDistributionQueries = new DatasetDistributionQueries(new ConfigStub());
+
     @Test
     void shouldCallGetDistributionQuery() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
@@ -30,7 +28,7 @@ class DatasetDistributionQueriesTest {
                 put("LG2", "en");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributions.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetDistributionQueries.getDistributions("distribution-graph");
+            String query = datasetDistributionQueries.getDistributions("distribution-graph");
             Assertions.assertEquals("request", query);
         }
     }
@@ -45,7 +43,7 @@ class DatasetDistributionQueriesTest {
                 put("ID", "1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistribution.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetDistributionQueries.getDistribution("1", "distribution-graph");
+            String query = datasetDistributionQueries.getDistribution("1", "distribution-graph");
             Assertions.assertEquals("request", query);
         }
     }
@@ -60,7 +58,7 @@ class DatasetDistributionQueriesTest {
                 put("DATASET_ID", "1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributions.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetDistributionQueries.getDatasetDistributions("1", "distribution-graph");
+            String query = datasetDistributionQueries.getDatasetDistributions("1", "distribution-graph");
             Assertions.assertEquals("request", query);
         }
     }
@@ -72,7 +70,7 @@ class DatasetDistributionQueriesTest {
                 put("DATASET_GRAPH", "distribution-graph");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getLastDatasetId.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetDistributionQueries.lastDatasetId("distribution-graph");
+            String query = datasetDistributionQueries.lastDatasetId("distribution-graph");
             Assertions.assertEquals("request", query);
         }
     }
@@ -84,7 +82,7 @@ class DatasetDistributionQueriesTest {
                 put("DISTRIBUTION_GRAPH_URI", "distribution-graph-uri");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributionContributorsByUriQuery.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetDistributionQueries.getContributorsByDistributionUri("distribution-graph-uri");
+            String query = datasetDistributionQueries.getContributorsByDistributionUri("distribution-graph-uri");
             Assertions.assertEquals("request", query);
         }
     }

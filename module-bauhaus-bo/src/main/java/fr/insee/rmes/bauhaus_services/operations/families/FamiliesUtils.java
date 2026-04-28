@@ -48,13 +48,16 @@ public class FamiliesUtils {
 	final RepositoryGestion repositoryGestion;
 	final String lg1;
 	final String lg2;
+	final OperationFamilyQueries operationFamilyQueries;
+
 	public FamiliesUtils(@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.families-rich-text-new-structure}") boolean familiesRichTextNexStructure,
 						 FamOpeSerIndUtils famOpeSerUtils,
 						 FamilyPublication familyPublication,
 						 ParentUtils ownersUtils,
 						 RepositoryGestion repositoryGestion,
 						 @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-						 @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2) {
+						 @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+						 OperationFamilyQueries operationFamilyQueries) {
 
 		this.familiesRichTextNexStructure = familiesRichTextNexStructure;
 		this.famOpeSerUtils = famOpeSerUtils;
@@ -63,15 +66,16 @@ public class FamiliesUtils {
 		this.repositoryGestion = repositoryGestion;
 		this.lg1 = lg1;
 		this.lg2 = lg2;
+		this.operationFamilyQueries = operationFamilyQueries;
 	}
 
 
 
 	private void validateFamily(Family family) throws RmesException {
-		if(repositoryGestion.getResponseAsBoolean(OperationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
+		if(repositoryGestion.getResponseAsBoolean(operationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(OperationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
+		if(repositoryGestion.getResponseAsBoolean(operationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
 		}
 	}

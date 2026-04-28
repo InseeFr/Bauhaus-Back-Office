@@ -2,7 +2,6 @@ package fr.insee.rmes.testcontainers.queries.sparql_queries.concepts;
 
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.GenericQueries;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
@@ -11,6 +10,7 @@ import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -22,16 +22,22 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
 
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
+    private ConceptCollectionsQueries conceptCollectionsQueries;
+
     @BeforeAll
     static void initData() {
         container.withTrigFiles("concept-collections.trig");
-        GenericQueries.setConfig(new ConfigStub());
+    }
+
+    @BeforeEach
+    void setUp() {
+        conceptCollectionsQueries = new ConceptCollectionsQueries(new ConfigStub());
     }
 
     @Test
     void should_return_all_collections() throws RmesException {
         // When
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsQuery());
 
         // Then
         assertEquals(5, result.length());
@@ -47,7 +53,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_collections_dashboard_with_members_count() throws RmesException {
         // When
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsDashboardQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsDashboardQuery());
 
         // Then
         // Dashboard query only returns collections with members (excludes empty collections)
@@ -76,7 +82,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_only_non_validated_collections() throws RmesException {
         // When
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsToValidateQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsToValidateQuery());
 
         // Then
         assertEquals(2, result.length(), "Should return only non-validated collections");
@@ -105,7 +111,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_specific_collection_by_id() throws RmesException {
         // When
-        JSONObject result = repositoryGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery("c1000"));
+        JSONObject result = repositoryGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery("c1000"));
 
         // Then
         assertNotNull(result);
@@ -117,7 +123,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_collection_members() throws RmesException {
         // When - Get members of Agriculture collection
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery("c1000"));
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery("c1000"));
 
         // Then
         assertEquals(3, result.length(), "Agriculture collection should have 3 members");
@@ -137,7 +143,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_empty_array_for_collection_without_members() throws RmesException {
         // When - Get members of empty collection
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery("c5000"));
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery("c5000"));
 
         // Then
         assertEquals(0, result.length(), "Empty collection should have no members");
@@ -146,7 +152,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_collection_concepts_with_components_graph() throws RmesException {
         // When - Get concepts from Agriculture collection including those in components graph
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionConceptsQuery("c1000"));
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery("c1000"));
 
         // Then
         assertTrue(!result.isEmpty(), "Should return concepts from the collection");
@@ -167,7 +173,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_true_when_collection_exists() throws RmesException {
         // When
-        boolean result = repositoryGestion.getResponseAsBoolean(ConceptCollectionsQueries.isCollectionExist("c1000"));
+        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.isCollectionExist("c1000"));
 
         // Then
         assertTrue(result, "Should return true when collection exists");
@@ -176,7 +182,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_false_when_collection_does_not_exist() throws RmesException {
         // When
-        boolean result = repositoryGestion.getResponseAsBoolean(ConceptCollectionsQueries.isCollectionExist("c9999"));
+        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.isCollectionExist("c9999"));
 
         // Then
         assertFalse(result, "Should return false when collection does not exist");
@@ -185,7 +191,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_verify_collection_properties() throws RmesException {
         // When
-        JSONObject result = repositoryGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery("c3000"));
+        JSONObject result = repositoryGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery("c3000"));
 
         // Then
         assertNotNull(result);
@@ -200,7 +206,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_handle_collections_with_different_member_counts() throws RmesException {
         // When
-        JSONArray result = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsDashboardQuery());
+        JSONArray result = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsDashboardQuery());
 
         // Then
         // Verify different collections have different member counts

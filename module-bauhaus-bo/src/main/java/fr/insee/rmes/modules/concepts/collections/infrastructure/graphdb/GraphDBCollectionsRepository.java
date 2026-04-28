@@ -40,10 +40,12 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
 
     private final RepositoryGestion repositoryGestion;
     private final GraphDBCollectionProperties graphDBCollectionProperties;
+    private final ConceptCollectionsQueries conceptCollectionsQueries;
 
-    public GraphDBCollectionsRepository(RepositoryGestion repositoryGestion, GraphDBCollectionProperties graphDBCollectionProperties) {
+    public GraphDBCollectionsRepository(RepositoryGestion repositoryGestion, GraphDBCollectionProperties graphDBCollectionProperties, ConceptCollectionsQueries conceptCollectionsQueries) {
         this.repositoryGestion = repositoryGestion;
         this.graphDBCollectionProperties = graphDBCollectionProperties;
+        this.conceptCollectionsQueries = conceptCollectionsQueries;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
 
 
         try {
-            var collections =  repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsQuery());
+            var collections =  repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsQuery());
 
             var response = DiacriticSorter.sort(collections,
                     GraphDBPartialCollection[].class,
@@ -66,7 +68,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     @Override
     public Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException {
         try {
-            var collection = repositoryGestion.getResponseAsObject(ConceptCollectionsQueries.collectionQuery(id.value().toString()));
+            var collection = repositoryGestion.getResponseAsObject(conceptCollectionsQueries.collectionQuery(id.value().toString()));
 
             if(collection.isEmpty()){
                 return Optional.empty();
@@ -74,7 +76,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
 
             var graphDBCollection = Deserializer.deserializeJSONObject(collection, GraphDBCollection.class);
 
-            var concepts = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
+            var concepts = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
             var graphDBCollectionWithConcepts = graphDBCollection.withConcepts(Deserializer.deserializeJSONArray(concepts, GraphDBConcept[].class));
 
             return Optional.of(graphDBCollectionWithConcepts.toDomain());
@@ -129,7 +131,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     @Override
     public List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException {
         try {
-            var results = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsDashboardQuery());
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsDashboardQuery());
             return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBCollectionDashboardItem[].class))
                     .map(GraphDBCollectionDashboardItem::toDomain).toList();
         } catch (Exception e) {
@@ -140,7 +142,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     @Override
     public List<CollectionToValidate> getToValidate() throws CollectionsFetchException {
         try {
-            var results = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionsToValidateQuery());
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionsToValidateQuery());
             return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBCollectionToValidate[].class))
                     .map(GraphDBCollectionToValidate::toDomain).toList();
         } catch (Exception e) {
@@ -151,7 +153,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     @Override
     public List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException {
         try {
-            var results = repositoryGestion.getResponseAsArray(ConceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id.value().toString()));
             return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBConcept[].class))
                     .map(GraphDBConcept::toDomain).toList();
         } catch (Exception e) {

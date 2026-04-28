@@ -1,10 +1,18 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.graphdb.GenericQueries;
+import fr.insee.rmes.Config;
+import org.springframework.stereotype.Component;
 
-public class ClassificationCorrespondencesQueries extends GenericQueries{
-	
-	public static String correspondencesQuery() {
+@Component
+public class ClassificationCorrespondencesQueries {
+
+	private final Config config;
+
+	public ClassificationCorrespondencesQueries(Config config) {
+		this.config = config;
+	}
+
+	public String correspondencesQuery() {
 		return "SELECT DISTINCT ?id ?label \n"
 				+ "WHERE { \n"
 				+ "?correspondence rdf:type xkos:Correspondence . \n"
@@ -14,8 +22,8 @@ public class ClassificationCorrespondencesQueries extends GenericQueries{
 				+ "} \n"
 				+ "ORDER BY ?label ";
 	}
-	
-	public static String correspondenceQuery(String id) {
+
+	public String correspondenceQuery(String id) {
 		String[] classificationsIds = id.split("-");
 		String firstId = classificationsIds[0];
 		String secondId = classificationsIds[1];
@@ -61,8 +69,8 @@ public class ClassificationCorrespondencesQueries extends GenericQueries{
 				+ "}"
 				+ "LIMIT 1";
 	}
-	
-	public static String correspondenceAssociationsQuery(String correspondenceId) {
+
+	public String correspondenceAssociationsQuery(String correspondenceId) {
 		return "SELECT ?id ?sourceLabelLg1 ?sourceLabelLg2 ?sourceId \n"
 				+ "?targetLabelLg1 ?targetLabelLg2 ?targetId \n"
 				+ "WHERE { \n"
@@ -83,8 +91,8 @@ public class ClassificationCorrespondencesQueries extends GenericQueries{
 				+ "FILTER (lang(?targetLabelLg2) = '" + config.getLg2() + "') }  . \n"
 				+ "}";
 	}
-	
-	public static String correspondenceAssociationQuery(String correspondenceId, String associationId) {
+
+	public String correspondenceAssociationQuery(String correspondenceId, String associationId) {
 		String[] classificationsIds = correspondenceId.split("-");
 		String sourceClassId = classificationsIds[0];
 		String targetClassId = classificationsIds[1];
@@ -148,11 +156,4 @@ public class ClassificationCorrespondencesQueries extends GenericQueries{
 				+ "} \n"
 				+ "LIMIT 1";
 	}
-	
-	  private ClassificationCorrespondencesQueries() {
-		    throw new IllegalStateException("Utility class");
-	}
-
-	
-
 }
