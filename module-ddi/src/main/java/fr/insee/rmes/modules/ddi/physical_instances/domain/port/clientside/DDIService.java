@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface DDIService {
@@ -27,4 +28,5 @@ public interface DDIService {
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
+    Optional<String> getStudyUnitXmlByOperationIri(String operationIri);
 }

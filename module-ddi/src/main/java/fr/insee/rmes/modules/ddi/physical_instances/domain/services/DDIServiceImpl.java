@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -119,5 +120,11 @@ public class DDIServiceImpl implements DDIService {
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         logger.info("Getting parents for physical instance {}/{}", agencyId, id);
         return ddiRepository.getPhysicalInstanceParents(agencyId, id);
+    }
+
+    @Override
+    public Optional<String> getStudyUnitXmlByOperationIri(String operationIri) {
+        logger.info("Getting StudyUnit XML by operationIri: {}", operationIri);
+        return ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
     }
 }

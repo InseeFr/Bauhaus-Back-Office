@@ -16,12 +16,14 @@ import org.springframework.web.client.RestTemplate;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -1700,6 +1702,85 @@ class DDIRepositoryImplTest {
 
         // Then
         assertNull(result);
+    }
+
+    @Test
+    void shouldFindStudyUnitXmlByOperationIri_returnsXmlWhenMatching() {
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String queryUrl = baseApiUrl + "_query";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String suId = "su-abc";
+        String suAgency = "fr.insee";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaItem suItem = new ColecticaItem(
+            null, Map.of("fr-FR", "BPE 2021"), Map.of(), null, null, 0, "repo", true, List.of(),
+            "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
+            null, null, "2025-01-01T00:00:00", null, false, false, false, "DDI", 1L, 0
+        );
+        ColecticaResponse queryResponse = new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(queryResponse);
+
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\">"
+                + "<r:UserID>" + operationIri + "</r:UserID>"
+                + "</StudyUnit></Fragment>";
+        ColecticaItemResponse itemResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
+                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
+        );
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "item/" + suAgency + "/" + suId),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)
+        )).thenReturn(ResponseEntity.ok(itemResponse));
+
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+
+        assertTrue(result.isPresent());
+        assertEquals(studyUnitXml, result.get());
+    }
+
+    @Test
+    void shouldFindStudyUnitXmlByOperationIri_returnsEmptyWhenNoMatch() {
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String queryUrl = baseApiUrl + "_query";
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        String suId = "su-xyz";
+        String suAgency = "fr.insee";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaItem suItem = new ColecticaItem(
+            null, Map.of("fr-FR", "BPE 2021"), Map.of(), null, null, 0, "repo", true, List.of(),
+            "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
+            null, null, "2025-01-01T00:00:00", null, false, false, false, "DDI", 1L, 0
+        );
+        ColecticaResponse queryResponse = new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
+        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+                .thenReturn(queryResponse);
+
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\">"
+                + "<r:UserID>http://id.insee.fr/operations/operation/other</r:UserID>"
+                + "</StudyUnit></Fragment>";
+        ColecticaItemResponse itemResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
+                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
+        );
+        when(restTemplate.exchange(
+                eq(baseApiUrl + "item/" + suAgency + "/" + suId),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(ColecticaItemResponse.class)
+        )).thenReturn(ResponseEntity.ok(itemResponse));
+
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+
+        assertFalse(result.isPresent());
     }
 
     @Test

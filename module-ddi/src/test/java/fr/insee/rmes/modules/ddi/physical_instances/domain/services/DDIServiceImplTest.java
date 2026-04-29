@@ -27,11 +27,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -343,6 +346,30 @@ class DDIServiceImplTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("g1", result.getFirst().id());
+    }
+
+    @Test
+    void shouldGetStudyUnitXmlByOperationIri_returnsXmlWhenFound() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String expectedXml = "<StudyUnit><r:UserID>http://id.insee.fr/operations/operation/op1</r:UserID></StudyUnit>";
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(expectedXml));
+
+        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri);
+
+        assertTrue(result.isPresent());
+        assertEquals(expectedXml, result.get());
+        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
+    }
+
+    @Test
+    void shouldGetStudyUnitXmlByOperationIri_returnsEmptyWhenNotFound() {
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        when(ddiRepository.findStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+
+        Optional<String> result = ddiService.getStudyUnitXmlByOperationIri(operationIri);
+
+        assertFalse(result.isPresent());
+        verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
     }
 
     @Test

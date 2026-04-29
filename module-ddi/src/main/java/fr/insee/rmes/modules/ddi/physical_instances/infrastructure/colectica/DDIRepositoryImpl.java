@@ -1305,6 +1305,38 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
     }
 
+    @Override
+    public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
+        logger.info("Searching StudyUnit XML by operationIri: {}", operationIri);
+        List<PartialStudyUnit> studyUnits = getStudyUnits();
+        return studyUnits.stream()
+                .map(su -> fetchColecticaItem(su.agency(), su.id(), null))
+                .filter(Objects::nonNull)
+                .filter(item -> studyUnitMatchesOperationIri(item.item(), operationIri))
+                .map(ColecticaItemResponse::item)
+                .findFirst();
+    }
+
+    private boolean studyUnitMatchesOperationIri(String xml, String operationIri) {
+        if (xml == null || xml.isBlank()) return false;
+        try {
+            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new InputSource(new StringReader(xml)));
+            NodeList userIdNodes = doc.getElementsByTagNameNS("ddi:reusable:3_3", "UserID");
+            for (int i = 0; i < userIdNodes.getLength(); i++) {
+                String text = userIdNodes.item(i).getTextContent();
+                if (operationIri.equals(text != null ? text.trim() : null)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            logger.warn("Failed to parse StudyUnit XML for operationIri check", e);
+            return false;
+        }
+    }
+
     private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";
     private static final String GROUP_ITEM_TYPE = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
 
