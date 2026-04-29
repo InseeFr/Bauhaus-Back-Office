@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUni
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
@@ -27,4 +28,5 @@ public interface DDIRepository {
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
+    Optional<String> findStudyUnitXmlByOperationIri(String operationIri);
 }
