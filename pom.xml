@@ -32,8 +32,7 @@
   </developers>
   <properties>
     <java.version>25</java.version>
-    <springdoc.version>2.8.17</springdoc.version>
-    <rdf4j.version>5.3.1</rdf4j.version>
+<rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.1.0</xdocreport.version>
     <jacoco.version>0.8.13</jacoco.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
