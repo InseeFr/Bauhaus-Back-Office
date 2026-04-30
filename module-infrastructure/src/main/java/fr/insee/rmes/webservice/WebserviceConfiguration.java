@@ -1,18 +1,22 @@
 package fr.insee.rmes.webservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.domain.model.operations.families.OperationFamily;
 import fr.insee.rmes.webservice.response.mixins.OperationFamilyMixin;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
-import org.springframework.context.annotation.Bean;
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class WebserviceConfiguration {
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer addMixIns() {
-        return builder -> builder.mixIn(
-                OperationFamily.class,
-                OperationFamilyMixin.class
-        );
+
+    private final ObjectMapper objectMapper;
+
+    public WebserviceConfiguration(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @PostConstruct
+    public void addMixIns() {
+        objectMapper.addMixIn(OperationFamily.class, OperationFamilyMixin.class);
     }
 }

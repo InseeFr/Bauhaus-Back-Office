@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
@@ -15,13 +15,8 @@ public class Bauhaus{
     }
 
     @Bean
-    public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        
-        // Add StringHttpMessageConverter to handle text/plain responses
-        restTemplate.getMessageConverters().add(0, new org.springframework.http.converter.StringHttpMessageConverter());
-        
-        return restTemplate;
+    public RestClient restClient() {
+        return RestClient.create();
     }
 
 }

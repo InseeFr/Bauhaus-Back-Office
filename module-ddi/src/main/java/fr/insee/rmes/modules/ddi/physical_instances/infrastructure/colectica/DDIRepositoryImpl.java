@@ -9,7 +9,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,7 +42,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private static final String BAUHAUS_API = "bauhaus-api";
     private final String defaultLang;
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaConfiguration colecticaConfiguration;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
@@ -51,14 +51,14 @@ public class DDIRepositoryImpl implements DDIRepository {
     private Set<String> denyListCache;
 
     public DDIRepositoryImpl(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator authenticator
             ) {
-        this.restTemplate = restTemplate;
+        this.restClient = restClient;
         this.instanceConfiguration = instanceConfiguration;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
@@ -83,11 +83,13 @@ public class DDIRepositoryImpl implements DDIRepository {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(token);
 
-            // Create HTTP entity with headers and body
-            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-
-            // Make the request with authentication
-            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+            ColecticaResponse response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(ColecticaResponse.class);
 
             return response.results().stream()
                     .map(item -> {
@@ -115,11 +117,13 @@ public class DDIRepositoryImpl implements DDIRepository {
         return authenticator.executeWithAuth(token -> {
             String url = instanceConfiguration.baseApiUrl() + "_query";
             QueryRequest requestBody = new QueryRequest(List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23"));
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+            ColecticaResponse response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(ColecticaResponse.class);
 
             if (response == null || response.results() == null || response.results().isEmpty()) {
                 return List.<PartialGroup>of();
@@ -131,8 +135,13 @@ public class DDIRepositoryImpl implements DDIRepository {
                     .toList();
 
             String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
-            HttpEntity<GetDescriptionsRequest> listRequestEntity = new HttpEntity<>(new GetDescriptionsRequest(identifiers), headers);
-            ColecticaItemResponse[] itemResponses = restTemplate.postForObject(getListUrl, listRequestEntity, ColecticaItemResponse[].class);
+            ColecticaItemResponse[] itemResponses = restClient.post()
+                    .uri(getListUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(new GetDescriptionsRequest(identifiers))
+                    .retrieve()
+                    .body(ColecticaItemResponse[].class);
 
             Map<String, List<String>> seriesIrisByGroupId = new HashMap<>();
             if (itemResponses != null) {
@@ -193,13 +202,13 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             QueryRequest requestBody = new QueryRequest(List.of("30ea0200-7121-4f01-8d21-a931a182b86d"));
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-
-            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+            ColecticaResponse response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(ColecticaResponse.class);
 
             return response.results().stream()
                     .map(item -> {
@@ -231,16 +240,13 @@ public class DDIRepositoryImpl implements DDIRepository {
             // Create request body with CodeList itemType
             QueryRequest requestBody = new QueryRequest(List.of("8b108ef8-b642-4484-9c49-f88e4bf7cf1d"));
 
-            // Create headers with Bearer token and Content-Type
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            // Create HTTP entity with headers and body
-            HttpEntity<QueryRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-
-            // Make the request with authentication
-            ColecticaResponse response = restTemplate.postForObject(url, requestEntity, ColecticaResponse.class);
+            ColecticaResponse response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(ColecticaResponse.class);
 
             int totalCount = response.results().size();
             logger.debug("Received {} code lists from Colectica API", totalCount);
@@ -484,18 +490,12 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return authenticator.executeWithAuth(token -> {
             try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(token);
-
                 String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
-                HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
-                ColecticaSetItem[] setItems = restTemplate.exchange(
-                        setUrl,
-                        HttpMethod.GET,
-                        getRequestEntity,
-                        ColecticaSetItem[].class
-                ).getBody();
+                ColecticaSetItem[] setItems = restClient.get()
+                        .uri(setUrl)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .retrieve()
+                        .body(ColecticaSetItem[].class);
 
                 if (setItems == null || setItems.length == 0) {
                     return null;
@@ -506,12 +506,13 @@ public class DDIRepositoryImpl implements DDIRepository {
                         .toList();
 
                 String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
-                HttpEntity<GetDescriptionsRequest> postRequestEntity = new HttpEntity<>(new GetDescriptionsRequest(identifiers), headers);
-                ColecticaItemResponse[] itemResponses = restTemplate.postForObject(
-                        getListUrl,
-                        postRequestEntity,
-                        ColecticaItemResponse[].class
-                );
+                ColecticaItemResponse[] itemResponses = restClient.post()
+                        .uri(getListUrl)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .body(new GetDescriptionsRequest(identifiers))
+                        .retrieve()
+                        .body(ColecticaItemResponse[].class);
 
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
@@ -560,20 +561,12 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 logger.info("Fetching full DDI set for Group from: {}", ddisetUrl);
 
-                // Create headers with Bearer token
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setBearerAuth(token);
-
-                HttpEntity<Void> getRequestEntity = new HttpEntity<>(headers);
-
                 // The response from Colectica ddiset endpoint contains XML with Group and StudyUnits
-                String ddisetXml = restTemplate.exchange(
-                        ddisetUrl,
-                        HttpMethod.GET,
-                        getRequestEntity,
-                        String.class
-                ).getBody();
+                String ddisetXml = restClient.get()
+                        .uri(ddisetUrl)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .retrieve()
+                        .body(String.class);
 
                 if (ddisetXml == null || ddisetXml.isEmpty()) {
                     logger.error("Received empty response from Colectica API for ddiset URL: {}", ddisetUrl);
@@ -930,16 +923,15 @@ public class DDIRepositoryImpl implements DDIRepository {
             // Send to Colectica
             String url = instanceConfiguration.baseApiUrl() + "item";
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(updateRequest, headers);
-
             logger.info("Sending full update request to Colectica with {} items: {}", colecticaItems.size(), url);
 
-            // POST to Colectica
-            restTemplate.postForObject(url, requestEntity, String.class);
+            restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(updateRequest)
+                    .retrieve()
+                    .body(String.class);
 
             logger.info("Successfully updated full physical instance with id: {} ({} items saved)", id, colecticaItems.size());
 
@@ -1027,14 +1019,13 @@ public class DDIRepositoryImpl implements DDIRepository {
             // Send to Colectica
             String url = instanceConfiguration.baseApiUrl() + "item";
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(createRequest, headers);
-
-            // POST to Colectica
-            restTemplate.postForObject(url, requestEntity, String.class);
+            restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(createRequest)
+                    .retrieve()
+                    .body(String.class);
 
             // Return the created instance
             return getPhysicalInstance(agencyId, physicalInstanceId);
@@ -1152,15 +1143,15 @@ public class DDIRepositoryImpl implements DDIRepository {
             GetDescriptionsRequest requestBody = new GetDescriptionsRequest(identifiers);
             logger.info("Request body identifiers: {}", identifiers);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<GetDescriptionsRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-
             logger.info("Calling _getDescriptions with {} identifiers", identifiers.size());
 
-            ColecticaItem[] response = restTemplate.postForObject(url, requestEntity, ColecticaItem[].class);
+            ColecticaItem[] response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(ColecticaItem[].class);
             logger.info("Response from _getDescriptions: {} items", response != null ? response.length : "null");
 
             if (response == null) {
@@ -1227,13 +1218,11 @@ public class DDIRepositoryImpl implements DDIRepository {
                 url += "/" + URLEncoder.encode(version, StandardCharsets.UTF_8);
             }
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
-            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, ColecticaItemResponse.class).getBody();
+            return restClient.get()
+                    .uri(url)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(ColecticaItemResponse.class);
         });
     }
 
@@ -1343,17 +1332,18 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         return authenticator.executeWithAuth(token -> {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
             String url = instanceConfiguration.baseApiUrl() + "_query/relationship/byobject/descriptions";
 
             RelationshipBySubjectRequest piRequest = new RelationshipBySubjectRequest(
                     List.of(STUDY_UNIT_ITEM_TYPE),
                     new RelationshipBySubjectRequest.TargetItemRef(agencyId, id));
-            HttpEntity<RelationshipBySubjectRequest> piEntity = new HttpEntity<>(piRequest, headers);
-            ColecticaItem[] studyUnitItems = restTemplate.postForObject(url, piEntity, ColecticaItem[].class);
+            ColecticaItem[] studyUnitItems = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(piRequest)
+                    .retrieve()
+                    .body(ColecticaItem[].class);
 
             ColecticaItem studyUnitItem = Arrays.stream(studyUnitItems != null ? studyUnitItems : new ColecticaItem[0])
                     .findFirst()
@@ -1362,8 +1352,13 @@ public class DDIRepositoryImpl implements DDIRepository {
             RelationshipBySubjectRequest suRequest = new RelationshipBySubjectRequest(
                     List.of(GROUP_ITEM_TYPE),
                     new RelationshipBySubjectRequest.TargetItemRef(studyUnitItem.agencyId(), studyUnitItem.identifier()));
-            HttpEntity<RelationshipBySubjectRequest> suEntity = new HttpEntity<>(suRequest, headers);
-            ColecticaItem[] groupItems = restTemplate.postForObject(url, suEntity, ColecticaItem[].class);
+            ColecticaItem[] groupItems = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(suRequest)
+                    .retrieve()
+                    .body(ColecticaItem[].class);
 
             ColecticaItem groupItem = Arrays.stream(groupItems != null ? groupItems : new ColecticaItem[0])
                     .findFirst()

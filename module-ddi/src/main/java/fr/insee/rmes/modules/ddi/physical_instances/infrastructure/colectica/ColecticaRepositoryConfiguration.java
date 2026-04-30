@@ -8,7 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Study
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 
 @Configuration
@@ -19,14 +19,14 @@ public class ColecticaRepositoryConfiguration {
      */
     @Bean
     public DDIRepository primaryDDIRepository(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration colecticaConfiguration,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaAuthenticator authenticator
     ) {
         return new DDIRepositoryImpl(
-                restTemplate,
+                restClient,
                 colecticaConfiguration.server(),
                 ddi3ToDdi4Converter,
                 ddi4ToDdi3Converter,
@@ -37,14 +37,14 @@ public class ColecticaRepositoryConfiguration {
 
     @Bean
     public GroupRepository groupRepository(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator authenticator,
             Ddi3XmlWriter ddi3XmlWriter,
             DDIRepository ddiRepository
     ) {
         return new ColecticaGroupRepository(
-                restTemplate,
+                restClient,
                 colecticaConfiguration.server(),
                 authenticator,
                 ddi3XmlWriter,
@@ -54,14 +54,14 @@ public class ColecticaRepositoryConfiguration {
 
     @Bean
     public StudyUnitRepository studyUnitRepository(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator authenticator,
             Ddi3XmlWriter ddi3XmlWriter,
             DDIRepository ddiRepository
     ) {
         return new ColecticaStudyUnitRepository(
-                restTemplate,
+                restClient,
                 colecticaConfiguration.server(),
                 authenticator,
                 ddi3XmlWriter,

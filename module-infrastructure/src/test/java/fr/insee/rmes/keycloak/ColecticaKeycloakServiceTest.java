@@ -2,20 +2,28 @@ package fr.insee.rmes.keycloak;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ColecticaKeycloakServiceTest {
 
     @Mock
-    private RestTemplate testRestTemplate;
+    private RestClient testRestClient;
+
+    @Mock
+    private RestClient.RequestBodyUriSpec requestBodyUriSpec;
+
+    @Mock(answer = Answers.RETURNS_SELF)
+    private RestClient.RequestBodySpec requestBodySpec;
+
+    @Mock
+    private RestClient.ResponseSpec responseSpec;
 
     private ColecticaKeycloakService colecticaKeycloakService;
 
@@ -28,7 +36,11 @@ class ColecticaKeycloakServiceTest {
                 new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
         );
         colecticaKeycloakService = new ColecticaKeycloakService(properties);
-        colecticaKeycloakService.keycloakClient = testRestTemplate;
+        colecticaKeycloakService.keycloakClient = testRestClient;
+
+        when(testRestClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
 
         Token token = new Token() {
             @Override
@@ -36,16 +48,14 @@ class ColecticaKeycloakServiceTest {
                 return "colectica-token";
             }
         };
-        when(testRestTemplate.postForObject(anyString(), any(HttpEntity.class), eq(Token.class))).thenReturn(token);
+        when(responseSpec.body(eq(Token.class))).thenReturn(token);
     }
 
     @Test
     void getAccessToken_shouldCallKeycloakServerWithColecticaRealm() {
         colecticaKeycloakService.getAccessToken();
-        Mockito.verify(testRestTemplate).postForObject(
-                eq("keycloak.test/realms/colectica-realm/protocol/openid-connect/token"),
-                any(HttpEntity.class),
-                eq(Token.class)
+        verify(requestBodyUriSpec).uri(
+                eq("keycloak.test/realms/colectica-realm/protocol/openid-connect/token")
         );
     }
 

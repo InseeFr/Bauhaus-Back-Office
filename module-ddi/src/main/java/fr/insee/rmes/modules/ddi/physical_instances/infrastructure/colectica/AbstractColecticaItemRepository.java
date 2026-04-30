@@ -8,10 +8,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaItemResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -27,18 +26,18 @@ public abstract class AbstractColecticaItemRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractColecticaItemRepository.class);
 
-    protected final RestTemplate restTemplate;
+    protected final RestClient restClient;
     protected final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     protected final ColecticaAuthenticator authenticator;
     protected final Ddi3XmlWriter ddi3XmlWriter;
 
     protected AbstractColecticaItemRepository(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ColecticaAuthenticator authenticator,
             Ddi3XmlWriter ddi3XmlWriter
     ) {
-        this.restTemplate = restTemplate;
+        this.restClient = restClient;
         this.instanceConfiguration = instanceConfiguration;
         this.authenticator = authenticator;
         this.ddi3XmlWriter = ddi3XmlWriter;
@@ -85,12 +84,13 @@ public abstract class AbstractColecticaItemRepository {
 
             String url = instanceConfiguration.baseApiUrl() + "item";
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<ColecticaCreateItemRequest> requestEntity = new HttpEntity<>(createRequest, headers);
-            String response = restTemplate.postForObject(url, requestEntity, String.class);
+            String response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(createRequest)
+                    .retrieve()
+                    .body(String.class);
 
             logger.info("Successfully created/updated item: type={}, id={}, response={}", itemTypeUuid, item.id(), response);
             return null;

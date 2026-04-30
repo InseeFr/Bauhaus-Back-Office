@@ -57,16 +57,20 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
     @DisplayName("Fetch all collections then add another one then check it is well added")
     void ok_when_collection_added_test() {
 
-        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections/";
-        RestClient restClient = RestClient.create(collectionsEndpoint);
+        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
+        RestClient restClient = RestClient.create();
+
         var fetchedCollections = restClient
                 .get()
+                .uri(collectionsEndpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
         JSONAssert.assertEquals("[]", fetchedCollections, true);
 
-        var entityResponse = restClient.post().body(CREATE_COLLECTION_REQUEST_JSON)
+        var entityResponse = restClient.post()
+                .uri(collectionsEndpoint)
+                .body(CREATE_COLLECTION_REQUEST_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -76,12 +80,13 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
 
         String uuid = entityResponse.getBody();
 
-        assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION)).containsExactly("http://localhost:" + serverPort + "/api/concepts/collections/" + uuid);
+        assertThat(entityResponse.getHeaders().get(HttpHeaders.LOCATION)).containsExactly(collectionsEndpoint + "/" + uuid);
         //TODO check uuid regexp
         assertThat(uuid).isNotNull();
 
         fetchedCollections = restClient
                 .get()
+                .uri(collectionsEndpoint)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -95,7 +100,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), fetchedCollections, true);
 
         fetchedCollections = restClient
-                .get().uri(uuid)
+                .get().uri(collectionsEndpoint + "/" + uuid)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -114,13 +119,13 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat((new JSONObject(fetchedCollections)).has("modified")).isTrue();
         assertThat((new JSONObject(fetchedCollections)).isNull("modified")).isTrue();
 
-        var updateResponseKo = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
+        var updateResponseKo = restClient.put().uri(collectionsEndpoint + "/" + uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted("1"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
                 .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
 
-        var updateResponseOk = restClient.put().uri(uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
+        var updateResponseOk = restClient.put().uri(collectionsEndpoint + "/" + uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -129,7 +134,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         assertThat(updateResponseOk.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         fetchedCollections = restClient
-                .get().uri(uuid)
+                .get().uri(collectionsEndpoint + "/" + uuid)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -146,7 +151,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), fetchedCollections, false);
 
         var dashboardResponse = restClient
-                .get().uri("dashboard")
+                .get().uri(collectionsEndpoint + "/dashboard")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -162,7 +167,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), dashboardResponse, false);
 
         var toValidateResponse = restClient
-                .get().uri("toValidate")
+                .get().uri(collectionsEndpoint + "/toValidate")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
@@ -176,7 +181,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 """.formatted(uuid), toValidateResponse, false);
 
         var membersResponse = restClient
-                .get().uri(uuid + "/members")
+                .get().uri(collectionsEndpoint + "/" + uuid + "/members")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);

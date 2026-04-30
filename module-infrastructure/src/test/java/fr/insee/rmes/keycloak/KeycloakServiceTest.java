@@ -4,23 +4,31 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class KeycloakServiceTest {
 
     @Mock
-    private RestTemplate testRestTemplate;
+    private RestClient testRestClient;
+
+    @Mock
+    private RestClient.RequestBodyUriSpec requestBodyUriSpec;
+
+    @Mock(answer = Answers.RETURNS_SELF)
+    private RestClient.RequestBodySpec requestBodySpec;
+
+    @Mock
+    private RestClient.ResponseSpec responseSpec;
 
     private KeycloakService keycloakService;
 
@@ -33,7 +41,11 @@ class KeycloakServiceTest {
                 new KeycloakProperties.RealmConfig("colectica-realm", "colectica-client", "colectica-secret")
         );
         keycloakService = new KeycloakService(properties);
-        keycloakService.keycloakClient = testRestTemplate;
+        keycloakService.keycloakClient = testRestClient;
+
+        when(testRestClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
 
         Token token = new Token() {
             @Override
@@ -41,7 +53,7 @@ class KeycloakServiceTest {
                 return "token";
             }
         };
-        when(testRestTemplate.postForObject(anyString(), any(HttpEntity.class), eq(Token.class))).thenReturn(token);
+        when(responseSpec.body(eq(Token.class))).thenReturn(token);
     }
 
     @Test
@@ -57,10 +69,8 @@ class KeycloakServiceTest {
     @Test
     void getAccessToken_shouldCallKeycloakServerWithDefaultRealm() {
         keycloakService.getAccessToken();
-        Mockito.verify(testRestTemplate).postForObject(
-                eq("keycloak.test/realms/default-realm/protocol/openid-connect/token"),
-                any(HttpEntity.class),
-                eq(Token.class)
+        verify(requestBodyUriSpec).uri(
+                eq("keycloak.test/realms/default-realm/protocol/openid-connect/token")
         );
     }
 
@@ -70,7 +80,6 @@ class KeycloakServiceTest {
         assertEquals("default-realm", realmConfig.name());
         assertEquals("default-client", realmConfig.clientid());
     }
-
 
     @Test
     void shouldThrowMissingKeycloakConfigurationException_whenServerUrlIsNull() {

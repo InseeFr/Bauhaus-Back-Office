@@ -13,7 +13,7 @@ class RmesExceptionHandlerTest {
     RmesExceptionHandler rmesExceptionHandler = new RmesExceptionHandler();
 
     @ParameterizedTest
-    @ValueSource(ints = { 100,200,201,202,203,204,205,206,300,301,302,303,304,305,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,500,501,502,503,504,505 })
+    @ValueSource(ints = { 100,200,201,202,203,204,205,206,300,301,302,303,304,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,500,501,502,503,504,505 })
     void shouldReturnHandleSubclassesOfRmesExceptionDetails(int codeError) {
         RmesException rmesException = new RmesException(codeError,"RmesException message", "RmesExceptionDetails");
         ResponseEntity<String> actual = rmesExceptionHandler.handleSubclassesOfRmesException(rmesException);

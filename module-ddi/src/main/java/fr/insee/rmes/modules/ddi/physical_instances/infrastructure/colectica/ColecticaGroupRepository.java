@@ -7,10 +7,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Map;
@@ -29,13 +28,13 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     private final DDIRepository ddiRepository;
 
     public ColecticaGroupRepository(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ColecticaAuthenticator authenticator,
             Ddi3XmlWriter ddi3XmlWriter,
             DDIRepository ddiRepository
     ) {
-        super(restTemplate, instanceConfiguration, authenticator, ddi3XmlWriter);
+        super(restClient, instanceConfiguration, authenticator, ddi3XmlWriter);
         this.ddiRepository = ddiRepository;
     }
 
@@ -92,12 +91,13 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
                     "applyToAllVersions", true
             );
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
-            restTemplate.postForObject(url, requestEntity, String.class);
+            restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
 
             logger.info("Deprecated {} group(s) from Colectica", groups.size());
             return null;
