@@ -1,6 +1,7 @@
 package fr.insee.rmes;
 
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
@@ -42,5 +43,6 @@ import java.lang.annotation.Target;
                 "spring.hateoas.use-hal-as-default-json-media-type=true"
         }
 )
+@AutoConfigureTestRestTemplate
 @Import(GraphDBDocumentationRepository.class)
 public @interface AppSpringBootTest {}

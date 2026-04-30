@@ -7,11 +7,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -30,7 +31,13 @@ import static org.mockito.Mockito.*;
 class DDIRepositoryImplTest {
 
     @Mock
-    private RestTemplate restTemplate;
+    private RestClient restClient;
+
+    @Mock(answer = Answers.RETURNS_SELF)
+    private RestClient.RequestBodyUriSpec requestSpec;
+
+    @Mock
+    private RestClient.ResponseSpec responseSpec;
 
     @Mock
     private ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
@@ -64,7 +71,12 @@ class DDIRepositoryImplTest {
             return function.apply(TEST_TOKEN);
         });
 
-        ddiRepository = new DDIRepositoryImpl(restTemplate, instanceConfiguration, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, authenticator);
+        // RestClient chain stubs (shared for POST and GET)
+        lenient().when(restClient.post()).thenReturn(requestSpec);
+        lenient().doReturn(requestSpec).when(restClient).get();
+        lenient().when(requestSpec.retrieve()).thenReturn(responseSpec);
+
+        ddiRepository = new DDIRepositoryImpl(restClient, instanceConfiguration, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, authenticator);
     }
 
     @Test
@@ -133,7 +145,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
 
         // Mock query call
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -157,13 +169,11 @@ class DDIRepositoryImplTest {
         verify(authenticator).executeWithAuth(any());
 
         // Verify query was called with Bearer token
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
-
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        HttpHeaders headers = capturedEntity.getHeaders();
-        assertEquals(MediaType.APPLICATION_JSON, headers.getContentType());
-        assertTrue(headers.getFirst(HttpHeaders.AUTHORIZATION).startsWith("Bearer "));
+        verify(requestSpec).uri(eq(queryUrl));
+        verify(requestSpec).contentType(MediaType.APPLICATION_JSON);
+        ArgumentCaptor<String> tokenCaptor = ArgumentCaptor.forClass(String.class);
+        verify(requestSpec).header(eq(HttpHeaders.AUTHORIZATION), tokenCaptor.capture());
+        assertTrue(tokenCaptor.getValue().startsWith("Bearer "));
     }
 
     @Test
@@ -181,12 +191,7 @@ class DDIRepositoryImplTest {
             new ColecticaSetItem("var-1", 1, agencyId),
             new ColecticaSetItem("dr-123", 1, agencyId)
         };
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(setItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
 
         ColecticaItemResponse[] itemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, version, instanceId,
@@ -199,10 +204,7 @@ class DDIRepositoryImplTest {
                     "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(
-                eq(baseApiUrl + "item/_getList"),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(itemResponses);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
@@ -235,15 +237,8 @@ class DDIRepositoryImplTest {
         assertEquals(agencyId, result.physicalInstance().get(0).agency());
         assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().string().text());
 
-        verify(restTemplate).exchange(
-                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class));
-        verify(restTemplate).postForObject(
-                eq(baseApiUrl + "item/_getList"),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse[].class));
+        verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
+        verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
     }
 
@@ -337,7 +332,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         // Mock query call - should query for CodeList itemType (8b108ef8-b642-4484-9c49-f88e4bf7cf1d)
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -355,11 +350,12 @@ class DDIRepositoryImplTest {
         assertEquals("agency2", result.get(1).agency());
 
         // Verify query was called with CodeList itemType
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
+        verify(requestSpec).uri(eq(queryUrl));
 
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        QueryRequest queryRequest = (QueryRequest) capturedEntity.getBody();
+        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec, atLeastOnce()).body(bodyCaptor.capture());
+        QueryRequest queryRequest = bodyCaptor.getAllValues().stream()
+                .filter(v -> v instanceof QueryRequest).map(v -> (QueryRequest) v).findFirst().orElseThrow();
         assertNotNull(queryRequest);
         assertEquals(1, queryRequest.itemTypes().size());
         assertEquals("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", queryRequest.itemTypes().get(0)); // CodeList UUID
@@ -403,37 +399,24 @@ class DDIRepositoryImplTest {
         ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
                 "30ea0200-7121-4f01-8d21-a931a182b86d", studyUnitAgency, 2, studyUnitId,
                 studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, null);
-        when(restTemplate.exchange(
-                any(String.class),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)))
-                .thenReturn(ResponseEntity.ok(studyUnitResponse));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(studyUnitResponse);
 
         // Mock item creation (POST /item)
-        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+        when(responseSpec.body(eq(String.class)))
                 .thenReturn("{}");
 
         // Mock set and _getList responses for getPhysicalInstance call after creation
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem("test-id", 1, "fr.insee")
         };
-        when(restTemplate.exchange(
-                any(String.class),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(setItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
 
         ColecticaItemResponse[] getListResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", "fr.insee", 1, "test-id",
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(
-                eq(baseApiUrl + "item/_getList"),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(getListResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
@@ -465,11 +448,12 @@ class DDIRepositoryImplTest {
         assertEquals(physicalInstanceLabel, result.physicalInstance().get(0).citation().title().string().text());
 
         // Verify item creation endpoint was called
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
+        verify(requestSpec, atLeastOnce()).uri(eq(itemUrl));
 
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) capturedEntity.getBody();
+        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec, atLeastOnce()).body(bodyCaptor.capture());
+        ColecticaCreateItemRequest createRequest = bodyCaptor.getAllValues().stream()
+                .filter(v -> v instanceof ColecticaCreateItemRequest).map(v -> (ColecticaCreateItemRequest) v).findFirst().orElseThrow();
         assertNotNull(createRequest);
         assertEquals(3, createRequest.items().size()); // PhysicalInstance + DataRelationship + StudyUnit
 
@@ -527,29 +511,21 @@ class DDIRepositoryImplTest {
         ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
                 "30ea0200-7121-4f01-8d21-a931a182b86d", studyUnitAgency, 3, studyUnitId,
                 studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, null);
-        when(restTemplate.exchange(
-                any(String.class),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)))
-                .thenReturn(ResponseEntity.ok(studyUnitResponse));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(studyUnitResponse);
 
-        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+        when(responseSpec.body(eq(String.class)))
                 .thenReturn("{}");
-        when(restTemplate.exchange(
-                any(String.class),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(new ColecticaSetItem[0]));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(new ColecticaSetItem[0]);
 
         // When
         ddiRepository.createPhysicalInstance(request);
 
         // Then: the StudyUnit item in the POST contains both the existing and the new PhysicalInstanceReference
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
-        ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) entityCaptor.getValue().getBody();
+        verify(requestSpec, atLeastOnce()).uri(eq(itemUrl));
+        ArgumentCaptor<Object> bodyCaptor3 = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec, atLeastOnce()).body(bodyCaptor3.capture());
+        ColecticaCreateItemRequest createRequest = bodyCaptor3.getAllValues().stream()
+                .filter(v -> v instanceof ColecticaCreateItemRequest).map(v -> (ColecticaCreateItemRequest) v).findFirst().orElseThrow();
 
         ColecticaItemResponse suItem = createRequest.items().get(2);
         // Each PhysicalInstanceReference element contributes one open + one close tag = 2 occurrences per reference
@@ -582,12 +558,7 @@ class DDIRepositoryImplTest {
             new ColecticaSetItem(instanceId, 1, agencyId),
             new ColecticaSetItem("dr-123", 1, agencyId)
         };
-        when(restTemplate.exchange(
-                any(String.class),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(existingSetItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(existingSetItems);
 
         ColecticaItemResponse[] existingItemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
@@ -597,10 +568,7 @@ class DDIRepositoryImplTest {
                     "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(
-                eq(baseApiUrl + "item/_getList"),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(existingItemResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
@@ -648,7 +616,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(mockDdi3Response);
 
         // Mock item update (POST /item)
-        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+        when(responseSpec.body(eq(String.class)))
                 .thenReturn("{}");
 
         // When
@@ -656,11 +624,12 @@ class DDIRepositoryImplTest {
 
         // Then
         // Verify item update endpoint was called
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(itemUrl), entityCaptor.capture(), eq(String.class));
+        verify(requestSpec, atLeastOnce()).uri(eq(itemUrl));
 
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        ColecticaCreateItemRequest createRequest = (ColecticaCreateItemRequest) capturedEntity.getBody();
+        ArgumentCaptor<Object> bodyCaptor2 = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec, atLeastOnce()).body(bodyCaptor2.capture());
+        ColecticaCreateItemRequest createRequest = bodyCaptor2.getAllValues().stream()
+                .filter(v -> v instanceof ColecticaCreateItemRequest).map(v -> (ColecticaCreateItemRequest) v).findFirst().orElseThrow();
         assertNotNull(createRequest);
         assertEquals(2, createRequest.items().size()); // PhysicalInstance + DataRelationship
 
@@ -748,7 +717,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         // Mock query call
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -784,7 +753,7 @@ class DDIRepositoryImplTest {
         when(colecticaConfiguration.codeListDenyList()).thenReturn(List.of());
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -815,7 +784,7 @@ class DDIRepositoryImplTest {
         when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -864,7 +833,7 @@ class DDIRepositoryImplTest {
         when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -893,12 +862,7 @@ class DDIRepositoryImplTest {
             new ColecticaSetItem("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", 1, agencyId),
             new ColecticaSetItem("d363a730-14d4-4c54-9464-982312cf9330", 1, agencyId)
         };
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(setItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
 
         ColecticaItemResponse[] itemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
@@ -917,10 +881,7 @@ class DDIRepositoryImplTest {
                     "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(
-                eq(baseApiUrl + "item/_getList"),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(itemResponses);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
@@ -1021,15 +982,8 @@ class DDIRepositoryImplTest {
         assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
         assertEquals("aq", result.category().get(0).label().content().text());
 
-        verify(restTemplate).exchange(
-                eq(baseApiUrl + "set/" + agencyId + "/" + instanceId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaSetItem[].class));
-        verify(restTemplate).postForObject(
-                eq(baseApiUrl + "item/_getList"),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse[].class));
+        verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
+        verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
 
         ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
@@ -1103,11 +1057,11 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         // Mock query call - should query for Group itemType (4bd6eef6-99df-40e6-9b11-5b8f64e5cb23)
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(mockResponse);
 
         // Mock second call to _getList for extracting UserID (seriesIris) from full XML
-        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(new ColecticaItemResponse[0]);
 
         // When
@@ -1125,11 +1079,12 @@ class DDIRepositoryImplTest {
         assertEquals("fr.insee", result.get(1).agency());
 
         // Verify query was called with Group itemType
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(queryUrl), entityCaptor.capture(), eq(ColecticaResponse.class));
+        verify(requestSpec, atLeastOnce()).uri(eq(queryUrl));
 
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        QueryRequest queryRequest = (QueryRequest) capturedEntity.getBody();
+        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec, atLeastOnce()).body(bodyCaptor.capture());
+        QueryRequest queryRequest = bodyCaptor.getAllValues().stream()
+                .filter(v -> v instanceof QueryRequest).map(v -> (QueryRequest) v).findFirst().orElseThrow();
         assertNotNull(queryRequest);
         assertEquals(1, queryRequest.itemTypes().size());
         assertEquals("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23", queryRequest.itemTypes().get(0)); // Group UUID
@@ -1209,12 +1164,7 @@ class DDIRepositoryImplTest {
                 "</ddi:FragmentInstance>";
 
         // Mock the direct call to /ddiset/{agencyId}/{identifier}
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(String.class)))
-                .thenReturn(ResponseEntity.ok(ddisetXml));
+        when(responseSpec.body(eq(String.class))).thenReturn(ddisetXml);
 
         // When
         Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
@@ -1246,11 +1196,7 @@ class DDIRepositoryImplTest {
         assertEquals("Group", result.topLevelReference().get(0).typeOfObject());
 
         // Verify ddiset endpoint was called
-        verify(restTemplate).exchange(
-                eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(String.class));
+        verify(requestSpec).uri(eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId));
     }
 
     @Test
@@ -1298,7 +1244,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         // Mock the POST call to _getDescriptions
-        when(restTemplate.postForObject(eq(getDescriptionsUrl), any(HttpEntity.class), eq(ColecticaItem[].class)))
+        when(responseSpec.body(eq(ColecticaItem[].class)))
                 .thenReturn(mockResponse);
 
         // When
@@ -1313,11 +1259,12 @@ class DDIRepositoryImplTest {
         assertNotNull(result.get(0).versionDate());
 
         // Verify the request was made correctly
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(getDescriptionsUrl), entityCaptor.capture(), eq(ColecticaItem[].class));
+        verify(requestSpec).uri(eq(getDescriptionsUrl));
 
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        GetDescriptionsRequest requestBody = (GetDescriptionsRequest) capturedEntity.getBody();
+        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec, atLeastOnce()).body(bodyCaptor.capture());
+        GetDescriptionsRequest requestBody = bodyCaptor.getAllValues().stream()
+                .filter(v -> v instanceof GetDescriptionsRequest).map(v -> (GetDescriptionsRequest) v).findFirst().orElseThrow();
         assertNotNull(requestBody);
         assertEquals(1, requestBody.identifiers().size());
         assertEquals("fr.insee", requestBody.identifiers().get(0).agencyId());
@@ -1338,7 +1285,7 @@ class DDIRepositoryImplTest {
         assertTrue(result.isEmpty());
 
         // Verify no REST call was made
-        verify(restTemplate, never()).postForObject(anyString(), any(HttpEntity.class), eq(ColecticaItem[].class));
+        verify(restClient, never()).post();
     }
 
     @Test
@@ -1354,7 +1301,7 @@ class DDIRepositoryImplTest {
         assertTrue(result.isEmpty());
 
         // Verify no REST call was made
-        verify(restTemplate, never()).postForObject(anyString(), any(HttpEntity.class), eq(ColecticaItem[].class));
+        verify(restClient, never()).post();
     }
 
     @Test
@@ -1407,14 +1354,13 @@ class DDIRepositoryImplTest {
         );
 
         ColecticaSetItem[] updateSetItems = { new ColecticaSetItem(instanceId, 1, agencyId) };
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(updateSetItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(updateSetItems);
         ColecticaItemResponse[] updateItemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(updateItemResponses);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
@@ -1427,7 +1373,7 @@ class DDIRepositoryImplTest {
         );
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
                 .thenReturn(new Ddi3Response(null, List.of(mockItem)));
-        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+        when(responseSpec.body(eq(String.class)))
                 .thenReturn("{}");
 
         // When
@@ -1491,14 +1437,13 @@ class DDIRepositoryImplTest {
         );
 
         ColecticaSetItem[] updateSetItems = { new ColecticaSetItem(instanceId, 1, agencyId) };
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(updateSetItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(updateSetItems);
         ColecticaItemResponse[] updateItemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(updateItemResponses);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
@@ -1510,7 +1455,7 @@ class DDIRepositoryImplTest {
         );
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
                 .thenReturn(new Ddi3Response(null, List.of(mockItem)));
-        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+        when(responseSpec.body(eq(String.class)))
                 .thenReturn("{}");
 
         // When
@@ -1581,14 +1526,13 @@ class DDIRepositoryImplTest {
         );
 
         ColecticaSetItem[] updateSetItems = { new ColecticaSetItem(instanceId, 1, agencyId) };
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(ColecticaSetItem[].class)))
-                .thenReturn(ResponseEntity.ok(updateSetItems));
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(updateSetItems);
         ColecticaItemResponse[] updateItemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(restTemplate.postForObject(eq(baseApiUrl + "item/_getList"), any(HttpEntity.class), eq(ColecticaItemResponse[].class)))
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(updateItemResponses);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
@@ -1600,7 +1544,7 @@ class DDIRepositoryImplTest {
         );
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
                 .thenReturn(new Ddi3Response(null, List.of(mockItem)));
-        when(restTemplate.postForObject(eq(itemUrl), any(HttpEntity.class), eq(String.class)))
+        when(responseSpec.body(eq(String.class)))
                 .thenReturn("{}");
 
         // When
@@ -1637,12 +1581,7 @@ class DDIRepositoryImplTest {
                 "2025-01-01T00:00:00", null, true, false, false, "DDI"
         );
 
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "item/fr.insee/" + id + "/" + version),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)
-        )).thenReturn(ResponseEntity.ok(itemResponse));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(itemResponse);
 
         // When
         String result = ddiRepository.getItemXml(agency, id, version);
@@ -1667,12 +1606,7 @@ class DDIRepositoryImplTest {
                 "2025-06-01T00:00:00", null, true, false, false, "DDI"
         );
 
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "item/fr.insee/" + id),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)
-        )).thenReturn(ResponseEntity.ok(itemResponse));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(itemResponse);
 
         // When
         String result = ddiRepository.getItemXml(agency, id);
@@ -1690,12 +1624,7 @@ class DDIRepositoryImplTest {
         String version = "1";
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(restTemplate.exchange(
-                anyString(),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)
-        )).thenReturn(ResponseEntity.ok(null));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(null);
 
         // When
         String result = ddiRepository.getItemXml(agency, id, version);
@@ -1720,7 +1649,7 @@ class DDIRepositoryImplTest {
             null, null, "2025-01-01T00:00:00", null, false, false, false, "DDI", 1L, 0
         );
         ColecticaResponse queryResponse = new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(queryResponse);
 
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
@@ -1731,12 +1660,7 @@ class DDIRepositoryImplTest {
                 "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
                 studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
         );
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "item/" + suAgency + "/" + suId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)
-        )).thenReturn(ResponseEntity.ok(itemResponse));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(itemResponse);
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
@@ -1760,7 +1684,7 @@ class DDIRepositoryImplTest {
             null, null, "2025-01-01T00:00:00", null, false, false, false, "DDI", 1L, 0
         );
         ColecticaResponse queryResponse = new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
-        when(restTemplate.postForObject(eq(queryUrl), any(HttpEntity.class), eq(ColecticaResponse.class)))
+        when(responseSpec.body(eq(ColecticaResponse.class)))
                 .thenReturn(queryResponse);
 
         String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
@@ -1771,12 +1695,7 @@ class DDIRepositoryImplTest {
                 "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
                 studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
         );
-        when(restTemplate.exchange(
-                eq(baseApiUrl + "item/" + suAgency + "/" + suId),
-                eq(HttpMethod.GET),
-                any(HttpEntity.class),
-                eq(ColecticaItemResponse.class)
-        )).thenReturn(ResponseEntity.ok(itemResponse));
+        when(responseSpec.body(eq(ColecticaItemResponse.class))).thenReturn(itemResponse);
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
@@ -1807,7 +1726,7 @@ class DDIRepositoryImplTest {
         );
         ColecticaItem[] groupItems = new ColecticaItem[]{groupItem};
 
-        when(restTemplate.postForObject(eq(relUrl), any(HttpEntity.class), eq(ColecticaItem[].class)))
+        when(responseSpec.body(eq(ColecticaItem[].class)))
             .thenReturn(studyUnitItems, groupItems);
 
         // When
@@ -1819,7 +1738,7 @@ class DDIRepositoryImplTest {
         assertEquals("fr.insee", result.studyUnitAgency());
         assertEquals("grp-333", result.groupId());
         assertEquals("fr.insee", result.groupAgency());
-        verify(restTemplate, times(2)).postForObject(eq(relUrl), any(HttpEntity.class), eq(ColecticaItem[].class));
+        verify(requestSpec, times(2)).uri(eq(relUrl));
     }
 
 }

@@ -5,19 +5,17 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.Date;
 
 public abstract class AbstractTokenService implements TokenService {
 
-    protected RestTemplate keycloakClient = new RestTemplate();
+    protected RestClient keycloakClient = RestClient.create();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractTokenService.class);
 
@@ -51,17 +49,19 @@ public abstract class AbstractTokenService implements TokenService {
         logger.debug("Token URL: {}", tokenUrl);
         logger.debug("Client ID: {}", realmConfig.clientid());
 
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
         body.add("client_id", realmConfig.clientid());
         body.add("client_secret", realmConfig.clientsecret());
 
-        HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {
             logger.debug("Sending token request to Keycloak...");
-            Token accessToken = keycloakClient.postForObject(tokenUrl, entity, Token.class);
+            Token accessToken = keycloakClient.post()
+                    .uri(tokenUrl)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(body)
+                    .retrieve()
+                    .body(Token.class);
 
             logger.debug("Access token successfully retrieved from Keycloak");
             return accessToken.getAccessToken();

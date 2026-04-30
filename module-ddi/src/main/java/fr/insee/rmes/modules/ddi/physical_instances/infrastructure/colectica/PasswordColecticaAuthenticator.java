@@ -5,13 +5,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.function.Function;
 
@@ -29,15 +27,15 @@ public class PasswordColecticaAuthenticator implements ColecticaAuthenticator {
 
     private static final Logger logger = LoggerFactory.getLogger(PasswordColecticaAuthenticator.class);
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private String cachedAuthToken;
 
     public PasswordColecticaAuthenticator(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration colecticaConfiguration
     ) {
-        this.restTemplate = restTemplate;
+        this.restClient = restClient;
         this.instanceConfiguration = colecticaConfiguration.server();
         logger.info("Using password authentication mode for Colectica API");
     }
@@ -73,16 +71,12 @@ public class PasswordColecticaAuthenticator implements ColecticaAuthenticator {
                 instanceConfiguration.password()
         );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<AuthenticationRequest> requestEntity = new HttpEntity<>(authRequest, headers);
-
-        AuthenticationResponse authResponse = restTemplate.postForObject(
-                tokenUrl,
-                requestEntity,
-                AuthenticationResponse.class
-        );
+        AuthenticationResponse authResponse = restClient.post()
+                .uri(tokenUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(authRequest)
+                .retrieve()
+                .body(AuthenticationResponse.class);
 
         if (authResponse == null || authResponse.accessToken() == null) {
             logger.error("Failed to retrieve authentication token");

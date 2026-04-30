@@ -10,11 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
@@ -29,7 +29,13 @@ import static org.mockito.Mockito.*;
 class DDIRepositoryImplGroupTest {
 
     @Mock
-    private RestTemplate restTemplate;
+    private RestClient restClient;
+
+    @Mock(answer = Answers.RETURNS_SELF)
+    private RestClient.RequestBodyUriSpec requestSpec;
+
+    @Mock
+    private RestClient.ResponseSpec responseSpec;
 
     @Mock
     private ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
@@ -57,6 +63,10 @@ class DDIRepositoryImplGroupTest {
         lenient().when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
         lenient().when(instanceConfiguration.versionResponsibility()).thenReturn("bauhaus");
         lenient().when(instanceConfiguration.itemFormat()).thenReturn("DC337820-AF3A-4C0B-82F9-CF02535CDE83");
+
+        lenient().when(restClient.post()).thenReturn(requestSpec);
+        lenient().when(requestSpec.retrieve()).thenReturn(responseSpec);
+        lenient().when(responseSpec.body(eq(String.class))).thenReturn(null);
     }
 
     // --- ColecticaGroupRepository ---
@@ -69,7 +79,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             groupRepository = new ColecticaGroupRepository(
-                    restTemplate, instanceConfiguration, authenticator, ddi3XmlWriter, ddiRepository
+                    restClient, instanceConfiguration, authenticator, ddi3XmlWriter, ddiRepository
             );
         }
 
@@ -89,11 +99,11 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.createOrUpdate(group);
 
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<HttpEntity<ColecticaCreateItemRequest>> captor = ArgumentCaptor.forClass(HttpEntity.class);
-            verify(restTemplate).postForObject(eq(BASE_API_URL + "item"), captor.capture(), eq(String.class));
+            verify(requestSpec).uri(eq(BASE_API_URL + "item"));
+            ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+            verify(requestSpec).body(captor.capture());
 
-            ColecticaCreateItemRequest request = captor.getValue().getBody();
+            ColecticaCreateItemRequest request = (ColecticaCreateItemRequest) captor.getValue();
             assertThat(request).isNotNull();
             assertThat(request.items()).hasSize(1);
 
@@ -108,9 +118,6 @@ class DDIRepositoryImplGroupTest {
         @Test
         @SuppressWarnings("unchecked")
         void deprecateAll_shouldDeprecateAllGroups() {
-            ColecticaItem item1 = createColecticaItem("group-id-1", "Groupe 1");
-            ColecticaItem item2 = createColecticaItem("group-id-2", "Groupe 2");
-
             when(ddiRepository.getGroups()).thenReturn(List.of(
                     new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of()),
                     new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee", List.of())
@@ -118,15 +125,15 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.deprecateAll();
 
-            ArgumentCaptor<HttpEntity<Map<String, Object>>> captor = ArgumentCaptor.forClass(HttpEntity.class);
-            verify(restTemplate).postForObject(eq(BASE_API_URL + "item/_updateState"), captor.capture(), eq(String.class));
+            verify(requestSpec).uri(eq(BASE_API_URL + "item/_updateState"));
+            ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+            verify(requestSpec).body(captor.capture());
 
-            Map<String, Object> body = captor.getValue().getBody();
+            Map<String, Object> body = (Map<String, Object>) captor.getValue();
             assertThat(body).isNotNull();
             assertThat(body.get("state")).isEqualTo(true);
             assertThat(body.get("applyToAllVersions")).isEqualTo(true);
 
-            @SuppressWarnings("unchecked")
             List<Map<String, Object>> ids = (List<Map<String, Object>>) body.get("ids");
             assertThat(ids).hasSize(2);
             assertThat(ids.get(0).get("identifier")).isEqualTo("group-id-1");
@@ -139,7 +146,7 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.deprecateAll();
 
-            verify(restTemplate, never()).postForObject(eq(BASE_API_URL + "item/_updateState"), any(), any());
+            verify(requestSpec, never()).uri(eq(BASE_API_URL + "item/_updateState"));
         }
     }
 
@@ -153,7 +160,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             studyUnitRepository = new ColecticaStudyUnitRepository(
-                    restTemplate, instanceConfiguration, authenticator, ddi3XmlWriter, null
+                    restClient, instanceConfiguration, authenticator, ddi3XmlWriter, null
             );
         }
 
@@ -171,11 +178,11 @@ class DDIRepositoryImplGroupTest {
 
             studyUnitRepository.createOrUpdate(studyUnit);
 
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<HttpEntity<ColecticaCreateItemRequest>> captor = ArgumentCaptor.forClass(HttpEntity.class);
-            verify(restTemplate).postForObject(eq(BASE_API_URL + "item"), captor.capture(), eq(String.class));
+            verify(requestSpec).uri(eq(BASE_API_URL + "item"));
+            ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+            verify(requestSpec).body(captor.capture());
 
-            ColecticaCreateItemRequest request = captor.getValue().getBody();
+            ColecticaCreateItemRequest request = (ColecticaCreateItemRequest) captor.getValue();
             assertThat(request).isNotNull();
             assertThat(request.items()).hasSize(1);
 

@@ -5,28 +5,32 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PasswordColecticaAuthenticatorTest {
 
     @Mock
-    private RestTemplate restTemplate;
+    private RestClient restClient;
+
+    @Mock(answer = Answers.RETURNS_SELF)
+    private RestClient.RequestBodyUriSpec requestSpec;
+
+    @Mock
+    private RestClient.ResponseSpec responseSpec;
 
     @Mock
     private ColecticaConfiguration colecticaConfiguration;
@@ -48,87 +52,64 @@ class PasswordColecticaAuthenticatorTest {
         when(instanceConfiguration.username()).thenReturn(USERNAME);
         when(instanceConfiguration.password()).thenReturn(PASSWORD);
 
-        authenticator = new PasswordColecticaAuthenticator(restTemplate, colecticaConfiguration);
+        when(restClient.post()).thenReturn(requestSpec);
+        when(requestSpec.retrieve()).thenReturn(responseSpec);
+
+        authenticator = new PasswordColecticaAuthenticator(restClient, colecticaConfiguration);
     }
 
     @Test
     void shouldAuthenticateAndExecuteApiCall() {
-        // Given
         String accessToken = "test-token-123";
         AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        when(responseSpec.body(eq(AuthenticationResponse.class))).thenReturn(authResponse);
 
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-
-        // When
         String result = authenticator.executeWithAuth(token -> {
             assertEquals(accessToken, token);
             return "success";
         });
 
-        // Then
         assertEquals("success", result);
-        verify(restTemplate).postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        verify(requestSpec).uri(eq(TOKEN_URL));
     }
 
     @Test
     void shouldAuthenticateWithCorrectCredentials() {
-        // Given
-        String accessToken = "test-token-123";
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        AuthenticationResponse authResponse = new AuthenticationResponse("test-token-123");
+        when(responseSpec.body(eq(AuthenticationResponse.class))).thenReturn(authResponse);
 
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-
-        // When
         authenticator.executeWithAuth(token -> "result");
 
-        // Then
-        ArgumentCaptor<HttpEntity> entityCaptor = ArgumentCaptor.forClass(HttpEntity.class);
-        verify(restTemplate).postForObject(eq(TOKEN_URL), entityCaptor.capture(), eq(AuthenticationResponse.class));
-
-        HttpEntity<?> capturedEntity = entityCaptor.getValue();
-        HttpHeaders headers = capturedEntity.getHeaders();
-        assertEquals(MediaType.APPLICATION_JSON, headers.getContentType());
-
-        AuthenticationRequest authRequest = (AuthenticationRequest) capturedEntity.getBody();
-        assertNotNull(authRequest);
-        assertEquals(USERNAME, authRequest.username());
-        assertEquals(PASSWORD, authRequest.password());
+        verify(requestSpec).contentType(MediaType.APPLICATION_JSON);
+        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(requestSpec).body(bodyCaptor.capture());
+        AuthenticationRequest capturedRequest = (AuthenticationRequest) bodyCaptor.getValue();
+        assertNotNull(capturedRequest);
+        assertEquals(USERNAME, capturedRequest.username());
+        assertEquals(PASSWORD, capturedRequest.password());
     }
 
     @Test
     void shouldCacheAuthenticationToken() {
-        // Given
-        String accessToken = "test-token-123";
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        AuthenticationResponse authResponse = new AuthenticationResponse("test-token-123");
+        when(responseSpec.body(eq(AuthenticationResponse.class))).thenReturn(authResponse);
 
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-
-        // When - Call twice
         authenticator.executeWithAuth(token -> "result1");
         authenticator.executeWithAuth(token -> "result2");
 
-        // Then - Authentication should only be called once (token is cached)
-        verify(restTemplate, times(1)).postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        verify(restClient, times(1)).post();
     }
 
     @Test
     void shouldRetryWithNewTokenOn401Error() {
-        // Given
         String firstToken = "expired-token";
         String newToken = "new-token-123";
-        AuthenticationResponse firstAuthResponse = new AuthenticationResponse(firstToken);
-        AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(firstAuthResponse)
-                .thenReturn(newAuthResponse);
+        when(responseSpec.body(eq(AuthenticationResponse.class)))
+                .thenReturn(new AuthenticationResponse(firstToken))
+                .thenReturn(new AuthenticationResponse(newToken));
 
         AtomicInteger callCount = new AtomicInteger(0);
 
-        // When
         String result = authenticator.executeWithAuth(token -> {
             int count = callCount.incrementAndGet();
             if (count == 1) {
@@ -137,26 +118,20 @@ class PasswordColecticaAuthenticatorTest {
             return "success with " + token;
         });
 
-        // Then
         assertEquals("success with " + newToken, result);
-        verify(restTemplate, times(2)).postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        verify(restClient, times(2)).post();
     }
 
     @Test
     void shouldRetryWithNewTokenOn403Error() {
-        // Given
         String firstToken = "forbidden-token";
         String newToken = "new-token-456";
-        AuthenticationResponse firstAuthResponse = new AuthenticationResponse(firstToken);
-        AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(firstAuthResponse)
-                .thenReturn(newAuthResponse);
+        when(responseSpec.body(eq(AuthenticationResponse.class)))
+                .thenReturn(new AuthenticationResponse(firstToken))
+                .thenReturn(new AuthenticationResponse(newToken));
 
         AtomicInteger callCount = new AtomicInteger(0);
 
-        // When
         String result = authenticator.executeWithAuth(token -> {
             int count = callCount.incrementAndGet();
             if (count == 1) {
@@ -165,38 +140,28 @@ class PasswordColecticaAuthenticatorTest {
             return "success with " + token;
         });
 
-        // Then
         assertEquals("success with " + newToken, result);
-        verify(restTemplate, times(2)).postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        verify(restClient, times(2)).post();
     }
 
     @Test
     void shouldNotRetryOnNon401Or403Error() {
-        // Given
-        String accessToken = "valid-token";
-        AuthenticationResponse authResponse = new AuthenticationResponse(accessToken);
+        AuthenticationResponse authResponse = new AuthenticationResponse("valid-token");
+        when(responseSpec.body(eq(AuthenticationResponse.class))).thenReturn(authResponse);
 
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-
-        // When & Then
         assertThrows(HttpClientErrorException.class, () -> {
             authenticator.executeWithAuth(token -> {
                 throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
             });
         });
 
-        // Authentication should only be called once (no retry for 500 errors)
-        verify(restTemplate, times(1)).postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        verify(restClient, times(1)).post();
     }
 
     @Test
     void shouldThrowExceptionWhenAuthenticationReturnsNull() {
-        // Given
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(null);
+        when(responseSpec.body(eq(AuthenticationResponse.class))).thenReturn(null);
 
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authenticator.executeWithAuth(token -> "result");
         });
@@ -206,13 +171,8 @@ class PasswordColecticaAuthenticatorTest {
 
     @Test
     void shouldThrowExceptionWhenAccessTokenIsNull() {
-        // Given
-        AuthenticationResponse authResponse = new AuthenticationResponse(null);
+        when(responseSpec.body(eq(AuthenticationResponse.class))).thenReturn(new AuthenticationResponse(null));
 
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(authResponse);
-
-        // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authenticator.executeWithAuth(token -> "result");
         });
@@ -222,19 +182,14 @@ class PasswordColecticaAuthenticatorTest {
 
     @Test
     void shouldInvalidateCacheAfter401AndUseNewToken() {
-        // Given
         String expiredToken = "expired-token";
         String newToken = "new-token";
-        AuthenticationResponse expiredAuthResponse = new AuthenticationResponse(expiredToken);
-        AuthenticationResponse newAuthResponse = new AuthenticationResponse(newToken);
-
-        when(restTemplate.postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class)))
-                .thenReturn(expiredAuthResponse)
-                .thenReturn(newAuthResponse);
+        when(responseSpec.body(eq(AuthenticationResponse.class)))
+                .thenReturn(new AuthenticationResponse(expiredToken))
+                .thenReturn(new AuthenticationResponse(newToken));
 
         AtomicInteger callCount = new AtomicInteger(0);
 
-        // When - First call fails with 401
         authenticator.executeWithAuth(token -> {
             int count = callCount.incrementAndGet();
             if (count == 1) {
@@ -243,18 +198,14 @@ class PasswordColecticaAuthenticatorTest {
             return "success";
         });
 
-        // Reset call count for second test
         callCount.set(0);
 
-        // Second call should use the new cached token
         String result = authenticator.executeWithAuth(token -> {
             assertEquals(newToken, token);
             return "success with new token";
         });
 
-        // Then
         assertEquals("success with new token", result);
-        // Authentication should have been called twice total (initial + after 401)
-        verify(restTemplate, times(2)).postForObject(eq(TOKEN_URL), any(HttpEntity.class), eq(AuthenticationResponse.class));
+        verify(restClient, times(2)).post();
     }
 }

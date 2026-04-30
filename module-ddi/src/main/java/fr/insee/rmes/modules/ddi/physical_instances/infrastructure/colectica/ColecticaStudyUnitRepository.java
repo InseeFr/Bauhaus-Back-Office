@@ -11,7 +11,7 @@ import java.util.List;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
@@ -29,13 +29,13 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     private final DDIRepository ddiRepository;
 
     public ColecticaStudyUnitRepository(
-            RestTemplate restTemplate,
+            RestClient restClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ColecticaAuthenticator authenticator,
             Ddi3XmlWriter ddi3XmlWriter,
             DDIRepository ddiRepository
     ) {
-        super(restTemplate, instanceConfiguration, authenticator, ddi3XmlWriter);
+        super(restClient, instanceConfiguration, authenticator, ddi3XmlWriter);
         this.ddiRepository = ddiRepository;
     }
 

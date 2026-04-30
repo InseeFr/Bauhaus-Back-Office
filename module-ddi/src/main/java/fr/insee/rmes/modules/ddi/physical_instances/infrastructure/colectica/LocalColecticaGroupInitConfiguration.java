@@ -29,10 +29,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +71,7 @@ public class LocalColecticaGroupInitConfiguration {
             RepositoryGestion repositoryGestion,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator colecticaAuthenticator,
-            RestTemplate restTemplate,
+            RestClient restClient,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
             @Value("${fr.insee.rmes.bauhaus.operations.graph}") String operationsGraph
     ) {
@@ -186,26 +185,27 @@ public class LocalColecticaGroupInitConfiguration {
 
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
-            verifyItemsInColectica(colecticaAuthenticator, restTemplate, colecticaConfiguration);
+            verifyItemsInColectica(colecticaAuthenticator, restClient, colecticaConfiguration);
         };
     }
 
-    private void verifyItemsInColectica(ColecticaAuthenticator authenticator, RestTemplate restTemplate,
+    private void verifyItemsInColectica(ColecticaAuthenticator authenticator, RestClient restClient,
                                          ColecticaConfiguration colecticaConfiguration) {
         String groupItemType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
         String studyUnitItemType = "752a535b-b548-4fbe-97e4-f26a02d9e413";
         String queryUrl = colecticaConfiguration.server().baseApiUrl() + "_query";
 
         authenticator.executeWithAuth(token -> {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
             // Query Groups
             try {
                 QueryRequest groupQuery = new QueryRequest(List.of(groupItemType));
-                HttpEntity<QueryRequest> groupRequest = new HttpEntity<>(groupQuery, headers);
-                ColecticaResponse groupResponse = restTemplate.postForObject(queryUrl, groupRequest, ColecticaResponse.class);
+                ColecticaResponse groupResponse = restClient.post()
+                        .uri(queryUrl)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .body(groupQuery)
+                        .retrieve()
+                        .body(ColecticaResponse.class);
                 logger.info("=== VERIFICATION: Groups total={} ===", groupResponse != null ? groupResponse.totalResults() : "null");
                 if (groupResponse != null && groupResponse.results() != null) {
                     int count = 0;
@@ -230,8 +230,13 @@ public class LocalColecticaGroupInitConfiguration {
             // Query StudyUnits
             try {
                 QueryRequest suQuery = new QueryRequest(List.of(studyUnitItemType));
-                HttpEntity<QueryRequest> suRequest = new HttpEntity<>(suQuery, headers);
-                ColecticaResponse suResponse = restTemplate.postForObject(queryUrl, suRequest, ColecticaResponse.class);
+                ColecticaResponse suResponse = restClient.post()
+                        .uri(queryUrl)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .body(suQuery)
+                        .retrieve()
+                        .body(ColecticaResponse.class);
                 logger.info("=== VERIFICATION: StudyUnits total={} ===", suResponse != null ? suResponse.totalResults() : "null");
                 if (suResponse != null && suResponse.results() != null) {
                     int count = 0;

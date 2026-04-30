@@ -5,10 +5,13 @@ import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsS
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+@ImportAutoConfiguration(ServletWebSecurityAutoConfiguration.class)
 public abstract class AbstractResourcesEnvProd {
 
     @MockitoBean
