@@ -21,6 +21,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
 
 class DomainCollectionsServiceTest {
 
@@ -126,6 +127,86 @@ class DomainCollectionsServiceTest {
         var result = domainCollectionsService.getCollectionMembers(ID);
         // Then
         assertThat(result).containsExactly(member);
+    }
+
+    @Test
+    void sync_should_link_new_collections() throws CollectionsSaveException, CollectionsFetchException {
+        when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(Collections.emptyList());
+
+        domainCollectionsService.syncConceptCollections("c00001", List.of(uuid1.toString()));
+
+        verify(collectionsRepository, times(1)).linkConceptToCollection(ID, "c00001");
+        verify(collectionsRepository, never()).unlinkConceptFromCollection(any(), any());
+    }
+
+    @Test
+    void sync_should_unlink_removed_collections() throws CollectionsSaveException, CollectionsFetchException {
+        when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(List.of(uuid1.toString()));
+
+        domainCollectionsService.syncConceptCollections("c00001", Collections.emptyList());
+
+        verify(collectionsRepository, never()).linkConceptToCollection(any(), any());
+        verify(collectionsRepository, times(1)).unlinkConceptFromCollection(ID, "c00001");
+    }
+
+    @Test
+    void sync_should_link_and_unlink_when_collections_change() throws CollectionsSaveException, CollectionsFetchException {
+        CollectionId ID2 = new CollectionId(uuid2.toString());
+        when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(List.of(uuid1.toString()));
+
+        domainCollectionsService.syncConceptCollections("c00001", List.of(uuid2.toString()));
+
+        verify(collectionsRepository, times(1)).linkConceptToCollection(ID2, "c00001");
+        verify(collectionsRepository, times(1)).unlinkConceptFromCollection(ID, "c00001");
+    }
+
+    @Test
+    void sync_should_do_nothing_when_collections_unchanged() throws CollectionsSaveException, CollectionsFetchException {
+        when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(List.of(uuid1.toString()));
+
+        domainCollectionsService.syncConceptCollections("c00001", List.of(uuid1.toString()));
+
+        verify(collectionsRepository, never()).linkConceptToCollection(any(), any());
+        verify(collectionsRepository, never()).unlinkConceptFromCollection(any(), any());
+    }
+
+    @Test
+    void sync_should_do_nothing_when_new_collections_is_empty_and_current_is_empty() throws CollectionsSaveException, CollectionsFetchException {
+        when(collectionsRepository.getCollectionIdsByConceptId("c00001")).thenReturn(Collections.emptyList());
+
+        domainCollectionsService.syncConceptCollections("c00001", Collections.emptyList());
+
+        verify(collectionsRepository, never()).linkConceptToCollection(any(), any());
+        verify(collectionsRepository, never()).unlinkConceptFromCollection(any(), any());
+    }
+
+    @Test
+    void validate_should_succeed_when_all_collections_exist() throws CollectionsFetchException {
+        when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(Set.of(uuid1.toString()));
+
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() ->
+                domainCollectionsService.validateCollections(List.of(uuid1.toString())));
+    }
+
+    @Test
+    void validate_should_throw_when_collection_does_not_exist() throws CollectionsFetchException, CollectionsSaveException {
+        when(collectionsRepository.findExistingCollectionIds(List.of("unknown-collection")))
+                .thenReturn(Set.of());
+
+        org.junit.jupiter.api.Assertions.assertThrows(CollectionsFetchException.class, () ->
+                domainCollectionsService.validateCollections(List.of("unknown-collection")));
+
+        verify(collectionsRepository, never()).linkConceptToCollection(any(), any());
+        verify(collectionsRepository, never()).unlinkConceptFromCollection(any(), any());
+    }
+
+    @Test
+    void validate_should_do_nothing_when_list_is_empty() throws CollectionsFetchException {
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() ->
+                domainCollectionsService.validateCollections(Collections.emptyList()));
+
+        verify(collectionsRepository, never()).findExistingCollectionIds(any());
     }
 
 }

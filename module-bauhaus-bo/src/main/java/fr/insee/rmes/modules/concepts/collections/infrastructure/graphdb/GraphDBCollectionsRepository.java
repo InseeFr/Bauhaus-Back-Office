@@ -32,6 +32,9 @@ import org.springframework.stereotype.Repository;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @ServerSideAdaptor
 @Repository
@@ -158,6 +161,55 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
                     .map(GraphDBConcept::toDomain).toList();
         } catch (Exception e) {
             throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public Set<String> findExistingCollectionIds(List<String> ids) throws CollectionsFetchException {
+        if (ids.isEmpty()) return Set.of();
+        try {
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.findExistingCollectionIds(ids));
+            if (results == null) return Set.of();
+            return IntStream.range(0, results.length())
+                    .mapToObj(i -> results.getJSONObject(i).getString("id"))
+                    .collect(Collectors.toSet());
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public List<String> getCollectionIdsByConceptId(String conceptId) throws CollectionsFetchException {
+        try {
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.getCollectionsByConceptId(conceptId));
+            if (results == null) return List.of();
+            return IntStream.range(0, results.length())
+                    .mapToObj(i -> results.getJSONObject(i).getString("id"))
+                    .toList();
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public void linkConceptToCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException {
+        try {
+            String conceptUri = RdfUtils.conceptIRI(conceptId).toString();
+            String graph = graphDBCollectionProperties.getResourceGraph().toString();
+            repositoryGestion.executeUpdate(conceptCollectionsQueries.linkConceptToCollection(collectionId.value(), conceptUri, graph));
+        } catch (RmesException e) {
+            throw new CollectionsSaveException(e);
+        }
+    }
+
+    @Override
+    public void unlinkConceptFromCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException {
+        try {
+            String conceptUri = RdfUtils.conceptIRI(conceptId).toString();
+            String graph = graphDBCollectionProperties.getResourceGraph().toString();
+            repositoryGestion.executeUpdate(conceptCollectionsQueries.unlinkConceptFromCollection(collectionId.value(), conceptUri, graph));
+        } catch (RmesException e) {
+            throw new CollectionsSaveException(e);
         }
     }
 }

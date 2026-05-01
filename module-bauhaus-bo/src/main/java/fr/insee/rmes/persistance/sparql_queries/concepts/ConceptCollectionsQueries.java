@@ -6,6 +6,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -65,10 +66,38 @@ public class ConceptCollectionsQueries {
 		return buildRequest("getCollectionConcepts.ftlh", params);
 	}
 
-	public String isCollectionExist(String id) throws RmesException {
+	public String collectionExistsById(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("ID", id);
-		return buildRequest("isCollectionExist.ftlh", params);
+		return buildRequest("collectionExistsById.ftlh", params);
+	}
+
+	public String getCollectionsByConceptId(String conceptId) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("CONCEPT_ID", conceptId);
+		return buildRequest("getCollectionsByConceptId.ftlh", params);
+	}
+
+	public String findExistingCollectionIds(List<String> ids) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("IDS", ids);
+		return buildRequest("findExistingCollectionIds.ftlh", params);
+	}
+
+	public String linkConceptToCollection(String collectionId, String conceptUri, String graph) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("COLLECTION_ID", collectionId);
+		params.put("CONCEPT_URI", conceptUri);
+		params.put("GRAPH", graph);
+		return buildRequest("linkConceptToCollection.ftlh", params);
+	}
+
+	public String unlinkConceptFromCollection(String collectionId, String conceptUri, String graph) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("COLLECTION_ID", collectionId);
+		params.put("CONCEPT_URI", conceptUri);
+		params.put("GRAPH", graph);
+		return buildRequest("unlinkConceptFromCollection.ftlh", params);
 	}
 
 }

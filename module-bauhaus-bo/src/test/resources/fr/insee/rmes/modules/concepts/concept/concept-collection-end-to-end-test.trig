@@ -1,0 +1,15 @@
+<http://rdf.insee.fr/graphes/concepts/> {
+    <http://bauhaus/concepts/definition/c00001>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c00001" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Concept test"@fr .
+
+    <http://bauhaus/concepts/definition/c00002>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c00002" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Concept sans collection"@fr .
+}

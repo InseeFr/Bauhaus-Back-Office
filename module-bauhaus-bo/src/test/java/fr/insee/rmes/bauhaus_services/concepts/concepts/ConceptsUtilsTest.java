@@ -10,6 +10,9 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptFetchException;
+import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -36,6 +39,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -61,6 +65,12 @@ class ConceptsUtilsTest {
     @Mock
     private NotesUtils notesUtils;
 
+    @Mock
+    private ConceptsService conceptsService;
+
+    @Mock
+    private CollectionsService collectionsService;
+
     private ConceptsUtils conceptsUtils;
     private ConceptsPublication conceptsPublication;
     private NoteManager noteManager;
@@ -82,7 +92,7 @@ class ConceptsUtilsTest {
         noteManager = new NoteManager(notesUtils);
 
         // Create ConceptsUtils with necessary dependencies
-        conceptsUtils = new ConceptsUtils(conceptsPublication, noteManager, 5, conceptConceptsQueries);
+        conceptsUtils = new ConceptsUtils(conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
 
         // Inject mocks using reflection for fields from RdfService
         injectField(conceptsUtils, "repoGestion", repoGestion);
@@ -115,7 +125,7 @@ class ConceptsUtilsTest {
 
         ConceptsPublication conceptsPublication =  new ConceptsPublication(null);
         NoteManager noteManager = new NoteManager(null);
-        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication,noteManager,19, null);
+        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication, noteManager, 19, null, null, null);
 
         ConceptForExport conceptForExport = new ConceptForExport();
         conceptForExport.setId("id");
@@ -253,7 +263,7 @@ class ConceptsUtilsTest {
     }
 
     @Test
-    void shouldGetConceptByIdWithAltLabels() throws RmesException {
+    void shouldGetConceptByIdWithAltLabels() throws RmesException, ConceptFetchException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -278,6 +288,7 @@ class ConceptsUtilsTest {
                 return altLabelLg2;
             }
         });
+        when(conceptsService.getCollectionIdsByConceptId(id)).thenReturn(Collections.emptyList());
 
         // When
         JSONObject result = conceptsUtils.getConceptById(id);
@@ -289,7 +300,7 @@ class ConceptsUtilsTest {
     }
 
     @Test
-    void shouldGetConceptByIdWithoutAltLabels() throws RmesException {
+    void shouldGetConceptByIdWithoutAltLabels() throws RmesException, ConceptFetchException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -301,6 +312,7 @@ class ConceptsUtilsTest {
         when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(true);
         when(repoGestion.getResponseAsObject(conceptConceptsQueries.conceptQuery(id))).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(emptyArray);
+        when(conceptsService.getCollectionIdsByConceptId(id)).thenReturn(Collections.emptyList());
 
         // When
         JSONObject result = conceptsUtils.getConceptById(id);

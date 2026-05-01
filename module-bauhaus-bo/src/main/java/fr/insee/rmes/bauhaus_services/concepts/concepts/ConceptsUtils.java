@@ -15,6 +15,12 @@ import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionNotFoundException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
+import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptFetchException;
+import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;
@@ -45,12 +51,16 @@ public class ConceptsUtils extends RdfService {
 	private final NoteManager noteManager;
 	private final int maxLength;
 	private final ConceptConceptsQueries conceptConceptsQueries;
+	private final ConceptsService conceptsService;
+	private final CollectionsService collectionsService;
 
-	public ConceptsUtils(ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries) {
+	public ConceptsUtils(ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries, ConceptsService conceptsService, CollectionsService collectionsService) {
 		this.conceptsPublication = conceptsPublication;
 		this.noteManager = noteManager;
 		this.maxLength = maxLength;
 		this.conceptConceptsQueries = conceptConceptsQueries;
+		this.conceptsService = conceptsService;
+		this.collectionsService = collectionsService;
 	}
 
 	public String getConceptExportFileName(ConceptForExport concept) {
@@ -92,6 +102,12 @@ public class ConceptsUtils extends RdfService {
 		if(!altLabelLg2.isEmpty()) {
 			concept.put(Constants.ALT_LABEL_LG2, JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
 		}
+		try {
+			List<String> collections = conceptsService.getCollectionIdsByConceptId(id);
+			concept.put("collections", new JSONArray(collections));
+		} catch (ConceptFetchException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error fetching concept collections");
+		}
 		return concept;
 	}
 
@@ -128,7 +144,25 @@ public class ConceptsUtils extends RdfService {
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "IOException");
 		}
+		if (concept.getCollections() != null) {
+			try {
+				collectionsService.validateCollections(concept.getCollections());
+			} catch (CollectionsFetchException e) {
+				Throwable cause = e.getCause();
+				if (cause instanceof CollectionNotFoundException notFound) {
+					throw new RmesException(HttpStatus.BAD_REQUEST.value(), notFound.getMessage(), "Collection not found");
+				}
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error validating collections");
+			}
+		}
 		createRdfConcept(concept);
+		if (concept.getCollections() != null) {
+			try {
+				collectionsService.syncConceptCollections(id, concept.getCollections());
+			} catch (CollectionsSaveException | CollectionsFetchException e) {
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error syncing concept collections");
+			}
+		}
 		return concept;
 	}
 

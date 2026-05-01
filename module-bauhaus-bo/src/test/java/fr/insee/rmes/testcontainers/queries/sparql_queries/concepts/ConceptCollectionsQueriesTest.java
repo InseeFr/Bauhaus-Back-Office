@@ -173,7 +173,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_true_when_collection_exists() throws RmesException {
         // When
-        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.isCollectionExist("c1000"));
+        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.collectionExistsById("c1000"));
 
         // Then
         assertTrue(result, "Should return true when collection exists");
@@ -182,7 +182,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_false_when_collection_does_not_exist() throws RmesException {
         // When
-        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.isCollectionExist("c9999"));
+        boolean result = repositoryGestion.getResponseAsBoolean(conceptCollectionsQueries.collectionExistsById("c9999"));
 
         // Then
         assertFalse(result, "Should return false when collection does not exist");

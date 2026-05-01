@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @ServerSidePort
 public interface CollectionsRepository {
@@ -22,4 +23,8 @@ public interface CollectionsRepository {
     List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException;
     List<CollectionToValidate> getToValidate() throws CollectionsFetchException;
     List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException;
+    List<String> getCollectionIdsByConceptId(String conceptId) throws CollectionsFetchException;
+    Set<String> findExistingCollectionIds(List<String> ids) throws CollectionsFetchException;
+    void linkConceptToCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException;
+    void unlinkConceptFromCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException;
 }
