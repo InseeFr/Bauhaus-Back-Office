@@ -27,8 +27,9 @@ public class Concept {
 	private String isValidated;
 	private Boolean creation;
 	private Boolean versioning;
+	private List<String> collections;
 
-	
+
 	public Concept(String id, boolean isNew) {
 		this.id = id;
 		this.modified = LocalDateTime.now().toString();
@@ -123,5 +124,12 @@ public class Concept {
 		return versioning;
 	}
 
+	public List<String> getCollections() {
+		return collections;
+	}
+
+	public void setCollections(List<String> collections) {
+		this.collections = collections;
+	}
 
 }

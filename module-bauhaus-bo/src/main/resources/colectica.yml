@@ -29,8 +29,8 @@ fr.insee.rmes.bauhaus.colectica:
 
     # Credentials for "password" authentication mode
     # Override these values in environment-specific configuration files
-    username:
-    password:
+    username: ${COLECTICA_USERNAME:}
+    password: ${COLECTICA_PASSWORD:}
 
     # Static token for "token" authentication mode
     # Override this value when using token-based authentication

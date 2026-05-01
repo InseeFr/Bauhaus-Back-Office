@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCo
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @ClientSidePort
 public interface CollectionsService {
@@ -24,4 +25,6 @@ public interface CollectionsService {
     List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException;
     List<CollectionToValidate> getToValidate() throws CollectionsFetchException;
     List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException;
+    void validateCollections(List<String> collectionIds) throws CollectionsFetchException;
+    void syncConceptCollections(String conceptId, List<String> newCollectionIds) throws CollectionsSaveException, CollectionsFetchException;
 }
