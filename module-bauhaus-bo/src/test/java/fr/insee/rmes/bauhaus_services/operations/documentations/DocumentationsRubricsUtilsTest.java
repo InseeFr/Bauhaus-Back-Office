@@ -9,6 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
@@ -51,6 +52,9 @@ class DocumentationsRubricsUtilsTest {
 
 	@Mock
 	private OrganizationUtils organizationUtils;
+
+	@Mock
+	private OrganisationLookup organisationLookup;
 
 	@Mock
 	private CodeListService codeListService;
@@ -304,7 +308,7 @@ class DocumentationsRubricsUtilsTest {
 	}
 
 	@Test
-	void shouldAddOrganizationRubricToModel() throws RmesException {
+	void shouldAddOrganizationRubricToModel_resolvedThroughOrganisationLookup() throws RmesException {
 		// Given
 		String simsId = "1000";
 		String attributeId = "ORG_ATTRIBUTE";
@@ -317,7 +321,7 @@ class DocumentationsRubricsUtilsTest {
 		rubric.setSingleValue(orgaId);
 
 		setupBasicMocks(attributeId, "orgAttribute");
-		when(organizationUtils.getUri(orgaId)).thenReturn(orgaUri);
+		when(organisationLookup.resolve(orgaId)).thenReturn(Optional.of(orgaUri));
 
 		// When
 		documentationsRubricsUtils.addRubricsToModel(model, simsId, graph, List.of(rubric));
@@ -325,11 +329,38 @@ class DocumentationsRubricsUtilsTest {
 		// Then
 		assertFalse(model.isEmpty(), "Le modèle ne devrait pas être vide");
 
-		// Vérifie que l'organisation a été ajoutée
+		// Vérifie que l'organisation a été ajoutée comme IRI
 		boolean hasOrgaUri = model.stream()
-				.anyMatch(stmt -> stmt.getObject().stringValue().equals(orgaUri));
+				.anyMatch(stmt -> stmt.getObject() instanceof IRI
+						&& stmt.getObject().stringValue().equals(orgaUri));
 
-		assertTrue(hasOrgaUri, "Le modèle devrait contenir l'URI de l'organisation");
+		assertTrue(hasOrgaUri, "Le modèle devrait contenir l'URI de l'organisation comme IRI");
+	}
+
+	@Test
+	void shouldAddOrganizationRubricToModel_iriPassthrough_whenInputIsAlreadyAnIri() throws RmesException {
+		// Given
+		String simsId = "1000";
+		String attributeId = "ORG_ATTRIBUTE";
+		String orgaIri = "http://rdf.insee.fr/def/base/organisations/insee/DG75-F001";
+
+		DocumentationRubric rubric = new DocumentationRubric();
+		rubric.setIdAttribute(attributeId);
+		rubric.setRangeType(RangeType.ORGANIZATION.getJsonType());
+		rubric.setSingleValue(orgaIri);
+
+		setupBasicMocks(attributeId, "orgAttribute");
+		when(organisationLookup.resolve(orgaIri)).thenReturn(Optional.of(orgaIri));
+
+		// When
+		documentationsRubricsUtils.addRubricsToModel(model, simsId, graph, List.of(rubric));
+
+		// Then
+		boolean hasOrgaUri = model.stream()
+				.anyMatch(stmt -> stmt.getObject() instanceof IRI
+						&& stmt.getObject().stringValue().equals(orgaIri));
+
+		assertTrue(hasOrgaUri, "Le modèle devrait contenir l'IRI de l'organisation directement");
 	}
 
 	@Test

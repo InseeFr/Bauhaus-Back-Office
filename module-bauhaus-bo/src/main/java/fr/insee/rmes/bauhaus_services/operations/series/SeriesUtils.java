@@ -11,6 +11,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -54,6 +55,8 @@ public class SeriesUtils {
 
     final OrganizationsService organizationsService;
 
+    private final OrganisationLookup organisationLookup;
+
     final FamOpeSerIndUtils famOpeSerIndUtils;
 
     final ParentUtils ownersUtils;
@@ -85,7 +88,8 @@ public class SeriesUtils {
             DocumentationsUtils documentationsUtils,
             UriUtils uriUtils,
             SeriesValidator validator,
-            OperationSeriesQueries operationSeriesQueries) {
+            OperationSeriesQueries operationSeriesQueries,
+            OrganisationLookup organisationLookup) {
         this.seriesRichTextNexStructure = seriesRichTextNexStructure;
         this.lg1 = lg1;
         this.lg2 = lg2;
@@ -99,6 +103,7 @@ public class SeriesUtils {
         this.uriUtils = uriUtils;
         this.validator = validator;
         this.operationSeriesQueries = operationSeriesQueries;
+        this.organisationLookup = organisationLookup;
     }
 
     /*READ*/
@@ -130,7 +135,7 @@ public class SeriesUtils {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-        if (series.getId().isEmpty()) {
+        if (StringUtils.isEmpty(series.getId())) {
             series.id = id;
         }
         return series;
@@ -330,12 +335,7 @@ public class SeriesUtils {
         addMulltiLangValues(model, seriesURI, RdfUtils.operationsGraph(), series.getAbstractLg1(), series.getAbstractLg2(), DCTERMS.ABSTRACT);
         addMulltiLangValues(model, seriesURI, RdfUtils.operationsGraph(), series.getHistoryNoteLg1(), series.getHistoryNoteLg2(), SKOS.HISTORY_NOTE);
 
-        List<String> creators = series.getCreators();
-        if (creators != null) {
-            for (String creator : creators) {
-                RdfUtils.addTripleString(seriesURI, DC.CREATOR, creator, model, RdfUtils.operationsGraph());
-            }
-        }
+        addCreators(model, seriesURI, series.getCreators());
 
         //Organismes responsables
         addOperationLinksOrganization(series.getPublishers(), DCTERMS.PUBLISHER, model, seriesURI);
@@ -379,6 +379,19 @@ public class SeriesUtils {
         repositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
     }
 
+    void addCreators(Model model, IRI seriesURI, List<String> creators) {
+        addCreators(model, seriesURI, creators, RdfUtils.operationsGraph());
+    }
+
+    void addCreators(Model model, IRI seriesURI, List<String> creators, Resource graph) {
+        if (creators == null) {
+            return;
+        }
+        for (String creatorIri : creators) {
+            RdfUtils.addTripleUri(seriesURI, DC.CREATOR, creatorIri, model, graph);
+        }
+    }
+
     private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
         RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY, next, model, RdfUtils.operationsGraph());
         RdfUtils.addTripleUri(next, DCTERMS.REPLACES, previous, model, RdfUtils.operationsGraph());
@@ -402,15 +415,20 @@ public class SeriesUtils {
         }
     }
 
-    private void addOperationLinksOrganization(List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI)
+    void addOperationLinksOrganization(List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI)
+            throws RmesException {
+        addOperationLinksOrganization(data, predicate, model, seriesURI, RdfUtils.operationsGraph());
+    }
+
+    void addOperationLinksOrganization(List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI, Resource graph)
             throws RmesException {
         if (data != null) {
             for (OperationsLink d : data) {
                 if (!d.isEmpty()) {
-                    RdfUtils.addTripleUri(seriesURI, predicate,
-                            //			d.getId(),
-                            organizationsService.getOrganizationUriById(d.getId()),
-                            model, RdfUtils.operationsGraph());
+                    Optional<String> resolved = organisationLookup.resolve(d.getId());
+                    if (resolved.isPresent()) {
+                        RdfUtils.addTripleUri(seriesURI, predicate, resolved.get(), model, graph);
+                    }
                 }
             }
         }

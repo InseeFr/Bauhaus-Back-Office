@@ -114,7 +114,6 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                    "isValidated": false,
                 }
                 """.formatted(uuid), fetchedCollections, false);
-        System.out.println(fetchedCollections);
         assertThat((new JSONObject(fetchedCollections)).getString("created")).matches(ISO_8601_DATE_TIME_PATTERN);
         assertThat((new JSONObject(fetchedCollections)).has("modified")).isTrue();
         assertThat((new JSONObject(fetchedCollections)).isNull("modified")).isTrue();

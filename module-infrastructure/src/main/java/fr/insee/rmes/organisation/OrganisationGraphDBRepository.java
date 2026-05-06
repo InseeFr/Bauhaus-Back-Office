@@ -19,21 +19,28 @@ import java.util.Map;
 public class OrganisationGraphDBRepository implements OrganisationRepository {
 
     private static final String ORGANIZATIONS_GRAPH_PARAM = "ORGANIZATIONS_GRAPH";
+    private static final String ORGANIZATIONS_INSEE_GRAPH_PARAM = "ORGANIZATIONS_INSEE_GRAPH";
     private static final String ORGANISATIONS_PATH = "organisations/";
     private static final String STAMP_FIELD = "stamp";
     private static final String LABEL_FIELD = "label";
+    private static final String KEY_FIELD = "key";
 
     private final RepositoryGestion repositoryGestion;
     private final String organizationsGraph;
+    private final String organizationsRootGraph;
     private final String language;
 
     public OrganisationGraphDBRepository(
             RepositoryGestion repositoryGestion,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
+            @Value("${fr.insee.rmes.bauhaus.organisations.graph}") String organisationsGraph,
             @Value("${fr.insee.rmes.bauhaus.insee.graph}") String inseeGraph,
             @Value("${fr.insee.rmes.bauhaus.lg1}") String language) {
         this.repositoryGestion = repositoryGestion;
+        // Existing methods (getOrganisations, getOrganisation) target the insee sub-graph.
         this.organizationsGraph = baseGraph + inseeGraph;
+        // The map-resolution path needs the outer graph too, since some IRIs (sub-units) live there.
+        this.organizationsRootGraph = baseGraph + organisationsGraph;
         this.language = language;
     }
 
@@ -84,7 +91,8 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         }
 
         Map<String, Object> params = new HashMap<>();
-        params.put(ORGANIZATIONS_GRAPH_PARAM, organizationsGraph);
+        params.put(ORGANIZATIONS_GRAPH_PARAM, organizationsRootGraph);
+        params.put(ORGANIZATIONS_INSEE_GRAPH_PARAM, organizationsGraph);
         params.put("LANG", language);
         params.put("IDENTIFIERS", identifiers);
 
@@ -94,9 +102,13 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         Map<String, OrganisationOption> organisationsMap = new HashMap<>();
         for (int i = 0; i < results.length(); i++) {
             JSONObject org = results.getJSONObject(i);
-            String stamp = org.getString(STAMP_FIELD);
             String label = org.getString(LABEL_FIELD);
-            organisationsMap.put(stamp, new OrganisationOption(stamp, label));
+            String stamp = org.has(STAMP_FIELD) ? org.getString(STAMP_FIELD) : null;
+            String key = org.has(KEY_FIELD) ? org.getString(KEY_FIELD) : stamp;
+            if (key == null) {
+                continue;
+            }
+            organisationsMap.put(key, new OrganisationOption(stamp, label));
         }
 
         return organisationsMap;

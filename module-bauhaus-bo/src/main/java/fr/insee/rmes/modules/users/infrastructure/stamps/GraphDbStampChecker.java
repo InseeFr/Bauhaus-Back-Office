@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
 
+import fr.insee.rmes.domain.model.OrganisationOption;
+import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.graphdb.ontologies.QB;
@@ -20,16 +22,21 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQuerie
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @ServerSideAdaptor
 @Repository
 public class GraphDbStampChecker implements StampChecker {
+    private static final Logger logger = LoggerFactory.getLogger(GraphDbStampChecker.class);
+
     private final RepositoryGestion repositoryGestion;
     private final DatasetQueries datasetQueries;
     private final StructureQueries structureQueries;
@@ -37,6 +44,7 @@ public class GraphDbStampChecker implements StampChecker {
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
     private final DatasetDistributionQueries datasetDistributionQueries;
+    private final OrganisationService organisationService;
 
     public GraphDbStampChecker(
             RepositoryGestion repositoryGestion,
@@ -45,7 +53,8 @@ public class GraphDbStampChecker implements StampChecker {
             OperationSeriesQueries operationSeriesQueries,
             DDIRepository ddiRepository,
             SeriesCreatorsPort seriesCreatorsPort,
-            DatasetDistributionQueries datasetDistributionQueries) {
+            DatasetDistributionQueries datasetDistributionQueries,
+            OrganisationService organisationService) {
         this.repositoryGestion = repositoryGestion;
         this.datasetQueries = datasetQueries;
         this.structureQueries = structureQueries;
@@ -53,6 +62,7 @@ public class GraphDbStampChecker implements StampChecker {
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
         this.datasetDistributionQueries = datasetDistributionQueries;
+        this.organisationService = organisationService;
     }
 
 
@@ -62,7 +72,7 @@ public class GraphDbStampChecker implements StampChecker {
             return switch (module) {
                 case OPERATION_SERIES -> {
                     var iri = RdfUtils.objectIRI(ObjectType.SERIES, id);
-                    yield this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString()));
+                    yield normalizeOrganisationStamps(this.getStamps("creators", operationSeriesQueries.getCreatorsBySeriesUri(iri.toString())));
                 }
                 case DDI_PHYSICALINSTANCE -> {
                     if (id == null) yield List.of();
@@ -78,10 +88,11 @@ public class GraphDbStampChecker implements StampChecker {
                                     .toList();
                     if (seriesIris.isEmpty()) yield List.of();
                     Map<String, List<String>> creatorsByIri = seriesCreatorsPort.getCreatorsForSeries(seriesIris);
-                    yield creatorsByIri.values().stream()
+                    List<String> distinctCreators = creatorsByIri.values().stream()
                             .flatMap(Collection::stream)
                             .distinct()
                             .toList();
+                    yield normalizeOrganisationStamps(distinctCreators).stream().distinct().toList();
                 }
                 default -> throw new UnsupportedModuleException(module);
             };
@@ -112,10 +123,35 @@ public class GraphDbStampChecker implements StampChecker {
                 }
                 default -> throw new UnsupportedModuleException(module);
             };
-            return this.getStamps("contributors", query);
+            return normalizeOrganisationStamps(this.getStamps("contributors", query));
         } catch(RmesException e){
             throw new StampFetchException(module, id);
         }
+    }
+
+    private List<String> normalizeOrganisationStamps(List<String> values) {
+        if (values == null) return List.of();
+        if (values.isEmpty()) return values;
+        Map<String, OrganisationOption> organisationsMap;
+        try {
+            organisationsMap = organisationService.getOrganisationsMap(values.stream().distinct().toList());
+        } catch (RmesException e) {
+            logger.warn("Failed to resolve organisation stamps; keeping raw values", e);
+            return values;
+        }
+        if (organisationsMap == null || organisationsMap.isEmpty()) {
+            return values;
+        }
+        List<String> normalized = new ArrayList<>(values.size());
+        for (String value : values) {
+            OrganisationOption option = organisationsMap.get(value);
+            if (option != null && option.stamp() != null && !option.stamp().isBlank()) {
+                normalized.add(option.stamp());
+            } else {
+                normalized.add(value);
+            }
+        }
+        return Collections.unmodifiableList(normalized);
     }
 
     private IRI findStructureComponentIri(String componentId) throws RmesException {

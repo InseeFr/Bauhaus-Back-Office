@@ -1,0 +1,35 @@
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix insee:   <http://rdf.insee.fr/def/base#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+
+# Test fixtures for canonicalize/double-compat reads.
+# Three series in the operations graph with creators in different formats:
+# - sIRI: creator already stored as IRI
+# - sLIT: creator stored as legacy literal stamp (resolves to IRI HIE2000069 via organisations.trig)
+# - sMIX: one IRI creator + one literal stamp creator
+# - sBAD: literal that does not resolve (should be dropped by canonicalize)
+
+<http://rdf.insee.fr/graphes/operations> {
+
+    <http://bauhaus/operations/serie/sIRI> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "Série IRI"@fr , "Series IRI"@en ;
+        insee:validationState "Validated" ;
+        dc:creator <http://bauhaus/organisations/insee/HIE2000069> .
+
+    <http://bauhaus/operations/serie/sLIT> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "Série Littérale"@fr , "Literal series"@en ;
+        insee:validationState "Validated" ;
+        dc:creator "HIE2000069" .
+
+    <http://bauhaus/operations/serie/sMIX> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "Série Mixte"@fr , "Mixed series"@en ;
+        insee:validationState "Validated" ;
+        dc:creator <http://bauhaus/organisations/insee/HIE2000069> ,
+                   "HIE2000076" .
+
+    <http://bauhaus/operations/serie/sBAD> a insee:StatisticalOperationSeries ;
+        skos:prefLabel "Série inconnue"@fr , "Unknown stamp series"@en ;
+        insee:validationState "Validated" ;
+        dc:creator "DOES_NOT_EXIST" .
+}

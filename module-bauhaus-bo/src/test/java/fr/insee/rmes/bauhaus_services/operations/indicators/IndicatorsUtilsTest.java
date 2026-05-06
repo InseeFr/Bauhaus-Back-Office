@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.links.OperationsLink;
@@ -11,8 +12,11 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.spy;
@@ -48,7 +52,7 @@ class IndicatorsUtilsTest {
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
         JSONObject indicator = new JSONObject();
 
-        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null));
+        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null));
         doReturn("p1000").when(indicatorsUtils).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
@@ -61,7 +65,7 @@ class IndicatorsUtilsTest {
     void shouldThrowExceptionIfWasGeneratedByEmpty() throws RmesException {
         JSONObject indicator = new JSONObject().put("wasGeneratedBy", new JSONArray());
 
-        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null));
+        IndicatorsUtils indicatorsUtils = spy(new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null));
         doReturn("p1000").when(indicatorsUtils).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
@@ -82,7 +86,7 @@ class IndicatorsUtilsTest {
         when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries);
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
         assertThat(exception.getDetails()).contains("This prefLabelLg1 is already used by another indicator.");
     }
@@ -101,7 +105,7 @@ class IndicatorsUtilsTest {
         when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries);
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
         assertThat(exception.getDetails()).contains("This prefLabelLg2 is already used by another indicator.");
     }
@@ -109,7 +113,7 @@ class IndicatorsUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null);
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -130,7 +134,7 @@ class IndicatorsUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null);
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -158,7 +162,7 @@ class IndicatorsUtilsTest {
         JSONObject jsonIndicator = new JSONObject(json);
         Indicator indicator = initIndicator();
 
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null);
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
 
 
         Indicator indicatorByApp = indicatorsUtils.buildIndicatorFromJson(jsonIndicator);
@@ -191,6 +195,89 @@ class IndicatorsUtilsTest {
         wgbList.add(wgb);
         indicator.setWasGeneratedBy(wgbList);
         return indicator;
+    }
+
+    @Test
+    void createID_returnsP1_whenNoIndicatorExistsInProductsGraph() throws RmesException {
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
+        when(operationIndicatorsQueries.lastID()).thenReturn("query");
+        when(repositoryGestion.getResponseAsObject("query")).thenReturn(new JSONObject());
+
+        String id = indicatorsUtils.createID();
+
+        assertThat(id).isEqualTo("p1");
+    }
+
+    @Test
+    void createID_returnsP1_whenLastIdIsUndefined() throws RmesException {
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
+        when(operationIndicatorsQueries.lastID()).thenReturn("query");
+        when(repositoryGestion.getResponseAsObject("query")).thenReturn(new JSONObject().put(Constants.ID, Constants.UNDEFINED));
+
+        String id = indicatorsUtils.createID();
+
+        assertThat(id).isEqualTo("p1");
+    }
+
+    @Test
+    void validate_throwsBadRequest_whenAnOrganisationIsUnknown() throws RmesException {
+        OrganisationLookup lookup = mock(OrganisationLookup.class);
+        when(lookup.findUnknown(any())).thenReturn(List.of("http://bauhaus/organisations/MISSING"));
+        when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, lookup);
+
+        Indicator indicator = new Indicator();
+        OperationsLink wgb = new OperationsLink("s1", null, "Series", "Series");
+        indicator.setWasGeneratedBy(List.of(wgb));
+        indicator.setCreators(List.of("http://bauhaus/organisations/MISSING"));
+
+        Exception exception = assertThrows(RmesBadRequestException.class, () -> indicatorsUtils.validate(indicator));
+        assertThat(((RmesException) exception).getDetails()).contains("MISSING");
+    }
+
+    private static final IRI TEST_GRAPH = SimpleValueFactory.getInstance().createIRI("http://test/products");
+
+    @Test
+    void addCreators_writesEachCreatorAsAnIriTriple() {
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
+        SimpleValueFactory vf = SimpleValueFactory.getInstance();
+        IRI indicURI = vf.createIRI("http://bauhaus/indicators/i1");
+        Model model = new LinkedHashModel();
+
+        indicatorsUtils.addCreators(model, indicURI, List.of(
+                "http://bauhaus/organisations/DG75-A001",
+                "http://bauhaus/organisations/DG75-B002"), TEST_GRAPH);
+
+        IRI dcCreator = vf.createIRI(DC.CREATOR.toString());
+        List<Value> creators = model.filter(indicURI, dcCreator, null).stream()
+                .map(Statement::getObject)
+                .toList();
+        assertThat(creators).hasSize(2);
+        assertThat(creators.get(0)).isInstanceOf(IRI.class);
+        assertThat(creators.get(1)).isInstanceOf(IRI.class);
+    }
+
+    @Test
+    void addOrganisationLinks_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {
+        OrganisationLookup lookup = mock(OrganisationLookup.class);
+        when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
+                .thenReturn(java.util.Optional.of("http://bauhaus/organisations/DG75-A001"));
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, lookup);
+        SimpleValueFactory vf = SimpleValueFactory.getInstance();
+        IRI indicURI = vf.createIRI("http://bauhaus/indicators/i1");
+        Model model = new LinkedHashModel();
+        OperationsLink link = new OperationsLink();
+        link.id = "http://bauhaus/organisations/DG75-A001";
+
+        indicatorsUtils.addOrganisationLinks(List.of(link), DCTERMS.CONTRIBUTOR, model, indicURI, TEST_GRAPH);
+
+        IRI contributor = vf.createIRI(DCTERMS.CONTRIBUTOR.toString());
+        List<Value> contributors = model.filter(indicURI, contributor, null).stream()
+                .map(Statement::getObject)
+                .toList();
+        assertThat(contributors).hasSize(1);
+        assertThat(contributors.get(0)).isInstanceOf(IRI.class);
+        assertThat(contributors.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
     }
 
 }

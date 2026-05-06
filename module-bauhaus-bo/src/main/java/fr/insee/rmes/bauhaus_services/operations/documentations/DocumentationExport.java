@@ -369,8 +369,8 @@ public class DocumentationExport {
 				transformedCreators.add(organisation.label());
 				successCount++;
 			} else {
-				// If organization not found or has no value, keep the stamp
-				transformedCreators.add(stamp);
+				// If organization not found or has no value, keep a readable form (last segment of an IRI, or the raw stamp).
+				transformedCreators.add(shortenIfIri(stamp));
 				notFoundCount++;
 				if (organisation == null) {
 					logger.debug("Organization not found for stamp: {}", stamp);
@@ -384,6 +384,19 @@ public class DocumentationExport {
 				successCount, notFoundCount);
 
 		return transformedCreators;
+	}
+
+	private static String shortenIfIri(String stamp) {
+		if (stamp == null) {
+			return null;
+		}
+		if (!stamp.startsWith("http://") && !stamp.startsWith("https://")) {
+			return stamp;
+		}
+		int lastSlash = stamp.lastIndexOf('/');
+		return lastSlash >= 0 && lastSlash < stamp.length() - 1
+				? stamp.substring(lastSlash + 1)
+				: stamp;
 	}
 
 	/**
