@@ -37,10 +37,8 @@ public class OperationPublication extends RdfService{
 		Model model = new LinkedHashModel();
 
 		Resource operation = RdfUtils.operationIRI(operationId);
-		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation);
-
-		try {
+		try (RepositoryConnection con = repoGestion.getConnection();
+			 RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation)) {
 			if (!statements.hasNext()) {
 				throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_ID, "Operation not found", operationId);
 			}
@@ -63,10 +61,6 @@ public class OperationPublication extends RdfService{
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
-		finally {
-			repoGestion.closeStatements(statements);
-			con.close();
-		}
 		Resource operationToPublishRessource = publicationUtils.tranformBaseURIToPublish(operation);
 		repositoryPublication.publishResource(operationToPublishRessource, model, "operation");
 
@@ -86,12 +80,12 @@ public class OperationPublication extends RdfService{
 
 	private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con)
 			throws RmesException {
-		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation);
-
-		while (hasPartStatements.hasNext()) {
-			Statement hpst = hasPartStatements.next();
-			model.add(publicationUtils.tranformBaseURIToPublish(hpst.getSubject()), hpst.getPredicate(),
-					publicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()), hpst.getContext());
+		try (RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation)) {
+			while (hasPartStatements.hasNext()) {
+				Statement hpst = hasPartStatements.next();
+				model.add(publicationUtils.tranformBaseURIToPublish(hpst.getSubject()), hpst.getPredicate(),
+						publicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()), hpst.getContext());
+			}
 		}
 	}
 

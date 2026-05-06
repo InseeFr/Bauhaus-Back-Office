@@ -109,8 +109,7 @@ public class RepositoryPublication{
 
 		if (repo == null) {return ;}
 
-		try {
-			RepositoryConnection conn = repo.getConnection();
+		try (RepositoryConnection conn = repo.getConnection()) {
 			// notes to delete
 			for (Resource note : noteToClear) {
 				conn.remove(note, null, null);
@@ -124,7 +123,6 @@ public class RepositoryPublication{
 
 			conn.remove(concept, null, null);
 			conn.add(model);
-			conn.close();
 			logger.info("Publication of concept : {}", concept);
 		} catch (RepositoryException e) {
 			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
@@ -140,11 +138,9 @@ public class RepositoryPublication{
 	private static void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
 		if (repo == null) {return ;}
 
-		try {
-			RepositoryConnection conn = repo.getConnection();
+		try (RepositoryConnection conn = repo.getConnection()) {
 			conn.remove(resource, null, null);
 			conn.add(model);
-			conn.close();
 			logger.info("Publication of Resource {} : {}" ,type, resource);
 		} catch (RepositoryException e) {
 			logger.error("Publication of Resource {} : {} {}" ,type, resource, FAILED);
@@ -161,11 +157,9 @@ public class RepositoryPublication{
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
 		if (repo == null) {return ;}
 
-		try {
-			RepositoryConnection conn = repo.getConnection();
+		try (RepositoryConnection conn = repo.getConnection()) {
 			conn.clear(context);
 			conn.add(model);
-			conn.close();
 			logger.info("Publication of Graph {} : {}" ,type, context);
 		} catch (RepositoryException e) {
 			logger.error("Publication of Graph {} : {} {}" ,type, context, FAILED);
@@ -183,13 +177,7 @@ public class RepositoryPublication{
 				DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 
 		for (IRI predicat : typeOfLink) {
-			RepositoryResult<Statement> statements;
-			try {
-				statements = conn.getStatements(null, predicat, concept, false);
-			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-			}
-			try {
+			try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, concept, false)) {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
 				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);

@@ -26,10 +26,8 @@ public class ClassificationPublication extends RdfService{
 	public void publishClassification(Resource graphIri) throws RmesException {
 		Model model = new LinkedHashModel();
 
-		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> classifStatements = repoGestion.getCompleteGraph(con, graphIri);
-
-		try {
+		try (RepositoryConnection con = repoGestion.getConnection();
+			 RepositoryResult<Statement> classifStatements = repoGestion.getCompleteGraph(con, graphIri)) {
 			if (!classifStatements.hasNext()) {
 				throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", graphIri.stringValue());
 			}
@@ -37,11 +35,6 @@ public class ClassificationPublication extends RdfService{
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					Constants.REPOSITORY_EXCEPTION);
-		}
-
-		finally {
-			repoGestion.closeStatements(classifStatements);
-			con.close();
 		}
 
 		repositoryPublication.publishContext(graphIri, model, "classification");

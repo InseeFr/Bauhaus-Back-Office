@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
@@ -292,7 +293,10 @@ public class DdiResources {
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<String> getDdiSchema() throws IOException {
         ClassPathResource resource = new ClassPathResource("ddi-schema.json");
-        String schema = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        String schema;
+        try (InputStream is = resource.getInputStream()) {
+            schema = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
         // Remove BOM if present
         if (schema.startsWith("\uFEFF")) {
             schema = schema.substring(1);
@@ -364,7 +368,10 @@ public class DdiResources {
         try {
             // Load schema
             ClassPathResource resource = new ClassPathResource("ddi-schema.json");
-            String schemaContent = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            String schemaContent;
+            try (InputStream is = resource.getInputStream()) {
+                schemaContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            }
             // Remove BOM if present
             if (schemaContent.startsWith("\uFEFF")) {
                 schemaContent = schemaContent.substring(1);

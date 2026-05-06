@@ -193,17 +193,13 @@ public class RepositoryGestion {
 
 
 	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, Value value) throws RmesException {
-		try {
-			RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-					rdfGestion.repositoryId()).getConnection();
-
+		try (RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
+				rdfGestion.repositoryId()).getConnection()) {
 			conn.remove(object, predicate, value, graph);
-			conn.close();
 		} catch (RepositoryException e) {
 			logger.error(FAILURE_LOAD_OBJECT , object);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
-
 		}
 	}
 
@@ -262,13 +258,9 @@ public class RepositoryGestion {
 	}
 
     private void processConnection(Consumer<RepositoryConnection> processor, RepositoryConnection initialConnection, String message)throws RmesException{
-        try {
-            if (initialConnection == null) {
-                initialConnection = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-                        rdfGestion.repositoryId()).getConnection();
-            }
-            processor.accept(initialConnection);
-            initialConnection.close();
+        try (RepositoryConnection conn = (initialConnection != null) ? initialConnection
+                : repositoryUtils.initRepository(rdfGestion.getUrlServer(), rdfGestion.repositoryId()).getConnection()) {
+            processor.accept(conn);
         } catch (RepositoryException e) {
             throw new RmesException("Failure while "+message, e);
         }
@@ -289,30 +281,24 @@ public class RepositoryGestion {
 	}
 
 	public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
-
-		try {
-			RepositoryConnection conn=repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-					rdfGestion.repositoryId()).getConnection();
+		try (RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
+				rdfGestion.repositoryId()).getConnection()) {
 			for (IRI item : collectionsToValidateList) {
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
 				conn.remove(item, INSEE.IS_VALIDATED, null);
 			}
 			conn.add(model);
-			conn.close();
 		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure validation : " + collectionsToValidateList);
 		}
 	}
 
 	public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
-
-		try {
-			RepositoryConnection conn=repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-					rdfGestion.repositoryId()).getConnection();
+		try (RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
+				rdfGestion.repositoryId()).getConnection()) {
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
 			conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
 			conn.add(model);
-			conn.close();
 		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure validation : " + ressourceURI);
 		}
@@ -334,11 +320,11 @@ public class RepositoryGestion {
         try(RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
                 rdfGestion.repositoryId()).getConnection()){
             for (IRI predicat : typeOfLink) {
-                RepositoryResult<Statement> statements;
                 exceptionCirucmstances="get " + predicat + " links from " + object;
-                statements = conn.getStatements(null, predicat, object, false);
-                exceptionCirucmstances="remove " + predicat + " links from " + object;
-                conn.remove(statements);
+                try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
+                    exceptionCirucmstances="remove " + predicat + " links from " + object;
+                    conn.remove(statements);
+                }
             }
         }catch (RepositoryException e) {
 
@@ -357,23 +343,23 @@ public class RepositoryGestion {
     }
 
 	private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink) throws RmesException {
-        RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-                rdfGestion.repositoryId()).getConnection();
-		for (IRI predicat : typeOfLink) {
-			RepositoryResult<Statement> statements;
-			try {
-				statements = conn.getStatements(null, predicat, object, false);
-				addStatementToModel(model, statements);
-				conn.remove(statements);
-
-				statements = conn.getStatements(object, predicat, null, false);
-				addStatementToModel(model, statements);
-				conn.remove(statements);
-			} catch (RepositoryException e) {
-				throwsRmesException(e, "Failure getHierarchicalOperationLinksModel : " + object);
+		try (RepositoryConnection conn = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
+				rdfGestion.repositoryId()).getConnection()) {
+			for (IRI predicat : typeOfLink) {
+				try {
+					try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, object, false)) {
+						addStatementToModel(model, statements);
+						conn.remove(statements);
+					}
+					try (RepositoryResult<Statement> statements = conn.getStatements(object, predicat, null, false)) {
+						addStatementToModel(model, statements);
+						conn.remove(statements);
+					}
+				} catch (RepositoryException e) {
+					throwsRmesException(e, "Failure getHierarchicalOperationLinksModel : " + object);
+				}
 			}
 		}
-
 	}
 
 	private void addStatementToModel(Model model, RepositoryResult<Statement> statements) {
@@ -400,14 +386,10 @@ public class RepositoryGestion {
 
 
 	public void overrideTriplets(IRI simsUri, Model model, Resource graph) throws RmesException {
-
-
-		try {
-			RepositoryConnection connection =repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-					rdfGestion.repositoryId()).getConnection();
+		try (RepositoryConnection connection = repositoryUtils.initRepository(rdfGestion.getUrlServer(),
+				rdfGestion.repositoryId()).getConnection()) {
 			model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
 			connection.add(model);
-			connection.close();
 		} catch (RepositoryException e) {
             throw new RmesException("Failure override triplets" + simsUri, e);
 		}

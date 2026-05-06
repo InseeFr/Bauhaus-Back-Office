@@ -53,14 +53,11 @@ public class ExportUtils {
         logger.debug("Begin To export {} as Response", objectType);
         fileName = FilesUtils.generateFinalFileNameWithoutExtension(fileName.replace(extension, ""), maxLength);
 
-        InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, extension);
-        if (input == null)
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
-
         ByteArrayResource resource;
-        try {
+        try (InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, extension)) {
+            if (input == null)
+                throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
             resource = new ByteArrayResource(IOUtils.toByteArray(input));
-            input.close();
         } catch (IOException e) {
             logger.error("Failed to getBytes of resource");
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
@@ -79,27 +76,20 @@ public class ExportUtils {
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
 
-        File output = null;
-        InputStream odtFileIS = null;
-        InputStream xslFileIS = null;
-        InputStream zipToCompleteIS = null;
         fileName = fileName.replace(extension, ""); //Remove extension if exists
 
-
+        File output = null;
         try {
-            xslFileIS = getClass().getResourceAsStream(xslFile);
-            odtFileIS = getClass().getResourceAsStream(xmlPattern);
-            zipToCompleteIS = getClass().getResourceAsStream(zip);
-
-            // prepare output
             output = File.createTempFile(Constants.OUTPUT, FilesUtils.getExtension(Constants.XML));
             output.deleteOnExit();
-
         } catch (IOException ioe) {
             logger.error(ioe.getMessage());
         }
 
-        try (OutputStream osOutputFile = FileUtils.openOutputStream(output);
+        try (InputStream xslFileIS = getClass().getResourceAsStream(xslFile);
+             InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
+             InputStream zipToCompleteIS = getClass().getResourceAsStream(zip);
+             OutputStream osOutputFile = FileUtils.openOutputStream(output);
              PrintStream printStream = new PrintStream(osOutputFile)) {
 
             Path tempDir = Files.createTempDirectory("forExport");
@@ -115,17 +105,6 @@ public class ExportUtils {
             return Files.newInputStream(finalPath);
         } catch (IOException | TransformerException e) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-        } finally {
-            try {
-                if (odtFileIS != null)
-                    odtFileIS.close();
-                if (xslFileIS != null)
-                    xslFileIS.close();
-                if (zipToCompleteIS != null)
-                    zipToCompleteIS.close();
-            } catch (IOException ioe) {
-                logger.error(ioe.getMessage());
-            }
         }
     }
 

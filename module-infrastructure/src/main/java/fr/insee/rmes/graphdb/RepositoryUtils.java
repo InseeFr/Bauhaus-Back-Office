@@ -80,18 +80,15 @@ public class RepositoryUtils {
 	 */
 	public static HttpStatus executeUpdate(String updateQuery,Repository repository) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
-		Update update;
 		String queryWithPrefixes = QueryUtils.PREFIXES + updateQuery;
-		try {
-			RepositoryConnection conn = repository.getConnection();
-			update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
+		try (RepositoryConnection conn = repository.getConnection()) {
+			Update update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
 			update.execute();
-			conn.close();
 			logTrace("Repo {} --- Executed update --- \n{}", repository, queryWithPrefixes);
 		} catch (RepositoryException e) {
 			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);		
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);
 		}
 		return(HttpStatus.OK);
 	}
@@ -171,13 +168,11 @@ public class RepositoryUtils {
      */
 	public static String getResponse(String query, Repository repository) throws DatabaseQueryException {
 		String response = "";
-		try {
-			RepositoryConnection conn = repository.getConnection();
+		try (RepositoryConnection conn = repository.getConnection()) {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeQuery(conn, queryWithPrefixes);
-			conn.close();
 		} catch (RDF4JException e) {
-			logAndThrowError(query, e);		
+			logAndThrowError(query, e);
 		}
 		return response;
 	}
@@ -194,13 +189,11 @@ public class RepositoryUtils {
      */
 	public static boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
 		boolean response = false;
-		try {
-			RepositoryConnection conn = repository.getConnection();
+		try (RepositoryConnection conn = repository.getConnection()) {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeAskQuery(conn, queryWithPrefixes);
-			conn.close();
 		} catch (RDF4JException e) {
-			logAndThrowError(query, e);		
+			logAndThrowError(query, e);
 		}
 		return response;
 	}
@@ -309,26 +302,21 @@ public class RepositoryUtils {
 	
 	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
-		try (RepositoryConnection conn = repository.getConnection()){
-			RepositoryResult<Statement> nodes;
-			RepositoryResult<Statement> specifications;
-			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
-			while (nodes.hasNext()) {
-				Resource node = (Resource) nodes.next().getObject();
-				toRemove.add(node);
-				specifications = conn.getStatements(node, QB.COMPONENT, null, false);
-				while (specifications.hasNext()) {
-					toRemove.add((Resource) specifications.next().getObject());
+		try (RepositoryConnection conn = repository.getConnection()) {
+			try (RepositoryResult<Statement> nodes = conn.getStatements(structure, QB.COMPONENT, null, false)) {
+				while (nodes.hasNext()) {
+					Resource node = (Resource) nodes.next().getObject();
+					toRemove.add(node);
+					try (RepositoryResult<Statement> specifications = conn.getStatements(node, QB.COMPONENT, null, false)) {
+						while (specifications.hasNext()) {
+							toRemove.add((Resource) specifications.next().getObject());
+						}
+					}
 				}
-				specifications.close();
-
 			}
-			nodes.close();
 			toRemove.forEach(res -> {
-				try {
-					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
+				try (RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false)) {
 					conn.remove(statements);
-					statements.close();
 				} catch (RepositoryException e) {
 					logger.error("Repository {} Error {}",repository, e.getMessage());
 				}

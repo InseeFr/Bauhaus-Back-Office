@@ -61,10 +61,8 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 		Model model = new LinkedHashModel();
 		Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
 
-		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator);
-
-		try {
+		try (RepositoryConnection con = repoGestion.getConnection();
+			 RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator)) {
 			if (!statements.hasNext()) {
 				throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID, "Indicator not found", indicatorId);
 			}
@@ -72,7 +70,7 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 				Statement st = statements.next();
 				// Triplets that don't get published
 				String pred = RdfUtils.toString(st.getPredicate());
-				
+
 				if (pred.endsWith("isValidated")
 						|| pred.endsWith("validationState")) {
 					// nothing, wouldn't copy this attr
@@ -96,11 +94,6 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					Constants.REPOSITORY_EXCEPTION);
-		}
-
-		finally {
-			repoGestion.closeStatements(statements);
-			con.close();
 		}
 		Resource indicatorToPublishRessource = publicationUtils.tranformBaseURIToPublish(indicator);
 		repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
