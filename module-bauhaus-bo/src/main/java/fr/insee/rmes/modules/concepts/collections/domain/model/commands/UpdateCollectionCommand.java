@@ -9,16 +9,16 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class UpdateCollectionCommand extends CreateCollectionCommand{
-    private final CollectionId id;
+    private final CollectionId collectionId;
 
     public UpdateCollectionCommand(String id, List<LocalisedLabel> labels, List<LocalisedLabel> descriptions, String creator, @Nullable String contributor, List<String> conceptsIdentifiers) throws InvalidCreateCollectionCommandException, InvalidCollectionIdException {
 
-        super(labels, descriptions, creator, contributor, conceptsIdentifiers);
-        this.id = new CollectionId(id);
+        super(id, labels, descriptions, creator, contributor, conceptsIdentifiers);
+        this.collectionId = new CollectionId(id);
     }
 
-    public CollectionId id() {
-        return id;
+    public CollectionId collectionId() {
+        return collectionId;
     }
 }
 

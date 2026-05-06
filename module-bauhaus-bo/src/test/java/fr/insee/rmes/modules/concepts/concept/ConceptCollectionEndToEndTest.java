@@ -19,6 +19,7 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
 
     static final String CREATE_COLLECTION_WITH_CONCEPT_JSON = """
             {
+                "id": "%s",
                 "labels": [{"value": "Collection test", "lang": "fr"}],
                 "descriptions": [],
                 "creator": "http://bauhaus/HIE000000",
@@ -38,6 +39,7 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
 
     static final String CREATE_EMPTY_COLLECTION_JSON = """
             {
+                "id": "%s",
                 "labels": [{"value": "Collection vide", "lang": "fr"}],
                 "descriptions": [],
                 "creator": "http://bauhaus/HIE000000",
@@ -105,7 +107,7 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         // Create a collection containing c00001
         var createResponse = restClient.post()
                 .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_WITH_CONCEPT_JSON)
+                .body(CREATE_COLLECTION_WITH_CONCEPT_JSON.formatted("Collection-sync-001"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -155,7 +157,7 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         // Create first collection (with c00001 as member)
         var createResponse1 = restClient.post()
                 .uri(collectionsEndpoint)
-                .body(CREATE_COLLECTION_WITH_CONCEPT_JSON)
+                .body(CREATE_COLLECTION_WITH_CONCEPT_JSON.formatted("Collection-multi-001"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
@@ -166,7 +168,7 @@ class ConceptCollectionEndToEndTest extends WithGraphDBContainer {
         // Create second collection (empty)
         var createResponse2 = restClient.post()
                 .uri(collectionsEndpoint)
-                .body(CREATE_EMPTY_COLLECTION_JSON)
+                .body(CREATE_EMPTY_COLLECTION_JSON.formatted("Collection-multi-002"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()

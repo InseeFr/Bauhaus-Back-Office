@@ -7,11 +7,9 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCo
 import java.util.List;
 
 public class UpdateCollectionRequest extends CreateCollectionRequest {
-    private final String id;
 
     public UpdateCollectionRequest(String id, List<LocalisedLabelResponse> labels, List<LocalisedLabelResponse> descriptions, String creator, String contributor, List<String> conceptsIdentifiers) {
-        super(labels, descriptions, creator, contributor, conceptsIdentifiers);
-        this.id = id;
+        super(id, labels, descriptions, creator, contributor, conceptsIdentifiers);
     }
 
     UpdateCollectionCommand toUpdateCommand() throws InvalidCreateCollectionCommandException, InvalidCollectionIdException {
@@ -23,9 +21,5 @@ public class UpdateCollectionRequest extends CreateCollectionRequest {
                 this.contributor(),
                 this.conceptsIdentifiers()
         );
-    }
-
-    public String id() {
-        return id;
     }
 }

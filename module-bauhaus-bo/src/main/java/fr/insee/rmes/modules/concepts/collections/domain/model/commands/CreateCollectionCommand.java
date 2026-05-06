@@ -10,13 +10,17 @@ import java.util.List;
 import java.util.Optional;
 
 public class CreateCollectionCommand {
+    private final String id;
     private final List<LocalisedLabel> labels;
     private final List<LocalisedLabel> descriptions;
     private final String creator;
     private final @Nullable String contributor;
     private final List<String> conceptsIdentifiers;
 
-    public CreateCollectionCommand(List<LocalisedLabel> labels, List<LocalisedLabel> descriptions, String creator, @Nullable String contributor, List<String> conceptsIdentifiers) throws InvalidCreateCollectionCommandException {
+    public CreateCollectionCommand(String id, List<LocalisedLabel> labels, List<LocalisedLabel> descriptions, String creator, @Nullable String contributor, List<String> conceptsIdentifiers) throws InvalidCreateCollectionCommandException {
+        if(StringUtils.isAllBlank(id)){
+            throw new InvalidCreateCollectionCommandException("The identifier is blank");
+        }
         if(labels.isEmpty()){
             throw new InvalidCreateCollectionCommandException("There are no labels");
         }
@@ -30,11 +34,16 @@ public class CreateCollectionCommand {
             throw new InvalidCreateCollectionCommandException("At least one concept is blank");
         }
 
+        this.id = id;
         this.labels = labels;
         this.descriptions = descriptions;
         this.creator = creator;
         this.contributor = contributor;
         this.conceptsIdentifiers = conceptsIdentifiers;
+    }
+
+    public String id() {
+        return id;
     }
 
     public List<LocalisedLabel> labels() {

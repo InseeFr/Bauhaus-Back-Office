@@ -7,13 +7,15 @@ import java.util.List;
 
 public class CreateCollectionRequest {
 
+    protected final String id;
     protected final List<LocalisedLabelResponse> labels;
     protected final List<LocalisedLabelResponse> descriptions;
     protected final String creator;
     protected final String contributor;
     protected final List<String> conceptsIdentifiers;
 
-    public CreateCollectionRequest(List<LocalisedLabelResponse> labels, List<LocalisedLabelResponse> descriptions, String creator, String contributor, List<String> conceptsIdentifiers) {
+    public CreateCollectionRequest(String id, List<LocalisedLabelResponse> labels, List<LocalisedLabelResponse> descriptions, String creator, String contributor, List<String> conceptsIdentifiers) {
+        this.id = id;
         this.labels = labels;
         this.descriptions = descriptions;
         this.creator = creator;
@@ -23,12 +25,17 @@ public class CreateCollectionRequest {
 
     CreateCollectionCommand toCreateCommand() throws InvalidCreateCollectionCommandException {
         return new CreateCollectionCommand(
+                this.id,
                 this.labels.stream().map(LocalisedLabelResponse::toDomain).toList(),
                 this.descriptions.stream().map(LocalisedLabelResponse::toDomain).toList(),
                 this.creator,
                 this.contributor,
                 this.conceptsIdentifiers
         );
+    }
+
+    public String id() {
+        return id;
     }
 
     public List<LocalisedLabelResponse> labels() {

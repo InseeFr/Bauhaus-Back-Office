@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyExistsException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionNotFoundException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
@@ -22,11 +23,9 @@ import java.util.Set;
 public class DomainCollectionsService implements CollectionsService {
 
     private final CollectionsRepository repository;
-    private final RandomIdGenerator randomIdGenerator;
 
-    public DomainCollectionsService(CollectionsRepository repository, RandomIdGenerator randomIdGenerator) {
+    public DomainCollectionsService(CollectionsRepository repository) {
         this.repository = repository;
-        this.randomIdGenerator = randomIdGenerator;
     }
 
     @Override
@@ -40,17 +39,22 @@ public class DomainCollectionsService implements CollectionsService {
     }
 
     @Override
-    public CollectionId createCollection(CreateCollectionCommand collectionCommand) throws CollectionsSaveException {
+    public CollectionId createCollection(CreateCollectionCommand collectionCommand) throws CollectionsSaveException, CollectionsFetchException {
         // TODO ajouter verication si les conceptsIdentifiers existent bien
 
-        Collection newCollection = Collection.create(collectionCommand, randomIdGenerator.generateCollectionId());
+        CollectionId requestedId = new CollectionId(collectionCommand.id());
+        if (this.repository.getCollection(requestedId).isPresent()) {
+            throw new CollectionAlreadyExistsException("Collection with id %s already exists".formatted(requestedId.value()));
+        }
+
+        Collection newCollection = Collection.create(collectionCommand, requestedId);
         this.repository.save(newCollection);
         return newCollection.id();
     }
 
     @Override
     public void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException {
-        Collection collection = Collection.create(updateCommand, updateCommand.id());
+        Collection collection = Collection.create(updateCommand, updateCommand.collectionId());
         this.repository.update(collection);
     }
 

@@ -11,10 +11,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CreateCollectionRequestCommandTest {
 
+    private static final String VALID_ID = "Collection-001";
+
     @Test
     void should_throw_exception_if_labels_is_empty() throws InvalidCreateCollectionCommandException {
         var exception = assertThrows(InvalidCreateCollectionCommandException.class, () -> {
             new CreateCollectionCommand(
+                    VALID_ID,
                     Collections.emptyList(),
                     Collections.emptyList(),
                     "HIE000000",
@@ -30,6 +33,7 @@ class CreateCollectionRequestCommandTest {
     void should_throw_exception_if_default_label_is_not_present() throws InvalidCreateCollectionCommandException {
         var exception = assertThrows(InvalidCreateCollectionCommandException.class, () -> {
             new CreateCollectionCommand(
+                    VALID_ID,
                     List.of(LocalisedLabel.ofAlternativeLanguage("value")),
                     Collections.emptyList(),
                     "HIE000000",
@@ -45,6 +49,7 @@ class CreateCollectionRequestCommandTest {
     void should_throw_exception_if_creator_is_blank() throws InvalidCreateCollectionCommandException {
         var exception = assertThrows(InvalidCreateCollectionCommandException.class, () -> {
             new CreateCollectionCommand(
+                    VALID_ID,
                     List.of(LocalisedLabel.ofDefaultLanguage("value")),
                     Collections.emptyList(),
                     "",
@@ -60,6 +65,7 @@ class CreateCollectionRequestCommandTest {
     void should_throw_exception_if_at_least_one_concept_is_blank() throws InvalidCreateCollectionCommandException {
         var exception = assertThrows(InvalidCreateCollectionCommandException.class, () -> {
             new CreateCollectionCommand(
+                    VALID_ID,
                     List.of(LocalisedLabel.ofDefaultLanguage("value")),
                     Collections.emptyList(),
                     "HIE000000",
@@ -72,9 +78,26 @@ class CreateCollectionRequestCommandTest {
     }
 
     @Test
+    void should_throw_exception_if_id_is_blank() {
+        var exception = assertThrows(InvalidCreateCollectionCommandException.class, () -> {
+            new CreateCollectionCommand(
+                    "",
+                    List.of(LocalisedLabel.ofDefaultLanguage("value")),
+                    Collections.emptyList(),
+                    "HIE000000",
+                    null,
+                    List.of("c01011")
+            );
+        });
+
+        assertEquals("The identifier is blank", exception.getMessage());
+    }
+
+    @Test
     void should_create_new_create_collection_command() throws InvalidCreateCollectionCommandException {
         assertDoesNotThrow(() -> {
             new CreateCollectionCommand(
+                    VALID_ID,
                     List.of(LocalisedLabel.ofDefaultLanguage("value")),
                     Collections.emptyList(),
                     "HIE000000",
