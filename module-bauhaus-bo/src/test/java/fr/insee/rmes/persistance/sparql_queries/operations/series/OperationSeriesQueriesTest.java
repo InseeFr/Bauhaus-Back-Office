@@ -4,11 +4,14 @@ import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -50,6 +53,17 @@ class OperationSeriesQueriesTest {
 
     private void prepareRdfUtils() {
         RdfUtils.setUriUtils(new UriUtils("","http://bauhaus/",p-> Optional.of(SERIES_BASE_URI)));
+    }
+
+    @Test
+    void seriesWithStampQuery_rendersStampValue_notRecordToString() throws Exception {
+        Set<Stamp> stamps = new LinkedHashSet<>();
+        stamps.add(new Stamp("HIE2000069"));
+
+        String query = operationSeriesQueries.seriesWithStampQuery(stamps, false);
+
+        assertThat(query).contains("\"HIE2000069\"");
+        assertThat(query).doesNotContain("Stamp[");
     }
 
 }
