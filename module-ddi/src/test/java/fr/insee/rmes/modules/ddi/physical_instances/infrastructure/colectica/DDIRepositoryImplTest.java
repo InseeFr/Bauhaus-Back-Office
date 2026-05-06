@@ -602,17 +602,18 @@ class DDIRepositoryImplTest {
 
         // Mock DDI4 to DDI3 conversion for updateFullPhysicalInstance
         Ddi3Response.Ddi3Item mockPiDdi3Item = new Ddi3Response.Ddi3Item(
-                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "2", instanceId,
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "1", instanceId,
                 "<PhysicalInstance>" + newLabel + "</PhysicalInstance>",
                 "2025-01-01T00:00:00", null, true, false, false, "DDI"
         );
         Ddi3Response.Ddi3Item mockDrDdi3Item = new Ddi3Response.Ddi3Item(
-                "f39ff278-8500-45fe-a850-3906da2d242b", agencyId, "2", "dr-123",
+                "f39ff278-8500-45fe-a850-3906da2d242b", agencyId, "1", "dr-123",
                 "<DataRelationship>" + newDataRelationshipLabel + "</DataRelationship>",
                 "2025-01-01T00:00:00", null, true, false, false, "DDI"
         );
         Ddi3Response mockDdi3Response = new Ddi3Response(null, List.of(mockPiDdi3Item, mockDrDdi3Item));
-        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any(Ddi4Response.class)))
+        ArgumentCaptor<Ddi4Response> ddi4Captor = ArgumentCaptor.forClass(Ddi4Response.class);
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Captor.capture()))
                 .thenReturn(mockDdi3Response);
 
         // Mock item update (POST /item)
@@ -626,6 +627,11 @@ class DDIRepositoryImplTest {
         // Verify item update endpoint was called
         verify(requestSpec, atLeastOnce()).uri(eq(itemUrl));
 
+        // Version of the objects sent to Colectica must NOT be incremented
+        Ddi4Response capturedDdi4 = ddi4Captor.getValue();
+        assertEquals("1", capturedDdi4.physicalInstance().get(0).version()); // version preserved, not incremented
+        assertEquals("1", capturedDdi4.dataRelationship().get(0).version()); // version preserved, not incremented
+
         ArgumentCaptor<Object> bodyCaptor2 = ArgumentCaptor.forClass(Object.class);
         verify(requestSpec, atLeastOnce()).body(bodyCaptor2.capture());
         ColecticaCreateItemRequest createRequest = bodyCaptor2.getAllValues().stream()
@@ -636,13 +642,13 @@ class DDIRepositoryImplTest {
         // Verify first item is PhysicalInstance with updated label
         ColecticaItemResponse piItem = createRequest.items().get(0);
         assertEquals("a51e85bb-6259-4488-8df2-f08cb43485f8", piItem.itemType()); // PhysicalInstance UUID
-        assertEquals(2, piItem.version()); // Version incremented
+        assertEquals(1, piItem.version()); // version preserved, not incremented
         assertTrue(piItem.item().contains(newLabel));
 
         // Verify second item is DataRelationship with updated name
         ColecticaItemResponse drItem = createRequest.items().get(1);
         assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
-        assertEquals(2, drItem.version()); // Version incremented
+        assertEquals(1, drItem.version()); // version preserved, not incremented
         assertTrue(drItem.item().contains(newDataRelationshipLabel));
     }
 

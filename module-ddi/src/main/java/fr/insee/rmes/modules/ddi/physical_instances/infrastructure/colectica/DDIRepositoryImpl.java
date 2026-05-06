@@ -814,10 +814,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         // Get current timestamp in ISO format
         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-        // Determine new version (increment by 1)
-        int currentVersion = Integer.parseInt(currentPI.version());
-        String newVersion = String.valueOf(currentVersion + 1);
-
         // Build updated PhysicalInstance with new label if provided
         String newPhysicalInstanceLabel = request.physicalInstanceLabel() != null
                 ? request.physicalInstanceLabel()
@@ -829,7 +825,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 currentPI.urn(),
                 currentPI.agency(),
                 currentPI.id(),
-                newVersion,
+                currentPI.version(),
                 currentPI.basedOnObject(),
                 new Citation(new Title(new StringValue(
                         currentPI.citation().title().string().xmlLang(),
@@ -864,7 +860,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     currentDR.urn(),
                     currentDR.agency(),
                     currentDR.id(),
-                    newVersion,
+                    currentDR.version(),
                     currentDR.basedOnObject(),
                     drLabel,
                     updatedLR // Updated LogicalRecord with new label
