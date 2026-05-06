@@ -80,51 +80,42 @@ public class SeriesPublication {
         Model model = new LinkedHashModel();
         Resource resource = RdfUtils.seriesIRI(id);
 
-        RepositoryConnection con = repoGestion.getConnection();
-        RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource);
-
-        checkIfSeriesExist(id, statements);
-
-        RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, resource);
-        RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, resource);
-        RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, resource);
-
-        readAllTriplets(statements, model, hasPartStatements, replacesStatements, isReplacedByStatements, resource, con);
+        try (RepositoryConnection con = repoGestion.getConnection();
+             RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource);
+             RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, resource);
+             RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, resource);
+             RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, resource)) {
+            checkIfSeriesExist(id, statements);
+            readAllTriplets(statements, model, hasPartStatements, replacesStatements, isReplacedByStatements, resource);
+        }
         Resource seriesToPublishResource = publicationUtils.tranformBaseURIToPublish(resource);
         repositoryPublication.publishResource(seriesToPublishResource, model, "serie");
 
     }
 
-    private void readAllTriplets(RepositoryResult<Statement> statements, Model model, RepositoryResult<Statement> hasPartStatements, RepositoryResult<Statement> replacesStatements, RepositoryResult<Statement> isReplacedByStatements, Resource resource, RepositoryConnection con) throws RmesException {
-        try (con) {
-            while (statements.hasNext()) {
-                Statement st = statements.next();
-                String predicate = RdfUtils.toString(st.getPredicate());
+    private void readAllTriplets(RepositoryResult<Statement> statements, Model model, RepositoryResult<Statement> hasPartStatements, RepositoryResult<Statement> replacesStatements, RepositoryResult<Statement> isReplacedByStatements, Resource resource) throws RmesException {
+        while (statements.hasNext()) {
+            Statement st = statements.next();
+            String predicate = RdfUtils.toString(st.getPredicate());
 
-                if (URI_PREDICATES_TO_TRANSFORM.stream().anyMatch(predicate::endsWith)) {
-                    transformSubjectAndObject(model, st);
-                } else if (PREDICATES_TO_IGNORE.stream().noneMatch(predicate::endsWith)) {
-                    model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-                            st.getPredicate(),
-                            st.getObject(),
-                            st.getContext()
-                    );
-                }
-                addStatementsToModel(model, hasPartStatements);
-                addStatementsToModel(model, replacesStatements);
-                addStatementsToModel(model, isReplacedByStatements);
+            if (URI_PREDICATES_TO_TRANSFORM.stream().anyMatch(predicate::endsWith)) {
+                transformSubjectAndObject(model, st);
+            } else if (PREDICATES_TO_IGNORE.stream().noneMatch(predicate::endsWith)) {
+                model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+                        st.getPredicate(),
+                        st.getObject(),
+                        st.getContext()
+                );
             }
-
-            /*
-              We have to query all published operations linked to this series and publish all of them
-             */
-            addOperationsWhoHavePartWithToModel(resource, model);
-
-
-        } finally {
-            repoGestion.closeStatements(statements);
-            repoGestion.closeStatements(hasPartStatements);
+            addStatementsToModel(model, hasPartStatements);
+            addStatementsToModel(model, replacesStatements);
+            addStatementsToModel(model, isReplacedByStatements);
         }
+
+        /*
+          We have to query all published operations linked to this series and publish all of them
+         */
+        addOperationsWhoHavePartWithToModel(resource, model);
     }
 
 

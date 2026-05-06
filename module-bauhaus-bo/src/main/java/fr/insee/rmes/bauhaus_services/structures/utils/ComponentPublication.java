@@ -19,46 +19,38 @@ import org.springframework.stereotype.Repository;
 public class ComponentPublication extends RdfService {
 
 	public void publishComponent(Resource component, IRI type) throws RmesException {
-		
+
 		Model model = new LinkedHashModel();
-		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, component);
-
-		try {	
-			try {
-				while (statements.hasNext()) {
-					Statement st = statements.next();
-					String pred = RdfUtils.toString(st.getPredicate());
-					if (pred.endsWith("validationState") || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith(Constants.CREATOR)) {
-						// nothing, wouldn't copy this attr
-					}else if (pred.endsWith("attribute")
-							|| pred.endsWith("dimension")
-							|| pred.endsWith("measure")
-							|| pred.endsWith(Constants.CODELIST)
-							|| pred.endsWith(Constants.CONCEPT)
-							|| pred.endsWith("range")) {
-						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-								publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-					}
-					else {
-						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
-								st.getPredicate(),
-								st.getObject(),
-								st.getContext());
-					}
-
+		try (RepositoryConnection con = repoGestion.getConnection();
+			 RepositoryResult<Statement> statements = repoGestion.getStatements(con, component)) {
+			while (statements.hasNext()) {
+				Statement st = statements.next();
+				String pred = RdfUtils.toString(st.getPredicate());
+				if (pred.endsWith("validationState") || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith(Constants.CREATOR)) {
+					// nothing, wouldn't copy this attr
+				}else if (pred.endsWith("attribute")
+						|| pred.endsWith("dimension")
+						|| pred.endsWith("measure")
+						|| pred.endsWith(Constants.CODELIST)
+						|| pred.endsWith(Constants.CONCEPT)
+						|| pred.endsWith("range")) {
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 				}
-			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+				else {
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+							st.getPredicate(),
+							st.getObject(),
+							st.getContext());
+				}
+
 			}
-		
-		} finally {
-			repoGestion.closeStatements(statements);
-			con.close();
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
 		Resource componentToPublishRessource = publicationUtils.tranformBaseURIToPublish(component);
 		repositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
-		
+
 	}
 
 }

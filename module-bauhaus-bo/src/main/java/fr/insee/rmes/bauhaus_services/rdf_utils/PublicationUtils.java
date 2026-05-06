@@ -51,43 +51,34 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
 
     public void publishResource(Resource resource, Set<String> denyList) throws RmesException {
         Model model = new LinkedHashModel();
-        RepositoryConnection connection = repositoryGestion.getConnection();
-        RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, resource);
+        try (RepositoryConnection connection = repositoryGestion.getConnection();
+             RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, resource)) {
+            while (statements.hasNext()) {
+                Statement statement = statements.next();
+                String predicate = RdfUtils.toString(statement.getPredicate());
 
-        try {
-            try {
-                while (statements.hasNext()) {
-                    Statement statement = statements.next();
-                    String predicate = RdfUtils.toString(statement.getPredicate());
+                boolean isDeniedPredicate = !denyList.stream().filter(predicate::endsWith).toList().isEmpty();
 
-                    boolean isDeniedPredicate = !denyList.stream().filter(predicate::endsWith).toList().isEmpty();
+                if(!isDeniedPredicate){
+                    try {
+                        model.add(tranformBaseURIToPublish(statement.getSubject()),
+                                statement.getPredicate(),
+                                tranformBaseURIToPublish((Resource) statement.getObject()),
+                                statement.getContext());
 
-                    if(!isDeniedPredicate){
-                        try {
-                            model.add(tranformBaseURIToPublish(statement.getSubject()),
-                                    statement.getPredicate(),
-                                    tranformBaseURIToPublish((Resource) statement.getObject()),
-                                    statement.getContext());
-
-                            if(statement.getObject().isBNode()){
-                                publishResource((Resource) statement.getObject(), Set.of());
-                            }
-                        } catch(ClassCastException _){
-                            model.add(tranformBaseURIToPublish(statement.getSubject()),
-                                    statement.getPredicate(),
-                                    statement.getObject(),
-                                    statement.getContext());
+                        if(statement.getObject().isBNode()){
+                            publishResource((Resource) statement.getObject(), Set.of());
                         }
+                    } catch(ClassCastException _){
+                        model.add(tranformBaseURIToPublish(statement.getSubject()),
+                                statement.getPredicate(),
+                                statement.getObject(),
+                                statement.getContext());
                     }
                 }
-
-            } catch (RepositoryException e) {
-                throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
             }
-
-        } finally {
-            repositoryGestion.closeStatements(statements);
-            connection.close();
+        } catch (RepositoryException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
         }
         Resource resourceToPublish = tranformBaseURIToPublish(resource);
         repositoryPublication.publishResource(resourceToPublish, model, null);

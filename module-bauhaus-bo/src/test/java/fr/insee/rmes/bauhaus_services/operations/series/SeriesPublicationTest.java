@@ -175,8 +175,10 @@ class SeriesPublicationTest {
             seriesPublication.publishSeries(seriesId, seriesJson);
 
             verify(repositoryPublication).publishResource(eq(resource), any(Model.class), eq("serie"));
-            verify(repoGestion).closeStatements(statements);
-            verify(repoGestion).closeStatements(hasPartStatements);
+            verify(statements).close();
+            verify(hasPartStatements).close();
+            verify(replacesStatements).close();
+            verify(isReplacedByStatements).close();
             verify(repositoryConnection).close();
         }
     }

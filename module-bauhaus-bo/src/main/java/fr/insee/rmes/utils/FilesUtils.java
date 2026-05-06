@@ -85,18 +85,10 @@ public class FilesUtils {
 	}
 
 	public static void zipDirectory(File directoryToZip) throws IOException {
-		FileOutputStream fos = new FileOutputStream(directoryToZip + "/" + directoryToZip.getName() + ".zip");
-		ZipOutputStream zipOut = new ZipOutputStream(fos);
-
-		zipFile(directoryToZip, directoryToZip.getName(), zipOut);
-		
-		try {
-			zipOut.close();
-			fos.close();
-		} catch(IOException _ ) {
-			log.warn("outputStream already closed");
+		try (FileOutputStream fos = new FileOutputStream(directoryToZip + "/" + directoryToZip.getName() + ".zip");
+			 ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+			zipFile(directoryToZip, directoryToZip.getName(), zipOut);
 		}
-		
 	}
 
 	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {

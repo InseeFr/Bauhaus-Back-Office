@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 
 @Service
@@ -67,7 +68,9 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Override
 	public String getMetadataReportDefaultValue() throws IOException {
-		return StreamUtils.copyToString(this.simsDefaultValue.getInputStream(), Charset.defaultCharset());
+		try (InputStream is = this.simsDefaultValue.getInputStream()) {
+			return StreamUtils.copyToString(is, Charset.defaultCharset());
+		}
 	}
 
 	@Override
