@@ -10,6 +10,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUt
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -67,6 +68,7 @@ public class IndicatorsUtils {
 	private final String lg2;
 	private final boolean indicatorsRichTextNexStructure;
 	private final OperationIndicatorsQueries operationIndicatorsQueries;
+	private final OrganisationLookup organisationLookup;
 
 	public IndicatorsUtils(
 			@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.indicators-rich-text-new-structure}") boolean indicatorsRichTextNexStructure,
@@ -80,7 +82,8 @@ public class IndicatorsUtils {
 			UriUtils uriUtils,
 			@Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
 			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
-			OperationIndicatorsQueries operationIndicatorsQueries) {
+			OperationIndicatorsQueries operationIndicatorsQueries,
+			OrganisationLookup organisationLookup) {
 		this.indicatorsRichTextNexStructure = indicatorsRichTextNexStructure;
 		this.repositoryGestion = repositoryGestion;
 		this.codeListService = codeListService;
@@ -93,9 +96,10 @@ public class IndicatorsUtils {
 		this.lg1 = lg1;
 		this.lg2 = lg2;
 		this.operationIndicatorsQueries = operationIndicatorsQueries;
+		this.organisationLookup = organisationLookup;
 	}
 
-	private void validate(Indicator indicator) throws RmesException {
+	void validate(Indicator indicator) throws RmesException {
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
 		}
@@ -104,6 +108,37 @@ public class IndicatorsUtils {
 		}
 		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
 			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
+		}
+		validateOrganisations(indicator);
+	}
+
+	private void validateOrganisations(Indicator indicator) throws RmesException {
+		if (organisationLookup == null) {
+			return;
+		}
+		java.util.List<String> values = new java.util.ArrayList<>();
+		if (indicator.getCreators() != null) {
+			values.addAll(indicator.getCreators());
+		}
+		addLinkIds(values, indicator.getContributors());
+		addLinkIds(values, indicator.getPublishers());
+		if (values.isEmpty()) {
+			return;
+		}
+		java.util.List<String> unknown = organisationLookup.findUnknown(values);
+		if (!unknown.isEmpty()) {
+			throw new RmesBadRequestException("Unknown organisation references: " + unknown);
+		}
+	}
+
+	private static void addLinkIds(java.util.List<String> target, java.util.List<OperationsLink> links) {
+		if (links == null) {
+			return;
+		}
+		for (OperationsLink link : links) {
+			if (link != null && !link.isEmpty()) {
+				target.add(link.getId());
+			}
 		}
 	}
 
@@ -343,26 +378,9 @@ public class IndicatorsUtils {
 		addMulltiLangValues(model, indicURI, RdfUtils.productsGraph(), indicator.getAbstractLg1(), indicator.getAbstractLg2(), DCTERMS.ABSTRACT);
 		addMulltiLangValues(model, indicURI, RdfUtils.productsGraph(), indicator.getHistoryNoteLg1(), indicator.getHistoryNoteLg2(), SKOS.HISTORY_NOTE);
 
-		List<OperationsLink> contributors = indicator.getContributors();
-		if (contributors != null){//partenaires
-			for (OperationsLink contributor : contributors) {
-				RdfUtils.addTripleUri(indicURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, RdfUtils.productsGraph());
-			}
-		}
-
-		List<String> creators=indicator.getCreators();
-		if (creators!=null) {
-			for (String creator : creators) {
-				RdfUtils.addTripleString(indicURI, DC.CREATOR, creator, model, RdfUtils.productsGraph());
-			}
-		}
-
-		List<OperationsLink> publishers=indicator.getPublishers();
-		if (publishers!=null) {
-			for (OperationsLink publisher : publishers) {
-				RdfUtils.addTripleUri(indicURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publisher.getId()), model, RdfUtils.productsGraph());
-			}
-		}
+		addOrganisationLinks(indicator.getContributors(), DCTERMS.CONTRIBUTOR, model, indicURI);
+		addCreators(model, indicURI, indicator.getCreators());
+		addOrganisationLinks(indicator.getPublishers(), DCTERMS.PUBLISHER, model, indicURI);
 		
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
 		RdfUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
@@ -421,13 +439,44 @@ public class IndicatorsUtils {
 		RdfUtils.addTripleUri(next, DCTERMS.REPLACES ,previous, model, RdfUtils.productsGraph());
 	}
 
+	void addCreators(Model model, IRI indicURI, List<String> creators) {
+		addCreators(model, indicURI, creators, RdfUtils.productsGraph());
+	}
+
+	void addCreators(Model model, IRI indicURI, List<String> creators, Resource graph) {
+		if (creators == null) {
+			return;
+		}
+		for (String creatorIri : creators) {
+			RdfUtils.addTripleUri(indicURI, DC.CREATOR, creatorIri, model, graph);
+		}
+	}
+
+	void addOrganisationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI indicURI) throws RmesException {
+		addOrganisationLinks(links, predicate, model, indicURI, RdfUtils.productsGraph());
+	}
+
+	void addOrganisationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI indicURI, Resource graph) throws RmesException {
+		if (links == null) {
+			return;
+		}
+		for (OperationsLink link : links) {
+			if (!link.isEmpty()) {
+				java.util.Optional<String> resolved = organisationLookup.resolve(link.getId());
+				if (resolved.isPresent()) {
+					RdfUtils.addTripleUri(indicURI, predicate, resolved.get(), model, graph);
+				}
+			}
+		}
+	}
+
 	public String createID() throws RmesException {
 		logger.info("Generate indicator id");
 		JSONObject json = repositoryGestion.getResponseAsObject(operationIndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : {}" , json);
-		if (json.isEmpty()) {return null;}
+		if (json.isEmpty()) {return "p1";}
 		String id = json.getString(Constants.ID);
-		if (id.equals(Constants.UNDEFINED)) {return null;}
+		if (id.equals(Constants.UNDEFINED)) {return "p1";}
 		int idInt = Integer.parseInt(id.substring(1))+1;
 		return "p" + idInt;
 	}

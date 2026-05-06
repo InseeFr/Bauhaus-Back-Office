@@ -332,7 +332,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 					members.add(convertConceptIntoMembers(concept));
 				}
 			} catch (RmesException e) {
-				e.printStackTrace();
+				logger.error("Failed to export concept {}", id, e);
 			}
 		});
 		return ret;

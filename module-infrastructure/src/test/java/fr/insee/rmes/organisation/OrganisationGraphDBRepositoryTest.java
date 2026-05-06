@@ -28,12 +28,13 @@ class OrganisationGraphDBRepositoryTest {
     private OrganisationGraphDBRepository repository;
 
     private static final String BASE_GRAPH = "http://rdf.insee.fr/graphes/";
+    private static final String ORGANISATIONS_GRAPH = "organisations";
     private static final String INSEE_GRAPH = "organisations/insee";
     private static final String LANGUAGE = "fr";
 
     @BeforeEach
     void setUp() {
-        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, INSEE_GRAPH, LANGUAGE);
+        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, ORGANISATIONS_GRAPH, INSEE_GRAPH, LANGUAGE);
     }
 
     @Test
@@ -136,6 +137,54 @@ class OrganisationGraphDBRepositoryTest {
 
         // Then
         assertThat(result).isNull();
+    }
+
+    @Test
+    void getOrganisationsMap_keyedByInputValue_supportingIriAndLegacyStamp() throws RmesException {
+        // Given: input contains one IRI and one legacy stamp; the SPARQL UNION returns both
+        JSONArray mockResponse = new JSONArray();
+        JSONObject row1 = new JSONObject();
+        row1.put("key", "http://bauhaus/organisations/DG75-A001");
+        row1.put("stamp", "DG75-A001");
+        row1.put("label", "Direction Générale 75 - Service A001");
+        JSONObject row2 = new JSONObject();
+        row2.put("key", "DR13-DIR");
+        row2.put("stamp", "DR13-DIR");
+        row2.put("label", "Direction Régionale 13 - Direction");
+        mockResponse.put(row1);
+        mockResponse.put(row2);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        // When
+        java.util.Map<String, OrganisationOption> result = repository.getOrganisationsMap(
+                List.of("http://bauhaus/organisations/DG75-A001", "DR13-DIR"));
+
+        // Then: the map is keyed by the input value (IRI or stamp)
+        assertThat(result).containsOnlyKeys("http://bauhaus/organisations/DG75-A001", "DR13-DIR");
+        assertThat(result.get("http://bauhaus/organisations/DG75-A001").label())
+                .isEqualTo("Direction Générale 75 - Service A001");
+        assertThat(result.get("DR13-DIR").label())
+                .isEqualTo("Direction Régionale 13 - Direction");
+    }
+
+    @Test
+    void getOrganisationsMap_handlesIriRowsWithoutStamp_keepsLabelAvailable() throws RmesException {
+        // Sub-units have skos:prefLabel but no adms:identifier; the SPARQL OPTIONAL leaves stamp absent.
+        JSONArray mockResponse = new JSONArray();
+        JSONObject row = new JSONObject();
+        row.put("key", "http://bauhaus/organisations/insee/HIE2001204");
+        row.put("label", "Sous-direction sans stamp");
+        // No "stamp" field in this row
+        mockResponse.put(row);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        java.util.Map<String, OrganisationOption> result = repository.getOrganisationsMap(
+                List.of("http://bauhaus/organisations/insee/HIE2001204"));
+
+        assertThat(result)
+                .containsKey("http://bauhaus/organisations/insee/HIE2001204");
+        assertThat(result.get("http://bauhaus/organisations/insee/HIE2001204").label())
+                .isEqualTo("Sous-direction sans stamp");
     }
 
     @Test

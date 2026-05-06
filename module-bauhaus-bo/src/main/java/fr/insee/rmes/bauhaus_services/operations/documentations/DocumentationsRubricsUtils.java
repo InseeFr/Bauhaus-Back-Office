@@ -60,6 +60,9 @@ DocumentationsRubricsUtils extends RdfService {
 	private OrganizationUtils organizationUtils;
 
 	@Autowired
+	private fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup;
+
+	@Autowired
 	private CodeListService codeListService;
 
 	@Autowired
@@ -221,10 +224,8 @@ DocumentationsRubricsUtils extends RdfService {
 			}
 			break;
 		case ORGANIZATION:
-			String orgaUri = organizationUtils.getUri(rubric.getSimpleValue());
-			if (orgaUri != null) {
-				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(orgaUri), model, graph);
-			}
+			organisationLookup.resolve(rubric.getSimpleValue())
+					.ifPresent(iri -> RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(iri), model, graph));
 			break;
 		case STRING:
 			if (!rubric.isEmpty()) {

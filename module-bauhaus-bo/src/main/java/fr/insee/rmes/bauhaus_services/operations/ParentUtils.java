@@ -4,6 +4,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -46,6 +47,9 @@ public class ParentUtils extends RdfService{
 
 	@Autowired
 	private OperationSeriesQueries operationSeriesQueries;
+
+	@Autowired
+	private OrganisationLookup organisationLookup;
 
 
 	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
@@ -126,16 +130,19 @@ public class ParentUtils extends RdfService{
 
 
 	public JSONArray getIndicatorCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(operationIndicatorsQueries.getCreatorsById(id));
+		JSONArray raw = repoGestion.getResponseAsJSONList(operationIndicatorsQueries.getCreatorsById(id));
+		return organisationLookup.canonicalize(raw);
 	}
 
 
 	public JSONArray getSeriesCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsById(id));
+		JSONArray raw = repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsById(id));
+		return organisationLookup.canonicalize(raw);
 	}
 
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
+		JSONArray raw = repoGestion.getResponseAsJSONList(operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
+		return organisationLookup.canonicalize(raw);
 	}
 
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {

@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
+import static java.util.Optional.*;
+
 import com.nimbusds.jose.shaded.gson.JsonElement;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
@@ -8,35 +10,40 @@ import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationExcepti
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.*;
-
-import static java.util.Optional.*;
-
 @ServerSideAdaptor
 public class OidcUserDecoder implements UserDecoder {
-    private static final Logger logger = LoggerFactory.getLogger(OidcUserDecoder.class);
-    public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
+
+    private static final Logger logger = LoggerFactory.getLogger(
+        OidcUserDecoder.class
+    );
+    public static final String LOG_INFO_DEFAULT_STAMP =
+        "User {} uses default stamp";
 
     private final OrganisationsService organisationService;
     private final JwtProperties jwtProperties;
     private final RoleClaimExtractor roleClaimExtractor;
 
-    public OidcUserDecoder(OrganisationsService organisationService, JwtProperties jwtProperties, RoleClaimExtractor roleClaimExtractor) {
+    public OidcUserDecoder(
+        OrganisationsService organisationService,
+        JwtProperties jwtProperties,
+        RoleClaimExtractor roleClaimExtractor
+    ) {
         this.organisationService = organisationService;
         this.jwtProperties = jwtProperties;
         this.roleClaimExtractor = roleClaimExtractor;
     }
 
-
     @Override
-    public Optional<User> fromPrincipal(Object principal) throws MissingUserInformationException {
+    public Optional<User> fromPrincipal(Object principal)
+        throws MissingUserInformationException {
         return switch (principal) {
             case String s when "anonymousUser".equals(s) -> empty();
-            case User user ->  of(user);
+            case User user -> of(user);
             case Jwt jwt -> {
                 var u = of(buildUserFromToken(jwt.getClaims()));
                 yield u;
@@ -45,7 +52,8 @@ public class OidcUserDecoder implements UserDecoder {
         };
     }
 
-    protected User buildUserFromToken(Map<String, Object> claims) throws MissingUserInformationException {
+    protected User buildUserFromToken(Map<String, Object> claims)
+        throws MissingUserInformationException {
         if (claims.isEmpty()) {
             throw new EmptyUserInformationException();
         }
@@ -55,41 +63,82 @@ public class OidcUserDecoder implements UserDecoder {
         var source = (String) claims.get(jwtProperties.getSourceClaim());
         var roles = roleClaimExtractor.extractRoles(claims).toList();
 
-        if(stamps.isEmpty()){
+        if (stamps.isEmpty()) {
             return new User(id, roles, Collections.emptySet(), source);
         }
 
-        logger.debug("Current User is {}, {} with roles {} from source {}", id, stamps, roles, source);
+        logger.debug(
+            "Current User is {}, {} with roles {} from source {}",
+            id,
+            stamps,
+            roles,
+            source
+        );
         return new User(id, roles, stamps, source);
     }
 
-    private Set<String> extractStamp(Map<String, Object> claims, String userId) {
+    private Set<String> extractStamp(
+        Map<String, Object> claims,
+        String userId
+    ) {
         logger.debug("Extracting stamp for user {}", userId);
 
         return ofNullable((String) claims.get(jwtProperties.getStampClaim()))
-                .map(stamp -> {
-                    logger.debug("Found stamp in stampClaim '{}' for user {}: {}", jwtProperties.getStampClaim(), userId, stamp);
-                    return buildStampsWithAlternateIdentifier(stamp, this::fetchAdmsIdentifier);
-                })
-                .orElseGet(() -> extractStampFromInseeGroup(claims, userId));
+            .map(stamp -> {
+                logger.debug(
+                    "Found stamp in stampClaim '{}' for user {}: {}",
+                    jwtProperties.getStampClaim(),
+                    userId,
+                    stamp
+                );
+                return buildStampsWithAlternateIdentifier(
+                    stamp,
+                    this::fetchAdmsIdentifier
+                );
+            })
+            .orElseGet(() -> extractStampFromInseeGroup(claims, userId));
     }
 
-    private Set<String> extractStampFromInseeGroup(Map<String, Object> claims, String userId) {
-        logger.debug("No stamp found in stampClaim '{}' for user {}, checking inseeGroupClaim", jwtProperties.getStampClaim(), userId);
+    private Set<String> extractStampFromInseeGroup(
+        Map<String, Object> claims,
+        String userId
+    ) {
+        logger.debug(
+            "No stamp found in stampClaim '{}' for user {}, checking inseeGroupClaim",
+            jwtProperties.getStampClaim(),
+            userId
+        );
 
-        return extractStampFromInseeGroups(claims.get(jwtProperties.getInseeGroupClaim()))
-                .map(hie -> {
-                    logger.debug("Found stamp in inseeGroupClaim '{}' for user {}: {}", jwtProperties.getInseeGroupClaim(), userId, hie);
-                    return buildStampsWithAlternateIdentifier(hie, this::fetchDctermsIdentifier);
-                })
-                .orElseGet(() -> {
-                    logger.debug("No stamp found in inseeGroupClaim '{}' for user {}, using anonymous stamp", jwtProperties.getInseeGroupClaim(), userId);
-                    logger.info(LOG_INFO_DEFAULT_STAMP, userId);
-                    return Set.of();
-                });
+        return extractStampFromInseeGroups(
+            claims.get(jwtProperties.getInseeGroupClaim())
+        )
+            .map(hie -> {
+                logger.debug(
+                    "Found stamp in inseeGroupClaim '{}' for user {}: {}",
+                    jwtProperties.getInseeGroupClaim(),
+                    userId,
+                    hie
+                );
+                return buildStampsWithAlternateIdentifier(
+                    hie,
+                    this::fetchDctermsIdentifier
+                );
+            })
+            .orElseGet(() -> {
+                logger.debug(
+                    "No stamp found in inseeGroupClaim '{}' for user {}, using anonymous stamp",
+                    jwtProperties.getInseeGroupClaim(),
+                    userId
+                );
+                logger.info(LOG_INFO_DEFAULT_STAMP, userId);
+                return Set.of();
+            });
     }
 
-    private Set<String> buildStampsWithAlternateIdentifier(String primaryStamp, IdentifierFetcher fetcher) {
+    private Set<String> buildStampsWithAlternateIdentifier(
+        String primaryStamp,
+        IdentifierFetcher fetcher
+    ) {
         Set<String> stamps = new HashSet<>();
         stamps.add(primaryStamp);
         fetcher.fetch(primaryStamp).ifPresent(stamps::add);
@@ -100,7 +149,10 @@ public class OidcUserDecoder implements UserDecoder {
         try {
             return organisationService.getAdmsIdentifier(stamp);
         } catch (OrganisationFetchException e) {
-            logger.debug("Impossible to fetch the adms:identifier for stamp {}", stamp);
+            logger.debug(
+                "Impossible to fetch the adms:identifier for stamp {}",
+                stamp
+            );
             return empty();
         }
     }
@@ -109,7 +161,10 @@ public class OidcUserDecoder implements UserDecoder {
         try {
             return organisationService.getDctermsIdentifier(hie);
         } catch (OrganisationFetchException e) {
-            logger.debug("Impossible to fetch the dcterms:identifier for hie {}", hie);
+            logger.debug(
+                "Impossible to fetch the dcterms:identifier for hie {}",
+                hie
+            );
             return empty();
         }
     }
@@ -127,10 +182,11 @@ public class OidcUserDecoder implements UserDecoder {
         String suffix = "_" + jwtProperties.getHieApplicationPrefix();
 
         return switch (inseeGroups) {
-            case List<?> list -> list.stream()
-                    .map(this::jsonElementOrElseToString)
-                    .filter(group -> group.endsWith(suffix))
-                    .findFirst();
+            case List<?> list -> list
+                .stream()
+                .map(this::jsonElementOrElseToString)
+                .filter(group -> group.endsWith(suffix))
+                .findFirst();
             default -> empty();
         };
     }

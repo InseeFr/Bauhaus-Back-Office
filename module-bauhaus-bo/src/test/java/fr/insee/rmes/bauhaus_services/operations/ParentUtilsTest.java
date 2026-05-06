@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -56,6 +57,9 @@ class ParentUtilsTest {
     @Mock
     OperationsOperationQueries operationsOperationQueries;
 
+    @Mock
+    OrganisationLookup organisationLookup;
+
     String id = "2025";
 
     @Test
@@ -89,11 +93,14 @@ class ParentUtilsTest {
     }
 
     @Test
-    void shouldGetIndicatorCreators() throws RmesException {
-        var creators = new JSONArray().put(new JSONObject().put("creators", "stamp"));
+    void getIndicatorCreators_canonicalisesLegacyStampsToIris() throws RmesException {
+        var raw = new JSONArray().put("stamp");
+        var canonicalized = new JSONArray().put("http://bauhaus/organisations/stamp");
         when(operationIndicatorsQueries.getCreatorsById(id)).thenReturn("query");
-        when(repoGestion.getResponseAsJSONList("query")).thenReturn(creators);
-        assertEquals(creators, parentUtils.getIndicatorCreators(id));
+        when(repoGestion.getResponseAsJSONList("query")).thenReturn(raw);
+        when(organisationLookup.canonicalize(raw)).thenReturn(canonicalized);
+
+        assertEquals(canonicalized, parentUtils.getIndicatorCreators(id));
     }
 
     @Test
