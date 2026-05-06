@@ -49,13 +49,10 @@ class DomainCollectionsServiceTest {
 
     DomainCollectionsService domainCollectionsService ;
 
-    RandomIdGenerator randomIdGenerator;
-
     @BeforeEach
     void resetDomainCollectionService(){
         collectionsRepository = Mockito.mock(CollectionsRepository.class);
-        randomIdGenerator = Mockito.mock(RandomIdGenerator.class);
-        domainCollectionsService = new DomainCollectionsService(collectionsRepository, randomIdGenerator);
+        domainCollectionsService = new DomainCollectionsService(collectionsRepository);
     }
 
     @Test
@@ -79,9 +76,10 @@ class DomainCollectionsServiceTest {
     }
 
     @Test
-    void collection_id_should_be_returned_when_collection_is_created() throws InvalidCreateCollectionCommandException, CollectionsSaveException {
-        when(randomIdGenerator.generateCollectionId()).thenReturn(ID);
+    void collection_id_should_be_returned_when_collection_is_created() throws InvalidCreateCollectionCommandException, CollectionsSaveException, CollectionsFetchException {
+        when(collectionsRepository.getCollection(ID)).thenReturn(Optional.empty());
         CreateCollectionCommand command = new CreateCollectionCommand(
+                ID.value(),
                 List.of(LocalisedLabel.ofDefaultLanguage("value")),
                 null,
                 "HIE0010",
@@ -94,6 +92,25 @@ class DomainCollectionsServiceTest {
 
         //Then
         assertThat(collectionId).isEqualTo(ID);
+    }
+
+    @Test
+    void should_throw_when_collection_id_already_exists() throws CollectionsFetchException, InvalidCreateCollectionCommandException, CollectionsSaveException {
+        when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(COLLECTION));
+        CreateCollectionCommand command = new CreateCollectionCommand(
+                ID.value(),
+                List.of(LocalisedLabel.ofDefaultLanguage("value")),
+                null,
+                "HIE0010",
+                null,
+                Collections.emptyList()
+        );
+
+        org.junit.jupiter.api.Assertions.assertThrows(
+                fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyExistsException.class,
+                () -> domainCollectionsService.createCollection(command));
+
+        verify(collectionsRepository, never()).save(any());
     }
 
     @Test

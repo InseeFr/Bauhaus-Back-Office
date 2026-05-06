@@ -20,7 +20,7 @@ import java.util.Set;
 public interface CollectionsService {
     List<CompactCollection> getAllCollections() throws CollectionsFetchException;
     Optional<Collection> getCollection(CollectionId id) throws CollectionsFetchException;
-    CollectionId createCollection(CreateCollectionCommand collectionCommand) throws CollectionsSaveException;
+    CollectionId createCollection(CreateCollectionCommand collectionCommand) throws CollectionsSaveException, CollectionsFetchException;
     void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException;
     List<CollectionDashboardItem> getDashboard() throws CollectionsFetchException;
     List<CollectionToValidate> getToValidate() throws CollectionsFetchException;

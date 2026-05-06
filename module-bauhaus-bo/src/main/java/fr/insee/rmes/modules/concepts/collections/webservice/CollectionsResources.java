@@ -99,9 +99,11 @@ public class CollectionsResources {
             response.setHeader(HttpHeaders.LOCATION, location.toString());
 
             return collectionId.value();
-        } catch (InvalidCreateCollectionCommandException | MalformedLocalisedLabelException e) {
+        } catch (InvalidCreateCollectionCommandException | InvalidCollectionIdException | MalformedLocalisedLabelException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        } catch (CollectionsSaveException e) {
+        } catch (CollectionAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+        } catch (CollectionsSaveException | CollectionsFetchException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }

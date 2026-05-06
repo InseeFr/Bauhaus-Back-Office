@@ -87,11 +87,11 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
 
     @MethodSource("providePostCollectionData")
     @ParameterizedTest
-    void createCollection(Integer code, boolean hasAccessReturn) throws Exception, CollectionsSaveException, MissingUserInformationException {
+    void createCollection(Integer code, boolean hasAccessReturn) throws Exception, CollectionsSaveException, fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
         when(collectionsService.createCollection(any())).thenReturn(new CollectionId("1"));
-        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_PLAIN_VALUE).content("{\"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
+        var request = post("/concepts/collections").contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_PLAIN_VALUE).content("{\"id\": \"Collection-1\", \"creator\": \"creator\", \"contributor\": \"contributor\", \"labels\": [{\"value\": \"value\", \"lang\": \"fr\"}], \"descriptions\": [], \"conceptsIdentifiers\": []}");
         request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
     }
