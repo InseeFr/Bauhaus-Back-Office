@@ -2,12 +2,13 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.AppSpringBootTest;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -25,11 +26,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -40,34 +40,52 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@AppSpringBootTest
 class DatasetServiceImplTest {
 
-    @MockitoBean
-    SeriesUtils seriesUtils;
-
-    @MockitoBean
-    IdGenerator idGenerator;
-
-    @MockitoBean
-    PublicationUtils publicationUtils;
-
-    @MockitoBean
-    RepositoryGestion repositoryGestion;
-
-    @MockitoBean(name = "sparqlDatasetQueries")
-    DatasetQueries datasetQueries;
-
-    @MockitoBean
-    DatasetDistributionQueries datasetDistributionQueries;
-
-    @Autowired
-    DatasetServiceImpl datasetService;
+    private SeriesUtils seriesUtils;
+    private IdGenerator idGenerator;
+    private PublicationUtils publicationUtils;
+    private RepositoryGestion repositoryGestion;
+    private DatasetQueries datasetQueries;
+    private DatasetDistributionQueries datasetDistributionQueries;
+    private DatasetServiceImpl datasetService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String EMPTY_ARRAY = "[]";
     private static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
+
+    @BeforeEach
+    void setUp() {
+        seriesUtils = mock(SeriesUtils.class);
+        idGenerator = mock(IdGenerator.class);
+        publicationUtils = mock(PublicationUtils.class);
+        repositoryGestion = mock(RepositoryGestion.class);
+        datasetQueries = mock(DatasetQueries.class);
+        datasetDistributionQueries = mock(DatasetDistributionQueries.class);
+        Config config = mock(Config.class);
+        when(config.getLg1()).thenReturn("fr");
+        when(config.getLg2()).thenReturn("en");
+
+        datasetService = new DatasetServiceImpl(
+                repositoryGestion,
+                idGenerator,
+                mock(RepositoryPublication.class),
+                config,
+                publicationUtils,
+                seriesUtils,
+                datasetQueries,
+                datasetDistributionQueries,
+                "datasetGraph/",
+                "datasetIRI",
+                "recordIRI",
+                "http://rdf.insee.fr/graphes/",
+                "http://",
+                "distributionIRI",
+                "adms",
+                "identifiantsAlternatifs/jeuDeDonnees"
+        );
+    }
 
     @Test
     void shouldReturnDatasets() throws RmesException {
