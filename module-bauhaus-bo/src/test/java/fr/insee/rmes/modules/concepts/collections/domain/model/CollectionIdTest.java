@@ -25,37 +25,22 @@ class CollectionIdTest {
                 .hasMessage("The identifier is empty");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "café",          // accents
-            "en–dash",       // tiret demi-cadratin
-            "em—dash",       // tiret cadratin
-            "with space",    // espace
-            "comma,sep",     // ponctuation
-            "slash/here",    // séparateur d'URI
-            "underscore_x",  // underscore non autorisé
-            "dot.value",     // point non autorisé
-            "résumé"         // accents multiples
-    })
-    void should_reject_value_with_forbidden_characters(String invalidValue) {
-        assertThatThrownBy(() -> new CollectionId(invalidValue))
-                .isInstanceOf(InvalidCollectionIdException.class)
-                .hasMessageContaining("invalid");
-    }
-
+    /**
+     * Le pattern d'ID est appliqué uniquement à la frontière HTTP (CreateCollectionRequest)
+     * pour ne pas casser la lecture des collections legacy déjà persistées avec un ID
+     * non conforme (underscore, etc.). CollectionId tolère donc tout caractère côté domaine.
+     */
     @ParameterizedTest
     @ValueSource(strings = {
             "abc",
-            "ABC",
-            "abc123",
-            "ABC-123",
-            "a-b-c",
-            "1234",
             "Collection-001",
-            "550e8400-e29b-41d4-a716-446655440000" // UUID — compatibilité héritée
+            "underscore_x",  // legacy
+            "dot.value",     // legacy
+            "café",          // legacy avec accents
+            "with space"     // legacy avec espace
     })
-    void should_accept_alphanumeric_and_hyphen_only(String validValue) {
-        assertDoesNotThrow(() -> new CollectionId(validValue));
+    void should_accept_any_non_blank_value(String value) {
+        assertDoesNotThrow(() -> new CollectionId(value));
     }
 
     @Test

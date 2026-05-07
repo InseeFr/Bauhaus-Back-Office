@@ -2,12 +2,11 @@ package fr.insee.rmes.modules.concepts.collections.domain.model;
 
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCollectionIdException;
 
-import java.util.regex.Pattern;
-
 public record CollectionId(String value) {
 
+    // Pattern check lives at the HTTP boundary (CreateCollectionRequest) so that legacy
+    // identifiers stored in GraphDB before the rule existed can still be read and updated.
     public static final String VALID_PATTERN = "^[A-Za-z0-9-]+$";
-    private static final Pattern PATTERN = Pattern.compile(VALID_PATTERN);
 
     public CollectionId {
         if (value == null) {
@@ -15,9 +14,6 @@ public record CollectionId(String value) {
         }
         if (value.isEmpty()) {
             throw new InvalidCollectionIdException("The identifier is empty");
-        }
-        if (!PATTERN.matcher(value).matches()) {
-            throw new InvalidCollectionIdException("The identifier is invalid: only alphanumeric characters and hyphens are allowed");
         }
     }
 }

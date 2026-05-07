@@ -1,0 +1,14 @@
+<http://rdf.insee.fr/graphes/concepts/definitions> {
+    <http://bauhaus//concepts/definitions/Legacy_collection_001>
+            a       <http://www.w3.org/2004/02/skos/core#Collection> ;
+            <http://rdf.insee.fr/def/base#isValidated>
+                    "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://purl.org/dc/terms/title>
+                    "Legacy collection"@fr ;
+            <http://purl.org/dc/terms/created>
+                    "2020-01-01T00:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    <http://bauhaus/HIE000000> ;
+            <http://purl.org/dc/elements/1.1/contributor>
+                    <http://bauhaus/HIE000000> .
+}

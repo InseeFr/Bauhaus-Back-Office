@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -23,12 +24,15 @@ public class CollectionsUtils  {
 	
 	private final ConceptsPublication conceptsPublication;
 	private final RepositoryGestion repositoryGestion;
+	private final GraphDBCollectionProperties collectionProperties;
 
 	public CollectionsUtils(ConceptsPublication conceptsPublication,
-							RepositoryGestion repositoryGestion
+							RepositoryGestion repositoryGestion,
+							GraphDBCollectionProperties collectionProperties
     ) {
         this.conceptsPublication = conceptsPublication;
         this.repositoryGestion = repositoryGestion;
+        this.collectionProperties = collectionProperties;
     }
 
 
@@ -42,7 +46,7 @@ public class CollectionsUtils  {
 		Model model = new LinkedHashModel();
 		List<IRI> collectionsToValidateList = new ArrayList<>();
 		for (int i = 0; i < collectionsToValidate.length(); i++) {
-			IRI collectionURI = RdfUtils.collectionIRI(collectionsToValidate.getString(i).replace(" ", "").toLowerCase());
+			IRI collectionURI = collectionProperties.getResourceIRI(collectionsToValidate.getString(i).replace(" ", ""));
 			collectionsToValidateList.add(collectionURI);
 			model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
 			logger.info("Validate collection : {}" , collectionURI);

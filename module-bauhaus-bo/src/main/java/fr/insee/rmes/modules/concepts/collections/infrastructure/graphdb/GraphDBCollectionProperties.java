@@ -17,7 +17,7 @@ public class GraphDBCollectionProperties {
         this.baseURI = baseURI;
     }
 
-    IRI getResourceIRI(String id){
+    public IRI getResourceIRI(String id){
         var iri = "%s/%s".formatted(baseURI, id);
         return factory.createIRI(iri);
     }
