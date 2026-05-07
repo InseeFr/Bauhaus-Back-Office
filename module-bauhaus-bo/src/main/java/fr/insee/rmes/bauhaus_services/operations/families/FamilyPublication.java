@@ -1,8 +1,13 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -18,6 +23,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class FamilyPublication extends RdfService {
+
+	public FamilyPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
+							 RepositoryPublication repositoryPublication, Config config,
+							 PublicationUtils publicationUtils) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+	}
 
 	public void publishFamily(String familyId) throws RmesException {
 

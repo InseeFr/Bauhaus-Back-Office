@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.Stubber;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
@@ -57,8 +56,7 @@ class ConceptsExportBuilderTest {
 
     @BeforeEach
     void setUp() {
-        conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, organisationsService, exportUtils, conceptConceptsQueries);
-        Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
+        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, null, conceptsUtils, organisationsService, exportUtils, conceptConceptsQueries);
     }
 
     @Test

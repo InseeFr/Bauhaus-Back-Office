@@ -1,8 +1,13 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
@@ -25,7 +30,11 @@ public class MetadataStructureDefUtils  extends RdfService {
 
 		private final DocumentationQueries documentationQueries;
 
-		public MetadataStructureDefUtils(DocumentationQueries documentationQueries) {
+		public MetadataStructureDefUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+										 RepositoryPublication repositoryPublication, Config config,
+										 PublicationUtils publicationUtils,
+										 DocumentationQueries documentationQueries) {
+			super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
 			this.documentationQueries = documentationQueries;
 		}
 

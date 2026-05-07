@@ -2,9 +2,14 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -27,7 +32,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -44,17 +48,25 @@ public class StructureComponentUtils extends RdfService {
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 
-    @Autowired
-    ComponentPublication componentPublication;
+    private final ComponentPublication componentPublication;
 
-    @Autowired
-    StructureQueries structureQueries;
+    private final StructureQueries structureQueries;
 
-    @Autowired
-    CodeListsQueries codeListsQueries;
+    private final CodeListsQueries codeListsQueries;
 
-    @Autowired
-    ConceptConceptsQueries conceptConceptsQueries;
+    private final ConceptConceptsQueries conceptConceptsQueries;
+
+    public StructureComponentUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                                   RepositoryPublication repositoryPublication, Config config,
+                                   PublicationUtils publicationUtils,
+                                   ComponentPublication componentPublication, StructureQueries structureQueries,
+                                   CodeListsQueries codeListsQueries, ConceptConceptsQueries conceptConceptsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        this.componentPublication = componentPublication;
+        this.structureQueries = structureQueries;
+        this.codeListsQueries = codeListsQueries;
+        this.conceptConceptsQueries = conceptConceptsQueries;
+    }
 
     public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);

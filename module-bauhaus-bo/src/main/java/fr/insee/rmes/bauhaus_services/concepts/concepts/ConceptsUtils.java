@@ -3,11 +3,16 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -54,7 +59,11 @@ public class ConceptsUtils extends RdfService {
 	private final ConceptsService conceptsService;
 	private final CollectionsService collectionsService;
 
-	public ConceptsUtils(ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries, ConceptsService conceptsService, CollectionsService collectionsService) {
+	public ConceptsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+						 RepositoryPublication repositoryPublication, Config config,
+						 PublicationUtils publicationUtils,
+						 ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries, ConceptsService conceptsService, CollectionsService collectionsService) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
 		this.conceptsPublication = conceptsPublication;
 		this.noteManager = noteManager;
 		this.maxLength = maxLength;

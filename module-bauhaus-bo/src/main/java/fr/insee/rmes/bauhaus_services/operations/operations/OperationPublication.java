@@ -1,10 +1,14 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -18,16 +22,21 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
 @Component
 public class OperationPublication extends RdfService{
 
-	@Autowired
-	ParentUtils ownersUtils;
+	private final ParentUtils ownersUtils;
 
+	public OperationPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
+								RepositoryPublication repositoryPublication, Config config,
+								PublicationUtils publicationUtils,
+								ParentUtils ownersUtils) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.ownersUtils = ownersUtils;
+	}
 
 	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
 

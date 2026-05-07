@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
@@ -7,8 +8,12 @@ import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
@@ -33,7 +38,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -47,29 +51,40 @@ DocumentationsRubricsUtils extends RdfService {
 
 	static final Logger logger = LoggerFactory.getLogger(DocumentationsRubricsUtils.class);
 
-	@Autowired
-	private MetadataStructureDefUtils msdUtils;
+	private final MetadataStructureDefUtils msdUtils;
 
-	@Autowired
-	private DocumentationQueries documentationQueries;
+	private final DocumentationQueries documentationQueries;
 
-	@Autowired
 	private DocumentsUtils docUtils;
 
-	@Autowired
-	private OrganizationUtils organizationUtils;
+	private final OrganizationUtils organizationUtils;
 
-	@Autowired
-	private fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup;
+	private final fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup;
 
-	@Autowired
-	private CodeListService codeListService;
+	private final CodeListService codeListService;
 
-	@Autowired
-	private LangService langService;
+	private final LangService langService;
 
-	@Autowired
-	private GeographyService geoService;
+	private final GeographyService geoService;
+
+	public DocumentationsRubricsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+									  RepositoryPublication repositoryPublication, Config config,
+									  PublicationUtils publicationUtils,
+									  MetadataStructureDefUtils msdUtils, DocumentationQueries documentationQueries,
+									  DocumentsUtils docUtils, OrganizationUtils organizationUtils,
+									  fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup,
+									  CodeListService codeListService, LangService langService,
+									  GeographyService geoService) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.msdUtils = msdUtils;
+		this.documentationQueries = documentationQueries;
+		this.docUtils = docUtils;
+		this.organizationUtils = organizationUtils;
+		this.organisationLookup = organisationLookup;
+		this.codeListService = codeListService;
+		this.langService = langService;
+		this.geoService = geoService;
+	}
 
 	public void setDocUtils(DocumentsUtils documentsUtils){
 		this.docUtils=documentsUtils;

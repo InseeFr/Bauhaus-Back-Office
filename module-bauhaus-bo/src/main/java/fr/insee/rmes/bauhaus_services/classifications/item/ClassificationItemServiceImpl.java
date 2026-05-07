@@ -2,7 +2,12 @@ package fr.insee.rmes.bauhaus_services.classifications.item;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.Config;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -13,7 +18,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,16 +26,25 @@ import java.io.IOException;
 public class ClassificationItemServiceImpl extends RdfService implements ClassificationItemService {
     private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-    @Autowired
-    ClassificationItemRepository classificationItemUtils;
+    private final ClassificationItemRepository classificationItemUtils;
 
-    @Autowired
-    ClassificationsQueries classificationsQueries;
+    private final ClassificationsQueries classificationsQueries;
 
-    @Autowired
-    ClassificationItemsQueries classificationItemsQueries;
+    private final ClassificationItemsQueries classificationItemsQueries;
 
     static final Logger logger = LoggerFactory.getLogger(ClassificationItemServiceImpl.class);
+
+    public ClassificationItemServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                                         RepositoryPublication repositoryPublication, Config config,
+                                         PublicationUtils publicationUtils,
+                                         ClassificationItemRepository classificationItemUtils,
+                                         ClassificationsQueries classificationsQueries,
+                                         ClassificationItemsQueries classificationItemsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        this.classificationItemUtils = classificationItemUtils;
+        this.classificationsQueries = classificationsQueries;
+        this.classificationItemsQueries = classificationItemsQueries;
+    }
 
     @Override
     public String getClassificationItems(String id) throws RmesException{

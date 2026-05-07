@@ -7,9 +7,9 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
@@ -30,8 +30,12 @@ class OperationsDocumentationsImplTest {
     @Mock
     private DocumentationsUtils documentationsUtils;
 
-    @InjectMocks
     private OperationsDocumentationsImpl metadataReportService;
+
+    @BeforeEach
+    void setUp() {
+        metadataReportService = new OperationsDocumentationsImpl(null, null, null, null, null, null, 0, documentationsUtils, documentationsExport, null, null, null);
+    }
 
     @Test
     void testExportMetadataReport_Success() throws RmesException {

@@ -6,7 +6,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +41,8 @@ public class HealthcheckResources extends GenericResources {
 
 
 
-    public HealthcheckResources(@Autowired RepositoryGestion repoGestion,
-                          @Autowired RepositoryPublication repositoryPublication,
+    public HealthcheckResources(RepositoryGestion repoGestion,
+                          RepositoryPublication repositoryPublication,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}") String documentsStoragePublicationInterne,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {

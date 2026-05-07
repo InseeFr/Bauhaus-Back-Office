@@ -1,9 +1,13 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -20,7 +24,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ClassificationPublication extends RdfService{
-	
+
+	public ClassificationPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
+									 RepositoryPublication repositoryPublication, Config config,
+									 PublicationUtils publicationUtils) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+	}
+
 	String[] ignoredAttrs = { "isValidated", "validationState", "conceptVersion" };
 
 	public void publishClassification(Resource graphIri) throws RmesException {

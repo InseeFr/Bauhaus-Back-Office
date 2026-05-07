@@ -1,9 +1,14 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -17,7 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,18 +30,26 @@ import java.util.List;
 public class StructureImpl  extends RdfService implements StructureService {
 	
 	static final Logger logger = LoggerFactory.getLogger(StructureImpl.class);
-	
-	@Autowired
-	StructureUtils structureUtils;
 
-	@Autowired
-	CodeListService codeListService;
+	private final StructureUtils structureUtils;
 
-	@Autowired
-	StructureQueries structureQueries;
+	private final CodeListService codeListService;
 
-	@Autowired
-	ConceptConceptsQueries conceptConceptsQueries;
+	private final StructureQueries structureQueries;
+
+	private final ConceptConceptsQueries conceptConceptsQueries;
+
+	public StructureImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+						 RepositoryPublication repositoryPublication, Config config,
+						 PublicationUtils publicationUtils,
+						 StructureUtils structureUtils, CodeListService codeListService,
+						 StructureQueries structureQueries, ConceptConceptsQueries conceptConceptsQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.structureUtils = structureUtils;
+		this.codeListService = codeListService;
+		this.structureQueries = structureQueries;
+		this.conceptConceptsQueries = conceptConceptsQueries;
+	}
 
 	@Override
 	public List<PartialStructure> getStructures() throws RmesException {

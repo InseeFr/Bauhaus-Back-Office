@@ -1,6 +1,11 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
+import fr.insee.rmes.Config;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -12,7 +17,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,11 +27,18 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public static final String ATTRIBUTE_IRI = "attributeIRI";
     public static final String VALUE_IRI = "valueIri";
 
-    @Autowired
-    StructureComponentUtils structureComponentUtils;
+    private final StructureComponentUtils structureComponentUtils;
 
-    @Autowired
-    StructureQueries structureQueries;
+    private final StructureQueries structureQueries;
+
+    public StructureComponentImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                                  RepositoryPublication repositoryPublication, Config config,
+                                  PublicationUtils publicationUtils,
+                                  StructureComponentUtils structureComponentUtils, StructureQueries structureQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        this.structureComponentUtils = structureComponentUtils;
+        this.structureQueries = structureQueries;
+    }
 
     /**
      * Return all mutualized components

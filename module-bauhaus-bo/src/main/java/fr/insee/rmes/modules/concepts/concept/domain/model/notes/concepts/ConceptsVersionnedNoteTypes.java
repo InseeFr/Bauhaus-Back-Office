@@ -5,7 +5,6 @@ import fr.insee.rmes.Config;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
@@ -82,8 +81,11 @@ public enum ConceptsVersionnedNoteTypes {
 
     @Component
     public static class ConfigServiceInjector {
-        @Autowired
-        private Config config;
+        private final Config config;
+
+        public ConfigServiceInjector(Config config) {
+            this.config = config;
+        }
 
         @PostConstruct
         public void postConstruct() {

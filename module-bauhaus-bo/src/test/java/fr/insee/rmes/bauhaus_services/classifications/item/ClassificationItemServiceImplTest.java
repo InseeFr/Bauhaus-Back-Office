@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class ClassificationItemServiceImplTest {
 
     @InjectMocks
-    ClassificationItemServiceImpl classificationItemServiceImpl = new ClassificationItemServiceImpl();
+    ClassificationItemServiceImpl classificationItemServiceImpl;
 
     @MockitoBean
     RepositoryGestion repoGestion;

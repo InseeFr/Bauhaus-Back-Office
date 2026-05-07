@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 class ParentUtilsTest {
 
     @InjectMocks
-    ParentUtils parentUtils = new ParentUtils();
+    ParentUtils parentUtils;
 
     @Mock
     RepositoryGestion repoGestion;

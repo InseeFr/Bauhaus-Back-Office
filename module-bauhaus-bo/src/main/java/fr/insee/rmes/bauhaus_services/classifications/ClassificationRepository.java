@@ -1,7 +1,12 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
+import fr.insee.rmes.Config;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
@@ -30,7 +35,12 @@ public class ClassificationRepository extends RdfService {
     private final ClassificationNoteService classificationNoteService;
     private final ClassificationsQueries classificationsQueries;
 
-    public ClassificationRepository(ClassificationNoteService classificationNoteService, ClassificationsQueries classificationsQueries) {
+    public ClassificationRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                                    RepositoryPublication repositoryPublication, Config config,
+                                    PublicationUtils publicationUtils,
+                                    ClassificationNoteService classificationNoteService,
+                                    ClassificationsQueries classificationsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
         this.classificationNoteService = classificationNoteService;
         this.classificationsQueries = classificationsQueries;
     }

@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Stubber;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
@@ -56,10 +55,7 @@ class CollectionExportBuilderTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        collectionExportBuilder = new CollectionExportBuilder();
-        Stubber.forRdfService(collectionExportBuilder).injectRepoGestion(repoGestion);
-        collectionExportBuilder.exportUtils = exportUtils;
-        collectionExportBuilder.conceptCollectionsQueries = conceptCollectionsQueries;
+        collectionExportBuilder = new CollectionExportBuilder(repoGestion, null, null, null, null, exportUtils, conceptCollectionsQueries);
         lenient().when(conceptCollectionsQueries.collectionQuery(anyString())).thenReturn("mock-query");
         lenient().when(conceptCollectionsQueries.collectionConceptsQuery(anyString())).thenReturn("mock-query");
         lenient().when(conceptCollectionsQueries.collectionMembersQuery(anyString())).thenReturn("mock-query");

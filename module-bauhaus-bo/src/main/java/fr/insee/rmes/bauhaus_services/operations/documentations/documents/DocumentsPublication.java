@@ -1,12 +1,17 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -37,10 +42,16 @@ public class DocumentsPublication  extends RdfService{
     private final StorageProperties storageProperties;
 
     public DocumentsPublication(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            Config config,
+            PublicationUtils publicationUtils,
             DocumentsUtils docUtils,
             FilesOperations filesOperations,
             StorageProperties storageProperties
     ) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
         this.docUtils = docUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;

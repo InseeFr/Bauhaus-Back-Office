@@ -1,10 +1,15 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.Organization;
@@ -14,7 +19,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,16 +27,24 @@ import java.util.List;
 @Service
 public class OrganizationsServiceImpl  extends RdfService implements OrganizationsService {
 
-	@Autowired
-	OrganizationUtils organizationUtils;
+	private final OrganizationUtils organizationUtils;
 
-	@Autowired
-	FamOpeSerIndUtils famOpeSerUtils;
+	private final FamOpeSerIndUtils famOpeSerUtils;
 
-	@Autowired
-	OrganizationQueries organizationQueries;
+	private final OrganizationQueries organizationQueries;
 
 	static final Logger logger = LoggerFactory.getLogger(OrganizationsServiceImpl.class);
+
+	public OrganizationsServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+									RepositoryPublication repositoryPublication, Config config,
+									PublicationUtils publicationUtils,
+									OrganizationUtils organizationUtils, FamOpeSerIndUtils famOpeSerUtils,
+									OrganizationQueries organizationQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.organizationUtils = organizationUtils;
+		this.famOpeSerUtils = famOpeSerUtils;
+		this.organizationQueries = organizationQueries;
+	}
 	
 	@Override
 	public String getOrganizationJsonString(String organizationIdentifier) throws RmesException {

@@ -3,8 +3,13 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
@@ -18,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,12 +38,19 @@ import java.util.zip.ZipOutputStream;
 
 @Component
 public class CollectionExportBuilder extends RdfService {
-	
-	@Autowired
-	ExportUtils exportUtils;
 
-	@Autowired
-	ConceptCollectionsQueries conceptCollectionsQueries;
+	private final ExportUtils exportUtils;
+
+	private final ConceptCollectionsQueries conceptCollectionsQueries;
+
+	public CollectionExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
+								   RepositoryPublication repositoryPublication, Config config,
+								   PublicationUtils publicationUtils,
+								   ExportUtils exportUtils, ConceptCollectionsQueries conceptCollectionsQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.exportUtils = exportUtils;
+		this.conceptCollectionsQueries = conceptCollectionsQueries;
+	}
 
 	private static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
 	private static final String XML_PATERN = "/xslTransformerFiles/collection/collectionPatternContent.xml";

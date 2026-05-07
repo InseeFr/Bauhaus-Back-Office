@@ -9,7 +9,6 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @ConditionalOnModule("concepts")
 public class ConceptsCollectionsResources {
 
-    @Autowired
     public ConceptsCollectionsResources(ConceptsService conceptsService, ConceptsCollectionService conceptsCollectionService) {
         this.conceptsService = conceptsService;
         this.conceptsCollectionService = conceptsCollectionService;

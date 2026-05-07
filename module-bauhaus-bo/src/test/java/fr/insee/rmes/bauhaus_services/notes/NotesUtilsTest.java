@@ -30,14 +30,14 @@ class NotesUtilsTest {
         Concept concept = new Concept("id",true);
         VersionableNote versionableNote = new VersionableNote();
         String defaultBVersion = "defaultVersion";
-        NotesUtils notesUtils = new NotesUtils();
+        NotesUtils notesUtils = new NotesUtils(null, null, null, null, null, null);
         String result= notesUtils.getVersion(concept,versionableNote,defaultBVersion);
         assertEquals("1",result);
     }
 
     @Test
     void createRdfDatableNote_shouldAddExpectedStatements() {
-        NotesUtils notesUtils = new NotesUtils();
+        NotesUtils notesUtils = new NotesUtils(null, null, null, null, null, null);
 
 
         ValueFactory vf = SimpleValueFactory.getInstance();

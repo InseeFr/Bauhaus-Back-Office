@@ -1,12 +1,17 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
@@ -28,7 +33,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,24 +40,33 @@ public class OperationsUtils extends RdfService{
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsUtils.class);
 
-	@Autowired
-	private FamOpeSerIndUtils famOpeSerIndUtils;
+	private final FamOpeSerIndUtils famOpeSerIndUtils;
 
-	@Autowired
-	private DocumentationsUtils documentationsUtils;
-	
-	@Autowired
-	ParentUtils parentUtils;
+	private final DocumentationsUtils documentationsUtils;
 
+	private final ParentUtils parentUtils;
 
-	@Autowired
-	private OperationPublication operationPublication;
+	private final OperationPublication operationPublication;
 
-	@Autowired
-	private OperationsOperationQueries operationsOperationQueries;
+	private final OperationsOperationQueries operationsOperationQueries;
 
-	@Autowired
-	private OperationSeriesQueries operationSeriesQueries;
+	private final OperationSeriesQueries operationSeriesQueries;
+
+	public OperationsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+						   RepositoryPublication repositoryPublication, Config config,
+						   PublicationUtils publicationUtils,
+						   FamOpeSerIndUtils famOpeSerIndUtils, DocumentationsUtils documentationsUtils,
+						   ParentUtils parentUtils, OperationPublication operationPublication,
+						   OperationsOperationQueries operationsOperationQueries,
+						   OperationSeriesQueries operationSeriesQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.famOpeSerIndUtils = famOpeSerIndUtils;
+		this.documentationsUtils = documentationsUtils;
+		this.parentUtils = parentUtils;
+		this.operationPublication = operationPublication;
+		this.operationsOperationQueries = operationsOperationQueries;
+		this.operationSeriesQueries = operationSeriesQueries;
+	}
 
 	private void validate(Operation operation) throws RmesException {
 		if(repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg1(), config.getLg1()))){

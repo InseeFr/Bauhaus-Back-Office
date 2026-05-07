@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 class ClassificationPublicationTest {
 
     @InjectMocks
-    ClassificationPublication classificationPublication = new ClassificationPublication();
+    ClassificationPublication classificationPublication;
 
     @MockitoBean
     RepositoryGestion repoGestion;

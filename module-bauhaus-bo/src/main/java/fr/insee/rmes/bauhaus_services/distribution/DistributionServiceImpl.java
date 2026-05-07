@@ -1,7 +1,12 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
+import fr.insee.rmes.Config;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -14,7 +19,6 @@ import fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.utils.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
@@ -39,26 +43,40 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_B
 public class DistributionServiceImpl extends RdfService implements DistributionService {
 
 
-    @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
-    private String datasetsGraphSuffix;
+    private final String datasetsGraphSuffix;
 
-    @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
-    private String datasetsBaseUriSuffix;
+    private final String datasetsBaseUriSuffix;
 
-    @Value("${fr.insee.rmes.bauhaus.baseGraph}")
-    private String baseGraph;
+    private final String baseGraph;
 
-    @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
-    private String baseUriGestion;
+    private final String baseUriGestion;
 
-    @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
-    private String distributionsBaseUriSuffix;
+    private final String distributionsBaseUriSuffix;
 
-    @Value("${fr.insee.rmes.bauhaus.adms.graph}")
-    private String admsGraphSuffix;
+    private final String admsGraphSuffix;
 
-    @Autowired
-    DatasetDistributionQueries datasetDistributionQueries;
+    private final DatasetDistributionQueries datasetDistributionQueries;
+
+    public DistributionServiceImpl(
+            RepositoryGestion repoGestion, IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication, Config config,
+            PublicationUtils publicationUtils,
+            @Value("${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraphSuffix,
+            @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}") String datasetsBaseUriSuffix,
+            @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
+            @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}") String baseUriGestion,
+            @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}") String distributionsBaseUriSuffix,
+            @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
+            DatasetDistributionQueries datasetDistributionQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        this.datasetsGraphSuffix = datasetsGraphSuffix;
+        this.datasetsBaseUriSuffix = datasetsBaseUriSuffix;
+        this.baseGraph = baseGraph;
+        this.baseUriGestion = baseUriGestion;
+        this.distributionsBaseUriSuffix = distributionsBaseUriSuffix;
+        this.admsGraphSuffix = admsGraphSuffix;
+        this.datasetDistributionQueries = datasetDistributionQueries;
+    }
 
     private String getAdmsGraph(){
         return baseGraph + admsGraphSuffix;
