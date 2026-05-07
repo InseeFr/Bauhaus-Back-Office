@@ -42,7 +42,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Component
@@ -172,9 +174,11 @@ public class DocumentationsUtils  {
 		if (create) {
 			sims.setCreated(DateUtils.getCurrentDate());
 			sims.setUpdated(DateUtils.getCurrentDate());
+			AutoUpdatedDateRubrics.applyDate(sims.getRubrics(), getAutoUpdatedAttributeIds(), sims.getUpdated());
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
 			sims.setUpdated(DateUtils.getCurrentDate());
+			AutoUpdatedDateRubrics.applyDate(sims.getRubrics(), getAutoUpdatedAttributeIds(), sims.getUpdated());
 			if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 			} else {
@@ -186,6 +190,19 @@ public class DocumentationsUtils  {
 		return sims.getId();
 	}
 
+
+	private Set<String> getAutoUpdatedAttributeIds() throws RmesException {
+		JSONArray attributes = repoGestion.getResponseAsArray(documentationQueries.getAttributesQuery());
+		Set<String> ids = new HashSet<>();
+		for (int i = 0; i < attributes.length(); i++) {
+			JSONObject attribute = attributes.getJSONObject(i);
+			if (AutoUpdatedDateRubrics.DCTERMS_MODIFIED.equals(attribute.optString("subPropertyOf", null))) {
+				String id = attribute.optString(Constants.ID, null);
+				if (id != null) ids.add(id.toUpperCase());
+			}
+		}
+		return ids;
+	}
 
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {

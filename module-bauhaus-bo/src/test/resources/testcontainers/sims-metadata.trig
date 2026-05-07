@@ -295,6 +295,7 @@
       owl:DatatypeProperty;
     rdfs:domain sdmx-mm:ReportedAttribute;
     rdfs:range xsd:date;
+    rdfs:subPropertyOf <http://purl.org/dc/terms/modified>;
     rdfs:label "Metadata Attribute Property for concept Metadata last update"@en, "Propriété d'attribut de métadonnées pour le concept Dernière mise à jour des métadonnées"@fr .
 
   <http://ec.europa.eu/eurostat/simsv2/attribute/S.2.1> a sdmx-mm:MetadataAttributeProperty,

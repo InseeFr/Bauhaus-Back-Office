@@ -18,6 +18,7 @@ class DocumentationAttributeTest {
         json.put("maxOccurs", "1");
         json.put("isPresentational", true);
         json.put("sansObject", false);
+        json.put("subPropertyOf", "http://purl.org/dc/terms/modified");
 
         // When
         DocumentationAttribute result = DocumentationAttribute.fromJson(json);
@@ -30,6 +31,19 @@ class DocumentationAttributeTest {
         assertEquals("1", result.maxOccurs());
         assertTrue(result.isPresentational());
         assertFalse(result.sansObject());
+        assertEquals("http://purl.org/dc/terms/modified", result.subPropertyOf());
+    }
+
+    @Test
+    void testFromJson_subPropertyOfMissingIsNull() {
+        // Given
+        JSONObject json = new JSONObject();
+
+        // When
+        DocumentationAttribute result = DocumentationAttribute.fromJson(json);
+
+        // Then
+        assertNull(result.subPropertyOf());
     }
 
     @Test
@@ -154,13 +168,13 @@ class DocumentationAttributeTest {
     void testRecordEquality() {
         // Given
         DocumentationAttribute attr1 = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, ""
+            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
         );
         DocumentationAttribute attr2 = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, ""
+            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
         );
         DocumentationAttribute attr3 = new DocumentationAttribute(
-            "INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, ""
+            "INTEGER", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
         );
 
         // Then
@@ -174,7 +188,7 @@ class DocumentationAttributeTest {
     void testRecordToString() {
         // Given
         DocumentationAttribute attr = new DocumentationAttribute(
-            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, ""
+            "STRING", "Label FR", "Label EN", "attr-123", "1", true, false, "", null
         );
 
         // When
