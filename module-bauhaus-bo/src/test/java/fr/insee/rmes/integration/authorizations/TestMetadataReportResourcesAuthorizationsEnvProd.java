@@ -127,6 +127,24 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
 
     @Test
+    void testGetMetadataReportOwner_returnsShortStampForm() throws Exception, MissingUserInformationException {
+        String id = "1234";
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+
+        String jsonResponse = "[\"HIE2000069\"]";
+
+        when(documentationsService.getMetadataReportOwner(id)).thenReturn(jsonResponse);
+
+        mvc.perform(get("/operations/metadataReport/Owner/{id}", id)
+                        .header("Authorization", "Bearer toto")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(jsonResponse));
+    }
+
+    @Test
     void testGetMetadataReportDefaultValue() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
