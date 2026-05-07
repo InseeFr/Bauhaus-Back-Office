@@ -1,11 +1,15 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class CreateCollectionRequest {
+
+    private static final Pattern ID_PATTERN = Pattern.compile(CollectionId.VALID_PATTERN);
 
     protected final String id;
     protected final List<LocalisedLabelResponse> labels;
@@ -24,6 +28,10 @@ public class CreateCollectionRequest {
     }
 
     CreateCollectionCommand toCreateCommand() throws InvalidCreateCollectionCommandException {
+        if (this.id != null && !this.id.isEmpty() && !ID_PATTERN.matcher(this.id).matches()) {
+            throw new InvalidCreateCollectionCommandException(
+                    "The identifier is invalid: only alphanumeric characters and hyphens are allowed");
+        }
         return new CreateCollectionCommand(
                 this.id,
                 this.labels.stream().map(LocalisedLabelResponse::toDomain).toList(),

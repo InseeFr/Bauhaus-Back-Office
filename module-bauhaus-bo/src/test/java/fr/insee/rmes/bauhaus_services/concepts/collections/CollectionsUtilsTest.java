@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONArray;
@@ -39,7 +40,10 @@ class CollectionsUtilsTest {
 
     @BeforeEach
     void setUp() {
-        collectionsUtils = new CollectionsUtils(conceptsPublication, repositoryGestion);
+        GraphDBCollectionProperties collectionProperties =
+                new GraphDBCollectionProperties("http://rdf.insee.fr/graphes/concepts/definitions",
+                        "http://bauhaus//concepts/definitions");
+        collectionsUtils = new CollectionsUtils(conceptsPublication, repositoryGestion, collectionProperties);
     }
 
     @Test

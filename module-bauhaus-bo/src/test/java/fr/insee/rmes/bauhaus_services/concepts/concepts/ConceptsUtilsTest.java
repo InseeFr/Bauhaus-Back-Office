@@ -79,7 +79,7 @@ class ConceptsUtilsTest {
     void setUp() {
         conceptConceptsQueries = new ConceptConceptsQueries(new ConfigStub());
 
-        conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, new ConfigStub(), publicationUtils, conceptConceptsQueries);
+        conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, new ConfigStub(), publicationUtils, conceptConceptsQueries, null);
 
         noteManager = new NoteManager(notesUtils);
 
@@ -89,7 +89,7 @@ class ConceptsUtilsTest {
     @Test
     void shouldReturnGetConceptExportFileName() {
 
-        ConceptsPublication conceptsPublication =  new ConceptsPublication(null, null, null, null, null, null);
+        ConceptsPublication conceptsPublication =  new ConceptsPublication(null, null, null, null, null, null, null);
         NoteManager noteManager = new NoteManager(null);
         ConceptsUtils conceptsUtilsExample = new ConceptsUtils(null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null);
 

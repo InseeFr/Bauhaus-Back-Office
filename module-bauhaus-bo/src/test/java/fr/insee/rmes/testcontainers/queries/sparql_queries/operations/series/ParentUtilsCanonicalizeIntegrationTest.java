@@ -22,9 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link fr.insee.rmes.bauhaus_services.utils.OrganisationLookup#canonicalize}.
  *
  * Covers plan §6 read-side cases (séries):
- * - tout-IRI: the creator stays an IRI in the JSON output,
- * - tout-littéral (legacy stamp): the creator is resolved to its canonical IRI,
- * - mixte: both IRIs returned, one resolved and one passe-plat,
+ * - tout-IRI: the creator IRI is normalised to its short stamp form,
+ * - tout-littéral (legacy stamp): the creator is resolved and returned as short form,
+ * - mixte: both creators returned in short form,
  * - littéral non résolvable: the creator row is dropped (no null in the list).
  *
  * Series fixtures live in {@code creators-mixed.trig}; organisations live in
@@ -34,8 +34,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AppSpringBootTest
 class ParentUtilsCanonicalizeIntegrationTest extends WithGraphDBContainer {
 
-    private static final String CANONICAL_HIE_069 = "http://bauhaus/organisations/insee/HIE2000069";
-    private static final String CANONICAL_HIE_076 = "http://bauhaus/organisations/insee/HIE2000076";
+    private static final String SHORT_HIE_069 = "HIE2000069";
+    private static final String SHORT_HIE_076 = "HIE2000076";
 
     @Autowired
     private ParentUtils parentUtils;
@@ -53,26 +53,26 @@ class ParentUtilsCanonicalizeIntegrationTest extends WithGraphDBContainer {
     }
 
     @Test
-    void getSeriesCreators_returnsIriUnchanged_whenStoredAsIri() throws RmesException {
+    void getSeriesCreators_returnsShortStamp_whenStoredAsIri() throws RmesException {
         JSONArray creators = parentUtils.getSeriesCreators("sIRI");
 
-        assertThat(toCreatorList(creators)).containsExactly(CANONICAL_HIE_069);
+        assertThat(toCreatorList(creators)).containsExactly(SHORT_HIE_069);
     }
 
     @Test
-    void getSeriesCreators_resolvesLegacyLiteralToIri() throws RmesException {
+    void getSeriesCreators_resolvesLegacyLiteralToShortStamp() throws RmesException {
         JSONArray creators = parentUtils.getSeriesCreators("sLIT");
 
-        assertThat(toCreatorList(creators)).containsExactly(CANONICAL_HIE_069);
+        assertThat(toCreatorList(creators)).containsExactly(SHORT_HIE_069);
     }
 
     @Test
-    void getSeriesCreators_returnsBothFormatsAsIris_whenMixed() throws RmesException {
+    void getSeriesCreators_returnsBothInShortForm_whenMixed() throws RmesException {
         JSONArray creators = parentUtils.getSeriesCreators("sMIX");
 
         assertThat(toCreatorList(creators)).containsExactlyInAnyOrder(
-                CANONICAL_HIE_069,
-                CANONICAL_HIE_076
+                SHORT_HIE_069,
+                SHORT_HIE_076
         );
     }
 

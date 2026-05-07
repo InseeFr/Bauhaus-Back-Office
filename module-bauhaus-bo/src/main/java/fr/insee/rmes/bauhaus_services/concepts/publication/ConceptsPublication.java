@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -33,13 +34,16 @@ import java.util.List;
 public class ConceptsPublication extends RdfService{
 
 	private final ConceptConceptsQueries conceptConceptsQueries;
+	private final GraphDBCollectionProperties collectionProperties;
 
 	public ConceptsPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
 							   RepositoryPublication repositoryPublication, Config config,
 							   PublicationUtils publicationUtils,
-							   ConceptConceptsQueries conceptConceptsQueries) {
+							   ConceptConceptsQueries conceptConceptsQueries,
+							   GraphDBCollectionProperties collectionProperties) {
 		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
 		this.conceptConceptsQueries = conceptConceptsQueries;
+		this.collectionProperties = collectionProperties;
 	}
 
 	String[] notes = {"scopeNote","definition","editorialNote"} ;
@@ -200,22 +204,19 @@ public class ConceptsPublication extends RdfService{
 		for (int i = 0; i < collectionsToValidate.length(); ++i) {
 			String collectionId = collectionsToValidate.getString(i);
 			Model model = new LinkedHashModel();
-			Resource collection = RdfUtils.collectionIRI(collectionId);
+			Resource collection = collectionProperties.getResourceIRI(collectionId);
 			try (RepositoryConnection con = repoGestion.getConnection();
 				 RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection)) {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					// Other URI to transform
-					if (RdfUtils.toString(st.getPredicate()).endsWith("member")) {
+					String predicate = RdfUtils.toString(st.getPredicate());
+					if (predicate.endsWith("member")) {
 						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 								publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-					} else if (RdfUtils.toString(st.getPredicate()).endsWith("isValidated")
-							|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CREATOR))
-							|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CONTRIBUTOR))) {
-						// nothing, wouldn't copy this attr
-					}
-					// Literals
-					else {
+					} else if (predicate.endsWith(Constants.CREATOR) || predicate.endsWith(Constants.CONTRIBUTOR)) {
+						// not copied: gestion-only metadata
+					} else {
+						// Literals (incl. isValidated which has just been set to true upstream)
 						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
 								st.getContext());
 					}
