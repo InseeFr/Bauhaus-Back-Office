@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.graphdb.ObjectType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +14,7 @@ public record UriUtils(  String baseUriPublication, String baseUriGestion, Prope
 
     public UriUtils(@Value("${"+BASE_URI_PUBLICATION+"}") String baseUriPublication,
                     @Value("${"+BASE_URI_GESTION+"}") String baseUriGestion,
-                    @Autowired PropertiesFinder propertiesFinder){
+                    PropertiesFinder propertiesFinder){
         this.baseUriPublication=baseUriPublication;
         this.baseUriGestion=baseUriGestion;
         this.propertiesFinder=propertiesFinder;

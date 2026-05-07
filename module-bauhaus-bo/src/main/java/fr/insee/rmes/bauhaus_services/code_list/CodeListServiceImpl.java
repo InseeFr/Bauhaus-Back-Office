@@ -3,11 +3,16 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -27,7 +32,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
@@ -51,11 +55,18 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public static final String VALIDATION_STATE = "validationState";
 	public static final String CONCEPT = "concept/";
 
-	@Autowired
-	CodeListPublication codeListPublication;
+	private final CodeListPublication codeListPublication;
 
-	@Autowired
-	CodeListsQueries codeListsQueries;
+	private final CodeListsQueries codeListsQueries;
+
+	public CodeListServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+							   RepositoryPublication repositoryPublication, Config config,
+							   PublicationUtils publicationUtils,
+							   CodeListPublication codeListPublication, CodeListsQueries codeListsQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.codeListPublication = codeListPublication;
+		this.codeListsQueries = codeListsQueries;
+	}
 
 	@Override
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {

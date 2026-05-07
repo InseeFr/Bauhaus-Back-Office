@@ -4,27 +4,29 @@ import fr.insee.rmes.Config;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class RdfService {
 
+	protected final RepositoryGestion repoGestion;
 
-	@Autowired
-	protected RepositoryGestion repoGestion;
+	protected final IdGenerator idGenerator;
 
-	@Autowired
-	protected IdGenerator idGenerator;
+	protected final RepositoryPublication repositoryPublication;
 
-	@Autowired
-	protected RepositoryPublication repositoryPublication;
-	
-	@Autowired
-	protected Config config;
+	protected final Config config;
 
+	protected final PublicationUtils publicationUtils;
 
-	@Autowired
-	protected PublicationUtils publicationUtils;
-	
+	protected RdfService(RepositoryGestion repoGestion, IdGenerator idGenerator,
+						 RepositoryPublication repositoryPublication, Config config,
+						 PublicationUtils publicationUtils) {
+		this.repoGestion = repoGestion;
+		this.idGenerator = idGenerator;
+		this.repositoryPublication = repositoryPublication;
+		this.config = config;
+		this.publicationUtils = publicationUtils;
+	}
+
 	public void transformTripleToPublish(Model model, Statement st) {
 		Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 		IRI predicateIRI = RdfUtils

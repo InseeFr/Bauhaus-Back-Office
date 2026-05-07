@@ -1,12 +1,17 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -59,6 +64,11 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
     private final ConceptConceptsQueries conceptConceptsQueries;
 
     public ConceptsImpl(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            Config config,
+            PublicationUtils publicationUtils,
             ConceptsUtils conceptsUtils,
             CollectionsUtils collectionsUtils,
             ConceptsExportBuilder conceptsExport,
@@ -67,6 +77,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
             ConceptCollectionsQueries conceptCollectionsQueries,
             ConceptConceptsQueries conceptConceptsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
         this.conceptsUtils = conceptsUtils;
         this.collectionsUtils = collectionsUtils;
         this.conceptsExport = conceptsExport;

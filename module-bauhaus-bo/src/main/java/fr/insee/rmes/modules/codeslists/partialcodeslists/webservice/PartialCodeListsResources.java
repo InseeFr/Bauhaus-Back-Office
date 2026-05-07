@@ -8,7 +8,6 @@ import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.commons.webservice.GenericResources;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +19,11 @@ import java.util.List;
 @RequestMapping(value = "/codeList/partial")
 public class PartialCodeListsResources extends GenericResources {
 
-    @Autowired
-    CodeListService codeListService;
+    private final CodeListService codeListService;
+
+    public PartialCodeListsResources(CodeListService codeListService) {
+        this.codeListService = codeListService;
+    }
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

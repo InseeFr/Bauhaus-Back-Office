@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 @AppSpringBootTest
 class StructureUtilsTest {
     @InjectMocks
-    StructureUtils structureUtils = new StructureUtils();
+    StructureUtils structureUtils;
 
     @MockitoBean
     RepositoryGestion repositoryGestion;

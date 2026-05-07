@@ -24,7 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -39,32 +38,39 @@ public class OperationsImpl  implements OperationsService {
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
 
-	@Autowired
-	RepositoryGestion repoGestion;
+	private final RepositoryGestion repoGestion;
 
-	@Autowired
-	SeriesUtils seriesUtils;
+	private final SeriesUtils seriesUtils;
 
-	@Autowired
-	OperationsUtils operationsUtils;
+	private final OperationsUtils operationsUtils;
 
-	@Autowired
-	FamiliesUtils familiesUtils;
+	private final FamiliesUtils familiesUtils;
 
-	@Autowired
-	IndicatorsUtils indicatorsUtils;
+	private final IndicatorsUtils indicatorsUtils;
 
-    @Autowired
-    UserDecoder userDecoder;
+    private final UserDecoder userDecoder;
 
-	@Autowired
-	OperationIndicatorsQueries operationIndicatorsQueries;
+	private final OperationIndicatorsQueries operationIndicatorsQueries;
 
-	@Autowired
-	OperationsOperationQueries operationsOperationQueries;
+	private final OperationsOperationQueries operationsOperationQueries;
 
-	@Autowired
-	OperationSeriesQueries operationSeriesQueries;
+	private final OperationSeriesQueries operationSeriesQueries;
+
+	public OperationsImpl(RepositoryGestion repoGestion, SeriesUtils seriesUtils, OperationsUtils operationsUtils,
+						  FamiliesUtils familiesUtils, IndicatorsUtils indicatorsUtils, UserDecoder userDecoder,
+						  OperationIndicatorsQueries operationIndicatorsQueries,
+						  OperationsOperationQueries operationsOperationQueries,
+						  OperationSeriesQueries operationSeriesQueries) {
+		this.repoGestion = repoGestion;
+		this.seriesUtils = seriesUtils;
+		this.operationsUtils = operationsUtils;
+		this.familiesUtils = familiesUtils;
+		this.indicatorsUtils = indicatorsUtils;
+		this.userDecoder = userDecoder;
+		this.operationIndicatorsQueries = operationIndicatorsQueries;
+		this.operationsOperationQueries = operationsOperationQueries;
+		this.operationSeriesQueries = operationSeriesQueries;
+	}
 
 
 	/***************************************************************************************************

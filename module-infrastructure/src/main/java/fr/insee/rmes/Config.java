@@ -1,9 +1,6 @@
 package fr.insee.rmes;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 
@@ -14,9 +11,6 @@ public class Config {
     /******************************************************/
     /** GLOBAL CONF 	***********************************/
     /******************************************************/
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
 
     @Value("${fr.insee.rmes.bauhaus.lg1}")
     private String lg1;

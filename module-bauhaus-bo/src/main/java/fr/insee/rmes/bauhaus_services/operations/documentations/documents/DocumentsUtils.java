@@ -2,13 +2,18 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -66,7 +71,12 @@ public class DocumentsUtils extends RdfService {
 
     private final OperationDocumentsQueries operationDocumentsQueries;
 
-    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations, StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries) {
+    public DocumentsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                          RepositoryPublication repositoryPublication, Config config,
+                          PublicationUtils publicationUtils,
+                          ParentUtils ownersUtils, FilesOperations filesOperations,
+                          StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
         this.ownersUtils = ownersUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;

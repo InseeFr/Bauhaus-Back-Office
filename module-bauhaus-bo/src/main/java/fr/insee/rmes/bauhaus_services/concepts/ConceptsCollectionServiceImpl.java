@@ -1,9 +1,14 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.model.concepts.CollectionForExport;
@@ -34,10 +39,16 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     private final ConceptCollectionsQueries conceptCollectionsQueries;
 
     public ConceptsCollectionServiceImpl(
+            RepositoryGestion repoGestion,
+            IdGenerator idGenerator,
+            RepositoryPublication repositoryPublication,
+            Config config,
+            PublicationUtils publicationUtils,
             CollectionExportBuilder collectionExport,
             ConceptsService conceptsService,
             @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
             ConceptCollectionsQueries conceptCollectionsQueries) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
         this.collectionExport = collectionExport;
         this.conceptsService = conceptsService;
         this.maxLength = maxLength;

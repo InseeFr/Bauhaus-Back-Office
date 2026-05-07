@@ -94,11 +94,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}") String identifiantsAlternatifsBaseUri
     ) {
-        this.repoGestion = repoGestion;
-        this.idGenerator = idGenerator;
-        this.repositoryPublication = repositoryPublication;
-        this.config = config;
-        this.publicationUtils = publicationUtils;
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
         this.seriesUtils = seriesUtils;
         this.datasetQueries = datasetQueries;
         this.datasetDistributionQueries = datasetDistributionQueries;

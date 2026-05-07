@@ -1,11 +1,16 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -17,7 +22,6 @@ import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -34,25 +38,39 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsDocumentationsImpl.class);
 
-	@Value("classpath:bauhaus-sims.json")
-	org.springframework.core.io.Resource simsDefaultValue;
+	private final org.springframework.core.io.Resource simsDefaultValue;
 
-	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength;
+	private final int maxLength;
 
-	@Autowired
-	DocumentationsUtils documentationsUtils;
-	
-	@Autowired
-	DocumentationExport documentationsExport;
+	private final DocumentationsUtils documentationsUtils;
 
-	@Autowired
-	ParentUtils ownersUtils;
+	private final DocumentationExport documentationsExport;
 
-	@Autowired
-	DocumentationRepository documentationRepository;
+	private final ParentUtils ownersUtils;
 
-	@Autowired
-	DocumentationQueries documentationQueries;
+	private final DocumentationRepository documentationRepository;
+
+	private final DocumentationQueries documentationQueries;
+
+	public OperationsDocumentationsImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+										RepositoryPublication repositoryPublication, Config config,
+										PublicationUtils publicationUtils,
+										@Value("classpath:bauhaus-sims.json") org.springframework.core.io.Resource simsDefaultValue,
+										@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
+										DocumentationsUtils documentationsUtils,
+										DocumentationExport documentationsExport,
+										ParentUtils ownersUtils,
+										DocumentationRepository documentationRepository,
+										DocumentationQueries documentationQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.simsDefaultValue = simsDefaultValue;
+		this.maxLength = maxLength;
+		this.documentationsUtils = documentationsUtils;
+		this.documentationsExport = documentationsExport;
+		this.ownersUtils = ownersUtils;
+		this.documentationRepository = documentationRepository;
+		this.documentationQueries = documentationQueries;
+	}
 
 
 	/***************************************************************************************************

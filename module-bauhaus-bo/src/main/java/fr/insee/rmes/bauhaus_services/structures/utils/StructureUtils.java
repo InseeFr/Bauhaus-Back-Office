@@ -2,9 +2,14 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -29,7 +34,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -51,17 +55,25 @@ public class StructureUtils extends RdfService {
     public static final String COMPONENT_DEFINITION_MODIFIED = "componentDefinitionModified";
     public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
 
-    @Autowired
-    StructureComponent structureComponent;
+    private final StructureComponent structureComponent;
 
-    @Autowired
-    StructureQueries structureQueries;
+    private final StructureQueries structureQueries;
 
-    @Autowired
-    StructureComponentUtils structureComponentUtils;
+    private final StructureComponentUtils structureComponentUtils;
 
-    @Autowired
-    StructurePublication structurePublication;
+    private final StructurePublication structurePublication;
+
+    public StructureUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                          RepositoryPublication repositoryPublication, Config config,
+                          PublicationUtils publicationUtils,
+                          StructureComponent structureComponent, StructureQueries structureQueries,
+                          StructureComponentUtils structureComponentUtils, StructurePublication structurePublication) {
+        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        this.structureComponent = structureComponent;
+        this.structureQueries = structureQueries;
+        this.structureComponentUtils = structureComponentUtils;
+        this.structurePublication = structurePublication;
+    }
 
     public JSONArray formatStructuresForSearch(JSONArray structures) throws RmesException {
         for (int i = 0; i < structures.length(); i++) {

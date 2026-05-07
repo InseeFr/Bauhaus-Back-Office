@@ -1,7 +1,12 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
+import fr.insee.rmes.Config;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
@@ -18,7 +23,6 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -27,9 +31,16 @@ import java.util.List;
 @Component
 public class NotesUtils  extends RdfService {
 
-	@Autowired
-	private ConceptNotesQueries conceptNotesQueries;
-	
+	private final ConceptNotesQueries conceptNotesQueries;
+
+	public NotesUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+					  RepositoryPublication repositoryPublication, Config config,
+					  PublicationUtils publicationUtils,
+					  ConceptNotesQueries conceptNotesQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.conceptNotesQueries = conceptNotesQueries;
+	}
+
 	private static final String ONE = "1";
 	
 

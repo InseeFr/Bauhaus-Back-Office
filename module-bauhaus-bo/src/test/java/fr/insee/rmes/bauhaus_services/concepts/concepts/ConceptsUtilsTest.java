@@ -37,7 +37,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,55 +76,22 @@ class ConceptsUtilsTest {
     private ConceptConceptsQueries conceptConceptsQueries;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         conceptConceptsQueries = new ConceptConceptsQueries(new ConfigStub());
 
-        // Create ConceptsPublication and inject its dependencies
-        conceptsPublication = new ConceptsPublication(conceptConceptsQueries);
-        injectField(conceptsPublication, "repoGestion", repoGestion);
-        injectField(conceptsPublication, "repositoryPublication", repositoryPublication);
-        injectField(conceptsPublication, "idGenerator", idGenerator);
-        injectField(conceptsPublication, "publicationUtils", publicationUtils);
-        injectField(conceptsPublication, "config", new ConfigStub());
+        conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, new ConfigStub(), publicationUtils, conceptConceptsQueries);
 
-        // Create NoteManager with NotesUtils
         noteManager = new NoteManager(notesUtils);
 
-        // Create ConceptsUtils with necessary dependencies
-        conceptsUtils = new ConceptsUtils(conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
-
-        // Inject mocks using reflection for fields from RdfService
-        injectField(conceptsUtils, "repoGestion", repoGestion);
-        injectField(conceptsUtils, "repositoryPublication", repositoryPublication);
-        injectField(conceptsUtils, "idGenerator", idGenerator);
-        injectField(conceptsUtils, "publicationUtils", publicationUtils);
-        injectField(conceptsUtils, "config", new ConfigStub());
-    }
-
-    private void injectField(Object target, String fieldName, Object value) throws Exception {
-        Field field = getFieldFromClassHierarchy(target.getClass(), fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
-    }
-
-    private Field getFieldFromClassHierarchy(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-        Class<?> currentClass = clazz;
-        while (currentClass != null) {
-            try {
-                return currentClass.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-                currentClass = currentClass.getSuperclass();
-            }
-        }
-        throw new NoSuchFieldException("Field " + fieldName + " not found in class hierarchy");
+        conceptsUtils = new ConceptsUtils(repoGestion, idGenerator, repositoryPublication, new ConfigStub(), publicationUtils, conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
     }
 
     @Test
     void shouldReturnGetConceptExportFileName() {
 
-        ConceptsPublication conceptsPublication =  new ConceptsPublication(null);
+        ConceptsPublication conceptsPublication =  new ConceptsPublication(null, null, null, null, null, null);
         NoteManager noteManager = new NoteManager(null);
-        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(conceptsPublication, noteManager, 19, null, null, null);
+        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null);
 
         ConceptForExport conceptForExport = new ConceptForExport();
         conceptForExport.setId("id");

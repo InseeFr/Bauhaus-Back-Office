@@ -1,9 +1,13 @@
 package fr.insee.rmes.bauhaus_services.concepts.publication;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
@@ -30,7 +34,11 @@ public class ConceptsPublication extends RdfService{
 
 	private final ConceptConceptsQueries conceptConceptsQueries;
 
-	public ConceptsPublication(ConceptConceptsQueries conceptConceptsQueries) {
+	public ConceptsPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
+							   RepositoryPublication repositoryPublication, Config config,
+							   PublicationUtils publicationUtils,
+							   ConceptConceptsQueries conceptConceptsQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
 		this.conceptConceptsQueries = conceptConceptsQueries;
 	}
 

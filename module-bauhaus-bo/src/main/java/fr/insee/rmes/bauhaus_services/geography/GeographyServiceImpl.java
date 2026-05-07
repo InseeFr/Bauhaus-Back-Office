@@ -1,11 +1,16 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
+import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.utils.Deserializer;
@@ -24,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -35,8 +39,15 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	private static final String HAS_COMPOSITION = "hasComposition";
 	static final Logger logger = LoggerFactory.getLogger(GeographyServiceImpl.class);
 
-	@Autowired
-	private GeographyQueries geographyQueries;
+	private final GeographyQueries geographyQueries;
+
+	public GeographyServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
+								RepositoryPublication repositoryPublication, Config config,
+								PublicationUtils publicationUtils,
+								GeographyQueries geographyQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		this.geographyQueries = geographyQueries;
+	}
 
 	@Override
 	public String getGeoFeatures() throws RmesException {

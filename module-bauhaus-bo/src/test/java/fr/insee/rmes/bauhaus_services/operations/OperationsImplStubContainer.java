@@ -8,6 +8,7 @@ import fr.insee.rmes.graphdb.RepositoryUtils;
 public class OperationsImplStubContainer extends OperationsImpl {
 
     public OperationsImplStubContainer(RdfConnectionDetails rdfGestionConectionDetails) {
-        repoGestion=new RepositoryGestion(rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
+        super(new RepositoryGestion(rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)),
+                null, null, null, null, null, null, null, null);
     }
 }
