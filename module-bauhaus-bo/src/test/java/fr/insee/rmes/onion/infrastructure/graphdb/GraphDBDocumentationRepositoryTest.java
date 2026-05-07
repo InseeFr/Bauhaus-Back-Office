@@ -60,4 +60,16 @@ class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
         DocumentationAttribute result = repository.getAttributeSpecification("S.6");
         Assertions.assertFalse(result.sansObject());
     }
+
+    @Test
+    void should_expose_subPropertyOf_for_attribute_flagged_with_dcterms_modified() throws Exception {
+        DocumentationAttribute result = repository.getAttributeSpecification("S.2.3");
+        Assertions.assertEquals("http://purl.org/dc/terms/modified", result.subPropertyOf());
+    }
+
+    @Test
+    void should_return_null_subPropertyOf_for_unflagged_attribute() throws Exception {
+        DocumentationAttribute result = repository.getAttributeSpecification("S.6");
+        Assertions.assertNull(result.subPropertyOf());
+    }
 }

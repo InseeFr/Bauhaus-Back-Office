@@ -10,7 +10,8 @@ public record DocumentationAttribute (
         String maxOccurs,
         Boolean isPresentational,
         Boolean sansObject,
-        String codeList
+        String codeList,
+        String subPropertyOf
 ) {
 
     public static DocumentationAttribute fromJson(JSONObject obj) {
@@ -22,7 +23,8 @@ public record DocumentationAttribute (
         Boolean presentational = toNullableBoolean(obj.opt("isPresentational"));
         Boolean sansObject = obj.optBooleanObject("sansObject");
         String codeList = obj.optString("codeList", null);
-        return new DocumentationAttribute(rt, lg1, lg2, id, max, presentational, sansObject, codeList);
+        String subPropertyOf = obj.optString("subPropertyOf", null);
+        return new DocumentationAttribute(rt, lg1, lg2, id, max, presentational, sansObject, codeList, subPropertyOf);
     }
 
     private static Boolean toNullableBoolean(Object v) {
