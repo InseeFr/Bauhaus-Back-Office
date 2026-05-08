@@ -34,7 +34,7 @@ class OperationsDocumentationsImplTest {
 
     @BeforeEach
     void setUp() {
-        metadataReportService = new OperationsDocumentationsImpl(null, null, null, null, null, null, 0, documentationsUtils, documentationsExport, null, null, null);
+        metadataReportService = new OperationsDocumentationsImpl(null, null, null, null, null, 0, documentationsUtils, documentationsExport, null, null, null);
     }
 
     @Test

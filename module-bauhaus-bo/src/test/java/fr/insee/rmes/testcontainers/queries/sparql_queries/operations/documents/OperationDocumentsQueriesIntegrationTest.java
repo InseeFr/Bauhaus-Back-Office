@@ -1,6 +1,8 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.documents;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
@@ -32,7 +34,7 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        operationDocumentsQueries = new OperationDocumentsQueries(new ConfigStub());
+        operationDocumentsQueries = new OperationDocumentsQueries(BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

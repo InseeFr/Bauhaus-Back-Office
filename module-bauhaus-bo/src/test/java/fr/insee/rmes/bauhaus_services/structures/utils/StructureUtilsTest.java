@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.Mockito;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,14 +43,14 @@ class StructureUtilsTest {
     @InjectMocks
     StructureUtils structureUtils;
 
+    @Spy
+    BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
+
     @MockitoBean
     RepositoryGestion repositoryGestion;
 
     @Mock
     StructureQueries structureQueries;
-
-    @Autowired
-    Config config;
 
     public static final String VALIDATION_STATUS = "{\"state\":\"Published\"}";
     public String fakeJsonObjectBody = "This a fake body of JsonObject";
@@ -120,7 +121,6 @@ class StructureUtilsTest {
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class))).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
 
-            ReflectionTestUtils.setField(structureUtils, "config", config);
 
             Structure structure = new Structure("dsd1000");
             structure.setIdentifiant("identifiant");

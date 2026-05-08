@@ -1,8 +1,7 @@
 package fr.insee.rmes.testcontainers.documentations;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationPublication;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.modules.operations.msd.DocumentationConfiguration;
 import fr.insee.rmes.modules.organisations.OrganisationsProperties;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
@@ -35,17 +34,15 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
     private RepositoryPublication repositoryPublication;
     private DocumentationPublication documentationPublication;
-    private Config config;
 
     @BeforeAll
     static void initData() {
-        RdfUtils.setConfig(new ConfigStub());
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         container.withTrigFiles("documentation-publication-test.trig");
     }
 
     @BeforeEach
     void setUp() throws Exception {
-        config = new ConfigStub();
 
         // Create a simple PropertiesFinder for UriUtils
         UriUtils.PropertiesFinder propertiesFinder = Optional::of;

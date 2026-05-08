@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -34,7 +34,7 @@ class CollectionsUtilsTest {
 
     @BeforeAll
     static void initConfig() {
-        RdfUtils.setConfig(new ConfigStub());
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
     }
 

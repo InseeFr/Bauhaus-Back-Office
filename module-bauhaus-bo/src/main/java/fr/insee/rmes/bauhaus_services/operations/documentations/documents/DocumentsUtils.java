@@ -2,7 +2,8 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.DocumentsStorageProperties;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
@@ -60,6 +61,8 @@ import java.util.regex.Pattern;
 
 @Component
 public class DocumentsUtils extends RdfService {
+    private final BauhausLanguagesProperties languages;
+
 
     private static final String SCHEME_FILE = "file://";
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
@@ -71,16 +74,21 @@ public class DocumentsUtils extends RdfService {
 
     private final OperationDocumentsQueries operationDocumentsQueries;
 
+    private final DocumentsStorageProperties documentsStorage;
+
     public DocumentsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                          RepositoryPublication repositoryPublication, Config config,
+                          RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                           PublicationUtils publicationUtils,
                           ParentUtils ownersUtils, FilesOperations filesOperations,
-                          StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+                          StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries,
+                          DocumentsStorageProperties documentsStorage) {
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
         this.ownersUtils = ownersUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.operationDocumentsQueries = operationDocumentsQueries;
+        this.documentsStorage = documentsStorage;
     }
 
     /*
@@ -464,10 +472,10 @@ public class DocumentsUtils extends RdfService {
 
 
     private void validate(Document document) throws RmesException {
-        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), config.getLg1()))) {
+        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), languages.lg1()))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
         }
-        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), config.getLg2()))) {
+        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), languages.lg2()))) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
         }
     }
@@ -485,19 +493,19 @@ public class DocumentsUtils extends RdfService {
 
         if (StringUtils.isNotEmpty(document.getLabelLg1())) {
             logger.debug("Add to {} RDFS:LABEL {}", docUri, document.getLabelLg1());
-            RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), config.getLg1(), model, graph);
+            RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), languages.lg1(), model, graph);
         }
         if (StringUtils.isNotEmpty(document.getLabelLg2())) {
             logger.debug("Add to {} RDFS:LABEL {}", docUri, document.getLabelLg2());
-            RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), config.getLg2(), model, graph);
+            RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), languages.lg2(), model, graph);
         }
         if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
             logger.debug("Add to {} RDFS.COMMENT {}", docUri, document.getDescriptionLg1());
-            RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), config.getLg1(), model, graph);
+            RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), languages.lg1(), model, graph);
         }
         if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
             logger.debug("Add to {} RDFS.COMMENT {}", docUri, document.getDescriptionLg2());
-            RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), config.getLg2(), model, graph);
+            RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), languages.lg2(), model, graph);
         }
         if (StringUtils.isNotEmpty(document.getLangue())) {
             logger.debug("Add to {} DC.LANGUAGE {}", docUri, document.getLangue());
@@ -520,12 +528,12 @@ public class DocumentsUtils extends RdfService {
     }
 
     private String createFileUrl(String name) throws RmesException {
-        if (!filesOperations.exists(config.getDocumentsStorageGestion())){
+        if (!filesOperations.exists(documentsStorage.storageGestion())){
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
                     "config.DOCUMENTS_STORAGE");
         }
 
-        Path gestionStorageFolder=Path.of(config.getDocumentsStorageGestion());
+        Path gestionStorageFolder=Path.of(documentsStorage.storageGestion());
         String url= gestionStorageFolder.resolve(name).toString();
         Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
         Matcher m = p.matcher(url);

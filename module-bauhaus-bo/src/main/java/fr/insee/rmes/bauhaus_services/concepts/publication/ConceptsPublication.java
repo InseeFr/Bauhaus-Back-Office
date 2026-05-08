@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.concepts.publication;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -37,11 +36,11 @@ public class ConceptsPublication extends RdfService{
 	private final GraphDBCollectionProperties collectionProperties;
 
 	public ConceptsPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							   RepositoryPublication repositoryPublication, Config config,
+							   RepositoryPublication repositoryPublication,
 							   PublicationUtils publicationUtils,
 							   ConceptConceptsQueries conceptConceptsQueries,
 							   GraphDBCollectionProperties collectionProperties) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.conceptConceptsQueries = conceptConceptsQueries;
 		this.collectionProperties = collectionProperties;
 	}

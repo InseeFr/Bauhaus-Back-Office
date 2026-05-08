@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
@@ -37,6 +37,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OperationsUtils extends RdfService{
+    private final BauhausLanguagesProperties languages;
+
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsUtils.class);
 
@@ -53,13 +55,14 @@ public class OperationsUtils extends RdfService{
 	private final OperationSeriesQueries operationSeriesQueries;
 
 	public OperationsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-						   RepositoryPublication repositoryPublication, Config config,
+						   RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 						   PublicationUtils publicationUtils,
 						   FamOpeSerIndUtils famOpeSerIndUtils, DocumentationsUtils documentationsUtils,
 						   ParentUtils parentUtils, OperationPublication operationPublication,
 						   OperationsOperationQueries operationsOperationQueries,
 						   OperationSeriesQueries operationSeriesQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
 		this.famOpeSerIndUtils = famOpeSerIndUtils;
 		this.documentationsUtils = documentationsUtils;
 		this.parentUtils = parentUtils;
@@ -69,10 +72,10 @@ public class OperationsUtils extends RdfService{
 	}
 
 	private void validate(Operation operation) throws RmesException {
-		if(repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg1(), config.getLg1()))){
+		if(repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg1(), languages.lg1()))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another operation.");
 		}
-		if(repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg2(), config.getLg2()))){
+		if(repoGestion.getResponseAsBoolean(operationsOperationQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg2(), languages.lg2()))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another operation.");
 		}
 	}
@@ -162,12 +165,12 @@ public class OperationsUtils extends RdfService{
 		/*Const*/
 		model.add(operationURI, RDF.TYPE, INSEE.OPERATION, RdfUtils.operationsGraph());
 		/*Required*/
-		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), config.getLg1()), RdfUtils.operationsGraph());
+		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), languages.lg1()), RdfUtils.operationsGraph());
 		model.add(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), languages.lg1(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getModified(), model, RdfUtils.operationsGraph());
 

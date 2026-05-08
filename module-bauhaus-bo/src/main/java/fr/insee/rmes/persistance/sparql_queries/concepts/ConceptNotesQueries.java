@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -16,10 +16,10 @@ public class ConceptNotesQueries {
 	private static final String NOTES_FOLDER = "concepts/notes/";
 	private static final String CONCEPT_ID = "CONCEPT_ID";
 
-	private final Config config;
+    private final GraphsProperties graphs;
 
-	public ConceptNotesQueries(Config config) {
-		this.config = config;
+	public ConceptNotesQueries(GraphsProperties graphs) {
+        this.graphs = graphs;
 	}
 
 	private String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
@@ -51,7 +51,7 @@ public class ConceptNotesQueries {
 		Map<String, Object> params = new HashMap<>();
 		params.put(CONCEPT_ID, conceptId);
 		params.put("MAX_VERSION", maxVersion);
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put("CONCEPTS_GRAPH", graphs.conceptsGraph());
 		return buildRequest("getHistoricalNotes.ftlh", params);
 	}
 

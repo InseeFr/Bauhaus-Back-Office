@@ -1,6 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.structures;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class StructureQueriesTest extends WithGraphDBContainer {
 
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    StructureQueries structureQueries = new StructureQueries(new ConfigStub());
+    StructureQueries structureQueries = new StructureQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
     static void initData() {

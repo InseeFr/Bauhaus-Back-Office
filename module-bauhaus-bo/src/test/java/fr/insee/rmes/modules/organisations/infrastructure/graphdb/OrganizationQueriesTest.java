@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -31,7 +32,7 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        organizationQueries = new OrganizationQueries(new ConfigStub());
+        organizationQueries = new OrganizationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

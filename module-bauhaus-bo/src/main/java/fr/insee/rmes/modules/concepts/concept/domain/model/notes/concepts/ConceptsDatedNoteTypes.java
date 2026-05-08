@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.domain.model.notes.concepts;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -15,7 +15,7 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String pathComponent() {return "changeNote";}
 		@Override
-		public String lang() {return config.getLg1();}
+		public String lang() {return languages.lg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
@@ -24,31 +24,31 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String pathComponent() {return "changeNote";}
 		@Override
-		public String lang() {return config.getLg2();}
+		public String lang() {return languages.lg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
 	};
 
-	private static Config config;
-	
-	protected void setConfig(Config configParam) {
-		config = configParam;
+	private static BauhausLanguagesProperties languages;
+
+	protected void setLanguages(BauhausLanguagesProperties languagesParam) {
+		languages = languagesParam;
 	}
-	
+
 
     @Component
     public static class ConfigServiceInjector {
-        private final Config config;
+        private final BauhausLanguagesProperties languages;
 
-        public ConfigServiceInjector(Config config) {
-            this.config = config;
+        public ConfigServiceInjector(BauhausLanguagesProperties languages) {
+            this.languages = languages;
         }
 
         @PostConstruct
         public void postConstruct() {
         	 for (ConceptsDatedNoteTypes note : EnumSet.allOf(ConceptsDatedNoteTypes.class))
-        		 note.setConfig(config);
+        		 note.setLanguages(languages);
         }
     }
 	

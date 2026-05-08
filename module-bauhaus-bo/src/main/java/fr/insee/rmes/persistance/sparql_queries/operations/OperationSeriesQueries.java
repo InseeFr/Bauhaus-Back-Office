@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
@@ -16,10 +17,12 @@ import java.util.Set;
 @Component
 public class OperationSeriesQueries {
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-	public OperationSeriesQueries(Config config) {
-		this.config = config;
+	public OperationSeriesQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
+        this.languages = languages;
+        this.graphs = graphs;
 	}
 
 	private static final String ID_SERIES = "ID_SERIES";
@@ -33,7 +36,7 @@ public class OperationSeriesQueries {
 
 	public String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
 		params.put("LANG", lang);
 		params.put("ID", id);
 		params.put("LABEL", label);
@@ -44,8 +47,8 @@ public class OperationSeriesQueries {
 
 	public String oneSeriesQuery(String id, boolean seriesRichTextNexStructure) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		params.put("ID", id);
 		params.put("SERIES_RICH_TEXT_NEXT_STRUCTURE", seriesRichTextNexStructure);
 
@@ -64,12 +67,12 @@ public class OperationSeriesQueries {
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
-		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
-		params.put(ORG_INSEE_GRAPH, config.getOrgInseeGraph());
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
+		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
+		params.put(ORGANIZATIONS_GRAPH, graphs.organizationsGraph());
+		params.put(ORG_INSEE_GRAPH, graphs.orgInseeGraph());
+		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
 		return params;
 	}
 
@@ -96,7 +99,7 @@ public class OperationSeriesQueries {
 	 */
 	public String getCreatorsBySeriesUri(String uriSeries) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
 		params.put(URI_SERIES, uriSeries);
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);
 	}

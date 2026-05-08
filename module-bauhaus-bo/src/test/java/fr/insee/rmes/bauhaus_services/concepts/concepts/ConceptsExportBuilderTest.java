@@ -56,7 +56,7 @@ class ConceptsExportBuilderTest {
 
     @BeforeEach
     void setUp() {
-        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, null, conceptsUtils, organisationsService, exportUtils, conceptConceptsQueries);
+        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationsService, exportUtils, conceptConceptsQueries);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -49,7 +48,7 @@ public class ParentUtils extends RdfService{
 	private final OrganisationLookup organisationLookup;
 
 	public ParentUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-					   RepositoryPublication repositoryPublication, Config config,
+					   RepositoryPublication repositoryPublication,
 					   PublicationUtils publicationUtils,
 					   OperationIndicatorsQueries operationIndicatorsQueries,
 					   OperationsOperationQueries operationsOperationQueries,
@@ -58,7 +57,7 @@ public class ParentUtils extends RdfService{
 					   OperationQueries operationQueries,
 					   OperationSeriesQueries operationSeriesQueries,
 					   OrganisationLookup organisationLookup) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.operationIndicatorsQueries = operationIndicatorsQueries;
 		this.operationsOperationQueries = operationsOperationQueries;
 		this.documentationQueries = documentationQueries;

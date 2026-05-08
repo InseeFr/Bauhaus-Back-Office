@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -25,16 +26,12 @@ import static org.mockito.Mockito.mockStatic;
 @ExtendWith(MockitoExtension.class)
 class StructureQueriesTest {
 
-    @Mock
-    private Config config;
 
     private StructureQueries structureQueries;
 
     @BeforeEach
     void setUp() {
-        lenient().when(config.getStructuresGraph()).thenReturn("http://rdf.insee.fr/graphes/structures/");
-        lenient().when(config.getStructuresComponentsGraph()).thenReturn("http://rdf.insee.fr/graphes/composants/");
-        structureQueries = new StructureQueries(config);
+        structureQueries = new StructureQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

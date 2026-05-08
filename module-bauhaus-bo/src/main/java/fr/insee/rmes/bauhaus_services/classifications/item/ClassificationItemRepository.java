@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.classifications.item;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
@@ -25,13 +25,13 @@ public class ClassificationItemRepository {
 
     ClassificationNoteService classificationNoteService;
     RepositoryGestion repoGestion;
-    Config config;
+    BauhausLanguagesProperties languages;
     ClassificationItemsQueries classificationItemsQueries;
 
-    public ClassificationItemRepository(ClassificationNoteService classificationNoteService, RepositoryGestion repoGestion, Config config, ClassificationItemsQueries classificationItemsQueries) {
+    public ClassificationItemRepository(ClassificationNoteService classificationNoteService, RepositoryGestion repoGestion, BauhausLanguagesProperties languages, ClassificationItemsQueries classificationItemsQueries) {
         this.classificationNoteService = classificationNoteService;
         this.repoGestion = repoGestion;
-        this.config = config;
+        this.languages = languages;
         this.classificationItemsQueries = classificationItemsQueries;
     }
 
@@ -48,17 +48,17 @@ public class ClassificationItemRepository {
 
         repoGestion.deleteTripletByPredicate(classificationItemIri, SKOS.PREF_LABEL, graph, null);
 
-        model.add(classificationItemIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(item.getPrefLabelLg1(), config.getLg1()), graph);
-        model.add(classificationItemIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(item.getPrefLabelLg2(), config.getLg2()), graph);
+        model.add(classificationItemIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(item.getPrefLabelLg1(), languages.lg1()), graph);
+        model.add(classificationItemIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(item.getPrefLabelLg2(), languages.lg2()), graph);
 
         repoGestion.deleteTripletByPredicate(classificationItemIri, SKOS.ALT_LABEL, graph, null);
 
         if(item.getAltLabelLg1() != null){
-            model.add(classificationItemIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(item.getAltLabelLg1(), config.getLg1()), graph);
+            model.add(classificationItemIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(item.getAltLabelLg1(), languages.lg1()), graph);
         }
 
         if(item.getAltLabelLg2() != null){
-            model.add(classificationItemIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(item.getAltLabelLg2(), config.getLg2()), graph);
+            model.add(classificationItemIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(item.getAltLabelLg2(), languages.lg2()), graph);
         }
 
 
@@ -80,10 +80,10 @@ public class ClassificationItemRepository {
                     altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
                     repoGestion.deleteTripletByPredicate(altLabelIri, SKOSXL.LITERAL_FORM, graph, null);
                     if (altLabel.getShortLabelLg1() != null) {
-                        model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), config.getLg1()), graph);
+                        model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), languages.lg1()), graph);
                     }
                     if (altLabel.getShortLabelLg2() != null) {
-                        model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
+                        model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), languages.lg2()), graph);
                     }
                 } catch (RmesException _) {
                     logger.error("The altLabel {} can not be deleted", altLabelIri);

@@ -1,6 +1,6 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.checks.CheckResult;
 import fr.insee.rmes.domain.port.serverside.RuleChecker;
@@ -19,12 +19,12 @@ import java.util.*;
 @Service
 public class ConceptDateChecker implements RuleChecker  {
     private final RepositoryGestion repositoryGestion;
-    private final Config config;
+    private final GraphsProperties graphs;
     private static final Logger logger = LoggerFactory.getLogger(ConceptDateChecker.class);
 
-    public ConceptDateChecker(RepositoryGestion repositoryGestion, Config config) {
+    public ConceptDateChecker(RepositoryGestion repositoryGestion, GraphsProperties graphs) {
         this.repositoryGestion = repositoryGestion;
-        this.config = config;
+        this.graphs = graphs;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class ConceptDateChecker implements RuleChecker  {
     
     public String getSparqlQuery() throws RmesException {
         Map<String, Object> params = new HashMap<>();
-        params.put("CONCEPTS_GRAPH", this.config.getConceptsGraph());
+        params.put("CONCEPTS_GRAPH", this.graphs.conceptsGraph());
         return FreeMarkerUtils.buildRequest("checks/", "checkConceptsDateFormat.ftlh", params);
 
     }

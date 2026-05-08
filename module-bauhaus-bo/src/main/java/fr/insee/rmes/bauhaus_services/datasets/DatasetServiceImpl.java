@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.modules.datasets.datasets.model.*;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
@@ -43,6 +43,8 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
+    private final BauhausLanguagesProperties languages;
+
 
     public static final String CONTRIBUTOR = "contributor";
     private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
@@ -80,7 +82,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
-            Config config,
+            BauhausLanguagesProperties languages,
             PublicationUtils publicationUtils,
             SeriesUtils seriesUtils,
             @Qualifier("sparqlDatasetQueries") DatasetQueries datasetQueries,
@@ -94,7 +96,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}") String identifiantsAlternatifsBaseUri
     ) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
         this.seriesUtils = seriesUtils;
         this.datasetQueries = datasetQueries;
         this.datasetDistributionQueries = datasetDistributionQueries;
@@ -237,10 +240,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if(keywords != null){
             keywords.forEach(k -> {
                 JSONObject keyword = (JSONObject) k;
-                if(keyword.getString("lang").equalsIgnoreCase(config.getLg1())){
+                if(keyword.getString("lang").equalsIgnoreCase(languages.lg1())){
                     lg1.add(keyword.getString("keyword"));
                 }
-                if(keyword.getString("lang").equalsIgnoreCase(config.getLg2())){
+                if(keyword.getString("lang").equalsIgnoreCase(languages.lg2())){
                     lg2.add(keyword.getString("keyword"));
                 }
             });
@@ -430,10 +433,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private void persistGeneralInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
-        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg1(), config.getLg1()), graph);
-        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg2(), config.getLg2()), graph);
-        RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg2(), config.getLg2(), model, graph);
+        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg1(), languages.lg1()), graph);
+        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg2(), languages.lg2()), graph);
+        RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg2(), languages.lg2(), model, graph);
 
         RdfUtils.addTripleUri(datasetIri, DCTERMS.ACCRUAL_PERIODICITY, dataset.getAccrualPeriodicity(), model, graph);
         RdfUtils.addTripleUri(datasetIri, DCTERMS.ACCESS_RIGHTS, dataset.getAccessRights(), model, graph);
@@ -445,8 +448,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         RdfUtils.addTripleUri(datasetIri, DCTERMS.PUBLISHER, dataset.getPublisher(), model, graph);
 
-        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg2(), languages.lg2(), model, graph);
 
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.MODIFIED, dataset.getUpdated(), model, graph);
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.ISSUED, dataset.getIssued(), model, graph);
@@ -475,12 +478,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph){
-        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), languages.lg2(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg2(), languages.lg2(), model, graph);
+        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg2(), languages.lg2(), model, graph);
     }
 
     private void persistStatisticsInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
@@ -556,13 +559,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         Optional.ofNullable(dataset.getThemes()).ifPresent(list -> list.forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph)));
         Optional.ofNullable(dataset.getLinkedDocuments()).ifPresent(list -> list.forEach(linkDocument -> RdfUtils.addTripleString(datasetIri, DCTERMS.RELATION, linkDocument, model, graph)));
         Optional.ofNullable(dataset.getKeywords()).ifPresent(keywords -> {
-            addKeywords(datasetIri, Optional.ofNullable(keywords.lg1()), config.getLg1(), model, graph);
-            addKeywords(datasetIri, Optional.ofNullable(keywords.lg2()), config.getLg2(), model, graph);
+            addKeywords(datasetIri, Optional.ofNullable(keywords.lg1()), languages.lg1(), model, graph);
+            addKeywords(datasetIri, Optional.ofNullable(keywords.lg2()), languages.lg2(), model, graph);
         });
 
         if(dataset.getKeywords() != null){
-            Optional.ofNullable(dataset.getKeywords().lg1()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, config.getLg1(), model, graph)));
-            Optional.ofNullable(dataset.getKeywords().lg2()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, config.getLg2(), model, graph)));
+            Optional.ofNullable(dataset.getKeywords().lg1()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, languages.lg1(), model, graph)));
+            Optional.ofNullable(dataset.getKeywords().lg2()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, languages.lg2(), model, graph)));
         }
 
         JSONUtils.stream(new JSONArray(this.getDistributions(dataset.getId())))

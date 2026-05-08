@@ -3,7 +3,8 @@ package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -36,7 +37,7 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        operationSeriesQueries = new OperationSeriesQueries(new ConfigStub());
+        operationSeriesQueries = new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -12,16 +12,16 @@ import java.util.Map;
 @Component
 public class ParentQueries {
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
 
-	public ParentQueries(Config config) {
-		this.config = config;
+	public ParentQueries(BauhausLanguagesProperties languages) {
+        this.languages = languages;
 	}
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return params;
 	}
 

@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -44,10 +43,10 @@ public class CollectionExportBuilder extends RdfService {
 	private final ConceptCollectionsQueries conceptCollectionsQueries;
 
 	public CollectionExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
-								   RepositoryPublication repositoryPublication, Config config,
+								   RepositoryPublication repositoryPublication,
 								   PublicationUtils publicationUtils,
 								   ExportUtils exportUtils, ConceptCollectionsQueries conceptCollectionsQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.exportUtils = exportUtils;
 		this.conceptCollectionsQueries = conceptCollectionsQueries;
 	}

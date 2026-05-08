@@ -1,6 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausUriProperties;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -14,15 +16,19 @@ import java.util.Map;
 @Component
 public class OperationDocumentsQueries {
 
-	private final Config config;
+    private final BauhausUriProperties uris;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-	public OperationDocumentsQueries(Config config) {
-		this.config = config;
+	public OperationDocumentsQueries(BauhausUriProperties uris, BauhausLanguagesProperties languages, GraphsProperties graphs) {
+        this.uris = uris;
+        this.languages = languages;
+        this.graphs = graphs;
 	}
 
 	public String checkLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("OPERATIONS_GRAPH", config.getDocumentsGraph());
+		params.put("OPERATIONS_GRAPH", graphs.documentsGraph());
 		params.put("LANG", lang);
 		params.put("ID", id);
 		params.put("LABEL", label);
@@ -76,7 +82,7 @@ public class OperationDocumentsQueries {
 		params.put("idRubric", idRubric);
 		params.put("type", getDocType(isLink));
 		params.put("LANG", uriLang);
-		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
+		params.put("DOCUMENTATIONS_GRAPH", graphs.documentationsGraph());
 		return buildRequest("getDocumentQuery.ftlh", params);
 	}
 
@@ -84,7 +90,7 @@ public class OperationDocumentsQueries {
 		if (isLink == null) {
 			return "";
 		}
-		return (Boolean.TRUE.equals(isLink) ? config.getLinksBaseUri() : config.getDocumentsBaseUri());
+		return (Boolean.TRUE.equals(isLink) ? uris.linksBaseUri() : uris.documentsBaseUri());
 	}
 
 	public String getLinksToDocumentQuery(String id) throws RmesException {
@@ -111,9 +117,9 @@ public class OperationDocumentsQueries {
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put("DOCUMENTS_GRAPH", config.getDocumentsGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
+		params.put("DOCUMENTS_GRAPH", graphs.documentsGraph());
 		return params;
 	}
 
@@ -124,7 +130,7 @@ public class OperationDocumentsQueries {
 	public String getDocumentsUriAndUrlForSims(String id) throws RmesException {
 		Map<String, Object> params = initParams();
 		params.put(Constants.ID, id);
-		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
+		params.put("DOCUMENTATIONS_GRAPH", graphs.documentationsGraph());
 		return buildRequest("getDocumentsUriAndUrlForSims.ftlh", params);
 	}
 }

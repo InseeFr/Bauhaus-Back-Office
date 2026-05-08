@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -32,10 +31,10 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     private final StructureQueries structureQueries;
 
     public StructureComponentImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                  RepositoryPublication repositoryPublication, Config config,
+                                  RepositoryPublication repositoryPublication,
                                   PublicationUtils publicationUtils,
                                   StructureComponentUtils structureComponentUtils, StructureQueries structureQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.structureComponentUtils = structureComponentUtils;
         this.structureQueries = structureQueries;
     }

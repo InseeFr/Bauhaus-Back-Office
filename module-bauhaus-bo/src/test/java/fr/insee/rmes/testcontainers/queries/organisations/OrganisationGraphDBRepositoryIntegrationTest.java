@@ -1,6 +1,5 @@
 package fr.insee.rmes.testcontainers.queries.organisations;
 
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.OrganisationOption;
 import fr.insee.rmes.graphdb.RepositoryInitiator;

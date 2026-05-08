@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -23,6 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,11 +42,12 @@ class StructureComponentUtilsTest {
     @InjectMocks
     StructureComponentUtils structureComponentUtils;
 
+    @Spy
+    BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
+
     @Mock
     RepositoryGestion repoGestion;
 
-    @Mock
-    Config config;
 
     @Mock
     ComponentPublication componentPublication;
@@ -145,8 +147,6 @@ class StructureComponentUtilsTest {
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class))).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
 
-            when(config.getLg1()).thenReturn("fr");
-            when(config.getLg2()).thenReturn("en");
 
             MutualizedComponent component = new MutualizedComponent();
             component.setIdentifiant("identifiant");
@@ -194,8 +194,6 @@ class StructureComponentUtilsTest {
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class))).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
 
-            when(config.getLg1()).thenReturn("fr");
-            when(config.getLg2()).thenReturn("en");
 
             MutualizedComponent component = new MutualizedComponent();
             component.setIdentifiant("identifiant");

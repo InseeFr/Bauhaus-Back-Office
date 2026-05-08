@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import org.junit.jupiter.api.Assertions;
@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 class DatasetDistributionQueriesTest {
 
-    DatasetDistributionQueries datasetDistributionQueries = new DatasetDistributionQueries(new ConfigStub());
+    DatasetDistributionQueries datasetDistributionQueries = new DatasetDistributionQueries(new BauhausLanguagesProperties("fr", "en"));
 
     @Test
     void shouldCallGetDistributionQuery() throws RmesException {

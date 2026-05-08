@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -34,10 +33,10 @@ public class FamOpeSerIndUtils  extends RdfService {
 	private final OperationQueries operationQueries;
 
 	public FamOpeSerIndUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							 RepositoryPublication repositoryPublication, Config config,
+							 RepositoryPublication repositoryPublication,
 							 PublicationUtils publicationUtils,
 							 OperationQueries operationQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.operationQueries = operationQueries;
 	}
 

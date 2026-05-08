@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
@@ -24,10 +23,10 @@ public class OrganizationUtils  extends RdfService {
 	private final OrganizationQueries organizationQueries;
 
 	public OrganizationUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							 RepositoryPublication repositoryPublication, Config config,
+							 RepositoryPublication repositoryPublication,
 							 PublicationUtils publicationUtils,
 							 FamOpeSerIndUtils famOpeSerUtils, OrganizationQueries organizationQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.famOpeSerUtils = famOpeSerUtils;
 		this.organizationQueries = organizationQueries;
 	}

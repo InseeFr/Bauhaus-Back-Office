@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.operation.series.infrastructure.graphdb;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
@@ -25,15 +25,16 @@ class GraphDbSeriesCreatorsAdapterTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
+
     @Mock
-    private Config config;
+    private GraphsProperties graphs;
 
     private GraphDbSeriesCreatorsAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        lenient().when(config.getOperationsGraph()).thenReturn("http://rdf.insee.fr/graphes/operations");
-        adapter = new GraphDbSeriesCreatorsAdapter(repositoryGestion, config);
+        lenient().when(graphs.operationsGraph()).thenReturn("http://rdf.insee.fr/graphes/operations");
+        adapter = new GraphDbSeriesCreatorsAdapter(repositoryGestion, graphs);
     }
 
     @Test

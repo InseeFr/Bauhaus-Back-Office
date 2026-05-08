@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -12,15 +12,15 @@ public class OperationFamilyQueries {
 
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 
-	private final Config config;
+    private final GraphsProperties graphs;
 
-	public OperationFamilyQueries(Config config) {
-		this.config = config;
+	public OperationFamilyQueries(GraphsProperties graphs) {
+        this.graphs = graphs;
 	}
 
 	public String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
 		params.put("LANG", lang);
 		params.put("ID", id);
 		params.put("LABEL", label);

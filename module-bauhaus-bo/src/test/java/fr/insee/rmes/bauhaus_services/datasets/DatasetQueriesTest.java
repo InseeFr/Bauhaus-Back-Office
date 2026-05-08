@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 class DatasetQueriesTest {
 
-    DatasetQueries datasetQueries = new DatasetQueries(new ConfigStub());
+    DatasetQueries datasetQueries = new DatasetQueries(new BauhausLanguagesProperties("fr", "en"));
 
     @Test
     void shouldCallGetDatasetsQueryWithoutStamp() throws RmesException {

@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ class ClassificationCorrespondencesQueriesTest {
 
     @BeforeEach
     void setUp() {
-        queries = new ClassificationCorrespondencesQueries(new ConfigStub());
+        queries = new ClassificationCorrespondencesQueries(new BauhausLanguagesProperties("fr", "en"));
     }
 
     @Test

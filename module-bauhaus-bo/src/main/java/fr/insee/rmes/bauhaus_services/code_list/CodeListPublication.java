@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -29,9 +28,9 @@ import org.springframework.stereotype.Repository;
 public class CodeListPublication extends RdfService {
 
 	public CodeListPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							   RepositoryPublication repositoryPublication, Config config,
+							   RepositoryPublication repositoryPublication,
 							   PublicationUtils publicationUtils) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 	}
 
 	private void checkIfResourceExists(RepositoryResult<Statement> statements, Resource codeList) throws RmesNotFoundException {

@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 
@@ -27,6 +27,9 @@ class OperationsUtilsTest {
     @InjectMocks
     OperationsUtils operationsUtils;
 
+    @Spy
+    BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
+
     @Mock
     FamOpeSerIndUtils famOpeSerIndUtils;
 
@@ -37,8 +40,6 @@ class OperationsUtilsTest {
     @Mock
     RepositoryGestion repositoryGestion;
 
-    @Mock
-    Config config;
 
     @Mock
     OperationsOperationQueries operationsOperationQueries;
@@ -48,8 +49,6 @@ class OperationsUtilsTest {
 
         when(repositoryGestion.getResponseAsBoolean("unicity-labelLg1")).thenReturn(false);
         when(repositoryGestion.getResponseAsBoolean("unicity-labelLg2")).thenReturn(false);
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
         when(famOpeSerIndUtils.createId()).thenReturn("1");
         when(famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
         when(parentUtils.checkIfSeriesHasSims(anyString())).thenReturn(false);

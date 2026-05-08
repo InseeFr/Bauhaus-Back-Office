@@ -70,7 +70,7 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
 
     @Test
     @DisplayName("Bug #1453 : publier une collection doit faire passer isValidated à true dans le dashboard")
-    void publishing_a_collection_replaces_isValidated_false_with_true() {
+    void publishing_a_collection_replaces_is_validated_false_with_true() {
         RestClient restClient = RestClient.create();
         String collectionId = "Collection-bug-1453";
 
@@ -84,7 +84,7 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
 
     @Test
     @DisplayName("Bug #1453 (cycle 3) : après publication, le graphe publication doit contenir isValidated=true pour la collection")
-    void publishing_a_collection_writes_isValidated_true_in_publication_graph() {
+    void publishing_a_collection_writes_is_validated_true_in_publication_graph() {
         RestClient restClient = RestClient.create();
         String collectionId = "Collection-bug-1453-pub";
 

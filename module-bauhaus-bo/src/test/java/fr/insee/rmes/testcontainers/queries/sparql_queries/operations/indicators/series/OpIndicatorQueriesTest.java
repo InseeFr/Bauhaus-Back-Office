@@ -3,7 +3,9 @@ package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.indicator
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.eclipse.rdf4j.model.IRI;
@@ -19,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Tag("integration")
 class OpIndicatorQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    OperationIndicatorsQueries operationIndicatorsQueries = new OperationIndicatorsQueries(new ConfigStub());
+    OperationIndicatorsQueries operationIndicatorsQueries = new OperationIndicatorsQueries(BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
     static void initData(){

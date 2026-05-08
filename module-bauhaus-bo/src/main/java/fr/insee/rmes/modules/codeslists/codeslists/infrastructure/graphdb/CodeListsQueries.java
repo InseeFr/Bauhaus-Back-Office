@@ -1,7 +1,10 @@
 package fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb;
 
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausUriProperties;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
+import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -19,31 +22,37 @@ public class CodeListsQueries {
 	private static final String CODE = "CODE";
 	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
 
-	private final Config config;
+    private final BauhausUriProperties uris;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
+	private final PaginationProperties paginationProperties;
 
-	public CodeListsQueries(Config config) {
-		this.config = config;
+	public CodeListsQueries(BauhausUriProperties uris, BauhausLanguagesProperties languages, GraphsProperties graphs, PaginationProperties paginationProperties) {
+        this.uris = uris;
+        this.languages = languages;
+        this.graphs = graphs;
+		this.paginationProperties = paginationProperties;
 	}
 
 	public String isCodesListValidated(String codesListUri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put("IRI", codesListUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "isCodesListValidated.ftlh", params);
 	}
 
 	public String getAllCodesLists(boolean partial) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
 
 	public int getPerPageConfiguration(Integer perPage) {
 		if (perPage == null) {
-			return config.getPerPage();
+			return paginationProperties.perPage();
 		}
 		return perPage;
 	}
@@ -69,12 +78,12 @@ public class CodeListsQueries {
 	public String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage, String sort) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put(NOTATION, notation);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		params.put(PARTIAL, partial);
-		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
+		params.put(CODE_LIST_BASE_URI, uris.codeListBaseUri());
 		params.put("SORT", sort == null ? "code" : sort);
 
 		addSearchPredicates(params, search);
@@ -88,10 +97,10 @@ public class CodeListsQueries {
 
 	public String countCodesForCodeList(String notation, List<String> search) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put(NOTATION, notation);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		addSearchPredicates(params, search);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
 	}
@@ -100,10 +109,10 @@ public class CodeListsQueries {
 		int perPageValue = getPerPageConfiguration(perPage);
 
 		Map<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put(NOTATION, notation);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		if (perPageValue > 0) {
 			var offset = perPageValue * (page - 1);
 			params.put("OFFSET", String.valueOf(offset));
@@ -129,7 +138,7 @@ public class CodeListsQueries {
 
 	public String getCodeUriByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?uri  \n"
-				+ "WHERE { GRAPH <" + config.getCodeListGraph() + "> { \n"
+				+ "WHERE { GRAPH <" + graphs.codeListGraph() + "> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?uri skos:inScheme ?codeList . \n"
@@ -139,10 +148,10 @@ public class CodeListsQueries {
 
 	public String geCodesListByIRI(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put("CODE_LIST", id);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
 	}
 
@@ -150,7 +159,7 @@ public class CodeListsQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
 		params.put(NOTATION, notation);
-		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
+		params.put(CODE_LIST_BASE_URI, uris.codeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 
@@ -169,9 +178,9 @@ public class CodeListsQueries {
 	}
 
 	private void initParams(HashMap<String, Object> params) {
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 	}
 
 	public String checkCodeListUnicity(String id, String iri, String seeAlso, boolean partial) throws RmesException {
@@ -196,7 +205,7 @@ public class CodeListsQueries {
 	}
 
 	public String getCodesListContributors(String IRI) throws RmesException {
-		Map<String, Object> params = Map.of("GRAPH", config.getCodeListGraph(), "IRI", IRI, "PREDICATE", "dc:contributor");
+		Map<String, Object> params = Map.of("GRAPH", graphs.codeListGraph(), "IRI", IRI, "PREDICATE", "dc:contributor");
 		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
 	}
 }

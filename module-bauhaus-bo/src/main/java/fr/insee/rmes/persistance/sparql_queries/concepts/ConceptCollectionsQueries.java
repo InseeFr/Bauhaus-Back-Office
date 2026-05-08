@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -12,10 +13,12 @@ import java.util.Map;
 @Component
 public class ConceptCollectionsQueries {
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-	public ConceptCollectionsQueries(Config config) {
-		this.config = config;
+	public ConceptCollectionsQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
+        this.languages = languages;
+        this.graphs = graphs;
 	}
 
 	private String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
@@ -24,44 +27,44 @@ public class ConceptCollectionsQueries {
 
 	public String collectionsQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
+		params.put("LG1", languages.lg1());
 		return buildRequest("getCollections.ftlh", params);
 	}
 
 	public String collectionsDashboardQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
+		params.put("LG1", languages.lg1());
 		return buildRequest("getCollectionsDashboard.ftlh", params);
 	}
 
 	public String collectionsToValidateQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
+		params.put("LG1", languages.lg1());
 		return buildRequest("getCollectionsToValidate.ftlh", params);
 	}
 
 	public String collectionQuery(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		params.put("ID", id);
 		return buildRequest("getCollection.ftlh", params);
 	}
 
 	public String collectionMembersQuery(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		params.put("ID", id);
 		return buildRequest("getCollectionMembers.ftlh", params);
 	}
 
 	public String collectionConceptsQuery(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put("CONCEPT_GRAPH", config.getConceptsGraph());
-		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
+		params.put("CONCEPT_GRAPH", graphs.conceptsGraph());
+		params.put("STRUCTURES_COMPONENTS_GRAPH", graphs.structuresComponentsGraph());
 		params.put("COLLECTION_ID", id);
 		return buildRequest("getCollectionConcepts.ftlh", params);
 	}

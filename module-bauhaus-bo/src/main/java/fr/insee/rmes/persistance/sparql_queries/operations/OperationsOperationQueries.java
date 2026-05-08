@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.operations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -14,23 +15,25 @@ public class OperationsOperationQueries {
 	public static final String OPERATIONS_SERIES_FOLDER = "operations/series/";
 	public static final String OPERATIONS_FOLDER = "operations/";
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-	public OperationsOperationQueries(Config config) {
-		this.config = config;
+	public OperationsOperationQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
+        this.languages = languages;
+        this.graphs = graphs;
 	}
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return params;
 	}
 
 	public String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
 		params.put("LANG", lang);
 		params.put("ID", id);
 		params.put("LABEL", label);

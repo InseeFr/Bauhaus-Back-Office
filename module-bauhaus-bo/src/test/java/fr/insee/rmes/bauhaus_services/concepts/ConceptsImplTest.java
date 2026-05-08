@@ -85,7 +85,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsList() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(repoGestion, null, null, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(repoGestion, null, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -117,7 +117,7 @@ class ConceptsImplTest {
 
     @Test
     void shouldGetConceptsListForAdvancedSearch() throws RmesException {
-        ConceptsImpl conceptsImpl = new ConceptsImpl(repoGestion, null, null, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(repoGestion, null, null, null, null, null, null, collectionExport, null, 10, null, conceptConceptsQueries);
 
         JSONArray array = new JSONArray();
         array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -155,7 +155,7 @@ class ConceptsImplTest {
         collection.setPrefLabelLg1("Lg1Collection");
         collection.setPrefLabelLg2("Lg2Collection");
 
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, null, null, null, null, null, 10, null, null);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, null, null, null, null, 10, null, null);
 
         assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, Language.lg1));
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
@@ -164,9 +164,9 @@ class ConceptsImplTest {
     void exportConceptTest() throws RmesException, IOException, URISyntaxException, OrganisationFetchException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, null, conceptsUtils, organisationsService, new ExportUtils(200, null), conceptConceptsQueries);
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationsService, new ExportUtils(200, null), conceptConceptsQueries);
 
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
 
         JSONObject jsonConcept = new JSONObject("""
                 {
