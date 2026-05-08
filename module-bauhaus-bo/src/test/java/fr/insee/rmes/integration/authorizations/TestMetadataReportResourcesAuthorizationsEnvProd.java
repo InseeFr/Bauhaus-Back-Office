@@ -66,9 +66,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
     @MockitoBean
     private DocumentationService documentationService;
 
-
-
-    @Test
+   @Test
     void testGetMSDJson() throws Exception, MissingUserInformationException {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);

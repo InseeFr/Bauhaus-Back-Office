@@ -39,6 +39,7 @@ public class MetadataReportResources {
 
 	protected final DocumentationService documentationService;
 
+
 	public MetadataReportResources(OperationsService operationsService, OperationsDocumentationsService documentationsService, DocumentationService documentationService) {
 		this.operationsService = operationsService;
 		this.documentationsService = documentationsService;
@@ -188,6 +189,8 @@ public class MetadataReportResources {
 
 		return documentationsService.exportMetadataReportForLabel(id);
 	}
+
+
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/export/{id}/tempFiles", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })

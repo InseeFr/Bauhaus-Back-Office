@@ -14,4 +14,6 @@ public class MSDConfiguration {
     DocumentationService documentationService(DocumentationRepository repository){
         return new DocumentationServiceImpl(repository);
     }
+
+
 }
