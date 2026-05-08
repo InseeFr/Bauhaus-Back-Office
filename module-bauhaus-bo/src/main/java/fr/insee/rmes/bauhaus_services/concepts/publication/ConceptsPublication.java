@@ -46,7 +46,7 @@ public class ConceptsPublication extends RdfService{
 	}
 
 	String[] notes = {"scopeNote","definition","editorialNote"} ;
-	String[] links = {"inScheme","disseminationStatus","references",Constants.ISREPLACEDBY};
+	String[] links = {"inScheme","disseminationStatus","references"};
 	String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
 
 	public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
@@ -86,7 +86,7 @@ public class ConceptsPublication extends RdfService{
 
 
 
-	private Boolean prepareOneTripleToPublicationAndCheckIfHasBroader(Model model, List<Resource> noteToClear,
+	Boolean prepareOneTripleToPublicationAndCheckIfHasBroader(Model model, List<Resource> noteToClear,
 			List<Resource> topConceptOfToDelete, RepositoryConnection con, Statement st, boolean hasBroader)
 			throws RmesException {
 		
@@ -113,6 +113,10 @@ public class ConceptsPublication extends RdfService{
 			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 					graph);
 			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
+		} else if (predicat.endsWith(Constants.ISREPLACEDBY)) {
+			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+					graph);
+			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.REPLACES, subject, graph);
 		} else if (predicat.endsWith("broader")) {
 			hasBroader = true;
 			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),

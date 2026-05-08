@@ -89,11 +89,17 @@ public class RdfUtils {
 	}
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
+		if (isAbsoluteUri(id)) return factory.createIRI(id);
 		return factory.createIRI(uriUtils.getBaseUriGestion(objType) + "/" + id);
 	}
-	
+
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
+		if (isAbsoluteUri(id)) return factory.createIRI(id);
 		return factory.createIRI(uriUtils.getBaseUriPublication(objType) + "/" + id);
+	}
+
+	private static boolean isAbsoluteUri(String value) {
+		return value != null && (value.startsWith("http://") || value.startsWith("https://"));
 	}
 
 	public static IRI structureComponentAttributeIRI(String id) {
