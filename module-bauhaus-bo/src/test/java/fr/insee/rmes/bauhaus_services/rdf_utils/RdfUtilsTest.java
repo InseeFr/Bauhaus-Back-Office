@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.graphdb.ObjectType;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RdfUtilsTest {
@@ -253,6 +257,30 @@ class RdfUtilsTest {
         Model model = new LinkedHashModel();
         Resource graph = null;
         Assertions.assertNull(RdfUtils.addTripleStringMdToXhtml2(iri, predicate, value, lang, prefix, model, graph));
+    }
+
+    @Test
+    void objectIRIPrefixesPlainIdsWithTheGestionBaseUri(){
+        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+
+        IRI iri = RdfUtils.objectIRI(ObjectType.CONCEPT, "c123");
+
+        assertEquals("http://bauhaus/concepts/definitions/c123", iri.toString());
+    }
+
+    @Test
+    void objectIRIIsIdempotentWhenGivenAnAbsoluteConceptUri(){
+        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+
+        // Defensive: callers occasionally pass a fully-qualified concept URI instead of the
+        // bare notation (#1494). Re-prefixing produces malformed URIs like
+        // http://bauhaus/concepts/definitions/http://bauhaus/concepts/definitions/c123 that get
+        // duplicated in the gestion graph, so the helper must return the original IRI as-is.
+        String alreadyAbsolute = "http://bauhaus/concepts/definitions/c123";
+
+        IRI iri = RdfUtils.objectIRI(ObjectType.CONCEPT, alreadyAbsolute);
+
+        assertEquals(alreadyAbsolute, iri.toString());
     }
 
     @Test
