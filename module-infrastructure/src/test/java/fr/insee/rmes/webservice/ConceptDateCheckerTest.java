@@ -1,6 +1,6 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.checks.CheckResult;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -25,14 +25,15 @@ class ConceptDateCheckerTest {
     @Mock
     private RepositoryGestion repositoryGestion;
     
+
     @Mock
-    private Config config;
+    private GraphsProperties graphs;
 
     private ConceptDateChecker conceptDateChecker;
 
     @BeforeEach
     void setUp() {
-        conceptDateChecker = new ConceptDateChecker(repositoryGestion, config);
+        conceptDateChecker = new ConceptDateChecker(repositoryGestion, graphs);
     }
 
     @Test
@@ -52,7 +53,7 @@ class ConceptDateCheckerTest {
         concept2.put("modified", ""); // Empty is valid
         concepts.put(concept2);
 
-        when(config.getConceptsGraph()).thenReturn("http://test.graph");
+        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(concepts);
 
         // When
@@ -88,7 +89,7 @@ class ConceptDateCheckerTest {
         concept2.put("modified", "");
         concepts.put(concept2);
 
-        when(config.getConceptsGraph()).thenReturn("http://test.graph");
+        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(concepts);
 
         // When
@@ -110,7 +111,7 @@ class ConceptDateCheckerTest {
     @Test
     void check_shouldReturnErrorResult_whenExceptionOccurs() throws RmesException {
         // Given
-        when(config.getConceptsGraph()).thenReturn("http://test.graph");
+        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
         when(repositoryGestion.getResponseAsArray(anyString())).thenThrow(new RmesException(1, "Database error"));
 
         // When
@@ -130,7 +131,7 @@ class ConceptDateCheckerTest {
         // Given
         JSONArray emptyConcepts = new JSONArray();
         
-        when(config.getConceptsGraph()).thenReturn("http://test.graph");
+        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(emptyConcepts);
 
         // When
@@ -150,7 +151,7 @@ class ConceptDateCheckerTest {
     @Test
     void getSparqlQuery_shouldReturnQueryString() throws RmesException {
         // Given
-        when(config.getConceptsGraph()).thenReturn("http://test.graph");
+        when(graphs.conceptsGraph()).thenReturn("http://test.graph");
 
         // When
         String query = conceptDateChecker.getSparqlQuery();

@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
@@ -63,15 +63,12 @@ class DatasetServiceImplTest {
         repositoryGestion = mock(RepositoryGestion.class);
         datasetQueries = mock(DatasetQueries.class);
         datasetDistributionQueries = mock(DatasetDistributionQueries.class);
-        Config config = mock(Config.class);
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
 
         datasetService = new DatasetServiceImpl(
                 repositoryGestion,
                 idGenerator,
                 mock(RepositoryPublication.class),
-                config,
+                new BauhausLanguagesProperties("fr", "en"),
                 publicationUtils,
                 seriesUtils,
                 datasetQueries,

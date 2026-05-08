@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
@@ -41,20 +41,23 @@ public class DocumentsPublication  extends RdfService{
 	static final Logger logger = LoggerFactory.getLogger(DocumentsPublication.class);
     private final StorageProperties storageProperties;
 
+    private final DocumentsStorageProperties documentsStorage;
+
     public DocumentsPublication(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
-            Config config,
             PublicationUtils publicationUtils,
             DocumentsUtils docUtils,
             FilesOperations filesOperations,
-            StorageProperties storageProperties
+            StorageProperties storageProperties,
+            DocumentsStorageProperties documentsStorage
     ) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.docUtils = docUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
+        this.documentsStorage = documentsStorage;
     }
 
     public void publishAllDocumentsInSims(String idSims) throws RmesException {
@@ -111,7 +114,7 @@ public class DocumentsPublication  extends RdfService{
                     Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
                     IRI predicate = RdfUtils
                             .createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-                    String newUrl = config.getDocumentsBaseurl() + "/" + filename;
+                    String newUrl = documentsStorage.baseUrl() + "/" + filename;
                     logger.info("Publishing document : {}", newUrl);
                     Value object = RdfUtils.toURI(newUrl);
                     model.add(subject, predicate, object, st.getContext());
@@ -165,7 +168,7 @@ public class DocumentsPublication  extends RdfService{
 			String predicatString = tuple.getString("predicat");
 			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
 			if (predicatString.endsWith(Constants.URL)) {
-				String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
+				String newUrl = documentsStorage.baseUrl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
 				object = RdfUtils.toURI(newUrl);
 			} else {

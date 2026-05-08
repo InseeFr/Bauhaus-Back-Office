@@ -1,13 +1,15 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.bauhaus_services.notes.NotesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
@@ -77,19 +79,19 @@ class ConceptsUtilsTest {
 
     @BeforeEach
     void setUp() {
-        conceptConceptsQueries = new ConceptConceptsQueries(new ConfigStub());
+        conceptConceptsQueries = new ConceptConceptsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
-        conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, new ConfigStub(), publicationUtils, conceptConceptsQueries, null);
+        conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, publicationUtils, conceptConceptsQueries, null);
 
         noteManager = new NoteManager(notesUtils);
 
-        conceptsUtils = new ConceptsUtils(repoGestion, idGenerator, repositoryPublication, new ConfigStub(), publicationUtils, conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
+        conceptsUtils = new ConceptsUtils(repoGestion, idGenerator, repositoryPublication, new BauhausLanguagesProperties("fr", "en"), publicationUtils, conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
     }
 
     @Test
     void shouldReturnGetConceptExportFileName() {
 
-        ConceptsPublication conceptsPublication =  new ConceptsPublication(null, null, null, null, null, null, null);
+        ConceptsPublication conceptsPublication =  new ConceptsPublication(null, null, null, null, null, null);
         NoteManager noteManager = new NoteManager(null);
         ConceptsUtils conceptsUtilsExample = new ConceptsUtils(null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null);
 
@@ -139,7 +141,7 @@ class ConceptsUtilsTest {
 
     @Test
     void shouldDeleteConcept() throws RmesException {
-        RdfUtils.setConfig(new ConfigStub());
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         when(repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
         when(repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
         HttpStatus actual = conceptsUtils.deleteConcept("mocked id");

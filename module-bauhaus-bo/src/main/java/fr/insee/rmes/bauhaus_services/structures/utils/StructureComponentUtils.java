@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -39,6 +39,8 @@ import java.util.Arrays;
 
 @Component
 public class StructureComponentUtils extends RdfService {
+    private final BauhausLanguagesProperties languages;
+
     static final Logger logger = LoggerFactory.getLogger(StructureComponentUtils.class);
 
     private static final String MAX_LENGTH = "maxLength";
@@ -57,11 +59,12 @@ public class StructureComponentUtils extends RdfService {
     private final ConceptConceptsQueries conceptConceptsQueries;
 
     public StructureComponentUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                   RepositoryPublication repositoryPublication, Config config,
+                                   RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                                    PublicationUtils publicationUtils,
                                    ComponentPublication componentPublication, StructureQueries structureQueries,
                                    CodeListsQueries codeListsQueries, ConceptConceptsQueries conceptConceptsQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
         this.componentPublication = componentPublication;
         this.structureQueries = structureQueries;
         this.codeListsQueries = codeListsQueries;
@@ -188,15 +191,15 @@ public class StructureComponentUtils extends RdfService {
         /*Required*/
         model.add(componentURI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(component.getId()), graph);
 
-        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg1(), config.getLg1()), graph);
-        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg2(), config.getLg2()), graph);
+        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg1(), languages.lg1()), graph);
+        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg2(), languages.lg2()), graph);
         model.add(componentURI, SKOS.NOTATION, RdfUtils.setLiteralString(component.getIdentifiant()), graph);
         model.add(componentURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status), graph);
         model.add(componentURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(component.getCreated()), graph);
         model.add(componentURI, DCTERMS.MODIFIED, RdfUtils.setLiteralDateTime(component.getUpdated()), graph);
 
-        RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg2(), languages.lg2(), model, graph);
         RdfUtils.addTripleUri(componentURI, DC.CREATOR, component.getCreator(), model, graph);
 
         component.getContributor().forEach(contributor ->  RdfUtils.addTripleUri(componentURI, DC.CONTRIBUTOR, contributor, model, graph));
@@ -235,30 +238,30 @@ public class StructureComponentUtils extends RdfService {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
 
             if (component.getRange().equals(XSD.DATE.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), languages.lg1(), model, graph);
             }
             else if (component.getRange().equals(XSD.DATETIME.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), languages.lg1(), model, graph);
             }
             else if (component.getRange().equals(XSD.INTEGER.stringValue()) || component.getRange().equals(XSD.DOUBLE.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinInclusive(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxInclusive(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), languages.lg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), languages.lg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinInclusive(), languages.lg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxInclusive(), languages.lg1(), model, graph);
 
             }
             else if (component.getRange().equals(XSD.STRING.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), languages.lg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), languages.lg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), languages.lg1(), model, graph);
             }
         }
 
 
         String codeListIri = (component.getCodeList() != null && !"".equals(component.getCodeList())) ? component.getCodeList() : component.getFullCodeListValue();
         RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, codeListIri, model, graph);
-        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), languages.lg2(), model, graph);
 
 
         repoGestion.loadSimpleObject(componentURI, model, null);

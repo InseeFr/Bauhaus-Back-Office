@@ -3,7 +3,8 @@ package fr.insee.rmes.persistance.sparql_queries.operations.series;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ class OperationSeriesQueriesTest {
 
     @BeforeEach
     void setUp() {
-        operationSeriesQueries = new OperationSeriesQueries(new ConfigStub());
+        operationSeriesQueries = new OperationSeriesQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

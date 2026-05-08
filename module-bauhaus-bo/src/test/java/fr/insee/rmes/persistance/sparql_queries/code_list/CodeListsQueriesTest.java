@@ -1,7 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
+import fr.insee.rmes.BauhausUriProperties;
+import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.junit.jupiter.api.Assertions;
@@ -23,22 +26,23 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CodeListsQueriesTest {
 
+
     @Mock
-    Config config;
+    GraphsProperties graphs;
+
+    @Mock
+    BauhausUriProperties uris;
 
     CodeListsQueries codeListsQueries;
 
     @BeforeEach
     void setUp() {
-        codeListsQueries = new CodeListsQueries(config);
+        codeListsQueries = new CodeListsQueries(uris, new BauhausLanguagesProperties("fr", "en"), graphs, new PaginationProperties(5));
     }
 
     @Test
     void getCodeListItemsByNotation() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        when(config.getPerPage()).thenReturn(5);
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -56,10 +60,8 @@ class CodeListsQueriesTest {
 
     @Test
     void getCodeListItemsByNotationWithoutPerPageValue() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        when(config.getPerPage()).thenReturn(0);
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
+        codeListsQueries = new CodeListsQueries(uris, new BauhausLanguagesProperties("fr", "en"), graphs, new PaginationProperties(0));
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -75,9 +77,7 @@ class CodeListsQueriesTest {
 
     @Test
     void countCodesForCodeList() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -94,11 +94,8 @@ class CodeListsQueriesTest {
 
     @Test
     void getDetailedCodesWithPagination() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
-        when(config.getPerPage()).thenReturn(5);
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
+        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -120,10 +117,8 @@ class CodeListsQueriesTest {
 
     @Test
     void getDetailedCodesWithoutPagination() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
+        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -144,9 +139,7 @@ class CodeListsQueriesTest {
 
     @Test
     void getBroaderNarrowerCloseMatch() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");
@@ -162,10 +155,8 @@ class CodeListsQueriesTest {
 
     @Test
     void getDetailedCodesWithoutSearch() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getCodeListGraph()).thenReturn("codelist-graph");
-        when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
+        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("CODES_LISTS_GRAPH", "codelist-graph");

@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -42,10 +41,10 @@ public class ConceptsExportBuilder extends RdfService {
     private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
     public ConceptsExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                 RepositoryPublication repositoryPublication, Config config,
+                                 RepositoryPublication repositoryPublication,
                                  PublicationUtils publicationUtils,
                                  ConceptsUtils conceptsUtils, OrganisationsService organisationsService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.conceptsUtils = conceptsUtils;
         this.organisationsService = organisationsService;
         this.exportUtils = exportUtils;

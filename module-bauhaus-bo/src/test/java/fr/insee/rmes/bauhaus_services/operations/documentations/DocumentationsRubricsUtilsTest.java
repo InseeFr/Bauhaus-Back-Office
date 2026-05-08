@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.BauhausUriPropertiesStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.GeographyService;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
@@ -65,11 +68,12 @@ class DocumentationsRubricsUtilsTest {
 	@Mock
 	private GeographyService geoService;
 
-	@Mock
-	private Config config;
 
 	@InjectMocks
 	private DocumentationsRubricsUtils documentationsRubricsUtils;
+
+    @Spy
+    BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
 
 	private SimpleValueFactory factory;
 	private Model model;
@@ -81,14 +85,9 @@ class DocumentationsRubricsUtilsTest {
 		model = new LinkedHashModel();
 		graph = factory.createIRI("http://test.insee.fr/graphes/documentations/test");
 
-		// Initialize RdfUtils static dependencies (using lenient to avoid unnecessary stubbing warnings)
-		lenient().when(config.getBaseGraph()).thenReturn("http://rdf.insee.fr/graphes");
-		lenient().when(config.getConceptsGraph()).thenReturn("http://rdf.insee.fr/graphes/concepts");
-		lenient().when(config.getDocumentsGraph()).thenReturn("http://rdf.insee.fr/graphes/documents");
-		lenient().when(config.getDocumentationsGraph()).thenReturn("http://rdf.insee.fr/graphes/documentations");
-		lenient().when(config.getBaseUriGestion()).thenReturn("http://rdf.insee.fr/graphes");
-
-		RdfUtils.setConfig(config);
+		// Initialize RdfUtils static dependencies
+		RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+		RdfUtils.setUris(BauhausUriPropertiesStub.stub());
 		RdfUtils.setUriUtils(new UriUtils(
 			"http://id.insee.fr/",
 			"http://rdf.insee.fr/graphes/",
@@ -107,8 +106,6 @@ class DocumentationsRubricsUtilsTest {
 		attributesUriList.put(attributeId, predicateUri);
 
 		when(msdUtils.getMetadataAttributesUri()).thenReturn(attributesUriList);
-		lenient().when(config.getLg1()).thenReturn("fr");
-		lenient().when(config.getLg2()).thenReturn("en");
 	}
 
 	/**

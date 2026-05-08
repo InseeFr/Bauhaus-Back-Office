@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -39,8 +38,6 @@ class DocumentationsUtilsTest {
 	@Mock
 	private RepositoryPublication repositoryPublication;
 
-	@Mock
-	private Config config;
 
 	@Mock
 	private ParentUtils parentUtils;

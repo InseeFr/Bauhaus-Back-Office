@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -12,15 +12,15 @@ public class ClassificationsQueries {
 
 	public static final String CLASSIFICATIONS = "classifications/";
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
 
-	public ClassificationsQueries(Config config) {
-		this.config = config;
+	public ClassificationsQueries(BauhausLanguagesProperties languages) {
+        this.languages = languages;
 	}
 
 	public String classificationsQuery() throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("LG1", config.getLg1());
+		params.put("LG1", languages.lg1());
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassifications.ftlh", params);
 	}
 
@@ -33,8 +33,8 @@ public class ClassificationsQueries {
 	public String classificationQuery(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("ID", id);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassification.ftlh", params);
 	}
 
@@ -47,8 +47,8 @@ public class ClassificationsQueries {
 	public String classificationItemsQuery(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("ID", id);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassificationItems.ftlh", params);
 	}
 

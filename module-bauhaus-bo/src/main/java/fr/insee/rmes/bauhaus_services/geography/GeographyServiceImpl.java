@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -35,6 +35,8 @@ import java.util.UUID;
 
 @Service
 public class GeographyServiceImpl extends RdfService implements GeographyService {
+    private final BauhausLanguagesProperties languages;
+
 
 	private static final String HAS_COMPOSITION = "hasComposition";
 	static final Logger logger = LoggerFactory.getLogger(GeographyServiceImpl.class);
@@ -42,10 +44,11 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	private final GeographyQueries geographyQueries;
 
 	public GeographyServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-								RepositoryPublication repositoryPublication, Config config,
+								RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 								PublicationUtils publicationUtils,
 								GeographyQueries geographyQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
 		this.geographyQueries = geographyQueries;
 	}
 
@@ -169,13 +172,13 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		/*Const*/
 		model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
 		/*Required*/
-		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), config.getLg1()), RdfUtils.simsGeographyGraph());
+		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), languages.lg1()), RdfUtils.simsGeographyGraph());
 
 		/*Optional*/
-		RdfUtils.addTripleString(geoIRI, SKOS.PREF_LABEL, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
-		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
-		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), config.getLg1(), model, RdfUtils.simsGeographyGraph());
-		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleString(geoIRI, SKOS.PREF_LABEL, geoFeature.getLabelLg2(), languages.lg2(), model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), languages.lg2(), model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), languages.lg1(), model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), languages.lg2(), model, RdfUtils.simsGeographyGraph());
 
 
 		geoFeature.getUnions().forEach(feature -> RdfUtils.addTripleUri(geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph()));

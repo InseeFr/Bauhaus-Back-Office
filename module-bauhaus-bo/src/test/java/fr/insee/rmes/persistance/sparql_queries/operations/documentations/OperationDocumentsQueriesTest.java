@@ -1,8 +1,9 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
@@ -20,13 +21,11 @@ import static org.mockito.Mockito.mockStatic;
 
 class OperationDocumentsQueriesTest {
 
-    private Config config;
     private OperationDocumentsQueries operationDocumentsQueries;
 
     @BeforeEach
     void setUp() {
-        config = new ConfigStub();
-        operationDocumentsQueries = new OperationDocumentsQueries(config);
+        operationDocumentsQueries = new OperationDocumentsQueries(BauhausUriPropertiesStub.stub(), new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test
@@ -47,7 +46,7 @@ class OperationDocumentsQueriesTest {
                                "en".equals(map.get("LANG")) &&
                                "".equals(map.get("URI_PREFIX")) &&
                                "foaf:Document".equals(map.get("TYPE")) &&
-                               config.getDocumentsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               GraphsPropertiesStub.stub().documentsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -123,7 +122,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        String expectedType = config.getDocumentsBaseUri();
+                        String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
                         return "".equals(map.get(Constants.ID)) &&
                                "sims123".equals(map.get(Constants.ID_SIMS)) &&
                                "".equals(map.get("idRubric")) &&
@@ -146,7 +145,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        String expectedType = config.getLinksBaseUri();
+                        String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
                         return "".equals(map.get(Constants.ID)) &&
                                "sims123".equals(map.get(Constants.ID_SIMS)) &&
                                "".equals(map.get("idRubric")) &&
@@ -168,7 +167,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        String expectedType = config.getDocumentsBaseUri();
+                        String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
                         return "doc123".equals(map.get(Constants.ID)) &&
                                (expectedType != null ? expectedType.equals(map.get("type")) : map.get("type") == null);
                     })));
@@ -188,7 +187,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        String expectedType = config.getLinksBaseUri();
+                        String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
                         return "link123".equals(map.get(Constants.ID)) &&
                                (expectedType != null ? expectedType.equals(map.get("type")) : map.get("type") == null);
                     })));
@@ -297,7 +296,7 @@ class OperationDocumentsQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "sims123".equals(map.get(Constants.ID)) &&
-                               config.getDocumentationsGraph().equals(map.get("DOCUMENTATIONS_GRAPH"));
+                               GraphsPropertiesStub.stub().documentationsGraph().equals(map.get("DOCUMENTATIONS_GRAPH"));
                     })));
         }
     }

@@ -1,7 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.families;
 
-import fr.insee.rmes.Config;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
@@ -17,13 +16,11 @@ import static org.mockito.Mockito.mockStatic;
 
 class OperationFamilyQueriesTest {
 
-    private Config config;
     private OperationFamilyQueries operationFamilyQueries;
 
     @BeforeEach
     void setUp() {
-        config = new ConfigStub();
-        operationFamilyQueries = new OperationFamilyQueries(config);
+        operationFamilyQueries = new OperationFamilyQueries(GraphsPropertiesStub.stub());
     }
 
     @Test
@@ -44,7 +41,7 @@ class OperationFamilyQueriesTest {
                                "en".equals(map.get("LANG")) &&
                                "/operations/famille/".equals(map.get("URI_PREFIX")) &&
                                "insee:StatisticalOperationFamily".equals(map.get("TYPE")) &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -121,7 +118,7 @@ class OperationFamilyQueriesTest {
                         Map<String, Object> map = (Map<String, Object>) params;
                         // Verify that the OPERATIONS_GRAPH constant is used correctly
                         return "OPERATIONS_GRAPH".equals("OPERATIONS_GRAPH") && // This verifies the constant exists
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }

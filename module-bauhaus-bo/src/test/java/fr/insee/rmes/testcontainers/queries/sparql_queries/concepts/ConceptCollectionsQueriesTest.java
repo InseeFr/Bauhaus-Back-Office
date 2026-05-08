@@ -1,6 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.concepts;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -31,7 +32,7 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
 
     @BeforeEach
     void setUp() {
-        conceptCollectionsQueries = new ConceptCollectionsQueries(new ConfigStub());
+        conceptCollectionsQueries = new ConceptCollectionsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test

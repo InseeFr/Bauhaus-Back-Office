@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -31,10 +30,10 @@ public class MetadataStructureDefUtils  extends RdfService {
 		private final DocumentationQueries documentationQueries;
 
 		public MetadataStructureDefUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-										 RepositoryPublication repositoryPublication, Config config,
+										 RepositoryPublication repositoryPublication,
 										 PublicationUtils publicationUtils,
 										 DocumentationQueries documentationQueries) {
-			super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+			super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 			this.documentationQueries = documentationQueries;
 		}
 

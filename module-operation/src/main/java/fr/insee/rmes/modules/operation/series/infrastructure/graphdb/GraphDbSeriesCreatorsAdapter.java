@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.operation.series.infrastructure.graphdb;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
@@ -23,11 +23,11 @@ public class GraphDbSeriesCreatorsAdapter implements SeriesCreatorsPort {
     private static final Logger logger = LoggerFactory.getLogger(GraphDbSeriesCreatorsAdapter.class);
 
     private final RepositoryGestion repositoryGestion;
-    private final Config config;
+    private final GraphsProperties graphs;
 
-    public GraphDbSeriesCreatorsAdapter(RepositoryGestion repositoryGestion, Config config) {
+    public GraphDbSeriesCreatorsAdapter(RepositoryGestion repositoryGestion, GraphsProperties graphs) {
         this.repositoryGestion = repositoryGestion;
-        this.config = config;
+        this.graphs = graphs;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class GraphDbSeriesCreatorsAdapter implements SeriesCreatorsPort {
         }
         try {
             Map<String, Object> params = new HashMap<>();
-            params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+            params.put("OPERATIONS_GRAPH", graphs.operationsGraph());
             params.put("SERIES_IRIS", seriesIris);
             String query = FreeMarkerUtils.buildRequest("operations/series/", "getSeriesCreatorsForIris.ftlh", params);
 

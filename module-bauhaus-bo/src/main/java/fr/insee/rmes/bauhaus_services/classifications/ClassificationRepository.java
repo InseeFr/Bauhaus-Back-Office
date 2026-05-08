@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -31,16 +31,19 @@ import java.util.List;
 
 @Repository()
 public class ClassificationRepository extends RdfService {
+    private final BauhausLanguagesProperties languages;
+
 
     private final ClassificationNoteService classificationNoteService;
     private final ClassificationsQueries classificationsQueries;
 
     public ClassificationRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                    RepositoryPublication repositoryPublication, Config config,
+                                    RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                                     PublicationUtils publicationUtils,
                                     ClassificationNoteService classificationNoteService,
                                     ClassificationsQueries classificationsQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
         this.classificationNoteService = classificationNoteService;
         this.classificationsQueries = classificationsQueries;
     }
@@ -55,27 +58,27 @@ public class ClassificationRepository extends RdfService {
 
         repoGestion.deleteTripletByPredicate(classificationIri, SKOS.PREF_LABEL, graph, null);
 
-        model.add(classificationIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(classification.getPrefLabelLg1(), config.getLg1()), graph);
-        model.add(classificationIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(classification.getPrefLabelLg2(), config.getLg2()), graph);
+        model.add(classificationIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(classification.getPrefLabelLg1(), languages.lg1()), graph);
+        model.add(classificationIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(classification.getPrefLabelLg2(), languages.lg2()), graph);
 
         repoGestion.deleteTripletByPredicate(classificationIri, SKOS.ALT_LABEL, graph, null);
 
         if(classification.getAltLabelLg1() != null){
-            model.add(classificationIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(classification.getAltLabelLg1(), config.getLg1()), graph);
+            model.add(classificationIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(classification.getAltLabelLg1(), languages.lg1()), graph);
         }
 
         if(classification.getAltLabelLg2() != null){
-            model.add(classificationIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(classification.getAltLabelLg2(), config.getLg2()), graph);
+            model.add(classificationIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(classification.getAltLabelLg2(), languages.lg2()), graph);
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.DESCRIPTION, graph, null);
 
         if(classification.getDescriptionLg1() != null){
-            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(classification.getDescriptionLg1(), config.getLg1()), graph);
+            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(classification.getDescriptionLg1(), languages.lg1()), graph);
         }
 
         if(classification.getDescriptionLg2() != null){
-            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(classification.getDescriptionLg2(), config.getLg2()), graph);
+            model.add(classificationIri, DC.DESCRIPTION, RdfUtils.setLiteralString(classification.getDescriptionLg2(), languages.lg2()), graph);
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.BELONGS_TO, graph, null);

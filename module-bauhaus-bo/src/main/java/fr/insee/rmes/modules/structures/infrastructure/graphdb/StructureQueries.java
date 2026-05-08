@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.structures.infrastructure.graphdb;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -19,10 +20,12 @@ public class StructureQueries {
 	private static final String URI_COMPONENT = "URI_COMPONENT";
 	public static final String CODES_LISTS_GRAPH = "CODES_LISTS_GRAPH";
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-	public StructureQueries(Config config) {
-		this.config = config;
+	public StructureQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
+        this.languages = languages;
+        this.graphs = graphs;
 	}
 
 	public String getStructures() throws RmesException {
@@ -60,8 +63,8 @@ public class StructureQueries {
 		params.put("COMPONENT_ID", componentId);
 		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
 		params.put("CODE_LIST_URI", codeListUri);
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
-		params.put("CONCEPT_GRAPH", config.getConceptsGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
+		params.put("CONCEPT_GRAPH", graphs.conceptsGraph());
 		params.put("TYPE", type);
 		return buildStructureRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
@@ -128,7 +131,7 @@ public class StructureQueries {
 
 	public String getUriClasseOwl(String codeList) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put("CODES_LIST", codeList);
 		return buildStructureRequest("getUriClasseOwl.ftlh", params);
 	}
@@ -146,12 +149,12 @@ public class StructureQueries {
 	}
 
 	public String getStructureContributors(IRI iri) throws RmesException {
-		Map<String, Object> params = Map.of("GRAPH", config.getStructuresGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
+		Map<String, Object> params = Map.of("GRAPH", graphs.structuresGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
 		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
 	}
 
 	public String getComponentContributors(String iri) throws RmesException {
-		Map<String, Object> params = Map.of("GRAPH", config.getStructuresComponentsGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
+		Map<String, Object> params = Map.of("GRAPH", graphs.structuresComponentsGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
 		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
 	}
 
@@ -161,11 +164,11 @@ public class StructureQueries {
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
-		params.put("STRUCTURES_GRAPH", config.getStructuresGraph());
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("STRUCTURES_COMPONENTS_GRAPH", graphs.structuresComponentsGraph());
+		params.put("STRUCTURES_GRAPH", graphs.structuresGraph());
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return params;
 	}
 }

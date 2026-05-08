@@ -1,6 +1,7 @@
 package fr.insee.rmes.onion.infrastructure.graphdb;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -22,7 +23,7 @@ import java.util.List;
 class GraphDBDocumentationRepositoryTest extends WithGraphDBContainer {
 
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    DocumentationQueries documentationQueries = new DocumentationQueries(new ConfigStub());
+    DocumentationQueries documentationQueries = new DocumentationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     GraphDBDocumentationRepository repository = new GraphDBDocumentationRepository(repositoryGestion, documentationQueries);
 

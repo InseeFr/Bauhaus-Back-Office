@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausUriProperties;
+import fr.insee.rmes.DocumentationsProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
@@ -23,7 +25,11 @@ public class RdfUtils {
 
 	private RdfUtils(){}
 	
-	private static Config config;
+	private static GraphsProperties graphs;
+
+	private static BauhausUriProperties uris;
+
+	private static DocumentationsProperties documentations;
 
 	private static UriUtils uriUtils;
 
@@ -33,53 +39,53 @@ public class RdfUtils {
 
 	public static BNode createBlankNode(){ return factory.createBNode(); }
 	public static String getBaseGraph(){
-		return config.getBaseGraph();
+		return graphs.baseGraph();
 	}
 	
 	public static Resource conceptGraph(){
-		return factory.createIRI(config.getConceptsGraph());
+		return factory.createIRI(graphs.conceptsGraph());
 	}
 
 	public static Resource documentsGraph() {
-		return factory.createIRI(config.getDocumentsGraph());
+		return factory.createIRI(graphs.documentsGraph());
 	}
 	
 	public static Resource operationsGraph(){
-		return factory.createIRI(config.getOperationsGraph());
+		return factory.createIRI(graphs.operationsGraph());
 	}
 
 	public static Resource productsGraph(){
-		return factory.createIRI(config.getProductsGraph());
+		return factory.createIRI(graphs.productsGraph());
 	}
 	
 	public static Resource simsGraph(String id) {
-		return factory.createIRI(config.getDocumentationsGraph() +"/"+ id);
+		return factory.createIRI(graphs.documentationsGraph() +"/"+ id);
 	}
 	
 
 	public static Resource simsGeographyGraph(){
-		return factory.createIRI(config.getDocumentationsGeoGraph());
+		return factory.createIRI(graphs.documentationsGeoGraph());
 	}
 	
 	public static Resource structureGraph(){
-		return factory.createIRI(config.getStructuresGraph());
+		return factory.createIRI(graphs.structuresGraph());
 	}
 	public static Resource codesListGraph(){
-		return factory.createIRI(config.getCodeListGraph());
+		return factory.createIRI(graphs.codeListGraph());
 	}
 	public static Resource codesListGraph(String id) {
-		return factory.createIRI(config.getCodeListGraph() + "/" + id);
+		return factory.createIRI(graphs.codeListGraph() + "/" + id);
 	}
 	public static Resource classificationSerieIRI(String id) {
-		return factory.createIRI(config.getBaseUriGestion() + "codes/serieDeNomenclatures/" + id);
+		return factory.createIRI(uris.baseUriGestion() + "codes/serieDeNomenclatures/" + id);
 	}
 
 	public static Resource structureComponentGraph(){
-		return factory.createIRI(config.getStructuresComponentsGraph());
+		return factory.createIRI(graphs.structuresComponentsGraph());
 	}
 	
 	public static Resource conceptScheme(){
-		return factory.createIRI(config.getBaseUriGestion() + config.getConceptsScheme());
+		return factory.createIRI(uris.baseUriGestion() + documentations.conceptsScheme());
 	}
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
@@ -307,8 +313,16 @@ public class RdfUtils {
 		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
 	}
 
-	public static void setConfig(Config config) {
-		RdfUtils.config = config;
+	public static void setGraphs(GraphsProperties graphs) {
+		RdfUtils.graphs = graphs;
+	}
+
+	public static void setUris(BauhausUriProperties uris) {
+		RdfUtils.uris = uris;
+	}
+
+	public static void setDocumentations(DocumentationsProperties documentations) {
+		RdfUtils.documentations = documentations;
 	}
 
 	public static void setUriUtils(UriUtils uriUtils){

@@ -90,11 +90,28 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
             return new HashMap<>();
         }
 
+        List<String> iris = new ArrayList<>();
+        List<String> literals = new ArrayList<>();
+        for (String id : identifiers) {
+            if (id == null) {
+                continue;
+            }
+            if (id.startsWith("http://") || id.startsWith("https://")) {
+                iris.add(id);
+            } else {
+                literals.add(id);
+            }
+        }
+        if (iris.isEmpty() && literals.isEmpty()) {
+            return new HashMap<>();
+        }
+
         Map<String, Object> params = new HashMap<>();
         params.put(ORGANIZATIONS_GRAPH_PARAM, organizationsRootGraph);
         params.put(ORGANIZATIONS_INSEE_GRAPH_PARAM, organizationsGraph);
         params.put("LANG", language);
-        params.put("IDENTIFIERS", identifiers);
+        params.put("IRI_IDENTIFIERS", iris);
+        params.put("LITERAL_IDENTIFIERS", literals);
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisationsMap.ftlh", params);
         JSONArray results = repositoryGestion.getResponseAsArray(query);

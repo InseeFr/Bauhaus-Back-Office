@@ -55,7 +55,7 @@ class CollectionExportBuilderTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        collectionExportBuilder = new CollectionExportBuilder(repoGestion, null, null, null, null, exportUtils, conceptCollectionsQueries);
+        collectionExportBuilder = new CollectionExportBuilder(repoGestion, null, null, null, exportUtils, conceptCollectionsQueries);
         lenient().when(conceptCollectionsQueries.collectionQuery(anyString())).thenReturn("mock-query");
         lenient().when(conceptCollectionsQueries.collectionConceptsQuery(anyString())).thenReturn("mock-query");
         lenient().when(conceptCollectionsQueries.collectionMembersQuery(anyString())).thenReturn("mock-query");

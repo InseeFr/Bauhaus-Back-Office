@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -10,17 +10,17 @@ import java.util.HashMap;
 @Component
 public class ClassificationLevelsQueries {
 
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
 
-	public ClassificationLevelsQueries(Config config) {
-		this.config = config;
+	public ClassificationLevelsQueries(BauhausLanguagesProperties languages) {
+        this.languages = languages;
 	}
 
 	public String levelsQuery(String classificationId) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("ID", classificationId);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
 		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationLevels.ftlh", params);
 	}
 
@@ -33,9 +33,9 @@ public class ClassificationLevelsQueries {
 			+ "BIND(STRAFTER(STRAFTER(STR(?level),'/codes/'), '/') AS ?levelId) \n"
 			+ "BIND(STRBEFORE(STRAFTER(STR(?level),'/codes/'), '/') AS ?classificationId) \n"
 			+ "?level skos:prefLabel ?prefLabelLg1 . \n"
-			+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') \n"
+			+ "FILTER (lang(?prefLabelLg1) = '" + languages.lg1() + "') \n"
 			+ "OPTIONAL {?level skos:prefLabel ?prefLabelLg2 . \n"
-			+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } \n"
+			+ "FILTER (lang(?prefLabelLg2) = '" + languages.lg2() + "') } \n"
 			+ "?level xkos:depth ?depth . \n"
 			+ "?level skos:notation ?notation . \n"
 			+ "?level xkos:notationPattern ?notationPattern . \n"
@@ -43,16 +43,16 @@ public class ClassificationLevelsQueries {
 				+ "OPTIONAL {?node rdf:rest ?nextNode . \n"
 				+ "?nextNode rdf:first ?nextLevel . \n"
 				+ "?nextLevel skos:prefLabel ?narrowerLg1 . \n"
-				+ "FILTER (lang(?narrowerLg1) = '" + config.getLg1() + "') \n"
+				+ "FILTER (lang(?narrowerLg1) = '" + languages.lg1() + "') \n"
 					+ "OPTIONAL {?nextLevel skos:prefLabel ?narrowerLg2 . \n"
-					+ "FILTER (lang(?narrowerLg2) = '" + config.getLg2() + "') } \n"
+					+ "FILTER (lang(?narrowerLg2) = '" + languages.lg2() + "') } \n"
 				+ "BIND(STRAFTER(STRAFTER(STR(?nextLevel),'/codes/'), '/') AS ?idNarrower) } \n"
 				+ "OPTIONAL {?previousNode rdf:rest ?node . \n"
 				+ "?previousNode rdf:first ?previousLevel . \n"
 				+ "?previousLevel skos:prefLabel ?broaderLg1 . \n"
-				+ "FILTER (lang(?broaderLg1) = '" + config.getLg1() + "') \n"
+				+ "FILTER (lang(?broaderLg1) = '" + languages.lg1() + "') \n"
 					+ "OPTIONAL {?previousLevel skos:prefLabel ?broaderLg2 . \n"
-					+ "FILTER (lang(?broaderLg2) = '" + config.getLg2() + "') } \n"
+					+ "FILTER (lang(?broaderLg2) = '" + languages.lg2() + "') } \n"
 				+ "BIND(STRAFTER(STRAFTER(STR(?previousLevel),'/codes/'), '/') AS ?idBroader) } \n"
 			+ "} \n"
 			+ "} \n";
@@ -65,9 +65,9 @@ public class ClassificationLevelsQueries {
 				+ "FILTER(STRENDS(STR(?level),'/codes/" + classificationId + "/" + levelId + "')) \n"
 				+ "?level skos:member ?item . \n"
 				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') \n"
+				+ "FILTER (lang(?labelLg1) = '" + languages.lg1() + "') \n"
 				+ "OPTIONAL {?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') } . \n"
+				+ "FILTER (lang(?labelLg2) = '" + languages.lg2() + "') } . \n"
 				+ "?item skos:notation ?id . \n"
 				+ "} \n"
 				+ "ORDER BY ?id ";

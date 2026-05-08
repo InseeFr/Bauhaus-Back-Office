@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.datasets;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
@@ -16,21 +16,21 @@ public class DatasetQueries {
     private static final String ROOT_DIRECTORY = "dataset/";
     public static final String DATASET_GRAPH = "DATASET_GRAPH";
 
-    private final Config config;
+    private final BauhausLanguagesProperties languages;
 
-    public DatasetQueries(Config config) {
-        this.config = config;
+    public DatasetQueries(BauhausLanguagesProperties languages) {
+        this.languages = languages;
     }
 
     public String getArchivageUnits() throws RmesException {
-        Map<String, Object> params = Map.of("LG1", config.getLg1());
+        Map<String, Object> params = Map.of("LG1", languages.lg1());
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getArchivageUnit.ftlh", params);
     }
 
     public String getDatasets(String datasetsGraph, Set<String> stamps) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
-        params.put("LG1", config.getLg1());
+        params.put("LG1", languages.lg1());
 
         if(stamps != null && !stamps.isEmpty()){
             params.put("STAMP", stamps);
@@ -41,7 +41,7 @@ public class DatasetQueries {
     public String getDatasetsForSearch(String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
-        params.put("LG1", config.getLg1());
+        params.put("LG1", languages.lg1());
 
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetsForSearch.ftlh", params);
     }
@@ -50,8 +50,8 @@ public class DatasetQueries {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
         params.put("ADMS_GRAPH", admsGraph);
-        params.put("LG1", config.getLg1());
-        params.put("LG2", config.getLg2());
+        params.put("LG1", languages.lg1());
+        params.put("LG2", languages.lg2());
         params.put("ID", id);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDataset.ftlh", params);
     }

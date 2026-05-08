@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -34,10 +33,10 @@ public class NotesUtils  extends RdfService {
 	private final ConceptNotesQueries conceptNotesQueries;
 
 	public NotesUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-					  RepositoryPublication repositoryPublication, Config config,
+					  RepositoryPublication repositoryPublication,
 					  PublicationUtils publicationUtils,
 					  ConceptNotesQueries conceptNotesQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.conceptNotesQueries = conceptNotesQueries;
 	}
 

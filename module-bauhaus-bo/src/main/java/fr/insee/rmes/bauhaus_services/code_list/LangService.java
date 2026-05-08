@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.commons.lang3.StringUtils;
@@ -14,11 +14,11 @@ public class LangService {
 
 
 	private final CodeListService codeListService;
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
 
-	public LangService(CodeListService codeListService, Config config) {
+	public LangService(CodeListService codeListService, BauhausLanguagesProperties languages) {
 		this.codeListService = codeListService;
-		this.config = config;
+        this.languages = languages;
 	}
 
 	/**
@@ -28,14 +28,14 @@ public class LangService {
 	 */
 	public String getLanguage1() throws RmesException {
 		if (language1 == null) {
-			language1 = getLanguage(config.getLg1());
+			language1 = getLanguage(languages.lg1());
 		}
 		return language1;
 	}
 
 	public String getLanguage2() throws RmesException {
 		if (language2 == null) {
-			language2 = getLanguage(config.getLg2());
+			language2 = getLanguage(languages.lg2());
 		}
 		return language2;
 	}

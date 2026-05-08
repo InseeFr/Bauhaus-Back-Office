@@ -1,8 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
@@ -18,13 +20,11 @@ import static org.mockito.Mockito.mockStatic;
 
 class OperationQueriesTest {
 
-    private Config config;
     private OperationQueries operationQueries;
 
     @BeforeEach
     void setUp() {
-        config = new ConfigStub();
-        operationQueries = new OperationQueries(config);
+        operationQueries = new OperationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
     }
 
     @Test
@@ -40,9 +40,9 @@ class OperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2")) &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                        return "fr".equals(map.get("LG1")) &&
+                               "en".equals(map.get("LG2")) &&
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -62,9 +62,9 @@ class OperationQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return testUri.equals(map.get(Constants.URI)) &&
-                               config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2")) &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               "fr".equals(map.get("LG1")) &&
+                               "en".equals(map.get("LG2")) &&
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -83,9 +83,9 @@ class OperationQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "op123".equals(map.get(Constants.ID)) &&
-                               config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2")) &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               "fr".equals(map.get("LG1")) &&
+                               "en".equals(map.get("LG2")) &&
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -104,9 +104,9 @@ class OperationQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return map.get(Constants.URI) == null &&
-                               config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2")) &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               "fr".equals(map.get("LG1")) &&
+                               "en".equals(map.get("LG2")) &&
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -144,9 +144,9 @@ class OperationQueriesTest {
                         return map.containsKey("LG1") &&
                                map.containsKey("LG2") &&
                                map.containsKey("OPERATIONS_GRAPH") &&
-                               config.getLg1().equals(map.get("LG1")) &&
-                               config.getLg2().equals(map.get("LG2")) &&
-                               config.getOperationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               "fr".equals(map.get("LG1")) &&
+                               "en".equals(map.get("LG2")) &&
+                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }

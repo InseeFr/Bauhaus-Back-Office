@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.QueryUtils;
@@ -40,6 +40,8 @@ import java.util.List;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
+    private final BauhausLanguagesProperties languages;
+
 
 	private static final String LAST_CLASS_URI_SEGMENT = "lastClassUriSegment";
 
@@ -60,10 +62,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private final CodeListsQueries codeListsQueries;
 
 	public CodeListServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							   RepositoryPublication repositoryPublication, Config config,
+							   RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 							   PublicationUtils publicationUtils,
 							   CodeListPublication codeListPublication, CodeListsQueries codeListsQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
 		this.codeListPublication = codeListPublication;
 		this.codeListsQueries = codeListsQueries;
 	}
@@ -366,15 +369,15 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleUri(codeListIri, INSEE.DISSEMINATIONSTATUS, codesList.getString("disseminationStatus"), model, graph);
 		}
 
-		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString(Constants.LABEL_LG1), config.getLg1()), graph);
-		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString(Constants.LABEL_LG2), config.getLg2()), graph);
+		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString(Constants.LABEL_LG1), languages.lg1()), graph);
+		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString(Constants.LABEL_LG2), languages.lg2()), graph);
 
 
 		if(codesList.has(Constants.DESCRIPTION_LG1)){
-			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG1), config.getLg1()), graph);
+			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG1), languages.lg1()), graph);
 		}
 		if(codesList.has(Constants.DESCRIPTION_LG2)){
-			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG2), config.getLg2()), graph);
+			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG2), languages.lg2()), graph);
 		}
 		if(codesList.has(Constants.CREATOR)){
 			RdfUtils.addTripleUri(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
@@ -415,17 +418,17 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		RdfUtils.addTripleUri(codeIri, RDF.TYPE, uriOwlClass, codeListModel, graph);
 
 		if(code.has(Constants.LABEL_LG1)){
-			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG1), config.getLg1()), graph);
+			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG1), languages.lg1()), graph);
 		}
 		if(code.has(Constants.LABEL_LG2)){
-			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG2), config.getLg2()), graph);
+			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG2), languages.lg2()), graph);
 		}
 
 		if(code.has(Constants.DESCRIPTION_LG1)){
-			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG1), config.getLg1()), graph);
+			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG1), languages.lg1()), graph);
 		}
 		if(code.has(Constants.DESCRIPTION_LG2)){
-			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG2), config.getLg2()), graph);
+			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG2), languages.lg2()), graph);
 		}
 	}
 

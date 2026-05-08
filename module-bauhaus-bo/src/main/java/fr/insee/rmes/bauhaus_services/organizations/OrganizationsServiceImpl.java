@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
@@ -36,11 +35,11 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	static final Logger logger = LoggerFactory.getLogger(OrganizationsServiceImpl.class);
 
 	public OrganizationsServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-									RepositoryPublication repositoryPublication, Config config,
+									RepositoryPublication repositoryPublication,
 									PublicationUtils publicationUtils,
 									OrganizationUtils organizationUtils, FamOpeSerIndUtils famOpeSerUtils,
 									OrganizationQueries organizationQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.organizationUtils = organizationUtils;
 		this.famOpeSerUtils = famOpeSerUtils;
 		this.organizationQueries = organizationQueries;

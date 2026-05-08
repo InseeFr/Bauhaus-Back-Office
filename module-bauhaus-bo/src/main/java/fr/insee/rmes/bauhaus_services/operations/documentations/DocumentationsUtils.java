@@ -2,7 +2,8 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.DocumentationsProperties;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -54,16 +55,18 @@ public class DocumentationsUtils  {
 
 	private final RepositoryGestion repoGestion;
 	private final RepositoryPublication repositoryPublication;
-	private final Config config;
+    private final BauhausLanguagesProperties languages;
+    private final DocumentationsProperties documentations;
 	private final DocumentationsRubricsUtils documentationsRubricsUtils;
 	private final DocumentationPublication documentationPublication;
 	private final ParentUtils parentUtils;
 	private final DocumentationQueries documentationQueries;
 
-    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, Config config, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils, DocumentationQueries documentationQueries) {
+    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages, DocumentationsProperties documentations, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils, DocumentationQueries documentationQueries) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
-        this.config = config;
+        this.languages = languages;
+        this.documentations = documentations;
         this.documentationsRubricsUtils = documentationsRubricsUtils;
         this.documentationPublication = documentationPublication;
         this.parentUtils = parentUtils;
@@ -360,8 +363,8 @@ public class DocumentationsUtils  {
 		model.add(simsUri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(state), graph);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), config.getLg1(), model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), config.getLg2(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), languages.lg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), languages.lg2(), model, graph);
 
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.CREATED, sims.getCreated(), model, graph);
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.MODIFIED, sims.getUpdated(), model, graph);
@@ -460,8 +463,8 @@ public class DocumentationsUtils  {
 		Resource graph = RdfUtils.simsGraph(idSims);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, config.getDocumentationsTitlePrefixLg1() + " " + prefLabeLg1, config.getLg1(), model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, config.getDocumentationsTitlePrefixLg2() + " " + prefLabelLg2, config.getLg2(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, documentations.titlePrefixLg1() + " " + prefLabeLg1, languages.lg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, documentations.titlePrefixLg2() + " " + prefLabelLg2, languages.lg2(), model, graph);
 
 		repoGestion.overrideTriplets(simsUri, model, graph);
 	}

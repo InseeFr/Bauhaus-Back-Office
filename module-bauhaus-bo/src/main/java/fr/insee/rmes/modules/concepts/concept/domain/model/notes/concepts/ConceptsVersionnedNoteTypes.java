@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept.domain.model.notes.concepts;
 
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -19,7 +19,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definitionCourte";}
 		@Override
-		public String lang() {return config.getLg1();}
+		public String lang() {return languages.lg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
@@ -28,7 +28,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definitionCourte";}
 		@Override
-		public String lang() {return config.getLg2();}
+		public String lang() {return languages.lg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
@@ -37,7 +37,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definition";}
 		@Override
-		public String lang() {return config.getLg1();}
+		public String lang() {return languages.lg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.DEFINITION;}
 
@@ -46,7 +46,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definition";}
 		@Override
-		public String lang() {return config.getLg2();}
+		public String lang() {return languages.lg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.DEFINITION;}
 
@@ -55,7 +55,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "noteEditoriale";}
 		@Override
-		public String lang() {return config.getLg1();}
+		public String lang() {return languages.lg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
@@ -64,7 +64,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "noteEditoriale";}
 		@Override
-		public String lang() {return config.getLg2();}
+		public String lang() {return languages.lg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
@@ -72,25 +72,25 @@ public enum ConceptsVersionnedNoteTypes {
 		
 
 	
-	private static Config config;
-	
-	protected void setConfig(Config configParam) {
-		config = configParam;
+	private static BauhausLanguagesProperties languages;
+
+	protected void setLanguages(BauhausLanguagesProperties languagesParam) {
+		languages = languagesParam;
 	}
-	
+
 
     @Component
     public static class ConfigServiceInjector {
-        private final Config config;
+        private final BauhausLanguagesProperties languages;
 
-        public ConfigServiceInjector(Config config) {
-            this.config = config;
+        public ConfigServiceInjector(BauhausLanguagesProperties languages) {
+            this.languages = languages;
         }
 
         @PostConstruct
         public void postConstruct() {
         	 for (ConceptsVersionnedNoteTypes note : EnumSet.allOf(ConceptsVersionnedNoteTypes.class))
-        		 note.setConfig(config);
+        		 note.setLanguages(languages);
         }
     }
 	

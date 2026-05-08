@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -23,9 +22,9 @@ import org.springframework.stereotype.Repository;
 public class StructurePublication extends RdfService {
 
 	public StructurePublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
-								RepositoryPublication repositoryPublication, Config config,
+								RepositoryPublication repositoryPublication,
 								PublicationUtils publicationUtils) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 	}
 
 	private void copyTriplet(Resource structure, Model model, RepositoryConnection con, String[] denyList) throws RmesException {

@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.classifications.item;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,14 +21,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ClassificationItemUtilsTest {
 
-    @Mock
-    Config config;
 
     @Mock
     RepositoryGestion repositoryGestion;
 
     @InjectMocks
     ClassificationItemRepository classificationItemUtils;
+
+    @Spy
+    BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
 
     @Mock
     ClassificationNoteService classificationNoteService;
@@ -64,13 +66,6 @@ class ClassificationItemUtilsTest {
 
     @Test
     void shouldAddNotes() throws RmesException {
-
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-
-        when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
-
-        RdfUtils.setConfig(config);
 
         ClassificationItem item = new ClassificationItem();
         item.setId("1");

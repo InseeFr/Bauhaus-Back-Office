@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
@@ -53,7 +52,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	private final DocumentationQueries documentationQueries;
 
 	public OperationsDocumentationsImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-										RepositoryPublication repositoryPublication, Config config,
+										RepositoryPublication repositoryPublication,
 										PublicationUtils publicationUtils,
 										@Value("classpath:bauhaus-sims.json") org.springframework.core.io.Resource simsDefaultValue,
 										@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
@@ -62,7 +61,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 										ParentUtils ownersUtils,
 										DocumentationRepository documentationRepository,
 										DocumentationQueries documentationQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.simsDefaultValue = simsDefaultValue;
 		this.maxLength = maxLength;
 		this.documentationsUtils = documentationsUtils;

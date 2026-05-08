@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -41,6 +41,8 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_B
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
+    private final BauhausLanguagesProperties languages;
+
 
 
     private final String datasetsGraphSuffix;
@@ -59,7 +61,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     public DistributionServiceImpl(
             RepositoryGestion repoGestion, IdGenerator idGenerator,
-            RepositoryPublication repositoryPublication, Config config,
+            RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
             PublicationUtils publicationUtils,
             @Value("${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraphSuffix,
             @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}") String datasetsBaseUriSuffix,
@@ -68,7 +70,8 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
             @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}") String distributionsBaseUriSuffix,
             @Value("${fr.insee.rmes.bauhaus.adms.graph}") String admsGraphSuffix,
             DatasetDistributionQueries datasetDistributionQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
         this.datasetsGraphSuffix = datasetsGraphSuffix;
         this.datasetsBaseUriSuffix = datasetsBaseUriSuffix;
         this.baseGraph = baseGraph;
@@ -213,11 +216,11 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         model.add(distributionIRI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(distribution.getValidationState()), graph);
         model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);
-        model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg1(), config.getLg1()), graph);
-        model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg2(), config.getLg2()), graph);
+        model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg1(), languages.lg1()), graph);
+        model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg2(), languages.lg2()), graph);
 
-        RdfUtils.addTripleString(distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCTERMS.DESCRIPTION, distribution.getDescriptionLg2(), languages.lg2(), model, graph);
         RdfUtils.addTripleString(distributionIRI, DCTERMS.LANGUAGE, distribution.getLanguage(), model, graph);
 
         RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.CREATED, distribution.getCreated(), model, graph);

@@ -1,7 +1,7 @@
 package fr.insee.rmes.testcontainers.queries;
 
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("integration")
 class DatasetQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    DatasetQueries datasetQueries = new DatasetQueries(new ConfigStub());
+    DatasetQueries datasetQueries = new DatasetQueries(new BauhausLanguagesProperties("fr", "en"));
 
     @BeforeAll
     static void initData(){

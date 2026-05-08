@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
@@ -67,7 +66,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
-            Config config,
             PublicationUtils publicationUtils,
             ConceptsUtils conceptsUtils,
             CollectionsUtils collectionsUtils,
@@ -77,7 +75,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
             ConceptCollectionsQueries conceptCollectionsQueries,
             ConceptConceptsQueries conceptConceptsQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.conceptsUtils = conceptsUtils;
         this.collectionsUtils = collectionsUtils;
         this.conceptsExport = conceptsExport;

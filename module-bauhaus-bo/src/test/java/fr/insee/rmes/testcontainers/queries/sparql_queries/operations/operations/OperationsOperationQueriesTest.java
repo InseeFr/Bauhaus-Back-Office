@@ -3,7 +3,8 @@ package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.operation
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Tag("integration")
 class OperationsOperationQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
-    OperationsOperationQueries operationsOperationQueries = new OperationsOperationQueries(new ConfigStub());
+    OperationsOperationQueries operationsOperationQueries = new OperationsOperationQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
     @BeforeAll
     static void initData(){

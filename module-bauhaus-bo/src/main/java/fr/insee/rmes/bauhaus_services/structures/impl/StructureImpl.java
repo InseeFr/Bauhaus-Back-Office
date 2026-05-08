@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -40,11 +39,11 @@ public class StructureImpl  extends RdfService implements StructureService {
 	private final ConceptConceptsQueries conceptConceptsQueries;
 
 	public StructureImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-						 RepositoryPublication repositoryPublication, Config config,
+						 RepositoryPublication repositoryPublication,
 						 PublicationUtils publicationUtils,
 						 StructureUtils structureUtils, CodeListService codeListService,
 						 StructureQueries structureQueries, ConceptConceptsQueries conceptConceptsQueries) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.structureUtils = structureUtils;
 		this.codeListService = codeListService;
 		this.structureQueries = structureQueries;

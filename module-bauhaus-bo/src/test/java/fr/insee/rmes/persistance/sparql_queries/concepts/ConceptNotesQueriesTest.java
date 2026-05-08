@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
-import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
@@ -26,7 +26,7 @@ class ConceptNotesQueriesTest {
 
     @BeforeEach
     void setUp() {
-        conceptNotesQueries = new ConceptNotesQueries(new ConfigStub());
+        conceptNotesQueries = new ConceptNotesQueries(GraphsPropertiesStub.stub());
     }
 
     @Test
@@ -103,7 +103,7 @@ class ConceptNotesQueriesTest {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return "conceptABC".equals(map.get("CONCEPT_ID")) &&
                                "5".equals(map.get("MAX_VERSION")) &&
-                               new ConfigStub().getConceptsGraph().equals(map.get("CONCEPTS_GRAPH"));
+                               GraphsPropertiesStub.stub().conceptsGraph().equals(map.get("CONCEPTS_GRAPH"));
                     })));
         }
     }

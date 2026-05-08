@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.classifications.item;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -35,12 +34,12 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     static final Logger logger = LoggerFactory.getLogger(ClassificationItemServiceImpl.class);
 
     public ClassificationItemServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                         RepositoryPublication repositoryPublication, Config config,
+                                         RepositoryPublication repositoryPublication,
                                          PublicationUtils publicationUtils,
                                          ClassificationItemRepository classificationItemUtils,
                                          ClassificationsQueries classificationsQueries,
                                          ClassificationItemsQueries classificationItemsQueries) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.classificationItemUtils = classificationItemUtils;
         this.classificationsQueries = classificationsQueries;
         this.classificationItemsQueries = classificationItemsQueries;

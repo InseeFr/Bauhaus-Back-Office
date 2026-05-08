@@ -1,6 +1,7 @@
 package fr.insee.rmes.onion.infrastructure.graphdb.operations.queries;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.model.operations.documentations.RangeType;
@@ -16,20 +17,22 @@ public class DocumentationQueries {
 
     private static final String ID_SIMS = Constants.ID_SIMS;
 
-    private final Config config;
+    private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-    public DocumentationQueries(Config config) {
-        this.config = config;
+    public DocumentationQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
+        this.languages = languages;
+        this.graphs = graphs;
     }
 
     private Map<String, Object> initParams() {
         Map<String, Object> params = new HashMap<>();
-        params.put("LG1", config.getLg1());
-        params.put("LG2", config.getLg2());
-        params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
-        params.put("MSD_GRAPH", config.getMsdGraph());
-        params.put("CODELIST_GRAPH", config.getCodeListGraph());
-        params.put("MSD_CONCEPTS_GRAPH", config.getMsdConceptsGraph());
+        params.put("LG1", languages.lg1());
+        params.put("LG2", languages.lg2());
+        params.put("DOCUMENTATIONS_GRAPH", graphs.documentationsGraph());
+        params.put("MSD_GRAPH", graphs.msdGraph());
+        params.put("CODELIST_GRAPH", graphs.codeListGraph());
+        params.put("MSD_CONCEPTS_GRAPH", graphs.msdConceptsGraph());
         return params;
     }
 
@@ -82,10 +85,10 @@ public class DocumentationQueries {
         params.put("ORGANIZATION", RangeType.ORGANIZATION);
         params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
 
-        params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
-        params.put("ORG_INSEE_GRAPH", config.getOrgInseeGraph());
-        params.put("COG_GRAPH", config.getGeographyGraph());
-        params.put("DOCUMENTATIONS_GEO_GRAPH", config.getDocumentationsGeoGraph());
+        params.put("ORGANIZATIONS_GRAPH", graphs.organizationsGraph());
+        params.put("ORG_INSEE_GRAPH", graphs.orgInseeGraph());
+        params.put("COG_GRAPH", graphs.geographyGraph());
+        params.put("DOCUMENTATIONS_GEO_GRAPH", graphs.documentationsGeoGraph());
         params.put("LG1_CL", clLg1);
         params.put("LG2_CL", clLg2);
         return buildRequest("getDocumentationRubricsQuery.ftlh", params);
@@ -98,7 +101,7 @@ public class DocumentationQueries {
     public String getPublicationState(String id) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(Constants.ID_SIMS, id);
-        params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
+        params.put("DOCUMENTATIONS_GRAPH", graphs.documentationsGraph());
         return buildRequest("getPublicationStatusQuery.ftlh", params);
     }
 
@@ -106,9 +109,9 @@ public class DocumentationQueries {
         Map<String, Object> params = initParams();
         params.put("idMas", idMas);
         params.put("uniqueAttr", "true");
-        params.put("MSD_GRAPH", config.getMsdGraph());
-        params.put("CODELIST_GRAPH", config.getCodeListGraph());
-        params.put("MSD_CONCEPTS_GRAPH", config.getMsdConceptsGraph());
+        params.put("MSD_GRAPH", graphs.msdGraph());
+        params.put("CODELIST_GRAPH", graphs.codeListGraph());
+        params.put("MSD_CONCEPTS_GRAPH", graphs.msdConceptsGraph());
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
     }
 

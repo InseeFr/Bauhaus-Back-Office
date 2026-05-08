@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
@@ -49,6 +49,8 @@ import java.util.Map;
 public class
 DocumentationsRubricsUtils extends RdfService {
 
+	private final BauhausLanguagesProperties languages;
+
 	static final Logger logger = LoggerFactory.getLogger(DocumentationsRubricsUtils.class);
 
 	private final MetadataStructureDefUtils msdUtils;
@@ -68,14 +70,15 @@ DocumentationsRubricsUtils extends RdfService {
 	private final GeographyService geoService;
 
 	public DocumentationsRubricsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-									  RepositoryPublication repositoryPublication, Config config,
+									  RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 									  PublicationUtils publicationUtils,
 									  MetadataStructureDefUtils msdUtils, DocumentationQueries documentationQueries,
 									  DocumentsUtils docUtils, OrganizationUtils organizationUtils,
 									  fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup,
 									  CodeListService codeListService, LangService langService,
 									  GeographyService geoService) {
-		super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
 		this.msdUtils = msdUtils;
 		this.documentationQueries = documentationQueries;
 		this.docUtils = docUtils;
@@ -173,7 +176,7 @@ DocumentationsRubricsUtils extends RdfService {
 
 	private void clearDocuments(String idSims, JSONObject rubric, String hasDocLg) throws RmesException {
 		if (rubric.getBoolean(hasDocLg)) {
-			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString(Constants.ID_ATTRIBUTE), hasDocLg.equals(Constants.HAS_DOC_LG1)? config.getLg1() : config.getLg2());
+			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString(Constants.ID_ATTRIBUTE), hasDocLg.equals(Constants.HAS_DOC_LG1)? languages.lg1() : languages.lg2());
 			rubric.put(hasDocLg.equals(Constants.HAS_DOC_LG1)?Constants.DOCUMENTS_LG1 : Constants.DOCUMENTS_LG2, listDoc);
 		}
 		rubric.remove(hasDocLg);
@@ -273,10 +276,10 @@ DocumentationsRubricsUtils extends RdfService {
 			IRI attributeUri) {
 		RdfUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
 		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), config.getLg1(), model, graph);
+			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), languages.lg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), config.getLg2(), model, graph);
+			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), languages.lg2(), model, graph);
 		}
 	}
 
@@ -289,7 +292,7 @@ DocumentationsRubricsUtils extends RdfService {
 			RdfUtils.addTripleUri(textUriLg1, DCTERMS.LANGUAGE, langService.getLanguage1(), model, graph);
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-				RdfUtils.addTripleString(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), config.getLg1(), model, graph);
+				RdfUtils.addTripleString(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), languages.lg1(), model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
 		}
@@ -300,7 +303,7 @@ DocumentationsRubricsUtils extends RdfService {
 			RdfUtils.addTripleUri(textUriLg2, DCTERMS.LANGUAGE, langService.getLanguage2(), model, graph);
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-				RdfUtils.addTripleString(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), config.getLg2(), model, graph);
+				RdfUtils.addTripleString(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), languages.lg2(), model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}

@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.Config;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -42,6 +42,8 @@ import java.util.List;
 
 @Component
 public class StructureUtils extends RdfService {
+    private final BauhausLanguagesProperties languages;
+
 
     private static final String IO_EXCEPTION = "IOException";
 	static final Logger logger = LoggerFactory.getLogger(StructureUtils.class);
@@ -64,11 +66,12 @@ public class StructureUtils extends RdfService {
     private final StructurePublication structurePublication;
 
     public StructureUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                          RepositoryPublication repositoryPublication, Config config,
+                          RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                           PublicationUtils publicationUtils,
                           StructureComponent structureComponent, StructureQueries structureQueries,
                           StructureComponentUtils structureComponentUtils, StructurePublication structurePublication) {
-        super(repoGestion, idGenerator, repositoryPublication, config, publicationUtils);
+        super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+        this.languages = languages;
         this.structureComponent = structureComponent;
         this.structureQueries = structureQueries;
         this.structureComponentUtils = structureComponentUtils;
@@ -260,16 +263,16 @@ public class StructureUtils extends RdfService {
         /*Required*/
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
         model.add(structureIri, SKOS.NOTATION, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
-        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), config.getLg1()), graph);
+        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), languages.lg1()), graph);
         model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
 
         /*Optional*/
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
-        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), languages.lg2(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), languages.lg1(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), languages.lg2(), model, graph);
 
         RdfUtils.addTripleUri(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         structure.getContributor().forEach(contributor -> RdfUtils.addTripleUri(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
@@ -334,10 +337,10 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, SKOS.NOTATION, RdfUtils.setLiteralString(componentDefinition.getNotation()), graph);
         }
         if(componentDefinition.getLabelLg1() != null){
-            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg1(), config.getLg1()), graph);
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg1(), languages.lg1()), graph);
         }
         if(componentDefinition.getLabelLg2() != null){
-            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), config.getLg2()), graph);
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), languages.lg2()), graph);
         }
         MutualizedComponent component = componentDefinition.getComponent();
         if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
