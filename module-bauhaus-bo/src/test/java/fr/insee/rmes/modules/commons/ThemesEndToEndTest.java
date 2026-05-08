@@ -27,60 +27,8 @@ class ThemesEndToEndTest extends WithGraphDBContainer {
     }
 
     @Test
-    @DisplayName("Fetch themes with inseeTheme filter returns only inseeTheme themes")
-    void ok_when_fetching_themes_with_insee_scheme_filter() {
-        RestClient restClient = RestClient.create("http://localhost:" + serverPort + "/api");
-
-        var response = restClient.get().uri("/themes?schemeFilter=inseeTheme")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
-
-        JSONAssert.assertEquals("""
-                [
-                  {
-                    "uri": "http://id.insee.fr/concepts/theme/t001",
-                    "label": { "value": "Agriculture", "lang": "FR" },
-                    "idConceptScheme": "inseeTheme"
-                  },
-                  {
-                    "uri": "http://id.insee.fr/concepts/theme/t002",
-                    "label": { "value": "Économie", "lang": "FR" },
-                    "idConceptScheme": "inseeTheme"
-                  }
-                ]
-                """, response, true);
-    }
-
-    @Test
-    @DisplayName("Fetch themes with classificationOfStatisticalDomain filter returns only those themes")
-    void ok_when_fetching_themes_with_classification_scheme_filter() {
-        RestClient restClient = RestClient.create("http://localhost:" + serverPort + "/api");
-
-        var response = restClient.get().uri("/themes?schemeFilter=classificationOfStatisticalDomain")
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .body(String.class);
-
-        JSONAssert.assertEquals("""
-                [
-                  {
-                    "uri": "http://id.insee.fr/concepts/theme/t003",
-                    "label": { "value": "Démographie", "lang": "FR" },
-                    "idConceptScheme": "classificationOfStatisticalDomain"
-                  },
-                  {
-                    "uri": "http://id.insee.fr/concepts/theme/t004",
-                    "label": { "value": "Emploi", "lang": "FR" },
-                    "idConceptScheme": "classificationOfStatisticalDomain"
-                  }
-                ]
-                """, response, true);
-    }
-
-    @Test
-    @DisplayName("Fetch themes without filter uses default and returns all themes")
-    void ok_when_fetching_themes_with_default_filter() {
+    @DisplayName("Fetch themes returns all themes")
+    void ok_when_fetching_themes() {
         RestClient restClient = RestClient.create("http://localhost:" + serverPort + "/api");
 
         var response = restClient.get().uri("/themes")
