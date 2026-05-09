@@ -14,7 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
-      <artifactId>module-infrastructure</artifactId>
+      <artifactId>module-utility</artifactId>
       <version>1.0.0</version>
     </dependency>
   </dependencies>

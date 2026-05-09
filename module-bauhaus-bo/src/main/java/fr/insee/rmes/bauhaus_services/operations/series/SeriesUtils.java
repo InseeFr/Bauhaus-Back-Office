@@ -437,7 +437,6 @@ public class SeriesUtils {
     public String createSeries(String body) throws RmesException {
 
         Series series = buildSeriesFromJson(new JSONObject(body), EncodingType.MARKDOWN);
-        checkSimsWithOperations(series);
 
         // Tester l'existence de la famille
         String idFamily = series.getFamily().getId();

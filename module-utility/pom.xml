@@ -7,37 +7,29 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>module-testcontainer-graphdb</artifactId>
+  <artifactId>module-utility</artifactId>
   <version>1.0.0</version>
-
-  <name>module-testcontainer-graphdb</name>
+  <name>module-utility</name>
 
   <dependencies>
+    <!-- RDF4J in-memory store for RepositoryGestionTest -->
     <dependency>
-      <groupId>fr.insee.rmes</groupId>
-      <artifactId>module-utility</artifactId>
-      <version>1.0.0</version>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-repository-sail</artifactId>
+      <version>${rdf4j.version}</version>
+      <scope>test</scope>
     </dependency>
-    
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-sail-memory</artifactId>
+      <version>${rdf4j.version}</version>
+      <scope>test</scope>
     </dependency>
-    
+    <!-- Testcontainers Keycloak for E2E tests of TokenService -->
     <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${testcontainers.version}</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-yaml</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
+      <groupId>com.github.dasniko</groupId>
+      <artifactId>testcontainers-keycloak</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -49,6 +41,13 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
           <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useModulePath>false</useModulePath>
         </configuration>
       </plugin>
     </plugins>

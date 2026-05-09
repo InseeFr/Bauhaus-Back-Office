@@ -14,13 +14,14 @@
   <dependencies>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
-      <artifactId>module-domain</artifactId>
+      <artifactId>module-utility</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <!-- JSON Schema Validator (used by DdiResources) -->
     <dependency>
-      <groupId>fr.insee.rmes</groupId>
-      <artifactId>module-infrastructure</artifactId>
-      <version>1.0.0</version>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>

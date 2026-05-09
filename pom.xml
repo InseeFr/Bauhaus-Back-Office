@@ -349,10 +349,8 @@
     </repository>
   </repositories>
   <modules>
-    <module>module-domain</module>
-    <module>module-infrastructure</module>
+    <module>module-utility</module>
     <module>module-testcontainer-graphdb</module>
-    <module>module-infrastructure-graphdb</module>
     <module>module-operation</module>
     <module>module-ddi</module>
     <module>module-bauhaus-bo</module>
