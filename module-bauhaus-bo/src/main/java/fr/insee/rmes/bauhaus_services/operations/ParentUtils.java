@@ -9,8 +9,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
@@ -100,22 +98,8 @@ public class ParentUtils extends RdfService{
 	}
 
 
-	public boolean checkIfSeriesHasSims(String uriSeries) throws RmesException {
-		return repoGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasSims(uriSeries));
-	}
-
-	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
-		String uriParent = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.SERIES, idParent));
-		if (checkIfParentExists(uriParent) && checkIfSeriesHasOperation(uriParent)) throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
-				"Cannot create Sims for a series which already has operations", idParent);
-	}
-
 	public boolean checkIfParentExists(String uriParent) throws RmesException {
 		return repoGestion.getResponseAsBoolean(parentQueries.checkIfExists(uriParent));
-	}
-
-	public boolean checkIfSeriesHasOperation(String uriParent) throws RmesException {
-		return repoGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasOperation(uriParent));
 	}
 
 

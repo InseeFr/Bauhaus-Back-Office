@@ -26,7 +26,9 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -129,6 +131,27 @@ class DocumentationsUtilsTest {
 		boolean idAttributeCValue = "IDATTRIBUTEC".equals(sims.getRubrics().getLast().getIdAttribute());
 
 		assertTrue(idAttributeAValue && idAttributeBValue && idAttributeCValue);
+	}
+
+	@Test
+	void setMetadataReport_shouldNotRejectWith406_whenCreatingSimsOnSeriesWithOperations() throws RmesException {
+		// Une série avec opérations doit pouvoir recevoir un SIMS (cf. ticket #1452).
+		String idTarget = "s1234";
+		String body = "{\"idTarget\":\"" + idTarget + "\",\"idSeries\":\"" + idTarget + "\"}";
+
+		lenient().when(documentationQueries.getSimsByTarget(idTarget)).thenReturn("q-sims");
+		lenient().when(documentationQueries.lastID()).thenReturn("q-last");
+		lenient().when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
+
+		try {
+			documentationsUtils.setMetadataReport(null, body, true);
+		} catch (RmesNotAcceptableException e) {
+			if (e.getDetails().contains("Cannot create Sims for a series which already has operations")) {
+				fail("La création d'un SIMS sur une série avec opérations ne devrait plus lever 406 : " + e.getDetails());
+			}
+		} catch (Exception ignored) {
+			// d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
+		}
 	}
 
 	@Test

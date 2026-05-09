@@ -104,20 +104,6 @@ public class OperationSeriesQueries {
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);
 	}
 
-	public String checkIfSeriesHasSims(String uriSeries) throws RmesException {
-		Map<String, Object> params = initParams();
-		params.put(URI_SERIES, uriSeries);
-		return buildSeriesRequest("checkIfSeriesHasSimsQuery.ftlh", params);
-	}
-
-
-	public String checkIfSeriesHasOperation(String uriSeries) throws RmesException {
-		Map<String, Object> params = initParams();
-		params.put(URI_SERIES, uriSeries);
-		return buildSeriesRequest("checkIfSeriesHasOperationQuery.ftlh", params);
-	}
-
-
 	/**
 	 * @param idSeries
 	 * @return String

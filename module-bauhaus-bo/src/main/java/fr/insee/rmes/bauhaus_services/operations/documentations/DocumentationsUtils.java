@@ -166,7 +166,6 @@ public class DocumentationsUtils  {
 		if (create) {
 			id = checkTargetHasNoSimsAndcreateSimsId(idTarget);
 			sims.setId(id);
-			parentUtils.checkIfParentIsASeriesWithOperations(idTarget);
 		} else {
 			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}

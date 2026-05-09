@@ -120,12 +120,7 @@ public class OperationsUtils extends RdfService{
 		if (! famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
-		// Tester que la série n'a pas de Sims
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
-		if (parentUtils.checkIfSeriesHasSims(seriesURI.stringValue())) {
-			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-					idSeries +" ; "+operation.getPrefLabelLg1());
-		}
 
 		operation.setCreated(DateUtils.getCurrentDate());
 		operation.setModified(DateUtils.getCurrentDate());

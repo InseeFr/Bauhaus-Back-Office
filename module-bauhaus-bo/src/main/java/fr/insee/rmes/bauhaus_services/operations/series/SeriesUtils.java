@@ -455,21 +455,6 @@ public class SeriesUtils {
         return series.getId();
     }
 
-    /**
-     * Une série ne peut avoir un Sims que si elle n'a pas d'opération
-     *
-     * @param series
-     * @throws RmesNotAcceptableException
-     */
-    private void checkSimsWithOperations(Series series) throws RmesNotAcceptableException {
-        if (series.getIdSims() != null && !series.getIdSims().isEmpty() && series.getOperations() != null
-                && !series.getOperations().isEmpty()) {
-            throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
-                    "A series cannot have both a Sims and Operation(s)",
-                    series.getPrefLabelLg1() + " " + series.getPrefLabelLg2());
-        }
-    }
-
     /* Update Series */
     public void setSeries(String id, String body) throws RmesException {
         ObjectMapper mapper = new ObjectMapper();
@@ -483,8 +468,6 @@ public class SeriesUtils {
             logger.error(e.getMessage());
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't parse series", e.getMessage());
         }
-
-        checkSimsWithOperations(series);
 
         series.setUpdated(DateUtils.getCurrentDate());
 
