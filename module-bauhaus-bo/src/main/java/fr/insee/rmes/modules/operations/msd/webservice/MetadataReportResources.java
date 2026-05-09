@@ -150,8 +150,8 @@ public class MetadataReportResources {
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.DELETE)
-	@DeleteMapping(value = "/metadataReport/delete/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> deleteMetadataReportById(
+	@DeleteMapping("/metadataReport/delete/{id}")
+	public ResponseEntity<Void> deleteMetadataReportById(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		HttpStatus result = documentationsService.deleteMetadataReport(id);
 		return ResponseEntity.status(result.value()).build();

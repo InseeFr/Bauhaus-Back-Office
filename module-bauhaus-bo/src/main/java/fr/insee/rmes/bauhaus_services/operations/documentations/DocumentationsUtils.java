@@ -437,13 +437,6 @@ public class DocumentationsUtils  {
 
 
 	public HttpStatus deleteMetadataReport(String id) throws RmesException {
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
-		String targetType = target[0];
-
-		if (!Constants.SERIES_UP.equals(targetType)) {
-			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
-		}
-
 		Resource graph = RdfUtils.simsGraph(id);
 
 		HttpStatus result =  repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));
