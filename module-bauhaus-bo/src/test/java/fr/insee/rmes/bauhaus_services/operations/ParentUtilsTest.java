@@ -72,13 +72,6 @@ class ParentUtilsTest {
     }
 
     @Test
-    void shouldCheckIfSeriesHasSims() throws RmesException {
-        when(operationSeriesQueries.checkIfSeriesHasSims("uriSeries")).thenReturn("mock-sims-query");
-        when(repoGestion.getResponseAsBoolean("mock-sims-query")).thenReturn(true);
-        parentUtils.checkIfSeriesHasSims("uriSeries");
-    }
-
-    @Test
     void shouldCheckIfParentExists() throws RmesException {
         when(parentQueries.checkIfExists("uriParent")).thenReturn("mock-parent-exists-query");
         when(repoGestion.getResponseAsBoolean("mock-parent-exists-query")).thenReturn(true);
@@ -108,29 +101,6 @@ class ParentUtilsTest {
         when(operationSeriesQueries.getCreatorsById(id)).thenReturn("mock-query");
         when(repoGestion.getResponseAsJSONList("mock-query")).thenReturn(null);
         assertNull(parentUtils.getSeriesCreators(id));
-    }
-
-    @Test
-    void shouldThrowRmesExceptionWhenCheckIfParentIsASeriesWithOperations() throws RmesException {
-        String testId = "id";
-        String uriParent = "http://bauhaus/operations/series/id";
-        ValueFactory factory = SimpleValueFactory.getInstance();
-        IRI seriesIRI = factory.createIRI(uriParent);
-
-        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class)) {
-
-            mockedRdfUtils.when(() -> RdfUtils.objectIRI(ObjectType.SERIES, testId)).thenReturn(seriesIRI);
-            mockedRdfUtils.when(() -> RdfUtils.toString(seriesIRI)).thenReturn(uriParent);
-
-            when(parentQueries.checkIfExists(uriParent)).thenReturn("mock-parent-query");
-            when(operationSeriesQueries.checkIfSeriesHasOperation(uriParent)).thenReturn("mock-operation-query");
-
-            when(repoGestion.getResponseAsBoolean("mock-parent-query")).thenReturn(true);
-            when(repoGestion.getResponseAsBoolean("mock-operation-query")).thenReturn(true);
-
-            RmesException exception = assertThrows(RmesException.class, () -> parentUtils.checkIfParentIsASeriesWithOperations(testId));
-            assertTrue(exception.getDetails().contains("Cannot create Sims for a series which already has operations"));
-        }
     }
 
     @Test

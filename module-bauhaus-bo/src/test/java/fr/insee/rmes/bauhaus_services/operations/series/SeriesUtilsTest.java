@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 @AppSpringBootTest
@@ -129,6 +131,22 @@ class SeriesUtilsTest {
         assertThat(contributors).hasSize(1);
         assertThat(contributors.get(0)).isInstanceOf(IRI.class);
         assertThat(contributors.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
+    }
+
+    @Test
+    void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
+        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        String body = "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
+
+        try {
+            seriesUtils.setSeries("1", body);
+        } catch (RmesNotAcceptableException e) {
+            if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
+                fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : " + e.getDetails());
+            }
+        } catch (Exception ignored) {
+            // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
+        }
     }
 
     @Test

@@ -94,30 +94,6 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
-    void should_return_true_if_series_has_sims() throws RmesException {
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s1236"));
-        assertTrue(hasSims);
-    }
-
-    @Test
-    void should_return_false_if_series_does_not_have_sims() throws RmesException {
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s12361"));
-        assertFalse(hasSims);
-    }
-
-    @Test
-    void should_return_true_if_series_has_operation() throws RmesException {
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1228"));
-        assertTrue(hasSims);
-    }
-
-    @Test
-    void should_return_false_if_series_does_not_have_operation() throws RmesException {
-        boolean hasSims = repositoryGestion.getResponseAsBoolean(operationSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1236"));
-        assertFalse(hasSims);
-    }
-
-    @Test
     void should_get_creators() throws RmesException {
         JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsById("s1236"));
         assertEquals(1, creators.length());
