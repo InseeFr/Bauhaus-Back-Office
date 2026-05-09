@@ -2,7 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -16,6 +18,7 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,12 +27,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import org.eclipse.rdf4j.model.Resource;
+import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentationsUtilsTest {
@@ -56,6 +63,10 @@ class DocumentationsUtilsTest {
 	@InjectMocks
 	private DocumentationsUtils documentationsUtils;
 
+	@BeforeEach
+	void initStaticGraphs() {
+		RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+	}
 
 	@Test
 	void shouldThrowRmesNotFoundExceptionWhenGetDocumentationByIdSims() throws RmesException {
@@ -68,12 +79,18 @@ class DocumentationsUtilsTest {
 	}
 
 	@Test
-	void shouldThrowRmesNotAcceptableExceptionWhenDeleteMetadataReport() throws RmesException {
-		String id ="2025";
-		String[] days = {"yesterday","today","tomorrow"};
-		when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(days);
-		RmesException exception = assertThrows(RmesNotAcceptableException.class, () -> documentationsUtils.deleteMetadataReport(id));
-		assertTrue(exception.getDetails().contains("Only a sims that documents a series can be deleted"));
+	void deleteMetadataReport_shouldSucceed_regardlessOfTargetType() throws RmesException {
+		// La suppression d'un SIMS est désormais autorisée pour tout type de cible
+		// (série, opération ou indicateur) — cf. retrait de la contrainte "Only a sims
+		// that documents a series can be deleted".
+		String id = "2025";
+		when(documentationQueries.deleteGraph(any(Resource.class))).thenReturn("delete-graph-query");
+		when(repoGestion.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
+		when(repositoryPublication.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
+
+		HttpStatus result = documentationsUtils.deleteMetadataReport(id);
+
+		assertEquals(HttpStatus.OK, result);
 	}
 
 
