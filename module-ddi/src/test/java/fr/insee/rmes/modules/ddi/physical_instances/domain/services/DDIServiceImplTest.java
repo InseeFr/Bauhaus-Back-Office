@@ -33,6 +33,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -275,6 +276,23 @@ class DDIServiceImplTest {
         assertEquals("Another Code List", result.get(1).label());
 
         verify(ddiRepository).getMutualizedCodesLists();
+    }
+
+    @Test
+    void shouldGetMutualizedCodesListDelegatingToRepository() {
+        // Given
+        String agencyId = "fr.insee";
+        String id = "fc65a527-a04b-4505-85de-0a181e54dbad";
+        Ddi4Response expectedResponse = new Ddi4Response(
+                "ddi:4.0", List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+        when(ddiRepository.getMutualizedCodesList(agencyId, id)).thenReturn(expectedResponse);
+
+        // When
+        Ddi4Response result = ddiService.getMutualizedCodesList(agencyId, id);
+
+        // Then
+        assertSame(expectedResponse, result);
+        verify(ddiRepository).getMutualizedCodesList(agencyId, id);
     }
 
     @Test

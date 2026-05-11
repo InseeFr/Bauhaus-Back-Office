@@ -29,19 +29,16 @@ fr.insee.rmes.bauhaus.colectica:
 
     # Credentials for "password" authentication mode
     # Override these values in environment-specific configuration files
-    username: ${COLECTICA_USERNAME:}
-    password: ${COLECTICA_PASSWORD:}
+    username: ""
+    password: ""
 
     # Static token for "token" authentication mode
     # Override this value when using token-based authentication
     token: ""
 
-  # Exemple: Liste des statuts professionnels à supprimer
-  # code-list-deny-list:
-  #   - agency-id: fr.insee
-  #     id: 2a22ba00-a977-4a61-a582-99025c6b0582
-
+  # Liste des code lists mutualisées exposées en lecture seule via /ddi/mutualized-codes-list.
+  # Vide ou absente = aucune code list mutualisée (l'application démarre normalement).
   mutualized-codes-lists:
     - agency-id: fr.insee
-      identifier: fc65a527-a04b-4505-85de-0a181e54dbad
+      identifier: 37b132f6-7c81-42a5-8bff-7a7b6e239642
       version: 1

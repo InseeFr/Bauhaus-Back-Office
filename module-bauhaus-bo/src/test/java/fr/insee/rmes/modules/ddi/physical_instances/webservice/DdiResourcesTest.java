@@ -209,6 +209,25 @@ class DdiResourcesTest {
     }
 
     @Test
+    void shouldGetMutualizedCodesList() {
+        // Given
+        String agencyId = "fr.insee";
+        String id = "fc65a527-a04b-4505-85de-0a181e54dbad";
+        Ddi4Response expectedResponse = createMockDdi4Response();
+        when(ddiService.getMutualizedCodesList(agencyId, id)).thenReturn(expectedResponse);
+
+        // When
+        ResponseEntity<Ddi4Response> result = ddiResources.getMutualizedCodesList(agencyId, id);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        assertEquals(expectedResponse, result.getBody());
+        verify(ddiService).getMutualizedCodesList(agencyId, id);
+    }
+
+    @Test
     void shouldUpdatePhysicalInstance() {
         // Given
         String agencyId = "fr.insee";
