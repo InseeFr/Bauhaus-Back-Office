@@ -1,9 +1,12 @@
 package fr.insee.rmes.modules.concepts.collections.domain.port.clientside;
 
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExportType;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
@@ -27,4 +30,8 @@ public interface CollectionsService {
     List<CollectionMember> getCollectionMembers(CollectionId id) throws CollectionsFetchException;
     void validateCollections(List<String> collectionIds) throws CollectionsFetchException;
     void syncConceptCollections(String conceptId, List<String> newCollectionIds) throws CollectionsSaveException, CollectionsFetchException;
+    void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException, CollectionsFetchException;
+    CollectionExport exportCollection(CollectionId id) throws CollectionsFetchException;
+    CollectionExport exportCollectionByType(CollectionId id, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException;
+    CollectionExport exportCollectionsZip(List<CollectionId> ids, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException;
 }

@@ -1,13 +1,21 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
+import fr.insee.rmes.bauhaus_services.ConceptsService;
+import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
+import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExportType;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
@@ -17,6 +25,8 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueri
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.utils.XMLUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,10 +37,19 @@ import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.json.JSONArray;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,11 +63,25 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     private final RepositoryGestion repositoryGestion;
     private final GraphDBCollectionProperties graphDBCollectionProperties;
     private final ConceptCollectionsQueries conceptCollectionsQueries;
+    private final CollectionsUtils collectionsUtils;
+    private final CollectionExportBuilder collectionExportBuilder;
+    private final ConceptsService conceptsService;
+    private final int filenameMaxLength;
 
-    public GraphDBCollectionsRepository(RepositoryGestion repositoryGestion, GraphDBCollectionProperties graphDBCollectionProperties, ConceptCollectionsQueries conceptCollectionsQueries) {
+    public GraphDBCollectionsRepository(RepositoryGestion repositoryGestion,
+                                        GraphDBCollectionProperties graphDBCollectionProperties,
+                                        ConceptCollectionsQueries conceptCollectionsQueries,
+                                        CollectionsUtils collectionsUtils,
+                                        CollectionExportBuilder collectionExportBuilder,
+                                        @Lazy ConceptsService conceptsService,
+                                        @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int filenameMaxLength) {
         this.repositoryGestion = repositoryGestion;
         this.graphDBCollectionProperties = graphDBCollectionProperties;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
+        this.collectionsUtils = collectionsUtils;
+        this.collectionExportBuilder = collectionExportBuilder;
+        this.conceptsService = conceptsService;
+        this.filenameMaxLength = filenameMaxLength;
     }
 
     @Override
@@ -211,5 +244,124 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         } catch (RmesException e) {
             throw new CollectionsSaveException(e);
         }
+    }
+
+    @Override
+    public void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException {
+        JSONArray ids = new JSONArray();
+        collectionIds.forEach(id -> ids.put(id.value()));
+        try {
+            collectionsUtils.collectionsValidation(ids);
+        } catch (RmesException e) {
+            throw new CollectionsSaveException(e);
+        }
+    }
+
+    @Override
+    public CollectionExport exportCollection(CollectionId id) throws CollectionsFetchException {
+        try {
+            CollectionForExportOld collection = collectionExportBuilder.getCollectionDataOld(id.value());
+            String collectionXml = XMLUtils.produceXMLResponse(collection).replace("CollectionForExport", "Collection");
+            Map<String, String> xmlContent = new HashMap<>();
+            xmlContent.put("collectionFile", collectionXml);
+            String fileName = FilesUtils.generateFinalFileNameWithoutExtension(
+                    collection.getId() + "-" + collection.getPrefLabelLg1(), filenameMaxLength);
+
+            ResponseEntity<org.springframework.core.io.Resource> response =
+                    collectionExportBuilder.exportAsResponse(fileName, xmlContent, true, true, true);
+            org.springframework.core.io.Resource resource = response.getBody();
+            if (resource == null) {
+                throw new CollectionsFetchException(new RmesException(500, "Empty export resource", "ExportError"));
+            }
+            byte[] bytes = ((ByteArrayResource) resource).getByteArray();
+            return new CollectionExport(fileName + FilesUtils.ODT_EXTENSION, bytes,
+                    org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        } catch (RmesException e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public CollectionExport exportCollectionByType(CollectionId id, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException {
+        try {
+            CollectionForExport collection = collectionExportBuilder.getCollectionData(id.value());
+            List<String> conceptsIds = withConcepts ? memberConceptIds(id.value()) : List.of();
+            Map<String, String> xmlContent = collectionXmlContent(collection);
+            String fileName = exportFileName(collection, language);
+
+            if (conceptsIds.isEmpty()) {
+                ResponseEntity<org.springframework.core.io.Resource> response = (type == CollectionExportType.ODS)
+                        ? collectionExportBuilder.exportAsResponseODS(fileName, xmlContent, true, true, true)
+                        : collectionExportBuilder.exportAsResponseODT(fileName, xmlContent, true, language);
+                byte[] bytes = ((ByteArrayResource) response.getBody()).getByteArray();
+                String extension = (type == CollectionExportType.ODS) ? FilesUtils.ODS_EXTENSION : FilesUtils.ODT_EXTENSION;
+                return new CollectionExport(fileName + extension, bytes, org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            }
+
+            Map<String, Map<String, String>> collections = new HashMap<>();
+            collections.put(fileName, xmlContent);
+            Map<String, Map<String, InputStream>> collectionConcepts = new HashMap<>();
+            collectionConcepts.put(fileName, conceptsService.getConceptsExportIS(conceptsIds, null));
+
+            byte[] bytes = (type == CollectionExportType.ODS)
+                    ? collectionExportBuilder.buildOdsZipBytes(collections, true, true, true, collectionConcepts, withConcepts)
+                    : collectionExportBuilder.buildOdtZipBytes(collections, true, true, true, language, collectionConcepts, withConcepts);
+            return new CollectionExport(fileName + FilesUtils.ZIP_EXTENSION, bytes,
+                    org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        } catch (RmesException e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
+    public CollectionExport exportCollectionsZip(List<CollectionId> ids, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException {
+        try {
+            Map<String, Map<String, String>> collections = new HashMap<>();
+            Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
+
+            for (CollectionId collectionId : ids) {
+                try {
+                    CollectionForExport collection = collectionExportBuilder.getCollectionData(collectionId.value());
+                    List<String> conceptsIds = withConcepts ? memberConceptIds(collectionId.value()) : List.of();
+                    Map<String, String> xmlContent = collectionXmlContent(collection);
+                    String fileName = exportFileName(collection, language);
+                    collections.put(fileName, xmlContent);
+                    if (!conceptsIds.isEmpty()) {
+                        collectionsConcepts.put(fileName, conceptsService.getConceptsExportIS(conceptsIds, null));
+                    }
+                } catch (RmesException ignored) {
+                    // Mirror legacy behavior: skip individual failures, keep building the archive.
+                }
+            }
+
+            String archiveName = collectionExportBuilder.computeZipFileName(collections);
+            byte[] bytes = (type == CollectionExportType.ODS)
+                    ? collectionExportBuilder.buildOdsZipBytes(collections, true, true, true, collectionsConcepts, withConcepts)
+                    : collectionExportBuilder.buildOdtZipBytes(collections, true, true, true, language, collectionsConcepts, withConcepts);
+            return new CollectionExport(archiveName, bytes, org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        } catch (RmesException e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    private List<String> memberConceptIds(String collectionId) throws RmesException {
+        var concepts = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(collectionId));
+        List<String> ids = new ArrayList<>();
+        for (int i = 0; i < concepts.length(); i++) {
+            ids.add(concepts.getJSONObject(i).getString("id"));
+        }
+        return ids;
+    }
+
+    private Map<String, String> collectionXmlContent(CollectionForExport collection) {
+        Map<String, String> xmlContent = new HashMap<>();
+        xmlContent.put("collectionFile", XMLUtils.produceXMLResponse(collection).replace("CollectionForExport", "Collection"));
+        return xmlContent;
+    }
+
+    private String exportFileName(CollectionForExport collection, Language language) {
+        String label = (language == Language.lg2 && collection.getPrefLabelLg2() != null)
+                ? collection.getPrefLabelLg2() : collection.getPrefLabelLg1();
+        return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + label, filenameMaxLength);
     }
 }

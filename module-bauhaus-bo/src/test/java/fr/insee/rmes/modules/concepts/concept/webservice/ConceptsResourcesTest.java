@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
@@ -29,12 +28,9 @@ class ConceptsResourcesTest {
     @MockitoBean
     ConceptsService conceptsService;
 
-    @MockitoBean
-    ConceptsCollectionService conceptsCollectionService;
-
     @Test
     void shouldReturnConceptsWithHateoasLinks() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
 
         PartialConcept concept1 = new PartialConcept("concept-1", "Concept 1", "altLabel1");
         PartialConcept concept2 = new PartialConcept("concept-2", "Concept 2", "altLabel2");
@@ -51,7 +47,7 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturnConceptsSearchWithHateoasLinks() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
 
         ConceptForAdvancedSearch concept1 = new ConceptForAdvancedSearch("search-1", "Search Concept 1", "altLabel1", "owner1", "disseminationStatus1", "validationStatus1", "definition1", "2024-01-01", "2024-01-02", "true", "");
         ConceptForAdvancedSearch concept2 = new ConceptForAdvancedSearch("search-2", "Search Concept 2", "altLabel2", "owner2", "disseminationStatus2", "validationStatus2", "definition2", "2024-02-01", "2024-02-02", "false", "");
@@ -70,14 +66,14 @@ class ConceptsResourcesTest {
     @Test
     void shouldReturnResponseWhenDeleteConcept() throws RmesException {
         doNothing().when(conceptsService).deleteConcept("id mocked");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         String actual = conceptsResources.deleteConcept("id mocked").toString();
         Assertions.assertEquals("<200 OK OK,id mocked,[]>",actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetConceptByID() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         when( conceptsService.getConceptByID("id mocked")).thenReturn("mocked result");
         String actual = conceptsResources.getConceptByID("id mocked").toString();
         Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
@@ -85,7 +81,7 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenGetConceptsToValidate() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         when(conceptsService.getConceptsToValidate()).thenReturn("mocked result");
         String actual = conceptsResources.getConceptsToValidate().toString();
         Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
@@ -93,7 +89,7 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenGetConceptLinksByID() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         when(conceptsService.getConceptLinksByID("id mocked")).thenReturn("mocked result");
         String actual = conceptsResources.getConceptLinksByID("id mocked").toString();
         Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
@@ -102,7 +98,7 @@ class ConceptsResourcesTest {
     @ParameterizedTest
     @ValueSource(ints = { 2, 784 ,10,2025})
     void shouldReturnResponseWhenGetConceptNotesByID(int conceptVersion) throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         when(conceptsService.getConceptNotesByID("id mocked", conceptVersion)).thenReturn("mocked result");
         String actual = conceptsResources.getConceptNotesByID("id mocked", conceptVersion).toString();
         Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
@@ -117,7 +113,7 @@ class ConceptsResourcesTest {
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
 
         when(conceptsService.setConcept("mocked body")).thenReturn("test-concept-123");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService, conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
 
         var response = conceptsResources.setConcept("mocked body");
 
@@ -132,7 +128,7 @@ class ConceptsResourcesTest {
     @Test
     void shouldReturnResponseWhenSetConceptWithIdAndConcept()  throws RmesException {
         doNothing().when(conceptsService).setConcept("mocked id", "mocked body");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         String actual = conceptsResources.setConcept("mocked id", "mocked body").toString();
         Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
     }
@@ -140,16 +136,9 @@ class ConceptsResourcesTest {
     @Test
     void shouldReturnResponseWhenSetConceptsValidation()  throws RmesException {
         doNothing().when(conceptsService).setConceptsValidation( "mocked body");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
+        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
         String actual = conceptsResources.setConceptsValidation("mocked id", "mocked body").toString();
         Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
     }
 
-    @Test
-    void shouldReturnResponseWhenSetCollectionsValidation()  throws RmesException {
-        doNothing().when(conceptsService).setCollectionsValidation("mocked body");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService,conceptsCollectionService);
-        String actual = conceptsResources.setCollectionsValidation("mocked id","mocked body").toString();
-        Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
-    }
 }
