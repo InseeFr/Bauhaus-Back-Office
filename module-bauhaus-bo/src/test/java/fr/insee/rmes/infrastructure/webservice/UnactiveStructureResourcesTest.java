@@ -8,7 +8,6 @@ import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
 import fr.insee.rmes.modules.operations.operations.webservice.OperationsResources;
 import fr.insee.rmes.modules.operations.series.webservice.SeriesResources;
 import fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources;
-import fr.insee.rmes.modules.commons.webservice.concepts.ConceptsCollectionsResources;
 import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
 import org.junit.jupiter.api.Assertions;
@@ -25,9 +24,6 @@ class UnactiveModulesTest {
 
     @Autowired(required = false)
     ClassificationsResources classificationsResources;
-
-    @Autowired(required = false)
-    ConceptsCollectionsResources conceptsCollectionsResources;
 
     @Autowired(required = false)
     ConceptsResources conceptsResources;
@@ -60,7 +56,6 @@ class UnactiveModulesTest {
 
     @Test
     void shouldReturnAnErrorIfTheConceptsModuleIsNotActive(){
-        Assertions.assertNull(conceptsCollectionsResources);
         Assertions.assertNull(conceptsResources);
     }
 

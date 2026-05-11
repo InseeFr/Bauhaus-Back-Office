@@ -1,12 +1,17 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.*;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExportType;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -137,9 +142,85 @@ public class CollectionsResources {
         return null;
     }
 
-    @PutMapping("/{id}/validate")
+    @GetMapping(value = "/{id}/export/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    ResponseEntity<Resource> exportByType(@PathVariable String id,
+                                          @PathVariable String type,
+                                          @RequestParam("langue") Language langue,
+                                          @RequestParam("withConcepts") boolean withConcepts) {
+        try {
+            CollectionExport export = this.service.exportCollectionByType(new CollectionId(id), CollectionExportType.fromString(type), langue, withConcepts);
+            return buildExportResponse(export);
+        } catch (InvalidCollectionIdException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (CollectionsFetchException e) {
+            return mapFetchException(e);
+        }
+    }
+
+    @GetMapping(value = "/export-zip/{ids}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    ResponseEntity<Resource> exportZip(@PathVariable String ids,
+                                       @PathVariable String type,
+                                       @RequestParam("langue") Language langue,
+                                       @RequestParam("withConcepts") boolean withConcepts) {
+        try {
+            List<CollectionId> collectionIds = java.util.Arrays.stream(ids.split("_AND_")).map(CollectionId::new).toList();
+            CollectionExport export = this.service.exportCollectionsZip(collectionIds, CollectionExportType.fromString(type), langue, withConcepts);
+            return buildExportResponse(export);
+        } catch (InvalidCollectionIdException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (CollectionsFetchException e) {
+            return mapFetchException(e);
+        }
+    }
+
+    private ResponseEntity<Resource> buildExportResponse(CollectionExport export) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + export.fileName() + "\"");
+        headers.add("Access-Control-Expose-Headers", "Content-Disposition");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new ByteArrayResource(export.content()));
+    }
+
+    private ResponseEntity<Resource> mapFetchException(CollectionsFetchException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof CollectionNotFoundException) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, cause.getMessage(), e);
+        }
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+    }
+
+    @GetMapping(value = "/{id}/export", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+    @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.READ)
+    ResponseEntity<Resource> export(@PathVariable String id){
+        try {
+            return buildExportResponse(this.service.exportCollection(new CollectionId(id)));
+        } catch (InvalidCollectionIdException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (CollectionsFetchException e) {
+            return mapFetchException(e);
+        }
+    }
+
+    @PutMapping(value = "/{id}/validate", consumes = APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-    ResponseEntity<String> publish(@PathVariable String id){
-        return null;
+    ResponseEntity<Void> publish(@PathVariable String id, @RequestBody List<String> collectionIds){
+        try {
+            this.service.publishCollections(collectionIds.stream().map(CollectionId::new).toList());
+            return ResponseEntity.noContent().build();
+        } catch (InvalidCollectionIdException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (CollectionsFetchException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof CollectionNotFoundException) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, cause.getMessage(), e);
+            }
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        } catch (CollectionsSaveException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
     }
 }

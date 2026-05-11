@@ -125,13 +125,33 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
         mvc.perform(request).andExpect(status().is(code));
     }
 
-    @MethodSource("provideCollectionData")
+    @MethodSource("providePublishCollectionData")
     @ParameterizedTest
-    void publishCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
+    void publishCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException, CollectionsFetchException, CollectionsSaveException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        doNothing().when(collectionsService).publishCollections(any());
 
-        var request = put("/concepts/collections/" + collectionId + "/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        var request = put("/concepts/collections/" + collectionId + "/validate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content("[\"" + collectionId + "\"]");
+        request.header("Authorization", "Bearer toto");
+
+        mvc.perform(request).andExpect(status().is(code));
+    }
+
+    @MethodSource("provideExportCollectionData")
+    @ParameterizedTest
+    void exportCollection(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException, CollectionsFetchException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        when(collectionsService.exportCollection(any())).thenReturn(
+                new fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport(
+                        "file.odt", new byte[]{'P', 'K'}, MediaType.APPLICATION_OCTET_STREAM_VALUE));
+
+        var request = get("/concepts/collections/" + collectionId + "/export")
+                .accept(MediaType.APPLICATION_OCTET_STREAM);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -197,6 +217,20 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
     }
 
     private static Stream<Arguments> provideCollectionData() {
+        return Stream.of(
+                Arguments.of(200, true),
+                Arguments.of(403, false)
+        );
+    }
+
+    private static Stream<Arguments> providePublishCollectionData() {
+        return Stream.of(
+                Arguments.of(204, true),
+                Arguments.of(403, false)
+        );
+    }
+
+    private static Stream<Arguments> provideExportCollectionData() {
         return Stream.of(
                 Arguments.of(200, true),
                 Arguments.of(403, false)

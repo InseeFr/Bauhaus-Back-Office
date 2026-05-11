@@ -1,7 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
@@ -31,11 +30,8 @@ public class ConceptsResources  {
 
 	final ConceptsService conceptsService;
 
-	final ConceptsCollectionService conceptsCollectionService;
-
-	public ConceptsResources(ConceptsService conceptsService, ConceptsCollectionService conceptsCollectionService) {
+	public ConceptsResources(ConceptsService conceptsService) {
 		this.conceptsService = conceptsService;
-		this.conceptsCollectionService = conceptsCollectionService;
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
@@ -139,21 +135,6 @@ public class ConceptsResources  {
 			@RequestBody String body) throws RmesException {
 		conceptsService.setConceptsValidation(body);
 		return ResponseEntity.noContent().build();
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_COLLECTION, privilege = RBAC.Privilege.PUBLISH)
-	@PutMapping(value= "/collections/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> setCollectionsValidation(
-			@PathVariable(Constants.ID) String id,
-			@RequestBody String body) throws RmesException {
-		conceptsService.setCollectionsValidation(body);
-		return ResponseEntity.noContent().build();
-	}
-
-	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)
-	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
-		return conceptsService.getCollectionExport(id, accept);
 	}
 
 	@HasAccess(module = RBAC.Module.CONCEPT_CONCEPT, privilege = RBAC.Privilege.READ)

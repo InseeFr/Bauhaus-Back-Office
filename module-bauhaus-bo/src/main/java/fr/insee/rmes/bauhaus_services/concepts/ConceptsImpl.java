@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.concepts;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -51,8 +50,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	private final ConceptsUtils conceptsUtils;
 
-	private final CollectionsUtils collectionsUtils;
-
 	private final ConceptsExportBuilder conceptsExport;
 	private final CollectionExportBuilder collectionExport;
 	private final CollectionRepository collectionRepository;
@@ -68,7 +65,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
             ConceptsUtils conceptsUtils,
-            CollectionsUtils collectionsUtils,
             ConceptsExportBuilder conceptsExport,
             CollectionExportBuilder collectionExport,
             CollectionRepository collectionRepository,
@@ -77,7 +73,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             ConceptConceptsQueries conceptConceptsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.conceptsUtils = conceptsUtils;
-        this.collectionsUtils = collectionsUtils;
         this.conceptsExport = conceptsExport;
         this.collectionExport = collectionExport;
 		this.collectionRepository = collectionRepository;
@@ -362,29 +357,5 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		return xmlContent;
 	}
 	
-
-	/**
-	 * Validate collection(s)
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 * @throws Exception 
-	 */
-	@Override
-	public void setCollectionsValidation(String body) throws  RmesException   {
-		collectionsUtils.collectionsValidation(body);
-	}
-
-	@Override
-	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException{
-		CollectionForExportOld collection;
-		try {
-			collection = collectionExport.getCollectionDataOld(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
-		Map<String, String> xmlContent = convertCollectionInXml(collection);	
-		String fileName = FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg1(), maxLength);
-		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
-	}
 
 }

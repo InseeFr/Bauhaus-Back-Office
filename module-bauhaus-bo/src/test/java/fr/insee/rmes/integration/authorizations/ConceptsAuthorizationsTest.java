@@ -1,6 +1,5 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
@@ -53,8 +52,6 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
 
     @MockitoBean
     ConceptsService conceptsService;
-    @MockitoBean
-    ConceptsCollectionService conceptsCollectionService;
 
     static String conceptVersion="16";
     static String id ="2025";
@@ -78,7 +75,6 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
                 Arguments.of("/concepts/concept/"+id+"/notes/16"+conceptVersion),
                 Arguments.of("/concepts/concept/"+id+"/links"),
                 Arguments.of("/concepts/concept/export/"+id),
-                Arguments.of("/concepts/collection/export/"+id),
                 Arguments.of("/concepts/advanced-search"),
                 Arguments.of("/concepts/concept/"+id)
         );
