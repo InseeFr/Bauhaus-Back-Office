@@ -30,7 +30,6 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         null,
                         VALID_SERVER,
-                        Collections.emptyList(),
                         Collections.emptyList()
                 )
         )
@@ -44,7 +43,6 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         Collections.emptyList(),
                         VALID_SERVER,
-                        Collections.emptyList(),
                         Collections.emptyList()
                 )
         )
@@ -58,7 +56,6 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("invalid-code"),
                         VALID_SERVER,
-                        Collections.emptyList(),
                         Collections.emptyList()
                 )
         )
@@ -73,7 +70,6 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("FR-fr"),
                         VALID_SERVER,
-                        Collections.emptyList(),
                         Collections.emptyList()
                 )
         )
@@ -87,7 +83,6 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("fr-FR", "en-GB", "de-DE"),
                         VALID_SERVER,
-                        Collections.emptyList(),
                         Collections.emptyList()
                 )
         );
@@ -99,7 +94,6 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("fr-FR"),
                         VALID_SERVER,
-                        Collections.emptyList(),
                         Collections.emptyList()
                 )
         );

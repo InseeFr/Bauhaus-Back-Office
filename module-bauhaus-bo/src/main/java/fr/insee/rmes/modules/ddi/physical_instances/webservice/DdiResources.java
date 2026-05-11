@@ -15,7 +15,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
-import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodesListResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
@@ -108,28 +107,6 @@ public class DdiResources {
                 .body(responses);
     }
 
-    @GetMapping("/codes-list")
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
-    public ResponseEntity<List<PartialCodesListResponse>> getCodesLists() {
-        List<PartialCodesList> codesLists = ddiService.getCodesLists();
-
-        List<PartialCodesListResponse> responses = codesLists.stream()
-                .map(codesList -> {
-                    var response = PartialCodesListResponse.fromDomain(codesList);
-                    response.add(linkTo(DdiResources.class)
-                            .slash("codes-list")
-                            .slash(codesList.agency())
-                            .slash(codesList.id())
-                            .withSelfRel());
-                    return response;
-                })
-                .toList();
-
-        return ResponseEntity.ok()
-                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
-                .body(responses);
-    }
-
     @GetMapping("/mutualized-codes-list")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<CodeListSummaryResponse>> getMutualizedCodesLists() {
@@ -146,6 +123,17 @@ public class DdiResources {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(responses);
+    }
+
+    @GetMapping("/mutualized-codes-list/{agencyId}/{id}")
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<Ddi4Response> getMutualizedCodesList(
+            @PathVariable String agencyId,
+            @PathVariable(Constants.ID) String id) {
+        Ddi4Response response = ddiService.getMutualizedCodesList(agencyId, id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 
     @GetMapping("/group")

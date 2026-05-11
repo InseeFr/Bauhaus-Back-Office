@@ -60,9 +60,6 @@ class DDIRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        // By default, mock returns null for codeListDenyList (no filtering)
-        // Use lenient() since not all tests use this stubbing
-        lenient().when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
         lenient().when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR"));
 
         // Configure authenticator to execute the function with a test token
@@ -266,99 +263,6 @@ class DDIRepositoryImplTest {
 
         // Then
         assertEquals(accessToken, response.accessToken());
-    }
-
-    @Test
-    void shouldGetCodesLists() {
-        // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
-
-        ColecticaItem codeList1 = new ColecticaItem(
-            null, // summary
-            Map.of("fr-FR", "Liste de codes 1", "en", "Code List 1"), // itemName
-            Map.of("fr-FR", "LC1", "en", "LC1"), // value
-            null, // description
-            null, // versionRationale
-            0, // metadataRank
-            "test-repo", // repositoryName
-            true, // isAuthoritative
-            List.of(), // tags
-            "CodeList", // itemType
-            "agency1", // agencyId
-            1, // version
-            "cl-1", // identifier
-            null, // item
-            null, // notes
-            "2025-01-01T00:00:00", // versionDate
-            null, // versionResponsibility
-            true, // isPublished
-            false, // isDeprecated
-            false, // isProvisional
-            "DDI", // itemFormat
-            1L, // transactionId
-            0 // versionCreationType
-        );
-
-        ColecticaItem codeList2 = new ColecticaItem(
-            null, // summary
-            Map.of("fr-FR", "Liste de codes 2", "en", "Code List 2"), // itemName
-            Map.of("fr-FR", "LC2", "en", "LC2"), // value
-            null, // description
-            null, // versionRationale
-            0, // metadataRank
-            "test-repo", // repositoryName
-            true, // isAuthoritative
-            List.of(), // tags
-            "CodeList", // itemType
-            "agency2", // agencyId
-            1, // version
-            "cl-2", // identifier
-            null, // item
-            null, // notes
-            "2025-01-02T00:00:00", // versionDate
-            null, // versionResponsibility
-            true, // isPublished
-            false, // isDeprecated
-            false, // isProvisional
-            "DDI", // itemFormat
-            2L, // transactionId
-            0 // versionCreationType
-        );
-
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2), 2, 2, null, null, null);
-
-        // Mock configuration
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        // Mock query call - should query for CodeList itemType (8b108ef8-b642-4484-9c49-f88e4bf7cf1d)
-        when(responseSpec.body(eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("cl-1", result.get(0).id());
-        assertEquals("Liste de codes 1", result.get(0).label());
-        assertEquals("agency1", result.get(0).agency());
-        assertNotNull(result.get(0).versionDate());
-        assertEquals("cl-2", result.get(1).id());
-        assertEquals("Liste de codes 2", result.get(1).label());
-        assertEquals("agency2", result.get(1).agency());
-
-        // Verify query was called with CodeList itemType
-        verify(requestSpec).uri(eq(queryUrl));
-
-        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(requestSpec, atLeastOnce()).body(bodyCaptor.capture());
-        QueryRequest queryRequest = bodyCaptor.getAllValues().stream()
-                .filter(v -> v instanceof QueryRequest).map(v -> (QueryRequest) v).findFirst().orElseThrow();
-        assertNotNull(queryRequest);
-        assertEquals(1, queryRequest.itemTypes().size());
-        assertEquals("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", queryRequest.itemTypes().get(0)); // CodeList UUID
     }
 
     @Test
@@ -650,206 +554,6 @@ class DDIRepositoryImplTest {
         assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", drItem.itemType()); // DataRelationship UUID
         assertEquals(1, drItem.version()); // version preserved, not incremented
         assertTrue(drItem.item().contains(newDataRelationshipLabel));
-    }
-
-    @Test
-    void shouldFilterCodeListsInDenyList() {
-        // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
-
-        // Create code lists - one should be filtered, one should pass
-        ColecticaItem codeListToFilter = new ColecticaItem(
-            null, // summary
-            Map.of("fr-FR", "Liste des statuts professionnels", "en", "Professional Status List"), // itemName
-            Map.of("fr-FR", "Statuts", "en", "Status"), // value
-            null, // description
-            null, // versionRationale
-            0, // metadataRank
-            "test-repo", // repositoryName
-            true, // isAuthoritative
-            List.of(), // tags
-            "CodeList", // itemType
-            "fr.insee", // agencyId
-            1, // version
-            "2a22ba00-a977-4a61-a582-99025c6b0582", // identifier - IN DENY LIST
-            null, // item
-            null, // notes
-            "2023-07-04T08:19:29", // versionDate
-            null, // versionResponsibility
-            true, // isPublished
-            false, // isDeprecated
-            false, // isProvisional
-            "DDI", // itemFormat
-            1L, // transactionId
-            0 // versionCreationType
-        );
-
-        ColecticaItem codeListToKeep = new ColecticaItem(
-            null, // summary
-            Map.of("fr-FR", "Liste de codes à garder", "en", "Code List to Keep"), // itemName
-            Map.of("fr-FR", "À garder", "en", "To Keep"), // value
-            null, // description
-            null, // versionRationale
-            0, // metadataRank
-            "test-repo", // repositoryName
-            true, // isAuthoritative
-            List.of(), // tags
-            "CodeList", // itemType
-            "fr.insee", // agencyId
-            1, // version
-            "other-id-to-keep", // identifier - NOT IN DENY LIST
-            null, // item
-            null, // notes
-            "2023-07-04T08:19:29", // versionDate
-            null, // versionResponsibility
-            true, // isPublished
-            false, // isDeprecated
-            false, // isProvisional
-            "DDI", // itemFormat
-            2L, // transactionId
-            0 // versionCreationType
-        );
-
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeListToFilter, codeListToKeep), 2, 2, null, null, null);
-
-        // Configure deny list
-        List<ColecticaConfiguration.CodeListDenyEntry> denyList = List.of(
-            new ColecticaConfiguration.CodeListDenyEntry("fr.insee", "2a22ba00-a977-4a61-a582-99025c6b0582")
-        );
-        when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
-
-        // Mock configuration
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        // Mock query call
-        when(responseSpec.body(eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size()); // Only one code list should remain
-        assertEquals("other-id-to-keep", result.get(0).id());
-        assertEquals("Liste de codes à garder", result.get(0).label());
-        assertEquals("fr.insee", result.get(0).agency());
-
-        // Verify the filtered code list is not in the results
-        assertFalse(result.stream().anyMatch(cl -> cl.id().equals("2a22ba00-a977-4a61-a582-99025c6b0582")));
-    }
-
-    @Test
-    void shouldNotFilterWhenDenyListIsEmpty() {
-        // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
-
-        ColecticaItem codeList = new ColecticaItem(
-            null, Map.of("fr-FR", "Liste de codes"), Map.of("fr-FR", "LC"),
-            null, null, 0, "test-repo", true, List.of(), "CodeList",
-            "fr.insee", 1, "some-id", null, null, "2023-07-04T08:19:29",
-            null, true, false, false, "DDI", 1L, 0
-        );
-
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList), 1, 1, null, null, null);
-
-        // Configure empty deny list
-        when(colecticaConfiguration.codeListDenyList()).thenReturn(List.of());
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(responseSpec.body(eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size()); // Code list should not be filtered
-        assertEquals("some-id", result.get(0).id());
-    }
-
-    @Test
-    void shouldNotFilterWhenDenyListIsNull() {
-        // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
-
-        ColecticaItem codeList = new ColecticaItem(
-            null, Map.of("fr-FR", "Liste de codes"), Map.of("fr-FR", "LC"),
-            null, null, 0, "test-repo", true, List.of(), "CodeList",
-            "fr.insee", 1, "some-id", null, null, "2023-07-04T08:19:29",
-            null, true, false, false, "DDI", 1L, 0
-        );
-
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList), 1, 1, null, null, null);
-
-        // Configure null deny list (default behavior)
-        when(colecticaConfiguration.codeListDenyList()).thenReturn(null);
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(responseSpec.body(eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size()); // Code list should not be filtered
-        assertEquals("some-id", result.get(0).id());
-    }
-
-    @Test
-    void shouldFilterMultipleCodeListsInDenyList() {
-        // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
-
-        ColecticaItem codeList1 = new ColecticaItem(
-            null, Map.of("fr-FR", "Code List 1"), Map.of("fr-FR", "CL1"),
-            null, null, 0, "test-repo", true, List.of(), "CodeList",
-            "fr.insee", 1, "id-to-filter-1", null, null, "2023-07-04T08:19:29",
-            null, true, false, false, "DDI", 1L, 0
-        );
-
-        ColecticaItem codeList2 = new ColecticaItem(
-            null, Map.of("fr-FR", "Code List 2"), Map.of("fr-FR", "CL2"),
-            null, null, 0, "test-repo", true, List.of(), "CodeList",
-            "fr.insee", 1, "id-to-keep", null, null, "2023-07-04T08:19:29",
-            null, true, false, false, "DDI", 2L, 0
-        );
-
-        ColecticaItem codeList3 = new ColecticaItem(
-            null, Map.of("fr-FR", "Code List 3"), Map.of("fr-FR", "CL3"),
-            null, null, 0, "test-repo", true, List.of(), "CodeList",
-            "other.agency", 1, "id-to-filter-2", null, null, "2023-07-04T08:19:29",
-            null, true, false, false, "DDI", 3L, 0
-        );
-
-        ColecticaResponse mockResponse = new ColecticaResponse(List.of(codeList1, codeList2, codeList3), 3, 3, null, null, null);
-
-        // Configure deny list with multiple entries
-        List<ColecticaConfiguration.CodeListDenyEntry> denyList = List.of(
-            new ColecticaConfiguration.CodeListDenyEntry("fr.insee", "id-to-filter-1"),
-            new ColecticaConfiguration.CodeListDenyEntry("other.agency", "id-to-filter-2")
-        );
-        when(colecticaConfiguration.codeListDenyList()).thenReturn(denyList);
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-        when(responseSpec.body(eq(ColecticaResponse.class)))
-                .thenReturn(mockResponse);
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size()); // Only one code list should remain
-        assertEquals("id-to-keep", result.get(0).id());
-        assertEquals("Code List 2", result.get(0).label());
     }
 
     @Test
@@ -1276,6 +980,77 @@ class DDIRepositoryImplTest {
         assertEquals("fr.insee", requestBody.identifiers().get(0).agencyId());
         assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", requestBody.identifiers().get(0).identifier());
         assertEquals(1, requestBody.identifiers().get(0).version());
+    }
+
+    @Test
+    void shouldGetMutualizedCodesListWithCodesAndCategories() {
+        // Given
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String codeListId = "fc65a527-a04b-4505-85de-0a181e54dbad";
+        String categoryId = "cat-1";
+        int version = 1;
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(codeListId, version, agencyId),
+            new ColecticaSetItem(categoryId, version, agencyId)
+        };
+        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
+
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(
+                    "8b108ef8-b642-4484-9c49-f88e4bf7cf1d", // CodeList type
+                    agencyId, version, codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(
+                    "fa1d4dca-f6dc-4d80-8b94-de1063a64d6d", // Category type
+                    agencyId, version, categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
+
+        Ddi4CodeList mockCodeList = new Ddi4CodeList(
+                "true", "2024-10-31T10:43:38",
+                "urn:ddi:fr.insee:" + codeListId + ":1",
+                agencyId, codeListId, "1",
+                new Label(new Content("fr-FR", "NAF rév. 2")),
+                List.of()
+        );
+        Ddi4Category mockCategory = new Ddi4Category(
+                "true", "2024-10-31T10:43:38",
+                "urn:ddi:fr.insee:" + categoryId + ":1",
+                agencyId, categoryId, "1",
+                new Label(new Content("fr-FR", "Agriculture"))
+        );
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(new TopLevelReference(agencyId, codeListId, "1", "CodeList")),
+                List.of(), List.of(), List.of(),
+                List.of(mockCodeList),
+                List.of(mockCategory)
+        );
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        // When
+        Ddi4Response result = ddiRepository.getMutualizedCodesList(agencyId, codeListId);
+
+        // Then
+        assertNotNull(result);
+        assertNotNull(result.codeList());
+        assertEquals(1, result.codeList().size());
+        assertEquals(codeListId, result.codeList().get(0).id());
+        assertNotNull(result.category());
+        assertEquals(1, result.category().size());
+        assertEquals(categoryId, result.category().get(0).id());
+
+        verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + codeListId));
+        verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
     }
 
     @Test
@@ -1718,21 +1493,13 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
-        ColecticaItem studyUnitItem = new ColecticaItem(
-            null, Map.of(), Map.of(), null, null, 0, "repo", true, List.of(),
-            "30ea0200-7121-4f01-8d21-a931a182b86d", "fr.insee", 1, "su-222",
-            null, null, null, null, true, false, false, "DDI", 1L, 0
-        );
-        ColecticaItem[] studyUnitItems = new ColecticaItem[]{studyUnitItem};
+        ColecticaParentRef studyUnitItem = new ColecticaParentRef("fr.insee", "su-222");
+        ColecticaParentRef[] studyUnitItems = new ColecticaParentRef[]{studyUnitItem};
 
-        ColecticaItem groupItem = new ColecticaItem(
-            null, Map.of(), Map.of(), null, null, 0, "repo", true, List.of(),
-            "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23", "fr.insee", 1, "grp-333",
-            null, null, null, null, true, false, false, "DDI", 2L, 0
-        );
-        ColecticaItem[] groupItems = new ColecticaItem[]{groupItem};
+        ColecticaParentRef groupItem = new ColecticaParentRef("fr.insee", "grp-333");
+        ColecticaParentRef[] groupItems = new ColecticaParentRef[]{groupItem};
 
-        when(responseSpec.body(eq(ColecticaItem[].class)))
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
             .thenReturn(studyUnitItems, groupItems);
 
         // When

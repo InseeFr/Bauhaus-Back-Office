@@ -296,6 +296,42 @@ class Ddi3XmlWriterTest {
     }
 
     @Test
+    void shouldEmitOnlyCodeListReferenceForCodeRepresentation() throws XMLStreamException {
+        Ddi4Variable var = new Ddi4Variable(
+                "true",
+                "2025-12-23T09:52:06.355Z",
+                "urn:ddi:fr.insee:var-coderep:1",
+                "fr.insee",
+                "var-coderep",
+                "1",
+                null,
+                new VariableName(new StringValue("fr-FR", "VAR_CODEREP")),
+                new Label(new Content("fr-FR", "Variable avec CodeRepresentation")),
+                null,
+                new VariableRepresentation(
+                        null,
+                        new CodeRepresentation(
+                                "true",
+                                new CodeListReference("fr.insee", "fc65a527-a04b-4505-85de-0a181e54dbad", "1", "CodeList")
+                        ),
+                        null,
+                        null,
+                        null
+                ),
+                null
+        );
+
+        String xml = writer.buildVariableXml(var);
+
+        assertThat(xml)
+                .contains("<r:CodeListReference")
+                .contains(">fc65a527-a04b-4505-85de-0a181e54dbad<")
+                .contains(">CodeList<")
+                .doesNotContain("<l:CodeList")
+                .doesNotContain("<ddi:CodeList");
+    }
+
+    @Test
     void shouldWriteGroupXml() throws XMLStreamException {
         // Given
         Ddi4Group group = new Ddi4Group(

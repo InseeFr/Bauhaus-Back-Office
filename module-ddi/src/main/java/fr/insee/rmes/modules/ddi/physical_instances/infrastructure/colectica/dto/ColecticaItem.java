@@ -22,13 +22,13 @@ public record ColecticaItem(
     Map<String, String> versionRationale,
     
     @JsonProperty("MetadataRank")
-    int metadataRank,
-    
+    Integer metadataRank,
+
     @JsonProperty("RepositoryName")
     String repositoryName,
-    
+
     @JsonProperty("IsAuthoritative")
-    boolean isAuthoritative,
+    Boolean isAuthoritative,
     
     @JsonProperty("Tags")
     List<String> tags,
@@ -40,7 +40,7 @@ public record ColecticaItem(
     String agencyId,
     
     @JsonProperty("Version")
-    int version,
+    Integer version,
     
     @JsonProperty("Identifier")
     String identifier,
@@ -58,20 +58,20 @@ public record ColecticaItem(
     String versionResponsibility,
     
     @JsonProperty("IsPublished")
-    boolean isPublished,
-    
+    Boolean isPublished,
+
     @JsonProperty("IsDeprecated")
-    boolean isDeprecated,
-    
+    Boolean isDeprecated,
+
     @JsonProperty("IsProvisional")
-    boolean isProvisional,
+    Boolean isProvisional,
     
     @JsonProperty("ItemFormat")
     String itemFormat,
     
     @JsonProperty("TransactionId")
-    long transactionId,
-    
+    Long transactionId,
+
     @JsonProperty("VersionCreationType")
-    int versionCreationType
+    Integer versionCreationType
 ) {}

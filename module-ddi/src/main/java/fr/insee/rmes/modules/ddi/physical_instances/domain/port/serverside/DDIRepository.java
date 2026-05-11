@@ -16,7 +16,6 @@ import java.util.Optional;
 
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
-    List<PartialCodesList> getCodesLists();
     List<PartialGroup> getGroups();
     List<PartialStudyUnit> getStudyUnits();
     Ddi4Response getPhysicalInstance(String agencyId, String id);
@@ -25,6 +24,7 @@ public interface DDIRepository {
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
     List<PartialCodesList> getMutualizedCodesLists();
+    Ddi4Response getMutualizedCodesList(String agencyId, String id);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);

@@ -39,12 +39,6 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
-    public List<PartialCodesList> getCodesLists() {
-        logger.info("Starting to get codes lists");
-        return ddiRepository.getCodesLists();
-    }
-
-    @Override
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
         return ddiRepository.getGroups();
@@ -102,6 +96,12 @@ public class DDIServiceImpl implements DDIService {
     public List<PartialCodesList> getMutualizedCodesLists() {
         logger.info("Starting to get mutualized codes lists");
         return ddiRepository.getMutualizedCodesLists();
+    }
+
+    @Override
+    public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
+        logger.info("Getting mutualized codes list {}/{}", agencyId, id);
+        return ddiRepository.getMutualizedCodesList(agencyId, id);
     }
 
     @Override

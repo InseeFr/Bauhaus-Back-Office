@@ -32,7 +32,6 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static javax.xml.XMLConstants.*;
 
@@ -48,7 +47,6 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private final ColecticaAuthenticator authenticator;
-    private Set<String> denyListCache;
 
     public DDIRepositoryImpl(
             RestClient restClient,
@@ -229,58 +227,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         });
     }
 
-    @Override
-    public List<PartialCodesList> getCodesLists() {
-        logger.info("Getting codes lists from Colectica API via HTTP");
-
-        return authenticator.executeWithAuth(token -> {
-            // Set up the request with authorization header
-            String url = instanceConfiguration.baseApiUrl() + "_query";
-
-            // Create request body with CodeList itemType
-            QueryRequest requestBody = new QueryRequest(List.of("8b108ef8-b642-4484-9c49-f88e4bf7cf1d"));
-
-            ColecticaResponse response = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(ColecticaResponse.class);
-
-            int totalCount = response.results().size();
-            logger.debug("Received {} code lists from Colectica API", totalCount);
-
-            List<PartialCodesList> result = response.results().stream()
-                    .filter(item -> !isCodeListInDenyList(item.agencyId(), item.identifier()))
-                    .map(item -> {
-                        String id = item.identifier();
-                        String label = extractLabelFromItem(item);
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        Date date = null;
-                        try {
-                            date = formatter.parse(item.versionDate());
-                        } catch (ParseException | NullPointerException _) {
-                            logger.debug("Impossible to parse {}", item.versionDate());
-                        }
-                        String agency = item.agencyId();
-                        return new PartialCodesList(id, label, date, agency);
-                    })
-                    .toList();
-
-            int filteredCount = totalCount - result.size();
-            if (filteredCount > 0) {
-                logger.info("Filtered {} code list(s) from {} total using deny list (returned {} code lists)",
-                        filteredCount, totalCount, result.size());
-            } else {
-                logger.debug("No code lists filtered, returning all {} code lists", result.size());
-            }
-
-            return result;
-        });
-    }
-    
     private String extractLabelFromItem(ColecticaItem item) {
         // Extract value from ItemName or Label (both can have language variants)
         String label = extractLabelFromLanguageMap(item.itemName());
@@ -307,61 +253,6 @@ public class DDIRepositoryImpl implements DDIRepository {
             label = languageMap.values().stream().findFirst().orElse(null);
         }
         return label;
-    }
-
-    /**
-     * Check if a code list is in the deny list.
-     *
-     * <p>This method uses a cached HashSet for O(1) lookup performance.
-     * The cache is lazily initialized on first access.
-     *
-     * <p>Code lists matching entries in the deny list (based on agencyId and id)
-     * will be excluded from the results. This is useful for filtering out
-     * deprecated, test, or otherwise unwanted code lists from the Colectica repository.
-     *
-     * <p>Configuration example in properties file:
-     * <pre>
-     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].agency-id = fr.insee
-     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].id = 2a22ba00-a977-4a61-a582-99025c6b0582
-     * </pre>
-     *
-     * @param agencyId The agency ID of the code list to check
-     * @param id The ID of the code list to check
-     * @return true if the code list should be filtered out, false otherwise
-     * @see ColecticaConfiguration.CodeListDenyEntry
-     */
-    private boolean isCodeListInDenyList(String agencyId, String id) {
-        if (colecticaConfiguration == null || colecticaConfiguration.codeListDenyList() == null) {
-            return false;
-        }
-
-        // Lazy initialization of cache for O(1) lookups
-        if (denyListCache == null) {
-            denyListCache = colecticaConfiguration.codeListDenyList().stream()
-                    .map(entry -> createDenyListKey(entry.agencyId(), entry.id()))
-                    .collect(Collectors.toSet());
-            logger.info("Initialized code list deny list cache with {} entries", denyListCache.size());
-        }
-
-        String key = createDenyListKey(agencyId, id);
-        boolean isDenied = denyListCache.contains(key);
-
-        if (isDenied) {
-            logger.debug("Filtering out code list: agencyId={}, id={}", agencyId, id);
-        }
-
-        return isDenied;
-    }
-
-    /**
-     * Creates a unique key for deny list lookups by combining agencyId and id.
-     *
-     * @param agencyId The agency ID
-     * @param id The code list ID
-     * @return A unique key string in format "agencyId:id"
-     */
-    private String createDenyListKey(String agencyId, String id) {
-        return agencyId + ":" + id;
     }
 
     /**
@@ -1111,6 +1002,80 @@ public class DDIRepositoryImpl implements DDIRepository {
                    .replace("'", "&apos;");
     }
 
+    /**
+     * Returns the metadata of every mutualized code list configured in {@code colectica.yml}.
+     *
+     * <p>Contract:
+     * <ul>
+     *   <li>Source unique : la liste {@code fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists}
+     *       (triplets {@code agencyId / identifier / version}).</li>
+     *   <li>Liste absente ou vide → liste vide retournée, aucun appel Colectica (tolérance documentée).</li>
+     *   <li>Endpoint Colectica utilisé : {@code POST item/_getDescriptions} qui retourne **uniquement la
+     *       métadonnée** des items (label, identifiant, agence, version). Les codes ne sont pas inclus
+     *       dans cette réponse — ils sont déjà disponibles inline dans la réponse de
+     *       {@link #getPhysicalInstance(String, String)} via le flux {@code /set} + {@code /_getList} +
+     *       conversion DDI3→DDI4.</li>
+     * </ul>
+     */
+    @Override
+    public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
+        logger.info("Fetching mutualized codes list {}/{}", agencyId, id);
+
+        return authenticator.executeWithAuth(token -> {
+            try {
+                String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
+                ColecticaSetItem[] setItems = restClient.get()
+                        .uri(setUrl)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .retrieve()
+                        .body(ColecticaSetItem[].class);
+
+                if (setItems == null || setItems.length == 0) {
+                    return null;
+                }
+
+                List<GetDescriptionsRequest.IdentifierRef> identifiers = Arrays.stream(setItems)
+                        .map(item -> new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                        .toList();
+
+                String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
+                ColecticaItemResponse[] itemResponses = restClient.post()
+                        .uri(getListUrl)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .body(new GetDescriptionsRequest(identifiers))
+                        .retrieve()
+                        .body(ColecticaItemResponse[].class);
+
+                if (itemResponses == null || itemResponses.length == 0) {
+                    return null;
+                }
+
+                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(itemResponses)
+                        .map(item -> new Ddi3Response.Ddi3Item(
+                                item.itemType(),
+                                item.agencyId(),
+                                String.valueOf(item.version()),
+                                item.identifier(),
+                                item.item(),
+                                item.versionDate(),
+                                item.versionResponsibility(),
+                                item.isPublished(),
+                                item.isDeprecated(),
+                                item.isProvisional(),
+                                item.itemFormat()
+                        ))
+                        .toList();
+
+                Ddi3Response ddi3Response = new Ddi3Response(null, ddi3Items);
+                return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
+
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch mutualized codes list", e);
+            }
+        });
+    }
+
     @Override
     public List<PartialCodesList> getMutualizedCodesLists() {
         logger.info("Getting mutualized codes lists from Colectica API via _getDescriptions endpoint");
@@ -1333,30 +1298,30 @@ public class DDIRepositoryImpl implements DDIRepository {
             RelationshipBySubjectRequest piRequest = new RelationshipBySubjectRequest(
                     List.of(STUDY_UNIT_ITEM_TYPE),
                     new RelationshipBySubjectRequest.TargetItemRef(agencyId, id));
-            ColecticaItem[] studyUnitItems = restClient.post()
+            ColecticaParentRef[] studyUnitItems = restClient.post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .body(piRequest)
                     .retrieve()
-                    .body(ColecticaItem[].class);
+                    .body(ColecticaParentRef[].class);
 
-            ColecticaItem studyUnitItem = Arrays.stream(studyUnitItems != null ? studyUnitItems : new ColecticaItem[0])
+            ColecticaParentRef studyUnitItem = Arrays.stream(studyUnitItems != null ? studyUnitItems : new ColecticaParentRef[0])
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No study unit found for physical instance " + agencyId + "/" + id));
 
             RelationshipBySubjectRequest suRequest = new RelationshipBySubjectRequest(
                     List.of(GROUP_ITEM_TYPE),
                     new RelationshipBySubjectRequest.TargetItemRef(studyUnitItem.agencyId(), studyUnitItem.identifier()));
-            ColecticaItem[] groupItems = restClient.post()
+            ColecticaParentRef[] groupItems = restClient.post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .body(suRequest)
                     .retrieve()
-                    .body(ColecticaItem[].class);
+                    .body(ColecticaParentRef[].class);
 
-            ColecticaItem groupItem = Arrays.stream(groupItems != null ? groupItems : new ColecticaItem[0])
+            ColecticaParentRef groupItem = Arrays.stream(groupItems != null ? groupItems : new ColecticaParentRef[0])
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("No group found for study unit " + studyUnitItem.agencyId() + "/" + studyUnitItem.identifier()));
 
