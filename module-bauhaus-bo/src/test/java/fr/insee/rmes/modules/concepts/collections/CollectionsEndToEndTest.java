@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CollectionsEndToEndTest extends WithGraphDBContainer {
 
     public static final String ISO_8601_DATE_TIME_PATTERN = "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$";
+    private static final String BAUHAUS_TEST_PUBLICATION_REPOSITORY = "bauhaus-test-pub";
     final static String CREATE_COLLECTION_REQUEST_JSON = """
             {
                  "id": "%s",
@@ -36,7 +37,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
             """;
 
     final static String UPDATE_COLLECTION_REQUEST_JSON = """
-            {   
+            {
                 "id": "%s",
                  "labels": [{"value": "label fr v2", "lang": "fr"}],
                  "descriptions": [],
@@ -54,6 +55,10 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
         String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
         registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> BAUHAUS_TEST_REPOSITORY);
+        container.withInitFolder("/testcontainers").withRepository("config-pub.ttl");
+        registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> sesameServer);
+        registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> BAUHAUS_TEST_PUBLICATION_REPOSITORY);
+        registry.add("fr.insee.rmes.bauhaus.sesame.publication.baseURI", () -> "http://id.insee.fr/");
         container.withInitFolder("fr/insee/rmes/modules/concepts/collections")
                 .withTrigFiles("collections-end-to-end-test.trig");
     }
@@ -243,6 +248,73 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .retrieve()
                 .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CONFLICT))
                 .toBodilessEntity();
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("PUT /{id}/validate flips isValidated to true on the collection")
+    void ok_when_collection_validated() {
+        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
+        RestClient restClient = RestClient.create();
+        String validatedId = "Collection-validate-001";
+
+        restClient.post()
+                .uri(collectionsEndpoint)
+                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(validatedId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve()
+                .toBodilessEntity();
+
+        var validateResponse = restClient.put()
+                .uri(collectionsEndpoint + "/" + validatedId + "/validate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("[\"%s\"]".formatted(validatedId))
+                .retrieve()
+                .toBodilessEntity();
+        assertThat(validateResponse.getStatusCode().is2xxSuccessful()).isTrue();
+
+        var fetched = restClient
+                .get().uri(collectionsEndpoint + "/" + validatedId)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+        assertThat(new JSONObject(fetched).getBoolean("isValidated")).isTrue();
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("GET /{id}/export returns an ODT document")
+    void ok_when_collection_exported() {
+        String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
+        RestClient restClient = RestClient.create();
+        String exportedId = "Collection-export-001";
+
+        restClient.post()
+                .uri(collectionsEndpoint)
+                .body(CREATE_COLLECTION_REQUEST_JSON.formatted(exportedId))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve()
+                .toBodilessEntity();
+
+        var exportResponse = restClient
+                .get().uri(collectionsEndpoint + "/" + exportedId + "/export")
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .retrieve()
+                .toEntity(byte[].class);
+
+        assertThat(exportResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        byte[] body = exportResponse.getBody();
+        assertThat(body).isNotNull().isNotEmpty();
+        assertThat(body[0]).isEqualTo((byte) 'P');
+        assertThat(body[1]).isEqualTo((byte) 'K');
+        assertThat(exportResponse.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION))
+                .as("Content-Disposition must carry an attachment filename so the browser triggers a download")
+                .startsWith("attachment; filename=\"");
+        assertThat(exportResponse.getHeaders().getFirst("Access-Control-Expose-Headers"))
+                .as("Access-Control-Expose-Headers must expose Content-Disposition so the browser fetch can read it")
+                .contains("Content-Disposition");
     }
 
 }

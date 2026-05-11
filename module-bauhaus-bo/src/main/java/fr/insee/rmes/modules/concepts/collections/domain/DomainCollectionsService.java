@@ -4,8 +4,11 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAl
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionNotFoundException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
+import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;
+import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExportType;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
@@ -83,6 +86,42 @@ public class DomainCollectionsService implements CollectionsService {
         if (!missing.isEmpty()) {
             throw new CollectionsFetchException(new CollectionNotFoundException("Collections not found: " + String.join(", ", missing)));
         }
+    }
+
+    @Override
+    public CollectionExport exportCollection(CollectionId id) throws CollectionsFetchException {
+        if (this.repository.getCollection(id).isEmpty()) {
+            throw new CollectionsFetchException(new CollectionNotFoundException("Collection %s not found".formatted(id.value())));
+        }
+        return this.repository.exportCollection(id);
+    }
+
+    @Override
+    public CollectionExport exportCollectionByType(CollectionId id, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException {
+        if (this.repository.getCollection(id).isEmpty()) {
+            throw new CollectionsFetchException(new CollectionNotFoundException("Collection %s not found".formatted(id.value())));
+        }
+        return this.repository.exportCollectionByType(id, type, language, withConcepts);
+    }
+
+    @Override
+    public CollectionExport exportCollectionsZip(List<CollectionId> ids, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException {
+        if (ids.isEmpty()) {
+            throw new CollectionsFetchException(new CollectionNotFoundException("No collection ids provided"));
+        }
+        return this.repository.exportCollectionsZip(ids, type, language, withConcepts);
+    }
+
+    @Override
+    public void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException, CollectionsFetchException {
+        if (collectionIds.isEmpty()) return;
+        List<String> ids = collectionIds.stream().map(CollectionId::value).toList();
+        Set<String> existing = this.repository.findExistingCollectionIds(ids);
+        List<String> missing = ids.stream().filter(id -> !existing.contains(id)).toList();
+        if (!missing.isEmpty()) {
+            throw new CollectionsFetchException(new CollectionNotFoundException("Collections not found: " + String.join(", ", missing)));
+        }
+        this.repository.publishCollections(collectionIds);
     }
 
     @Override
