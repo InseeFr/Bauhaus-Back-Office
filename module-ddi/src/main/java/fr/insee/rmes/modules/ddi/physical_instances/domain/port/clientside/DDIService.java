@@ -16,7 +16,6 @@ import java.util.Set;
 
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
-    List<PartialCodesList> getCodesLists();
     List<PartialGroup> getGroups();
     List<PartialGroup> getGroupsFilteredByStamp(Set<String> userStamps);
     Ddi4Response getDdi4PhysicalInstance(String agencyId, String id);
@@ -25,6 +24,7 @@ public interface DDIService {
     Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
     List<PartialCodesList> getMutualizedCodesLists();
+    Ddi4Response getMutualizedCodesList(String agencyId, String id);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);

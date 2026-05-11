@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * <p>This configuration class manages all settings related to connecting to
  * and interacting with the Colectica metadata repository, including server
- * connection details and filtering rules.
+ * connection details and the list of mutualized code lists exposed to the UI.
  *
  * <p>Configuration properties are prefixed with {@code fr.insee.rmes.bauhaus.colectica}.
  *
@@ -23,36 +23,30 @@ import java.util.Map;
  * fr.insee.rmes.bauhaus.colectica.server.username = myuser
  * fr.insee.rmes.bauhaus.colectica.server.password = mypassword
  *
- * # Deny list configuration
- * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].agency-id = fr.insee
- * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].id = 2a22ba00-a977-4a61-a582-99025c6b0582
+ * # Mutualized code lists
+ * fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].agency-id = fr.insee
+ * fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].identifier = fc65a527-a04b-4505-85de-0a181e54dbad
+ * fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists[0].version = 1
  * </pre>
  *
  * @param langs List of supported language codes (e.g., "fr-FR", "en-GB")
  * @param server Configuration for the Colectica server instance
- * @param codeListDenyList List of code lists to exclude from results (optional)
+ * @param mutualizedCodesLists List of mutualized code lists exposed via the API. Empty or null
+ *                             means no mutualized code list — the application starts normally.
  * @see ColecticaInstanceConfiguration
- * @see CodeListDenyEntry
+ * @see MutualizedCodeListEntry
  */
 @ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.colectica")
 public record ColecticaConfiguration(
         List<String> langs,
         ColecticaInstanceConfiguration server,
-        List<CodeListDenyEntry> codeListDenyList,
         List<MutualizedCodeListEntry> mutualizedCodesLists
 ) {
-    /**
-     * Compact constructor for validation.
-     * Validates that:
-     * - langs is not null or empty
-     * - all language codes follow the pattern xx-XX (e.g., fr-FR, en-GB)
-     */
     public ColecticaConfiguration {
         if (langs == null || langs.isEmpty()) {
             throw new InvalidColecticaConfigurationException("langs cannot be null or empty");
         }
 
-        // Validate language code format (e.g., fr-FR, en-GB)
         langs.forEach(lang -> {
             if (!lang.matches("[a-z]{2}-[A-Z]{2}")) {
                 throw new InvalidColecticaConfigurationException(
@@ -77,11 +71,9 @@ public record ColecticaConfiguration(
             String defaultAgencyId
     ) {
         public ColecticaInstanceConfiguration {
-            // Set default apiPath if not provided
             if (apiPath == null || apiPath.isBlank()) {
                 apiPath = "/api/v1/";
             }
-            // Set default authenticationMode if not provided
             if (authenticationMode == null || authenticationMode.isBlank()) {
                 authenticationMode = "password";
             }
@@ -95,42 +87,6 @@ public record ColecticaConfiguration(
             return baseUrl + apiPath;
         }
     }
-
-    /**
-     * Represents a code list entry to be excluded from query results.
-     *
-     * <p>Code lists matching both the agencyId and id will be filtered out
-     * when retrieving code lists from the Colectica repository.
-     *
-     * <p>This is useful for excluding:
-     * <ul>
-     *   <li>Deprecated or obsolete code lists</li>
-     *   <li>Test or temporary code lists</li>
-     *   <li>Code lists that should not be visible in the application</li>
-     * </ul>
-     *
-     * <p>Configuration example:
-     * <pre>
-     * # Exclude a specific code list
-     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].agency-id = fr.insee
-     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[0].id = 2a22ba00-a977-4a61-a582-99025c6b0582
-     *
-     * # Exclude another code list from different agency
-     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[1].agency-id = other.agency
-     * fr.insee.rmes.bauhaus.colectica.code-list-deny-list[1].id = another-id-to-exclude
-     * </pre>
-     *
-     * @param agencyId Agency ID of the code list to exclude (e.g., "fr.insee").
-     *                 Must not be null or empty.
-     * @param id ID of the code list to exclude (e.g., "2a22ba00-a977-4a61-a582-99025c6b0582").
-     *           Must not be null or empty.
-     * @see ColecticaConfigurationValidator
-     * @see DenyListFilter
-     */
-    public record CodeListDenyEntry(
-            String agencyId,
-            String id
-    ) {}
 
     /**
      * Represents a mutualized code list identifier to be fetched from Colectica.
