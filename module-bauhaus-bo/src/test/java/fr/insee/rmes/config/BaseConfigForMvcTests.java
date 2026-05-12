@@ -11,7 +11,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @TestConfiguration
 @Import({UserAuthTestConfiguration.class, JwtProperties.class})
 @TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.force.ssl = false",
         "jwt.stampClaim=timbre",
         "jwt.roleClaim=roles",
         "jwt.idClaim=idep",

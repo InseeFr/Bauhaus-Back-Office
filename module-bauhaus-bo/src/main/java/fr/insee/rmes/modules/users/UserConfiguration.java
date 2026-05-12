@@ -44,19 +44,16 @@ public class UserConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(UserConfiguration.class);
     public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/disseminationStatus"};
 
-    private final boolean requireSsl;
     private final Optional<String> allowedOrigin;
     private final BauhausConfiguration bauhausConfiguration;
     private final JwtProperties jwtProperties;
     private final RoleClaimExtractor roleClaimExtractor;
 
     public UserConfiguration(
-            @Value("${fr.insee.rmes.bauhaus.force.ssl}") boolean requireSsl,
             @Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin,
             BauhausConfiguration bauhausConfiguration,
             JwtProperties jwtProperties,
             RoleClaimExtractor roleClaimExtractor) {
-        this.requireSsl = requireSsl;
         this.allowedOrigin = allowedOrigin;
         this.bauhausConfiguration = bauhausConfiguration;
         this.jwtProperties = jwtProperties;
@@ -102,10 +99,6 @@ public class UserConfiguration {
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
                                 .anyRequest().authenticated()
                 );
-
-        if (requireSsl) {
-            http.requiresChannel(channel -> channel.requestMatchers("/**").requiresSecure());
-        }
 
         logger.info(isProd ? "OpenID authentication activated" : "Development mode with FAKE_USER");
 
