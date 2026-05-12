@@ -1,0 +1,32 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xkos: <http://rdf-vocabulary.ddialliance.org/xkos#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix eu: <http://eurovoc.europa.eu/schema#> .
+
+<http://rdf.insee.fr/graphes/concepts/definitions> {
+    <http://bauhaus/concepts/definition/c0042>
+            a skos:Concept ;
+            skos:notation "c0042" ;
+            skos:prefLabel "Concept IT FR"@fr ;
+            skos:prefLabel "Concept IT EN"@en ;
+            dc:creator <http://bauhaus/HIE000000> ;
+            dc:contributor <http://bauhaus/HIE000001> ;
+            insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/Prive> ;
+            insee:isValidated "false"^^xsd:boolean ;
+            dcterms:created "2026-01-01T10:00:00"^^xsd:dateTime ;
+            skos:scopeNote <http://bauhaus/concepts/definition/c0042/definitionCourte/v1/fr> .
+
+    <http://bauhaus/concepts/definition/c0042/definitionCourte/v1/fr>
+            a xkos:ExplanatoryNote ;
+            dcterms:language "fr"^^xsd:language ;
+            pav:version "1"^^xsd:int ;
+            insee:conceptVersion "1"^^xsd:int ;
+            insee:validFrom "2026-01-01T10:00:00"^^xsd:dateTime ;
+            eu:noteLiteral "<div>Note de portée FR</div>"^^rdf:XMLLiteral ;
+            rdf:value "<div>Note de portée FR</div>" .
+}

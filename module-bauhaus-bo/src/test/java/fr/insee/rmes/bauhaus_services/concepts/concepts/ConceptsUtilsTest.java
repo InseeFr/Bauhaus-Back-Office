@@ -13,7 +13,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
-import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptFetchException;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -231,7 +231,7 @@ class ConceptsUtilsTest {
     }
 
     @Test
-    void shouldGetConceptByIdWithAltLabels() throws RmesException, ConceptFetchException {
+    void shouldGetConceptByIdWithAltLabels() throws RmesException, ConceptsFetchException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -268,7 +268,7 @@ class ConceptsUtilsTest {
     }
 
     @Test
-    void shouldGetConceptByIdWithoutAltLabels() throws RmesException, ConceptFetchException {
+    void shouldGetConceptByIdWithoutAltLabels() throws RmesException, ConceptsFetchException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
