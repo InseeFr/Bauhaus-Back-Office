@@ -135,6 +135,19 @@ public class ConceptConceptsQueries {
 				+ "FILTER(STRENDS(STR(?uri),'/concepts/definition/" + id + "')) . }";
 	}
 
+	public String findExistingConceptIds(java.util.List<String> ids) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("IDS", ids);
+		return buildConceptRequest("findExistingConceptIds.ftlh", params);
+	}
+
+	public String getConceptCreated(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		return buildConceptRequest("getConceptCreated.ftlh", params);
+	}
+
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", languages.lg1());

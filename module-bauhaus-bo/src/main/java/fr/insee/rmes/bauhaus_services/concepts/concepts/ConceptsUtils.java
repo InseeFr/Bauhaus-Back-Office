@@ -15,6 +15,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
@@ -24,7 +25,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionNo
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
-import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptFetchException;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
@@ -117,7 +118,7 @@ public class ConceptsUtils extends RdfService {
 		try {
 			List<String> collections = conceptsService.getCollectionIdsByConceptId(id);
 			concept.put("collections", new JSONArray(collections));
-		} catch (ConceptFetchException e) {
+		} catch (ConceptsFetchException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error fetching concept collections");
 		}
 		return concept;
@@ -156,13 +157,19 @@ public class ConceptsUtils extends RdfService {
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "IOException");
 		}
+		if (!isNewConcept && concept.getCreated() == null) {
+			JSONObject existing = repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id));
+			if (existing != null && existing.has("created")) {
+				concept.setCreated(existing.getString("created"));
+			}
+		}
 		if (concept.getCollections() != null) {
 			try {
 				collectionsService.validateCollections(concept.getCollections());
 			} catch (CollectionsFetchException e) {
 				Throwable cause = e.getCause();
 				if (cause instanceof CollectionNotFoundException notFound) {
-					throw new RmesException(HttpStatus.BAD_REQUEST.value(), notFound.getMessage(), "Collection not found");
+					throw new RmesBadRequestException(notFound.getMessage(), "Collection not found");
 				}
 				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error validating collections");
 			}

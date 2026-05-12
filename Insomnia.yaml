@@ -30,6 +30,628 @@ collection:
         send: true
         store: true
       rebuildPath: true
+  - name: Concepts
+    meta:
+      id: fld_concepts_0000000000000000000000000000
+      created: 1765280400000
+      modified: 1765280400000
+      description: ""
+      sortKey: -1765280400000
+    children:
+      - url: "{{ _.API_URL }}/concepts"
+        name: List concepts
+        meta:
+          id: req_concepts_list_00000000000000000000000
+          created: 1765280400001
+          modified: 1765280400001
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400001
+        method: GET
+        headers:
+          - name: Accept
+            value: application/hal+json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/advanced-search"
+        name: Advanced search
+        meta:
+          id: req_concepts_advanced_search_0000000000
+          created: 1765280400002
+          modified: 1765280400002
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400002
+        method: GET
+        headers:
+          - name: Accept
+            value: application/hal+json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/toValidate"
+        name: List concepts to validate
+        meta:
+          id: req_concepts_to_validate_000000000000000
+          created: 1765280400003
+          modified: 1765280400003
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400003
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept/{{ _.CONCEPT_ID }}"
+        name: Get concept by id
+        meta:
+          id: req_concepts_get_by_id_0000000000000000
+          created: 1765280400004
+          modified: 1765280400004
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400004
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept/{{ _.CONCEPT_ID }}/links"
+        name: Get concept links
+        meta:
+          id: req_concepts_get_links_0000000000000000
+          created: 1765280400005
+          modified: 1765280400005
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400005
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept/{{ _.CONCEPT_ID }}/notes/{{ _.CONCEPT_VERSION }}"
+        name: Get concept notes (version)
+        meta:
+          id: req_concepts_get_notes_0000000000000000
+          created: 1765280400006
+          modified: 1765280400006
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400006
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept"
+        name: Create concept
+        meta:
+          id: req_concepts_create_000000000000000000
+          created: 1765280400007
+          modified: 1765280400007
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400007
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "general": {
+                "prefLabelLg1": "Nouveau concept",
+                "prefLabelLg2": "New concept",
+                "creator": "DG75-L201",
+                "disseminationStatus": "Public"
+              },
+              "notes": {
+                "scopeNoteLg1": "<p>Note de portée</p>",
+                "definitionLg1": "<p>Définition</p>"
+              },
+              "conceptsWithLinks": []
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept/{{ _.CONCEPT_ID }}"
+        name: Update concept
+        meta:
+          id: req_concepts_update_000000000000000000
+          created: 1765280400008
+          modified: 1765280400008
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400008
+        method: PUT
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "general": {
+                "prefLabelLg1": "Concept modifié",
+                "creator": "DG75-L201",
+                "disseminationStatus": "Public"
+              },
+              "notes": {
+                "scopeNoteLg1": "<p>Note de portée</p>"
+              },
+              "conceptsWithLinks": []
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/{{ _.CONCEPT_ID }}/validate"
+        name: Validate concepts
+        meta:
+          id: req_concepts_validate_00000000000000000
+          created: 1765280400009
+          modified: 1765280400009
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400009
+        method: PUT
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            ["{{ _.CONCEPT_ID }}"]
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/{{ _.CONCEPT_ID }}"
+        name: Delete concept
+        meta:
+          id: req_concepts_delete_000000000000000000
+          created: 1765280400010
+          modified: 1765280400010
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400010
+        method: DELETE
+        headers: []
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept/export/{{ _.CONCEPT_ID }}"
+        name: Export concept
+        meta:
+          id: req_concepts_export_000000000000000000
+          created: 1765280400011
+          modified: 1765280400011
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400011
+        method: GET
+        headers:
+          - name: Accept
+            value: application/octet-stream
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/concept/export-zip/{{ _.CONCEPT_ID }}/odt?langue=fr&withConcepts=false"
+        name: Export concept zip
+        meta:
+          id: req_concepts_export_zip_00000000000000
+          created: 1765280400012
+          modified: 1765280400012
+          isPrivate: false
+          description: ""
+          sortKey: -1765280400012
+        method: GET
+        headers:
+          - name: Accept
+            value: application/zip
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Collections
+    meta:
+      id: fld_collections_00000000000000000000000000
+      created: 1765280500000
+      modified: 1765280500000
+      description: ""
+      sortKey: -1765280500000
+    children:
+      - url: "{{ _.API_URL }}/concepts/collections"
+        name: List collections
+        meta:
+          id: req_collections_list_0000000000000000000
+          created: 1765280500001
+          modified: 1765280500001
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500001
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/dashboard"
+        name: Collections dashboard
+        meta:
+          id: req_collections_dashboard_0000000000000
+          created: 1765280500002
+          modified: 1765280500002
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500002
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/toValidate"
+        name: List collections to validate
+        meta:
+          id: req_collections_to_validate_000000000000
+          created: 1765280500003
+          modified: 1765280500003
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500003
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}"
+        name: Get collection by id
+        meta:
+          id: req_collections_get_by_id_0000000000000
+          created: 1765280500004
+          modified: 1765280500004
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500004
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}/members"
+        name: Get collection members
+        meta:
+          id: req_collections_members_00000000000000000
+          created: 1765280500005
+          modified: 1765280500005
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500005
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections"
+        name: Create collection
+        meta:
+          id: req_collections_create_0000000000000000
+          created: 1765280500006
+          modified: 1765280500006
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500006
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "id": "c2000",
+              "prefLabelLg1": "Nouvelle collection",
+              "prefLabelLg2": "New collection",
+              "creator": "DG75-L201",
+              "descriptionLg1": "Description fr",
+              "descriptionLg2": "Description en",
+              "members": []
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}"
+        name: Update collection
+        meta:
+          id: req_collections_update_0000000000000000
+          created: 1765280500007
+          modified: 1765280500007
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500007
+        method: PUT
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "id": "{{ _.COLLECTION_ID }}",
+              "prefLabelLg1": "Collection modifiée",
+              "prefLabelLg2": "Updated collection",
+              "creator": "DG75-L201",
+              "descriptionLg1": "Description fr",
+              "descriptionLg2": "Description en",
+              "members": []
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}/validate"
+        name: Publish collections
+        meta:
+          id: req_collections_publish_000000000000000
+          created: 1765280500008
+          modified: 1765280500008
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500008
+        method: PUT
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            ["{{ _.COLLECTION_ID }}"]
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}"
+        name: Delete collection
+        meta:
+          id: req_collections_delete_0000000000000000
+          created: 1765280500009
+          modified: 1765280500009
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500009
+        method: DELETE
+        headers: []
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/search"
+        name: Search collections
+        meta:
+          id: req_collections_search_0000000000000000
+          created: 1765280500010
+          modified: 1765280500010
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500010
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}/export"
+        name: Export collection
+        meta:
+          id: req_collections_export_0000000000000000
+          created: 1765280500011
+          modified: 1765280500011
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500011
+        method: GET
+        headers:
+          - name: Accept
+            value: application/octet-stream
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/{{ _.COLLECTION_ID }}/export/odt?langue=fr&withConcepts=false"
+        name: Export collection by type
+        meta:
+          id: req_collections_export_type_00000000000
+          created: 1765280500012
+          modified: 1765280500012
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500012
+        method: GET
+        headers:
+          - name: Accept
+            value: application/octet-stream
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/concepts/collections/export-zip/{{ _.COLLECTION_ID }}/odt?langue=fr&withConcepts=false"
+        name: Export collections zip
+        meta:
+          id: req_collections_export_zip_000000000000
+          created: 1765280500013
+          modified: 1765280500013
+          isPrivate: false
+          description: ""
+          sortKey: -1765280500013
+        method: GET
+        headers:
+          - name: Accept
+            value: application/zip
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
 cookieJar:
   name: Default Jar
   meta:
@@ -45,3 +667,6 @@ environments:
     isPrivate: false
   data:
     API_URL: http://localhost:8080/api
+    CONCEPT_ID: c2000
+    CONCEPT_VERSION: "1"
+    COLLECTION_ID: c2000

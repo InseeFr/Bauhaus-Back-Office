@@ -1,0 +1,4 @@
+# Empty seed: every concept and collection used in
+# ConceptConceptCollectionIntegrationTest is created via the REST API.
+<http://rdf.insee.fr/graphes/concepts/definitions> {
+}
