@@ -52,6 +52,10 @@ public class Concept {
 		return created;
 	}
 
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
 	public String getModified() {
 		return modified;
 	}

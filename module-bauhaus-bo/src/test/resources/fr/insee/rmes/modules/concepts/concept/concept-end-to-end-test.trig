@@ -1,0 +1,8 @@
+<http://rdf.insee.fr/graphes/concepts/definitions> {
+    <http://bauhaus/concepts/definition/c00100>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "c00100" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Concept préexistant"@fr .
+}

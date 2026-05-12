@@ -1,10 +1,8 @@
 package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
-import fr.insee.rmes.model.concepts.PartialConcept;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,86 +20,48 @@ import java.util.Objects;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
 class ConceptsResourcesTest {
+
     @MockitoBean
-    ConceptsService conceptsService;
+    fr.insee.rmes.bauhaus_services.ConceptsService legacyConceptsService;
 
-    @Test
-    void shouldReturnConceptsWithHateoasLinks() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
+    @MockitoBean
+    fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService conceptsService;
 
-        PartialConcept concept1 = new PartialConcept("concept-1", "Concept 1", "altLabel1");
-        PartialConcept concept2 = new PartialConcept("concept-2", "Concept 2", "altLabel2");
-        List<PartialConcept> concepts = List.of(concept1, concept2);
-
-        when(conceptsService.getConcepts()).thenReturn(concepts);
-
-        var response = conceptsResources.getConcepts();
-
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertNotNull(response.getBody());
-        Assertions.assertEquals(2, response.getBody().size());
+    private ConceptsResources newController() {
+        return new ConceptsResources(legacyConceptsService, conceptsService);
     }
 
     @Test
     void shouldReturnConceptsSearchWithHateoasLinks() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-
         ConceptForAdvancedSearch concept1 = new ConceptForAdvancedSearch("search-1", "Search Concept 1", "altLabel1", "owner1", "disseminationStatus1", "validationStatus1", "definition1", "2024-01-01", "2024-01-02", "true", "");
         ConceptForAdvancedSearch concept2 = new ConceptForAdvancedSearch("search-2", "Search Concept 2", "altLabel2", "owner2", "disseminationStatus2", "validationStatus2", "definition2", "2024-02-01", "2024-02-02", "false", "");
-        List<ConceptForAdvancedSearch> concepts = List.of(concept1, concept2);
 
-        when(conceptsService.getConceptsSearch()).thenReturn(concepts);
+        when(legacyConceptsService.getConceptsSearch()).thenReturn(List.of(concept1, concept2));
 
-        var response = conceptsResources.getConceptsSearch();
+        var response = newController().getConceptsSearch();
 
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getBody());
         Assertions.assertEquals(2, response.getBody().size());
     }
 
-
-    @Test
-    void shouldReturnResponseWhenDeleteConcept() throws RmesException {
-        doNothing().when(conceptsService).deleteConcept("id mocked");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        String actual = conceptsResources.deleteConcept("id mocked").toString();
-        Assertions.assertEquals("<200 OK OK,id mocked,[]>",actual);
-    }
-
-    @Test
-    void shouldReturnResponseWhenGetConceptByID() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        when( conceptsService.getConceptByID("id mocked")).thenReturn("mocked result");
-        String actual = conceptsResources.getConceptByID("id mocked").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
-
-    @Test
-    void shouldReturnResponseWhenGetConceptsToValidate() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        when(conceptsService.getConceptsToValidate()).thenReturn("mocked result");
-        String actual = conceptsResources.getConceptsToValidate().toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
-    }
-
     @Test
     void shouldReturnResponseWhenGetConceptLinksByID() throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        when(conceptsService.getConceptLinksByID("id mocked")).thenReturn("mocked result");
-        String actual = conceptsResources.getConceptLinksByID("id mocked").toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(legacyConceptsService.getConceptLinksByID("id mocked")).thenReturn("mocked result");
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>",
+                newController().getConceptLinksByID("id mocked").toString());
     }
 
     @ParameterizedTest
-    @ValueSource(ints = { 2, 784 ,10,2025})
+    @ValueSource(ints = {2, 784, 10, 2025})
     void shouldReturnResponseWhenGetConceptNotesByID(int conceptVersion) throws RmesException {
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        when(conceptsService.getConceptNotesByID("id mocked", conceptVersion)).thenReturn("mocked result");
-        String actual = conceptsResources.getConceptNotesByID("id mocked", conceptVersion).toString();
-        Assertions.assertEquals("<200 OK OK,mocked result,[]>",actual);
+        when(legacyConceptsService.getConceptNotesByID("id mocked", conceptVersion)).thenReturn("mocked result");
+        Assertions.assertEquals("<200 OK OK,mocked result,[]>",
+                newController().getConceptNotesByID("id mocked", conceptVersion).toString());
     }
 
     @Test
@@ -112,33 +72,22 @@ class ConceptsResourcesTest {
         req.setScheme("http");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
 
-        when(conceptsService.setConcept("mocked body")).thenReturn("test-concept-123");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
+        when(legacyConceptsService.setConcept("mocked body")).thenReturn("test-concept-123");
 
-        var response = conceptsResources.setConcept("mocked body");
+        var response = newController().setConcept("mocked body");
 
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         Assertions.assertEquals("test-concept-123", response.getBody());
         Assertions.assertEquals(
-            "/concepts/concept/test-concept-123",
-            Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
+                "/concepts/concept/test-concept-123",
+                Objects.requireNonNull(response.getHeaders().getLocation()).getPath()
         );
     }
 
     @Test
-    void shouldReturnResponseWhenSetConceptWithIdAndConcept()  throws RmesException {
-        doNothing().when(conceptsService).setConcept("mocked id", "mocked body");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        String actual = conceptsResources.setConcept("mocked id", "mocked body").toString();
-        Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
+    void shouldReturnResponseWhenSetConceptWithIdAndConcept() throws RmesException {
+        doNothing().when(legacyConceptsService).setConcept("mocked id", "mocked body");
+        Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",
+                newController().setConcept("mocked id", "mocked body").toString());
     }
-
-    @Test
-    void shouldReturnResponseWhenSetConceptsValidation()  throws RmesException {
-        doNothing().when(conceptsService).setConceptsValidation( "mocked body");
-        ConceptsResources conceptsResources = new ConceptsResources(conceptsService);
-        String actual = conceptsResources.setConceptsValidation("mocked id", "mocked body").toString();
-        Assertions.assertEquals("<204 NO_CONTENT No Content,[]>",actual);
-    }
-
 }
