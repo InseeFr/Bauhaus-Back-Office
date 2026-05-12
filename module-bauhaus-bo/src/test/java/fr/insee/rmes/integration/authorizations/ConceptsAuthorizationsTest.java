@@ -53,6 +53,9 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     @MockitoBean
     ConceptsService conceptsService;
 
+    @MockitoBean
+    fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService hexagonalConceptsService;
+
     static String conceptVersion="16";
     static String id ="2025";
 
@@ -85,7 +88,7 @@ class ConceptsAuthorizationTest extends AbstractResourcesEnvProd {
     void publishConcept(Integer code, boolean hasAccessReturn) throws Exception, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        var request = put("/concepts/c1116/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        var request = put("/concepts/c1116/validate").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("[\"c1116\"]");
         request.header("Authorization", "Bearer toto");
         mvc.perform(request).andExpect(status().is(code));
     }
