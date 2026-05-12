@@ -61,7 +61,6 @@ import static org.mockito.Mockito.when;
                 "fr.insee.rmes.bauhaus.documentation.titlePrefixLg1=Rapport qualité :",
                 "fr.insee.rmes.bauhaus.documentation.titlePrefixLg2=Quality report:",
                 "fr.insee.rmes.bauhaus.organisations.graph=http://rdf.insee.fr/graphes/organisations",
-                "fr.insee.rmes.bauhaus.force.ssl=false",
                 "fr.insee.rmes.bauhaus.cors.allowedOrigin=*",
                 "jwt.idClaim=preferred_username",
                 "jwt.stampClaim=timbre",
