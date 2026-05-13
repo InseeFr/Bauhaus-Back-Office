@@ -983,6 +983,43 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void shouldIgnoreNullItemsWhenColecticaReturnsUnknownIdentifier() {
+        // Given - configuration mentions two mutualized lists, one of which does not exist in Colectica
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+
+        List<ColecticaConfiguration.MutualizedCodeListEntry> mutualizedEntries = List.of(
+            new ColecticaConfiguration.MutualizedCodeListEntry("fr.insee", "existing-id", 1),
+            new ColecticaConfiguration.MutualizedCodeListEntry("fr.insee", "missing-id", 1)
+        );
+        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(mutualizedEntries);
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        ColecticaItem existing = new ColecticaItem(
+            null,
+            Map.of("fr-FR", "CL-EXISTING"),
+            Map.of("fr-FR", "Existing label"),
+            null, null, 0, "test-repo", true, List.of(),
+            "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+            "fr.insee", 1, "existing-id", null, null,
+            "2024-10-31T10:43:38",
+            null, false, false, false, "DDI", 1L, 0
+        );
+
+        // Colectica returns a null entry for the unknown identifier
+        ColecticaItem[] mockResponse = new ColecticaItem[] { existing, null };
+        when(responseSpec.body(eq(ColecticaItem[].class))).thenReturn(mockResponse);
+
+        // When
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        // Then - null entries are skipped, the call does not throw
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("existing-id", result.get(0).id());
+        assertEquals("CL-EXISTING", result.get(0).label());
+    }
+
+    @Test
     void shouldGetMutualizedCodesListWithCodesAndCategories() {
         // Given
         String baseApiUrl = "http://localhost:8082/api/v1/";
