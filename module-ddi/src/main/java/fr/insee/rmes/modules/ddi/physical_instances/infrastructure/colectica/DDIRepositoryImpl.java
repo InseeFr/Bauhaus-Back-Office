@@ -1,27 +1,13 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import static javax.xml.XMLConstants.*;
+
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.MutualizedCodeListEntry;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
-import org.springframework.web.client.RestClient;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
@@ -32,11 +18,27 @@ import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import static javax.xml.XMLConstants.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
+import org.springframework.web.client.RestClient;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 public class DDIRepositoryImpl implements DDIRepository {
-    static final Logger logger = LoggerFactory.getLogger(DDIRepositoryImpl.class);
+
+    static final Logger logger = LoggerFactory.getLogger(
+        DDIRepositoryImpl.class
+    );
 
     private static final String BAUHAUS_API = "bauhaus-api";
     private final String defaultLang;
@@ -49,13 +51,13 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final ColecticaAuthenticator authenticator;
 
     public DDIRepositoryImpl(
-            RestClient restClient,
-            ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-            DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-            DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-            ColecticaConfiguration colecticaConfiguration,
-            ColecticaAuthenticator authenticator
-            ) {
+        RestClient restClient,
+        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
+        DDI3toDDI4ConverterService ddi3ToDdi4Converter,
+        DDI4toDDI3ConverterService ddi4ToDdi3Converter,
+        ColecticaConfiguration colecticaConfiguration,
+        ColecticaAuthenticator authenticator
+    ) {
         this.restClient = restClient;
         this.instanceConfiguration = instanceConfiguration;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
@@ -67,44 +69,55 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
-        logger.info("Getting physical instances from Colectica API via HTTP (primary instance)");
+        logger.info(
+            "Getting physical instances from Colectica API via HTTP (primary instance)"
+        );
 
         return authenticator.executeWithAuth(token -> {
             // Set up the request with authorization header
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
             // Create request body with itemTypes from configuration
-            QueryRequest requestBody = new QueryRequest(List.of(instanceConfiguration.itemTypes().get("PhysicalInstance")));
+            QueryRequest requestBody = new QueryRequest(
+                List.of(
+                    instanceConfiguration.itemTypes().get("PhysicalInstance")
+                )
+            );
 
             // Create headers with Bearer token and Content-Type
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(token);
 
-            ColecticaResponse response = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(ColecticaResponse.class);
+            ColecticaResponse response = restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(requestBody)
+                .retrieve()
+                .body(ColecticaResponse.class);
 
-            return response.results().stream()
-                    .map(item -> {
-                        String id = item.identifier();
-                        String label = extractLabelFromItem(item);
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        Date date = null;
-                        try {
-                            date = formatter.parse(item.versionDate());
-                        } catch (ParseException | NullPointerException _) {
-                            logger.debug("Impossible to parse");
-                        }
-                        String agency = item.agencyId();
-                        return new PartialPhysicalInstance(id, label, date, agency);
-                    })
-                    .toList();
+            return response
+                .results()
+                .stream()
+                .map(item -> {
+                    String id = item.identifier();
+                    String label = extractLabelFromItem(item);
+                    SimpleDateFormat formatter = new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss"
+                    );
+                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException _) {
+                        logger.debug("Impossible to parse");
+                    }
+                    String agency = item.agencyId();
+                    return new PartialPhysicalInstance(id, label, date, agency);
+                })
+                .toList();
         });
     }
 
@@ -114,57 +127,93 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return authenticator.executeWithAuth(token -> {
             String url = instanceConfiguration.baseApiUrl() + "_query";
-            QueryRequest requestBody = new QueryRequest(List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23"));
-            ColecticaResponse response = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(ColecticaResponse.class);
+            QueryRequest requestBody = new QueryRequest(
+                List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23")
+            );
+            ColecticaResponse response = restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(requestBody)
+                .retrieve()
+                .body(ColecticaResponse.class);
 
-            if (response == null || response.results() == null || response.results().isEmpty()) {
+            if (
+                response == null ||
+                response.results() == null ||
+                response.results().isEmpty()
+            ) {
                 return List.<PartialGroup>of();
             }
 
             // Batch-fetch full XML for all groups to extract seriesIris (UserID elements)
-            List<GetDescriptionsRequest.IdentifierRef> identifiers = response.results().stream()
-                    .map(item -> new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
-                    .toList();
+            List<GetDescriptionsRequest.IdentifierRef> identifiers = response
+                .results()
+                .stream()
+                .map(item ->
+                    new GetDescriptionsRequest.IdentifierRef(
+                        item.agencyId(),
+                        item.identifier(),
+                        item.version()
+                    )
+                )
+                .toList();
 
-            String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
-            ColecticaItemResponse[] itemResponses = restClient.post()
-                    .uri(getListUrl)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(new GetDescriptionsRequest(identifiers))
-                    .retrieve()
-                    .body(ColecticaItemResponse[].class);
+            String getListUrl =
+                instanceConfiguration.baseApiUrl() + "item/_getList";
+            ColecticaItemResponse[] itemResponses = restClient
+                .post()
+                .uri(getListUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(new GetDescriptionsRequest(identifiers))
+                .retrieve()
+                .body(ColecticaItemResponse[].class);
 
             Map<String, List<String>> seriesIrisByGroupId = new HashMap<>();
             if (itemResponses != null) {
                 for (ColecticaItemResponse itemResponse : itemResponses) {
-                    seriesIrisByGroupId.put(itemResponse.identifier(), extractUserIdsFromGroupXml(itemResponse.item()));
+                    seriesIrisByGroupId.put(
+                        itemResponse.identifier(),
+                        extractUserIdsFromGroupXml(itemResponse.item())
+                    );
                 }
             }
 
-            return response.results().stream()
-                    .map(item -> {
-                        String id = item.identifier();
-                        String label = extractLabelFromItem(item);
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        Date date = null;
-                        try {
-                            date = formatter.parse(item.versionDate());
-                        } catch (ParseException | NullPointerException _) {
-                            logger.debug("Impossible to parse {}", item.versionDate());
-                        }
-                        String agency = item.agencyId();
-                        List<String> seriesIris = seriesIrisByGroupId.getOrDefault(id, List.of());
-                        return new PartialGroup(id, label, date, agency, seriesIris);
-                    })
-                    .toList();
+            return response
+                .results()
+                .stream()
+                .map(item -> {
+                    String id = item.identifier();
+                    String label = extractLabelFromItem(item);
+                    SimpleDateFormat formatter = new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss"
+                    );
+                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException _) {
+                        logger.debug(
+                            "Impossible to parse {}",
+                            item.versionDate()
+                        );
+                    }
+                    String agency = item.agencyId();
+                    List<String> seriesIris = seriesIrisByGroupId.getOrDefault(
+                        id,
+                        List.of()
+                    );
+                    return new PartialGroup(
+                        id,
+                        label,
+                        date,
+                        agency,
+                        seriesIris
+                    );
+                })
+                .toList();
         });
     }
 
@@ -173,10 +222,16 @@ public class DDIRepositoryImpl implements DDIRepository {
             return List.of();
         }
         try {
-            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
+            DocumentBuilderFactory factory =
+                createSecureDocumentBuilderFactory();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new InputSource(new StringReader(xml)));
-            NodeList userIdNodes = doc.getElementsByTagNameNS("ddi:reusable:3_3", "UserID");
+            Document doc = builder.parse(
+                new InputSource(new StringReader(xml))
+            );
+            NodeList userIdNodes = doc.getElementsByTagNameNS(
+                "ddi:reusable:3_3",
+                "UserID"
+            );
             List<String> userIds = new ArrayList<>();
             for (int i = 0; i < userIdNodes.getLength(); i++) {
                 String text = userIdNodes.item(i).getTextContent();
@@ -198,32 +253,42 @@ public class DDIRepositoryImpl implements DDIRepository {
         return authenticator.executeWithAuth(token -> {
             String url = instanceConfiguration.baseApiUrl() + "_query";
 
-            QueryRequest requestBody = new QueryRequest(List.of("30ea0200-7121-4f01-8d21-a931a182b86d"));
+            QueryRequest requestBody = new QueryRequest(
+                List.of("30ea0200-7121-4f01-8d21-a931a182b86d")
+            );
 
-            ColecticaResponse response = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(ColecticaResponse.class);
+            ColecticaResponse response = restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(requestBody)
+                .retrieve()
+                .body(ColecticaResponse.class);
 
-            return response.results().stream()
-                    .map(item -> {
-                        String id = item.identifier();
-                        String label = extractLabelFromItem(item);
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        Date date = null;
-                        try {
-                            date = formatter.parse(item.versionDate());
-                        } catch (ParseException | NullPointerException _) {
-                            logger.debug("Impossible to parse {}", item.versionDate());
-                        }
-                        String agency = item.agencyId();
-                        return new PartialStudyUnit(id, label, date, agency);
-                    })
-                    .toList();
+            return response
+                .results()
+                .stream()
+                .map(item -> {
+                    String id = item.identifier();
+                    String label = extractLabelFromItem(item);
+                    SimpleDateFormat formatter = new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss"
+                    );
+                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException _) {
+                        logger.debug(
+                            "Impossible to parse {}",
+                            item.versionDate()
+                        );
+                    }
+                    String agency = item.agencyId();
+                    return new PartialStudyUnit(id, label, date, agency);
+                })
+                .toList();
         });
     }
 
@@ -238,8 +303,10 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
         return label;
     }
-    
-    private String extractLabelFromLanguageMap(Map<String, String> languageMap) {
+
+    private String extractLabelFromLanguageMap(
+        Map<String, String> languageMap
+    ) {
         if (languageMap == null) {
             return null;
         }
@@ -259,17 +326,27 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Parse FragmentInstance XML and extract each Fragment as a separate Ddi3Item
      * The FragmentInstance contains multiple Fragment elements (PhysicalInstance, DataRelationship, etc.)
      */
-    private List<Ddi3Response.Ddi3Item> parseFragmentInstanceToItems(String fragmentInstanceXml, String agencyId, String id) {
+    private List<Ddi3Response.Ddi3Item> parseFragmentInstanceToItems(
+        String fragmentInstanceXml,
+        String agencyId,
+        String id
+    ) {
         try {
             // Parse the XML with XXE protection
-            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
+            DocumentBuilderFactory factory =
+                createSecureDocumentBuilderFactory();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new InputSource(new StringReader(fragmentInstanceXml)));
+            Document doc = builder.parse(
+                new InputSource(new StringReader(fragmentInstanceXml))
+            );
 
             List<Ddi3Response.Ddi3Item> items = new ArrayList<>();
 
             // Get all Fragment elements
-            NodeList fragmentNodes = doc.getElementsByTagNameNS("ddi:instance:3_3", "Fragment");
+            NodeList fragmentNodes = doc.getElementsByTagNameNS(
+                "ddi:instance:3_3",
+                "Fragment"
+            );
 
             for (int i = 0; i < fragmentNodes.getLength(); i++) {
                 Element fragmentElement = (Element) fragmentNodes.item(i);
@@ -306,7 +383,10 @@ public class DDIRepositoryImpl implements DDIRepository {
             return items;
         } catch (Exception e) {
             logger.error("Error parsing FragmentInstance XML", e);
-            throw new RuntimeException("Failed to parse FragmentInstance XML", e);
+            throw new RuntimeException(
+                "Failed to parse FragmentInstance XML",
+                e
+            );
         }
     }
 
@@ -316,23 +396,54 @@ public class DDIRepositoryImpl implements DDIRepository {
      */
     private String determineItemType(Element fragmentElement) {
         // Check for PhysicalInstance
-        if (fragmentElement.getElementsByTagNameNS("ddi:physicalinstance:3_3", "PhysicalInstance").getLength() > 0) {
+        if (
+            fragmentElement
+                .getElementsByTagNameNS(
+                    "ddi:physicalinstance:3_3",
+                    "PhysicalInstance"
+                )
+                .getLength() >
+            0
+        ) {
             return instanceConfiguration.itemTypes().get("PhysicalInstance");
         }
         // Check for DataRelationship
-        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "DataRelationship").getLength() > 0) {
+        if (
+            fragmentElement
+                .getElementsByTagNameNS(
+                    "ddi:logicalproduct:3_3",
+                    "DataRelationship"
+                )
+                .getLength() >
+            0
+        ) {
             return instanceConfiguration.itemTypes().get("DataRelationship");
         }
         // Check for Variable
-        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable").getLength() > 0) {
+        if (
+            fragmentElement
+                .getElementsByTagNameNS("ddi:logicalproduct:3_3", "Variable")
+                .getLength() >
+            0
+        ) {
             return instanceConfiguration.itemTypes().get("Variable");
         }
         // Check for CodeList
-        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "CodeList").getLength() > 0) {
+        if (
+            fragmentElement
+                .getElementsByTagNameNS("ddi:logicalproduct:3_3", "CodeList")
+                .getLength() >
+            0
+        ) {
             return instanceConfiguration.itemTypes().get("CodeList");
         }
         // Check for Category
-        if (fragmentElement.getElementsByTagNameNS("ddi:logicalproduct:3_3", "Category").getLength() > 0) {
+        if (
+            fragmentElement
+                .getElementsByTagNameNS("ddi:logicalproduct:3_3", "Category")
+                .getLength() >
+            0
+        ) {
             return instanceConfiguration.itemTypes().get("Category");
         }
         // Return null for unsupported types
@@ -342,7 +453,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Creates a secure DocumentBuilderFactory with XXE protection
      */
-    private DocumentBuilderFactory createSecureDocumentBuilderFactory() throws Exception {
+    private DocumentBuilderFactory createSecureDocumentBuilderFactory()
+        throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setFeature(FEATURE_SECURE_PROCESSING, true);
         factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
@@ -356,7 +468,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Creates a secure TransformerFactory with XXE protection
      */
-    private TransformerFactory createSecureTransformerFactory() throws Exception {
+    private TransformerFactory createSecureTransformerFactory()
+        throws Exception {
         TransformerFactory factory = TransformerFactory.newInstance();
         factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
         factory.setAttribute(ACCESS_EXTERNAL_STYLESHEET, "");
@@ -367,7 +480,8 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Convert a DOM Element to XML String
      */
     private String elementToString(Element element) throws Exception {
-        TransformerFactory transformerFactory = createSecureTransformerFactory();
+        TransformerFactory transformerFactory =
+            createSecureTransformerFactory();
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 
@@ -378,61 +492,83 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
-
         return authenticator.executeWithAuth(token -> {
             try {
-                String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
-                ColecticaSetItem[] setItems = restClient.get()
-                        .uri(setUrl)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .retrieve()
-                        .body(ColecticaSetItem[].class);
+                String setUrl =
+                    instanceConfiguration.baseApiUrl() +
+                    "set/" +
+                    agencyId +
+                    "/" +
+                    id;
+                ColecticaSetItem[] setItems = restClient
+                    .get()
+                    .uri(setUrl)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(ColecticaSetItem[].class);
 
                 if (setItems == null || setItems.length == 0) {
                     return null;
                 }
 
-                List<GetDescriptionsRequest.IdentifierRef> identifiers = Arrays.stream(setItems)
-                        .map(item -> new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                List<GetDescriptionsRequest.IdentifierRef> identifiers =
+                    Arrays.stream(setItems)
+                        .map(item ->
+                            new GetDescriptionsRequest.IdentifierRef(
+                                item.agencyId(),
+                                item.identifier(),
+                                item.version()
+                            )
+                        )
                         .toList();
 
-                String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
-                ColecticaItemResponse[] itemResponses = restClient.post()
-                        .uri(getListUrl)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .body(new GetDescriptionsRequest(identifiers))
-                        .retrieve()
-                        .body(ColecticaItemResponse[].class);
+                String getListUrl =
+                    instanceConfiguration.baseApiUrl() + "item/_getList";
+                ColecticaItemResponse[] itemResponses = restClient
+                    .post()
+                    .uri(getListUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(new GetDescriptionsRequest(identifiers))
+                    .retrieve()
+                    .body(ColecticaItemResponse[].class);
 
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
 
-                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(itemResponses)
-                        .map(item -> new Ddi3Response.Ddi3Item(
-                                item.itemType(),
-                                item.agencyId(),
-                                String.valueOf(item.version()),
-                                item.identifier(),
-                                item.item(),
-                                item.versionDate(),
-                                item.versionResponsibility(),
-                                item.isPublished(),
-                                item.isDeprecated(),
-                                item.isProvisional(),
-                                item.itemFormat()
-                        ))
-                        .toList();
+                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(
+                    itemResponses
+                )
+                    .map(item ->
+                        new Ddi3Response.Ddi3Item(
+                            item.itemType(),
+                            item.agencyId(),
+                            String.valueOf(item.version()),
+                            item.identifier(),
+                            item.item(),
+                            item.versionDate(),
+                            item.versionResponsibility(),
+                            item.isPublished(),
+                            item.isDeprecated(),
+                            item.isProvisional(),
+                            item.itemFormat()
+                        )
+                    )
+                    .toList();
 
                 Ddi3Response ddi3Response = new Ddi3Response(null, ddi3Items);
 
                 logger.info("Converting DDI3 to DDI4 using converter service");
-                var response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
+                var response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                    ddi3Response,
+                    "ddi:4.0"
+                );
 
-                logger.info("Successfully converted Physical Instance to DDI4 format");
+                logger.info(
+                    "Successfully converted Physical Instance to DDI4 format"
+                );
                 return response;
-
             } catch (Exception e) {
                 throw new RuntimeException("Failed to process DDI response", e);
             }
@@ -441,45 +577,78 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4GroupResponse getGroup(String agencyId, String id) {
-        logger.info("Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}", agencyId, id);
+        logger.info(
+            "Fetching DDI4 Group from Colectica API for agencyId: {}, id: {}",
+            agencyId,
+            id
+        );
 
         return authenticator.executeWithAuth(token -> {
             try {
                 // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint
-                String ddisetUrl = instanceConfiguration.baseApiUrl() + "ddiset/"
-                        + agencyId + "/"
-                        + id;
+                String ddisetUrl =
+                    instanceConfiguration.baseApiUrl() +
+                    "ddiset/" +
+                    agencyId +
+                    "/" +
+                    id;
 
-                logger.info("Fetching full DDI set for Group from: {}", ddisetUrl);
+                logger.info(
+                    "Fetching full DDI set for Group from: {}",
+                    ddisetUrl
+                );
 
                 // The response from Colectica ddiset endpoint contains XML with Group and StudyUnits
-                String ddisetXml = restClient.get()
-                        .uri(ddisetUrl)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .retrieve()
-                        .body(String.class);
+                String ddisetXml = restClient
+                    .get()
+                    .uri(ddisetUrl)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(String.class);
 
                 if (ddisetXml == null || ddisetXml.isEmpty()) {
-                    logger.error("Received empty response from Colectica API for ddiset URL: {}", ddisetUrl);
+                    logger.error(
+                        "Received empty response from Colectica API for ddiset URL: {}",
+                        ddisetUrl
+                    );
                     return null;
                 }
 
-                logger.info("Received response from ddiset endpoint for Group. Length: {}", ddisetXml.length());
+                logger.info(
+                    "Received response from ddiset endpoint for Group. Length: {}",
+                    ddisetXml.length()
+                );
 
                 // Clean the XML - remove leading invisible/control characters
                 int startIndex = 0;
-                while (startIndex < ddisetXml.length() && ddisetXml.charAt(startIndex) != '<') {
+                while (
+                    startIndex < ddisetXml.length() &&
+                    ddisetXml.charAt(startIndex) != '<'
+                ) {
                     char c = ddisetXml.charAt(startIndex);
-                    if (c == '\uFEFF' || Character.isWhitespace(c) || Character.isISOControl(c) || !Character.isDefined(c)) {
+                    if (
+                        c == '\uFEFF' ||
+                        Character.isWhitespace(c) ||
+                        Character.isISOControl(c) ||
+                        !Character.isDefined(c)
+                    ) {
                         startIndex++;
                     } else {
-                        logger.warn("Unexpected character at position {}: {} (code: {})", startIndex, c, (int)c);
+                        logger.warn(
+                            "Unexpected character at position {}: {} (code: {})",
+                            startIndex,
+                            c,
+                            (int) c
+                        );
                         startIndex++;
                     }
                 }
 
                 if (startIndex > 0) {
-                    logger.info("Removed {} leading characters from XML", startIndex);
+                    logger.info(
+                        "Removed {} leading characters from XML",
+                        startIndex
+                    );
                     ddisetXml = ddisetXml.substring(startIndex);
                 }
 
@@ -487,10 +656,17 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 // Parse the XML directly to build Ddi4GroupResponse
                 return parseGroupXmlToDdi4Response(ddisetXml);
-
             } catch (Exception e) {
-                logger.error("Error processing Colectica API response for Group agencyId: {}, id: {}", agencyId, id, e);
-                throw new RuntimeException("Failed to process DDI Group response", e);
+                logger.error(
+                    "Error processing Colectica API response for Group agencyId: {}, id: {}",
+                    agencyId,
+                    id,
+                    e
+                );
+                throw new RuntimeException(
+                    "Failed to process DDI Group response",
+                    e
+                );
             }
         });
     }
@@ -498,7 +674,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Parse DDI3 XML directly to build Ddi4GroupResponse
      */
-    private Ddi4GroupResponse parseGroupXmlToDdi4Response(String xml) throws Exception {
+    private Ddi4GroupResponse parseGroupXmlToDdi4Response(String xml)
+        throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -509,7 +686,10 @@ public class DDIRepositoryImpl implements DDIRepository {
         List<TopLevelReference> topLevelReferences = new ArrayList<>();
 
         // Parse Group elements
-        NodeList groupNodes = doc.getElementsByTagNameNS("ddi:group:3_3", "Group");
+        NodeList groupNodes = doc.getElementsByTagNameNS(
+            "ddi:group:3_3",
+            "Group"
+        );
         logger.info("Found {} Group elements", groupNodes.getLength());
 
         for (int i = 0; i < groupNodes.getLength(); i++) {
@@ -518,16 +698,21 @@ public class DDIRepositoryImpl implements DDIRepository {
             groups.add(group);
 
             // Add top level reference for the group
-            topLevelReferences.add(new TopLevelReference(
-                group.agency(),
-                group.id(),
-                group.version(),
-                "Group"
-            ));
+            topLevelReferences.add(
+                new TopLevelReference(
+                    group.agency(),
+                    group.id(),
+                    group.version(),
+                    "Group"
+                )
+            );
         }
 
         // Parse StudyUnit elements
-        NodeList studyUnitNodes = doc.getElementsByTagNameNS("ddi:studyunit:3_3", "StudyUnit");
+        NodeList studyUnitNodes = doc.getElementsByTagNameNS(
+            "ddi:studyunit:3_3",
+            "StudyUnit"
+        );
         logger.info("Found {} StudyUnit elements", studyUnitNodes.getLength());
 
         for (int i = 0; i < studyUnitNodes.getLength(); i++) {
@@ -548,24 +733,56 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Parse a Group XML element to Ddi4Group
      */
     private Ddi4Group parseGroupElement(Element groupElement) {
-        String isUniversallyUnique = groupElement.getAttribute("isUniversallyUnique");
+        String isUniversallyUnique = groupElement.getAttribute(
+            "isUniversallyUnique"
+        );
         String versionDate = groupElement.getAttribute("versionDate");
 
-        String urn = getElementTextContent(groupElement, "ddi:reusable:3_3", "URN");
-        String agency = getElementTextContent(groupElement, "ddi:reusable:3_3", "Agency");
-        String id = getElementTextContent(groupElement, "ddi:reusable:3_3", "ID");
-        String version = getElementTextContent(groupElement, "ddi:reusable:3_3", "Version");
-        String versionResponsibility = getElementTextContent(groupElement, "ddi:reusable:3_3", "VersionResponsibility");
+        String urn = getElementTextContent(
+            groupElement,
+            "ddi:reusable:3_3",
+            "URN"
+        );
+        String agency = getElementTextContent(
+            groupElement,
+            "ddi:reusable:3_3",
+            "Agency"
+        );
+        String id = getElementTextContent(
+            groupElement,
+            "ddi:reusable:3_3",
+            "ID"
+        );
+        String version = getElementTextContent(
+            groupElement,
+            "ddi:reusable:3_3",
+            "Version"
+        );
+        String versionResponsibility = getElementTextContent(
+            groupElement,
+            "ddi:reusable:3_3",
+            "VersionResponsibility"
+        );
 
         // Parse Citation
         Citation citation = parseCitation(groupElement);
 
         // Parse StudyUnitReferences
-        List<StudyUnitReference> studyUnitReferences = parseStudyUnitReferences(groupElement);
+        List<StudyUnitReference> studyUnitReferences = parseStudyUnitReferences(
+            groupElement
+        );
 
         // Parse UserID elements (seriesIris) and TypeOfGroup
-        List<String> seriesIris = getAllElementTextContents(groupElement, "ddi:reusable:3_3", "UserID");
-        String typeOfGroup = getElementTextContent(groupElement, "ddi:group:3_3", "TypeOfGroup");
+        List<String> seriesIris = getAllElementTextContents(
+            groupElement,
+            "ddi:reusable:3_3",
+            "UserID"
+        );
+        String typeOfGroup = getElementTextContent(
+            groupElement,
+            "ddi:group:3_3",
+            "TypeOfGroup"
+        );
 
         return new Ddi4Group(
             isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
@@ -586,29 +803,55 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Parse a StudyUnit XML element to Ddi4StudyUnit
      */
     private Ddi4StudyUnit parseStudyUnitElement(Element studyUnitElement) {
-        String isUniversallyUnique = studyUnitElement.getAttribute("isUniversallyUnique");
+        String isUniversallyUnique = studyUnitElement.getAttribute(
+            "isUniversallyUnique"
+        );
         String versionDate = studyUnitElement.getAttribute("versionDate");
 
-        String urn = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "URN");
-        String agency = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "Agency");
-        String id = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "ID");
-        String version = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "Version");
+        String urn = getElementTextContent(
+            studyUnitElement,
+            "ddi:reusable:3_3",
+            "URN"
+        );
+        String agency = getElementTextContent(
+            studyUnitElement,
+            "ddi:reusable:3_3",
+            "Agency"
+        );
+        String id = getElementTextContent(
+            studyUnitElement,
+            "ddi:reusable:3_3",
+            "ID"
+        );
+        String version = getElementTextContent(
+            studyUnitElement,
+            "ddi:reusable:3_3",
+            "Version"
+        );
 
         // Parse Citation
         Citation citation = parseCitation(studyUnitElement);
 
         // Parse UserID (operationIri)
-        String operationIri = getElementTextContent(studyUnitElement, "ddi:reusable:3_3", "UserID");
+        String operationIri = getElementTextContent(
+            studyUnitElement,
+            "ddi:reusable:3_3",
+            "UserID"
+        );
 
         return new Ddi4StudyUnit(
-            (isUniversallyUnique == null || isUniversallyUnique.isEmpty()) ? null : isUniversallyUnique,
+            (isUniversallyUnique == null || isUniversallyUnique.isEmpty())
+                ? null
+                : isUniversallyUnique,
             (versionDate == null || versionDate.isEmpty()) ? null : versionDate,
             urn,
             agency,
             id,
             version,
             citation,
-            (operationIri == null || operationIri.isEmpty()) ? null : operationIri,
+            (operationIri == null || operationIri.isEmpty())
+                ? null
+                : operationIri,
             null
         );
     }
@@ -617,46 +860,85 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Parse Citation from an element
      */
     private Citation parseCitation(Element parentElement) {
-        NodeList citationNodes = parentElement.getElementsByTagNameNS("ddi:reusable:3_3", "Citation");
+        NodeList citationNodes = parentElement.getElementsByTagNameNS(
+            "ddi:reusable:3_3",
+            "Citation"
+        );
         if (citationNodes.getLength() == 0) {
             return null;
         }
 
         Element citationElement = (Element) citationNodes.item(0);
-        NodeList titleNodes = citationElement.getElementsByTagNameNS("ddi:reusable:3_3", "Title");
+        NodeList titleNodes = citationElement.getElementsByTagNameNS(
+            "ddi:reusable:3_3",
+            "Title"
+        );
         if (titleNodes.getLength() == 0) {
             return null;
         }
 
         Element titleElement = (Element) titleNodes.item(0);
-        NodeList stringNodes = titleElement.getElementsByTagNameNS("ddi:reusable:3_3", "String");
+        NodeList stringNodes = titleElement.getElementsByTagNameNS(
+            "ddi:reusable:3_3",
+            "String"
+        );
         if (stringNodes.getLength() == 0) {
             return null;
         }
 
         Element stringElement = (Element) stringNodes.item(0);
         String text = stringElement.getTextContent();
-        String lang = stringElement.getAttributeNS("http://www.w3.org/XML/1998/namespace", "lang");
+        String lang = stringElement.getAttributeNS(
+            "http://www.w3.org/XML/1998/namespace",
+            "lang"
+        );
 
-        return new Citation(new Title(new StringValue(lang.isEmpty() ? defaultLang : lang, text)));
+        return new Citation(
+            new Title(
+                new StringValue(lang.isEmpty() ? defaultLang : lang, text)
+            )
+        );
     }
 
     /**
      * Parse StudyUnitReferences from a Group element
      */
-    private List<StudyUnitReference> parseStudyUnitReferences(Element groupElement) {
+    private List<StudyUnitReference> parseStudyUnitReferences(
+        Element groupElement
+    ) {
         List<StudyUnitReference> references = new ArrayList<>();
 
-        NodeList refNodes = groupElement.getElementsByTagNameNS("ddi:reusable:3_3", "StudyUnitReference");
+        NodeList refNodes = groupElement.getElementsByTagNameNS(
+            "ddi:reusable:3_3",
+            "StudyUnitReference"
+        );
         for (int i = 0; i < refNodes.getLength(); i++) {
             Element refElement = (Element) refNodes.item(i);
 
-            String agency = getElementTextContent(refElement, "ddi:reusable:3_3", "Agency");
-            String id = getElementTextContent(refElement, "ddi:reusable:3_3", "ID");
-            String version = getElementTextContent(refElement, "ddi:reusable:3_3", "Version");
-            String typeOfObject = getElementTextContent(refElement, "ddi:reusable:3_3", "TypeOfObject");
+            String agency = getElementTextContent(
+                refElement,
+                "ddi:reusable:3_3",
+                "Agency"
+            );
+            String id = getElementTextContent(
+                refElement,
+                "ddi:reusable:3_3",
+                "ID"
+            );
+            String version = getElementTextContent(
+                refElement,
+                "ddi:reusable:3_3",
+                "Version"
+            );
+            String typeOfObject = getElementTextContent(
+                refElement,
+                "ddi:reusable:3_3",
+                "TypeOfObject"
+            );
 
-            references.add(new StudyUnitReference(agency, id, version, typeOfObject));
+            references.add(
+                new StudyUnitReference(agency, id, version, typeOfObject)
+            );
         }
 
         return references;
@@ -665,7 +947,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Get text content of the first child element with given namespace and local name.
      */
-    private String getElementTextContent(Element parent, String namespaceUri, String localName) {
+    private String getElementTextContent(
+        Element parent,
+        String namespaceUri,
+        String localName
+    ) {
         NodeList nodes = parent.getElementsByTagNameNS(namespaceUri, localName);
         if (nodes.getLength() > 0) {
             return nodes.item(0).getTextContent();
@@ -676,7 +962,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Get text content of all child elements with given namespace and local name.
      */
-    private List<String> getAllElementTextContents(Element parent, String namespaceUri, String localName) {
+    private List<String> getAllElementTextContents(
+        Element parent,
+        String namespaceUri,
+        String localName
+    ) {
         NodeList nodes = parent.getElementsByTagNameNS(namespaceUri, localName);
         List<String> values = new ArrayList<>();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -689,146 +979,200 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
-    public void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request) {
+    public void updatePhysicalInstance(
+        String agencyId,
+        String id,
+        UpdatePhysicalInstanceRequest request
+    ) {
         // First, fetch the current instance to get all necessary information including variables
         Ddi4Response currentInstance = getPhysicalInstance(agencyId, id);
 
-        if (currentInstance == null || currentInstance.physicalInstance() == null || currentInstance.physicalInstance().isEmpty()) {
-            throw new RuntimeException("Physical instance not found: " + agencyId + "/" + id);
+        if (
+            currentInstance == null ||
+            currentInstance.physicalInstance() == null ||
+            currentInstance.physicalInstance().isEmpty()
+        ) {
+            throw new RuntimeException(
+                "Physical instance not found: " + agencyId + "/" + id
+            );
         }
 
         var currentPI = currentInstance.physicalInstance().getFirst();
-        var currentDR = currentInstance.dataRelationship() != null && !currentInstance.dataRelationship().isEmpty()
+        var currentDR =
+            currentInstance.dataRelationship() != null &&
+            !currentInstance.dataRelationship().isEmpty()
                 ? currentInstance.dataRelationship().getFirst()
                 : null;
 
         // Get current timestamp in ISO format
-        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        String versionDate = ZonedDateTime.now().format(
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME
+        );
 
         // Build updated PhysicalInstance with new label if provided
-        String newPhysicalInstanceLabel = request.physicalInstanceLabel() != null
+        String newPhysicalInstanceLabel =
+            request.physicalInstanceLabel() != null
                 ? request.physicalInstanceLabel()
                 : currentPI.citation().title().string().text();
 
         var updatedPI = new Ddi4PhysicalInstance(
-                currentPI.isUniversallyUnique(),
-                versionDate,
-                currentPI.urn(),
-                currentPI.agency(),
-                currentPI.id(),
-                currentPI.version(),
-                currentPI.basedOnObject(),
-                new Citation(new Title(new StringValue(
+            currentPI.isUniversallyUnique(),
+            versionDate,
+            currentPI.urn(),
+            currentPI.agency(),
+            currentPI.id(),
+            currentPI.version(),
+            currentPI.basedOnObject(),
+            new Citation(
+                new Title(
+                    new StringValue(
                         currentPI.citation().title().string().xmlLang(),
                         newPhysicalInstanceLabel
-                ))),
-                currentPI.dataRelationshipReference()
+                    )
+                )
+            ),
+            currentPI.dataRelationshipReference()
         );
 
         // Build updated DataRelationship with new label if provided, preserving LogicalRecord with variables
         Ddi4DataRelationship updatedDR = null;
         if (currentDR != null) {
             // Build updated DataRelationship Label
-            Label drLabel = createLabelWithFallback(currentDR.label(), request.dataRelationshipLabel());
+            Label drLabel = createLabelWithFallback(
+                currentDR.label(),
+                request.dataRelationshipLabel()
+            );
 
             // Build updated LogicalRecord with new label if provided
             LogicalRecord updatedLR = currentDR.logicalRecord();
             if (updatedLR != null && request.logicalRecordLabel() != null) {
                 updatedLR = new LogicalRecord(
-                        updatedLR.isUniversallyUnique(),
-                        updatedLR.urn(),
-                        updatedLR.agency(),
-                        updatedLR.id(),
-                        updatedLR.version(),
-                        createLabelWithFallback(updatedLR.label(), request.logicalRecordLabel()),
-                        updatedLR.variablesInRecord()
+                    updatedLR.isUniversallyUnique(),
+                    updatedLR.urn(),
+                    updatedLR.agency(),
+                    updatedLR.id(),
+                    updatedLR.version(),
+                    createLabelWithFallback(
+                        updatedLR.label(),
+                        request.logicalRecordLabel()
+                    ),
+                    updatedLR.variablesInRecord()
                 );
             }
 
             updatedDR = new Ddi4DataRelationship(
-                    currentDR.isUniversallyUnique(),
-                    versionDate,
-                    currentDR.urn(),
-                    currentDR.agency(),
-                    currentDR.id(),
-                    currentDR.version(),
-                    currentDR.basedOnObject(),
-                    drLabel,
-                    updatedLR // Updated LogicalRecord with new label
+                currentDR.isUniversallyUnique(),
+                versionDate,
+                currentDR.urn(),
+                currentDR.agency(),
+                currentDR.id(),
+                currentDR.version(),
+                currentDR.basedOnObject(),
+                drLabel,
+                updatedLR // Updated LogicalRecord with new label
             );
         }
 
         // Build updated Ddi4Response preserving all variables, codeLists and categories
         Ddi4Response updatedResponse = new Ddi4Response(
-                currentInstance.schema(),
-                currentInstance.topLevelReference(),
-                List.of(updatedPI),
-                updatedDR != null ? List.of(updatedDR) : currentInstance.dataRelationship(),
-                currentInstance.variable(),    // Preserve all variables
-                currentInstance.codeList(),    // Preserve all codeLists
-                currentInstance.category()     // Preserve all categories
+            currentInstance.schema(),
+            currentInstance.topLevelReference(),
+            List.of(updatedPI),
+            updatedDR != null
+                ? List.of(updatedDR)
+                : currentInstance.dataRelationship(),
+            currentInstance.variable(), // Preserve all variables
+            currentInstance.codeList(), // Preserve all codeLists
+            currentInstance.category() // Preserve all categories
         );
 
         // Use updateFullPhysicalInstance to save everything including variables
         updateFullPhysicalInstance(agencyId, id, updatedResponse);
-
     }
 
     @Override
-    public void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
-        logger.info("Updating full physical instance {}/{} with all DDI objects in Colectica", agencyId, id);
+    public void updateFullPhysicalInstance(
+        String agencyId,
+        String id,
+        Ddi4Response ddi4Response
+    ) {
+        logger.info(
+            "Updating full physical instance {}/{} with all DDI objects in Colectica",
+            agencyId,
+            id
+        );
 
         authenticator.executeWithAuth(token -> {
-
             // Convert DDI4 to DDI3
-            Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(ddi4Response);
+            Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(
+                ddi4Response
+            );
 
-            if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
+            if (
+                ddi3Response == null ||
+                ddi3Response.items() == null ||
+                ddi3Response.items().isEmpty()
+            ) {
                 throw new RuntimeException("No items to save in DDI4 response");
             }
 
             // Convert each Ddi3Item to ColecticaItemResponse
-            List<ColecticaItemResponse> colecticaItems = ddi3Response.items().stream()
-                .map(ddi3Item -> new ColecticaItemResponse(
-                    ddi3Item.itemType(),
-                    ddi3Item.agencyId(),
-                    Integer.parseInt(ddi3Item.version()),
-                    ddi3Item.identifier(),
-                    ddi3Item.item(),
-                    ddi3Item.versionDate(),
-                    ddi3Item.versionResponsibility(),
-                    ddi3Item.isPublished(),
-                    ddi3Item.isDeprecated(),
-                    ddi3Item.isProvisional(),
-                    ddi3Item.itemFormat()
-                ))
+            List<ColecticaItemResponse> colecticaItems = ddi3Response
+                .items()
+                .stream()
+                .map(ddi3Item ->
+                    new ColecticaItemResponse(
+                        ddi3Item.itemType(),
+                        ddi3Item.agencyId(),
+                        Integer.parseInt(ddi3Item.version()),
+                        ddi3Item.identifier(),
+                        ddi3Item.item(),
+                        ddi3Item.versionDate(),
+                        ddi3Item.versionResponsibility(),
+                        ddi3Item.isPublished(),
+                        ddi3Item.isDeprecated(),
+                        ddi3Item.isProvisional(),
+                        ddi3Item.itemFormat()
+                    )
+                )
                 .toList();
 
             // Create request with all items
-            ColecticaCreateItemRequest updateRequest = new ColecticaCreateItemRequest(colecticaItems);
+            ColecticaCreateItemRequest updateRequest =
+                new ColecticaCreateItemRequest(colecticaItems);
 
             // Send to Colectica
             String url = instanceConfiguration.baseApiUrl() + "item";
 
-            logger.info("Sending full update request to Colectica with {} items: {}", colecticaItems.size(), url);
+            logger.info(
+                "Sending full update request to Colectica with {} items: {}",
+                colecticaItems.size(),
+                url
+            );
 
-            restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(updateRequest)
-                    .retrieve()
-                    .body(String.class);
+            restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(updateRequest)
+                .retrieve()
+                .body(String.class);
 
-            logger.info("Successfully updated full physical instance with id: {} ({} items saved)", id, colecticaItems.size());
-
+            logger.info(
+                "Successfully updated full physical instance with id: {} ({} items saved)",
+                id,
+                colecticaItems.size()
+            );
 
             return null;
         });
     }
 
     @Override
-    public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
+    public Ddi4Response createPhysicalInstance(
+        CreatePhysicalInstanceRequest request
+    ) {
         return authenticator.executeWithAuth(token -> {
             // Generate UUIDs for physical instance and data relationship
             String physicalInstanceId = UUID.randomUUID().toString();
@@ -838,30 +1182,35 @@ public class DDIRepositoryImpl implements DDIRepository {
             int version = 1;
 
             // Get current timestamp in ISO format
-            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            String versionDate = ZonedDateTime.now().format(
+                DateTimeFormatter.ISO_OFFSET_DATE_TIME
+            );
 
             // Build DDI3 XML fragments
             String physicalInstanceXml = buildPhysicalInstanceXml(
-                    agencyId,
-                    physicalInstanceId,
-                    version,
-                    request.physicalInstanceLabel(),
-                    dataRelationshipId,
-                    versionDate
+                agencyId,
+                physicalInstanceId,
+                version,
+                request.physicalInstanceLabel(),
+                dataRelationshipId,
+                versionDate
             );
 
             String dataRelationshipXml = buildDataRelationshipXml(
-                    agencyId,
-                    dataRelationshipId,
-                    version,
-                    request.dataRelationshipLabel(),
-                    logicalRecordId,
-                    request.logicalRecordLabel() != null ? request.logicalRecordLabel() : request.physicalInstanceLabel(),
-                    versionDate
+                agencyId,
+                dataRelationshipId,
+                version,
+                request.dataRelationshipLabel(),
+                logicalRecordId,
+                request.logicalRecordLabel() != null
+                    ? request.logicalRecordLabel()
+                    : request.physicalInstanceLabel(),
+                versionDate
             );
 
             // Create Colectica items
-            ColecticaItemResponse physicalInstanceItem = new ColecticaItemResponse(
+            ColecticaItemResponse physicalInstanceItem =
+                new ColecticaItemResponse(
                     instanceConfiguration.itemTypes().get("PhysicalInstance"),
                     agencyId,
                     version,
@@ -873,9 +1222,10 @@ public class DDIRepositoryImpl implements DDIRepository {
                     false, // isDeprecated
                     false, // isProvisional
                     instanceConfiguration.itemFormat() // DDI format UUID
-            );
+                );
 
-            ColecticaItemResponse dataRelationshipItem = new ColecticaItemResponse(
+            ColecticaItemResponse dataRelationshipItem =
+                new ColecticaItemResponse(
                     instanceConfiguration.itemTypes().get("DataRelationship"),
                     agencyId,
                     version,
@@ -887,32 +1237,40 @@ public class DDIRepositoryImpl implements DDIRepository {
                     false, // isDeprecated
                     false, // isProvisional
                     instanceConfiguration.itemFormat() // DDI format UUID
+                );
+
+            List<ColecticaItemResponse> itemsToCreate = new ArrayList<>(
+                List.of(physicalInstanceItem, dataRelationshipItem)
             );
 
-            List<ColecticaItemResponse> itemsToCreate = new ArrayList<>(List.of(physicalInstanceItem, dataRelationshipItem));
-
-            if (request.studyUnitId() != null && request.studyUnitAgency() != null) {
-                ColecticaItemResponse updatedStudyUnit = addPhysicalInstanceReferenceToStudyUnit(
+            if (
+                request.studyUnitId() != null &&
+                request.studyUnitAgency() != null
+            ) {
+                ColecticaItemResponse updatedStudyUnit =
+                    addPhysicalInstanceReferenceToStudyUnit(
                         request.studyUnitAgency(),
                         request.studyUnitId(),
                         agencyId,
                         physicalInstanceId
-                );
+                    );
                 itemsToCreate.add(updatedStudyUnit);
             }
 
-            ColecticaCreateItemRequest createRequest = new ColecticaCreateItemRequest(itemsToCreate);
+            ColecticaCreateItemRequest createRequest =
+                new ColecticaCreateItemRequest(itemsToCreate);
 
             // Send to Colectica
             String url = instanceConfiguration.baseApiUrl() + "item";
 
-            restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(createRequest)
-                    .retrieve()
-                    .body(String.class);
+            restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(createRequest)
+                .retrieve()
+                .body(String.class);
 
             // Return the created instance
             return getPhysicalInstance(agencyId, physicalInstanceId);
@@ -922,72 +1280,117 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Build DDI3 XML fragment for PhysicalInstance
      */
-    private String generateDataRelationshipReference(String agencyId, String dataRelationshipId, int version) {
-        return String.format("""
-                    <r:DataRelationshipReference>
-                      <r:Agency>%s</r:Agency>
-                      <r:ID>%s</r:ID>
-                      <r:Version>%d</r:Version>
-                      <r:TypeOfObject>DataRelationship</r:TypeOfObject>
-                    </r:DataRelationshipReference>""",
-                escapeXml(agencyId), escapeXml(dataRelationshipId), version
+    private String generateDataRelationshipReference(
+        String agencyId,
+        String dataRelationshipId,
+        int version
+    ) {
+        return String.format(
+            """
+            <r:DataRelationshipReference>
+              <r:Agency>%s</r:Agency>
+              <r:ID>%s</r:ID>
+              <r:Version>%d</r:Version>
+              <r:TypeOfObject>DataRelationship</r:TypeOfObject>
+            </r:DataRelationshipReference>""",
+            escapeXml(agencyId),
+            escapeXml(dataRelationshipId),
+            version
         );
     }
 
-    private String buildPhysicalInstanceXml(String agencyId, String id, int version,
-                                           String label, String dataRelationshipId, String versionDate) {
-        return String.format("""
-                <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
-                  <PhysicalInstance isUniversallyUnique="true" versionDate="%s" xmlns="ddi:physicalinstance:3_3">
-                    <r:URN>urn:ddi:%s:%s:%d</r:URN>
-                    <r:Agency>%s</r:Agency>
-                    <r:ID>%s</r:ID>
-                    <r:Version>%d</r:Version>
-                    <r:Citation>
-                      <r:Title>
-                        <r:String xml:lang="%s">%s</r:String>
-                      </r:Title>
-                    </r:Citation>
-                    %s
-                  </PhysicalInstance>
-                </Fragment>""",
-                escapeXml(versionDate), escapeXml(agencyId), escapeXml(id), version,
-                escapeXml(agencyId), escapeXml(id), version, defaultLang, escapeXml(label),
-                generateDataRelationshipReference(agencyId, dataRelationshipId, version)
+    private String buildPhysicalInstanceXml(
+        String agencyId,
+        String id,
+        int version,
+        String label,
+        String dataRelationshipId,
+        String versionDate
+    ) {
+        return String.format(
+            """
+            <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+              <PhysicalInstance isUniversallyUnique="true" versionDate="%s" xmlns="ddi:physicalinstance:3_3">
+                <r:URN>urn:ddi:%s:%s:%d</r:URN>
+                <r:Agency>%s</r:Agency>
+                <r:ID>%s</r:ID>
+                <r:Version>%d</r:Version>
+                <r:Citation>
+                  <r:Title>
+                    <r:String xml:lang="%s">%s</r:String>
+                  </r:Title>
+                </r:Citation>
+                %s
+              </PhysicalInstance>
+            </Fragment>""",
+            escapeXml(versionDate),
+            escapeXml(agencyId),
+            escapeXml(id),
+            version,
+            escapeXml(agencyId),
+            escapeXml(id),
+            version,
+            defaultLang,
+            escapeXml(label),
+            generateDataRelationshipReference(
+                agencyId,
+                dataRelationshipId,
+                version
+            )
         );
     }
 
     /**
      * Build DDI3 XML fragment for DataRelationship
      */
-    private String buildDataRelationshipXml(String agencyId, String dataRelationshipId, int version,
-                                           String dataRelationshipLabel, String logicalRecordId,
-                                           String logicalRecordLabel, String versionDate) {
-        return String.format("""
-                <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
-                  <DataRelationship isUniversallyUnique="true" versionDate="%s" xmlns="ddi:logicalproduct:3_3">
-                    <r:URN>urn:ddi:%s:%s:%d</r:URN>
-                    <r:Agency>%s</r:Agency>
-                    <r:ID>%s</r:ID>
-                    <r:Version>%d</r:Version>
-                    <r:Label>
-                      <r:Content xml:lang="%s">%s</r:Content>
-                    </r:Label>
-                    <LogicalRecord isUniversallyUnique="true">
-                      <r:URN>urn:ddi:%s:%s:%d</r:URN>
-                      <r:Agency>%s</r:Agency>
-                      <r:ID>%s</r:ID>
-                      <r:Version>%d</r:Version>
-                      <r:Label>
-                        <r:Content xml:lang="%s">%s</r:Content>
-                      </r:Label>
-                    </LogicalRecord>
-                  </DataRelationship>
-                </Fragment>""",
-                escapeXml(versionDate), escapeXml(agencyId), escapeXml(dataRelationshipId), version,
-                escapeXml(agencyId), escapeXml(dataRelationshipId), version, defaultLang, escapeXml(dataRelationshipLabel),
-                escapeXml(agencyId), escapeXml(logicalRecordId), version,
-                escapeXml(agencyId), escapeXml(logicalRecordId), version, defaultLang, escapeXml(logicalRecordLabel)
+    private String buildDataRelationshipXml(
+        String agencyId,
+        String dataRelationshipId,
+        int version,
+        String dataRelationshipLabel,
+        String logicalRecordId,
+        String logicalRecordLabel,
+        String versionDate
+    ) {
+        return String.format(
+            """
+            <Fragment xmlns:r="ddi:reusable:3_3" xmlns="ddi:instance:3_3">
+              <DataRelationship isUniversallyUnique="true" versionDate="%s" xmlns="ddi:logicalproduct:3_3">
+                <r:URN>urn:ddi:%s:%s:%d</r:URN>
+                <r:Agency>%s</r:Agency>
+                <r:ID>%s</r:ID>
+                <r:Version>%d</r:Version>
+                <r:Label>
+                  <r:Content xml:lang="%s">%s</r:Content>
+                </r:Label>
+                <LogicalRecord isUniversallyUnique="true">
+                  <r:URN>urn:ddi:%s:%s:%d</r:URN>
+                  <r:Agency>%s</r:Agency>
+                  <r:ID>%s</r:ID>
+                  <r:Version>%d</r:Version>
+                  <r:Label>
+                    <r:Content xml:lang="%s">%s</r:Content>
+                  </r:Label>
+                </LogicalRecord>
+              </DataRelationship>
+            </Fragment>""",
+            escapeXml(versionDate),
+            escapeXml(agencyId),
+            escapeXml(dataRelationshipId),
+            version,
+            escapeXml(agencyId),
+            escapeXml(dataRelationshipId),
+            version,
+            defaultLang,
+            escapeXml(dataRelationshipLabel),
+            escapeXml(agencyId),
+            escapeXml(logicalRecordId),
+            version,
+            escapeXml(agencyId),
+            escapeXml(logicalRecordId),
+            version,
+            defaultLang,
+            escapeXml(logicalRecordLabel)
         );
     }
 
@@ -995,11 +1398,12 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (text == null) {
             return "";
         }
-        return text.replace("&", "&amp;")
-                   .replace("<", "&lt;")
-                   .replace(">", "&gt;")
-                   .replace("\"", "&quot;")
-                   .replace("'", "&apos;");
+        return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&apos;");
     }
 
     /**
@@ -1023,64 +1427,91 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return authenticator.executeWithAuth(token -> {
             try {
-                String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
-                ColecticaSetItem[] setItems = restClient.get()
-                        .uri(setUrl)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .retrieve()
-                        .body(ColecticaSetItem[].class);
+                String setUrl =
+                    instanceConfiguration.baseApiUrl() +
+                    "set/" +
+                    agencyId +
+                    "/" +
+                    id;
+                ColecticaSetItem[] setItems = restClient
+                    .get()
+                    .uri(setUrl)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(ColecticaSetItem[].class);
 
                 if (setItems == null || setItems.length == 0) {
                     return null;
                 }
 
-                List<GetDescriptionsRequest.IdentifierRef> identifiers = Arrays.stream(setItems)
-                        .map(item -> new GetDescriptionsRequest.IdentifierRef(item.agencyId(), item.identifier(), item.version()))
+                List<GetDescriptionsRequest.IdentifierRef> identifiers =
+                    Arrays.stream(setItems)
+                        .map(item ->
+                            new GetDescriptionsRequest.IdentifierRef(
+                                item.agencyId(),
+                                item.identifier(),
+                                item.version()
+                            )
+                        )
                         .toList();
 
-                String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
-                ColecticaItemResponse[] itemResponses = restClient.post()
-                        .uri(getListUrl)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .body(new GetDescriptionsRequest(identifiers))
-                        .retrieve()
-                        .body(ColecticaItemResponse[].class);
+                String getListUrl =
+                    instanceConfiguration.baseApiUrl() + "item/_getList";
+                ColecticaItemResponse[] itemResponses = restClient
+                    .post()
+                    .uri(getListUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(new GetDescriptionsRequest(identifiers))
+                    .retrieve()
+                    .body(ColecticaItemResponse[].class);
 
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
 
-                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(itemResponses)
-                        .map(item -> new Ddi3Response.Ddi3Item(
-                                item.itemType(),
-                                item.agencyId(),
-                                String.valueOf(item.version()),
-                                item.identifier(),
-                                item.item(),
-                                item.versionDate(),
-                                item.versionResponsibility(),
-                                item.isPublished(),
-                                item.isDeprecated(),
-                                item.isProvisional(),
-                                item.itemFormat()
-                        ))
-                        .toList();
+                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(
+                    itemResponses
+                )
+                    .map(item ->
+                        new Ddi3Response.Ddi3Item(
+                            item.itemType(),
+                            item.agencyId(),
+                            String.valueOf(item.version()),
+                            item.identifier(),
+                            item.item(),
+                            item.versionDate(),
+                            item.versionResponsibility(),
+                            item.isPublished(),
+                            item.isDeprecated(),
+                            item.isProvisional(),
+                            item.itemFormat()
+                        )
+                    )
+                    .toList();
 
                 Ddi3Response ddi3Response = new Ddi3Response(null, ddi3Items);
-                return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, "ddi:4.0");
-
+                return ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                    ddi3Response,
+                    "ddi:4.0"
+                );
             } catch (Exception e) {
-                throw new RuntimeException("Failed to fetch mutualized codes list", e);
+                throw new RuntimeException(
+                    "Failed to fetch mutualized codes list",
+                    e
+                );
             }
         });
     }
 
     @Override
     public List<PartialCodesList> getMutualizedCodesLists() {
-        logger.info("Getting mutualized codes lists from Colectica API via _getDescriptions endpoint");
+        logger.info(
+            "Getting mutualized codes lists from Colectica API via _getDescriptions endpoint"
+        );
 
-        List<MutualizedCodeListEntry> mutualizedEntries = colecticaConfiguration.mutualizedCodesLists();
+        List<MutualizedCodeListEntry> mutualizedEntries =
+            colecticaConfiguration.mutualizedCodesLists();
         logger.info("Mutualized entries from config: {}", mutualizedEntries);
 
         if (mutualizedEntries == null || mutualizedEntries.isEmpty()) {
@@ -1089,53 +1520,78 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
 
         return authenticator.executeWithAuth(token -> {
-            String url = instanceConfiguration.baseApiUrl() + "item/_getDescriptions";
+            String url =
+                instanceConfiguration.baseApiUrl() + "item/_getDescriptions";
             logger.info("Calling URL: {}", url);
 
             // Build request body from configuration
-            List<GetDescriptionsRequest.IdentifierRef> identifiers = mutualizedEntries.stream()
-                    .map(entry -> new GetDescriptionsRequest.IdentifierRef(
+            List<GetDescriptionsRequest.IdentifierRef> identifiers =
+                mutualizedEntries
+                    .stream()
+                    .map(entry ->
+                        new GetDescriptionsRequest.IdentifierRef(
                             entry.agencyId(),
                             entry.identifier(),
                             entry.version()
-                    ))
+                        )
+                    )
                     .toList();
 
-            GetDescriptionsRequest requestBody = new GetDescriptionsRequest(identifiers);
+            GetDescriptionsRequest requestBody = new GetDescriptionsRequest(
+                identifiers
+            );
             logger.info("Request body identifiers: {}", identifiers);
 
-            logger.info("Calling _getDescriptions with {} identifiers", identifiers.size());
+            logger.info(
+                "Calling _getDescriptions with {} identifiers",
+                identifiers.size()
+            );
 
-            ColecticaItem[] response = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(ColecticaItem[].class);
-            logger.info("Response from _getDescriptions: {} items", response != null ? response.length : "null");
+            ColecticaItem[] response = restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(requestBody)
+                .retrieve()
+                .body(ColecticaItem[].class);
+            logger.info(
+                "Response from _getDescriptions: {} items",
+                response != null ? response.length : "null"
+            );
+            logger.info(url);
+            logger.info(token);
+            logger.info(requestBody.toString());
 
             if (response == null) {
-                logger.warn("Received null response from _getDescriptions endpoint");
+                logger.warn(
+                    "Received null response from _getDescriptions endpoint"
+                );
                 return List.of();
             }
 
             return Arrays.stream(response)
-                    .map(item -> {
-                        String id = item.identifier();
-                        String label = extractLabelFromItem(item);
-                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                        Date date = null;
-                        try {
-                            date = formatter.parse(item.versionDate());
-                        } catch (ParseException | NullPointerException _) {
-                            logger.debug("Impossible to parse {}", item.versionDate());
-                        }
-                        String agency = item.agencyId();
-                        return new PartialCodesList(id, label, date, agency);
-                    })
-                    .toList();
+                .filter(Objects::nonNull)
+                .map(item -> {
+                    String id = item.identifier();
+                    String label = extractLabelFromItem(item);
+                    SimpleDateFormat formatter = new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss"
+                    );
+                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException _) {
+                        logger.debug(
+                            "Impossible to parse {}",
+                            item.versionDate()
+                        );
+                    }
+                    String agency = item.agencyId();
+                    return new PartialCodesList(id, label, date, agency);
+                })
+                .toList();
         });
     }
 
@@ -1151,7 +1607,8 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (newText == null) {
             return existingLabel;
         }
-        String lang = existingLabel != null && existingLabel.content() != null
+        String lang =
+            existingLabel != null && existingLabel.content() != null
                 ? existingLabel.content().xmlLang()
                 : defaultLang;
         return new Label(new Content(lang, newText));
@@ -1159,7 +1616,11 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public String getItemXml(String agency, String id, String version) {
-        ColecticaItemResponse response = fetchColecticaItem(agency, id, version);
+        ColecticaItemResponse response = fetchColecticaItem(
+            agency,
+            id,
+            version
+        );
         return response != null ? response.item() : null;
     }
 
@@ -1169,48 +1630,84 @@ public class DDIRepositoryImpl implements DDIRepository {
         return response != null ? response.item() : null;
     }
 
-    private ColecticaItemResponse fetchColecticaItem(String agency, String id, String version) {
+    private ColecticaItemResponse fetchColecticaItem(
+        String agency,
+        String id,
+        String version
+    ) {
         return authenticator.executeWithAuth(token -> {
-            String encodedAgency = URLEncoder.encode(agency, StandardCharsets.UTF_8);
+            String encodedAgency = URLEncoder.encode(
+                agency,
+                StandardCharsets.UTF_8
+            );
             String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
 
-            String url = instanceConfiguration.baseApiUrl() + "item/" + encodedAgency + "/" + encodedId;
+            String url =
+                instanceConfiguration.baseApiUrl() +
+                "item/" +
+                encodedAgency +
+                "/" +
+                encodedId;
             if (version != null && !version.isBlank()) {
                 url += "/" + URLEncoder.encode(version, StandardCharsets.UTF_8);
             }
 
-            return restClient.get()
-                    .uri(url)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .retrieve()
-                    .body(ColecticaItemResponse.class);
+            return restClient
+                .get()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .body(ColecticaItemResponse.class);
         });
     }
 
     private ColecticaItemResponse addPhysicalInstanceReferenceToStudyUnit(
-            String studyUnitAgency,
-            String studyUnitId,
-            String physicalInstanceAgency,
-            String physicalInstanceId
+        String studyUnitAgency,
+        String studyUnitId,
+        String physicalInstanceAgency,
+        String physicalInstanceId
     ) {
-        ColecticaItemResponse studyUnitItem = fetchColecticaItem(studyUnitAgency, studyUnitId, null);
+        ColecticaItemResponse studyUnitItem = fetchColecticaItem(
+            studyUnitAgency,
+            studyUnitId,
+            null
+        );
         if (studyUnitItem == null) {
-            throw new RuntimeException("StudyUnit not found: agency=" + studyUnitAgency + " id=" + studyUnitId);
+            throw new RuntimeException(
+                "StudyUnit not found: agency=" +
+                    studyUnitAgency +
+                    " id=" +
+                    studyUnitId
+            );
         }
         try {
-            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
+            DocumentBuilderFactory factory =
+                createSecureDocumentBuilderFactory();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new InputSource(new StringReader(studyUnitItem.item())));
+            Document doc = builder.parse(
+                new InputSource(new StringReader(studyUnitItem.item()))
+            );
 
-            NodeList studyUnitNodes = doc.getElementsByTagNameNS("ddi:studyunit:3_3", "StudyUnit");
+            NodeList studyUnitNodes = doc.getElementsByTagNameNS(
+                "ddi:studyunit:3_3",
+                "StudyUnit"
+            );
             if (studyUnitNodes.getLength() == 0) {
-                throw new RuntimeException("No StudyUnit element found in XML for id=" + studyUnitId);
+                throw new RuntimeException(
+                    "No StudyUnit element found in XML for id=" + studyUnitId
+                );
             }
             Element studyUnitElement = (Element) studyUnitNodes.item(0);
 
-            Element piRef = doc.createElementNS("ddi:reusable:3_3", "r:PhysicalInstanceReference");
+            Element piRef = doc.createElementNS(
+                "ddi:reusable:3_3",
+                "r:PhysicalInstanceReference"
+            );
 
-            Element agencyEl = doc.createElementNS("ddi:reusable:3_3", "r:Agency");
+            Element agencyEl = doc.createElementNS(
+                "ddi:reusable:3_3",
+                "r:Agency"
+            );
             agencyEl.setTextContent(physicalInstanceAgency);
             piRef.appendChild(agencyEl);
 
@@ -1218,62 +1715,96 @@ public class DDIRepositoryImpl implements DDIRepository {
             idEl.setTextContent(physicalInstanceId);
             piRef.appendChild(idEl);
 
-            Element versionEl = doc.createElementNS("ddi:reusable:3_3", "r:Version");
+            Element versionEl = doc.createElementNS(
+                "ddi:reusable:3_3",
+                "r:Version"
+            );
             versionEl.setTextContent("1");
             piRef.appendChild(versionEl);
 
-            Element typeEl = doc.createElementNS("ddi:reusable:3_3", "r:TypeOfObject");
+            Element typeEl = doc.createElementNS(
+                "ddi:reusable:3_3",
+                "r:TypeOfObject"
+            );
             typeEl.setTextContent("PhysicalInstance");
             piRef.appendChild(typeEl);
 
             studyUnitElement.appendChild(piRef);
 
-            TransformerFactory transformerFactory = createSecureTransformerFactory();
+            TransformerFactory transformerFactory =
+                createSecureTransformerFactory();
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(
+                OutputKeys.OMIT_XML_DECLARATION,
+                "yes"
+            );
             StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(doc.getDocumentElement()), new StreamResult(writer));
+            transformer.transform(
+                new DOMSource(doc.getDocumentElement()),
+                new StreamResult(writer)
+            );
             String updatedXml = writer.toString();
 
             return new ColecticaItemResponse(
-                    instanceConfiguration.itemTypes().get("StudyUnit"),
-                    studyUnitAgency,
-                    studyUnitItem.version(),
-                    studyUnitId,
-                    updatedXml,
-                    studyUnitItem.versionDate(),
-                    studyUnitItem.versionResponsibility(),
-                    studyUnitItem.isPublished(),
-                    studyUnitItem.isDeprecated(),
-                    studyUnitItem.isProvisional(),
-                    instanceConfiguration.itemFormat()
+                instanceConfiguration.itemTypes().get("StudyUnit"),
+                studyUnitAgency,
+                studyUnitItem.version(),
+                studyUnitId,
+                updatedXml,
+                studyUnitItem.versionDate(),
+                studyUnitItem.versionResponsibility(),
+                studyUnitItem.isPublished(),
+                studyUnitItem.isDeprecated(),
+                studyUnitItem.isProvisional(),
+                instanceConfiguration.itemFormat()
             );
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to add PhysicalInstanceReference to StudyUnit id=" + studyUnitId, e);
+            throw new RuntimeException(
+                "Failed to add PhysicalInstanceReference to StudyUnit id=" +
+                    studyUnitId,
+                e
+            );
         }
     }
 
     @Override
-    public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
-        logger.info("Searching StudyUnit XML by operationIri: {}", operationIri);
+    public Optional<String> findStudyUnitXmlByOperationIri(
+        String operationIri
+    ) {
+        logger.info(
+            "Searching StudyUnit XML by operationIri: {}",
+            operationIri
+        );
         List<PartialStudyUnit> studyUnits = getStudyUnits();
-        return studyUnits.stream()
-                .map(su -> fetchColecticaItem(su.agency(), su.id(), null))
-                .filter(Objects::nonNull)
-                .filter(item -> studyUnitMatchesOperationIri(item.item(), operationIri))
-                .map(ColecticaItemResponse::item)
-                .findFirst();
+        return studyUnits
+            .stream()
+            .map(su -> fetchColecticaItem(su.agency(), su.id(), null))
+            .filter(Objects::nonNull)
+            .filter(item ->
+                studyUnitMatchesOperationIri(item.item(), operationIri)
+            )
+            .map(ColecticaItemResponse::item)
+            .findFirst();
     }
 
-    private boolean studyUnitMatchesOperationIri(String xml, String operationIri) {
+    private boolean studyUnitMatchesOperationIri(
+        String xml,
+        String operationIri
+    ) {
         if (xml == null || xml.isBlank()) return false;
         try {
-            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
+            DocumentBuilderFactory factory =
+                createSecureDocumentBuilderFactory();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new InputSource(new StringReader(xml)));
-            NodeList userIdNodes = doc.getElementsByTagNameNS("ddi:reusable:3_3", "UserID");
+            Document doc = builder.parse(
+                new InputSource(new StringReader(xml))
+            );
+            NodeList userIdNodes = doc.getElementsByTagNameNS(
+                "ddi:reusable:3_3",
+                "UserID"
+            );
             for (int i = 0; i < userIdNodes.getLength(); i++) {
                 String text = userIdNodes.item(i).getTextContent();
                 if (operationIri.equals(text != null ? text.trim() : null)) {
@@ -1282,52 +1813,93 @@ public class DDIRepositoryImpl implements DDIRepository {
             }
             return false;
         } catch (Exception e) {
-            logger.warn("Failed to parse StudyUnit XML for operationIri check", e);
+            logger.warn(
+                "Failed to parse StudyUnit XML for operationIri check",
+                e
+            );
             return false;
         }
     }
 
-    private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";
-    private static final String GROUP_ITEM_TYPE = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
+    private static final String STUDY_UNIT_ITEM_TYPE =
+        "30ea0200-7121-4f01-8d21-a931a182b86d";
+    private static final String GROUP_ITEM_TYPE =
+        "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
 
     @Override
-    public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
+    public PhysicalInstanceParents getPhysicalInstanceParents(
+        String agencyId,
+        String id
+    ) {
         return authenticator.executeWithAuth(token -> {
-            String url = instanceConfiguration.baseApiUrl() + "_query/relationship/byobject/descriptions";
+            String url =
+                instanceConfiguration.baseApiUrl() +
+                "_query/relationship/byobject/descriptions";
 
-            RelationshipBySubjectRequest piRequest = new RelationshipBySubjectRequest(
+            RelationshipBySubjectRequest piRequest =
+                new RelationshipBySubjectRequest(
                     List.of(STUDY_UNIT_ITEM_TYPE),
-                    new RelationshipBySubjectRequest.TargetItemRef(agencyId, id));
-            ColecticaParentRef[] studyUnitItems = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(piRequest)
-                    .retrieve()
-                    .body(ColecticaParentRef[].class);
+                    new RelationshipBySubjectRequest.TargetItemRef(agencyId, id)
+                );
+            ColecticaParentRef[] studyUnitItems = restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(piRequest)
+                .retrieve()
+                .body(ColecticaParentRef[].class);
 
-            ColecticaParentRef studyUnitItem = Arrays.stream(studyUnitItems != null ? studyUnitItems : new ColecticaParentRef[0])
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No study unit found for physical instance " + agencyId + "/" + id));
+            ColecticaParentRef studyUnitItem = Arrays.stream(
+                studyUnitItems != null
+                    ? studyUnitItems
+                    : new ColecticaParentRef[0]
+            )
+                .findFirst()
+                .orElseThrow(() ->
+                    new RuntimeException(
+                        "No study unit found for physical instance " +
+                            agencyId +
+                            "/" +
+                            id
+                    )
+                );
 
-            RelationshipBySubjectRequest suRequest = new RelationshipBySubjectRequest(
+            RelationshipBySubjectRequest suRequest =
+                new RelationshipBySubjectRequest(
                     List.of(GROUP_ITEM_TYPE),
-                    new RelationshipBySubjectRequest.TargetItemRef(studyUnitItem.agencyId(), studyUnitItem.identifier()));
-            ColecticaParentRef[] groupItems = restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(suRequest)
-                    .retrieve()
-                    .body(ColecticaParentRef[].class);
+                    new RelationshipBySubjectRequest.TargetItemRef(
+                        studyUnitItem.agencyId(),
+                        studyUnitItem.identifier()
+                    )
+                );
+            ColecticaParentRef[] groupItems = restClient
+                .post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(suRequest)
+                .retrieve()
+                .body(ColecticaParentRef[].class);
 
-            ColecticaParentRef groupItem = Arrays.stream(groupItems != null ? groupItems : new ColecticaParentRef[0])
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No group found for study unit " + studyUnitItem.agencyId() + "/" + studyUnitItem.identifier()));
+            ColecticaParentRef groupItem = Arrays.stream(
+                groupItems != null ? groupItems : new ColecticaParentRef[0]
+            )
+                .findFirst()
+                .orElseThrow(() ->
+                    new RuntimeException(
+                        "No group found for study unit " +
+                            studyUnitItem.agencyId() +
+                            "/" +
+                            studyUnitItem.identifier()
+                    )
+                );
 
             return new PhysicalInstanceParents(
-                    studyUnitItem.agencyId(), studyUnitItem.identifier(),
-                    groupItem.agencyId(), groupItem.identifier()
+                studyUnitItem.agencyId(),
+                studyUnitItem.identifier(),
+                groupItem.agencyId(),
+                groupItem.identifier()
             );
         });
     }
