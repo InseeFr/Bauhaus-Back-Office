@@ -68,9 +68,9 @@ public class XsltUtils {
 	
 	public static void createOdtFromXml(File output, Path finalPath, InputStream zipToCompleteIS, Path tempDir)
 			throws IOException {
-		Path contentPath = Paths.get(tempDir.toString() + "/content.xml");
+		Path contentPath = Paths.get(tempDir + "/content.xml");
 		Files.copy(Paths.get(output.getAbsolutePath()), contentPath, StandardCopyOption.REPLACE_EXISTING);
-		Path zipPath = Paths.get(tempDir.toString() + "/export.zip");
+		Path zipPath = Paths.get(tempDir + "/export.zip");
 		Files.copy(zipToCompleteIS, zipPath, StandardCopyOption.REPLACE_EXISTING);
 		FilesUtils.addFileToZipFolder(contentPath.toFile(), zipPath.toFile());
 		Files.copy(zipPath, finalPath, StandardCopyOption.REPLACE_EXISTING);
