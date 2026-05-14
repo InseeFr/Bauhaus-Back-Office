@@ -260,7 +260,7 @@ public class RdfUtils {
 
 	public static IRI addTripleStringMdToXhtml2(IRI objectURI, IRI predicate, String value, String lang, String prefix, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			IRI uri = factory.createIRI(objectURI.toString() + "/" + prefix + "/" + lang);
+			IRI uri = factory.createIRI(objectURI + "/" + prefix + "/" + lang);
 			addTripleUri(objectURI, predicate, uri, model, graph);
 			addTripleUri(uri, RDF.TYPE, XKOS.EXPLANATORY_NOTE, model, graph);
 			addTripleLiteralXML(uri, EVOC.NOTE_LITERAL, XhtmlToMarkdownUtils.markdownToXhtml(value), model, graph);
