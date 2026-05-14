@@ -1,6 +1,7 @@
-SELECT ?id ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated
+SELECT ?id ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated ?altIdentifier
 
 FROM <${DATASET_GRAPH}>
+FROM <${ADMS_GRAPH}>
 
 WHERE {
     ?uri rdf:type dcat:Dataset .
@@ -34,5 +35,11 @@ WHERE {
 
     OPTIONAL {
         ?uri ^foaf:primaryTopic/dcterms:modified ?updated .
+    }
+
+    OPTIONAL {
+        ?uri adms:identifier ?admsIdentifierUri .
+        ?admsIdentifierUri rdf:type adms:Identifier .
+        ?admsIdentifierUri skos:notation ?altIdentifier .
     }
 }

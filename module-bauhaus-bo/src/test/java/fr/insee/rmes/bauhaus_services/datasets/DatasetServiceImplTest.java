@@ -112,13 +112,15 @@ class DatasetServiceImplTest {
                 .put("wasGeneratedIRIs", "wasGeneratedIRIs")
                 .put("created", "created")
                 .put("updated", "updated")
+                .put("altIdentifier", "ALT-001")
         );
 
-        when(datasetQueries.getDatasetsForSearch(anyString())).thenReturn("query");
+        when(datasetQueries.getDatasetsForSearch(anyString(), anyString())).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         var datasets = datasetService.getDatasetsForSearch();
         Assertions.assertEquals("id", datasets.getFirst().id());
         Assertions.assertEquals("labelLg1", datasets.getFirst().labelLg1());
+        Assertions.assertEquals("ALT-001", datasets.getFirst().altIdentifier());
     }
 
     @Test

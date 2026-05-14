@@ -8,5 +8,6 @@ public record DatasetsForSearch(
         String validationStatus,
         String wasGeneratedIRIs,
         String created,
-        String updated
+        String updated,
+        String altIdentifier
 ){}
