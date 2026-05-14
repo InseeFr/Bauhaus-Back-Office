@@ -38,9 +38,10 @@ public class DatasetQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasets.ftlh", params);
     }
 
-    public String getDatasetsForSearch(String datasetsGraph) throws RmesException {
+    public String getDatasetsForSearch(String datasetsGraph, String admsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ADMS_GRAPH", admsGraph);
         params.put("LG1", languages.lg1());
 
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetsForSearch.ftlh", params);
