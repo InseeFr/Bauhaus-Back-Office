@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.modules.datasets.datasets.model.*;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
+import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -62,6 +63,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private final DatasetDistributionQueries datasetDistributionQueries;
 
+    private final OrganizationsService organizationsService;
+
     private final String datasetsGraphSuffix;
 
     private final String datasetsBaseUriSuffix;
@@ -87,6 +90,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             SeriesUtils seriesUtils,
             @Qualifier("sparqlDatasetQueries") DatasetQueries datasetQueries,
             DatasetDistributionQueries datasetDistributionQueries,
+            OrganizationsService organizationsService,
             @Value("${fr.insee.rmes.bauhaus.datasets.graph}") String datasetsGraphSuffix,
             @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}") String datasetsBaseUriSuffix,
             @Value("${fr.insee.rmes.bauhaus.datasets.record.baseURI}") String datasetsRecordBaseUriSuffix,
@@ -101,6 +105,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         this.seriesUtils = seriesUtils;
         this.datasetQueries = datasetQueries;
         this.datasetDistributionQueries = datasetDistributionQueries;
+        this.organizationsService = organizationsService;
         this.datasetsGraphSuffix = datasetsGraphSuffix;
         this.datasetsBaseUriSuffix = datasetsBaseUriSuffix;
         this.datasetsRecordBaseUriSuffix = datasetsRecordBaseUriSuffix;
@@ -211,6 +216,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONObject catalogRecord = new JSONObject();
         this.repoGestion.getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, datasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
+        resolveContributorIris(catalogRecord);
 
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
@@ -422,9 +428,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(catalogRecordIRI, FOAF.PRIMARY_TOPIC, datasetIri, model, graph);
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
-        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(catalogRecord.getCreator()), graph);
+        RdfUtils.addTripleUri(catalogRecordIRI, DC.CREATOR, resolveOrganisationIri(catalogRecord.getCreator()), model, graph);
 
-        catalogRecord.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
+        catalogRecord.getContributor().forEach(contributor -> RdfUtils.addTripleUri(catalogRecordIRI, DC.CONTRIBUTOR, resolveOrganisationIri(contributor), model, graph));
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, catalogRecord.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, catalogRecord.getUpdated(), model, graph);
 
@@ -607,6 +613,36 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         if(!this.seriesUtils.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())){
             throw new RmesBadRequestException("Some series or operations do not exist");
+        }
+    }
+
+    private void resolveContributorIris(JSONObject catalogRecord) {
+        if (!catalogRecord.has(CONTRIBUTOR)) {
+            return;
+        }
+        JSONArray contributors = catalogRecord.optJSONArray(CONTRIBUTOR);
+        if (contributors == null) {
+            return;
+        }
+        List<String> resolved = new ArrayList<>(contributors.length());
+        for (int i = 0; i < contributors.length(); i++) {
+            resolved.add(resolveOrganisationIri(contributors.optString(i)));
+        }
+        catalogRecord.put(CONTRIBUTOR, resolved);
+    }
+
+    private String resolveOrganisationIri(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return identifier;
+        }
+        if (identifier.startsWith("http://") || identifier.startsWith("https://")) {
+            return identifier;
+        }
+        try {
+            String iri = organizationsService.getOrganizationUriById(identifier);
+            return (iri == null || iri.isBlank()) ? identifier : iri;
+        } catch (RmesException e) {
+            return identifier;
         }
     }
 }
