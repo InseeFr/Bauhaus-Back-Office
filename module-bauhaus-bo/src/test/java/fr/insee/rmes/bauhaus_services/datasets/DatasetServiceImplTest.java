@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
+import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -48,6 +49,7 @@ class DatasetServiceImplTest {
     private RepositoryGestion repositoryGestion;
     private DatasetQueries datasetQueries;
     private DatasetDistributionQueries datasetDistributionQueries;
+    private OrganizationsService organizationsService;
     private DatasetServiceImpl datasetService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -63,6 +65,7 @@ class DatasetServiceImplTest {
         repositoryGestion = mock(RepositoryGestion.class);
         datasetQueries = mock(DatasetQueries.class);
         datasetDistributionQueries = mock(DatasetDistributionQueries.class);
+        organizationsService = mock(OrganizationsService.class);
 
         datasetService = new DatasetServiceImpl(
                 repositoryGestion,
@@ -73,6 +76,7 @@ class DatasetServiceImplTest {
                 seriesUtils,
                 datasetQueries,
                 datasetDistributionQueries,
+                organizationsService,
                 "datasetGraph/",
                 "datasetIRI",
                 "recordIRI",
@@ -155,6 +159,44 @@ class DatasetServiceImplTest {
         Dataset response = datasetService.getDatasetByID("1");
         String responseJson = objectMapper.writeValueAsString(response);
         Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
+    }
+
+    @Test
+    void shouldResolveContributorStampsToIrisWhenFetchingDataset() throws RmesException, JsonProcessingException {
+        JSONObject object = new JSONObject().put("id", "1");
+        JSONArray array = new JSONArray().put(object);
+
+        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
+        when(datasetQueries.getDataset(eq("1"), any(), any())).thenReturn("query");
+        when(datasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
+        when(datasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
+        when(datasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
+        when(datasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributors");
+        when(datasetQueries.getKeywords(eq("1"), any())).thenReturn("query-keywords");
+
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsArray("query-contributors")).thenReturn(
+                new JSONArray()
+                        .put(new JSONObject().put("contributor", "HIE2000001"))
+                        .put(new JSONObject().put("contributor", "http://bauhaus/organisations/insee/HIE2000002"))
+        );
+
+        when(organizationsService.getOrganizationUriById("HIE2000001"))
+                .thenReturn("http://bauhaus/organisations/insee/HIE2000001");
+
+        Dataset response = datasetService.getDatasetByID("1");
+
+        Assertions.assertEquals(
+                List.of(
+                        "http://bauhaus/organisations/insee/HIE2000001",
+                        "http://bauhaus/organisations/insee/HIE2000002"
+                ),
+                response.getCatalogRecord().getContributor()
+        );
     }
 
     @Test
@@ -318,8 +360,8 @@ class DatasetServiceImplTest {
         object.put("id", datasetId);
         generateGeneralInformation(object);
         object.put("disseminationStatus", "http://disseminationStatus");
-        object.put("catalogRecordCreator", "creator");
-        object.put("catalogRecordContributor", List.of("contributor"));
+        object.put("catalogRecordCreator", "http://creator");
+        object.put("catalogRecordContributor", List.of("http://contributor"));
 
         JSONArray distributions = new JSONArray();
         JSONObject d = new JSONObject();
@@ -339,7 +381,7 @@ class DatasetServiceImplTest {
         when(datasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
-        when(repositoryGestion.getResponseAsArray("query-contributor")).thenReturn(new JSONArray().put(new JSONObject().put("contributor", "contributor")));
+        when(repositoryGestion.getResponseAsArray("query-contributor")).thenReturn(new JSONArray().put(new JSONObject().put("contributor", "http://contributor")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
 
@@ -387,8 +429,8 @@ class DatasetServiceImplTest {
 
     private JSONObject generateCatalogRecord() {
         JSONObject record = new JSONObject();
-        record.put("creator", "creator");
-        record.put("contributor", List.of("contributor"));
+        record.put("creator", "http://creator");
+        record.put("contributor", List.of("http://contributor"));
         return record;
     }
 
@@ -452,7 +494,7 @@ class DatasetServiceImplTest {
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
 
             Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, https://theme) [http://rdf.insee.fr/graphes/datasetGraph/]]".replaceAll("jd1001", nextId), model.getValue().toString());
-            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]", model2.getValue().toString());
+            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]", model2.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
     }
@@ -505,8 +547,8 @@ class DatasetServiceImplTest {
             body.put("altIdentifier", "1");
 
             JSONObject record = new JSONObject();
-            record.put("creator", "creator");
-            record.put("contributor", List.of("contributor"));
+            record.put("creator", "http://creator");
+            record.put("contributor", List.of("http://contributor"));
             record.put("created", "2023-10-19T11:44:23.335590");
 
             body.put("catalogRecord", record);
@@ -532,7 +574,7 @@ class DatasetServiceImplTest {
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(admsIri), model3.capture(), any());
 
             Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/jeuDeDonnees/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://2) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme) [http://rdf.insee.fr/graphes/datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000) [http://rdf.insee.fr/graphes/datasetGraph/]]", model.getValue().toString());
-            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\") [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]", model2.getValue().toString());
+            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, http://creator) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, http://contributor) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>) [http://rdf.insee.fr/graphes/datasetGraph/]]", model2.getValue().toString());
             Assertions.assertEquals("[(http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier) [http://rdf.insee.fr/graphes/adms], (http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\") [http://rdf.insee.fr/graphes/adms]]", model3.getValue().toString());
             Assertions.assertEquals("jd1001", id);
         }
