@@ -180,7 +180,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public List<DatasetsForSearch> getDatasetsForSearch() throws RmesException {
-        var datasets = this.repoGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch(getDatasetsGraph()));
+        var datasets = this.repoGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch(getDatasetsGraph(), getAdmsGraph()));
         return DiacriticSorter.sort(datasets,
                 DatasetsForSearch[].class,
                 DatasetsForSearch::labelLg1);

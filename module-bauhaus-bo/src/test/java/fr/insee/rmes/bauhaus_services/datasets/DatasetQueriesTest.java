@@ -64,6 +64,27 @@ class DatasetQueriesTest {
 
 
     @Test
+    void getDatasetsForSearchShouldExposeAltIdentifierProjection() throws RmesException {
+        String query = datasetQueries.getDatasetsForSearch("datasets-graph", "adms-graph");
+        Assertions.assertTrue(
+                query.contains("?altIdentifier"),
+                "Rendered template must select ?altIdentifier so the search results expose the alternative identifier"
+        );
+        Assertions.assertTrue(
+                query.contains("adms:identifier"),
+                "Rendered template must declare the adms:identifier OPTIONAL clause"
+        );
+        Assertions.assertTrue(
+                query.contains("skos:notation"),
+                "Rendered template must use skos:notation to fetch the alternative identifier"
+        );
+        Assertions.assertTrue(
+                query.contains("FROM <adms-graph>"),
+                "Rendered template must include the adms graph to resolve altIdentifier triples"
+        );
+    }
+
+    @Test
     void shouldCallGetDatasetCreatorsQuery() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{

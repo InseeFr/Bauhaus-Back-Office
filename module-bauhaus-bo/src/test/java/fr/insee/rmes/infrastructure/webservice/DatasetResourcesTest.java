@@ -54,11 +54,14 @@ class DatasetResourcesTest {
                 "validationStatus",
                 "wasGeneratedIRIs",
                 "created",
-                "updated"
+                "updated",
+                "ALT-001"
         ));
 
         when(datasetService.getDatasetsForSearch()).thenReturn(datasets);
-        Assertions.assertEquals(1, datasetResources.getDatasetsForSearch().size());
+        List<DatasetsForSearch> result = datasetResources.getDatasetsForSearch();
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("ALT-001", result.getFirst().altIdentifier());
     }
 
 

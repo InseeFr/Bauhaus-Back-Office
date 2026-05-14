@@ -31,6 +31,25 @@ class DatasetQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
+    void should_expose_alt_identifier_for_search() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch("http://rdf.insee.fr/graphes/catalogue", "http://rdf.insee.fr/graphes/adms"));
+        Set<String> altIdentifiers = new java.util.HashSet<>();
+        for (int i = 0; i < result.length(); i++) {
+            if (result.getJSONObject(i).has("altIdentifier")) {
+                altIdentifiers.add(result.getJSONObject(i).getString("altIdentifier"));
+            }
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(
+                altIdentifiers.contains("DATASET_ALL_PROPERTIES"),
+                "Expected altIdentifier DATASET_ALL_PROPERTIES, got: " + altIdentifiers
+        );
+        org.junit.jupiter.api.Assertions.assertTrue(
+                altIdentifiers.contains("DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES"),
+                "Expected altIdentifier DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES, got: " + altIdentifiers
+        );
+    }
+
+    @Test
     void should_return_all_datasets_based_on_stamp() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasets("http://rdf.insee.fr/graphes/catalogue", Set.of("DG75-L001")));
         assertEquals(1, result.length());
