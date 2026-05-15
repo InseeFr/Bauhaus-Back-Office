@@ -1,19 +1,22 @@
-SELECT distinct ?id ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
+SELECT distinct ?id ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang ?listCell ?listNext
 	FROM <${DOCUMENTS_GRAPH}>
 
 <#if idSims != "">
 	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
-</#if>	
+</#if>
 
-WHERE { 
+WHERE {
 
 <#if idSims != "">
 	 ?text rdf:type dcmitype:Text .
-	 ?text insee:additionalMaterial ?uri . 
+	 ?text insee:additionalMaterial ?listHead .
+	 ?listHead rdf:rest* ?listCell .
+	 ?listCell rdf:first ?uri .
+	 ?listCell rdf:rest ?listNext .
 	 <#if LANG != "">
 	 	?text dcterms:language <${LANG}> .
 	 </#if>
-</#if>	
+</#if>
 
 	 ?uri rdf:type foaf:Document .
 	 ?uri <http://schema.org/url> ?url .

@@ -1,0 +1,59 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix schema:   <http://schema.org/> .
+@prefix dctype:   <http://purl.org/dc/dcmitype/> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix sdmx-mm:  <http://www.w3.org/ns/sdmx-mm#> .
+@prefix insee:    <http://rdf.insee.fr/def/base#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# Documents listés dans une rubrique S.3.1 du SIMS 9999, dans la forme cible
+# (rdf:List ordonnée : 709 -> 710 -> 711).
+
+<http://rdf.insee.fr/graphes/qualite/documents> {
+    <http://bauhaus/documents/document/709>
+        a            foaf:Document ;
+        rdfs:label   "Document A"@fr ;
+        schema:url   <http://example.org/docA.pdf> .
+
+    <http://bauhaus/documents/document/710>
+        a            foaf:Document ;
+        rdfs:label   "Document B"@fr ;
+        schema:url   <http://example.org/docB.pdf> .
+
+    <http://bauhaus/documents/document/711>
+        a            foaf:Document ;
+        rdfs:label   "Document C"@fr ;
+        schema:url   <http://example.org/docC.pdf> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/rapport/9999> {
+    <http://bauhaus/qualite/rapport/9999>
+        a                       sdmx-mm:MetadataReport ;
+        rdfs:label              "Rapport ordre des documents"@fr ;
+        insee:validationState   "Unpublished" .
+
+    <http://bauhaus/qualite/attribut/9999/S.3.1>
+        a                        sdmx-mm:ReportedAttribute ;
+        simsv2fr:S.3.1           <http://bauhaus/qualite/attribut/9999/S.3.1/texte> ;
+        sdmx-mm:metadataReport   <http://bauhaus/qualite/rapport/9999> .
+
+    <http://bauhaus/qualite/attribut/9999/S.3.1/texte>
+        a                          dctype:Text ;
+        rdf:value                  "Champ de l'enquête"@fr ;
+        dcterms:language           <http://bauhaus/codes/langue/fr> ;
+        insee:additionalMaterial   _:cell709 .
+
+    _:cell709
+        rdf:first   <http://bauhaus/documents/document/709> ;
+        rdf:rest    _:cell710 .
+
+    _:cell710
+        rdf:first   <http://bauhaus/documents/document/710> ;
+        rdf:rest    _:cell711 .
+
+    _:cell711
+        rdf:first   <http://bauhaus/documents/document/711> ;
+        rdf:rest    rdf:nil .
+}

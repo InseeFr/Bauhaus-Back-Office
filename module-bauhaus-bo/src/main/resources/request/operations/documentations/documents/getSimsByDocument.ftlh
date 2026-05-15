@@ -1,6 +1,6 @@
 select ?id ?labelLg1 ?labelLg2 ?simsRubricId
 where {
-    ?simsValue insee:additionalMaterial ?document .
+    ?simsValue insee:additionalMaterial/rdf:rest*/rdf:first ?document .
     FILTER (regex(str(?document), '${ID}$','i'))
     ?simsRubric ?p ?simsValue .
     ?simsRubric sdmx-mm:metadataReport ?sims .
