@@ -11,7 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesLis
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StringValue;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MultilingualStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Title;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
@@ -196,7 +196,7 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String groupId = "10a689ce-7006-429b-8e84-036b7787b422";
 
-        Citation citation = new Citation(new Title(new StringValue("fr-FR", "Base permanente des équipements")));
+        Citation citation = new Citation(new Title(MultilingualStrings.of("fr-FR", "Base permanente des équipements")));
         StudyUnitReference suRef1 = new StudyUnitReference(agencyId, "su-1", "1", "StudyUnit");
         StudyUnitReference suRef2 = new StudyUnitReference(agencyId, "su-2", "1", "StudyUnit");
 
@@ -213,7 +213,7 @@ class DDIServiceImplTest {
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:su-1:1",
             agencyId, "su-1", "1",
-            new Citation(new Title(new StringValue("fr-FR", "BPE 2021"))),
+            new Citation(new Title(MultilingualStrings.of("fr-FR", "BPE 2021"))),
             "http://id.insee.fr/operations/operation/op1",
             null
         );
@@ -222,7 +222,7 @@ class DDIServiceImplTest {
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:su-2:1",
             agencyId, "su-2", "1",
-            new Citation(new Title(new StringValue("fr-FR", "BPE 2022"))),
+            new Citation(new Title(MultilingualStrings.of("fr-FR", "BPE 2022"))),
             "http://id.insee.fr/operations/operation/op2",
             null
         );
@@ -246,10 +246,10 @@ class DDIServiceImplTest {
         assertEquals("ddi:4.0", result.schema());
         assertEquals(1, result.group().size());
         assertEquals(groupId, result.group().get(0).id());
-        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().string().text());
+        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().strings().get(0).value().value());
         assertEquals(2, result.studyUnit().size());
-        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().string().text());
-        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().string().text());
+        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().strings().get(0).value().value());
+        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().strings().get(0).value().value());
 
         verify(ddiRepository).getGroup(agencyId, groupId);
     }

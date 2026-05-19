@@ -142,13 +142,20 @@ public class Ddi3XmlReader {
         Element titleElement = xmlHelper.getChildElement(citationElement, "Title");
         if (titleElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(titleElement, STRING_ELEMENT);
-        if (stringElement == null) return null;
+        List<MultilingualStringEntry> strings = parseSingleMultilingual(titleElement, STRING_ELEMENT);
+        if (strings == null) return null;
 
-        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
-        String text = stringElement.getTextContent();
+        return new Citation(new Title(strings));
+    }
 
-        return new Citation(new Title(new StringValue(lang, text)));
+    private List<MultilingualStringEntry> parseSingleMultilingual(Element parent, String childName) {
+        Element child = xmlHelper.getChildElement(parent, childName);
+        if (child == null) return null;
+
+        String lang = xmlHelper.getAttribute(child, XML_LANG_ATTRIBUTE);
+        String text = child.getTextContent();
+
+        return MultilingualStrings.of(lang, text);
     }
 
     private DataRelationshipReference parseDataRelationshipReference(Element parent) {
@@ -187,52 +194,32 @@ public class Ddi3XmlReader {
         Element nameElement = xmlHelper.getChildElement(parent, "DataRelationshipName");
         if (nameElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(nameElement, STRING_ELEMENT);
-        if (stringElement == null) return null;
-
-        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
-        String text = stringElement.getTextContent();
-
-        return new Label(new Content(lang, text));
+        List<MultilingualStringEntry> strings = parseSingleMultilingual(nameElement, STRING_ELEMENT);
+        return strings == null ? null : new Label(strings);
     }
 
     private VariableName parseVariableName(Element parent) {
         Element nameElement = xmlHelper.getChildElement(parent, "VariableName");
         if (nameElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(nameElement, STRING_ELEMENT);
-        if (stringElement == null) return null;
-
-        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
-        String text = stringElement.getTextContent();
-
-        return new VariableName(new StringValue(lang, text));
+        List<MultilingualStringEntry> strings = parseSingleMultilingual(nameElement, STRING_ELEMENT);
+        return strings == null ? null : new VariableName(strings);
     }
 
     private Label parseLabel(Element parent) {
         Element labelElement = xmlHelper.getChildElement(parent, "Label");
         if (labelElement == null) return null;
 
-        Element contentElement = xmlHelper.getChildElement(labelElement, "Content");
-        if (contentElement == null) return null;
-
-        String lang = xmlHelper.getAttribute(contentElement, XML_LANG_ATTRIBUTE);
-        String text = contentElement.getTextContent();
-
-        return new Label(new Content(lang, text));
+        List<MultilingualStringEntry> contents = parseSingleMultilingual(labelElement, "Content");
+        return contents == null ? null : new Label(contents);
     }
 
     private Description parseDescription(Element parent) {
         Element descElement = xmlHelper.getChildElement(parent, "Description");
         if (descElement == null) return null;
 
-        Element contentElement = xmlHelper.getChildElement(descElement, "Content");
-        if (contentElement == null) return null;
-
-        String lang = xmlHelper.getAttribute(contentElement, XML_LANG_ATTRIBUTE);
-        String text = contentElement.getTextContent();
-
-        return new Description(new Content(lang, text));
+        List<MultilingualStringEntry> contents = parseSingleMultilingual(descElement, "Content");
+        return contents == null ? null : new Description(contents);
     }
 
     private LogicalRecord parseLogicalRecord(Element parent) {
@@ -257,13 +244,8 @@ public class Ddi3XmlReader {
         Element nameElement = xmlHelper.getChildElement(parent, "LogicalRecordName");
         if (nameElement == null) return null;
 
-        Element stringElement = xmlHelper.getChildElement(nameElement, STRING_ELEMENT);
-        if (stringElement == null) return null;
-
-        String lang = xmlHelper.getAttribute(stringElement, XML_LANG_ATTRIBUTE);
-        String text = stringElement.getTextContent();
-
-        return new Label(new Content(lang, text));
+        List<MultilingualStringEntry> strings = parseSingleMultilingual(nameElement, STRING_ELEMENT);
+        return strings == null ? null : new Label(strings);
     }
 
     private VariablesInRecord parseVariablesInRecord(Element parent) {

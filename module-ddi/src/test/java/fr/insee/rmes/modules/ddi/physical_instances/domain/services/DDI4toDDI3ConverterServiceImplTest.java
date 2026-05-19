@@ -47,7 +47,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "saphir-rp99-sas",
                 "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "SAPHIR"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "SAPHIR"))),
                 new DataRelationshipReference("fr.insee", "saphir-rp99-sas", "1", "DataRelationship")
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null);
@@ -79,9 +79,9 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "saphir-rp99-sas",
                 "1",
                 null,
-                new Label(new Content("fr-FR", "SAPHIR - RP99")),
+                new Label(MultilingualStrings.of("fr-FR", "SAPHIR - RP99")),
                 new LogicalRecord("true", "urn:...", "fr.insee", "saphir-rp99-sas", "1",
-                        new Label(new Content("fr-FR", "SAPHIR - RP99")),
+                        new Label(MultilingualStrings.of("fr-FR", "SAPHIR - RP99")),
                         new VariablesInRecord(List.of()))
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, List.of(dr), null, null, null);
@@ -108,8 +108,8 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "urn:ddi:fr.insee:Variable.AGEMEN8:1",
                 "fr.insee", "AGEMEN8", "1",
                 null,
-                new VariableName(new StringValue("fr-FR", "AGEMEN8")),
-                new Label(new Content("fr-FR", "Âge détaillé")),
+                new VariableName(MultilingualStrings.of("fr-FR", "AGEMEN8")),
+                new Label(MultilingualStrings.of("fr-FR", "Âge détaillé")),
                 null,
                 new VariableRepresentation("Demographic",
                         new CodeRepresentation("false", new CodeListReference("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
@@ -139,7 +139,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1",
                 "fr.insee", "CL_AGEMEN8", "1",
-                new Label(new Content("fr-FR", "Liste codes")),
+                new Label(MultilingualStrings.of("fr-FR", "Liste codes")),
                 List.of()
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, List.of(cl), null);
@@ -165,7 +165,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:Category.CAT_0:1",
                 "fr.insee", "CAT_0", "1",
-                new Label(new Content("fr-FR", "0 an"))
+                new Label(MultilingualStrings.of("fr-FR", "0 an"))
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, List.of(cat));
         when(xmlWriter.buildCategoryXml(cat)).thenReturn("<Category/>");
@@ -230,7 +230,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "urn:ddi:fr.insee:PhysicalInstance.test:1",
                 "fr.insee", "test-id", "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Test"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test"))),
                 new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
         );
         TopLevelReference topLevelRef = new TopLevelReference("fr.insee", "test-id", "1", "PhysicalInstance");
@@ -280,7 +280,7 @@ class DDI4toDDI3ConverterServiceImplTest {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
                 "true", "2025-01-21T13:48:46.363", "urn:...",
                 "fr.insee", "pi-id", "1",
-                null, new Citation(new Title(new StringValue("fr-FR", "Test"))),
+                null, new Citation(new Title(MultilingualStrings.of("fr-FR", "Test"))),
                 new DataRelationshipReference("fr.insee", "dr", "1", "DataRelationship")
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null);
@@ -316,7 +316,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                         "urn:ddi:fr.insee:PhysicalInstance.test:1",
                         "fr.insee", "test", "1",
                         null,
-                        new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
+                        new Citation(new Title(MultilingualStrings.of("fr-FR", "Test Instance"))),
                         new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
                 )),
                 List.of(new Ddi4DataRelationship(
@@ -330,22 +330,22 @@ class DDI4toDDI3ConverterServiceImplTest {
                                 "urn:ddi:fr.insee:Variable.VAR1:1",
                                 "fr.insee", "VAR1", "1",
                                 null,
-                                new VariableName(new StringValue("fr-FR", "VAR1")),
-                                new Label(new Content("fr-FR", "Variable 1")),
+                                new VariableName(MultilingualStrings.of("fr-FR", "VAR1")),
+                                new Label(MultilingualStrings.of("fr-FR", "Variable 1")),
                                 null, null, null),
                         new Ddi4Variable("true", "2025-01-21T13:48:46.363",
                                 "urn:ddi:fr.insee:Variable.VAR2:1",
                                 "fr.insee", "VAR2", "1",
                                 null,
-                                new VariableName(new StringValue("fr-FR", "VAR2")),
-                                new Label(new Content("fr-FR", "Variable 2")),
+                                new VariableName(MultilingualStrings.of("fr-FR", "VAR2")),
+                                new Label(MultilingualStrings.of("fr-FR", "Variable 2")),
                                 null, null, null)
                 ),
                 List.of(new Ddi4CodeList(
                         "true", "2025-01-21T13:48:46.363",
                         "urn:ddi:fr.insee:CodeList.CL_TEST:1",
                         "fr.insee", "CL_TEST", "1",
-                        new Label(new Content("fr-FR", "Test CodeList")),
+                        new Label(MultilingualStrings.of("fr-FR", "Test CodeList")),
                         List.of(new Code("true", "urn:...", "fr.insee", "0", "1",
                                 new CategoryReference("fr.insee", "CAT_0", "1", "Category"), "0"))
                 )),
@@ -353,11 +353,11 @@ class DDI4toDDI3ConverterServiceImplTest {
                         new Ddi4Category("true", "2025-01-21T13:48:46.363",
                                 "urn:ddi:fr.insee:Category.CAT_0:1",
                                 "fr.insee", "CAT_0", "1",
-                                new Label(new Content("fr-FR", "Category 0"))),
+                                new Label(MultilingualStrings.of("fr-FR", "Category 0"))),
                         new Ddi4Category("true", "2025-01-21T13:48:46.363",
                                 "urn:ddi:fr.insee:Category.CAT_1:1",
                                 "fr.insee", "CAT_1", "1",
-                                new Label(new Content("fr-FR", "Category 1")))
+                                new Label(MultilingualStrings.of("fr-FR", "Category 1")))
                 )
         );
     }
