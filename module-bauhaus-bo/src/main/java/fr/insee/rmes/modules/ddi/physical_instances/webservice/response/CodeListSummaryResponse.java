@@ -5,8 +5,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 public record CodeListSummaryResponse(String agencyId, String id, String label) {
     public static CodeListSummaryResponse fromDdi4CodeList(Ddi4CodeList codeList) {
         String labelText = null;
-        if (codeList.label() != null && codeList.label().content() != null) {
-            labelText = codeList.label().content().text();
+        if (codeList.label() != null && codeList.label().contents() != null && !codeList.label().contents().isEmpty()) {
+            labelText = codeList.label().contents().get(0).value().value();
         }
         return new CodeListSummaryResponse(codeList.agency(), codeList.id(), labelText);
     }

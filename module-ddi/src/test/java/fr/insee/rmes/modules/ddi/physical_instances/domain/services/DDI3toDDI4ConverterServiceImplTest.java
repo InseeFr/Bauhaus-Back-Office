@@ -115,8 +115,8 @@ class DDI3toDDI4ConverterServiceImplTest {
 
         assertNotNull(pi.citation());
         assertNotNull(pi.citation().title());
-        assertEquals("fr-FR", pi.citation().title().string().xmlLang());
-        assertEquals("SAPHIR - Fichier Individus RP99 (.sas7bdat)", pi.citation().title().string().text());
+        assertEquals("fr-FR", pi.citation().title().strings().get(0).value().languageTag());
+        assertEquals("SAPHIR - Fichier Individus RP99 (.sas7bdat)", pi.citation().title().strings().get(0).value().value());
 
         assertNotNull(pi.dataRelationshipReference());
         assertEquals("fr.insee", pi.dataRelationshipReference().agency());
@@ -194,7 +194,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", dr.version());
 
         assertNotNull(dr.label());
-        assertEquals("SAPHIR - RP99", dr.label().content().text());
+        assertEquals("SAPHIR - RP99", dr.label().contents().get(0).value().value());
 
         assertNotNull(dr.logicalRecord());
         assertEquals("true", dr.logicalRecord().isUniversallyUnique());
@@ -272,13 +272,13 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", var.version());
 
         assertNotNull(var.variableName());
-        assertEquals("AGEMEN8", var.variableName().string().text());
+        assertEquals("AGEMEN8", var.variableName().strings().get(0).value().value());
 
         assertNotNull(var.label());
-        assertEquals("Âge détaillé", var.label().content().text());
+        assertEquals("Âge détaillé", var.label().contents().get(0).value().value());
 
         assertNotNull(var.description());
-        assertEquals("Âge de l'individu en années révolues", var.description().content().text());
+        assertEquals("Âge de l'individu en années révolues", var.description().contents().get(0).value().value());
 
         assertNotNull(var.variableRepresentation());
         assertEquals("Demographic", var.variableRepresentation().variableRole());
@@ -432,7 +432,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", cl.version());
 
         assertNotNull(cl.label());
-        assertEquals("Liste de codes - Âge détaillé", cl.label().content().text());
+        assertEquals("Liste de codes - Âge détaillé", cl.label().contents().get(0).value().value());
 
         assertNotNull(cl.code());
         assertEquals(2, cl.code().size());
@@ -500,7 +500,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", cat.version());
 
         assertNotNull(cat.label());
-        assertEquals("0 an", cat.label().content().text());
+        assertEquals("0 an", cat.label().contents().get(0).value().value());
     }
 
     @Test
@@ -583,9 +583,9 @@ class DDI3toDDI4ConverterServiceImplTest {
 
         Ddi4Variable var = result.variable().get(0);
         assertEquals("true", var.isGeographic());
-        assertEquals("NAME", var.variableName().string().text());
-        assertEquals("Name", var.label().content().text());
-        assertEquals("Person name", var.description().content().text());
+        assertEquals("NAME", var.variableName().strings().get(0).value().value());
+        assertEquals("Name", var.label().contents().get(0).value().value());
+        assertEquals("Person name", var.description().contents().get(0).value().value());
 
         assertNotNull(var.variableRepresentation());
         assertNotNull(var.variableRepresentation().textRepresentation());
@@ -650,8 +650,8 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.variable().size());
 
         Ddi4Variable var = result.variable().get(0);
-        assertEquals("BIRTHDATE", var.variableName().string().text());
-        assertEquals("Birth Date", var.label().content().text());
+        assertEquals("BIRTHDATE", var.variableName().strings().get(0).value().value());
+        assertEquals("Birth Date", var.label().contents().get(0).value().value());
 
         assertNotNull(var.variableRepresentation());
         assertNotNull(var.variableRepresentation().dateTimeRepresentation());

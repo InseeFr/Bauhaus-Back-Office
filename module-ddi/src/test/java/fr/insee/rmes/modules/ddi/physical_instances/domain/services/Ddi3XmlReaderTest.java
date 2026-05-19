@@ -198,9 +198,9 @@ class Ddi3XmlReaderTest {
         assertNotNull(result);
         assertEquals("dr-id", result.id());
         assertNotNull(result.label());
-        assertNotNull(result.label().content());
-        assertEquals("fr-FR", result.label().content().xmlLang());
-        assertEquals("Test DR Label", result.label().content().text());
+        assertNotNull(result.label().contents().get(0).value());
+        assertEquals("fr-FR", result.label().contents().get(0).value().languageTag());
+        assertEquals("Test DR Label", result.label().contents().get(0).value().value());
     }
 
     @Test
@@ -227,8 +227,8 @@ class Ddi3XmlReaderTest {
         assertNotNull(result);
         assertEquals("dr-id", result.id());
         assertNotNull(result.label());
-        assertEquals("Test DR Name", result.label().content().text());
-        assertEquals("fr-FR", result.label().content().xmlLang());
+        assertEquals("Test DR Name", result.label().contents().get(0).value().value());
+        assertEquals("fr-FR", result.label().contents().get(0).value().languageTag());
     }
 
     @Test
@@ -268,9 +268,9 @@ class Ddi3XmlReaderTest {
         assertNotNull(result.logicalRecord());
         assertEquals("lr-id", result.logicalRecord().id());
         assertNotNull(result.logicalRecord().label());
-        assertNotNull(result.logicalRecord().label().content());
-        assertEquals("fr-FR", result.logicalRecord().label().content().xmlLang());
-        assertEquals("LR Label", result.logicalRecord().label().content().text());
+        assertNotNull(result.logicalRecord().label().contents().get(0).value());
+        assertEquals("fr-FR", result.logicalRecord().label().contents().get(0).value().languageTag());
+        assertEquals("LR Label", result.logicalRecord().label().contents().get(0).value().value());
     }
 
     @Test
@@ -307,7 +307,7 @@ class Ddi3XmlReaderTest {
         assertNotNull(result.logicalRecord());
         assertEquals("lr-id", result.logicalRecord().id());
         assertNotNull(result.logicalRecord().label());
-        assertEquals("LR Name", result.logicalRecord().label().content().text());
-        assertEquals("fr-FR", result.logicalRecord().label().content().xmlLang());
+        assertEquals("LR Name", result.logicalRecord().label().contents().get(0).value().value());
+        assertEquals("fr-FR", result.logicalRecord().label().contents().get(0).value().languageTag());
     }
 }

@@ -12,6 +12,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -54,9 +55,8 @@ public class Ddi3XmlWriter {
         }
 
         if (group.citation() != null && group.citation().title() != null) {
-            StringType titleStr = groupType.addNewCitation().addNewTitle().addNewString();
-            titleStr.setLang(group.citation().title().string().xmlLang());
-            titleStr.setStringValue(group.citation().title().string().text());
+            writeString(groupType.addNewCitation().addNewTitle().addNewString(),
+                    firstEntry(group.citation().title().strings()));
         }
 
         if (group.studyUnitReference() != null) {
@@ -90,9 +90,8 @@ public class Ddi3XmlWriter {
         }
 
         if (studyUnit.citation() != null && studyUnit.citation().title() != null) {
-            StringType titleStr = suType.addNewCitation().addNewTitle().addNewString();
-            titleStr.setLang(studyUnit.citation().title().string().xmlLang());
-            titleStr.setStringValue(studyUnit.citation().title().string().text());
+            writeString(suType.addNewCitation().addNewTitle().addNewString(),
+                    firstEntry(studyUnit.citation().title().strings()));
         }
 
         if (studyUnit.physicalInstanceReferences() != null) {
@@ -122,9 +121,8 @@ public class Ddi3XmlWriter {
         populateBasedOnObject(pi.basedOnObject(), () -> piType.addNewBasedOnObject().addNewBasedOnReference());
 
         if (pi.citation() != null && pi.citation().title() != null) {
-            StringType titleStr = piType.addNewCitation().addNewTitle().addNewString();
-            titleStr.setLang(pi.citation().title().string().xmlLang());
-            titleStr.setStringValue(pi.citation().title().string().text());
+            writeString(piType.addNewCitation().addNewTitle().addNewString(),
+                    firstEntry(pi.citation().title().strings()));
         }
 
         if (pi.dataRelationshipReference() != null) {
@@ -151,14 +149,10 @@ public class Ddi3XmlWriter {
 
         populateBasedOnObject(dr.basedOnObject(), () -> drType.addNewBasedOnObject().addNewBasedOnReference());
 
-        if (dr.label() != null && dr.label().content() != null) {
-            StringType nameStr = drType.addNewDataRelationshipName().addNewString();
-            nameStr.setLang(dr.label().content().xmlLang());
-            nameStr.setStringValue(dr.label().content().text());
-
-            ContentType content = drType.addNewLabel().addNewContent();
-            content.setLang(dr.label().content().xmlLang());
-            setContentText(content, dr.label().content().text());
+        if (dr.label() != null && dr.label().contents() != null && !dr.label().contents().isEmpty()) {
+            MultilingualStringValue firstLabel = firstEntry(dr.label().contents());
+            writeString(drType.addNewDataRelationshipName().addNewString(), firstLabel);
+            writeContent(drType.addNewLabel().addNewContent(), firstLabel);
         }
 
         if (dr.logicalRecord() != null) {
@@ -170,14 +164,10 @@ public class Ddi3XmlWriter {
             lrType.addNewID().setStringValue(lr.id());
             lrType.addVersion(lr.version());
 
-            if (lr.label() != null && lr.label().content() != null) {
-                StringType nameStr = lrType.addNewLogicalRecordName().addNewString();
-                nameStr.setLang(lr.label().content().xmlLang());
-                nameStr.setStringValue(lr.label().content().text());
-
-                ContentType content = lrType.addNewLabel().addNewContent();
-                content.setLang(lr.label().content().xmlLang());
-                setContentText(content, lr.label().content().text());
+            if (lr.label() != null && lr.label().contents() != null && !lr.label().contents().isEmpty()) {
+                MultilingualStringValue firstLabel = firstEntry(lr.label().contents());
+                writeString(lrType.addNewLogicalRecordName().addNewString(), firstLabel);
+                writeContent(lrType.addNewLabel().addNewContent(), firstLabel);
             }
 
             if (lr.variablesInRecord() != null && lr.variablesInRecord().variableUsedReference() != null) {
@@ -212,21 +202,18 @@ public class Ddi3XmlWriter {
         populateBasedOnObject(var.basedOnObject(), () -> varType.addNewBasedOnObject().addNewBasedOnReference());
 
         if (var.variableName() != null) {
-            StringType nameStr = varType.addNewVariableName().addNewString();
-            nameStr.setLang(var.variableName().string().xmlLang());
-            nameStr.setStringValue(var.variableName().string().text());
+            writeString(varType.addNewVariableName().addNewString(),
+                    firstEntry(var.variableName().strings()));
         }
 
-        if (var.label() != null && var.label().content() != null) {
-            ContentType content = varType.addNewLabel().addNewContent();
-            content.setLang(var.label().content().xmlLang());
-            setContentText(content, var.label().content().text());
+        if (var.label() != null && var.label().contents() != null && !var.label().contents().isEmpty()) {
+            writeContent(varType.addNewLabel().addNewContent(),
+                    firstEntry(var.label().contents()));
         }
 
-        if (var.description() != null && var.description().content() != null) {
-            ContentType content = varType.addNewDescription().addNewContent();
-            content.setLang(var.description().content().xmlLang());
-            setContentText(content, var.description().content().text());
+        if (var.description() != null && var.description().contents() != null && !var.description().contents().isEmpty()) {
+            writeContent(varType.addNewDescription().addNewContent(),
+                    firstEntry(var.description().contents()));
         }
 
         var varRepType = varType.addNewVariableRepresentation();
@@ -339,10 +326,9 @@ public class Ddi3XmlWriter {
         clType.addNewID().setStringValue(cl.id());
         clType.addVersion(cl.version());
 
-        if (cl.label() != null && cl.label().content() != null) {
-            ContentType content = clType.addNewLabel().addNewContent();
-            content.setLang(cl.label().content().xmlLang());
-            setContentText(content, cl.label().content().text());
+        if (cl.label() != null && cl.label().contents() != null && !cl.label().contents().isEmpty()) {
+            writeContent(clType.addNewLabel().addNewContent(),
+                    firstEntry(cl.label().contents()));
         }
 
         if (cl.code() != null && !cl.code().isEmpty()) {
@@ -383,10 +369,9 @@ public class Ddi3XmlWriter {
         catType.addNewID().setStringValue(cat.id());
         catType.addVersion(cat.version());
 
-        if (cat.label() != null && cat.label().content() != null) {
-            ContentType content = catType.addNewLabel().addNewContent();
-            content.setLang(cat.label().content().xmlLang());
-            setContentText(content, cat.label().content().text());
+        if (cat.label() != null && cat.label().contents() != null && !cat.label().contents().isEmpty()) {
+            writeContent(catType.addNewLabel().addNewContent(),
+                    firstEntry(cat.label().contents()));
         }
 
         return doc.xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
@@ -469,6 +454,20 @@ public class Ddi3XmlWriter {
             cursor.toEndToken();
             cursor.insertChars(text);
         }
+    }
+
+    private static MultilingualStringValue firstEntry(List<MultilingualStringEntry> entries) {
+        return entries.get(0).value();
+    }
+
+    private static void writeString(StringType target, MultilingualStringValue value) {
+        target.setLang(value.languageTag());
+        target.setStringValue(value.value());
+    }
+
+    private void writeContent(ContentType target, MultilingualStringValue value) {
+        target.setLang(value.languageTag());
+        setContentText(target, value.value());
     }
 
     private String getTypeOfObjectFromItemType(String itemType) {

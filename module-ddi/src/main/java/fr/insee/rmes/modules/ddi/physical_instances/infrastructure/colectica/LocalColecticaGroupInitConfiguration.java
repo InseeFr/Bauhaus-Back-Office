@@ -10,7 +10,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StringValue;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MultilingualStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Title;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -115,7 +115,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 defaultAgencyId,
                                 studyUnitId,
                                 "1",
-                                new Citation(new Title(new StringValue(defaultLang, studyUnitLabel))),
+                                new Citation(new Title(MultilingualStrings.of(defaultLang, studyUnitLabel))),
                                 operation.operationIri(),
                                 null
                         );
@@ -167,7 +167,7 @@ public class LocalColecticaGroupInitConfiguration {
                             groupId,
                             "1",
                             versionResponsibility,
-                            new Citation(new Title(new StringValue(defaultLang, groupLabel))),
+                            new Citation(new Title(MultilingualStrings.of(defaultLang, groupLabel))),
                             studyUnitRefs,
                             List.of(series.seriesIri()),
                             "insee:StatisticalOperationSeries"

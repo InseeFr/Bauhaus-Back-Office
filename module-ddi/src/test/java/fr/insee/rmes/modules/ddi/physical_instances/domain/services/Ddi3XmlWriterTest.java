@@ -45,7 +45,7 @@ class Ddi3XmlWriterTest {
                 "new-pi-id",
                 "1",
                 basedOnObject,
-                new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test Instance"))),
                 new DataRelationshipReference("fr.insee", "dr-id", "1", "DataRelationship")
         );
 
@@ -67,7 +67,7 @@ class Ddi3XmlWriterTest {
                 "new-pi-id",
                 "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test Instance"))),
                 null
         );
 
@@ -91,7 +91,7 @@ class Ddi3XmlWriterTest {
                 "new-pi-id",
                 "1",
                 basedOnObject,
-                new Citation(new Title(new StringValue("fr-FR", "Test Instance"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test Instance"))),
                 null
         );
 
@@ -143,7 +143,7 @@ class Ddi3XmlWriterTest {
                 "dr-id",
                 "1",
                 null,
-                new Label(new Content("fr-FR", "DR Label")),
+                new Label(MultilingualStrings.of("fr-FR", "DR Label")),
                 null
         );
 
@@ -207,7 +207,7 @@ class Ddi3XmlWriterTest {
                 "fr.insee",
                 "lr-id",
                 "1",
-                new Label(new Content("fr-FR", "LR Label")),
+                new Label(MultilingualStrings.of("fr-FR", "LR Label")),
                 null
         );
 
@@ -281,8 +281,8 @@ class Ddi3XmlWriterTest {
                 "new-var-id",
                 "1",
                 basedOnObject,
-                new VariableName(new StringValue("fr-FR", "TEST_VAR")),
-                new Label(new Content("fr-FR", "Test Variable")),
+                new VariableName(MultilingualStrings.of("fr-FR", "TEST_VAR")),
+                new Label(MultilingualStrings.of("fr-FR", "Test Variable")),
                 null,
                 null,
                 null
@@ -305,8 +305,8 @@ class Ddi3XmlWriterTest {
                 "var-coderep",
                 "1",
                 null,
-                new VariableName(new StringValue("fr-FR", "VAR_CODEREP")),
-                new Label(new Content("fr-FR", "Variable avec CodeRepresentation")),
+                new VariableName(MultilingualStrings.of("fr-FR", "VAR_CODEREP")),
+                new Label(MultilingualStrings.of("fr-FR", "Variable avec CodeRepresentation")),
                 null,
                 new VariableRepresentation(
                         null,
@@ -338,7 +338,7 @@ class Ddi3XmlWriterTest {
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
-                new Citation(new Title(new StringValue("fr-FR", "Enquête innovation Group"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Enquête innovation Group"))),
                 List.of(new StudyUnitReference("fr.insee", "su-id-1", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries"
@@ -371,7 +371,7 @@ class Ddi3XmlWriterTest {
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
-                new Citation(new Title(new StringValue("fr-FR", "Test Group"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test Group"))),
                 List.of(),
                 null, null
         );
@@ -392,7 +392,7 @@ class Ddi3XmlWriterTest {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
-                new Citation(new Title(new StringValue("fr-FR", "BPE 2021 StudyUnit"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "BPE 2021 StudyUnit"))),
                 "http://id.insee.fr/operations/operation/s1001a1",
                 null
         );
@@ -419,7 +419,7 @@ class Ddi3XmlWriterTest {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
-                new Citation(new Title(new StringValue("fr-FR", "Test SU"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test SU"))),
                 null,
                 null
         );

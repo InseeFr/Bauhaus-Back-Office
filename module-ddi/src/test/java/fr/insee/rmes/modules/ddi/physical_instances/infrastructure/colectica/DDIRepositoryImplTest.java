@@ -209,7 +209,7 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
                 agencyId, instanceId, "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Radon et gamma"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Radon et gamma"))),
                 null
         );
 
@@ -232,7 +232,7 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.physicalInstance().size());
         assertEquals(instanceId, result.physicalInstance().get(0).id());
         assertEquals(agencyId, result.physicalInstance().get(0).agency());
-        assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().string().text());
+        assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().strings().get(0).value().value());
 
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
@@ -328,7 +328,7 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:test-id:1",
                 "fr.insee", "test-id", "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", physicalInstanceLabel))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", physicalInstanceLabel))),
                 null
         );
 
@@ -349,7 +349,7 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
-        assertEquals(physicalInstanceLabel, result.physicalInstance().get(0).citation().title().string().text());
+        assertEquals(physicalInstanceLabel, result.physicalInstance().get(0).citation().title().strings().get(0).value().value());
 
         // Verify item creation endpoint was called
         verify(requestSpec, atLeastOnce()).uri(eq(itemUrl));
@@ -480,7 +480,7 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Old Label"))),
                 new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
         );
 
@@ -599,7 +599,7 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
                 agencyId, instanceId, "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "test"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "test"))),
                 new DataRelationshipReference(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship")
         );
 
@@ -611,8 +611,8 @@ class DDIRepositoryImplTest {
                 "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
                 "1",
                 null,
-                new VariableName(new StringValue("fr-FR", "name")),
-                new Label(new Content("fr-FR", "Test Label")),
+                new VariableName(MultilingualStrings.of("fr-FR", "name")),
+                new Label(MultilingualStrings.of("fr-FR", "Test Label")),
                 null,
                 new VariableRepresentation(null,
                     new CodeRepresentation("false",
@@ -639,7 +639,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1",
                 agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1",
-                new Label(new Content("fr-FR", "cl")),
+                new Label(MultilingualStrings.of("fr-FR", "cl")),
                 List.of(new Code("true",
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
@@ -651,7 +651,7 @@ class DDIRepositoryImplTest {
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1",
                 agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1",
-                new Label(new Content("fr-FR", "aq"))
+                new Label(MultilingualStrings.of("fr-FR", "aq"))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -675,22 +675,22 @@ class DDIRepositoryImplTest {
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
         assertEquals(instanceId, result.physicalInstance().get(0).id());
-        assertEquals("test", result.physicalInstance().get(0).citation().title().string().text());
+        assertEquals("test", result.physicalInstance().get(0).citation().title().strings().get(0).value().value());
 
         assertNotNull(result.variable());
         assertEquals(1, result.variable().size());
         assertEquals("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", result.variable().get(0).id());
-        assertEquals("name", result.variable().get(0).variableName().string().text());
+        assertEquals("name", result.variable().get(0).variableName().strings().get(0).value().value());
 
         assertNotNull(result.codeList());
         assertEquals(1, result.codeList().size());
         assertEquals("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", result.codeList().get(0).id());
-        assertEquals("cl", result.codeList().get(0).label().content().text());
+        assertEquals("cl", result.codeList().get(0).label().contents().get(0).value().value());
 
         assertNotNull(result.category());
         assertEquals(1, result.category().size());
         assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
-        assertEquals("aq", result.category().get(0).label().content().text());
+        assertEquals("aq", result.category().get(0).label().contents().get(0).value().value());
 
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
@@ -888,16 +888,16 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.group().size());
         assertEquals(groupId, result.group().get(0).id());
         assertEquals(agencyId, result.group().get(0).agency());
-        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().string().text());
+        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().strings().get(0).value().value());
         assertEquals(2, result.group().get(0).studyUnitReference().size());
 
         // Verify StudyUnits
         assertNotNull(result.studyUnit());
         assertEquals(2, result.studyUnit().size());
         assertEquals("89f5e04d-da22-485f-9c08-5fbe452b6c90", result.studyUnit().get(0).id());
-        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().string().text());
+        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().strings().get(0).value().value());
         assertEquals("820a7c14-0ac4-42bc-a8c1-d39f60e304ee", result.studyUnit().get(1).id());
-        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().string().text());
+        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().strings().get(0).value().value());
 
         // Verify TopLevelReference
         assertNotNull(result.topLevelReference());
@@ -1054,14 +1054,14 @@ class DDIRepositoryImplTest {
                 "true", "2024-10-31T10:43:38",
                 "urn:ddi:fr.insee:" + codeListId + ":1",
                 agencyId, codeListId, "1",
-                new Label(new Content("fr-FR", "NAF rév. 2")),
+                new Label(MultilingualStrings.of("fr-FR", "NAF rév. 2")),
                 List.of()
         );
         Ddi4Category mockCategory = new Ddi4Category(
                 "true", "2024-10-31T10:43:38",
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId, categoryId, "1",
-                new Label(new Content("fr-FR", "Agriculture"))
+                new Label(MultilingualStrings.of("fr-FR", "Agriculture"))
         );
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
@@ -1146,13 +1146,13 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Old Label"))),
                 new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
         );
 
         // Existing DataRelationship has a Label with "en-US" language
-        Label existingDrLabel = new Label(new Content("en-US", "Existing DR Label"));
-        Label existingLrLabel = new Label(new Content("de-DE", "Existing LR Label"));
+        Label existingDrLabel = new Label(MultilingualStrings.of("en-US", "Existing DR Label"));
+        Label existingLrLabel = new Label(MultilingualStrings.of("de-DE", "Existing LR Label"));
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
                 "true", "2025-01-01T00:00:00",
@@ -1206,8 +1206,8 @@ class DDIRepositoryImplTest {
         Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
         // When newText is null, existing label should be preserved
         assertNotNull(updatedDr.label());
-        assertEquals("en-US", updatedDr.label().content().xmlLang());
-        assertEquals("Existing DR Label", updatedDr.label().content().text());
+        assertEquals("en-US", updatedDr.label().contents().get(0).value().languageTag());
+        assertEquals("Existing DR Label", updatedDr.label().contents().get(0).value().value());
     }
 
     @Test
@@ -1232,7 +1232,7 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Old Label"))),
                 new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
         );
 
@@ -1286,14 +1286,14 @@ class DDIRepositoryImplTest {
 
         Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
         assertNotNull(updatedDr.label());
-        assertEquals("fr-FR", updatedDr.label().content().xmlLang()); // Should use DEFAULT_LANG
-        assertEquals("New DR Label", updatedDr.label().content().text());
+        assertEquals("fr-FR", updatedDr.label().contents().get(0).value().languageTag()); // Should use DEFAULT_LANG
+        assertEquals("New DR Label", updatedDr.label().contents().get(0).value().value());
 
         // Also verify LogicalRecord label
         assertNotNull(updatedDr.logicalRecord());
         assertNotNull(updatedDr.logicalRecord().label());
-        assertEquals("fr-FR", updatedDr.logicalRecord().label().content().xmlLang()); // Should use DEFAULT_LANG
-        assertEquals("New LR Label", updatedDr.logicalRecord().label().content().text());
+        assertEquals("fr-FR", updatedDr.logicalRecord().label().contents().get(0).value().languageTag()); // Should use DEFAULT_LANG
+        assertEquals("New LR Label", updatedDr.logicalRecord().label().contents().get(0).value().value());
     }
 
     @Test
@@ -1318,13 +1318,13 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
-                new Citation(new Title(new StringValue("fr-FR", "Old Label"))),
+                new Citation(new Title(MultilingualStrings.of("fr-FR", "Old Label"))),
                 new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
         );
 
         // Existing labels with specific languages (not fr-FR)
-        Label existingDrLabel = new Label(new Content("en-GB", "Old DR Label"));
-        Label existingLrLabel = new Label(new Content("es-ES", "Old LR Label"));
+        Label existingDrLabel = new Label(MultilingualStrings.of("en-GB", "Old DR Label"));
+        Label existingLrLabel = new Label(MultilingualStrings.of("es-ES", "Old LR Label"));
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
                 "true", "2025-01-01T00:00:00",
@@ -1374,12 +1374,12 @@ class DDIRepositoryImplTest {
 
         Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
         assertNotNull(updatedDr.label());
-        assertEquals("en-GB", updatedDr.label().content().xmlLang()); // Should preserve existing lang
-        assertEquals("Updated DR Label", updatedDr.label().content().text()); // But update text
+        assertEquals("en-GB", updatedDr.label().contents().get(0).value().languageTag()); // Should preserve existing lang
+        assertEquals("Updated DR Label", updatedDr.label().contents().get(0).value().value()); // But update text
 
         assertNotNull(updatedDr.logicalRecord().label());
-        assertEquals("es-ES", updatedDr.logicalRecord().label().content().xmlLang()); // Should preserve existing lang
-        assertEquals("Updated LR Label", updatedDr.logicalRecord().label().content().text()); // But update text
+        assertEquals("es-ES", updatedDr.logicalRecord().label().contents().get(0).value().languageTag()); // Should preserve existing lang
+        assertEquals("Updated LR Label", updatedDr.logicalRecord().label().contents().get(0).value().value()); // But update text
     }
 
     @Test

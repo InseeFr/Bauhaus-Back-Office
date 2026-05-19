@@ -895,7 +895,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         return new Citation(
             new Title(
-                new StringValue(lang.isEmpty() ? defaultLang : lang, text)
+                MultilingualStrings.of(lang.isEmpty() ? defaultLang : lang, text)
             )
         );
     }
@@ -1010,10 +1010,11 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         // Build updated PhysicalInstance with new label if provided
+        MultilingualStringValue currentTitle = currentPI.citation().title().strings().get(0).value();
         String newPhysicalInstanceLabel =
             request.physicalInstanceLabel() != null
                 ? request.physicalInstanceLabel()
-                : currentPI.citation().title().string().text();
+                : currentTitle.value();
 
         var updatedPI = new Ddi4PhysicalInstance(
             currentPI.isUniversallyUnique(),
@@ -1025,8 +1026,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             currentPI.basedOnObject(),
             new Citation(
                 new Title(
-                    new StringValue(
-                        currentPI.citation().title().string().xmlLang(),
+                    MultilingualStrings.of(
+                        currentTitle.languageTag(),
                         newPhysicalInstanceLabel
                     )
                 )
@@ -1608,10 +1609,10 @@ public class DDIRepositoryImpl implements DDIRepository {
             return existingLabel;
         }
         String lang =
-            existingLabel != null && existingLabel.content() != null
-                ? existingLabel.content().xmlLang()
+            existingLabel != null && existingLabel.contents() != null && !existingLabel.contents().isEmpty()
+                ? existingLabel.contents().get(0).value().languageTag()
                 : defaultLang;
-        return new Label(new Content(lang, newText));
+        return new Label(MultilingualStrings.of(lang, newText));
     }
 
     @Override

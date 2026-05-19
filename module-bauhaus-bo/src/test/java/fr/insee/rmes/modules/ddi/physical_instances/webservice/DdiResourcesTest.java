@@ -596,9 +596,7 @@ class DdiResourcesTest {
     }
 
     private Ddi4Response createMockDdi4Response() {
-        // Create mock objects
-        StringValue titleStringValue = new StringValue("fr-FR", "Fichier thl-CASD");
-        Title title = new Title(titleStringValue);
+        Title title = new Title(MultilingualStrings.of("fr-FR", "Fichier thl-CASD"));
         Citation citation = new Citation(title);
 
         DataRelationshipReference dataRelRef = new DataRelationshipReference(
@@ -612,7 +610,7 @@ class DdiResourcesTest {
             null, citation, dataRelRef
         );
 
-        Label drLabel = new Label(new Content("fr-FR", "Dessin de fichier thl-CASD"));
+        Label drLabel = new Label(MultilingualStrings.of("fr-FR", "Dessin de fichier thl-CASD"));
 
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
             "true", "2024-06-03T14:29:23.4049817Z",
@@ -677,9 +675,7 @@ class DdiResourcesTest {
     }
 
     private Ddi4GroupResponse createMockDdi4GroupResponse() {
-        // Create mock citation
-        StringValue titleStringValue = new StringValue("fr-FR", "Base permanente des équipements");
-        Title title = new Title(titleStringValue);
+        Title title = new Title(MultilingualStrings.of("fr-FR", "Base permanente des équipements"));
         Citation citation = new Citation(title);
 
         // Create StudyUnit references
@@ -696,9 +692,7 @@ class DdiResourcesTest {
             "insee:StatisticalOperationSeries"
         );
 
-        // Create StudyUnits
-        StringValue su1TitleStringValue = new StringValue("fr-FR", "BPE 2021");
-        Title su1Title = new Title(su1TitleStringValue);
+        Title su1Title = new Title(MultilingualStrings.of("fr-FR", "BPE 2021"));
         Citation su1Citation = new Citation(su1Title);
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
@@ -710,8 +704,7 @@ class DdiResourcesTest {
             null
         );
 
-        StringValue su2TitleStringValue = new StringValue("fr-FR", "BPE 2022");
-        Title su2Title = new Title(su2TitleStringValue);
+        Title su2Title = new Title(MultilingualStrings.of("fr-FR", "BPE 2022"));
         Citation su2Citation = new Citation(su2Title);
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
