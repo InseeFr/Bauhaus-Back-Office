@@ -1,5 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -10,10 +16,16 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -22,6 +34,28 @@ class FamiliesUtilsTest {
 
     @Mock
     private RepositoryGestion repositoryGestion;
+
+    @BeforeAll
+    static void initRdfUtils() {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
+    }
+
+    @Test
+    void createRdfFamily_addsAdmsIdentifierTriple() throws RmesException {
+        FamiliesUtils familiesUtils = new FamiliesUtils(false, null, null, null, repositoryGestion, "fr", "en", null);
+        Family family = new Family();
+        family.setId("s1");
+        family.prefLabelLg1 = "Famille de test";
+
+        familiesUtils.createRdfFamily(family, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadSimpleObject(any(), captor.capture());
+        IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, "s1");
+        assertThat(captor.getValue().filter(familyURI, ADMS.HAS_IDENTIFIER, null).objects())
+                .containsExactly(SimpleValueFactory.getInstance().createLiteral("s1"));
+    }
 
 
     @Test

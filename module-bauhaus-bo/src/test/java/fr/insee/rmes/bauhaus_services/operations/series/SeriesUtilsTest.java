@@ -2,9 +2,14 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.model.links.OperationsLink;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -19,6 +24,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +92,23 @@ class SeriesUtilsTest {
     }
 
     private static final IRI TEST_GRAPH = SimpleValueFactory.getInstance().createIRI("http://test/operations");
+
+    @Test
+    void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
+        SeriesValidator validator = mock(SeriesValidator.class);
+        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, validator, null, null);
+        Series series = new Series();
+        series.setId("s2000");
+        series.setPrefLabelLg1("Série de test");
+
+        seriesUtils.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, "s2000");
+        assertThat(captor.getValue().filter(seriesURI, ADMS.HAS_IDENTIFIER, null).objects())
+                .containsExactly(SimpleValueFactory.getInstance().createLiteral("s2000"));
+    }
 
     @Test
     void addOperationLinksOrganization_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {

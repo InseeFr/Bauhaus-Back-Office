@@ -15,6 +15,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.Family;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -131,6 +132,7 @@ public class FamiliesUtils {
 		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, RdfUtils.operationsGraph());
+		model.add(familyURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(family.getId()), RdfUtils.operationsGraph());
 		/*Required*/
 		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), lg1), RdfUtils.operationsGraph());
 		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());

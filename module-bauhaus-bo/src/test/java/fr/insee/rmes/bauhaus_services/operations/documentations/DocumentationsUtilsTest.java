@@ -1,11 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -16,17 +20,23 @@ import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Objects;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.eclipse.rdf4j.model.Resource;
 import org.springframework.http.HttpStatus;
@@ -60,12 +71,31 @@ class DocumentationsUtilsTest {
 	@Mock
 	private DocumentationQueries documentationQueries;
 
+	@Mock
+	private BauhausLanguagesProperties languages;
+
 	@InjectMocks
 	private DocumentationsUtils documentationsUtils;
 
 	@BeforeEach
 	void initStaticGraphs() {
 		RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+		RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
+	}
+
+	@Test
+	void saveRdfMetadataReport_addsAdmsIdentifierTriple() throws RmesException {
+		Documentation sims = new Documentation();
+		sims.setId("1500");
+		IRI target = SimpleValueFactory.getInstance().createIRI("http://bauhaus/operations/series/s1");
+
+		documentationsUtils.saveRdfMetadataReport(sims, target, ValidationStatus.UNPUBLISHED);
+
+		ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+		verify(repoGestion).replaceGraph(any(Resource.class), captor.capture(), any());
+		IRI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, "1500");
+		assertThat(captor.getValue().filter(simsURI, ADMS.HAS_IDENTIFIER, null).objects())
+				.containsExactly(SimpleValueFactory.getInstance().createLiteral("1500"));
 	}
 
 	@Test

@@ -20,6 +20,7 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -314,13 +315,14 @@ public class SeriesUtils {
         }
     }
 
-    private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
+    void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
         this.validator.validate(series);
 
         Model model = new LinkedHashModel();
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, series.getId());
         /*Const*/
         model.add(seriesURI, RDF.TYPE, INSEE.SERIES, RdfUtils.operationsGraph());
+        model.add(seriesURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(series.getId()), RdfUtils.operationsGraph());
         /*Required*/
         model.add(seriesURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(series.getPrefLabelLg1(), lg1), RdfUtils.operationsGraph());
         model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
