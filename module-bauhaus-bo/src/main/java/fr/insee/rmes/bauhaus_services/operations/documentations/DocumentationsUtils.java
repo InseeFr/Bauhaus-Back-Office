@@ -15,6 +15,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -352,12 +353,13 @@ public class DocumentationsUtils  {
 	 * @param target
 	 * @throws RmesException
 	 */
-	private void saveRdfMetadataReport(Documentation sims, IRI target, ValidationStatus state) throws RmesException {
+	void saveRdfMetadataReport(Documentation sims, IRI target, ValidationStatus state) throws RmesException {
 		Model model = new LinkedHashModel();
 		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, sims.getId());
 		Resource graph = RdfUtils.simsGraph(sims.getId());
 		/*Const*/
 		model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
+		model.add(simsUri, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(sims.getId()), graph);
 		model.add(simsUri, SDMX_MM.TARGET, target, graph);
 		model.add(simsUri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(state), graph);
 

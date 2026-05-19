@@ -2,8 +2,14 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
+import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.links.OperationsLink;
@@ -23,12 +29,14 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -236,6 +244,27 @@ class IndicatorsUtilsTest {
     }
 
     private static final IRI TEST_GRAPH = SimpleValueFactory.getInstance().createIRI("http://test/products");
+
+    @Test
+    void createRdfIndicator_addsAdmsIdentifierTriple() throws RmesException {
+        CodeListService codeListService = mock(CodeListService.class);
+        when(codeListService.getCodeUri(any(), any())).thenReturn("http://bauhaus/codes/freq/A");
+        when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
+        UriUtils uriUtils = new UriUtils("http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, codeListService, null, null, famOpeSerIndUtils, null, null, uriUtils, "fr", "en", operationIndicatorsQueries, null);
+
+        Indicator indicator = new Indicator("p2000");
+        indicator.setPrefLabelLg1("Indicateur de test");
+        indicator.setWasGeneratedBy(List.of(new OperationsLink("s1", "series", "Série", "Series")));
+
+        indicatorsUtils.createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
+        IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR, "p2000");
+        assertThat(captor.getValue().filter(indicURI, ADMS.HAS_IDENTIFIER, null).objects())
+                .containsExactly(SimpleValueFactory.getInstance().createLiteral("p2000"));
+    }
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {

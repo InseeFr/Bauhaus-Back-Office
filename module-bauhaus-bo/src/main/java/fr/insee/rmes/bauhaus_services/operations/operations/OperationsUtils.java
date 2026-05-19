@@ -17,6 +17,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
@@ -152,13 +153,14 @@ public class OperationsUtils extends RdfService{
 		logger.info("Update operation : {} - {}" , operation.getId() , operation.getPrefLabelLg1());
 	}
 
-	private void createRdfOperation(Operation operation, IRI serieUri, ValidationStatus newStatus) throws RmesException {
+	void createRdfOperation(Operation operation, IRI serieUri, ValidationStatus newStatus) throws RmesException {
 		validate(operation);
 
 		Model model = new LinkedHashModel();
 		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/
 		model.add(operationURI, RDF.TYPE, INSEE.OPERATION, RdfUtils.operationsGraph());
+		model.add(operationURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(operation.getId()), RdfUtils.operationsGraph());
 		/*Required*/
 		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), languages.lg1()), RdfUtils.operationsGraph());
 		model.add(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());

@@ -18,6 +18,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -358,13 +359,14 @@ public class IndicatorsUtils {
 		}
 	}
 
-	private void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
+	void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
 		validate(indicator);
 
 		Model model = new LinkedHashModel();
 		IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/
 		model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, RdfUtils.productsGraph());
+		model.add(indicURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(indicator.getId()), RdfUtils.productsGraph());
 		/*Required*/
 		model.add(indicURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(indicator.getPrefLabelLg1(), lg1), RdfUtils.productsGraph());
 		model.add(indicURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.productsGraph());

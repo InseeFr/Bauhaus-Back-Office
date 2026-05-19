@@ -57,11 +57,27 @@
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
+    <!-- Exposes a property per dependency (e.g. ${org.mockito:mockito-core:jar}) used to load Mockito as a -javaagent -->
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+        <execution>
+          <id>get-mockito-agent-path</id>
+          <goals>
+            <goal>properties</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-surefire-plugin</artifactId>
       <configuration>
         <useModulePath>false</useModulePath>
+        <!-- @{argLine} keeps the JaCoCo agent; -javaagent loads Mockito explicitly so it
+             no longer self-attaches (deprecated dynamic agent loading on JDK 21+) -->
+        <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
       </configuration>
     </plugin>
     </plugins>

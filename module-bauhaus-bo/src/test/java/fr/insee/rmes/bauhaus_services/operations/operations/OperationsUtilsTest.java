@@ -2,9 +2,14 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -16,11 +21,15 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
@@ -45,6 +54,27 @@ class OperationsUtilsTest {
 
     @Mock
     OperationsOperationQueries operationsOperationQueries;
+
+    @BeforeAll
+    static void initRdfUtils() {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
+    }
+
+    @Test
+    void createRdfOperation_addsAdmsIdentifierTriple() throws RmesException {
+        when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
+        Operation operation = new Operation("o1500");
+        operation.setPrefLabelLg1("Opération de test");
+
+        operationsUtils.createRdfOperation(operation, null, ValidationStatus.UNPUBLISHED);
+
+        ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadSimpleObject(any(), captor.capture());
+        IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, "o1500");
+        assertThat(captor.getValue().filter(operationURI, ADMS.HAS_IDENTIFIER, null).objects())
+                .containsExactly(SimpleValueFactory.getInstance().createLiteral("o1500"));
+    }
 
     @Test
     void shouldStoreYearProperty() throws RmesException {
@@ -88,7 +118,7 @@ class OperationsUtilsTest {
 
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(operationIRI), model.capture());
 
-            Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#gYear>) [http://operations-graph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation) [http://operations-graph/], (http://operation/2, http://www.w3.org/ns/adms#identifier, \"1\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\") [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#gYear>) [http://operations-graph/]]", model.getValue().toString());
 
         }
 

@@ -36,6 +36,8 @@
     <xdocreport.version>2.2.0</xdocreport.version>
     <jacoco.version>0.8.13</jacoco.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Default empty value so surefire's @{argLine} resolves even when JaCoCo is skipped -->
+    <argLine></argLine>
     <java-jwt.version>4.5.0</java-jwt.version>
     <json.version>20250107</json.version>
     <flexmark.version>0.64.8</flexmark.version>
