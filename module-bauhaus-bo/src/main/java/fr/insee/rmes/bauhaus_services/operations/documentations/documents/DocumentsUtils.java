@@ -230,7 +230,7 @@ public class DocumentsUtils extends RdfService {
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Document document = new Document(id, isLink);
+        Document document = isLink ? Document.fromLinkId(id) : Document.fromDocumentId(id);
 
         try {
             document = mapper.readerForUpdating(document).readValue(body);
@@ -316,7 +316,7 @@ public class DocumentsUtils extends RdfService {
     public void setDocument(String id, String body, boolean isLink) throws RmesException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Document document = new Document(id, isLink);
+        Document document = isLink ? Document.fromLinkId(id) : Document.fromDocumentId(id);
 
         try {
             document = mapper.readerForUpdating(document).readValue(body);

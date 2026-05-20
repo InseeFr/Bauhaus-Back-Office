@@ -23,20 +23,23 @@ public class CodeListItem {
 	private String codeUri;
 	public List<String> broader;
 
-	public CodeListItem(String code, String labelLg1, String labelLg2, String iri) {
-		super();
-		this.code = code;
-		this.labelLg1 = labelLg1;
-		this.labelLg2 = labelLg2;
-		this.iri = iri;
-	}
-
-	public CodeListItem(String code) {
-		this.code = code;
-	}
-
 	public CodeListItem() {
 		super();
+	}
+
+	public static CodeListItem of(String code) {
+		CodeListItem item = new CodeListItem();
+		item.code = code;
+		return item;
+	}
+
+	public static CodeListItem of(String code, String labelLg1, String labelLg2, String iri) {
+		CodeListItem item = new CodeListItem();
+		item.code = code;
+		item.labelLg1 = labelLg1;
+		item.labelLg2 = labelLg2;
+		item.iri = iri;
+		return item;
 	}
 	
 	public String getCode() {

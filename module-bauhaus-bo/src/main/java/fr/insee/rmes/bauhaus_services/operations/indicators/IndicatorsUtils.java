@@ -159,7 +159,7 @@ public class IndicatorsUtils {
 	
 	public Indicator buildIndicatorFromJson(JSONObject indicatorJson, boolean forXML) {
 		String id= indicatorJson.getString(Constants.ID);
-		Indicator indicator = new Indicator(id);
+		Indicator indicator = Indicator.of(id);
 		try {
 			if(forXML) indicator = Deserializer.deserializeJsonString(XMLUtils.solveSpecialXmlcharacters(indicatorJson.toString()), Indicator.class);
 			else indicator = Deserializer.deserializeJsonString(indicatorJson.toString(), Indicator.class);
@@ -305,7 +305,7 @@ public class IndicatorsUtils {
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Indicator indicator = new Indicator(id);
+		Indicator indicator = Indicator.of(id);
 		try {
 			indicator = mapper.readerForUpdating(indicator).readValue(body);
 		} catch (IOException e) {

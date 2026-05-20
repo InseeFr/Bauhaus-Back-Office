@@ -11,6 +11,7 @@ import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.utils.ExportUtils;
@@ -310,7 +311,7 @@ class DocumentationExportTest {
         series.setFamily(family);
 
         // Set publishers
-        fr.insee.rmes.model.links.OperationsLink publisher = new fr.insee.rmes.model.links.OperationsLink(
+        OperationsLink publisher = OperationsLink.of(
                 "HIE2000007",
                 null,
                 "Direction des études et synthèses économiques (DESE)",
@@ -322,7 +323,7 @@ class DocumentationExportTest {
         series.setCreators(List.of("HIE2004993", "DG75-G401", "DG75-G450"));
 
         // Set replaces
-        fr.insee.rmes.model.links.OperationsLink replaces = new fr.insee.rmes.model.links.OperationsLink(
+        OperationsLink replaces = OperationsLink.of(
                 "s1030",
                 "series",
                 "Comptes nationaux annuels (base 2014)",
@@ -444,7 +445,7 @@ class DocumentationExportTest {
         indicator.setValidationState("Unpublished");
 
         // Set contributors
-        fr.insee.rmes.model.links.OperationsLink contributor = new fr.insee.rmes.model.links.OperationsLink(
+        OperationsLink contributor = OperationsLink.of(
                 "DG75-L002",
                 "organization",
                 "Administration du comité du Label",
@@ -456,13 +457,13 @@ class DocumentationExportTest {
         indicator.setCreators(List.of("HIE2004993"));
 
         // Set wasGeneratedBy
-        fr.insee.rmes.model.links.OperationsLink wasGeneratedBy1 = new fr.insee.rmes.model.links.OperationsLink(
+        OperationsLink wasGeneratedBy1 = OperationsLink.of(
                 "s1034",
                 "series",
                 "Autres indicateurs",
                 "Other indexes"
         );
-        fr.insee.rmes.model.links.OperationsLink wasGeneratedBy2 = new fr.insee.rmes.model.links.OperationsLink(
+        OperationsLink wasGeneratedBy2 = OperationsLink.of(
                 "s1034",
                 "undefined",
                 "Autres indicateurs",

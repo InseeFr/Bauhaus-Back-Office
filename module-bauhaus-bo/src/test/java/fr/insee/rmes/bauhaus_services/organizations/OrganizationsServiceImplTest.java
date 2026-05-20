@@ -30,7 +30,7 @@ class OrganizationsServiceImplTest {
 
     @Test
     void shouldGetOrganization() throws RmesException {
-        IdLabelTwoLangs idLabelTwoLangs = new IdLabelTwoLangs("id","label1","label2");
+        IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id","label1","label2");
         when(organizationUtils.buildOrganizationFromJson(organizationUtils.getOrganizationJson("45"))).thenReturn(idLabelTwoLangs);
         assertNotNull(organizationsService.getOrganization("45"));
     }

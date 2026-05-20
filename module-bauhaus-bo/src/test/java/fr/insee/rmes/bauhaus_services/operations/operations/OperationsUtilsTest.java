@@ -64,7 +64,7 @@ class OperationsUtilsTest {
     @Test
     void createRdfOperation_addsAdmsIdentifierTriple() throws RmesException {
         when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
-        Operation operation = new Operation("o1500");
+        Operation operation = Operation.of("o1500");
         operation.setPrefLabelLg1("Opération de test");
 
         operationsUtils.createRdfOperation(operation, null, ValidationStatus.UNPUBLISHED);

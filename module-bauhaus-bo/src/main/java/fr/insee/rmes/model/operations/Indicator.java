@@ -3,7 +3,6 @@ package fr.insee.rmes.model.operations;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 
 import java.util.List;
@@ -57,11 +56,13 @@ public class Indicator {
 
 	public String validationState;
 
-	public Indicator(String id) {
-		this.id=id;
+	public Indicator() {
 	}
-	
-	public Indicator() throws RmesException {
+
+	public static Indicator of(String id) {
+		Indicator indicator = new Indicator();
+		indicator.id = id;
+		return indicator;
 	}
 
 

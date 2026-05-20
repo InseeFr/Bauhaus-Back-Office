@@ -9,7 +9,7 @@ class CodeListItemTest {
     @Test
     void shouldVerifyElementsWhenCreateCodeListItemClass() {
 
-        CodeListItem codeListItem = new CodeListItem("mockedCode","mockedLabelLg1","mockedLabelLg2","mockedIri");
+        CodeListItem codeListItem = CodeListItem.of("mockedCode","mockedLabelLg1","mockedLabelLg2","mockedIri");
         CodeListItem codeListItemWithoutParameters = new CodeListItem();
 
         boolean isNullLastCodeUriSegment = codeListItem.getLastCodeUriSegment()==null && codeListItemWithoutParameters.getLastCodeUriSegment()==null;

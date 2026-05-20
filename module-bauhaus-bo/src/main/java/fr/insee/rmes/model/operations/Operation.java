@@ -27,26 +27,14 @@ public class Operation {
 
 	private Integer year;
 
-	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
-			IdLabelTwoLangs series, String idSims, String validationState, Integer year) {
-		super();
-		this.id = id;
-		this.prefLabelLg1 = prefLabelLg1;
-		this.prefLabelLg2 = prefLabelLg2;
-		this.altLabelLg1 = altLabelLg1;
-		this.altLabelLg2 = altLabelLg2;
-		this.series = series;
-		this.idSims = idSims;
-		this.validationState = validationState;
-		this.year = year;
-	}
-
 	public Operation() {
 		super();
 	}
 
-	public Operation(String id) {
-		this.id=id;
+	public static Operation of(String id) {
+		Operation operation = new Operation();
+		operation.id = id;
+		return operation;
 	}
 
 	public String getId() {

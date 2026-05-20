@@ -19,14 +19,17 @@ public class Document {
 
 	public Document() {
 	}
-	
-	public Document(String id) {
-		this.uri = RdfUtils.toString(RdfUtils.documentIRI(id));
+
+	public static Document fromDocumentId(String id) {
+		Document document = new Document();
+		document.uri = RdfUtils.toString(RdfUtils.documentIRI(id));
+		return document;
 	}
 
-	public Document(String id, boolean isLink) {
-		if (isLink) {this.uri = RdfUtils.toString(RdfUtils.linkIRI(id));}
-		else {this.uri = RdfUtils.toString(RdfUtils.documentIRI(id));}
+	public static Document fromLinkId(String id) {
+		Document document = new Document();
+		document.uri = RdfUtils.toString(RdfUtils.linkIRI(id));
+		return document;
 	}
 	
 	public String getLabelLg1() {

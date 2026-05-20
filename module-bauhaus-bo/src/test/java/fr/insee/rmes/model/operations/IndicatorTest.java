@@ -10,12 +10,12 @@ class IndicatorTest {
     @Test
     void shouldTestEqualsForDifferentObjects() {
 
-        Indicator indicator = new Indicator("id");
+        Indicator indicator = Indicator.of("id");
 
         List<Object> objects = new ArrayList<>();
         objects.add(indicator);
-        objects.add(new Indicator("id"));
-        objects.add(new Indicator("idExample"));
+        objects.add(Indicator.of("id"));
+        objects.add(Indicator.of("idExample"));
         objects.add(null);
         objects.add("This is an example of string.");
         objects.add(2025);

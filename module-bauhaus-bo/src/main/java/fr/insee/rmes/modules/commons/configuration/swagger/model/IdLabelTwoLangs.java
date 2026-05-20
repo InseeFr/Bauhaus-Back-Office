@@ -15,15 +15,16 @@ public class IdLabelTwoLangs {
 
 	private List<String> creators;
 
-	public IdLabelTwoLangs(String id, String labelLg1, String labelLg2) {
-		super();
-		this.id = id;
-		this.labelLg1 = labelLg1;
-		this.labelLg2 = labelLg2;
-	}
-
 	public IdLabelTwoLangs() {
 		super();
+	}
+
+	public static IdLabelTwoLangs of(String id, String labelLg1, String labelLg2) {
+		IdLabelTwoLangs item = new IdLabelTwoLangs();
+		item.id = id;
+		item.labelLg1 = labelLg1;
+		item.labelLg2 = labelLg2;
+		return item;
 	}
 	
 	public String getId() {
