@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -602,11 +603,38 @@ public class DDIRepositoryImpl implements DDIRepository {
                 logger.info(
                     "Successfully converted Physical Instance to DDI4 format"
                 );
-                return response;
+                return filterMutualizedCodeLists(response);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to process DDI response", e);
             }
         });
+    }
+
+    private Ddi4Response filterMutualizedCodeLists(Ddi4Response response) {
+        if (response == null || response.codeList() == null || response.codeList().isEmpty()) {
+            return response;
+        }
+        Set<String> mutualizedKeys = getMutualizedCodesLists().stream()
+                .map(p -> p.agency() + "/" + p.id())
+                .collect(Collectors.toSet());
+        if (mutualizedKeys.isEmpty()) {
+            return response;
+        }
+        List<Ddi4CodeList> kept = response.codeList().stream()
+                .filter(cl -> !mutualizedKeys.contains(cl.agency() + "/" + cl.id()))
+                .toList();
+        if (kept.size() == response.codeList().size()) {
+            return response;
+        }
+        return new Ddi4Response(
+                response.schema(),
+                response.topLevelReference(),
+                response.physicalInstance(),
+                response.dataRelationship(),
+                response.variable(),
+                kept.isEmpty() ? null : kept,
+                response.category()
+        );
     }
 
     @Override
