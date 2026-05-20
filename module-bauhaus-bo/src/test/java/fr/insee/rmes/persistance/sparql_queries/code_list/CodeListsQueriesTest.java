@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
+import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.GraphsProperties;
@@ -110,7 +111,7 @@ class CodeListsQueriesTest {
                 put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null, "labelLg1");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.FULL, List.of("code:search"), 2, null, "labelLg1");
             Assertions.assertEquals("request", query);
         }
     }
@@ -132,7 +133,7 @@ class CodeListsQueriesTest {
 
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0, "labelLg1");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, List.of("code:search"), 0, 0, "labelLg1");
             Assertions.assertEquals("request", query);
         }
     }
@@ -168,7 +169,7 @@ class CodeListsQueriesTest {
                 put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = codeListsQueries.getDetailedCodes("NOTATION", true, null, 0, 0, "labelLg1");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, "labelLg1");
             Assertions.assertEquals("request", query);
         }
     }

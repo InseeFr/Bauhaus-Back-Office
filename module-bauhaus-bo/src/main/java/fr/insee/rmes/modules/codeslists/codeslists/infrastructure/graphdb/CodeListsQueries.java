@@ -5,6 +5,7 @@ import fr.insee.rmes.BauhausUriProperties;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.PaginationProperties;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -41,12 +42,12 @@ public class CodeListsQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "isCodesListValidated.ftlh", params);
 	}
 
-	public String getAllCodesLists(boolean partial) throws RmesException {
+	public String getAllCodesLists(CodeListKind kind) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put("LG1", languages.lg1());
 		params.put("LG2", languages.lg2());
-		params.put(PARTIAL, partial);
+		params.put(PARTIAL, kind.isPartial());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
 
@@ -75,14 +76,14 @@ public class CodeListsQueries {
 		}
 	}
 
-	public String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage, String sort) throws RmesException {
+	public String getDetailedCodes(String notation, CodeListKind kind, List<String> search, int page, Integer perPage, String sort) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
 		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
 		params.put(NOTATION, notation);
 		params.put("LG1", languages.lg1());
 		params.put("LG2", languages.lg2());
-		params.put(PARTIAL, partial);
+		params.put(PARTIAL, kind.isPartial());
 		params.put(CODE_LIST_BASE_URI, uris.codeListBaseUri());
 		params.put("SORT", sort == null ? "code" : sort);
 
@@ -163,17 +164,17 @@ public class CodeListsQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 
-	public String getCodesListsForSearch(boolean partial) throws RmesException {
+	public String getCodesListsForSearch(CodeListKind kind) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put(PARTIAL, partial);
+		params.put(PARTIAL, kind.isPartial());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesListForSearch.ftlh", params);
 	}
 
-	public String getCodesForSearch(boolean partial) throws RmesException {
+	public String getCodesForSearch(CodeListKind kind) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put(PARTIAL, partial);
+		params.put(PARTIAL, kind.isPartial());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesForSearch.ftlh", params);
 	}
 
@@ -183,13 +184,13 @@ public class CodeListsQueries {
 		params.put("LG2", languages.lg2());
 	}
 
-	public String checkCodeListUnicity(String id, String iri, String seeAlso, boolean partial) throws RmesException {
+	public String checkCodeListUnicity(String id, String iri, String seeAlso, CodeListKind kind) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
 		params.put("ID", id);
 		params.put("IRI", iri);
 		params.put("SEE_ALSO", seeAlso);
-		params.put(PARTIAL, partial);
+		params.put(PARTIAL, kind.isPartial());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "checkCodeListUnicity.ftlh", params);
 	}
 

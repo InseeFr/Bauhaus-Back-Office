@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.codeslists.partialcodeslists.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
@@ -28,7 +29,7 @@ public class PartialCodeListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PartialCodesList> getAllPartialCodesLists() throws JsonProcessingException, RmesException {
-        return codeListService.getAllCodesLists(true);
+        return codeListService.getAllCodesLists(CodeListKind.PARTIAL);
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
@@ -54,7 +55,7 @@ public class PartialCodeListsResources extends GenericResources {
     public ResponseEntity<Object> publishPartialCodeList(
             @PathVariable(Constants.ID) String id) {
         try {
-            codeListService.publishCodeList(id, true);
+            codeListService.publishCodeList(id, CodeListKind.PARTIAL);
             return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return returnRmesException(e);
@@ -65,7 +66,7 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(codeListService.getDetailedCodesListForSearch(true));
+            return ResponseEntity.status(HttpStatus.OK).body(codeListService.getDetailedCodesListForSearch(CodeListKind.PARTIAL));
         } catch (RmesException e) {
             return returnRmesException(e);
         }
@@ -75,7 +76,7 @@ public class PartialCodeListsResources extends GenericResources {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createPartialCodeList(@RequestBody String body) {
         try {
-            String id = codeListService.setCodesList(body, true);
+            String id = codeListService.setCodesList(body, CodeListKind.PARTIAL);
             return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return returnRmesException(e);
@@ -88,7 +89,7 @@ public class PartialCodeListsResources extends GenericResources {
             @PathVariable(Constants.ID) String componentId,
             @RequestBody String body) {
         try {
-            String id = codeListService.setCodesList(componentId, body, true);
+            String id = codeListService.setCodesList(componentId, body, CodeListKind.PARTIAL);
             return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return returnRmesException(e);
@@ -99,7 +100,7 @@ public class PartialCodeListsResources extends GenericResources {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
         try {
-            codeListService.deleteCodeList(notation, true);
+            codeListService.deleteCodeList(notation, CodeListKind.PARTIAL);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (RmesException e) {
             return returnRmesException(e);

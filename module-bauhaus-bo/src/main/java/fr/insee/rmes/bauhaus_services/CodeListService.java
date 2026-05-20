@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -16,23 +17,23 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
+    List<PartialCodesList> getAllCodesLists(CodeListKind kind) throws RmesException, JsonProcessingException;
 
     String getCodesListByIRI(String iri) throws RmesException;
 
     CodeList getDetailedCodesList(String notation) throws RmesException;
 
-    List<CodeList> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException;
+    List<CodeList> getDetailedCodesListForSearch(CodeListKind kind) throws RmesException, JsonProcessingException;
 
-    String setCodesList(String body, boolean partial) throws RmesException;
+    String setCodesList(String body, CodeListKind kind) throws RmesException;
 
-    String setCodesList(String id, String body, boolean partial) throws RmesException;
+    String setCodesList(String id, String body, CodeListKind kind) throws RmesException;
 
     String getPartialCodeListByParent(String parentIRI) throws RmesException;
 
-    void deleteCodeList(String notation, boolean partial) throws RmesException;
+    void deleteCodeList(String notation, CodeListKind kind) throws RmesException;
 
-    void publishCodeList(String id, boolean b) throws RmesException;
+    void publishCodeList(String id, CodeListKind kind) throws RmesException;
 
     Page getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException;
 

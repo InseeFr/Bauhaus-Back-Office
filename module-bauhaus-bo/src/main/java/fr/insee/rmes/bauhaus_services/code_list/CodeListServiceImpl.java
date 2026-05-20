@@ -121,7 +121,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	public JSONObject getDetailedPartialCodesListJson(String notation) throws RmesException {
 		JSONObject detailedCodesList = getDetailedCodesListJson(notation);
-		JSONArray codes = repoGestion.getResponseAsArray(codeListsQueries.getDetailedCodes(notation, true, null, 0, 0, null));
+		JSONArray codes = repoGestion.getResponseAsArray(codeListsQueries.getDetailedCodes(notation, CodeListKind.PARTIAL, null, 0, 0, null));
 		formatCodesForPartialList(detailedCodesList, codes);
 		return detailedCodesList;
 	}
@@ -172,7 +172,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(codeListsQueries.countCodesForCodeList(notation, search));
-		JSONArray items = repoGestion.getResponseAsArray(codeListsQueries.getDetailedCodes(notation, false, search, page, perPage, sort));
+		JSONArray items = repoGestion.getResponseAsArray(codeListsQueries.getDetailedCodes(notation, CodeListKind.FULL, search, page, perPage, sort));
 		JSONObject broaderNarrowerCloseMatchByCode = groupByBroaderNarrowerCloseMatchByCode(notation);
 
 
@@ -206,9 +206,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<CodeList> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException {
-		JSONArray lists =  repoGestion.getResponseAsArray(codeListsQueries.getCodesListsForSearch(partial));
-		JSONArray codes =  repoGestion.getResponseAsArray(codeListsQueries.getCodesForSearch(partial));
+	public List<CodeList> getDetailedCodesListForSearch(CodeListKind kind) throws RmesException, JsonProcessingException {
+		JSONArray lists =  repoGestion.getResponseAsArray(codeListsQueries.getCodesListsForSearch(kind));
+		JSONArray codes =  repoGestion.getResponseAsArray(codeListsQueries.getCodesForSearch(kind));
 
 		for (int i = 0 ; i < lists.length(); i++) {
 			JSONObject list = lists.getJSONObject(i);
@@ -221,7 +221,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 
-	public void validateCodeList(JSONObject codeList, boolean partial) throws RmesException {
+	public void validateCodeList(JSONObject codeList, CodeListKind kind) throws RmesException {
 		if (!codeList.has(Constants.ID)) {
 			throw new RmesBadRequestException("The id of the list should be defined");
 		}
@@ -231,43 +231,43 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		if (!codeList.has(Constants.LABEL_LG2)) {
 			throw new RmesBadRequestException("The labelLg2 of the list should be defined");
 		}
-		if (!partial && !codeList.has(LAST_CLASS_URI_SEGMENT)) {
+		if (!kind.isPartial() && !codeList.has(LAST_CLASS_URI_SEGMENT)) {
 			throw new RmesBadRequestException("The lastClassUriSegment of the list should be defined");
 		}
-		if (!partial && !codeList.has(LAST_LIST_URI_SEGMENT)) {
+		if (!kind.isPartial() && !codeList.has(LAST_LIST_URI_SEGMENT)) {
 			throw new RmesBadRequestException("The lastListUriSegment of the list should be defined");
 		}
-		if(partial && (!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty())){
+		if(kind.isPartial() && (!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty())){
 			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
 		}
 	}
 
-	private IRI generateIri(JSONObject codesList, boolean partial) {
-		if(partial){
+	private IRI generateIri(JSONObject codesList, CodeListKind kind) {
+		if(kind.isPartial()){
 			return RdfUtils.codeListIRI(codesList.getString(Constants.ID));
 		} else {
 			return RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
 		}
 	}
 
-	private boolean checkCodeListUnicity(boolean partial, JSONObject codeList, String iri) throws RmesException {
+	private boolean checkCodeListUnicity(CodeListKind kind, JSONObject codeList, String iri) throws RmesException {
 		String id = codeList.getString(Constants.ID);
-		if(!partial) {
+		if(!kind.isPartial()) {
 			IRI seeAlso = RdfUtils.codeListIRI(CONCEPT + codeList.getString(LAST_CLASS_URI_SEGMENT));
-			return repoGestion.getResponseAsBoolean(codeListsQueries.checkCodeListUnicity(id, iri, RdfUtils.toString(seeAlso), false));
+			return repoGestion.getResponseAsBoolean(codeListsQueries.checkCodeListUnicity(id, iri, RdfUtils.toString(seeAlso), CodeListKind.FULL));
 		}
-		return repoGestion.getResponseAsBoolean(codeListsQueries.checkCodeListUnicity(id, iri, "", true));
+		return repoGestion.getResponseAsBoolean(codeListsQueries.checkCodeListUnicity(id, iri, "", CodeListKind.PARTIAL));
 	}
 
 	@Override
-	public String setCodesList(String body, boolean partial) throws RmesException {
+	public String setCodesList(String body, CodeListKind kind) throws RmesException {
 		JSONObject codesList = new JSONObject(body);
 
-		this.validateCodeList(codesList, partial);
+		this.validateCodeList(codesList, kind);
 
-		IRI codeListIri = this.generateIri(codesList, partial);
+		IRI codeListIri = this.generateIri(codesList, kind);
 
-		if(this.checkCodeListUnicity(partial, codesList, RdfUtils.toString(codeListIri))){
+		if(this.checkCodeListUnicity(kind, codesList, RdfUtils.toString(codeListIri))){
 			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_UNICITY,
 					"The identifier, IRI and OWL class should be unique", "");
 		}
@@ -277,16 +277,16 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		Resource graph = RdfUtils.codesListGraph();
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, DateUtils.getCurrentDate(), model, graph);
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
-		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, partial);
+		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, kind);
 	}
 
 	@Override
-	public String setCodesList(String id, String body, boolean partial) throws RmesException {
+	public String setCodesList(String id, String body, CodeListKind kind) throws RmesException {
 		JSONObject codesList = new JSONObject(body);
 
-		this.validateCodeList(codesList, partial);
+		this.validateCodeList(codesList, kind);
 
-		IRI codeListIri = this.generateIri(codesList, partial);
+		IRI codeListIri = this.generateIri(codesList, kind);
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();
@@ -294,7 +294,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, codesList.getString("created"), model, graph);
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
 
-		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, partial);
+		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, kind);
 	}
 
 	@Override
@@ -306,7 +306,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public void deleteCodeList(String notation, boolean partial) throws RmesException {
+	public void deleteCodeList(String notation, CodeListKind kind) throws RmesException {
 		JSONObject codesList = getDetailedPartialCodesListJson(notation);
 		String iri = codesList.getString("iri");
 
@@ -314,7 +314,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
 		}
 
-		if(!partial){
+		if(!kind.isPartial()){
 			JSONArray partials = repoGestion.getResponseAsArray(codeListsQueries.getPartialCodeListByParentUri(iri));
 			if(!partials.isEmpty()){
 				throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
@@ -332,7 +332,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public void publishCodeList(String id, boolean partial) throws RmesException {
+	public void publishCodeList(String id, CodeListKind kind) throws RmesException {
 
 		JSONObject codesList = getDetailedPartialCodesListJson(id);
 		String iri = codesList.getString("iri");
@@ -351,7 +351,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 
 
-	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, boolean partial) throws RmesException {
+	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, CodeListKind kind) throws RmesException {
 		String codeListId = codesList.getString(Constants.ID);
 
 		if(codesList.has(VALIDATION_STATE) && codesList.getString(VALIDATION_STATE).equalsIgnoreCase(ValidationStatus.VALIDATED.getValue())){
@@ -360,7 +360,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
 		}
 
-		IRI type = partial ? SKOS.COLLECTION : SKOS.CONCEPT_SCHEME ;
+		IRI type = kind.isPartial() ? SKOS.COLLECTION : SKOS.CONCEPT_SCHEME ;
 		RdfUtils.addTripleUri(codeListIri, RDF.TYPE, type, model, graph);
 		model.add(codeListIri, SKOS.NOTATION, RdfUtils.setLiteralString(codeListId), graph);
 
@@ -386,7 +386,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			codesList.getJSONArray(Constants.CONTRIBUTOR).toList().forEach(c -> RdfUtils.addTripleUri(codeListIri, DC.CONTRIBUTOR, (String) c, model, graph));
 		}
 
-		if(partial){
+		if(kind.isPartial()){
 			if(codesList.has(CODES)) {
 				JSONObject codes = codesList.getJSONObject(CODES);
 				for (String key : codes.keySet()) {
@@ -460,8 +460,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
-		var codeslists = repoGestion.getResponseAsArray(codeListsQueries.getAllCodesLists(partial));
+	public List<PartialCodesList> getAllCodesLists(CodeListKind kind) throws RmesException, JsonProcessingException {
+		var codeslists = repoGestion.getResponseAsArray(codeListsQueries.getAllCodesLists(kind));
 		return DiacriticSorter.sort(codeslists,
 				PartialCodesList[].class,
 				PartialCodesList::labelLg1);
@@ -486,7 +486,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		IRI owlClassUri = RdfUtils.codeListIRI(CONCEPT + codesList.getString(LAST_CLASS_URI_SEGMENT));
 		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.getString(CODE));
-		IRI codeListIri = this.generateIri(codesList, false);
+		IRI codeListIri = this.generateIri(codesList, CodeListKind.FULL);
 
 		Model codeModel = new LinkedHashModel();
 		createMainCodeTriplet(RdfUtils.codesListGraph(), codeListIri, code, codeModel, codeIri, owlClassUri);
