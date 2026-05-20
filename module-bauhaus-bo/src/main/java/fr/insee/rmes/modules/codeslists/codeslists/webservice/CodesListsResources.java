@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeLabelList;
@@ -38,7 +39,7 @@ public class CodesListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> setCodesList(@RequestBody String body) throws RmesException {
-        String id = codeListService.setCodesList(body, false);
+        String id = codeListService.setCodesList(body, CodeListKind.FULL);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -52,7 +53,7 @@ public class CodesListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> updateCodesList(@PathVariable(Constants.ID) String id, @RequestBody String body) throws RmesException {
-        codeListService.setCodesList(id, body, false);
+        codeListService.setCodesList(id, body, CodeListKind.FULL);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
@@ -60,14 +61,14 @@ public class CodesListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.DELETE)
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
-        codeListService.deleteCodeList(id, false);
+        codeListService.deleteCodeList(id, CodeListKind.FULL);
             return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PartialCodesList>> getAllCodesLists() throws RmesException, JsonProcessingException {
-        List<PartialCodesList> result = codeListService.getAllCodesLists(false);
+        List<PartialCodesList> result = codeListService.getAllCodesLists(CodeListKind.FULL);
         return ResponseEntity.status(HttpStatus.OK)
                 .header("Deprecation", "true")
                 .header("Sunset", "2025-12-31")
@@ -79,7 +80,7 @@ public class CodesListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CodeList>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
-        List<CodeList> listCodeList = codeListService.getDetailedCodesListForSearch(false);
+        List<CodeList> listCodeList = codeListService.getDetailedCodesListForSearch(CodeListKind.FULL);
         return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
 
     }
@@ -157,7 +158,7 @@ public class CodesListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
     public ResponseEntity<Id> publishFullCodeList(@PathVariable(Constants.ID) Id id) throws RmesException {
-        codeListService.publishCodeList(id.identifier(), false);
+        codeListService.publishCodeList(id.identifier(), CodeListKind.FULL);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 }

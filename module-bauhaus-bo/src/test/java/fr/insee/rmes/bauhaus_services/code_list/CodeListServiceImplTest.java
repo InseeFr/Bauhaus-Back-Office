@@ -46,7 +46,7 @@ class CodeListServiceImplTest {
 
     @Test
     void getAllCodesLists() throws RmesException, JsonProcessingException {
-        when(codeListsQueries.getAllCodesLists(false)).thenReturn("query");
+        when(codeListsQueries.getAllCodesLists(CodeListKind.FULL)).thenReturn("query");
 
         JSONArray response = new JSONArray();
         response.put(new JSONObject()
@@ -74,7 +74,7 @@ class CodeListServiceImplTest {
         );
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(response);
 
-        var codesLists = codeListService.getAllCodesLists(false);
+        var codesLists = codeListService.getAllCodesLists(CodeListKind.FULL);
         assertEquals(3, codesLists.size());
         assertEquals("alabelLg1", codesLists.get(0).labelLg1());
         assertEquals("élabelLg1", codesLists.get(1).labelLg1());
@@ -103,7 +103,7 @@ class CodeListServiceImplTest {
     @Test
     void getCodesForCodeList() throws RmesException, JsonProcessingException {
         when(codeListsQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
-        when(codeListsQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
+        when(codeListsQueries.getDetailedCodes("notation", CodeListKind.FULL, List.of("search"), 1, null, "code")).thenReturn("query2");
         when(codeListsQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
 
         JSONObject count = new JSONObject();
@@ -198,12 +198,12 @@ class CodeListServiceImplTest {
         JSONObject jsonObjectWithoutLastListUriSegment = new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("code","codeExample");
         JSONObject jsonObjectWithoutCodeKey = new JSONObject().put(Constants.ID,"idExample").put(Constants.LABEL_LG1,"labelLg1Example").put(Constants.LABEL_LG2,"labelLg2Example").put("lastClassUriSegment","lastClassUriSegmentExample").put("lastListUriSegment","lastListUriSegmentExample");
 
-        RmesException exceptionId = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutId,false));
-        RmesException exceptionLabelLg1 = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLabelLg1,false));
-        RmesException exceptionLabelLg2 = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLabelLg2,false));
-        RmesException exceptionLastClassUriSegment = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLastClassUriSegment,false));
-        RmesException exceptionLastListUriSegment = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLastListUriSegment,false));
-        RmesException exceptionCodeKey = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutCodeKey,true));
+        RmesException exceptionId = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutId, CodeListKind.FULL));
+        RmesException exceptionLabelLg1 = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLabelLg1, CodeListKind.FULL));
+        RmesException exceptionLabelLg2 = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLabelLg2, CodeListKind.FULL));
+        RmesException exceptionLastClassUriSegment = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLastClassUriSegment, CodeListKind.FULL));
+        RmesException exceptionLastListUriSegment = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutLastListUriSegment, CodeListKind.FULL));
+        RmesException exceptionCodeKey = assertThrows(RmesBadRequestException.class, () -> codeListService.validateCodeList(jsonObjectWithoutCodeKey, CodeListKind.PARTIAL));
 
         boolean cantValidateId = "{\"message\":\"The id of the list should be defined\"}".equals(exceptionId.getDetails());
         boolean cantValidateLabelLg1 = "{\"message\":\"The labelLg1 of the list should be defined\"}".equals(exceptionLabelLg1.getDetails());
