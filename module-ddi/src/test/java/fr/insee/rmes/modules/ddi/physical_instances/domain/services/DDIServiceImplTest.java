@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -335,6 +336,100 @@ class DDIServiceImplTest {
         assertEquals("su-456", result.studyUnitId());
         assertEquals("grp-789", result.groupId());
         verify(ddiRepository).getPhysicalInstanceParents(agencyId, id);
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents_resolvesCreatorStampsOfParentGroup() {
+        String agencyId = "fr.insee";
+        String id = "pi-123";
+        String seriesIri = "http://id.insee.fr/operations/serie/s1001";
+
+        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+
+        Ddi4Group group = new Ddi4Group(
+                "true", "2025-01-09T09:00:00Z",
+                "urn:ddi:fr.insee:grp-789:1",
+                "fr.insee", "grp-789", "1",
+                "bauhaus", null, List.of(),
+                List.of(seriesIri),
+                "insee:StatisticalOperationSeries"
+        );
+        when(ddiRepository.getGroup("fr.insee", "grp-789")).thenReturn(
+                new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of()));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(seriesIri)))
+                .thenReturn(Map.of(seriesIri, List.of("stamp-A", "stamp-B")));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
+
+        assertNotNull(result);
+        assertEquals("grp-789", result.groupId());
+        assertEquals(Set.of("stamp-A", "stamp-B"), Set.copyOf(result.stamps()));
+    }
+
+    @Test
+    void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
+        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
+        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
+        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(pi1, pi2));
+
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", "g2"));
+
+        String iri1 = "http://id.insee.fr/operations/serie/s1";
+        String iri2 = "http://id.insee.fr/operations/serie/s2";
+        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri1));
+        when(ddiRepository.getGroup("fr.insee", "g2")).thenReturn(groupResponseWithSeries("g2", iri2));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1)))
+                .thenReturn(Map.of(iri1, List.of("stamp-A")));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri2)))
+                .thenReturn(Map.of(iri2, List.of("stamp-B")));
+
+        List<PartialPhysicalInstance> result =
+                ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("pi-1", result.getFirst().id());
+    }
+
+    @Test
+    void shouldGetPhysicalInstancesFilteredByStamp_resolvesGroupStampsOncePerGroup() {
+        PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
+        PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
+        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(pi1, pi2));
+
+        // les deux PI partagent le même groupe parent g1
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-2"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-2", "fr.insee", "g1"));
+
+        String iri1 = "http://id.insee.fr/operations/serie/s1";
+        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri1));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri1)))
+                .thenReturn(Map.of(iri1, List.of("stamp-A")));
+
+        List<PartialPhysicalInstance> result =
+                ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+
+        assertEquals(2, result.size());
+        // les stamps du groupe partagé ne sont résolus qu'une seule fois
+        verify(ddiRepository, times(1)).getGroup("fr.insee", "g1");
+    }
+
+    private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
+        Ddi4Group group = new Ddi4Group(
+                "true", "2025-01-09T09:00:00Z",
+                "urn:ddi:fr.insee:" + groupId + ":1",
+                "fr.insee", groupId, "1",
+                "bauhaus", null, List.of(),
+                List.of(seriesIris),
+                "insee:StatisticalOperationSeries"
+        );
+        return new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of());
     }
 
     @Test

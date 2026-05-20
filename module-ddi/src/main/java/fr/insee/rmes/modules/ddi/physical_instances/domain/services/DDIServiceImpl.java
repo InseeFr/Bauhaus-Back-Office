@@ -15,6 +15,9 @@ import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +39,33 @@ public class DDIServiceImpl implements DDIService {
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Starting to get physical instances list");
         return ddiRepository.getPhysicalInstances();
+    }
+
+    @Override
+    public List<PartialPhysicalInstance> getPhysicalInstancesFilteredByStamp(Set<String> userStamps) {
+        logger.info("Starting to get physical instances filtered by stamp");
+        List<PartialPhysicalInstance> allInstances = ddiRepository.getPhysicalInstances();
+
+        // PI -> clé "agency|id" du groupe parent (résolution Colectica, par PI)
+        Map<PartialPhysicalInstance, String> groupKeyByInstance = new LinkedHashMap<>();
+        for (PartialPhysicalInstance instance : allInstances) {
+            PhysicalInstanceParents parents =
+                    ddiRepository.getPhysicalInstanceParents(instance.agency(), instance.id());
+            groupKeyByInstance.put(instance, parents.groupAgency() + "|" + parents.groupId());
+        }
+
+        // stamps créateurs résolus une seule fois par groupe distinct (et non par PI)
+        Map<String, List<String>> stampsByGroupKey = new HashMap<>();
+        for (String groupKey : Set.copyOf(groupKeyByInstance.values())) {
+            String[] parts = groupKey.split("\\|", 2);
+            stampsByGroupKey.put(groupKey, resolveGroupCreatorStamps(parts[0], parts[1]));
+        }
+
+        return allInstances.stream()
+                .filter(instance -> stampsByGroupKey
+                        .getOrDefault(groupKeyByInstance.get(instance), List.of())
+                        .stream().anyMatch(userStamps::contains))
+                .toList();
     }
 
     @Override
@@ -119,7 +149,31 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         logger.info("Getting parents for physical instance {}/{}", agencyId, id);
-        return ddiRepository.getPhysicalInstanceParents(agencyId, id);
+        PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
+        return parents.withStamps(resolveGroupCreatorStamps(parents.groupAgency(), parents.groupId()));
+    }
+
+    /**
+     * Stamps STAMP d'une instance physique : créateurs des séries du groupe parent.
+     * Même résolution groupe → séries → créateurs que {@code getGroupsFilteredByStamp}
+     * et que {@code GraphDbStampChecker.getCreatorsStamps} pour DDI_PHYSICALINSTANCE.
+     */
+    private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
+        Ddi4GroupResponse groupResponse = ddiRepository.getGroup(groupAgency, groupId);
+        List<String> seriesIris = groupResponse == null || groupResponse.group() == null
+                ? List.of()
+                : groupResponse.group().stream()
+                        .filter(g -> g.seriesIris() != null)
+                        .flatMap(g -> g.seriesIris().stream())
+                        .distinct()
+                        .toList();
+        if (seriesIris.isEmpty()) {
+            return List.of();
+        }
+        return seriesCreatorsPort.getCreatorsForSeries(seriesIris).values().stream()
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
     }
 
     @Override
