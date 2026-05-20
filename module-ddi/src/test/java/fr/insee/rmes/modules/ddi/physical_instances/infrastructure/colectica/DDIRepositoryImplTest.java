@@ -874,7 +874,8 @@ class DDIRepositoryImplTest {
                 "</ddi:FragmentInstance>";
 
         // Mock the direct call to /ddiset/{agencyId}/{identifier}
-        when(responseSpec.body(eq(String.class))).thenReturn(ddisetXml);
+        when(responseSpec.body(eq(byte[].class)))
+                .thenReturn(ddisetXml.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         // When
         Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
@@ -907,6 +908,55 @@ class DDIRepositoryImplTest {
 
         // Verify ddiset endpoint was called
         verify(requestSpec).uri(eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId));
+    }
+
+    @Test
+    void shouldPreserveUtf8AccentsWhenGroupResponseHasNoCharset() {
+        // Reproduces the mojibake bug: Colectica returns UTF-8 bytes but with a Content-Type
+        // that omits charset, so Spring's StringHttpMessageConverter falls back to ISO-8859-1.
+        // The repository must read raw bytes and decode as UTF-8 itself.
+        String groupId = "4ae1ad6e-bd5a-3ae7-ab21-57efc2f5e279";
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+
+        String ddisetXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                "<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\">\n" +
+                "    <ddi:TopLevelReference>\n" +
+                "        <r:Agency>fr.insee</r:Agency>\n" +
+                "        <r:ID>" + groupId + "</r:ID>\n" +
+                "        <r:Version>1</r:Version>\n" +
+                "        <r:TypeOfObject>Group</r:TypeOfObject>\n" +
+                "    </ddi:TopLevelReference>\n" +
+                "    <Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n" +
+                "        <Group isUniversallyUnique=\"true\" versionDate=\"2026-05-11T10:05:24Z\" xmlns=\"ddi:group:3_3\">\n" +
+                "            <r:URN>urn:ddi:fr.insee:" + groupId + ":1</r:URN>\n" +
+                "            <r:Agency>fr.insee</r:Agency>\n" +
+                "            <r:ID>" + groupId + "</r:ID>\n" +
+                "            <r:Version>1</r:Version>\n" +
+                "            <r:Citation>\n" +
+                "                <r:Title>\n" +
+                "                    <r:String xml:lang=\"fr-FR\">Enquête capacité à innover et stratégie</r:String>\n" +
+                "                </r:Title>\n" +
+                "            </r:Citation>\n" +
+                "        </Group>\n" +
+                "    </Fragment>\n" +
+                "</ddi:FragmentInstance>";
+        byte[] ddisetBytes = ddisetXml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        // Simulate Spring delivering raw bytes (what a real server returns), not a pre-decoded String.
+        when(responseSpec.body(eq(byte[].class))).thenReturn(ddisetBytes);
+
+        Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
+
+        assertNotNull(result);
+        assertNotNull(result.group());
+        assertEquals(1, result.group().size());
+        assertEquals(
+                "Enquête capacité à innover et stratégie",
+                result.group().get(0).citation().title().strings().get(0).value().value()
+        );
     }
 
     @Test

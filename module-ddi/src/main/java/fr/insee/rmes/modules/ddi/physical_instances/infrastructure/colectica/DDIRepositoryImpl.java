@@ -598,21 +598,26 @@ public class DDIRepositoryImpl implements DDIRepository {
                     ddisetUrl
                 );
 
-                // The response from Colectica ddiset endpoint contains XML with Group and StudyUnits
-                String ddisetXml = restClient
+                // Read raw bytes and decode as UTF-8 explicitly. body(String.class) lets
+                // Spring's StringHttpMessageConverter pick the charset from the response's
+                // Content-Type, which Colectica omits — Spring then falls back to ISO-8859-1
+                // and produces mojibake on accented characters.
+                byte[] ddisetBytes = restClient
                     .get()
                     .uri(ddisetUrl)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .retrieve()
-                    .body(String.class);
+                    .body(byte[].class);
 
-                if (ddisetXml == null || ddisetXml.isEmpty()) {
+                if (ddisetBytes == null || ddisetBytes.length == 0) {
                     logger.error(
                         "Received empty response from Colectica API for ddiset URL: {}",
                         ddisetUrl
                     );
                     return null;
                 }
+
+                String ddisetXml = new String(ddisetBytes, StandardCharsets.UTF_8);
 
                 logger.info(
                     "Received response from ddiset endpoint for Group. Length: {}",

@@ -109,10 +109,33 @@ class RepositoryUtilsTest {
     void shouldExecuteQuery() throws RmesException {
         try (RepositoryConnection conn = testRepository.getConnection()) {
             String query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10";
-            
+
             String result = RepositoryUtils.executeQuery(conn, query);
             assertNotNull(result);
             assertTrue(result.contains("results"));
+        }
+    }
+
+    @Test
+    void shouldPreserveUtf8AccentsInQueryResults() throws RmesException {
+        // Inserts a literal containing accented French characters and verifies that
+        // executeQuery returns them intact (no mojibake), regardless of the JVM's
+        // default charset. SPARQLResultsJSONWriter writes UTF-8 by spec.
+        try (RepositoryConnection conn = testRepository.getConnection()) {
+            conn.add(
+                    SimpleValueFactory.getInstance().createIRI("http://example.org/s1001"),
+                    SimpleValueFactory.getInstance().createIRI("http://example.org/label"),
+                    SimpleValueFactory.getInstance().createLiteral("Enquête capacité à innover et stratégie")
+            );
+
+            String query = "SELECT ?label WHERE { ?s <http://example.org/label> ?label }";
+            String result = RepositoryUtils.executeQuery(conn, query);
+
+            assertNotNull(result);
+            assertTrue(
+                    result.contains("Enquête capacité à innover et stratégie"),
+                    "Accented characters should survive the SPARQL JSON serialization round-trip; got: " + result
+            );
         }
     }
 
