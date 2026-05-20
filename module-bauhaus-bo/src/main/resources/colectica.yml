@@ -36,9 +36,9 @@ fr.insee.rmes.bauhaus.colectica:
     # Override this value when using token-based authentication
     token: ""
 
-  # Liste des code lists mutualisées exposées en lecture seule via /ddi/mutualized-codes-list.
-  # Vide ou absente = aucune code list mutualisée (l'application démarre normalement).
-  mutualized-codes-lists:
-    - agency-id: fr.insee
-      identifier: 37b132f6-7c81-42a5-8bff-7a7b6e239642
-      version: 1
+  # Package racine dont l'arborescence est parcourue pour exposer les code lists mutualisées
+  # via /ddi/mutualized-codes-list. Absent = aucune code list mutualisée (l'application démarre normalement).
+  mutualized-codes-package:
+    agency-id: fr.insee
+    identifier: e129238f-485f-40b4-b52f-5702c05d5f40
+    version: 1

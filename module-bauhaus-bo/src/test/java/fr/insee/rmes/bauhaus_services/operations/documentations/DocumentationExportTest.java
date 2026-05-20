@@ -27,7 +27,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -193,11 +195,11 @@ class DocumentationExportTest {
                 .thenReturn(series);
 
         // Mock organizations
-        when(organizationsService.getOrganizations()).thenReturn(new java.util.ArrayList<>());
+        when(organizationsService.getOrganizations()).thenReturn(new ArrayList<>());
 
         // Mock batch organization lookups for creators using OrganisationService from module-domain
-        when(organisationService.getOrganisationsMap(java.util.List.of("HIE2004993", "DG75-G401", "DG75-G450")))
-                .thenReturn(java.util.Map.of(
+        when(organisationService.getOrganisationsMap(List.of("HIE2004993", "DG75-G401", "DG75-G450")))
+                .thenReturn(Map.of(
                         "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993"),
                         "DG75-G401", new fr.insee.rmes.domain.model.OrganisationOption("DG75-G401", "Organisation DG75-G401"),
                         "DG75-G450", new fr.insee.rmes.domain.model.OrganisationOption("DG75-G450", "Organisation DG75-G450")
@@ -212,7 +214,7 @@ class DocumentationExportTest {
                         "CL_SOURCE_CATEGORY",
                         "Catégorie de source",
                         "Source category",
-                        new java.util.ArrayList<>()
+                        new ArrayList<>()
                 )
         );
 
@@ -314,10 +316,10 @@ class DocumentationExportTest {
                 "Direction des études et synthèses économiques (DESE)",
                 null
         );
-        series.setPublishers(java.util.List.of(publisher));
+        series.setPublishers(List.of(publisher));
 
         // Set creators
-        series.setCreators(java.util.List.of("HIE2004993", "DG75-G401", "DG75-G450"));
+        series.setCreators(List.of("HIE2004993", "DG75-G401", "DG75-G450"));
 
         // Set replaces
         fr.insee.rmes.model.links.OperationsLink replaces = new fr.insee.rmes.model.links.OperationsLink(
@@ -326,7 +328,7 @@ class DocumentationExportTest {
                 "Comptes nationaux annuels (base 2014)",
                 "Annual national accounts (2014 Base)"
         );
-        series.setReplaces(java.util.List.of(replaces));
+        series.setReplaces(List.of(replaces));
 
         return series;
     }
@@ -366,16 +368,16 @@ class DocumentationExportTest {
         series.setId("s1034");
         series.setPrefLabelLg1("Autres indicateurs");
         series.setPrefLabelLg2("Other indexes");
-        series.setCreators(new java.util.ArrayList<>());
+        series.setCreators(new ArrayList<>());
         when(seriesUtils.getSeriesById("s1034", fr.insee.rmes.utils.EncodingType.XML))
                 .thenReturn(series);
 
         // Mock organizations
-        when(organizationsService.getOrganizations()).thenReturn(new java.util.ArrayList<>());
+        when(organizationsService.getOrganizations()).thenReturn(new ArrayList<>());
 
         // Mock batch organization lookups for creators using OrganisationService from module-domain
-        when(organisationService.getOrganisationsMap(java.util.List.of("HIE2004993")))
-                .thenReturn(java.util.Map.of(
+        when(organisationService.getOrganisationsMap(List.of("HIE2004993")))
+                .thenReturn(Map.of(
                         "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
                 ));
 
@@ -448,10 +450,10 @@ class DocumentationExportTest {
                 "Administration du comité du Label",
                 null
         );
-        indicator.setContributors(java.util.List.of(contributor));
+        indicator.setContributors(List.of(contributor));
 
         // Set creators
-        indicator.setCreators(java.util.List.of("HIE2004993"));
+        indicator.setCreators(List.of("HIE2004993"));
 
         // Set wasGeneratedBy
         fr.insee.rmes.model.links.OperationsLink wasGeneratedBy1 = new fr.insee.rmes.model.links.OperationsLink(
@@ -466,7 +468,7 @@ class DocumentationExportTest {
                 "Autres indicateurs",
                 "Other indexes"
         );
-        indicator.setWasGeneratedBy(java.util.List.of(wasGeneratedBy1, wasGeneratedBy2));
+        indicator.setWasGeneratedBy(List.of(wasGeneratedBy1, wasGeneratedBy2));
 
         return indicator;
     }

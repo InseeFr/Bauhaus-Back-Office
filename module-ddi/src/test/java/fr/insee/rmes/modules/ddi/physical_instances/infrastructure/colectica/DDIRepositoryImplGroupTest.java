@@ -19,6 +19,7 @@ import org.springframework.web.client.RestClient;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +56,7 @@ class DDIRepositoryImplGroupTest {
     @BeforeEach
     void setUp() {
         lenient().when(authenticator.executeWithAuth(any())).thenAnswer(invocation -> {
-            java.util.function.Function<String, ?> function = invocation.getArgument(0);
+            Function<String, ?> function = invocation.getArgument(0);
             return function.apply(TEST_TOKEN);
         });
 

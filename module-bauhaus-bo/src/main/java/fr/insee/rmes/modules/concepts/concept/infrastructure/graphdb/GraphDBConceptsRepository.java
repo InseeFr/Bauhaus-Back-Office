@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @ServerSideAdaptor
@@ -203,7 +204,7 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
             if (results == null) return Set.of();
             return IntStream.range(0, results.length())
                     .mapToObj(i -> results.getJSONObject(i).getString("id"))
-                    .collect(java.util.stream.Collectors.toSet());
+                    .collect(Collectors.toSet());
         } catch (RmesException e) {
             throw new ConceptsFetchException(e);
         }

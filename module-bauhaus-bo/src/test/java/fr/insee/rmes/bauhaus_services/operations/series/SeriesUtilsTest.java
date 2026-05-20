@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -114,7 +115,7 @@ class SeriesUtilsTest {
     void addOperationLinksOrganization_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
-                .thenReturn(java.util.Optional.of("http://bauhaus/organisations/DG75-A001"));
+                .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
         SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
@@ -137,7 +138,7 @@ class SeriesUtilsTest {
     void addOperationLinksOrganization_resolvesLegacyIdViaLookup() throws RmesException {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("DG75-A001"))
-                .thenReturn(java.util.Optional.of("http://bauhaus/organisations/DG75-A001"));
+                .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
         SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");

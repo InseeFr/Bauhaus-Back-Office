@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
@@ -100,7 +101,7 @@ public class ConceptDateChecker implements RuleChecker  {
             return false;
         }
         try {
-            Instant.parse(dateString.trim()).atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            Instant.parse(dateString.trim()).atZone(ZoneId.systemDefault()).toLocalDate();
             return true;
         } catch (DateTimeParseException _){
             return false;

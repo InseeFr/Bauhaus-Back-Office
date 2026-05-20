@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.never;
 
@@ -106,7 +108,7 @@ class DomainCollectionsServiceTest {
                 Collections.emptyList()
         );
 
-        org.junit.jupiter.api.Assertions.assertThrows(
+        assertThrows(
                 fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyExistsException.class,
                 () -> domainCollectionsService.createCollection(command));
 
@@ -202,7 +204,7 @@ class DomainCollectionsServiceTest {
         when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
                 .thenReturn(Set.of(uuid1.toString()));
 
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() ->
+        assertDoesNotThrow(() ->
                 domainCollectionsService.validateCollections(List.of(uuid1.toString())));
     }
 
@@ -211,7 +213,7 @@ class DomainCollectionsServiceTest {
         when(collectionsRepository.findExistingCollectionIds(List.of("unknown-collection")))
                 .thenReturn(Set.of());
 
-        org.junit.jupiter.api.Assertions.assertThrows(CollectionsFetchException.class, () ->
+        assertThrows(CollectionsFetchException.class, () ->
                 domainCollectionsService.validateCollections(List.of("unknown-collection")));
 
         verify(collectionsRepository, never()).linkConceptToCollection(any(), any());
@@ -220,7 +222,7 @@ class DomainCollectionsServiceTest {
 
     @Test
     void validate_should_do_nothing_when_list_is_empty() throws CollectionsFetchException {
-        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() ->
+        assertDoesNotThrow(() ->
                 domainCollectionsService.validateCollections(Collections.emptyList()));
 
         verify(collectionsRepository, never()).findExistingCollectionIds(any());

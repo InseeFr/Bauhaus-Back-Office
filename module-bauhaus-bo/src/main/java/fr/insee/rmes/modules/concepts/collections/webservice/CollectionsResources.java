@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -165,7 +166,7 @@ public class CollectionsResources {
                                        @RequestParam("langue") Language langue,
                                        @RequestParam("withConcepts") boolean withConcepts) {
         try {
-            List<CollectionId> collectionIds = java.util.Arrays.stream(ids.split("_AND_")).map(CollectionId::new).toList();
+            List<CollectionId> collectionIds = Arrays.stream(ids.split("_AND_")).map(CollectionId::new).toList();
             CollectionExport export = this.service.exportCollectionsZip(collectionIds, CollectionExportType.fromString(type), langue, withConcepts);
             return buildExportResponse(export);
         } catch (InvalidCollectionIdException | IllegalArgumentException e) {
