@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,7 +84,7 @@ class OrganisationLookupIntegrationTest extends WithGraphDBContainer {
     @Test
     void findUnknown_handlesBatchOfHundredInputsWithoutRegression() throws RmesException {
         // Plan §6: 100 inputs in a reasonable time - assert the call returns without error.
-        List<String> inputs = new java.util.ArrayList<>();
+        List<String> inputs = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             inputs.add(KNOWN_IRI);
             inputs.add("MISSING-" + i);

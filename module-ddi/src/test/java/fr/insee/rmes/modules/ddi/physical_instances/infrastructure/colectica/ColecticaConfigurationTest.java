@@ -30,7 +30,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         null,
                         VALID_SERVER,
-                        Collections.emptyList()
+                        null
                 )
         )
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
@@ -41,9 +41,9 @@ class ColecticaConfigurationTest {
     void should_throw_exception_when_langs_is_empty() {
         assertThatThrownBy(() ->
                 new ColecticaConfiguration(
-                        Collections.emptyList(),
+                        null,
                         VALID_SERVER,
-                        Collections.emptyList()
+                        null
                 )
         )
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
@@ -56,7 +56,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("invalid-code"),
                         VALID_SERVER,
-                        Collections.emptyList()
+                        null
                 )
         )
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
@@ -70,7 +70,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("FR-fr"),
                         VALID_SERVER,
-                        Collections.emptyList()
+                        null
                 )
         )
                 .isInstanceOf(InvalidColecticaConfigurationException.class)
@@ -83,7 +83,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("fr-FR", "en-GB", "de-DE"),
                         VALID_SERVER,
-                        Collections.emptyList()
+                        null
                 )
         );
     }
@@ -94,7 +94,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("fr-FR"),
                         VALID_SERVER,
-                        Collections.emptyList()
+                        null
                 )
         );
     }

@@ -173,7 +173,7 @@ class XsltUtilsTest {
 
         if (Files.exists(tempDir)) {
             Files.walk(tempDir)
-                    .sorted(java.util.Comparator.reverseOrder())
+                    .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
         }

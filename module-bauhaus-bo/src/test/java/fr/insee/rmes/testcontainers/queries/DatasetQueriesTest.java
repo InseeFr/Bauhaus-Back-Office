@@ -11,9 +11,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("integration")
 class DatasetQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
@@ -33,17 +35,17 @@ class DatasetQueriesTest extends WithGraphDBContainer {
     @Test
     void should_expose_alt_identifier_for_search() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch("http://rdf.insee.fr/graphes/catalogue", "http://rdf.insee.fr/graphes/adms"));
-        Set<String> altIdentifiers = new java.util.HashSet<>();
+        Set<String> altIdentifiers = new HashSet<>();
         for (int i = 0; i < result.length(); i++) {
             if (result.getJSONObject(i).has("altIdentifier")) {
                 altIdentifiers.add(result.getJSONObject(i).getString("altIdentifier"));
             }
         }
-        org.junit.jupiter.api.Assertions.assertTrue(
+        assertTrue(
                 altIdentifiers.contains("DATASET_ALL_PROPERTIES"),
                 "Expected altIdentifier DATASET_ALL_PROPERTIES, got: " + altIdentifiers
         );
-        org.junit.jupiter.api.Assertions.assertTrue(
+        assertTrue(
                 altIdentifiers.contains("DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES"),
                 "Expected altIdentifier DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES, got: " + altIdentifiers
         );

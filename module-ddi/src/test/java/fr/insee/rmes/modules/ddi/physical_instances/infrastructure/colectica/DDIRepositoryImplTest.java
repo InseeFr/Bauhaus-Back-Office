@@ -14,11 +14,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClient;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -64,7 +66,7 @@ class DDIRepositoryImplTest {
 
         // Configure authenticator to execute the function with a test token
         lenient().when(authenticator.executeWithAuth(any())).thenAnswer(invocation -> {
-            java.util.function.Function<String, ?> function = invocation.getArgument(0);
+            Function<String, ?> function = invocation.getArgument(0);
             return function.apply(TEST_TOKEN);
         });
 
@@ -875,7 +877,7 @@ class DDIRepositoryImplTest {
 
         // Mock the direct call to /ddiset/{agencyId}/{identifier}
         when(responseSpec.body(eq(byte[].class)))
-                .thenReturn(ddisetXml.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                .thenReturn(ddisetXml.getBytes(StandardCharsets.UTF_8));
 
         // When
         Ddi4GroupResponse result = ddiRepository.getGroup(agencyId, groupId);
@@ -943,7 +945,7 @@ class DDIRepositoryImplTest {
                 "        </Group>\n" +
                 "    </Fragment>\n" +
                 "</ddi:FragmentInstance>";
-        byte[] ddisetBytes = ddisetXml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] ddisetBytes = ddisetXml.getBytes(StandardCharsets.UTF_8);
 
         // Simulate Spring delivering raw bytes (what a real server returns), not a pre-decoded String.
         when(responseSpec.body(eq(byte[].class))).thenReturn(ddisetBytes);
@@ -959,114 +961,246 @@ class DDIRepositoryImplTest {
         );
     }
 
+    private static final String CODE_LIST_TYPE = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+    private static final String CATEGORY_TYPE = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
+    private static final String VARIABLE_TYPE = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+    private static final String DATA_RELATIONSHIP_TYPE = "f39ff278-8500-45fe-a850-3906da2d242b";
+    private static final String PHYSICAL_INSTANCE_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+    private static final String STUDY_UNIT_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";
+
+    private static Map<String, String> standardItemTypes() {
+        return Map.of(
+            "CodeList", CODE_LIST_TYPE,
+            "Category", CATEGORY_TYPE,
+            "Variable", VARIABLE_TYPE,
+            "DataRelationship", DATA_RELATIONSHIP_TYPE,
+            "PhysicalInstance", PHYSICAL_INSTANCE_TYPE,
+            "StudyUnit", STUDY_UNIT_TYPE
+        );
+    }
+
+    private static ColecticaItem codeListItem(String identifier, String labelFr, String versionDate) {
+        return itemOfType(identifier, CODE_LIST_TYPE, labelFr, versionDate);
+    }
+
+    private static ColecticaItem itemOfType(String identifier, String itemType, String labelFr, String versionDate) {
+        return new ColecticaItem(
+            null,
+            labelFr == null ? null : Map.of("fr-FR", labelFr),
+            null,
+            null, null, 0, "test-repo", true, List.of(),
+            itemType,
+            "fr.insee", 1, identifier, null, null,
+            versionDate,
+            null, false, false, false, "DDI", 1L, 0
+        );
+    }
+
     @Test
-    void shouldGetMutualizedCodesLists() {
-        // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String getDescriptionsUrl = baseApiUrl + "item/_getDescriptions";
-
-        // Configure mutualized codes lists
-        List<ColecticaConfiguration.MutualizedCodeListEntry> mutualizedEntries = List.of(
-            new ColecticaConfiguration.MutualizedCodeListEntry("fr.insee", "fc65a527-a04b-4505-85de-0a181e54dbad", 1)
-        );
-        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(mutualizedEntries);
-
-        // Mock response from _getDescriptions endpoint
-        ColecticaItem codeList = new ColecticaItem(
-            null, // summary
-            Map.of("fr-FR", "CL-RMES-NAFR2-SOUS-CLASSE"), // itemName
-            Map.of("fr-FR", "NAF rév. 2, 2008 - Niveau 5 - Sous-classes"), // label
-            null, // description
-            null, // versionRationale
-            0, // metadataRank
-            "test-repo", // repositoryName
-            true, // isAuthoritative
-            List.of(), // tags
-            "8b108ef8-b642-4484-9c49-f88e4bf7cf1d", // itemType (CodeList)
-            "fr.insee", // agencyId
-            1, // version
-            "fc65a527-a04b-4505-85de-0a181e54dbad", // identifier
-            null, // item
-            null, // notes
-            "2024-10-31T10:43:38", // versionDate
-            null, // versionResponsibility
-            false, // isPublished
-            false, // isDeprecated
-            false, // isProvisional
-            "DDI", // itemFormat
-            1L, // transactionId
-            0 // versionCreationType
-        );
-
-        ColecticaItem[] mockResponse = new ColecticaItem[] { codeList };
-
-        // Mock configuration
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        // Mock the POST call to _getDescriptions
-        when(responseSpec.body(eq(ColecticaItem[].class)))
-                .thenReturn(mockResponse);
+    void noPackageConfigured_returnsEmptyListWithoutHttpCall() {
+        // Given - no mutualized codes package configured
+        when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
 
         // When
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", result.get(0).id());
-        assertEquals("CL-RMES-NAFR2-SOUS-CLASSE", result.get(0).label());
-        assertEquals("fr.insee", result.get(0).agency());
-        assertNotNull(result.get(0).versionDate());
+        assertTrue(result.isEmpty());
 
-        // Verify the request was made correctly
-        verify(requestSpec).uri(eq(getDescriptionsUrl));
-
-        ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
-        verify(requestSpec, atLeastOnce()).body(bodyCaptor.capture());
-        GetDescriptionsRequest requestBody = bodyCaptor.getAllValues().stream()
-                .filter(v -> v instanceof GetDescriptionsRequest).map(v -> (GetDescriptionsRequest) v).findFirst().orElseThrow();
-        assertNotNull(requestBody);
-        assertEquals(1, requestBody.identifiers().size());
-        assertEquals("fr.insee", requestBody.identifiers().get(0).agencyId());
-        assertEquals("fc65a527-a04b-4505-85de-0a181e54dbad", requestBody.identifiers().get(0).identifier());
-        assertEquals(1, requestBody.identifiers().get(0).version());
+        // No REST call of any kind
+        verify(restClient, never()).get();
+        verify(restClient, never()).post();
+        verify(authenticator, never()).executeWithAuth(any());
     }
 
     @Test
-    void shouldIgnoreNullItemsWhenColecticaReturnsUnknownIdentifier() {
-        // Given - configuration mentions two mutualized lists, one of which does not exist in Colectica
+    void codeListsDirectlyUnderPackage_areKept() {
         String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String cl1Id = "cl-1";
+        String cl2Id = "cl-2";
 
-        List<ColecticaConfiguration.MutualizedCodeListEntry> mutualizedEntries = List.of(
-            new ColecticaConfiguration.MutualizedCodeListEntry("fr.insee", "existing-id", 1),
-            new ColecticaConfiguration.MutualizedCodeListEntry("fr.insee", "missing-id", 1)
-        );
-        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(mutualizedEntries);
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
-        ColecticaItem existing = new ColecticaItem(
-            null,
-            Map.of("fr-FR", "CL-EXISTING"),
-            Map.of("fr-FR", "Existing label"),
-            null, null, 0, "test-repo", true, List.of(),
-            "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-            "fr.insee", 1, "existing-id", null, null,
-            "2024-10-31T10:43:38",
-            null, false, false, false, "DDI", 1L, 0
+        ColecticaResponse queryResponse = new ColecticaResponse(
+            List.of(
+                codeListItem(cl1Id, "Niveau 1", "2024-10-31T10:43:38"),
+                codeListItem(cl2Id, "Niveau 2", "2024-10-31T10:43:38")
+            ),
+            2, 2, null, null, null
         );
+        when(responseSpec.body(eq(ColecticaResponse.class))).thenReturn(queryResponse);
+        // Each byobject lookup returns the package as direct parent → CodeLists kept
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
+            .thenReturn(new ColecticaParentRef[] { new ColecticaParentRef(agencyId, packageId) });
 
-        // Colectica returns a null entry for the unknown identifier
-        ColecticaItem[] mockResponse = new ColecticaItem[] { existing, null };
-        when(responseSpec.body(eq(ColecticaItem[].class))).thenReturn(mockResponse);
-
-        // When
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
-        // Then - null entries are skipped, the call does not throw
-        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(cl1Id, result.get(0).id());
+        assertEquals("Niveau 1", result.get(0).label());
+        assertEquals(agencyId, result.get(0).agency());
+
+        verify(requestSpec).uri(eq(baseApiUrl + "_query"));
+        verify(requestSpec, atLeastOnce()).uri(eq(baseApiUrl + "_query/relationship/byobject/descriptions"));
+    }
+
+    @Test
+    void codeListNotDescendantOfPackage_isFilteredOut() {
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String orphanId = "cl-orphan";
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        ColecticaResponse queryResponse = new ColecticaResponse(
+            List.of(codeListItem(orphanId, "Not in package", "2024-10-31T10:43:38")),
+            1, 1, null, null, null
+        );
+        when(responseSpec.body(eq(ColecticaResponse.class))).thenReturn(queryResponse);
+        // byobject returns no parents → not a descendant of the package
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
+            .thenReturn(new ColecticaParentRef[0]);
+
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void codeListUnderGroupUnderPackage_isKept() {
+        // CodeList → Group → Package. Walking up takes 2 byobject calls.
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String groupId = "grp-mid";
+        String clId = "cl-nested";
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(responseSpec.body(eq(ColecticaResponse.class))).thenReturn(new ColecticaResponse(
+            List.of(codeListItem(clId, "Nested", "2024-10-31T10:43:38")),
+            1, 1, null, null, null
+        ));
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
+            // 1st call: parents of cl-nested → grp-mid
+            .thenReturn(new ColecticaParentRef[] { new ColecticaParentRef(agencyId, groupId) })
+            // 2nd call: parents of grp-mid → pkg-1
+            .thenReturn(new ColecticaParentRef[] { new ColecticaParentRef(agencyId, packageId) });
+
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
         assertEquals(1, result.size());
-        assertEquals("existing-id", result.get(0).id());
-        assertEquals("CL-EXISTING", result.get(0).label());
+        assertEquals(clId, result.get(0).id());
+    }
+
+    @Test
+    void codeListWithEmptyLabel_isFilteredOut() {
+        // Empty label is filtered BEFORE any ancestor walk, so no byobject mock is needed.
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String labelledId = "cl-labelled";
+        String blankId = "cl-blank";
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        ColecticaItem blank = new ColecticaItem(
+            null,
+            Map.of("fr-FR", "   "),
+            Map.of("fr-FR", ""),
+            null, null, 0, "test-repo", true, List.of(),
+            CODE_LIST_TYPE,
+            agencyId, 1, blankId, null, null, "2024-10-31T10:43:38",
+            null, false, false, false, "DDI", 1L, 0
+        );
+        ColecticaResponse queryResponse = new ColecticaResponse(
+            List.of(codeListItem(labelledId, "Has label", "2024-10-31T10:43:38"), blank),
+            2, 2, null, null, null
+        );
+        when(responseSpec.body(eq(ColecticaResponse.class))).thenReturn(queryResponse);
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
+            .thenReturn(new ColecticaParentRef[] { new ColecticaParentRef(agencyId, packageId) });
+
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        assertEquals(1, result.size());
+        assertEquals(labelledId, result.get(0).id());
+    }
+
+    @Test
+    void secondCallWithinTtl_isServedFromCache() {
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String clId = "cl-1";
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(responseSpec.body(eq(ColecticaResponse.class))).thenReturn(new ColecticaResponse(
+            List.of(codeListItem(clId, "label", "2024-10-31T10:43:38")),
+            1, 1, null, null, null
+        ));
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
+            .thenReturn(new ColecticaParentRef[] { new ColecticaParentRef(agencyId, packageId) });
+
+        // First call hits Colectica, second must be served from cache.
+        List<PartialCodesList> first = ddiRepository.getMutualizedCodesLists();
+        List<PartialCodesList> second = ddiRepository.getMutualizedCodesLists();
+
+        assertEquals(1, first.size());
+        assertEquals(first, second);
+
+        // _query is called exactly once across both invocations
+        verify(requestSpec, times(1)).uri(eq(baseApiUrl + "_query"));
+        // authenticator.executeWithAuth is also invoked exactly once
+        verify(authenticator, times(1)).executeWithAuth(any());
+    }
+
+    @Test
+    void duplicateCodeListInQueryResponse_appearsOnce() {
+        String baseApiUrl = "http://localhost:8082/api/v1/";
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String sharedClId = "cl-shared";
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(responseSpec.body(eq(ColecticaResponse.class))).thenReturn(new ColecticaResponse(
+            List.of(
+                codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38"),
+                codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38")
+            ),
+            2, 2, null, null, null
+        ));
+        when(responseSpec.body(eq(ColecticaParentRef[].class)))
+            .thenReturn(new ColecticaParentRef[] { new ColecticaParentRef(agencyId, packageId) });
+
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        assertEquals(1, result.size());
+        assertEquals(sharedClId, result.get(0).id());
     }
 
     @Test
@@ -1138,38 +1272,6 @@ class DDIRepositoryImplTest {
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + codeListId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"));
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenNoMutualizedCodesListsConfigured() {
-        // Given - no mutualized codes lists configured
-        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(null);
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-
-        // Verify no REST call was made
-        verify(restClient, never()).post();
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenMutualizedCodesListsIsEmpty() {
-        // Given - empty mutualized codes lists
-        when(colecticaConfiguration.mutualizedCodesLists()).thenReturn(List.of());
-
-        // When
-        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
-
-        // Then
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-
-        // Verify no REST call was made
-        verify(restClient, never()).post();
     }
 
     @Test

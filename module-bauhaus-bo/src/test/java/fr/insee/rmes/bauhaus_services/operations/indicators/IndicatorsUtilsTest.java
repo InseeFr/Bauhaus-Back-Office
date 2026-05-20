@@ -64,7 +64,7 @@ class IndicatorsUtilsTest {
         doReturn("p1000").when(indicatorsUtils).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-        org.assertj.core.api.Assertions.assertThat(exception)
+        assertThat(exception)
             .isInstanceOfAny(RmesBadRequestException.class, RmesException.class);
         assertThat(((RmesException) exception).getDetails()).contains("An indicator should be linked to a series.");
     }
@@ -77,7 +77,7 @@ class IndicatorsUtilsTest {
         doReturn("p1000").when(indicatorsUtils).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsUtils.setIndicator(indicator.toString()));
-        org.assertj.core.api.Assertions.assertThat(exception)
+        assertThat(exception)
             .isInstanceOfAny(RmesBadRequestException.class, RmesException.class);
         assertThat(((RmesException) exception).getDetails()).contains("An indicator should be linked to a series.");
     }
@@ -174,7 +174,7 @@ class IndicatorsUtilsTest {
 
 
         Indicator indicatorByApp = indicatorsUtils.buildIndicatorFromJson(jsonIndicator);
-        org.assertj.core.api.Assertions.assertThat(indicator).usingRecursiveComparison().isEqualTo(indicatorByApp);
+        assertThat(indicator).usingRecursiveComparison().isEqualTo(indicatorByApp);
 
     }
 
@@ -290,7 +290,7 @@ class IndicatorsUtilsTest {
     void addOrganisationLinks_writesIriPassthrough_whenLinkIdIsAlreadyAnIri() throws RmesException {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
-                .thenReturn(java.util.Optional.of("http://bauhaus/organisations/DG75-A001"));
+                .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI indicURI = vf.createIRI("http://bauhaus/indicators/i1");

@@ -6,7 +6,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.MutualizedCodeListEntry;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.PackageRef;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -15,6 +15,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,6 +44,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     );
 
     private static final String BAUHAUS_API = "bauhaus-api";
+    private static final Duration MUTUALIZED_CACHE_TTL = Duration.ofMinutes(10);
+
     private final String defaultLang;
 
     private final RestClient restClient;
@@ -49,6 +54,14 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private final ColecticaAuthenticator authenticator;
+
+    private volatile CachedCodesList mutualizedCache;
+
+    private record CachedCodesList(List<PartialCodesList> codes, Instant expiresAt) {
+        boolean isFresh(Clock clock) {
+            return Instant.now(clock).isBefore(expiresAt);
+        }
+    }
 
     public DDIRepositoryImpl(
         RestClient restClient,
@@ -302,6 +315,27 @@ public class DDIRepositoryImpl implements DDIRepository {
             label = item.identifier(); // Fallback to ID if no value found
         }
         return label;
+    }
+
+    /**
+     * Strict label extraction for mutualized code lists: returns the first non-blank value
+     * across {@code itemName} then {@code label}, trying default lang, then "en", then any
+     * other language. No fallback to identifier — empty Optional if no non-blank value exists.
+     */
+    private Optional<String> extractStrictLabel(ColecticaItem item) {
+        return firstNonBlank(item.itemName())
+            .or(() -> firstNonBlank(item.label()));
+    }
+
+    private Optional<String> firstNonBlank(Map<String, String> languageMap) {
+        if (languageMap == null) return Optional.empty();
+        String preferred = languageMap.get(defaultLang);
+        if (preferred != null && !preferred.isBlank()) return Optional.of(preferred);
+        String english = languageMap.get("en");
+        if (english != null && !english.isBlank()) return Optional.of(english);
+        return languageMap.values().stream()
+            .filter(v -> v != null && !v.isBlank())
+            .findFirst();
     }
 
     private String extractLabelFromLanguageMap(
@@ -1413,19 +1447,8 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
-     * Returns the metadata of every mutualized code list configured in {@code colectica.yml}.
-     *
-     * <p>Contract:
-     * <ul>
-     *   <li>Source unique : la liste {@code fr.insee.rmes.bauhaus.colectica.mutualized-codes-lists}
-     *       (triplets {@code agencyId / identifier / version}).</li>
-     *   <li>Liste absente ou vide → liste vide retournée, aucun appel Colectica (tolérance documentée).</li>
-     *   <li>Endpoint Colectica utilisé : {@code POST item/_getDescriptions} qui retourne **uniquement la
-     *       métadonnée** des items (label, identifiant, agence, version). Les codes ne sont pas inclus
-     *       dans cette réponse — ils sont déjà disponibles inline dans la réponse de
-     *       {@link #getPhysicalInstance(String, String)} via le flux {@code /set} + {@code /_getList} +
-     *       conversion DDI3→DDI4.</li>
-     * </ul>
+     * Returns the full DDI4 representation of one mutualized code list (codes + categories)
+     * via the {@code set/} + {@code _getList} + DDI3→DDI4 conversion pipeline.
      */
     @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
@@ -1510,95 +1533,141 @@ public class DDIRepositoryImpl implements DDIRepository {
         });
     }
 
+    /**
+     * Returns metadata for every CodeList that is reachable, via its ancestors, from the configured
+     * mutualized codes package.
+     *
+     * <p>Flow:
+     * <ol>
+     *   <li>{@code POST _query itemTypes=[CodeList]} → every CodeList in the repository.</li>
+     *   <li>For each CodeList, walk up the parent chain via
+     *       {@code POST _query/relationship/byobject/descriptions} until we reach the configured
+     *       package or exhaust the chain. Results are memoized across CodeLists so each ancestor is
+     *       queried at most once.</li>
+     * </ol>
+     *
+     * <p>Items are kept only when they carry a non-blank label (no fallback to identifier).
+     * Duplicates are removed by {@code agencyId/identifier}.
+     *
+     * <p>The result is cached in-process for {@link #MUTUALIZED_CACHE_TTL} to avoid hitting
+     * Colectica on every request. Concurrent callers see a single recompute.
+     */
     @Override
     public List<PartialCodesList> getMutualizedCodesLists() {
-        logger.info(
-            "Getting mutualized codes lists from Colectica API via _getDescriptions endpoint"
-        );
+        CachedCodesList snapshot = mutualizedCache;
+        if (snapshot != null && snapshot.isFresh(Clock.systemUTC())) {
+            return snapshot.codes();
+        }
+        synchronized (this) {
+            snapshot = mutualizedCache;
+            if (snapshot != null && snapshot.isFresh(Clock.systemUTC())) {
+                return snapshot.codes();
+            }
+            List<PartialCodesList> fresh = computeMutualizedCodesLists();
+            mutualizedCache = new CachedCodesList(fresh, Instant.now().plus(MUTUALIZED_CACHE_TTL));
+            return fresh;
+        }
+    }
 
-        List<MutualizedCodeListEntry> mutualizedEntries =
-            colecticaConfiguration.mutualizedCodesLists();
-        logger.info("Mutualized entries from config: {}", mutualizedEntries);
-
-        if (mutualizedEntries == null || mutualizedEntries.isEmpty()) {
-            logger.info("No mutualized codes lists configured");
+    private List<PartialCodesList> computeMutualizedCodesLists() {
+        PackageRef rootPackage = colecticaConfiguration.mutualizedCodesPackage();
+        if (rootPackage == null) {
             return List.of();
         }
+        String packageKey = rootPackage.agencyId() + "/" + rootPackage.identifier();
+        logger.info("Fetching CodeLists under package {}", packageKey);
 
         return authenticator.executeWithAuth(token -> {
-            String url =
-                instanceConfiguration.baseApiUrl() + "item/_getDescriptions";
-            logger.info("Calling URL: {}", url);
+            String codeListType = instanceConfiguration.itemTypes().get("CodeList");
+            String queryUrl = instanceConfiguration.baseApiUrl() + "_query";
 
-            // Build request body from configuration
-            List<GetDescriptionsRequest.IdentifierRef> identifiers =
-                mutualizedEntries
-                    .stream()
-                    .map(entry ->
-                        new GetDescriptionsRequest.IdentifierRef(
-                            entry.agencyId(),
-                            entry.identifier(),
-                            entry.version()
-                        )
-                    )
-                    .toList();
-
-            GetDescriptionsRequest requestBody = new GetDescriptionsRequest(
-                identifiers
-            );
-            logger.info("Request body identifiers: {}", identifiers);
-
-            logger.info(
-                "Calling _getDescriptions with {} identifiers",
-                identifiers.size()
-            );
-
-            ColecticaItem[] response = restClient
-                .post()
-                .uri(url)
+            long t0 = System.currentTimeMillis();
+            ColecticaResponse response = restClient.post()
+                .uri(queryUrl)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(requestBody)
+                .body(new QueryRequest(List.of(codeListType)))
                 .retrieve()
-                .body(ColecticaItem[].class);
-            logger.info(
-                "Response from _getDescriptions: {} items",
-                response != null ? response.length : "null"
-            );
-            logger.info(url);
-            logger.info(token);
-            logger.info(requestBody.toString());
+                .body(ColecticaResponse.class);
+            long queryMs = System.currentTimeMillis() - t0;
+            int total = response == null || response.results() == null ? 0 : response.results().size();
+            logger.info("_query CodeList returned {} items in {} ms", total, queryMs);
 
-            if (response == null) {
-                logger.warn(
-                    "Received null response from _getDescriptions endpoint"
-                );
+            if (response == null || response.results() == null) {
                 return List.of();
             }
 
-            return Arrays.stream(response)
-                .filter(Objects::nonNull)
-                .map(item -> {
-                    String id = item.identifier();
-                    String label = extractLabelFromItem(item);
-                    SimpleDateFormat formatter = new SimpleDateFormat(
-                        "yyyy-MM-dd'T'HH:mm:ss"
-                    );
-                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    Date date = null;
-                    try {
-                        date = formatter.parse(item.versionDate());
-                    } catch (ParseException | NullPointerException _) {
-                        logger.debug(
-                            "Impossible to parse {}",
-                            item.versionDate()
-                        );
-                    }
-                    String agency = item.agencyId();
-                    return new PartialCodesList(id, label, date, agency);
-                })
-                .toList();
+            Map<String, Boolean> descendantCache = new HashMap<>();
+            descendantCache.put(packageKey, true);
+
+            Map<String, PartialCodesList> collected = new LinkedHashMap<>();
+            long t1 = System.currentTimeMillis();
+            int parentLookups = 0;
+            for (ColecticaItem item : response.results()) {
+                if (item == null) continue;
+                Optional<String> label = extractStrictLabel(item);
+                if (label.isEmpty()) continue;
+                if (!isDescendantOfPackage(item.agencyId(), item.identifier(), packageKey, descendantCache, token)) {
+                    continue;
+                }
+                String key = item.agencyId() + "/" + item.identifier();
+                collected.putIfAbsent(key, new PartialCodesList(
+                    item.identifier(), label.get(), parseColecticaDate(item.versionDate()), item.agencyId()
+                ));
+                parentLookups++;
+            }
+            logger.info("Ancestor checks on {} CodeLists in {} ms; {} kept; cache size {}",
+                parentLookups, System.currentTimeMillis() - t1, collected.size(), descendantCache.size());
+
+            return List.copyOf(collected.values());
         });
+    }
+
+    private boolean isDescendantOfPackage(
+        String agencyId, String identifier, String packageKey,
+        Map<String, Boolean> cache, String token
+    ) {
+        String key = agencyId + "/" + identifier;
+        if (cache.containsKey(key)) return cache.get(key);
+        // tentative false to break cycles
+        cache.put(key, false);
+
+        String url = instanceConfiguration.baseApiUrl() + "_query/relationship/byobject/descriptions";
+        ColecticaParentRef[] parents;
+        try {
+            parents = restClient.post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .body(new RelationshipBySubjectRequest(
+                    List.of(),
+                    new RelationshipBySubjectRequest.TargetItemRef(agencyId, identifier)
+                ))
+                .retrieve()
+                .body(ColecticaParentRef[].class);
+        } catch (RuntimeException e) {
+            logger.warn("byobject lookup failed for {}/{}: {}", agencyId, identifier, e.getMessage());
+            return false;
+        }
+        if (parents == null) return false;
+        for (ColecticaParentRef parent : parents) {
+            if (isDescendantOfPackage(parent.agencyId(), parent.identifier(), packageKey, cache, token)) {
+                cache.put(key, true);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Date parseColecticaDate(String raw) {
+        if (raw == null) return null;
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            return formatter.parse(raw);
+        } catch (ParseException _) {
+            return null;
+        }
     }
 
     /**

@@ -7,6 +7,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -135,7 +136,7 @@ public class ConceptConceptsQueries {
 				+ "FILTER(STRENDS(STR(?uri),'/concepts/definition/" + id + "')) . }";
 	}
 
-	public String findExistingConceptIds(java.util.List<String> ids) throws RmesException {
+	public String findExistingConceptIds(List<String> ids) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("IDS", ids);
 		return buildConceptRequest("findExistingConceptIds.ftlh", params);

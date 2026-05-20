@@ -6,6 +6,7 @@ import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.domain.port.serverside.OrganisationRepository;
 
 import java.util.List;
+import java.util.Map;
 
 public class OrganisationServiceImpl implements OrganisationService {
 
@@ -302,7 +303,7 @@ public class OrganisationServiceImpl implements OrganisationService {
     }
 
     @Override
-    public java.util.Map<String, OrganisationOption> getOrganisationsMap(java.util.List<String> identifiers) throws RmesException {
+    public Map<String, OrganisationOption> getOrganisationsMap(List<String> identifiers) throws RmesException {
         return organisationRepository.getOrganisationsMap(identifiers);
     }
 }

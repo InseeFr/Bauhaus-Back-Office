@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -24,7 +25,7 @@ class HasAccessTest {
 
     @Test
     void should_be_applicable_to_methods_and_types() {
-        var target = HasAccess.class.getAnnotation(java.lang.annotation.Target.class);
+        var target = HasAccess.class.getAnnotation(Target.class);
 
         assertThat(target).isNotNull();
         assertThat(target.value()).contains(ElementType.METHOD, ElementType.TYPE);

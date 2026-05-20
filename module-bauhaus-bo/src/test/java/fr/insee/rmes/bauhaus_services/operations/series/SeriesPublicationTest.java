@@ -28,6 +28,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
@@ -160,7 +162,7 @@ class SeriesPublicationTest {
                     .thenReturn("SELECT * WHERE { }");
 
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))
-                    .thenReturn(java.util.stream.Stream.empty());
+                    .thenReturn(Stream.empty());
 
             when(repoGestion.getStatements(repositoryConnection, resource)).thenReturn(statements);
             when(repoGestion.getHasPartStatements(repositoryConnection, resource)).thenReturn(hasPartStatements);
@@ -313,7 +315,7 @@ class SeriesPublicationTest {
                     .thenReturn("SELECT * WHERE { }");
 
             mockedJSONUtils.when(() -> JSONUtils.stream(any(JSONArray.class)))
-                    .thenReturn(java.util.stream.Stream.empty());
+                    .thenReturn(Stream.empty());
 
             when(repoGestion.getStatements(repositoryConnection, resource)).thenReturn(statements);
             when(repoGestion.getHasPartStatements(repositoryConnection, resource)).thenReturn(hasPartStatements);

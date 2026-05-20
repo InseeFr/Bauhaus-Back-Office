@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -156,7 +157,7 @@ class OrganisationGraphDBRepositoryTest {
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
         // When
-        java.util.Map<String, OrganisationOption> result = repository.getOrganisationsMap(
+        Map<String, OrganisationOption> result = repository.getOrganisationsMap(
                 List.of("http://bauhaus/organisations/DG75-A001", "DR13-DIR"));
 
         // Then: the map is keyed by the input value (IRI or stamp)
@@ -178,7 +179,7 @@ class OrganisationGraphDBRepositoryTest {
         mockResponse.put(row);
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
 
-        java.util.Map<String, OrganisationOption> result = repository.getOrganisationsMap(
+        Map<String, OrganisationOption> result = repository.getOrganisationsMap(
                 List.of("http://bauhaus/organisations/insee/HIE2001204"));
 
         assertThat(result)

@@ -44,6 +44,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Component
@@ -117,7 +118,7 @@ public class IndicatorsUtils {
 		if (organisationLookup == null) {
 			return;
 		}
-		java.util.List<String> values = new java.util.ArrayList<>();
+		List<String> values = new ArrayList<>();
 		if (indicator.getCreators() != null) {
 			values.addAll(indicator.getCreators());
 		}
@@ -126,13 +127,13 @@ public class IndicatorsUtils {
 		if (values.isEmpty()) {
 			return;
 		}
-		java.util.List<String> unknown = organisationLookup.findUnknown(values);
+		List<String> unknown = organisationLookup.findUnknown(values);
 		if (!unknown.isEmpty()) {
 			throw new RmesBadRequestException("Unknown organisation references: " + unknown);
 		}
 	}
 
-	private static void addLinkIds(java.util.List<String> target, java.util.List<OperationsLink> links) {
+	private static void addLinkIds(List<String> target, List<OperationsLink> links) {
 		if (links == null) {
 			return;
 		}
@@ -464,7 +465,7 @@ public class IndicatorsUtils {
 		}
 		for (OperationsLink link : links) {
 			if (!link.isEmpty()) {
-				java.util.Optional<String> resolved = organisationLookup.resolve(link.getId());
+				Optional<String> resolved = organisationLookup.resolve(link.getId());
 				if (resolved.isPresent()) {
 					RdfUtils.addTripleUri(indicURI, predicate, resolved.get(), model, graph);
 				}

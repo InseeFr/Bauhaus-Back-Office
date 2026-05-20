@@ -23,6 +23,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
@@ -77,7 +78,7 @@ class CollectionsResourcesHasAccessIntegrationTest extends AbstractResourcesEnvP
     void getCollectionById(Integer code, boolean hasAccessReturn) throws Exception, CollectionsFetchException, MissingUserInformationException {
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
-        when(collectionsService.getCollection(any())).thenReturn(java.util.Optional.empty());
+        when(collectionsService.getCollection(any())).thenReturn(Optional.empty());
 
         var request = get("/concepts/collections/" + collectionId).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         request.header("Authorization", "Bearer toto");
