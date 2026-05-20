@@ -46,6 +46,8 @@
     <minio.version>8.5.17</minio.version>
     <record.builder.version>44</record.builder.version>
     <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
+    <!-- Override de la version Tomcat amenée par Spring Boot pour corriger une CVE -->
+    <tomcat.version>10.1.55</tomcat.version>
     <!-- SONAR -->
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
