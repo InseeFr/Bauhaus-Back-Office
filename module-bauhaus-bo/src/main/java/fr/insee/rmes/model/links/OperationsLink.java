@@ -32,16 +32,17 @@ public class OperationsLink {
 		return labelLg2;
 	}
 
-	public OperationsLink(String id, String type, String labelLg1, String labelLg2) {
-		super();
-		this.id = id;
-		this.type = type;
-		this.labelLg1 = labelLg1;
-		this.labelLg2 = labelLg2;
-	}
-	
 	public OperationsLink() {
 		super();
+	}
+
+	public static OperationsLink of(String id, String type, String labelLg1, String labelLg2) {
+		OperationsLink link = new OperationsLink();
+		link.id = id;
+		link.type = type;
+		link.labelLg1 = labelLg1;
+		link.labelLg2 = labelLg2;
+		return link;
 	}
 
 	public boolean isEmpty() {

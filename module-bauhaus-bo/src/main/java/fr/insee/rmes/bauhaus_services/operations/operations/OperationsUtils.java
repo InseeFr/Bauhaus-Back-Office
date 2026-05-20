@@ -134,7 +134,7 @@ public class OperationsUtils extends RdfService{
 
 
 	public void setOperation(String id, String body) throws RmesException {
-		Operation operation = new Operation(id);
+		Operation operation = Operation.of(id);
 		try {
 			operation = Deserializer.deserializeJsonString(body, Operation.class);
 		} catch (RmesException e) {

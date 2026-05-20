@@ -22,12 +22,14 @@ public class PatchDistribution {
             this.byteSize = byteSize;
     }
 
-    public PatchDistribution(String updated, String byteSize, String url) {
-        this.updated = updated;
-        this.byteSize = byteSize;
-        this.url = url;
+    public PatchDistribution() {
     }
 
-    public PatchDistribution() {
+    public static PatchDistribution of(String updated, String byteSize, String url) {
+        PatchDistribution patch = new PatchDistribution();
+        patch.updated = updated;
+        patch.byteSize = byteSize;
+        patch.url = url;
+        return patch;
     }
 }

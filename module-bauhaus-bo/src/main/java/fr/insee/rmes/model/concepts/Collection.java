@@ -21,13 +21,8 @@ public class Collection {
 		this.created = LocalDateTime.now().toString();
 		this.isValidated = "false";
 	}
-	
-	public Collection(String id) {
-		this.id = id;
-		this.modified = LocalDateTime.now().toString();
-		this.isValidated = "false";
-	}
-	
+
+
 	public String getCreated() {
 		return created;
 	}

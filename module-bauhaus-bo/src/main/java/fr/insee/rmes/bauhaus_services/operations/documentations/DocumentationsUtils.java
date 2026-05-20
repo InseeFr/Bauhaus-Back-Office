@@ -408,7 +408,7 @@ public class DocumentationsUtils  {
 			currentRubric = buildMSDRubricFromJson(rubric);
 			msd.add(currentRubric);
 		}	
-		return new MSD(msd) ;
+		return MSD.of(msd) ;
 	}
 
 	public MAS buildMSDRubricFromJson(JSONObject jsonMsdRubric) {

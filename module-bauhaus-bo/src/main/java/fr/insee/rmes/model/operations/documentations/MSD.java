@@ -15,9 +15,11 @@ public class MSD {
 	public MSD() {
 		this.masList = new ArrayList<>();
 	}
-	
-	public MSD(List<MAS> masList) {
-		this.masList = masList;
+
+	public static MSD of(List<MAS> masList) {
+		MSD msd = new MSD();
+		msd.masList = masList;
+		return msd;
 	}
 
 	public List<MAS> getMasList() {

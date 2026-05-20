@@ -23,7 +23,7 @@ class OrganizationUtilsTest {
     @Test
     void shouldBuildOrganizationFromJson()  {
         JSONObject jsonObject = new JSONObject().put("color","blue");
-        IdLabelTwoLangs idLabelTwoLangs = new IdLabelTwoLangs("id","label1","label2");
+        IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id","label1","label2");
         when(famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonObject)).thenReturn(idLabelTwoLangs);
         assertNotNull(organizationUtils.buildOrganizationFromJson(jsonObject));
     }

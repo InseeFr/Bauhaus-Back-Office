@@ -198,7 +198,7 @@ class IndicatorsUtilsTest {
         List<OperationsLink> contrList = new ArrayList<>();
         indicator.setContributors(contrList);
 
-        OperationsLink wgb = new OperationsLink("s1034",null,"Autres indicateurs","Other indexes");
+        OperationsLink wgb = OperationsLink.of("s1034",null,"Autres indicateurs","Other indexes");
         List<OperationsLink> wgbList = new ArrayList<>();
         wgbList.add(wgb);
         indicator.setWasGeneratedBy(wgbList);
@@ -235,7 +235,7 @@ class IndicatorsUtilsTest {
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, lookup);
 
         Indicator indicator = new Indicator();
-        OperationsLink wgb = new OperationsLink("s1", null, "Series", "Series");
+        OperationsLink wgb = OperationsLink.of("s1", null, "Series", "Series");
         indicator.setWasGeneratedBy(List.of(wgb));
         indicator.setCreators(List.of("http://bauhaus/organisations/MISSING"));
 
@@ -253,9 +253,9 @@ class IndicatorsUtilsTest {
         UriUtils uriUtils = new UriUtils("http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, codeListService, null, null, famOpeSerIndUtils, null, null, uriUtils, "fr", "en", operationIndicatorsQueries, null);
 
-        Indicator indicator = new Indicator("p2000");
+        Indicator indicator = Indicator.of("p2000");
         indicator.setPrefLabelLg1("Indicateur de test");
-        indicator.setWasGeneratedBy(List.of(new OperationsLink("s1", "series", "Série", "Series")));
+        indicator.setWasGeneratedBy(List.of(OperationsLink.of("s1", "series", "Série", "Series")));
 
         indicatorsUtils.createRdfIndicator(indicator, ValidationStatus.UNPUBLISHED);
 

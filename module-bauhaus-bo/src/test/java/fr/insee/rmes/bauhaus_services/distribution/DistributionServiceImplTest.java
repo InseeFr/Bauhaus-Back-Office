@@ -286,7 +286,7 @@ class DistributionServiceImplTest {
     @Test
     void shouldPatchByteSizeDistribution() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/d1004");
-        PatchDistribution patch = new PatchDistribution("2024-04-05T16:34:09.651166561", "5","http://test2");
+        PatchDistribution patch = PatchDistribution.of("2024-04-05T16:34:09.651166561", "5","http://test2");
         JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
         when(datasetDistributionQueries.getDistribution(any(), any())).thenReturn("distribution-query");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);
