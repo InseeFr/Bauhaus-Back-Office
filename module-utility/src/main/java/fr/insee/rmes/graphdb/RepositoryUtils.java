@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -127,7 +128,10 @@ public class RepositoryUtils {
 			var stream = new ByteArrayOutputStream();
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
-			result= stream.toString();
+			// SPARQLResultsJSONWriter emits UTF-8 (JSON spec); decode explicitly to avoid
+			// relying on the JVM default charset, which mangles accented characters on
+			// JVMs started with file.encoding=ISO-8859-1 (typical Docker/POSIX locale).
+			result= stream.toString(StandardCharsets.UTF_8);
 			traceLogResult(conn, query, result);
 		} catch (RDF4JException e) {
 			logAndThrowError(query, e);
