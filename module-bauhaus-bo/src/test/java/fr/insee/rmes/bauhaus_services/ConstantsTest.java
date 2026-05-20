@@ -4,7 +4,6 @@ import fr.insee.rmes.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -165,7 +164,7 @@ class ConstantsTest {
                 Constants.XML_ESPERLUETTE_REPLACEMENT
                 );
 
-        List<String> actual = Stream.of(
+        List<List<String>> allLetterLists = List.of(
                 startingWithTheLetterA,
                 startingWithTheLetterC,
                 startingWithTheLetterD,
@@ -186,7 +185,11 @@ class ConstantsTest {
                 startingWithTheLetterV,
                 startingWithTheLetterW,
                 startingWithTheLetterX
-        ).flatMap(List::stream).toList();
+        );
+        List<String> actual = new ArrayList<>();
+        for (List<String> letterList : allLetterLists) {
+            actual.addAll(letterList);
+        }
 
         SortedSet<String> expected = new TreeSet<>(actual);
 
