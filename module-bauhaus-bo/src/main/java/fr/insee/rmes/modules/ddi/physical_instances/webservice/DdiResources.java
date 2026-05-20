@@ -51,6 +51,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -88,7 +90,7 @@ public class DdiResources {
     @GetMapping("/physical-instance")
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialPhysicalInstanceResponse>> getPhysicalInstances() {
-        List<PartialPhysicalInstance> instances = ddiService.getPhysicalInstances();
+        List<PartialPhysicalInstance> instances = resolvePhysicalInstances();
 
         List<PartialPhysicalInstanceResponse> responses = instances.stream()
                 .map(instance -> {
@@ -159,17 +161,34 @@ public class DdiResources {
     }
 
     private List<PartialGroup> resolveGroups() {
+        return resolveByReadStampStrategy(
+                ddiService::getGroupsFilteredByStamp, ddiService::getGroups);
+    }
+
+    private List<PartialPhysicalInstance> resolvePhysicalInstances() {
+        return resolveByReadStampStrategy(
+                ddiService::getPhysicalInstancesFilteredByStamp, ddiService::getPhysicalInstances);
+    }
+
+    /**
+     * Applique la stratégie READ de DDI_PHYSICALINSTANCE : si elle vaut STAMP,
+     * renvoie la liste filtrée par les stamps de l'utilisateur courant ; sinon
+     * (ou en cas d'information utilisateur manquante) la liste complète.
+     */
+    private <T> List<T> resolveByReadStampStrategy(
+            Function<Set<String>, List<T>> filteredByStamp,
+            Supplier<List<T>> unfiltered) {
         try {
             User user = userProvider.findUser().orElse(User.EMPTY_USER);
             RBAC.Strategy strategy = rbacFetcher.getApplicationActionStrategyByRole(
                     user.roles(), RBAC.Module.DDI_PHYSICALINSTANCE, RBAC.Privilege.READ);
             if (strategy == RBAC.Strategy.STAMP) {
-                return ddiService.getGroupsFilteredByStamp(user.getStamps());
+                return filteredByStamp.apply(user.getStamps());
             }
         } catch (MissingUserInformationException | RmesException e) {
             // fall through to unfiltered
         }
-        return ddiService.getGroups();
+        return unfiltered.get();
     }
 
     @GetMapping("/group/{agencyId}/{id}")

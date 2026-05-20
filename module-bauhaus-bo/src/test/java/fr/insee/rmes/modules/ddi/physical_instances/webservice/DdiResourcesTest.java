@@ -8,6 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIIt
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -593,6 +595,51 @@ class DdiResourcesTest {
         assertEquals("group-1", result.getFirst().getId());
 
         verify(ddiService).getGroupsFilteredByStamp(Set.of("stamp-A"));
+    }
+
+    @Test
+    void shouldGetPhysicalInstancesFilteredByStamp() throws Exception, MissingUserInformationException {
+        List<PartialPhysicalInstance> filteredInstances = List.of(
+                new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee")
+        );
+        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
+        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(RBAC.Strategy.STAMP);
+        when(ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredInstances);
+
+        ResponseEntity<List<PartialPhysicalInstanceResponse>> response = ddiResources.getPhysicalInstances();
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        List<PartialPhysicalInstanceResponse> result = response.getBody();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("pi-1", result.getFirst().getId());
+
+        verify(ddiService).getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+        verify(ddiService, never()).getPhysicalInstances();
+    }
+
+    @Test
+    void getPhysicalInstanceParents_serializesStampsField() {
+        when(ddiService.getPhysicalInstanceParents("fr.insee", "pi-1"))
+                .thenReturn(new PhysicalInstanceParents(
+                        "fr.insee", "su-1", "fr.insee", "grp-1", List.of("stamp-A", "stamp-B")));
+
+        ResponseEntity<PhysicalInstanceParentsResponse> response =
+                ddiResources.getPhysicalInstanceParents("fr.insee", "pi-1");
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        PhysicalInstanceParentsResponse body = response.getBody();
+        assertNotNull(body);
+        assertEquals(List.of("stamp-A", "stamp-B"), body.stamps());
+
+        JsonNode json = new ObjectMapper().valueToTree(body);
+        assertTrue(json.has("stamps"));
+        assertEquals("stamp-A", json.get("stamps").get(0).asText());
+        assertEquals("stamp-B", json.get("stamps").get(1).asText());
     }
 
     private Ddi4Response createMockDdi4Response() {

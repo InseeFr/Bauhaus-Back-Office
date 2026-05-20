@@ -16,6 +16,7 @@ import java.util.Set;
 
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
+    List<PartialPhysicalInstance> getPhysicalInstancesFilteredByStamp(Set<String> userStamps);
     List<PartialGroup> getGroups();
     List<PartialGroup> getGroupsFilteredByStamp(Set<String> userStamps);
     Ddi4Response getDdi4PhysicalInstance(String agencyId, String id);
