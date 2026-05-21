@@ -39,18 +39,17 @@ public abstract class AbstractDDIItemConverter implements DDIItemConverter {
     protected void addCitation(ObjectNode target, CitationType citation) {
         if (citation == null || !citation.isSetTitle()) return;
 
-        ArrayNode stringsArray = MAPPER.createArrayNode();
+        ArrayNode titleArray = MAPPER.createArrayNode();
         for (StringType s : citation.getTitle().getStringList()) {
-            ObjectNode multilingualValue = MAPPER.createObjectNode();
+            ObjectNode langString = MAPPER.createObjectNode();
             String lang = s.getLang();
             String value = s.getStringValue();
-            if (lang != null && !lang.isBlank()) multilingualValue.put("LanguageTag", lang);
-            if (value != null && !value.isBlank()) multilingualValue.put("Value", value);
-            stringsArray.add(MAPPER.createObjectNode().set("MultilingualStringValue", multilingualValue));
+            if (lang != null && !lang.isBlank()) langString.put("@language", lang);
+            if (value != null && !value.isBlank()) langString.put("@value", value);
+            titleArray.add(langString);
         }
 
-        target.set("Citation", MAPPER.createObjectNode()
-                .set("Title", MAPPER.createObjectNode().set("String", stringsArray)));
+        target.set("Citation", MAPPER.createObjectNode().set("Title", titleArray));
     }
 
     protected ArrayNode buildReferences(ReferenceType[] refs) {

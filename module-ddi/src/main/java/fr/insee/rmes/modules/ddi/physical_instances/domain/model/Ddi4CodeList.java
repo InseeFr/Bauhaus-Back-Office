@@ -10,7 +10,7 @@ public record Ddi4CodeList(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
-        @JsonProperty("Label") Label label,
+        @JsonProperty("Label") List<LangString> label,
         @JsonProperty("Code") List<Code> code
 ) {
 }

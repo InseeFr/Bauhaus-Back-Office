@@ -142,20 +142,20 @@ public class Ddi3XmlReader {
         Element titleElement = xmlHelper.getChildElement(citationElement, "Title");
         if (titleElement == null) return null;
 
-        List<MultilingualStringEntry> strings = parseSingleMultilingual(titleElement, STRING_ELEMENT);
+        List<LangString> strings = parseSingleMultilingual(titleElement, STRING_ELEMENT);
         if (strings == null) return null;
 
-        return new Citation(new Title(strings));
+        return new Citation(strings);
     }
 
-    private List<MultilingualStringEntry> parseSingleMultilingual(Element parent, String childName) {
+    private List<LangString> parseSingleMultilingual(Element parent, String childName) {
         Element child = xmlHelper.getChildElement(parent, childName);
         if (child == null) return null;
 
         String lang = xmlHelper.getAttribute(child, XML_LANG_ATTRIBUTE);
         String text = child.getTextContent();
 
-        return MultilingualStrings.of(lang, text);
+        return LangStrings.of(lang, text);
     }
 
     private DataRelationshipReference parseDataRelationshipReference(Element parent) {
@@ -187,39 +187,35 @@ public class Ddi3XmlReader {
         return new BasedOnObject(basedOnReference);
     }
 
-    private Label parseLabelOrDataRelationshipName(Element parent) {
-        Label label = parseLabel(parent);
+    private List<LangString> parseLabelOrDataRelationshipName(Element parent) {
+        List<LangString> label = parseLabel(parent);
         if (label != null) return label;
 
         Element nameElement = xmlHelper.getChildElement(parent, "DataRelationshipName");
         if (nameElement == null) return null;
 
-        List<MultilingualStringEntry> strings = parseSingleMultilingual(nameElement, STRING_ELEMENT);
-        return strings == null ? null : new Label(strings);
+        return parseSingleMultilingual(nameElement, STRING_ELEMENT);
     }
 
-    private VariableName parseVariableName(Element parent) {
+    private List<LangString> parseVariableName(Element parent) {
         Element nameElement = xmlHelper.getChildElement(parent, "VariableName");
         if (nameElement == null) return null;
 
-        List<MultilingualStringEntry> strings = parseSingleMultilingual(nameElement, STRING_ELEMENT);
-        return strings == null ? null : new VariableName(strings);
+        return parseSingleMultilingual(nameElement, STRING_ELEMENT);
     }
 
-    private Label parseLabel(Element parent) {
+    private List<LangString> parseLabel(Element parent) {
         Element labelElement = xmlHelper.getChildElement(parent, "Label");
         if (labelElement == null) return null;
 
-        List<MultilingualStringEntry> contents = parseSingleMultilingual(labelElement, "Content");
-        return contents == null ? null : new Label(contents);
+        return parseSingleMultilingual(labelElement, "Content");
     }
 
-    private Description parseDescription(Element parent) {
+    private List<LangString> parseDescription(Element parent) {
         Element descElement = xmlHelper.getChildElement(parent, "Description");
         if (descElement == null) return null;
 
-        List<MultilingualStringEntry> contents = parseSingleMultilingual(descElement, "Content");
-        return contents == null ? null : new Description(contents);
+        return parseSingleMultilingual(descElement, "Content");
     }
 
     private LogicalRecord parseLogicalRecord(Element parent) {
@@ -237,15 +233,14 @@ public class Ddi3XmlReader {
         );
     }
 
-    private Label parseLabelOrLogicalRecordName(Element parent) {
-        Label label = parseLabel(parent);
+    private List<LangString> parseLabelOrLogicalRecordName(Element parent) {
+        List<LangString> label = parseLabel(parent);
         if (label != null) return label;
 
         Element nameElement = xmlHelper.getChildElement(parent, "LogicalRecordName");
         if (nameElement == null) return null;
 
-        List<MultilingualStringEntry> strings = parseSingleMultilingual(nameElement, STRING_ELEMENT);
-        return strings == null ? null : new Label(strings);
+        return parseSingleMultilingual(nameElement, STRING_ELEMENT);
     }
 
     private VariablesInRecord parseVariablesInRecord(Element parent) {

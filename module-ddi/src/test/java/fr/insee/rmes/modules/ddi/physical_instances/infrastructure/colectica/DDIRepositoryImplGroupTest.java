@@ -90,7 +90,7 @@ class DDIRepositoryImplGroupTest {
                     "true", "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:group-uuid:1", "fr.insee", "group-uuid", "1",
                     "bauhaus",
-                    new Citation(new Title(MultilingualStrings.of("fr-FR", "s1001 Group"))),
+                    new Citation(LangStrings.of("fr-FR", "s1001 Group")),
                     List.of(new StudyUnitReference("fr.insee", "su-uuid-1", "1", "StudyUnit")),
                     List.of("http://id.insee.fr/operations/serie/s1001"),
                     "insee:StatisticalOperationSeries"
@@ -170,7 +170,7 @@ class DDIRepositoryImplGroupTest {
             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                     "true", "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:su-uuid:1", "fr.insee", "su-uuid", "1",
-                    new Citation(new Title(MultilingualStrings.of("fr-FR", "op1 Study Unit"))),
+                    new Citation(LangStrings.of("fr-FR", "op1 Study Unit")),
                     "http://id.insee.fr/operations/operation/op1",
                     null
             );

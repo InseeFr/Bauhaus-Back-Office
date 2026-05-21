@@ -103,15 +103,15 @@ class LocalColecticaGroupInitConfigurationTest {
         ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
         verify(studyUnitService, times(2)).createOrUpdate(suCaptor.capture());
         List<Ddi4StudyUnit> studyUnits = suCaptor.getAllValues();
-        assertThat(studyUnits.get(0).citation().title().strings().get(0).value().value()).isEqualTo("Enquête innovation 2020 Study Unit");
+        assertThat(studyUnits.get(0).citation().title().get(0).value()).isEqualTo("Enquête innovation 2020 Study Unit");
         assertThat(studyUnits.get(0).operationIri()).isEqualTo("http://id.insee.fr/operations/operation/op1");
-        assertThat(studyUnits.get(1).citation().title().strings().get(0).value().value()).isEqualTo("Enquête innovation 2021 Study Unit");
+        assertThat(studyUnits.get(1).citation().title().get(0).value()).isEqualTo("Enquête innovation 2021 Study Unit");
 
         // Verify group created with Ddi4Group model
         ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
         verify(groupService).createOrUpdate(groupCaptor.capture());
         Ddi4Group createdGroup = groupCaptor.getValue();
-        assertThat(createdGroup.citation().title().strings().get(0).value().value()).isEqualTo("Enquête innovation Group");
+        assertThat(createdGroup.citation().title().get(0).value()).isEqualTo("Enquête innovation Group");
         assertThat(createdGroup.seriesIris()).containsExactly("http://id.insee.fr/operations/serie/s1001");
         assertThat(createdGroup.typeOfGroup()).isEqualTo("insee:StatisticalOperationSeries");
         assertThat(createdGroup.studyUnitReference()).hasSize(2);
@@ -143,7 +143,7 @@ class LocalColecticaGroupInitConfigurationTest {
         verify(groupService).deprecateAll();
         ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
         verify(groupService).createOrUpdate(groupCaptor.capture());
-        assertThat(groupCaptor.getValue().citation().title().strings().get(0).value().value()).isEqualTo("Enquête innovation Group");
+        assertThat(groupCaptor.getValue().citation().title().get(0).value()).isEqualTo("Enquête innovation Group");
         assertThat(groupCaptor.getValue().studyUnitReference()).isEmpty();
         verify(studyUnitService, never()).createOrUpdate(any());
     }

@@ -7,6 +7,8 @@ import fr.insee.ddi.lifecycle33.group.GroupType;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import org.apache.xmlbeans.XmlException;
 
+import java.util.Objects;
+
 public class GroupDDIItemConverter extends AbstractDDIItemConverter {
 
     @Override
@@ -18,7 +20,7 @@ public class GroupDDIItemConverter extends AbstractDDIItemConverter {
     public JsonNode convert(String xmlFragment) {
         try {
             GroupType group = FragmentDocument.Factory.parse(xmlFragment).getFragment().getGroup();
-            if (group == null) throw new IllegalArgumentException("No Group element found in fragment");
+            Objects.requireNonNull(group, "No Group element found in fragment");
 
             ObjectNode result = MAPPER.createObjectNode();
             addVersionableFields(result, group);
@@ -34,8 +36,6 @@ public class GroupDDIItemConverter extends AbstractDDIItemConverter {
             if (!studyUnitRefs.isEmpty()) result.set("StudyUnitReference", studyUnitRefs);
 
             return result;
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (XmlException e) {
             throw new RuntimeException("Failed to parse Group XML fragment", e);
         }

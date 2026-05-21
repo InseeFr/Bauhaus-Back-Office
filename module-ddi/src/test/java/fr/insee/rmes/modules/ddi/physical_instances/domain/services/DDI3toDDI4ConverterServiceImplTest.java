@@ -115,8 +115,8 @@ class DDI3toDDI4ConverterServiceImplTest {
 
         assertNotNull(pi.citation());
         assertNotNull(pi.citation().title());
-        assertEquals("fr-FR", pi.citation().title().strings().get(0).value().languageTag());
-        assertEquals("SAPHIR - Fichier Individus RP99 (.sas7bdat)", pi.citation().title().strings().get(0).value().value());
+        assertEquals("fr-FR", pi.citation().title().get(0).language());
+        assertEquals("SAPHIR - Fichier Individus RP99 (.sas7bdat)", pi.citation().title().get(0).value());
 
         assertNotNull(pi.dataRelationshipReference());
         assertEquals("fr.insee", pi.dataRelationshipReference().agency());
@@ -194,7 +194,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", dr.version());
 
         assertNotNull(dr.label());
-        assertEquals("SAPHIR - RP99", dr.label().contents().get(0).value().value());
+        assertEquals("SAPHIR - RP99", dr.label().get(0).value());
 
         assertNotNull(dr.logicalRecord());
         assertEquals("true", dr.logicalRecord().isUniversallyUnique());
@@ -272,13 +272,13 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", var.version());
 
         assertNotNull(var.variableName());
-        assertEquals("AGEMEN8", var.variableName().strings().get(0).value().value());
+        assertEquals("AGEMEN8", var.variableName().get(0).value());
 
         assertNotNull(var.label());
-        assertEquals("Âge détaillé", var.label().contents().get(0).value().value());
+        assertEquals("Âge détaillé", var.label().get(0).value());
 
         assertNotNull(var.description());
-        assertEquals("Âge de l'individu en années révolues", var.description().contents().get(0).value().value());
+        assertEquals("Âge de l'individu en années révolues", var.description().get(0).value());
 
         assertNotNull(var.variableRepresentation());
         assertEquals("Demographic", var.variableRepresentation().variableRole());
@@ -432,7 +432,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", cl.version());
 
         assertNotNull(cl.label());
-        assertEquals("Liste de codes - Âge détaillé", cl.label().contents().get(0).value().value());
+        assertEquals("Liste de codes - Âge détaillé", cl.label().get(0).value());
 
         assertNotNull(cl.code());
         assertEquals(2, cl.code().size());
@@ -500,7 +500,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", cat.version());
 
         assertNotNull(cat.label());
-        assertEquals("0 an", cat.label().contents().get(0).value().value());
+        assertEquals("0 an", cat.label().get(0).value());
     }
 
     @Test
@@ -583,9 +583,9 @@ class DDI3toDDI4ConverterServiceImplTest {
 
         Ddi4Variable var = result.variable().get(0);
         assertEquals("true", var.isGeographic());
-        assertEquals("NAME", var.variableName().strings().get(0).value().value());
-        assertEquals("Name", var.label().contents().get(0).value().value());
-        assertEquals("Person name", var.description().contents().get(0).value().value());
+        assertEquals("NAME", var.variableName().get(0).value());
+        assertEquals("Name", var.label().get(0).value());
+        assertEquals("Person name", var.description().get(0).value());
 
         assertNotNull(var.variableRepresentation());
         assertNotNull(var.variableRepresentation().textRepresentation());
@@ -650,8 +650,8 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.variable().size());
 
         Ddi4Variable var = result.variable().get(0);
-        assertEquals("BIRTHDATE", var.variableName().strings().get(0).value().value());
-        assertEquals("Birth Date", var.label().contents().get(0).value().value());
+        assertEquals("BIRTHDATE", var.variableName().get(0).value());
+        assertEquals("Birth Date", var.label().get(0).value());
 
         assertNotNull(var.variableRepresentation());
         assertNotNull(var.variableRepresentation().dateTimeRepresentation());

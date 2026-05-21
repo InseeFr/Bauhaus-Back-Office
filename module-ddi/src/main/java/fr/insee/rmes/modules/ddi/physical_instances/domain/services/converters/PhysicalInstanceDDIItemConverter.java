@@ -7,6 +7,8 @@ import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.physicalinstance.PhysicalInstanceType;
 import org.apache.xmlbeans.XmlException;
 
+import java.util.Objects;
+
 public class PhysicalInstanceDDIItemConverter extends AbstractDDIItemConverter {
 
     @Override
@@ -18,7 +20,7 @@ public class PhysicalInstanceDDIItemConverter extends AbstractDDIItemConverter {
     public JsonNode convert(String xmlFragment) {
         try {
             PhysicalInstanceType pi = FragmentDocument.Factory.parse(xmlFragment).getFragment().getPhysicalInstance();
-            if (pi == null) throw new IllegalArgumentException("No PhysicalInstance element found in fragment");
+            Objects.requireNonNull(pi, "No PhysicalInstance element found in fragment");
 
             ObjectNode result = MAPPER.createObjectNode();
             addVersionableFields(result, pi);
@@ -28,8 +30,6 @@ public class PhysicalInstanceDDIItemConverter extends AbstractDDIItemConverter {
             if (!dataRelationshipRefs.isEmpty()) result.set("DataRelationshipReference", dataRelationshipRefs);
 
             return result;
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (XmlException e) {
             throw new RuntimeException("Failed to parse PhysicalInstance XML fragment", e);
         }

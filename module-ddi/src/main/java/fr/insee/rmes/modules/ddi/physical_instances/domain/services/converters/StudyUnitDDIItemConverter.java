@@ -7,6 +7,8 @@ import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.studyunit.StudyUnitType;
 import org.apache.xmlbeans.XmlException;
 
+import java.util.Objects;
+
 public class StudyUnitDDIItemConverter extends AbstractDDIItemConverter {
 
     @Override
@@ -18,7 +20,7 @@ public class StudyUnitDDIItemConverter extends AbstractDDIItemConverter {
     public JsonNode convert(String xmlFragment) {
         try {
             StudyUnitType studyUnit = FragmentDocument.Factory.parse(xmlFragment).getFragment().getStudyUnit();
-            if (studyUnit == null) throw new IllegalArgumentException("No StudyUnit element found in fragment");
+            Objects.requireNonNull(studyUnit, "No StudyUnit element found in fragment");
 
             ObjectNode result = MAPPER.createObjectNode();
             addVersionableFields(result, studyUnit);
@@ -29,8 +31,6 @@ public class StudyUnitDDIItemConverter extends AbstractDDIItemConverter {
             if (!physicalInstanceRefs.isEmpty()) result.set("PhysicalInstanceReference", physicalInstanceRefs);
 
             return result;
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (XmlException e) {
             throw new RuntimeException("Failed to parse StudyUnit XML fragment", e);
         }
