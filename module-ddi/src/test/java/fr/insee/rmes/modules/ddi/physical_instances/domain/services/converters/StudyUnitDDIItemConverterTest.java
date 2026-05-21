@@ -82,11 +82,11 @@ class StudyUnitDDIItemConverterTest {
     void convert_mapsCitationTitle() {
         JsonNode result = converter.convert(STUDY_UNIT_XML);
 
-        JsonNode titleStrings = result.get("Citation").get("Title").get("String");
+        JsonNode titleStrings = result.get("Citation").get("Title");
         assertEquals(1, titleStrings.size());
-        JsonNode multilingualValue = titleStrings.get(0).get("MultilingualStringValue");
-        assertEquals("fr-FR", multilingualValue.get("LanguageTag").asText());
-        assertTrue(multilingualValue.get("Value").asText().contains("2012 Study Unit"));
+        JsonNode langString = titleStrings.get(0);
+        assertEquals("fr-FR", langString.get("@language").asText());
+        assertTrue(langString.get("@value").asText().contains("2012 Study Unit"));
     }
 
     @Test

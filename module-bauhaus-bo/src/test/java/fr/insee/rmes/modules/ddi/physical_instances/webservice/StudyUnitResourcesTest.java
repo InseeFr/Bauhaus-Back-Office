@@ -3,8 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.MultilingualStrings;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Title;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +60,7 @@ class StudyUnitResourcesTest {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
-                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test StudyUnit"))),
+                new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",
                 null
         );
@@ -77,7 +76,7 @@ class StudyUnitResourcesTest {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
-                new Citation(new Title(MultilingualStrings.of("fr-FR", "Test StudyUnit"))),
+                new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",
                 null
         );

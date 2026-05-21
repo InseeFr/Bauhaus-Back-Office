@@ -961,9 +961,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         return new Citation(
-            new Title(
-                MultilingualStrings.of(lang.isEmpty() ? defaultLang : lang, text)
-            )
+            LangStrings.of(lang.isEmpty() ? defaultLang : lang, text)
         );
     }
 
@@ -1077,7 +1075,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         // Build updated PhysicalInstance with new label if provided
-        MultilingualStringValue currentTitle = currentPI.citation().title().strings().get(0).value();
+        LangString currentTitle = currentPI.citation().title().get(0);
         String newPhysicalInstanceLabel =
             request.physicalInstanceLabel() != null
                 ? request.physicalInstanceLabel()
@@ -1092,11 +1090,9 @@ public class DDIRepositoryImpl implements DDIRepository {
             currentPI.version(),
             currentPI.basedOnObject(),
             new Citation(
-                new Title(
-                    MultilingualStrings.of(
-                        currentTitle.languageTag(),
-                        newPhysicalInstanceLabel
-                    )
+                LangStrings.of(
+                    currentTitle.language(),
+                    newPhysicalInstanceLabel
                 )
             ),
             currentPI.dataRelationshipReference()
@@ -1106,7 +1102,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         Ddi4DataRelationship updatedDR = null;
         if (currentDR != null) {
             // Build updated DataRelationship Label
-            Label drLabel = createLabelWithFallback(
+            List<LangString> drLabel = createLabelWithFallback(
                 currentDR.label(),
                 request.dataRelationshipLabel()
             );
@@ -1704,17 +1700,17 @@ public class DDIRepositoryImpl implements DDIRepository {
      *
      * @param existingLabel the existing label to extract language from (can be null)
      * @param newText the text for the new label
-     * @return a new Label with the appropriate language, or null if newText is null
+     * @return a new localized label with the appropriate language, or null if newText is null
      */
-    private Label createLabelWithFallback(Label existingLabel, String newText) {
+    private List<LangString> createLabelWithFallback(List<LangString> existingLabel, String newText) {
         if (newText == null) {
             return existingLabel;
         }
         String lang =
-            existingLabel != null && existingLabel.contents() != null && !existingLabel.contents().isEmpty()
-                ? existingLabel.contents().get(0).value().languageTag()
+            existingLabel != null && !existingLabel.isEmpty()
+                ? existingLabel.get(0).language()
                 : defaultLang;
-        return new Label(MultilingualStrings.of(lang, newText));
+        return LangStrings.of(lang, newText);
     }
 
     @Override

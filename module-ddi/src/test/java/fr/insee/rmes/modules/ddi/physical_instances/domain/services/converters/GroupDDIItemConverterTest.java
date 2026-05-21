@@ -106,13 +106,13 @@ class GroupDDIItemConverterTest {
         JsonNode citation = result.get("Citation");
         assertNotNull(citation);
 
-        JsonNode titleStrings = citation.get("Title").get("String");
+        JsonNode titleStrings = citation.get("Title");
         assertNotNull(titleStrings);
         assertEquals(1, titleStrings.size());
 
-        JsonNode multilingualValue = titleStrings.get(0).get("MultilingualStringValue");
-        assertEquals("fr-FR", multilingualValue.get("LanguageTag").asText());
-        assertEquals("Enquête auprès des sans-domicile Group", multilingualValue.get("Value").asText());
+        JsonNode langString = titleStrings.get(0);
+        assertEquals("fr-FR", langString.get("@language").asText());
+        assertEquals("Enquête auprès des sans-domicile Group", langString.get("@value").asText());
     }
 
     @Test

@@ -2,6 +2,8 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public record Ddi4Category(
         @JsonProperty("@isUniversallyUnique") String isUniversallyUnique,
         @JsonProperty("@versionDate") String versionDate,
@@ -9,6 +11,6 @@ public record Ddi4Category(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
-        @JsonProperty("Label") Label label
+        @JsonProperty("Label") List<LangString> label
 ) {
 }

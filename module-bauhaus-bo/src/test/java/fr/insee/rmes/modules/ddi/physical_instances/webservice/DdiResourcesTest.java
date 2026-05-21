@@ -643,7 +643,7 @@ class DdiResourcesTest {
     }
 
     private Ddi4Response createMockDdi4Response() {
-        Title title = new Title(MultilingualStrings.of("fr-FR", "Fichier thl-CASD"));
+        List<LangString> title = LangStrings.of("fr-FR", "Fichier thl-CASD");
         Citation citation = new Citation(title);
 
         DataRelationshipReference dataRelRef = new DataRelationshipReference(
@@ -657,7 +657,7 @@ class DdiResourcesTest {
             null, citation, dataRelRef
         );
 
-        Label drLabel = new Label(MultilingualStrings.of("fr-FR", "Dessin de fichier thl-CASD"));
+        List<LangString> drLabel = LangStrings.of("fr-FR", "Dessin de fichier thl-CASD");
 
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
             "true", "2024-06-03T14:29:23.4049817Z",
@@ -722,7 +722,7 @@ class DdiResourcesTest {
     }
 
     private Ddi4GroupResponse createMockDdi4GroupResponse() {
-        Title title = new Title(MultilingualStrings.of("fr-FR", "Base permanente des équipements"));
+        List<LangString> title = LangStrings.of("fr-FR", "Base permanente des équipements");
         Citation citation = new Citation(title);
 
         // Create StudyUnit references
@@ -739,7 +739,7 @@ class DdiResourcesTest {
             "insee:StatisticalOperationSeries"
         );
 
-        Title su1Title = new Title(MultilingualStrings.of("fr-FR", "BPE 2021"));
+        List<LangString> su1Title = LangStrings.of("fr-FR", "BPE 2021");
         Citation su1Citation = new Citation(su1Title);
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
@@ -751,7 +751,7 @@ class DdiResourcesTest {
             null
         );
 
-        Title su2Title = new Title(MultilingualStrings.of("fr-FR", "BPE 2022"));
+        List<LangString> su2Title = LangStrings.of("fr-FR", "BPE 2022");
         Citation su2Citation = new Citation(su2Title);
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(

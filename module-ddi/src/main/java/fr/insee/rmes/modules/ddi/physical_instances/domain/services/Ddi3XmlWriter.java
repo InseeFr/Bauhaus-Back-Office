@@ -56,7 +56,7 @@ public class Ddi3XmlWriter {
 
         if (group.citation() != null && group.citation().title() != null) {
             writeString(groupType.addNewCitation().addNewTitle().addNewString(),
-                    firstEntry(group.citation().title().strings()));
+                    firstEntry(group.citation().title()));
         }
 
         if (group.studyUnitReference() != null) {
@@ -91,7 +91,7 @@ public class Ddi3XmlWriter {
 
         if (studyUnit.citation() != null && studyUnit.citation().title() != null) {
             writeString(suType.addNewCitation().addNewTitle().addNewString(),
-                    firstEntry(studyUnit.citation().title().strings()));
+                    firstEntry(studyUnit.citation().title()));
         }
 
         if (studyUnit.physicalInstanceReferences() != null) {
@@ -122,7 +122,7 @@ public class Ddi3XmlWriter {
 
         if (pi.citation() != null && pi.citation().title() != null) {
             writeString(piType.addNewCitation().addNewTitle().addNewString(),
-                    firstEntry(pi.citation().title().strings()));
+                    firstEntry(pi.citation().title()));
         }
 
         if (pi.dataRelationshipReference() != null) {
@@ -149,8 +149,8 @@ public class Ddi3XmlWriter {
 
         populateBasedOnObject(dr.basedOnObject(), () -> drType.addNewBasedOnObject().addNewBasedOnReference());
 
-        if (dr.label() != null && dr.label().contents() != null && !dr.label().contents().isEmpty()) {
-            MultilingualStringValue firstLabel = firstEntry(dr.label().contents());
+        if (dr.label() != null && !dr.label().isEmpty()) {
+            LangString firstLabel = firstEntry(dr.label());
             writeString(drType.addNewDataRelationshipName().addNewString(), firstLabel);
             writeContent(drType.addNewLabel().addNewContent(), firstLabel);
         }
@@ -164,8 +164,8 @@ public class Ddi3XmlWriter {
             lrType.addNewID().setStringValue(lr.id());
             lrType.addVersion(lr.version());
 
-            if (lr.label() != null && lr.label().contents() != null && !lr.label().contents().isEmpty()) {
-                MultilingualStringValue firstLabel = firstEntry(lr.label().contents());
+            if (lr.label() != null && !lr.label().isEmpty()) {
+                LangString firstLabel = firstEntry(lr.label());
                 writeString(lrType.addNewLogicalRecordName().addNewString(), firstLabel);
                 writeContent(lrType.addNewLabel().addNewContent(), firstLabel);
             }
@@ -203,17 +203,17 @@ public class Ddi3XmlWriter {
 
         if (var.variableName() != null) {
             writeString(varType.addNewVariableName().addNewString(),
-                    firstEntry(var.variableName().strings()));
+                    firstEntry(var.variableName()));
         }
 
-        if (var.label() != null && var.label().contents() != null && !var.label().contents().isEmpty()) {
+        if (var.label() != null && !var.label().isEmpty()) {
             writeContent(varType.addNewLabel().addNewContent(),
-                    firstEntry(var.label().contents()));
+                    firstEntry(var.label()));
         }
 
-        if (var.description() != null && var.description().contents() != null && !var.description().contents().isEmpty()) {
+        if (var.description() != null && !var.description().isEmpty()) {
             writeContent(varType.addNewDescription().addNewContent(),
-                    firstEntry(var.description().contents()));
+                    firstEntry(var.description()));
         }
 
         var varRepType = varType.addNewVariableRepresentation();
@@ -326,9 +326,9 @@ public class Ddi3XmlWriter {
         clType.addNewID().setStringValue(cl.id());
         clType.addVersion(cl.version());
 
-        if (cl.label() != null && cl.label().contents() != null && !cl.label().contents().isEmpty()) {
+        if (cl.label() != null && !cl.label().isEmpty()) {
             writeContent(clType.addNewLabel().addNewContent(),
-                    firstEntry(cl.label().contents()));
+                    firstEntry(cl.label()));
         }
 
         if (cl.code() != null && !cl.code().isEmpty()) {
@@ -369,9 +369,9 @@ public class Ddi3XmlWriter {
         catType.addNewID().setStringValue(cat.id());
         catType.addVersion(cat.version());
 
-        if (cat.label() != null && cat.label().contents() != null && !cat.label().contents().isEmpty()) {
+        if (cat.label() != null && !cat.label().isEmpty()) {
             writeContent(catType.addNewLabel().addNewContent(),
-                    firstEntry(cat.label().contents()));
+                    firstEntry(cat.label()));
         }
 
         return doc.xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
@@ -456,17 +456,17 @@ public class Ddi3XmlWriter {
         }
     }
 
-    private static MultilingualStringValue firstEntry(List<MultilingualStringEntry> entries) {
-        return entries.get(0).value();
+    private static LangString firstEntry(List<LangString> entries) {
+        return entries.get(0);
     }
 
-    private static void writeString(StringType target, MultilingualStringValue value) {
-        target.setLang(value.languageTag());
+    private static void writeString(StringType target, LangString value) {
+        target.setLang(value.language());
         target.setStringValue(value.value());
     }
 
-    private void writeContent(ContentType target, MultilingualStringValue value) {
-        target.setLang(value.languageTag());
+    private void writeContent(ContentType target, LangString value) {
+        target.setLang(value.language());
         setContentText(target, value.value());
     }
 
