@@ -23,15 +23,7 @@ public class JSONUtils {
 	 * @return
 	 */
 	public static String jsonArrayOfStringToString(JSONArray jsonArray) {
-		if (jsonArray.length() == 1) {
-			return jsonArray.getString(0);
-		}
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < jsonArray.length()-1; i++) {
-			sb.append(jsonArray.getString(i) + " - ");
-		}
-		sb.append(jsonArray.getString(jsonArray.length()-1));
-		return sb.toString();
+		return String.join(" - ", jsonArrayToList(jsonArray));
 	}
 	
 	public static boolean isEmpty(JSONObject obj) {
