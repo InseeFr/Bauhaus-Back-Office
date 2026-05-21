@@ -39,13 +39,13 @@ public class LogRequestFilter extends AbstractRequestLoggingFilter {
     }
 
     private String getFormatLogRequest(HttpServletRequest request, String message, String idep) {
-        StringBuilder sb =
-                new StringBuilder("From ").append(request.getServerName()).append(" by user ").append(idep)
-                        .append(" call ").append(StringUtils.substringBetween(message, "[", "]"));
-        if (StringUtils.isNotEmpty(request.getQueryString())) {
-            sb.append(request.getQueryString());
-        }
-        return sb.toString();
+        String queryString = StringUtils.isNotEmpty(request.getQueryString()) ? request.getQueryString() : "";
+        return String.format(
+                "From %s by user %s call %s%s",
+                request.getServerName(),
+                idep,
+                StringUtils.substringBetween(message, "[", "]"),
+                queryString);
     }
 
     private String getIdUser() {
