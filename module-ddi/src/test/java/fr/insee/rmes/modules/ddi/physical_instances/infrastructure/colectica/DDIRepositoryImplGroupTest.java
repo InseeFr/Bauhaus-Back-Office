@@ -1,4 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -86,7 +88,7 @@ class DDIRepositoryImplGroupTest {
 
         @Test
         void createOrUpdate_shouldTransformAndPostGroup() throws XMLStreamException {
-            Ddi4Group group = new Ddi4Group(
+            Group group = group(
                     "true", "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:group-uuid:1", "fr.insee", "group-uuid", "1",
                     "bauhaus",
@@ -167,7 +169,7 @@ class DDIRepositoryImplGroupTest {
 
         @Test
         void createOrUpdate_shouldTransformAndPostStudyUnit() throws XMLStreamException {
-            Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+            StudyUnit studyUnit = studyUnit(
                     "true", "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:su-uuid:1", "fr.insee", "su-uuid", "1",
                     new Citation(LangStrings.of("fr-FR", "op1 Study Unit")),
@@ -223,5 +225,38 @@ class DDIRepositoryImplGroupTest {
                 false, false, false,
                 "DC337820-AF3A-4C0B-82F9-CF02535CDE83", 0L, 0
         );
+    }
+    private static Group group(String isUniversallyUnique, String versionDate, String urn, String agency,
+                               String id, String version, String versionResponsibility, Citation citation,
+                               List<StudyUnitReference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
+        Group group = new Group();
+        group.setURN(urn);
+        group.setAgency(agency);
+        group.setID(id);
+        group.setVersion(version);
+        group.setVersionResponsibility(versionResponsibility);
+        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        group.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) group.putAdditionalProperty("Citation", citation);
+        if (studyUnitReference != null) group.putAdditionalProperty("StudyUnitReference", studyUnitReference);
+        if (seriesIris != null) group.putAdditionalProperty("seriesIris", seriesIris);
+        if (typeOfGroup != null) group.putAdditionalProperty("typeOfGroup", typeOfGroup);
+        return group;
+    }
+
+    private static StudyUnit studyUnit(String isUniversallyUnique, String versionDate, String urn, String agency,
+                                       String id, String version, Citation citation, String operationIri,
+                                       List<DDIReference> physicalInstanceReferences) {
+        StudyUnit studyUnit = new StudyUnit();
+        studyUnit.setURN(urn);
+        studyUnit.setAgency(agency);
+        studyUnit.setID(id);
+        studyUnit.setVersion(version);
+        studyUnit.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        studyUnit.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) studyUnit.putAdditionalProperty("Citation", citation);
+        if (operationIri != null) studyUnit.putAdditionalProperty("operationIri", operationIri);
+        if (physicalInstanceReferences != null) studyUnit.putAdditionalProperty("physicalInstanceReferences", physicalInstanceReferences);
+        return studyUnit;
     }
 }

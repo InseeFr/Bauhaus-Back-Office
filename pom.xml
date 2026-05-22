@@ -354,6 +354,7 @@
     <module>module-utility</module>
     <module>module-testcontainer-graphdb</module>
     <module>module-operation</module>
+    <module>module-ddi-translation</module>
     <module>module-ddi</module>
     <module>module-bauhaus-bo</module>
   </modules>

@@ -1,7 +1,15 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
@@ -179,7 +187,7 @@ class DdiResourcesTest {
         assertEquals("test-schema", responseBody.schema());
         assertEquals(1, responseBody.group().size());
         assertEquals(2, responseBody.studyUnit().size());
-        assertEquals("10a689ce-7006-429b-8e84-036b7787b422", responseBody.group().get(0).id());
+        assertEquals("10a689ce-7006-429b-8e84-036b7787b422", responseBody.group().get(0).getID());
 
         verify(ddiService).getDdi4Group(agencyId, id);
     }
@@ -205,7 +213,7 @@ class DdiResourcesTest {
         assertEquals("test-schema", responseBody.schema());
         assertEquals(1, responseBody.physicalInstance().size());
         assertEquals(1, responseBody.dataRelationship().size());
-        assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", responseBody.physicalInstance().get(0).id());
+        assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", responseBody.physicalInstance().get(0).getID());
 
         verify(ddiService).getDdi4PhysicalInstance(agencyId, id);
     }
@@ -408,9 +416,9 @@ class DdiResourcesTest {
         assertNotNull(responseBody.physicalInstance());
         assertEquals(1, responseBody.physicalInstance().size());
 
-        Ddi4PhysicalInstance physicalInstance = responseBody.physicalInstance().get(0);
-        assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", physicalInstance.id());
-        assertEquals("fr.insee", physicalInstance.agency());
+        PhysicalInstance physicalInstance = responseBody.physicalInstance().get(0);
+        assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", physicalInstance.getID());
+        assertEquals("fr.insee", physicalInstance.getAgency());
 
         verify(ddi3toDdi4ConverterService).convertDdi3ToDdi4(eq(ddi3Request), anyString());
     }
@@ -650,21 +658,26 @@ class DdiResourcesTest {
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1", "DataRelationship"
         );
 
-        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-            "true", "2024-06-03T14:29:23.4049817Z",
-            "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
-            "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1",
-            null, citation, dataRelRef
-        );
+        PhysicalInstance physicalInstance = new PhysicalInstance();
+        physicalInstance.setURN("urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1");
+        physicalInstance.setAgency("fr.insee");
+        physicalInstance.setID("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd");
+        physicalInstance.setVersion("1");
+        physicalInstance.putAdditionalProperty("@isUniversallyUnique", "true");
+        physicalInstance.putAdditionalProperty("@versionDate", "2024-06-03T14:29:23.4049817Z");
+        physicalInstance.putAdditionalProperty("Citation", citation);
+        physicalInstance.putAdditionalProperty("DataRelationshipReference", dataRelRef);
 
         List<LangString> drLabel = LangStrings.of("fr-FR", "Dessin de fichier thl-CASD");
 
-        Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
-            "true", "2024-06-03T14:29:23.4049817Z",
-            "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
-            "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
-            null, drLabel, null
-        );
+        DataRelationship dataRelationship = new DataRelationship();
+        dataRelationship.setURN("urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1");
+        dataRelationship.setAgency("fr.insee");
+        dataRelationship.setID("d8283793-e88d-4cc7-a697-2951054e9a3a");
+        dataRelationship.setVersion("1");
+        dataRelationship.setLabel(drLabel);
+        dataRelationship.putAdditionalProperty("@isUniversallyUnique", "true");
+        dataRelationship.putAdditionalProperty("@versionDate", "2024-06-03T14:29:23.4049817Z");
 
         TopLevelReference topLevelRef = new TopLevelReference(
             "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1", "PhysicalInstance"
@@ -730,7 +743,7 @@ class DdiResourcesTest {
         StudyUnitReference suRef2 = new StudyUnitReference("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
 
         // Create Group
-        Ddi4Group group = new Ddi4Group(
+        Group group = group(
             "true", "2025-01-09T09:00:00.000000Z",
             "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
             "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
@@ -742,7 +755,7 @@ class DdiResourcesTest {
         List<LangString> su1Title = LangStrings.of("fr-FR", "BPE 2021");
         Citation su1Citation = new Citation(su1Title);
 
-        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+        StudyUnit studyUnit1 = studyUnit(
             "true", "2025-01-09T09:00:00.000000Z",
             "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
             "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
@@ -754,7 +767,7 @@ class DdiResourcesTest {
         List<LangString> su2Title = LangStrings.of("fr-FR", "BPE 2022");
         Citation su2Citation = new Citation(su2Title);
 
-        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+        StudyUnit studyUnit2 = studyUnit(
             "true", "2025-01-09T09:00:00.000000Z",
             "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
             "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
@@ -776,4 +789,38 @@ class DdiResourcesTest {
         );
     }
 
+
+    private static Group group(String isUniversallyUnique, String versionDate, String urn, String agency,
+                               String id, String version, String versionResponsibility, Citation citation,
+                               List<StudyUnitReference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
+        Group group = new Group();
+        group.setURN(urn);
+        group.setAgency(agency);
+        group.setID(id);
+        group.setVersion(version);
+        group.setVersionResponsibility(versionResponsibility);
+        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        group.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) group.putAdditionalProperty("Citation", citation);
+        if (studyUnitReference != null) group.putAdditionalProperty("StudyUnitReference", studyUnitReference);
+        if (seriesIris != null) group.putAdditionalProperty("seriesIris", seriesIris);
+        if (typeOfGroup != null) group.putAdditionalProperty("typeOfGroup", typeOfGroup);
+        return group;
+    }
+
+    private static StudyUnit studyUnit(String isUniversallyUnique, String versionDate, String urn, String agency,
+                                       String id, String version, Citation citation, String operationIri,
+                                       List<DDIReference> physicalInstanceReferences) {
+        StudyUnit studyUnit = new StudyUnit();
+        studyUnit.setURN(urn);
+        studyUnit.setAgency(agency);
+        studyUnit.setID(id);
+        studyUnit.setVersion(version);
+        studyUnit.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        studyUnit.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) studyUnit.putAdditionalProperty("Citation", citation);
+        if (operationIri != null) studyUnit.putAdditionalProperty("operationIri", operationIri);
+        if (physicalInstanceReferences != null) studyUnit.putAdditionalProperty("physicalInstanceReferences", physicalInstanceReferences);
+        return studyUnit;
+    }
 }

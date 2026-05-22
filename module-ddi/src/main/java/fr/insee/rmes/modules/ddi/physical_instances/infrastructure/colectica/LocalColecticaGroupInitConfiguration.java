@@ -6,10 +6,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -107,17 +107,15 @@ public class LocalColecticaGroupInitConfiguration {
                         String studyUnitLabel = operation.operationLabel() + " Study Unit";
                         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-                        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                                "true",
-                                versionDate,
-                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
-                                defaultAgencyId,
-                                studyUnitId,
-                                "1",
-                                new Citation(LangStrings.of(defaultLang, studyUnitLabel)),
-                                operation.operationIri(),
-                                null
-                        );
+                        StudyUnit studyUnit = new StudyUnit();
+                        studyUnit.setURN("urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId));
+                        studyUnit.setAgency(defaultAgencyId);
+                        studyUnit.setID(studyUnitId);
+                        studyUnit.setVersion("1");
+                        studyUnit.putAdditionalProperty("@isUniversallyUnique", "true");
+                        studyUnit.putAdditionalProperty("@versionDate", versionDate);
+                        studyUnit.putAdditionalProperty("Citation", new Citation(LangStrings.of(defaultLang, studyUnitLabel)));
+                        studyUnit.putAdditionalProperty("operationIri", operation.operationIri());
 
                         logger.info("Creating study unit: operationId={}, uri={}, generatedUuid={}, label='{}'",
                                 operation.operationId(), operation.operationIri(), studyUnitId, studyUnitLabel);
@@ -128,10 +126,10 @@ public class LocalColecticaGroupInitConfiguration {
                         String physicalInstanceLabel = operation.operationLabel() + " Physical Instance";
                         logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
                         Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null));
-                        Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
-                        studyUnitService.addPhysicalInstance(studyUnit, new DDIReference(pi.agency(), pi.id(), pi.version()));
+                        PhysicalInstance pi = piResponse.physicalInstance().getFirst();
+                        studyUnitService.addPhysicalInstance(studyUnit, new DDIReference(pi.getAgency(), pi.getID(), pi.getVersion()));
                         physicalInstancesCreated++;
-                        logger.info("Physical instance created and linked to study unit: operationId={}, piId={}", operation.operationId(), pi.id());
+                        logger.info("Physical instance created and linked to study unit: operationId={}, piId={}", operation.operationId(), pi.getID());
                     } catch (Exception e) {
                         logger.error("Failed to create study unit or physical instance for operation: id={}, uri={}", operation.operationId(), operation.operationIri(), e);
                     }
@@ -158,19 +156,18 @@ public class LocalColecticaGroupInitConfiguration {
                             ))
                             .toList();
 
-                    Ddi4Group group = new Ddi4Group(
-                            "true",
-                            versionDate,
-                            "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
-                            defaultAgencyId,
-                            groupId,
-                            "1",
-                            versionResponsibility,
-                            new Citation(LangStrings.of(defaultLang, groupLabel)),
-                            studyUnitRefs,
-                            List.of(series.seriesIri()),
-                            "insee:StatisticalOperationSeries"
-                    );
+                    Group group = new Group();
+                    group.setURN("urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId));
+                    group.setAgency(defaultAgencyId);
+                    group.setID(groupId);
+                    group.setVersion("1");
+                    group.setVersionResponsibility(versionResponsibility);
+                    group.putAdditionalProperty("@isUniversallyUnique", "true");
+                    group.putAdditionalProperty("@versionDate", versionDate);
+                    group.putAdditionalProperty("Citation", new Citation(LangStrings.of(defaultLang, groupLabel)));
+                    group.putAdditionalProperty("StudyUnitReference", studyUnitRefs);
+                    group.putAdditionalProperty("seriesIris", List.of(series.seriesIri()));
+                    group.putAdditionalProperty("typeOfGroup", "insee:StatisticalOperationSeries");
 
                     logger.info("Creating group: id={}, uri={}, operations={}", series.seriesId(), series.seriesIri(), series.operations().size());
                     groupService.createOrUpdate(group);

@@ -1,12 +1,13 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
@@ -200,7 +201,7 @@ class DDIServiceImplTest {
         StudyUnitReference suRef1 = new StudyUnitReference(agencyId, "su-1", "1", "StudyUnit");
         StudyUnitReference suRef2 = new StudyUnitReference(agencyId, "su-2", "1", "StudyUnit");
 
-        Ddi4Group group = new Ddi4Group(
+        Group group = group(
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:" + groupId + ":1",
             agencyId, groupId, "1",
@@ -209,7 +210,7 @@ class DDIServiceImplTest {
             "insee:StatisticalOperationSeries"
         );
 
-        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+        StudyUnit studyUnit1 = studyUnit(
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:su-1:1",
             agencyId, "su-1", "1",
@@ -218,7 +219,7 @@ class DDIServiceImplTest {
             null
         );
 
-        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+        StudyUnit studyUnit2 = studyUnit(
             "true", "2025-01-09T09:00:00Z",
             "urn:ddi:fr.insee:su-2:1",
             agencyId, "su-2", "1",
@@ -245,11 +246,11 @@ class DDIServiceImplTest {
         assertNotNull(result);
         assertEquals("ddi:4.0", result.schema());
         assertEquals(1, result.group().size());
-        assertEquals(groupId, result.group().get(0).id());
-        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().get(0).value());
+        assertEquals(groupId, result.group().get(0).getID());
+        assertEquals("Base permanente des équipements", citationOf(result.group().get(0)).title().get(0).getAtValue());
         assertEquals(2, result.studyUnit().size());
-        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().get(0).value());
-        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().get(0).value());
+        assertEquals("BPE 2021", citationOf(result.studyUnit().get(0)).title().get(0).getAtValue());
+        assertEquals("BPE 2022", citationOf(result.studyUnit().get(1)).title().get(0).getAtValue());
 
         verify(ddiRepository).getGroup(agencyId, groupId);
     }
@@ -346,7 +347,7 @@ class DDIServiceImplTest {
         when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
 
-        Ddi4Group group = new Ddi4Group(
+        Group group = group(
                 "true", "2025-01-09T09:00:00Z",
                 "urn:ddi:fr.insee:grp-789:1",
                 "fr.insee", "grp-789", "1",
@@ -420,7 +421,7 @@ class DDIServiceImplTest {
     }
 
     private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
-        Ddi4Group group = new Ddi4Group(
+        Group group = group(
                 "true", "2025-01-09T09:00:00Z",
                 "urn:ddi:fr.insee:" + groupId + ":1",
                 "fr.insee", groupId, "1",
@@ -501,5 +502,46 @@ class DDIServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
+    }
+    private static Group group(String isUniversallyUnique, String versionDate, String urn, String agency,
+                               String id, String version, String versionResponsibility, Citation citation,
+                               List<StudyUnitReference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
+        Group group = new Group();
+        group.setURN(urn);
+        group.setAgency(agency);
+        group.setID(id);
+        group.setVersion(version);
+        group.setVersionResponsibility(versionResponsibility);
+        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        group.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) group.putAdditionalProperty("Citation", citation);
+        if (studyUnitReference != null) group.putAdditionalProperty("StudyUnitReference", studyUnitReference);
+        if (seriesIris != null) group.putAdditionalProperty("seriesIris", seriesIris);
+        if (typeOfGroup != null) group.putAdditionalProperty("typeOfGroup", typeOfGroup);
+        return group;
+    }
+
+    private static StudyUnit studyUnit(String isUniversallyUnique, String versionDate, String urn, String agency,
+                                       String id, String version, Citation citation, String operationIri,
+                                       List<DDIReference> physicalInstanceReferences) {
+        StudyUnit studyUnit = new StudyUnit();
+        studyUnit.setURN(urn);
+        studyUnit.setAgency(agency);
+        studyUnit.setID(id);
+        studyUnit.setVersion(version);
+        studyUnit.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        studyUnit.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) studyUnit.putAdditionalProperty("Citation", citation);
+        if (operationIri != null) studyUnit.putAdditionalProperty("operationIri", operationIri);
+        if (physicalInstanceReferences != null) studyUnit.putAdditionalProperty("physicalInstanceReferences", physicalInstanceReferences);
+        return studyUnit;
+    }
+
+    private static Citation citationOf(Group group) {
+        return (Citation) group.getAdditionalProperties().get("Citation");
+    }
+
+    private static Citation citationOf(StudyUnit studyUnit) {
+        return (Citation) studyUnit.getAdditionalProperties().get("Citation");
     }
 }

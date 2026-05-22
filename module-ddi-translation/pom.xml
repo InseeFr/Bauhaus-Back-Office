@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>fr.insee.rmes</groupId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>module-ddi-translation</artifactId>
+  <version>1.0.0</version>
+  <name>module-ddi-translation</name>
+  <description>Traduction autonome DDI3 (ddi-lifecycle) vers DDI4 (modele genere) et inverse</description>
+
+  <dependencies>
+    <!-- DDI 3.3 : classes XmlBeans generees, utilisees en lecture (Ddi3XmlReader) et en
+         ecriture (Ddi3XmlWriter / converters). Seule dependance propre : le reste (jackson,
+         spring-core, jakarta, slf4j, junit, xmlunit, archunit) est herite du pom parent. -->
+    <dependency>
+      <groupId>fr.insee.ddi</groupId>
+      <artifactId>ddi-lifecycle</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+      <!-- Generation des classes Java du modele DDI 4 a partir de ddi-schema.json.
+           ddi-schema.json est un JSON Schema draft 2020-12 dont les ~498 types sont sous
+           "$defs" derriere un "anyOf" : jsonschema2pojo ne sait pas l'exploiter. On passe
+           par OpenAPI 3.1 (qui EST du JSON Schema 2020-12) : etape 1 (helper Java) convertit
+           "$defs" en "components/schemas", etape 2 (openapi-generator, generateur spring en
+           mode modeles seuls) genere un POJO Jackson par schema. Source unique : ddi-schema.json. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>ddi-schema-to-openapi</id>
+            <phase>generate-sources</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <!-- JDK source-file mode (java Foo.java) : pas de compilation prealable, Jackson
+                   fourni par le classpath du module. Compatible JDK 25. -->
+              <executable>${java.home}/bin/java</executable>
+              <arguments>
+                <argument>-cp</argument>
+                <classpath/>
+                <argument>${project.basedir}/buildtools/SchemaToOpenApi.java</argument>
+                <argument>${project.basedir}/src/main/resources/ddi-schema.json</argument>
+                <argument>${project.build.directory}/generated-resources/ddi-openapi.json</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>7.11.0</version>
+        <executions>
+          <execution>
+            <id>generate-ddi-model</id>
+            <phase>generate-sources</phase>
+            <goals><goal>generate</goal></goals>
+            <configuration>
+              <inputSpec>${project.build.directory}/generated-resources/ddi-openapi.json</inputSpec>
+              <generatorName>spring</generatorName>
+              <modelPackage>fr.insee.rmes.modules.ddi.physical_instances.generated</modelPackage>
+              <generateApis>false</generateApis>
+              <generateApiTests>false</generateApiTests>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateModelTests>false</generateModelTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateSupportingFiles>false</generateSupportingFiles>
+              <annotationLibrary>none</annotationLibrary>
+              <documentationProvider>none</documentationProvider>
+              <configOptions>
+                <!-- Tous les POJOs generes serialisent NON_EMPTY : les champs DDI absents
+                     (tableaux/objets vides, chaines vides, null) ne sont pas emis, pour que le
+                     JSON produit reste proche de l'actuel (modele ecrit a la main). -->
+                <additionalModelTypeAnnotations>@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)</additionalModelTypeAnnotations>
+                <sourceFolder>src</sourceFolder>
+                <useSpringBoot3>true</useSpringBoot3>
+                <useJakartaEe>true</useJakartaEe>
+                <serializationLibrary>jackson</serializationLibrary>
+                <useBeanValidation>false</useBeanValidation>
+                <performBeanValidation>false</performBeanValidation>
+                <openApiNullable>false</openApiNullable>
+                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                <documentationProvider>none</documentationProvider>
+                <annotationLibrary>none</annotationLibrary>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
