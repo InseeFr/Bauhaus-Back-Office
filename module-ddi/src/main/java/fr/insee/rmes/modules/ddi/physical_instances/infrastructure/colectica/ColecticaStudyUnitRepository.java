@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 
@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Colectica adapter for StudyUnit persistence.
  * <p>
- * Transforms {@link Ddi4StudyUnit} to DDI3 XML via {@link Ddi3XmlWriter},
+ * Transforms {@link StudyUnit} to DDI3 XML via {@link Ddi3XmlWriter},
  * then delegates the REST call to the parent class.
  */
 public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepository implements StudyUnitRepository {
@@ -46,40 +46,40 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     }
 
     @Override
-    public void addPhysicalInstance(Ddi4StudyUnit studyUnit, DDIReference physicalInstanceReference) {
-        logger.info("Linking physical instance piId={} to study unit id={}", physicalInstanceReference.id(), studyUnit.id());
-        List<DDIReference> refs = new ArrayList<>(
-                studyUnit.physicalInstanceReferences() != null ? studyUnit.physicalInstanceReferences() : List.of()
-        );
+    @SuppressWarnings("unchecked")
+    public void addPhysicalInstance(StudyUnit studyUnit, DDIReference physicalInstanceReference) {
+        logger.info("Linking physical instance piId={} to study unit id={}", physicalInstanceReference.id(), studyUnit.getID());
+        List<DDIReference> existing =
+                (List<DDIReference>) studyUnit.getAdditionalProperties().get("physicalInstanceReferences");
+        List<DDIReference> refs = new ArrayList<>(existing != null ? existing : List.of());
         refs.add(physicalInstanceReference);
-        Ddi4StudyUnit updated = new Ddi4StudyUnit(
-                studyUnit.isUniversallyUnique(),
-                studyUnit.versionDate(),
-                studyUnit.urn(),
-                studyUnit.agency(),
-                studyUnit.id(),
-                studyUnit.version(),
-                studyUnit.citation(),
-                studyUnit.operationIri(),
-                refs
-        );
+
+        // Recopie l'item (forme historique en additionalProperties) en remplaçant les références PI.
+        StudyUnit updated = new StudyUnit();
+        updated.setURN(studyUnit.getURN());
+        updated.setAgency(studyUnit.getAgency());
+        updated.setID(studyUnit.getID());
+        updated.setVersion(studyUnit.getVersion());
+        studyUnit.getAdditionalProperties().forEach(updated::putAdditionalProperty);
+        updated.putAdditionalProperty("physicalInstanceReferences", refs);
         createOrUpdate(updated);
     }
 
     @Override
-    public void createOrUpdate(Ddi4StudyUnit studyUnit) {
-        logger.info("Creating/updating study unit in Colectica: id={}, agency={}, urn={}", studyUnit.id(), studyUnit.agency(), studyUnit.urn());
+    public void createOrUpdate(StudyUnit studyUnit) {
+        logger.info("Creating/updating study unit in Colectica: id={}, agency={}, urn={}", studyUnit.getID(), studyUnit.getAgency(), studyUnit.getURN());
         try {
             String ddi3Xml = ddi3XmlWriter.buildStudyUnitXml(studyUnit);
-            logger.info("Generated DDI3 XML for study unit id={}: {}", studyUnit.id(), ddi3Xml);
-            createOrUpdateItem(STUDY_UNIT_ITEM_TYPE, studyUnit, ddi3Xml);
-            logger.info("Study unit successfully sent to Colectica: id={}", studyUnit.id());
+            logger.info("Generated DDI3 XML for study unit id={}: {}", studyUnit.getID(), ddi3Xml);
+            createOrUpdateItem(STUDY_UNIT_ITEM_TYPE, studyUnit.getAgency(), studyUnit.getID(), studyUnit.getVersion(),
+                    (String) studyUnit.getAdditionalProperties().get("@versionDate"), ddi3Xml);
+            logger.info("Study unit successfully sent to Colectica: id={}", studyUnit.getID());
         } catch (RuntimeException e) {
-            logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.id(), e);
+            logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.getID(), e);
             throw e;
         } catch (Exception e) {
-            logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.id(), e);
-            throw new RuntimeException("Failed to create study unit: " + studyUnit.id(), e);
+            logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.getID(), e);
+            throw new RuntimeException("Failed to create study unit: " + studyUnit.getID(), e);
         }
     }
 }

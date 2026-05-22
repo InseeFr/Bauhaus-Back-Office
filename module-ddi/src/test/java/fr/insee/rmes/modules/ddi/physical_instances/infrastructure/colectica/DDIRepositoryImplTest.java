@@ -1,6 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Category;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
@@ -206,7 +214,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-10-23T12:28:43.615773Z",
                 "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
                 agencyId, instanceId, "1",
@@ -232,9 +240,9 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
-        assertEquals(instanceId, result.physicalInstance().get(0).id());
-        assertEquals(agencyId, result.physicalInstance().get(0).agency());
-        assertEquals("Radon et gamma", result.physicalInstance().get(0).citation().title().get(0).value());
+        assertEquals(instanceId, result.physicalInstance().get(0).getID());
+        assertEquals(agencyId, result.physicalInstance().get(0).getAgency());
+        assertEquals("Radon et gamma", citationOf(result.physicalInstance().get(0)).title().get(0).getAtValue());
 
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
@@ -325,7 +333,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(getListResponses);
         // Mock converter
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:test-id:1",
                 "fr.insee", "test-id", "1",
@@ -351,7 +359,7 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
-        assertEquals(physicalInstanceLabel, result.physicalInstance().get(0).citation().title().get(0).value());
+        assertEquals(physicalInstanceLabel, citationOf(result.physicalInstance().get(0)).title().get(0).getAtValue());
 
         // Verify item creation endpoint was called
         verify(requestSpec, atLeastOnce()).uri(eq(itemUrl));
@@ -477,7 +485,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(existingItemResponses);
         // Mock converter
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -486,7 +494,7 @@ class DDIRepositoryImplTest {
                 new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
         );
 
-        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+        DataRelationship mockDataRelationship = dataRelationship(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
@@ -535,8 +543,8 @@ class DDIRepositoryImplTest {
 
         // Version of the objects sent to Colectica must NOT be incremented
         Ddi4Response capturedDdi4 = ddi4Captor.getValue();
-        assertEquals("1", capturedDdi4.physicalInstance().get(0).version()); // version preserved, not incremented
-        assertEquals("1", capturedDdi4.dataRelationship().get(0).version()); // version preserved, not incremented
+        assertEquals("1", capturedDdi4.physicalInstance().get(0).getVersion()); // version preserved, not incremented
+        assertEquals("1", capturedDdi4.dataRelationship().get(0).getVersion()); // version preserved, not incremented
 
         ArgumentCaptor<Object> bodyCaptor2 = ArgumentCaptor.forClass(Object.class);
         verify(requestSpec, atLeastOnce()).body(bodyCaptor2.capture());
@@ -596,7 +604,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class)))
                 .thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
                 agencyId, instanceId, "1",
@@ -605,7 +613,7 @@ class DDIRepositoryImplTest {
                 new DataRelationshipReference(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship")
         );
 
-        Ddi4Variable mockVariable = new Ddi4Variable(
+        Variable mockVariable = variable(
                 "true",
                 "2025-12-10T11:55:33.138Z",
                 "urn:ddi:fr.insee:2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d:1",
@@ -623,7 +631,7 @@ class DDIRepositoryImplTest {
                 ""
         );
 
-        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+        DataRelationship mockDataRelationship = dataRelationship(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1",
                 agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
@@ -637,7 +645,7 @@ class DDIRepositoryImplTest {
                         )))
         );
 
-        Ddi4CodeList mockCodeList = new Ddi4CodeList(
+        CodeList mockCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1",
                 agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1",
@@ -649,7 +657,7 @@ class DDIRepositoryImplTest {
                         "a"))
         );
 
-        Ddi4Category mockCategory = new Ddi4Category(
+        Category mockCategory = category(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1",
                 agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1",
@@ -676,23 +684,23 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
-        assertEquals(instanceId, result.physicalInstance().get(0).id());
-        assertEquals("test", result.physicalInstance().get(0).citation().title().get(0).value());
+        assertEquals(instanceId, result.physicalInstance().get(0).getID());
+        assertEquals("test", citationOf(result.physicalInstance().get(0)).title().get(0).getAtValue());
 
         assertNotNull(result.variable());
         assertEquals(1, result.variable().size());
-        assertEquals("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", result.variable().get(0).id());
-        assertEquals("name", result.variable().get(0).variableName().get(0).value());
+        assertEquals("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", result.variable().get(0).getID());
+        assertEquals("name", result.variable().get(0).getVariableName().get(0).getAtValue());
 
         assertNotNull(result.codeList());
         assertEquals(1, result.codeList().size());
-        assertEquals("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", result.codeList().get(0).id());
-        assertEquals("cl", result.codeList().get(0).label().get(0).value());
+        assertEquals("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", result.codeList().get(0).getID());
+        assertEquals("cl", result.codeList().get(0).getLabel().get(0).getAtValue());
 
         assertNotNull(result.category());
         assertEquals(1, result.category().size());
-        assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
-        assertEquals("aq", result.category().get(0).label().get(0).value());
+        assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).getID());
+        assertEquals("aq", result.category().get(0).getLabel().get(0).getAtValue());
 
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
@@ -731,7 +739,7 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        PhysicalInstance pi = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -740,7 +748,7 @@ class DDIRepositoryImplTest {
                 null
         );
 
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
+        CodeList mutualizedCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
@@ -806,7 +814,7 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        PhysicalInstance pi = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -815,7 +823,7 @@ class DDIRepositoryImplTest {
                 null
         );
 
-        Ddi4CodeList localCodeList = new Ddi4CodeList(
+        CodeList localCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + localCodeListId + ":1",
                 agencyId, localCodeListId, "1",
@@ -851,10 +859,10 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.codeList(), "Non-mutualized CodeList should remain in the response");
         assertEquals(1, result.codeList().size());
-        assertEquals(localCodeListId, result.codeList().get(0).id());
-        assertNotNull(result.codeList().get(0).code(), "Codes of non-mutualized CodeList must be preserved");
-        assertEquals(1, result.codeList().get(0).code().size());
-        assertEquals("a", result.codeList().get(0).code().get(0).value());
+        assertEquals(localCodeListId, result.codeList().get(0).getID());
+        assertNotNull(codesOf(result.codeList().get(0)), "Codes of non-mutualized CodeList must be preserved");
+        assertEquals(1, codesOf(result.codeList().get(0)).size());
+        assertEquals("a", codesOf(result.codeList().get(0)).get(0).value());
     }
 
     @Test
@@ -888,7 +896,7 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        PhysicalInstance pi = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -897,7 +905,7 @@ class DDIRepositoryImplTest {
                 null
         );
 
-        Ddi4CodeList localCodeList = new Ddi4CodeList(
+        CodeList localCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + localCodeListId + ":1",
                 agencyId, localCodeListId, "1",
@@ -908,7 +916,7 @@ class DDIRepositoryImplTest {
                         null, "L1"))
         );
 
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
+        CodeList mutualizedCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
@@ -943,8 +951,8 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.codeList());
         assertEquals(1, result.codeList().size());
-        assertEquals(localCodeListId, result.codeList().get(0).id());
-        assertEquals("L1", result.codeList().get(0).code().get(0).value());
+        assertEquals(localCodeListId, result.codeList().get(0).getID());
+        assertEquals("L1", codesOf(result.codeList().get(0)).get(0).value());
     }
 
     @Test
@@ -979,7 +987,7 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        PhysicalInstance pi = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -988,7 +996,7 @@ class DDIRepositoryImplTest {
                 null
         );
 
-        Ddi4Variable variable = new Ddi4Variable(
+        Variable variable = variable(
                 "true", "2025-12-10T11:55:33.138Z",
                 "urn:ddi:fr.insee:" + variableId + ":1",
                 agencyId, variableId, "1",
@@ -1003,7 +1011,7 @@ class DDIRepositoryImplTest {
                 ""
         );
 
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
+        CodeList mutualizedCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
@@ -1039,11 +1047,13 @@ class DDIRepositoryImplTest {
         assertNull(result.codeList(), "Mutualized CodeList filtered");
         assertNotNull(result.variable());
         assertEquals(1, result.variable().size());
-        Ddi4Variable resultVariable = result.variable().get(0);
-        assertEquals(variableId, resultVariable.id());
-        assertNotNull(resultVariable.variableRepresentation());
-        assertNotNull(resultVariable.variableRepresentation().codeRepresentation());
-        CodeListReference ref = resultVariable.variableRepresentation().codeRepresentation().codeListReference();
+        Variable resultVariable = result.variable().get(0);
+        assertEquals(variableId, resultVariable.getID());
+        VariableRepresentation resultRepresentation =
+                (VariableRepresentation) resultVariable.getAdditionalProperties().get("VariableRepresentation");
+        assertNotNull(resultRepresentation);
+        assertNotNull(resultRepresentation.codeRepresentation());
+        CodeListReference ref = resultRepresentation.codeRepresentation().codeListReference();
         assertNotNull(ref, "CodeListReference on Variable must survive filtering");
         assertEquals(agencyId, ref.agency());
         assertEquals(mutualizedCodeListId, ref.id());
@@ -1082,7 +1092,7 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        PhysicalInstance pi = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -1091,7 +1101,7 @@ class DDIRepositoryImplTest {
                 null
         );
 
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
+        CodeList mutualizedCodeList = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
@@ -1103,7 +1113,7 @@ class DDIRepositoryImplTest {
                         "M1"))
         );
 
-        Ddi4Category category = new Ddi4Category(
+        Category category = category(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId, categoryId, "1",
@@ -1135,7 +1145,7 @@ class DDIRepositoryImplTest {
         assertNull(result.codeList(), "Mutualized CodeList filtered");
         assertNotNull(result.category(), "Categories must remain untouched");
         assertEquals(1, result.category().size());
-        assertEquals(categoryId, result.category().get(0).id());
+        assertEquals(categoryId, result.category().get(0).getID());
     }
 
     @Test
@@ -1165,7 +1175,7 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        PhysicalInstance pi = physicalInstance(
                 "true", "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -1175,7 +1185,7 @@ class DDIRepositoryImplTest {
         );
 
         // Note version "2" here
-        Ddi4CodeList codeListVersion2 = new Ddi4CodeList(
+        CodeList codeListVersion2 = codeList(
                 "true", "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + codeListId + ":2",
                 agencyId, codeListId, "2",
@@ -1397,18 +1407,18 @@ class DDIRepositoryImplTest {
         // Verify Group
         assertNotNull(result.group());
         assertEquals(1, result.group().size());
-        assertEquals(groupId, result.group().get(0).id());
-        assertEquals(agencyId, result.group().get(0).agency());
-        assertEquals("Base permanente des équipements", result.group().get(0).citation().title().get(0).value());
-        assertEquals(2, result.group().get(0).studyUnitReference().size());
+        assertEquals(groupId, result.group().get(0).getID());
+        assertEquals(agencyId, result.group().get(0).getAgency());
+        assertEquals("Base permanente des équipements", citationOf(result.group().get(0)).title().get(0).getAtValue());
+        assertEquals(2, studyUnitReferencesOf(result.group().get(0)).size());
 
         // Verify StudyUnits
         assertNotNull(result.studyUnit());
         assertEquals(2, result.studyUnit().size());
-        assertEquals("89f5e04d-da22-485f-9c08-5fbe452b6c90", result.studyUnit().get(0).id());
-        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().get(0).value());
-        assertEquals("820a7c14-0ac4-42bc-a8c1-d39f60e304ee", result.studyUnit().get(1).id());
-        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().get(0).value());
+        assertEquals("89f5e04d-da22-485f-9c08-5fbe452b6c90", result.studyUnit().get(0).getID());
+        assertEquals("BPE 2021", citationOf(result.studyUnit().get(0)).title().get(0).getAtValue());
+        assertEquals("820a7c14-0ac4-42bc-a8c1-d39f60e304ee", result.studyUnit().get(1).getID());
+        assertEquals("BPE 2022", citationOf(result.studyUnit().get(1)).title().get(0).getAtValue());
 
         // Verify TopLevelReference
         assertNotNull(result.topLevelReference());
@@ -1465,7 +1475,7 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.group().size());
         assertEquals(
                 "Enquête capacité à innover et stratégie",
-                result.group().get(0).citation().title().get(0).value()
+                citationOf(result.group().get(0)).title().get(0).getAtValue()
         );
     }
 
@@ -1742,14 +1752,14 @@ class DDIRepositoryImplTest {
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4CodeList mockCodeList = new Ddi4CodeList(
+        CodeList mockCodeList = codeList(
                 "true", "2024-10-31T10:43:38",
                 "urn:ddi:fr.insee:" + codeListId + ":1",
                 agencyId, codeListId, "1",
                 LangStrings.of("fr-FR", "NAF rév. 2"),
                 List.of()
         );
-        Ddi4Category mockCategory = new Ddi4Category(
+        Category mockCategory = category(
                 "true", "2024-10-31T10:43:38",
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId, categoryId, "1",
@@ -1772,10 +1782,10 @@ class DDIRepositoryImplTest {
         assertNotNull(result);
         assertNotNull(result.codeList());
         assertEquals(1, result.codeList().size());
-        assertEquals(codeListId, result.codeList().get(0).id());
+        assertEquals(codeListId, result.codeList().get(0).getID());
         assertNotNull(result.category());
         assertEquals(1, result.category().size());
-        assertEquals(categoryId, result.category().get(0).id());
+        assertEquals(categoryId, result.category().get(0).getID());
 
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + codeListId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
@@ -1801,7 +1811,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         // Mock existing instance with a Label on DataRelationship
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -1814,7 +1824,7 @@ class DDIRepositoryImplTest {
         List<LangString> existingDrLabel = LangStrings.of("en-US", "Existing DR Label");
         List<LangString> existingLrLabel = LangStrings.of("de-DE", "Existing LR Label");
 
-        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+        DataRelationship mockDataRelationship = dataRelationship(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
@@ -1863,11 +1873,11 @@ class DDIRepositoryImplTest {
         assertNotNull(capturedDdi4.dataRelationship());
         assertEquals(1, capturedDdi4.dataRelationship().size());
 
-        Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
+        DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
         // When newText is null, existing label should be preserved
-        assertNotNull(updatedDr.label());
-        assertEquals("en-US", updatedDr.label().get(0).language());
-        assertEquals("Existing DR Label", updatedDr.label().get(0).value());
+        assertNotNull(updatedDr.getLabel());
+        assertEquals("en-US", updatedDr.getLabel().get(0).getAtLanguage());
+        assertEquals("Existing DR Label", updatedDr.getLabel().get(0).getAtValue());
     }
 
     @Test
@@ -1887,7 +1897,7 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -1897,7 +1907,7 @@ class DDIRepositoryImplTest {
         );
 
         // DataRelationship has NO existing Label (null)
-        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+        DataRelationship mockDataRelationship = dataRelationship(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
@@ -1944,16 +1954,16 @@ class DDIRepositoryImplTest {
         assertNotNull(capturedDdi4);
         assertNotNull(capturedDdi4.dataRelationship());
 
-        Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
-        assertNotNull(updatedDr.label());
-        assertEquals("fr-FR", updatedDr.label().get(0).language()); // Should use DEFAULT_LANG
-        assertEquals("New DR Label", updatedDr.label().get(0).value());
+        DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
+        assertNotNull(updatedDr.getLabel());
+        assertEquals("fr-FR", updatedDr.getLabel().get(0).getAtLanguage()); // Should use DEFAULT_LANG
+        assertEquals("New DR Label", updatedDr.getLabel().get(0).getAtValue());
 
         // Also verify LogicalRecord label
-        assertNotNull(updatedDr.logicalRecord());
-        assertNotNull(updatedDr.logicalRecord().label());
-        assertEquals("fr-FR", updatedDr.logicalRecord().label().get(0).language()); // Should use DEFAULT_LANG
-        assertEquals("New LR Label", updatedDr.logicalRecord().label().get(0).value());
+        assertNotNull(((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")));
+        assertNotNull(((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")).label());
+        assertEquals("fr-FR", ((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")).label().get(0).getAtLanguage()); // Should use DEFAULT_LANG
+        assertEquals("New LR Label", ((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")).label().get(0).getAtValue());
     }
 
     @Test
@@ -1973,7 +1983,7 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
-        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
+        PhysicalInstance mockPhysicalInstance = physicalInstance(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
@@ -1986,7 +1996,7 @@ class DDIRepositoryImplTest {
         List<LangString> existingDrLabel = LangStrings.of("en-GB", "Old DR Label");
         List<LangString> existingLrLabel = LangStrings.of("es-ES", "Old LR Label");
 
-        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
+        DataRelationship mockDataRelationship = dataRelationship(
                 "true", "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
@@ -2032,14 +2042,14 @@ class DDIRepositoryImplTest {
         Ddi4Response capturedDdi4 = ddi4Captor.getValue();
         assertNotNull(capturedDdi4);
 
-        Ddi4DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
-        assertNotNull(updatedDr.label());
-        assertEquals("en-GB", updatedDr.label().get(0).language()); // Should preserve existing lang
-        assertEquals("Updated DR Label", updatedDr.label().get(0).value()); // But update text
+        DataRelationship updatedDr = capturedDdi4.dataRelationship().get(0);
+        assertNotNull(updatedDr.getLabel());
+        assertEquals("en-GB", updatedDr.getLabel().get(0).getAtLanguage()); // Should preserve existing lang
+        assertEquals("Updated DR Label", updatedDr.getLabel().get(0).getAtValue()); // But update text
 
-        assertNotNull(updatedDr.logicalRecord().label());
-        assertEquals("es-ES", updatedDr.logicalRecord().label().get(0).language()); // Should preserve existing lang
-        assertEquals("Updated LR Label", updatedDr.logicalRecord().label().get(0).value()); // But update text
+        assertNotNull(((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")).label());
+        assertEquals("es-ES", ((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")).label().get(0).getAtLanguage()); // Should preserve existing lang
+        assertEquals("Updated LR Label", ((LogicalRecord) updatedDr.getAdditionalProperties().get("LogicalRecord")).label().get(0).getAtValue()); // But update text
     }
 
     @Test
@@ -2211,4 +2221,161 @@ class DDIRepositoryImplTest {
         verify(requestSpec, times(2)).uri(eq(relUrl));
     }
 
+    /** Construit une Category generee equivalente a l'ancien record Ddi4Category (memes arguments). */
+    private static Category category(String isUniversallyUnique, String versionDate, String urn,
+                                     String agency, String id, String version, List<LangString> label) {
+        Category category = new Category();
+        category.setURN(urn);
+        category.setAgency(agency);
+        category.setID(id);
+        category.setVersion(version);
+        category.setLabel(label);
+        category.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        category.putAdditionalProperty("@versionDate", versionDate);
+        return category;
+    }
+
+    /** Construit une CodeList generee equivalente a l'ancien record CodeList (memes arguments). */
+    private static CodeList codeList(String isUniversallyUnique, String versionDate, String urn,
+                                     String agency, String id, String version, List<LangString> label,
+                                     List<Code> codes) {
+        CodeList codeList = new CodeList();
+        codeList.setURN(urn);
+        codeList.setAgency(agency);
+        codeList.setID(id);
+        codeList.setVersion(version);
+        codeList.setLabel(label);
+        codeList.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        codeList.putAdditionalProperty("@versionDate", versionDate);
+        codeList.putAdditionalProperty("Code", codes);
+        return codeList;
+    }
+
+    /** Relit les Code (record historique) portes par la Map additionalProperties d'une CodeList generee. */
+    @SuppressWarnings("unchecked")
+    private static List<Code> codesOf(CodeList codeList) {
+        return (List<Code>) codeList.getAdditionalProperties().get("Code");
+    }
+
+    /** Construit une Variable generee equivalente a l'ancien record Ddi4Variable (memes arguments). */
+    private static Variable variable(String isUniversallyUnique, String versionDate, String urn, String agency,
+                                     String id, String version, BasedOnObject basedOnObject,
+                                     List<LangString> variableName, List<LangString> label,
+                                     List<LangString> description, VariableRepresentation representation,
+                                     String isGeographic) {
+        Variable variable = new Variable();
+        variable.setURN(urn);
+        variable.setAgency(agency);
+        variable.setID(id);
+        variable.setVersion(version);
+        variable.setVariableName(variableName);
+        variable.setLabel(label);
+        variable.setDescription(description);
+        variable.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        variable.putAdditionalProperty("@versionDate", versionDate);
+        variable.putAdditionalProperty("@isGeographic", isGeographic);
+        if (basedOnObject != null) {
+            variable.putAdditionalProperty("BasedOnObject", basedOnObject);
+        }
+        if (representation != null) {
+            variable.putAdditionalProperty("VariableRepresentation", representation);
+        }
+        return variable;
+    }
+
+    /** Construit une DataRelationship generee equivalente a l'ancien record (memes arguments). */
+    private static DataRelationship dataRelationship(String isUniversallyUnique, String versionDate, String urn,
+                                                     String agency, String id, String version,
+                                                     BasedOnObject basedOnObject, List<LangString> label,
+                                                     LogicalRecord logicalRecord) {
+        DataRelationship dataRelationship = new DataRelationship();
+        dataRelationship.setURN(urn);
+        dataRelationship.setAgency(agency);
+        dataRelationship.setID(id);
+        dataRelationship.setVersion(version);
+        dataRelationship.setLabel(label);
+        dataRelationship.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        dataRelationship.putAdditionalProperty("@versionDate", versionDate);
+        if (basedOnObject != null) {
+            dataRelationship.putAdditionalProperty("BasedOnObject", basedOnObject);
+        }
+        if (logicalRecord != null) {
+            dataRelationship.putAdditionalProperty("LogicalRecord", logicalRecord);
+        }
+        return dataRelationship;
+    }
+
+    /** Construit une PhysicalInstance generee equivalente a l'ancien record (memes arguments). */
+    private static PhysicalInstance physicalInstance(String isUniversallyUnique, String versionDate, String urn,
+                                                     String agency, String id, String version,
+                                                     BasedOnObject basedOnObject, Citation citation,
+                                                     DataRelationshipReference dataRelationshipReference) {
+        PhysicalInstance physicalInstance = new PhysicalInstance();
+        physicalInstance.setURN(urn);
+        physicalInstance.setAgency(agency);
+        physicalInstance.setID(id);
+        physicalInstance.setVersion(version);
+        physicalInstance.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        physicalInstance.putAdditionalProperty("@versionDate", versionDate);
+        if (basedOnObject != null) {
+            physicalInstance.putAdditionalProperty("BasedOnObject", basedOnObject);
+        }
+        if (citation != null) {
+            physicalInstance.putAdditionalProperty("Citation", citation);
+        }
+        if (dataRelationshipReference != null) {
+            physicalInstance.putAdditionalProperty("DataRelationshipReference", dataRelationshipReference);
+        }
+        return physicalInstance;
+    }
+    /** Relit la Citation (record historique) portee par additionalProperties d'une PhysicalInstance generee. */
+    private static Citation citationOf(PhysicalInstance physicalInstance) {
+        return (Citation) physicalInstance.getAdditionalProperties().get("Citation");
+    }
+
+    private static Group group(String isUniversallyUnique, String versionDate, String urn, String agency,
+                               String id, String version, String versionResponsibility, Citation citation,
+                               List<StudyUnitReference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
+        Group group = new Group();
+        group.setURN(urn);
+        group.setAgency(agency);
+        group.setID(id);
+        group.setVersion(version);
+        group.setVersionResponsibility(versionResponsibility);
+        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        group.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) group.putAdditionalProperty("Citation", citation);
+        if (studyUnitReference != null) group.putAdditionalProperty("StudyUnitReference", studyUnitReference);
+        if (seriesIris != null) group.putAdditionalProperty("seriesIris", seriesIris);
+        if (typeOfGroup != null) group.putAdditionalProperty("typeOfGroup", typeOfGroup);
+        return group;
+    }
+
+    private static StudyUnit studyUnit(String isUniversallyUnique, String versionDate, String urn, String agency,
+                                       String id, String version, Citation citation, String operationIri,
+                                       List<DDIReference> physicalInstanceReferences) {
+        StudyUnit studyUnit = new StudyUnit();
+        studyUnit.setURN(urn);
+        studyUnit.setAgency(agency);
+        studyUnit.setID(id);
+        studyUnit.setVersion(version);
+        studyUnit.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        studyUnit.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) studyUnit.putAdditionalProperty("Citation", citation);
+        if (operationIri != null) studyUnit.putAdditionalProperty("operationIri", operationIri);
+        if (physicalInstanceReferences != null) studyUnit.putAdditionalProperty("physicalInstanceReferences", physicalInstanceReferences);
+        return studyUnit;
+    }
+    private static Citation citationOf(Group group) {
+        return (Citation) group.getAdditionalProperties().get("Citation");
+    }
+
+    private static Citation citationOf(StudyUnit studyUnit) {
+        return (Citation) studyUnit.getAdditionalProperties().get("Citation");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<StudyUnitReference> studyUnitReferencesOf(Group group) {
+        return (List<StudyUnitReference>) group.getAdditionalProperties().get("StudyUnitReference");
+    }
 }

@@ -1,9 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
@@ -47,8 +48,13 @@ class LocalColecticaGroupInitConfigurationTest {
     private RestClient restClient;
 
     private Ddi4Response piResponse(String agency, String id) {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance("true", "2026-01-01T00:00:00Z",
-                "urn:ddi:%s:%s:1".formatted(agency, id), agency, id, "1", null, null, null);
+        PhysicalInstance pi = new PhysicalInstance();
+        pi.setURN("urn:ddi:%s:%s:1".formatted(agency, id));
+        pi.setAgency(agency);
+        pi.setID(id);
+        pi.setVersion("1");
+        pi.putAdditionalProperty("@isUniversallyUnique", "true");
+        pi.putAdditionalProperty("@versionDate", "2026-01-01T00:00:00Z");
         return new Ddi4Response(null, null, List.of(pi), null, null, null, null);
     }
 
@@ -99,23 +105,23 @@ class LocalColecticaGroupInitConfigurationTest {
         InOrder inOrder = inOrder(groupService, studyUnitService);
         inOrder.verify(groupService).deprecateAll();
 
-        // Verify study units created with Ddi4StudyUnit model
-        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        // Verify study units created with StudyUnit model
+        ArgumentCaptor<StudyUnit> suCaptor = ArgumentCaptor.forClass(StudyUnit.class);
         verify(studyUnitService, times(2)).createOrUpdate(suCaptor.capture());
-        List<Ddi4StudyUnit> studyUnits = suCaptor.getAllValues();
-        assertThat(studyUnits.get(0).citation().title().get(0).value()).isEqualTo("Enquête innovation 2020 Study Unit");
-        assertThat(studyUnits.get(0).operationIri()).isEqualTo("http://id.insee.fr/operations/operation/op1");
-        assertThat(studyUnits.get(1).citation().title().get(0).value()).isEqualTo("Enquête innovation 2021 Study Unit");
+        List<StudyUnit> studyUnits = suCaptor.getAllValues();
+        assertThat(citationOf(studyUnits.get(0)).title().get(0).getAtValue()).isEqualTo("Enquête innovation 2020 Study Unit");
+        assertThat((String) studyUnits.get(0).getAdditionalProperties().get("operationIri")).isEqualTo("http://id.insee.fr/operations/operation/op1");
+        assertThat(citationOf(studyUnits.get(1)).title().get(0).getAtValue()).isEqualTo("Enquête innovation 2021 Study Unit");
 
-        // Verify group created with Ddi4Group model
-        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        // Verify group created with Group model
+        ArgumentCaptor<Group> groupCaptor = ArgumentCaptor.forClass(Group.class);
         verify(groupService).createOrUpdate(groupCaptor.capture());
-        Ddi4Group createdGroup = groupCaptor.getValue();
-        assertThat(createdGroup.citation().title().get(0).value()).isEqualTo("Enquête innovation Group");
-        assertThat(createdGroup.seriesIris()).containsExactly("http://id.insee.fr/operations/serie/s1001");
-        assertThat(createdGroup.typeOfGroup()).isEqualTo("insee:StatisticalOperationSeries");
-        assertThat(createdGroup.studyUnitReference()).hasSize(2);
-        assertThat(createdGroup.agency()).isEqualTo("fr.insee");
+        Group createdGroup = groupCaptor.getValue();
+        assertThat(citationOf(createdGroup).title().get(0).getAtValue()).isEqualTo("Enquête innovation Group");
+        assertThat((List<String>) createdGroup.getAdditionalProperties().get("seriesIris")).containsExactly("http://id.insee.fr/operations/serie/s1001");
+        assertThat((String) createdGroup.getAdditionalProperties().get("typeOfGroup")).isEqualTo("insee:StatisticalOperationSeries");
+        assertThat((List<?>) createdGroup.getAdditionalProperties().get("StudyUnitReference")).hasSize(2);
+        assertThat(createdGroup.getAgency()).isEqualTo("fr.insee");
     }
 
     @Test
@@ -141,10 +147,10 @@ class LocalColecticaGroupInitConfigurationTest {
 
         // Then: group created with empty StudyUnitReferences, no study units
         verify(groupService).deprecateAll();
-        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        ArgumentCaptor<Group> groupCaptor = ArgumentCaptor.forClass(Group.class);
         verify(groupService).createOrUpdate(groupCaptor.capture());
-        assertThat(groupCaptor.getValue().citation().title().get(0).value()).isEqualTo("Enquête innovation Group");
-        assertThat(groupCaptor.getValue().studyUnitReference()).isEmpty();
+        assertThat(citationOf(groupCaptor.getValue()).title().get(0).getAtValue()).isEqualTo("Enquête innovation Group");
+        assertThat((List<?>) groupCaptor.getValue().getAdditionalProperties().get("StudyUnitReference")).isEmpty();
         verify(studyUnitService, never()).createOrUpdate(any());
     }
 
@@ -219,5 +225,12 @@ class LocalColecticaGroupInitConfigurationTest {
         assertThat(s1001.seriesLabel()).isEqualTo("Série A");
         assertThat(s2001.operations()).hasSize(1);
         assertThat(s2001.seriesLabel()).isEqualTo("Série B");
+    }
+    private static Citation citationOf(Group group) {
+        return (Citation) group.getAdditionalProperties().get("Citation");
+    }
+
+    private static Citation citationOf(StudyUnit studyUnit) {
+        return (Citation) studyUnit.getAdditionalProperties().get("Citation");
     }
 }

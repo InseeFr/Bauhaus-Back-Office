@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import org.slf4j.Logger;
@@ -48,13 +48,13 @@ public class GroupResources {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> createOrUpdateGroup(@RequestBody Ddi4Group group) {
-        logger.info("POST /ddi/groups - Creating/updating group: id={}", group.id());
+    public ResponseEntity<Void> createOrUpdateGroup(@RequestBody Group group) {
+        logger.info("POST /ddi/groups - Creating/updating group: id={}", group.getID());
         try {
             groupService.createOrUpdate(group);
             return ResponseEntity.status(201).build();
         } catch (Exception e) {
-            logger.error("Failed to create/update group: id={}", group.id(), e);
+            logger.error("Failed to create/update group: id={}", group.getID(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

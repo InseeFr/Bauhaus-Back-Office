@@ -1,7 +1,8 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
@@ -57,7 +58,7 @@ class StudyUnitResourcesTest {
 
     @Test
     void createOrUpdateStudyUnit_shouldReturn201() {
-        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+        StudyUnit studyUnit = studyUnit(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
@@ -73,7 +74,7 @@ class StudyUnitResourcesTest {
 
     @Test
     void createOrUpdateStudyUnit_shouldReturn500OnError() {
-        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+        StudyUnit studyUnit = studyUnit(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
@@ -86,5 +87,21 @@ class StudyUnitResourcesTest {
         ResponseEntity<Void> response = studyUnitResources.createOrUpdateStudyUnit(studyUnit);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private static StudyUnit studyUnit(String isUniversallyUnique, String versionDate, String urn, String agency,
+                                       String id, String version, Citation citation, String operationIri,
+                                       List<DDIReference> physicalInstanceReferences) {
+        StudyUnit studyUnit = new StudyUnit();
+        studyUnit.setURN(urn);
+        studyUnit.setAgency(agency);
+        studyUnit.setID(id);
+        studyUnit.setVersion(version);
+        studyUnit.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
+        studyUnit.putAdditionalProperty("@versionDate", versionDate);
+        if (citation != null) studyUnit.putAdditionalProperty("Citation", citation);
+        if (operationIri != null) studyUnit.putAdditionalProperty("operationIri", operationIri);
+        if (physicalInstanceReferences != null) studyUnit.putAdditionalProperty("physicalInstanceReferences", physicalInstanceReferences);
+        return studyUnit;
     }
 }
