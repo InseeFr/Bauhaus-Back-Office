@@ -28,13 +28,14 @@ fr.insee.rmes.bauhaus.colectica:
     authenticationMode: password
 
     # Credentials for "password" authentication mode
-    # Override these values in environment-specific configuration files
-    username: demey.emmanuel@gmail.com
-    password: ***REDACTED***
+    # Provide via environment variables (COLECTICA_USERNAME / COLECTICA_PASSWORD)
+    # or override in environment-specific configuration files. NEVER commit real values.
+    username: ${COLECTICA_USERNAME:}
+    password: ${COLECTICA_PASSWORD:}
 
     # Static token for "token" authentication mode
-    # Override this value when using token-based authentication
-    token: ""
+    # Provide via COLECTICA_TOKEN env var. NEVER commit real values.
+    token: ${COLECTICA_TOKEN:}
 
   # Package racine dont l'arborescence est parcourue pour exposer les code lists mutualisées
   # via /ddi/mutualized-codes-list. Absent = aucune code list mutualisée (l'application démarre normalement).
