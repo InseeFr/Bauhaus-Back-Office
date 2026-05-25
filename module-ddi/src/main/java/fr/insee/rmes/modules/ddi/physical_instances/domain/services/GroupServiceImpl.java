@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.util.List;
  * Inherits common {@code createOrUpdate} logic from {@link AbstractDdiItemService}
  * and adds the Group-specific {@code deprecateAll()} and {@code getAll()} operations.
  */
-public class GroupServiceImpl extends AbstractDdiItemService<Group> implements GroupService {
+public class GroupServiceImpl extends AbstractDdiItemService<Ddi4Group> implements GroupService {
 
     private static final Logger logger = LoggerFactory.getLogger(GroupServiceImpl.class);
 
@@ -41,10 +41,5 @@ public class GroupServiceImpl extends AbstractDdiItemService<Group> implements G
     @Override
     protected String itemTypeName() {
         return "group";
-    }
-
-    @Override
-    protected String itemId(Group group) {
-        return group.getID();
     }
 }

@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Item;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DdiItemService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DdiItemRepository;
 import org.slf4j.Logger;
@@ -12,9 +13,9 @@ import org.slf4j.LoggerFactory;
  * underlying {@link DdiItemRepository}. Subclasses can add domain-specific
  * operations (e.g. {@code deprecateAll()} for Groups).
  *
- * @param <T> the DDI4 item type (classe generee Group/StudyUnit)
+ * @param <T> the DDI4 item type
  */
-public abstract class AbstractDdiItemService<T> implements DdiItemService<T> {
+public abstract class AbstractDdiItemService<T extends Ddi4Item> implements DdiItemService<T> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -26,7 +27,7 @@ public abstract class AbstractDdiItemService<T> implements DdiItemService<T> {
 
     @Override
     public void createOrUpdate(T item) {
-        logger.info("Creating/updating {}: id={}", itemTypeName(), itemId(item));
+        logger.info("Creating/updating {}: id={}", itemTypeName(), item.id());
         repository.createOrUpdate(item);
     }
 
@@ -34,10 +35,4 @@ public abstract class AbstractDdiItemService<T> implements DdiItemService<T> {
      * Returns a human-readable name for the item type, used in log messages.
      */
     protected abstract String itemTypeName();
-
-    /**
-     * Extrait l'identifiant de l'item pour les logs (les classes generees n'exposent plus
-     * d'interface commune type {@code Ddi4Item}).
-     */
-    protected abstract String itemId(T item);
 }

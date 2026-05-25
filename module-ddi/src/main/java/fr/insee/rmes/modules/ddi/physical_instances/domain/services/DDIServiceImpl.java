@@ -9,7 +9,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
@@ -164,8 +163,8 @@ public class DDIServiceImpl implements DDIService {
         List<String> seriesIris = groupResponse == null || groupResponse.group() == null
                 ? List.of()
                 : groupResponse.group().stream()
-                        .filter(g -> seriesIrisOf(g) != null)
-                        .flatMap(g -> seriesIrisOf(g).stream())
+                        .filter(g -> g.seriesIris() != null)
+                        .flatMap(g -> g.seriesIris().stream())
                         .distinct()
                         .toList();
         if (seriesIris.isEmpty()) {
@@ -181,11 +180,5 @@ public class DDIServiceImpl implements DDIService {
     public Optional<String> getStudyUnitXmlByOperationIri(String operationIri) {
         logger.info("Getting StudyUnit XML by operationIri: {}", operationIri);
         return ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
-    }
-
-    /** seriesIris (champ Bauhaus hors-schéma) porté par additionalProperties du Group généré. */
-    @SuppressWarnings("unchecked")
-    private static List<String> seriesIrisOf(Group group) {
-        return (List<String>) group.getAdditionalProperties().get("seriesIris");
     }
 }

@@ -1,12 +1,10 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.model.OrganisationOption;
 import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.graphdb.ObjectType;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
@@ -84,7 +82,7 @@ class GraphDbStampCheckerTest {
     @Test
     void get_creators_stamps_ddi_physical_instance_returns_empty_list_when_group_has_no_series() throws StampFetchException, UnsupportedModuleException {
         // studyUnitReference=List.of(), seriesIris=List.of()
-        Group group = group(null, null, null, "fr.insee", "group-id", "1",
+        Ddi4Group group = new Ddi4Group(null, null, null, "fr.insee", "group-id", "1",
                 null, null, List.of(), List.of(), null);
         Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
         when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
@@ -99,7 +97,7 @@ class GraphDbStampCheckerTest {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String iri2 = "http://id.insee.fr/operations/serie/s1002";
         // studyUnitReference=null, seriesIris=List.of(iri1, iri2)
-        Group group = group(null, null, null, "fr.insee", "group-id", "1",
+        Ddi4Group group = new Ddi4Group(null, null, null, "fr.insee", "group-id", "1",
                 null, null, null, List.of(iri1, iri2), null);
         Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
         when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
@@ -156,7 +154,7 @@ class GraphDbStampCheckerTest {
     void get_creators_stamps_ddi_physical_instance_normalizes_uris_to_stamp_codes() throws StampFetchException, UnsupportedModuleException, fr.insee.rmes.domain.exceptions.RmesException {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String orgIri = "http://id.insee.fr/organisations/insee/DG75-G401";
-        Group group = group(null, null, null, "fr.insee", "group-id", "1",
+        Ddi4Group group = new Ddi4Group(null, null, null, "fr.insee", "group-id", "1",
                 null, null, null, List.of(iri1), null);
         Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
         when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
@@ -193,23 +191,5 @@ class GraphDbStampCheckerTest {
 
             assertThat(result).containsExactlyInAnyOrder("DG75-G401", "DG75-UNKNOWN");
         }
-    }
-
-    private static Group group(String isUniversallyUnique, String versionDate, String urn, String agency,
-                               String id, String version, String versionResponsibility, Citation citation,
-                               List<StudyUnitReference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
-        Group group = new Group();
-        group.setURN(urn);
-        group.setAgency(agency);
-        group.setID(id);
-        group.setVersion(version);
-        group.setVersionResponsibility(versionResponsibility);
-        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
-        group.putAdditionalProperty("@versionDate", versionDate);
-        if (citation != null) group.putAdditionalProperty("Citation", citation);
-        if (studyUnitReference != null) group.putAdditionalProperty("StudyUnitReference", studyUnitReference);
-        if (seriesIris != null) group.putAdditionalProperty("seriesIris", seriesIris);
-        if (typeOfGroup != null) group.putAdditionalProperty("typeOfGroup", typeOfGroup);
-        return group;
     }
 }

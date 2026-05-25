@@ -3,12 +3,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import static javax.xml.XMLConstants.*;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.CodeList;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.DataRelationship;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.LangString;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.PhysicalInstance;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -626,8 +620,8 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (mutualizedKeys.isEmpty()) {
             return response;
         }
-        List<CodeList> kept = response.codeList().stream()
-                .filter(cl -> !mutualizedKeys.contains(cl.getAgency() + "/" + cl.getID()))
+        List<Ddi4CodeList> kept = response.codeList().stream()
+                .filter(cl -> !mutualizedKeys.contains(cl.agency() + "/" + cl.id()))
                 .toList();
         if (kept.size() == response.codeList().size()) {
             return response;
@@ -754,8 +748,8 @@ public class DDIRepositoryImpl implements DDIRepository {
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(new InputSource(new StringReader(xml)));
 
-        List<Group> groups = new ArrayList<>();
-        List<StudyUnit> studyUnits = new ArrayList<>();
+        List<Ddi4Group> groups = new ArrayList<>();
+        List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
         List<TopLevelReference> topLevelReferences = new ArrayList<>();
 
         // Parse Group elements
@@ -767,15 +761,15 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         for (int i = 0; i < groupNodes.getLength(); i++) {
             Element groupElement = (Element) groupNodes.item(i);
-            Group group = parseGroupElement(groupElement);
+            Ddi4Group group = parseGroupElement(groupElement);
             groups.add(group);
 
             // Add top level reference for the group
             topLevelReferences.add(
                 new TopLevelReference(
-                    group.getAgency(),
-                    group.getID(),
-                    group.getVersion(),
+                    group.agency(),
+                    group.id(),
+                    group.version(),
                     "Group"
                 )
             );
@@ -790,7 +784,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         for (int i = 0; i < studyUnitNodes.getLength(); i++) {
             Element studyUnitElement = (Element) studyUnitNodes.item(i);
-            StudyUnit studyUnit = parseStudyUnitElement(studyUnitElement);
+            Ddi4StudyUnit studyUnit = parseStudyUnitElement(studyUnitElement);
             studyUnits.add(studyUnit);
         }
 
@@ -803,9 +797,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
-     * Parse a Group XML element to a generated Group (champs hors-schéma portés par additionalProperties).
+     * Parse a Group XML element to Ddi4Group
      */
-    private Group parseGroupElement(Element groupElement) {
+    private Ddi4Group parseGroupElement(Element groupElement) {
         String isUniversallyUnique = groupElement.getAttribute(
             "isUniversallyUnique"
         );
@@ -857,33 +851,25 @@ public class DDIRepositoryImpl implements DDIRepository {
             "TypeOfGroup"
         );
 
-        Group group = new Group();
-        group.setURN(urn);
-        group.setAgency(agency);
-        group.setID(id);
-        group.setVersion(version);
-        group.setVersionResponsibility(versionResponsibility);
-        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique.isEmpty() ? null : isUniversallyUnique);
-        group.putAdditionalProperty("@versionDate", versionDate.isEmpty() ? null : versionDate);
-        if (citation != null) {
-            group.putAdditionalProperty("Citation", citation);
-        }
-        if (studyUnitReferences != null) {
-            group.putAdditionalProperty("StudyUnitReference", studyUnitReferences);
-        }
-        if (!seriesIris.isEmpty()) {
-            group.putAdditionalProperty("seriesIris", seriesIris);
-        }
-        if (typeOfGroup != null && !typeOfGroup.isEmpty()) {
-            group.putAdditionalProperty("typeOfGroup", typeOfGroup);
-        }
-        return group;
+        return new Ddi4Group(
+            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
+            versionDate.isEmpty() ? null : versionDate,
+            urn,
+            agency,
+            id,
+            version,
+            versionResponsibility,
+            citation,
+            studyUnitReferences,
+            seriesIris.isEmpty() ? null : seriesIris,
+            (typeOfGroup == null || typeOfGroup.isEmpty()) ? null : typeOfGroup
+        );
     }
 
     /**
      * Parse a StudyUnit XML element to Ddi4StudyUnit
      */
-    private StudyUnit parseStudyUnitElement(Element studyUnitElement) {
+    private Ddi4StudyUnit parseStudyUnitElement(Element studyUnitElement) {
         String isUniversallyUnique = studyUnitElement.getAttribute(
             "isUniversallyUnique"
         );
@@ -920,22 +906,21 @@ public class DDIRepositoryImpl implements DDIRepository {
             "UserID"
         );
 
-        StudyUnit studyUnit = new StudyUnit();
-        studyUnit.setURN(urn);
-        studyUnit.setAgency(agency);
-        studyUnit.setID(id);
-        studyUnit.setVersion(version);
-        studyUnit.putAdditionalProperty("@isUniversallyUnique",
-            (isUniversallyUnique == null || isUniversallyUnique.isEmpty()) ? null : isUniversallyUnique);
-        studyUnit.putAdditionalProperty("@versionDate",
-            (versionDate == null || versionDate.isEmpty()) ? null : versionDate);
-        if (citation != null) {
-            studyUnit.putAdditionalProperty("Citation", citation);
-        }
-        if (operationIri != null && !operationIri.isEmpty()) {
-            studyUnit.putAdditionalProperty("operationIri", operationIri);
-        }
-        return studyUnit;
+        return new Ddi4StudyUnit(
+            (isUniversallyUnique == null || isUniversallyUnique.isEmpty())
+                ? null
+                : isUniversallyUnique,
+            (versionDate == null || versionDate.isEmpty()) ? null : versionDate,
+            urn,
+            agency,
+            id,
+            version,
+            citation,
+            (operationIri == null || operationIri.isEmpty())
+                ? null
+                : operationIri,
+            null
+        );
     }
 
     /**
@@ -1089,46 +1074,41 @@ public class DDIRepositoryImpl implements DDIRepository {
             DateTimeFormatter.ISO_OFFSET_DATE_TIME
         );
 
-        // Build updated PhysicalInstance with new label if provided.
-        // Citation, DataRelationshipReference et BasedOnObject : formes historiques portees par
-        // additionalProperties du POJO genere (contrat JSON et round-trip preserves).
-        Citation currentCitation = (Citation) currentPI.getAdditionalProperties().get("Citation");
-        LangString currentTitle = currentCitation.title().get(0);
+        // Build updated PhysicalInstance with new label if provided
+        LangString currentTitle = currentPI.citation().title().get(0);
         String newPhysicalInstanceLabel =
             request.physicalInstanceLabel() != null
                 ? request.physicalInstanceLabel()
-                : currentTitle.getAtValue();
+                : currentTitle.value();
 
-        PhysicalInstance updatedPI = new PhysicalInstance();
-        updatedPI.setURN(currentPI.getURN());
-        updatedPI.setAgency(currentPI.getAgency());
-        updatedPI.setID(currentPI.getID());
-        updatedPI.setVersion(currentPI.getVersion());
-        updatedPI.putAdditionalProperty("@isUniversallyUnique",
-            currentPI.getAdditionalProperties().get("@isUniversallyUnique"));
-        updatedPI.putAdditionalProperty("@versionDate", versionDate);
-        updatedPI.putAdditionalProperty("Citation",
-            new Citation(LangStrings.of(currentTitle.getAtLanguage(), newPhysicalInstanceLabel)));
-        Object piBasedOnObject = currentPI.getAdditionalProperties().get("BasedOnObject");
-        if (piBasedOnObject != null) {
-            updatedPI.putAdditionalProperty("BasedOnObject", piBasedOnObject);
-        }
-        Object currentDrRef = currentPI.getAdditionalProperties().get("DataRelationshipReference");
-        if (currentDrRef != null) {
-            updatedPI.putAdditionalProperty("DataRelationshipReference", currentDrRef);
-        }
+        var updatedPI = new Ddi4PhysicalInstance(
+            currentPI.isUniversallyUnique(),
+            versionDate,
+            currentPI.urn(),
+            currentPI.agency(),
+            currentPI.id(),
+            currentPI.version(),
+            currentPI.basedOnObject(),
+            new Citation(
+                LangStrings.of(
+                    currentTitle.language(),
+                    newPhysicalInstanceLabel
+                )
+            ),
+            currentPI.dataRelationshipReference()
+        );
 
         // Build updated DataRelationship with new label if provided, preserving LogicalRecord with variables
-        DataRelationship updatedDR = null;
+        Ddi4DataRelationship updatedDR = null;
         if (currentDR != null) {
             // Build updated DataRelationship Label
             List<LangString> drLabel = createLabelWithFallback(
-                currentDR.getLabel(),
+                currentDR.label(),
                 request.dataRelationshipLabel()
             );
 
-            // Build updated LogicalRecord with new label if provided (forme historique en bag)
-            LogicalRecord updatedLR = (LogicalRecord) currentDR.getAdditionalProperties().get("LogicalRecord");
+            // Build updated LogicalRecord with new label if provided
+            LogicalRecord updatedLR = currentDR.logicalRecord();
             if (updatedLR != null && request.logicalRecordLabel() != null) {
                 updatedLR = new LogicalRecord(
                     updatedLR.isUniversallyUnique(),
@@ -1144,22 +1124,17 @@ public class DDIRepositoryImpl implements DDIRepository {
                 );
             }
 
-            updatedDR = new DataRelationship();
-            updatedDR.setURN(currentDR.getURN());
-            updatedDR.setAgency(currentDR.getAgency());
-            updatedDR.setID(currentDR.getID());
-            updatedDR.setVersion(currentDR.getVersion());
-            updatedDR.setLabel(drLabel);
-            updatedDR.putAdditionalProperty("@isUniversallyUnique",
-                currentDR.getAdditionalProperties().get("@isUniversallyUnique"));
-            updatedDR.putAdditionalProperty("@versionDate", versionDate);
-            Object drBasedOnObject = currentDR.getAdditionalProperties().get("BasedOnObject");
-            if (drBasedOnObject != null) {
-                updatedDR.putAdditionalProperty("BasedOnObject", drBasedOnObject);
-            }
-            if (updatedLR != null) {
-                updatedDR.putAdditionalProperty("LogicalRecord", updatedLR);
-            }
+            updatedDR = new Ddi4DataRelationship(
+                currentDR.isUniversallyUnique(),
+                versionDate,
+                currentDR.urn(),
+                currentDR.agency(),
+                currentDR.id(),
+                currentDR.version(),
+                currentDR.basedOnObject(),
+                drLabel,
+                updatedLR // Updated LogicalRecord with new label
+            );
         }
 
         // Build updated Ddi4Response preserving all variables, codeLists and categories
@@ -1733,7 +1708,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
         String lang =
             existingLabel != null && !existingLabel.isEmpty()
-                ? existingLabel.get(0).getAtLanguage()
+                ? existingLabel.get(0).language()
                 : defaultLang;
         return LangStrings.of(lang, newText);
     }

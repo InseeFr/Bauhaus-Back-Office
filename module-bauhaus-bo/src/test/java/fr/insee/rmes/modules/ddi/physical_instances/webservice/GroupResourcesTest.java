@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
@@ -58,7 +58,7 @@ class GroupResourcesTest {
 
     @Test
     void createOrUpdateGroup_shouldReturn201() {
-        Group group = group(
+        Ddi4Group group = new Ddi4Group(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
@@ -76,7 +76,7 @@ class GroupResourcesTest {
 
     @Test
     void createOrUpdateGroup_shouldReturn500OnError() {
-        Group group = group(
+        Ddi4Group group = new Ddi4Group(
                 "true", "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
@@ -91,23 +91,5 @@ class GroupResourcesTest {
         ResponseEntity<Void> response = groupResources.createOrUpdateGroup(group);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private static Group group(String isUniversallyUnique, String versionDate, String urn, String agency,
-                               String id, String version, String versionResponsibility, Citation citation,
-                               List<StudyUnitReference> studyUnitReference, List<String> seriesIris, String typeOfGroup) {
-        Group group = new Group();
-        group.setURN(urn);
-        group.setAgency(agency);
-        group.setID(id);
-        group.setVersion(version);
-        group.setVersionResponsibility(versionResponsibility);
-        group.putAdditionalProperty("@isUniversallyUnique", isUniversallyUnique);
-        group.putAdditionalProperty("@versionDate", versionDate);
-        if (citation != null) group.putAdditionalProperty("Citation", citation);
-        if (studyUnitReference != null) group.putAdditionalProperty("StudyUnitReference", studyUnitReference);
-        if (seriesIris != null) group.putAdditionalProperty("seriesIris", seriesIris);
-        if (typeOfGroup != null) group.putAdditionalProperty("typeOfGroup", typeOfGroup);
-        return group;
     }
 }

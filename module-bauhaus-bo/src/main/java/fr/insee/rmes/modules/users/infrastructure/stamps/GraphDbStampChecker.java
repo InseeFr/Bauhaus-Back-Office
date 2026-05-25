@@ -8,7 +8,6 @@ import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.datasets.datasets.infrastructure.DatasetQueries;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
@@ -84,8 +83,8 @@ public class GraphDbStampChecker implements StampChecker {
                     Ddi4GroupResponse groupResponse = ddiRepository.getGroup(agency, groupId);
                     List<String> seriesIris = groupResponse.group() == null ? List.of() :
                             groupResponse.group().stream()
-                                    .filter(g -> seriesIrisOf(g) != null)
-                                    .flatMap(g -> seriesIrisOf(g).stream())
+                                    .filter(g -> g.seriesIris() != null)
+                                    .flatMap(g -> g.seriesIris().stream())
                                     .toList();
                     if (seriesIris.isEmpty()) yield List.of();
                     Map<String, List<String>> creatorsByIri = seriesCreatorsPort.getCreatorsForSeries(seriesIris);
@@ -182,11 +181,5 @@ public class GraphDbStampChecker implements StampChecker {
         } catch (RmesException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /** seriesIris (champ Bauhaus hors-schéma) porté par additionalProperties du Group généré. */
-    @SuppressWarnings("unchecked")
-    private static List<String> seriesIrisOf(Group group) {
-        return (List<String>) group.getAdditionalProperties().get("seriesIris");
     }
 }

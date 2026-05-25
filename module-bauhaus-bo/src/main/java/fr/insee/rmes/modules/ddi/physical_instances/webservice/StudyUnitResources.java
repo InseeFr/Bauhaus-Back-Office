@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import org.slf4j.Logger;
@@ -48,13 +48,13 @@ public class StudyUnitResources {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> createOrUpdateStudyUnit(@RequestBody StudyUnit studyUnit) {
-        logger.info("POST /ddi/study-units - Creating/updating study unit: id={}", studyUnit.getID());
+    public ResponseEntity<Void> createOrUpdateStudyUnit(@RequestBody Ddi4StudyUnit studyUnit) {
+        logger.info("POST /ddi/study-units - Creating/updating study unit: id={}", studyUnit.id());
         try {
             studyUnitService.createOrUpdate(studyUnit);
             return ResponseEntity.status(201).build();
         } catch (Exception e) {
-            logger.error("Failed to create/update study unit: id={}", studyUnit.getID(), e);
+            logger.error("Failed to create/update study unit: id={}", studyUnit.id(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  * <p>
  * Extends the generic {@link DdiItemService} with Group-specific operations.
  */
-public interface GroupService extends DdiItemService<Group> {
+public interface GroupService extends DdiItemService<Ddi4Group> {
 
     List<PartialGroup> getAll();
 

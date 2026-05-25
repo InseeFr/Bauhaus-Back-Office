@@ -23,11 +23,6 @@
       <version>1.0.0</version>
     </dependency>
     <dependency>
-      <groupId>fr.insee.rmes</groupId>
-      <artifactId>module-ddi-translation</artifactId>
-      <version>1.0.0</version>
-    </dependency>
-    <dependency>
       <groupId>fr.insee.ddi</groupId>
       <artifactId>ddi-lifecycle</artifactId>
     </dependency>

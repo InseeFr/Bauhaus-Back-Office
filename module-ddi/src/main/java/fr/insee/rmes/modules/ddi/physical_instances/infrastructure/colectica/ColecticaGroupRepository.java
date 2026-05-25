@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
-import fr.insee.rmes.modules.ddi.physical_instances.generated.Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Colectica adapter for Group persistence.
  * <p>
- * Transforms {@link Group} to DDI3 XML via {@link Ddi3XmlWriter},
+ * Transforms {@link Ddi4Group} to DDI3 XML via {@link Ddi3XmlWriter},
  * then delegates the REST call to the parent class.
  */
 public class ColecticaGroupRepository extends AbstractColecticaItemRepository implements GroupRepository {
@@ -39,20 +39,19 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     }
 
     @Override
-    public void createOrUpdate(Group group) {
-        logger.info("Creating/updating group in Colectica: id={}, agency={}, urn={}", group.getID(), group.getAgency(), group.getURN());
+    public void createOrUpdate(Ddi4Group group) {
+        logger.info("Creating/updating group in Colectica: id={}, agency={}, urn={}", group.id(), group.agency(), group.urn());
         try {
             String ddi3Xml = ddi3XmlWriter.buildGroupXml(group);
-            logger.info("Generated DDI3 XML for group id={}: {}", group.getID(), ddi3Xml);
-            createOrUpdateItem(GROUP_ITEM_TYPE, group.getAgency(), group.getID(), group.getVersion(),
-                    (String) group.getAdditionalProperties().get("@versionDate"), ddi3Xml);
-            logger.info("Group successfully sent to Colectica: id={}", group.getID());
+            logger.info("Generated DDI3 XML for group id={}: {}", group.id(), ddi3Xml);
+            createOrUpdateItem(GROUP_ITEM_TYPE, group, ddi3Xml);
+            logger.info("Group successfully sent to Colectica: id={}", group.id());
         } catch (RuntimeException e) {
-            logger.error("Unexpected error creating group in Colectica: id={}", group.getID(), e);
+            logger.error("Unexpected error creating group in Colectica: id={}", group.id(), e);
             throw e;
         } catch (Exception e) {
-            logger.error("Unexpected error creating group in Colectica: id={}", group.getID(), e);
-            throw new RuntimeException("Failed to create group: " + group.getID(), e);
+            logger.error("Unexpected error creating group in Colectica: id={}", group.id(), e);
+            throw new RuntimeException("Failed to create group: " + group.id(), e);
         }
     }
 
