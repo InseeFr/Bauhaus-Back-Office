@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.FileSystem;
@@ -144,6 +145,8 @@ class XsltUtilsTest {
 
         InputStream xslFileIS = getClass().getResourceAsStream(xslFile);
         InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
+        URL xslUrl = getClass().getResource(xslFile);
+        String xslSystemId = (xslUrl != null) ? xslUrl.toString() : null;
 
         if (xslFileIS != null && odtFileIS != null) {
             File outputFile = Files.createTempFile(tempDir, "output", ".xml").toFile();
@@ -151,7 +154,7 @@ class XsltUtilsTest {
             try (FileOutputStream osOutputFile = new FileOutputStream(outputFile);
                  PrintStream printStream = new PrintStream(osOutputFile)) {
 
-                XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
+                XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, xslSystemId, printStream, tempDir);
             }
 
             String xmlOutput = Files.readString(outputFile.toPath());

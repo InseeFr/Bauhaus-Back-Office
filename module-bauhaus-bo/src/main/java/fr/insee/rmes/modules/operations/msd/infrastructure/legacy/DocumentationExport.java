@@ -1,10 +1,11 @@
-package fr.insee.rmes.bauhaus_services.operations.documentations;
+package fr.insee.rmes.modules.operations.msd.infrastructure.legacy;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
 import fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;

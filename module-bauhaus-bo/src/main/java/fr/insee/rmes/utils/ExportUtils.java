@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import javax.xml.transform.TransformerException;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,6 +87,9 @@ public class ExportUtils {
             logger.error(ioe.getMessage());
         }
 
+        URL xslUrl = getClass().getResource(xslFile);
+        String xslSystemId = (xslUrl != null) ? xslUrl.toString() : null;
+
         try (InputStream xslFileIS = getClass().getResourceAsStream(xslFile);
              InputStream odtFileIS = getClass().getResourceAsStream(xmlPattern);
              InputStream zipToCompleteIS = getClass().getResourceAsStream(zip);
@@ -96,7 +100,7 @@ public class ExportUtils {
             Path finalPath = Paths.get(tempDir.toString(), fileName + extension);
 
             // transform
-            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
+            XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, xslSystemId, printStream, tempDir);
             // create odt
             XsltUtils.createOdtFromXml(output, finalPath, zipToCompleteIS, tempDir);
 

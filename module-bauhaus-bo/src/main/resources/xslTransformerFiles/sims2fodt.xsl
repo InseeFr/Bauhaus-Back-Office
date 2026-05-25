@@ -105,6 +105,8 @@
     <!-- keep the minimum spaces from the data -->
     <xsl:strip-space elements="*" />
 
+    <xsl:include href="sims2fodt-organization.xsl"/>
+
     <xd:doc>
         <xd:desc>Root template</xd:desc>
     </xd:doc>
@@ -612,27 +614,10 @@
                         </xsl:choose>
                     </xsl:when>
                     <xsl:when test="$simsRubrics/rangeType='ORGANIZATION'">
-                        <xsl:variable name="stamp" select="$simsRubrics//value/value"/>
-                        <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$rubric-element]"/>
-                        <xsl:choose>
-                            <xsl:when test="$original-text != '' and $rubric-element = 'labelLg1'">
-                                <xsl:variable name="altLabel" select="$organizations//item[id=$stamp]/altLabel"/>
-                                <xsl:choose>
-                                    <xsl:when test="$altLabel != ''">
-                                        <xsl:value-of select="concat($stamp,' : ',$original-text,' - ',$altLabel)"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="concat($stamp,' : ',$original-text)"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:when>
-                            <xsl:when test="$original-text != ''">
-                                <xsl:value-of select="concat($stamp,' : ',$original-text)"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="$stamp"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
+                        <xsl:call-template name="format-organization">
+                            <xsl:with-param name="simsRubrics" select="$simsRubrics"/>
+                            <xsl:with-param name="rubric-element" select="$rubric-element"/>
+                        </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="$simsRubrics/rangeType='CODE_LIST'">
                         <xsl:variable name="codeList-name" select="$simsRubrics//codeList"/>

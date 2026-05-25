@@ -5,17 +5,26 @@ import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Accept;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
+import fr.insee.rmes.modules.operations.msd.domain.model.ExportedFile;
+import fr.insee.rmes.modules.operations.msd.domain.model.commands.MetadataExportRequest;
+import fr.insee.rmes.modules.operations.msd.domain.model.commands.SourcesExportRequest;
+import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.modules.operations.msd.webservice.response.DocumentationAttributeResponse;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.utils.HttpUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,11 +48,17 @@ public class MetadataReportResources {
 
 	protected final DocumentationService documentationService;
 
+	protected final DocumentationExportService documentationExportService;
 
-	public MetadataReportResources(OperationsService operationsService, OperationsDocumentationsService documentationsService, DocumentationService documentationService) {
+
+	public MetadataReportResources(OperationsService operationsService,
+								   OperationsDocumentationsService documentationsService,
+								   DocumentationService documentationService,
+								   DocumentationExportService documentationExportService) {
 		this.operationsService = operationsService;
 		this.documentationsService = documentationsService;
         this.documentationService = documentationService;
+		this.documentationExportService = documentationExportService;
     }
 
 
@@ -171,35 +186,59 @@ public class MetadataReportResources {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	public ResponseEntity<?> getSimsExport(
+	public ResponseEntity<Resource> getSimsExport(
 			@PathVariable(Constants.ID) String id,
 			@RequestParam(name = "emptyMas", defaultValue = "true") boolean includeEmptyMas,
 			@RequestParam(name = "lg1", defaultValue = "true")  boolean lg1,
 			@RequestParam(name = "lg2", defaultValue = "true")  boolean lg2,
 			@RequestParam(name = "document", defaultValue = "true")  boolean document
 			) throws RmesException {
-
-
-		return documentationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2, document);
+		if (!lg1 && !lg2) {
+			throw new RmesNotAcceptableException(
+					ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE,
+					"at least one language must be selected for export",
+					"in export of sims: " + id);
+		}
+		ExportedFile exported = documentationExportService.exportMetadataReport(
+				new MetadataExportRequest(id, includeEmptyMas, lg1, lg2, document));
+		return toResponse(exported);
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/export/label/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	public ResponseEntity<?> getSimsExportForLabel(@PathVariable(Constants.ID) String id) throws RmesException {
-
-		return documentationsService.exportMetadataReportForLabel(id);
+	public ResponseEntity<Resource> getSimsExportForLabel(@PathVariable(Constants.ID) String id) throws RmesException {
+		ExportedFile exported = documentationExportService.exportMetadataReportForLabel(id);
+		return toResponse(exported);
 	}
 
 
 
 	@HasAccess(module = RBAC.Module.OPERATION_SIMS, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/metadataReport/export/{id}/tempFiles", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	public ResponseEntity<Object> getSimsExportFiles(
+	public ResponseEntity<Resource> getSimsExportFiles(
             @PathVariable(Constants.ID) String id,
 			@RequestParam(name = "emptyMas", defaultValue = "true") boolean includeEmptyMas,
 			@RequestParam(name = "lg1", defaultValue = "true")  boolean lg1,
 			@RequestParam(name = "lg2", defaultValue = "true")  boolean lg2
 		) throws RmesException {
-		return documentationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);
+		ExportedFile exported = documentationExportService.exportMetadataReportSources(
+				new SourcesExportRequest(id, includeEmptyMas, lg1, lg2));
+		return toResponse(exported);
+	}
+
+	private static ResponseEntity<Resource> toResponse(ExportedFile file) throws RmesException {
+		HttpHeaders headers = HttpUtils.generateHttpHeaders(file.filename(), file.extension());
+		if (!file.missingDocuments().isEmpty()) {
+			headers.set("X-Missing-Documents", String.join(",", file.missingDocuments()));
+		}
+		try {
+			return ResponseEntity.ok()
+					.headers(headers)
+					.contentLength(file.content().contentLength())
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(file.content());
+		} catch (IOException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), e.getClass().getSimpleName());
+		}
 	}
 }

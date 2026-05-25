@@ -8,6 +8,9 @@ import fr.insee.rmes.domain.Roles;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.modules.operations.msd.domain.model.ExportedFile;
+import fr.insee.rmes.modules.operations.msd.domain.model.commands.MetadataExportRequest;
+import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
@@ -65,6 +68,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
 
     @MockitoBean
     private DocumentationService documentationService;
+
+    @MockitoBean
+    private DocumentationExportService documentationExportService;
 
    @Test
     void testGetMSDJson() throws Exception, MissingUserInformationException {
@@ -210,10 +216,10 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
         boolean lg1 = true;
         boolean lg2 = true;
         boolean document = true;
-        Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
+        ExportedFile exported = new ExportedFile("MockedDocument", ".odt", new ByteArrayResource("Mocked Document Content".getBytes()), MediaType.APPLICATION_OCTET_STREAM_VALUE, null);
 
-        when(documentationsService.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document))
-                .thenReturn(ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource));
+        when(documentationExportService.exportMetadataReport(new MetadataExportRequest(id, includeEmptyMas, lg1, lg2, document)))
+                .thenReturn(exported);
 
         mvc.perform(get("/operations/metadataReport/export/{id}", id)
                         .header("Authorization", "Bearer toto")
@@ -233,10 +239,10 @@ class TestMetadataReportResourcesAuthorizationsEnvProd extends AbstractResources
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
 
         String id = "1234";
-        Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
+        ExportedFile exported = new ExportedFile("MockedDocument", ".odt", new ByteArrayResource("Mocked Document Content".getBytes()), MediaType.APPLICATION_OCTET_STREAM_VALUE, null);
 
-        when(documentationsService.exportMetadataReport(id, true, true, true, true))
-                .thenReturn(ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource));
+        when(documentationExportService.exportMetadataReport(new MetadataExportRequest(id, true, true, true, true)))
+                .thenReturn(exported);
 
         mvc.perform(get("/operations/metadataReport/export/{id}", id)
                         .header("Authorization", "Bearer toto")

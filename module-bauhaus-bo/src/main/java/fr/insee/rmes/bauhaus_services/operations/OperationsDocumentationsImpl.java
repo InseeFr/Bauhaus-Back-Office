@@ -1,8 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
-import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -11,20 +9,15 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
@@ -39,11 +32,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	private final org.springframework.core.io.Resource simsDefaultValue;
 
-	private final int maxLength;
-
 	private final DocumentationsUtils documentationsUtils;
-
-	private final DocumentationExport documentationsExport;
 
 	private final ParentUtils ownersUtils;
 
@@ -55,17 +44,13 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 										RepositoryPublication repositoryPublication,
 										PublicationUtils publicationUtils,
 										@Value("classpath:bauhaus-sims.json") org.springframework.core.io.Resource simsDefaultValue,
-										@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
 										DocumentationsUtils documentationsUtils,
-										DocumentationExport documentationsExport,
 										ParentUtils ownersUtils,
 										DocumentationRepository documentationRepository,
 										DocumentationQueries documentationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.simsDefaultValue = simsDefaultValue;
-		this.maxLength = maxLength;
 		this.documentationsUtils = documentationsUtils;
-		this.documentationsExport = documentationsExport;
 		this.ownersUtils = ownersUtils;
 		this.documentationRepository = documentationRepository;
 		this.documentationQueries = documentationQueries;
@@ -149,30 +134,5 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	public void publishMetadataReport(String id) throws RmesException {
 		documentationsUtils.publishMetadataReport(id);
 	}
-
-	/**
-	 * EXPORT
-	 */
-	@Override
-	public ResponseEntity<Resource> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2, boolean document) throws RmesException  {
-		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
-				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
-				"at least one language must be selected for export",
-				"in export of sims: " + id);
-		return documentationsExport.exportMetadataReport(id,includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES, maxLength);
-
-	}
-
-	@Override
-	public ResponseEntity<?> exportMetadataReportForLabel(String id) throws RmesException  {
-			return documentationsExport.exportMetadataReport(id,true, true, false, false, Constants.GOAL_COMITE_LABEL, maxLength);
-	}
-
-	@Override
-	public ResponseEntity<Object> exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		return documentationsExport.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
-	}
-
-
 
 }

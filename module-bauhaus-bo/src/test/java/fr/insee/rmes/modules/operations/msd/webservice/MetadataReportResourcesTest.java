@@ -7,6 +7,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
+import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,9 +33,12 @@ class MetadataReportResourcesTest {
     @MockitoBean
     DocumentationService documentationService;
 
+    @MockitoBean
+    DocumentationExportService documentationExportService;
+
     @Test
     void shouldReturnMetadataAttributesWithHateoasLinks() throws RmesException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException {
-        MetadataReportResources metadataReportResources = new MetadataReportResources(operationsService, documentationsService, documentationService);
+        MetadataReportResources metadataReportResources = new MetadataReportResources(operationsService, documentationsService, documentationService, documentationExportService);
 
         DocumentationAttribute attr1 = new DocumentationAttribute("text", "Label 1", "Label 1 EN", "attr-1", "1", false, false, null, null);
         DocumentationAttribute attr2 = new DocumentationAttribute("richText", "Label 2", "Label 2 EN", "attr-2", "n", true, false, "codeList1", null);

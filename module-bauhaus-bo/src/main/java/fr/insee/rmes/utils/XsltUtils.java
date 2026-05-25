@@ -29,9 +29,12 @@ public class XsltUtils {
 
 
 	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
-			PrintStream printStream, Path tempDir) throws TransformerException {
+			String xslSystemId, PrintStream printStream, Path tempDir) throws TransformerException {
 		// prepare transformer
 		StreamSource xsrc = new StreamSource(xslFileIS);
+		if (xslSystemId != null) {
+			xsrc.setSystemId(xslSystemId);
+		}
 		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
 
 		// Pass parameters in a file to the transformer

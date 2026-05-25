@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.operations.msd.webservice;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
+import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ class MetadataReportResourcesDeleteTest {
 
     @MockitoBean
     protected DocumentationService documentationService;
+
+    @MockitoBean
+    protected DocumentationExportService documentationExportService;
 
     @Autowired
     MockMvc mockMvc;
