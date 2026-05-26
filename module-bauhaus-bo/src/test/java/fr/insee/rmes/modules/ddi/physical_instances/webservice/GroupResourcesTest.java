@@ -59,7 +59,7 @@ class GroupResourcesTest {
     @Test
     void createOrUpdateGroup_shouldReturn201() {
         Ddi4Group group = new Ddi4Group(
-                "true", "2026-04-03T12:00:00Z",
+                "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
@@ -77,7 +77,7 @@ class GroupResourcesTest {
     @Test
     void createOrUpdateGroup_shouldReturn500OnError() {
         Ddi4Group group = new Ddi4Group(
-                "true", "2026-04-03T12:00:00Z",
+                "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),

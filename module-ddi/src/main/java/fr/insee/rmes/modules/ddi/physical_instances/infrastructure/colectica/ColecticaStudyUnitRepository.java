@@ -45,7 +45,6 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
         );
         refs.add(physicalInstanceReference);
         Ddi4StudyUnit updated = new Ddi4StudyUnit(
-                studyUnit.isUniversallyUnique(),
                 studyUnit.versionDate(),
                 studyUnit.urn(),
                 studyUnit.agency(),

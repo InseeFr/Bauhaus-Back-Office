@@ -106,7 +106,6 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.physicalInstance().size());
 
         Ddi4PhysicalInstance pi = result.physicalInstance().get(0);
-        assertEquals("true", pi.isUniversallyUnique());
         assertEquals("2025-01-21T13:48:46.363", pi.versionDate());
         assertEquals("urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1", pi.urn());
         assertEquals("fr.insee", pi.agency());
@@ -187,7 +186,6 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.dataRelationship().size());
 
         Ddi4DataRelationship dr = result.dataRelationship().get(0);
-        assertEquals("true", dr.isUniversallyUnique());
         assertEquals("2025-01-21T13:48:46.363", dr.versionDate());
         assertEquals("urn:ddi:fr.insee:DataRelationship.saphir-rp99-sas:1", dr.urn());
         assertEquals("fr.insee", dr.agency());
@@ -198,7 +196,6 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("SAPHIR - RP99", dr.label().get(0).value());
 
         assertNotNull(dr.logicalRecord());
-        assertEquals("true", dr.logicalRecord().isUniversallyUnique());
         assertNotNull(dr.logicalRecord().variablesInRecord());
         assertEquals(1, dr.logicalRecord().variablesInRecord().variableUsedReference().size());
         assertEquals("AGEMEN8", dr.logicalRecord().variablesInRecord().variableUsedReference().get(0).id());
@@ -265,7 +262,6 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.variable().size());
 
         Ddi4Variable var = result.variable().get(0);
-        assertEquals("true", var.isUniversallyUnique());
         assertEquals("2025-01-21T13:48:46.363", var.versionDate());
         assertEquals("urn:ddi:fr.insee:Variable.AGEMEN8:1", var.urn());
         assertEquals("fr.insee", var.agency());
@@ -426,7 +422,6 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.codeList().size());
 
         Ddi4CodeList cl = result.codeList().get(0);
-        assertEquals("true", cl.isUniversallyUnique());
         assertEquals("urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1", cl.urn());
         assertEquals("fr.insee", cl.agency());
         assertEquals("CL_AGEMEN8", cl.id());
@@ -493,7 +488,6 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.category().size());
 
         Ddi4Category cat = result.category().get(0);
-        assertEquals("true", cat.isUniversallyUnique());
         assertEquals("2025-01-21T13:48:46.363", cat.versionDate());
         assertEquals("urn:ddi:fr.insee:Category.CAT_0:1", cat.urn());
         assertEquals("fr.insee", cat.agency());

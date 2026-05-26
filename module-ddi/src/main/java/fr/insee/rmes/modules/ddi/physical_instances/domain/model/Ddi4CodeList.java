@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4CodeList(
-        @JsonProperty("@isUniversallyUnique") String isUniversallyUnique,
         @JsonProperty("@versionDate") String versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,

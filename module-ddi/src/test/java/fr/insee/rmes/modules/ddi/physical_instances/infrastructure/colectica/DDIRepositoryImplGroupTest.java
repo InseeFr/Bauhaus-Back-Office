@@ -86,7 +86,7 @@ class DDIRepositoryImplGroupTest {
         @Test
         void createOrUpdate_shouldTransformAndPostGroup() throws XMLStreamException {
             Ddi4Group group = new Ddi4Group(
-                    "true", "2026-04-02T00:00:00Z",
+                    "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:group-uuid:1", "fr.insee", "group-uuid", "1",
                     "bauhaus",
                     new Citation(LangStrings.of("fr-FR", "s1001 Group")),
@@ -169,7 +169,7 @@ class DDIRepositoryImplGroupTest {
         @Test
         void createOrUpdate_shouldTransformAndPostStudyUnit() throws XMLStreamException {
             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                    "true", "2026-04-02T00:00:00Z",
+                    "2026-04-02T00:00:00Z",
                     "urn:ddi:fr.insee:su-uuid:1", "fr.insee", "su-uuid", "1",
                     new Citation(LangStrings.of("fr-FR", "op1 Study Unit")),
                     "http://id.insee.fr/operations/operation/op1",

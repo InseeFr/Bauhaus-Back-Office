@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record LogicalRecord(
-        @JsonProperty("@isUniversallyUnique") String isUniversallyUnique,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,

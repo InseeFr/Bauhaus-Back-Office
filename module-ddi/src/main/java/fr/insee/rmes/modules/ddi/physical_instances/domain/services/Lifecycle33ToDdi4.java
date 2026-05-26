@@ -64,7 +64,6 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a PhysicalInstance");
         }
         return new Ddi4PhysicalInstance(
-                Boolean.toString(pi.getIsUniversallyUnique()),
                 pi.xgetVersionDate().getStringValue(),
                 pi.getURNArray(0).getStringValue(),
                 pi.getAgencyArray(0),
@@ -82,7 +81,6 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a DataRelationship");
         }
         return new Ddi4DataRelationship(
-                Boolean.toString(dr.getIsUniversallyUnique()),
                 dr.xgetVersionDate().getStringValue(),
                 dr.getURNArray(0).getStringValue(),
                 dr.getAgencyArray(0),
@@ -104,7 +102,6 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Variable");
         }
         return new Ddi4Variable(
-                Boolean.toString(var.getIsUniversallyUnique()),
                 var.xgetVersionDate().getStringValue(),
                 var.getURNArray(0).getStringValue(),
                 var.getAgencyArray(0),
@@ -131,7 +128,6 @@ public class Lifecycle33ToDdi4 {
         for (CodeType c : cl.getCodeArray()) {
             Reference catRef = readReference(c.getCategoryReference());
             codes.add(new Code(
-                    Boolean.toString(c.getIsUniversallyUnique()),
                     c.getURNArray(0).getStringValue(),
                     c.getAgencyArray(0),
                     c.getIDArray(0).getStringValue(),
@@ -140,7 +136,6 @@ public class Lifecycle33ToDdi4 {
                     c.getValue() != null ? c.getValue().getStringValue() : null));
         }
         return new Ddi4CodeList(
-                Boolean.toString(cl.getIsUniversallyUnique()),
                 cl.xgetVersionDate().getStringValue(),
                 cl.getURNArray(0).getStringValue(),
                 cl.getAgencyArray(0),
@@ -157,7 +152,6 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Category");
         }
         return new Ddi4Category(
-                Boolean.toString(cat.getIsUniversallyUnique()),
                 cat.xgetVersionDate().getStringValue(),
                 cat.getURNArray(0).getStringValue(),
                 cat.getAgencyArray(0),
@@ -181,7 +175,6 @@ public class Lifecycle33ToDdi4 {
             suRefs.add(readReference(ref));
         }
         return new Ddi4Group(
-                Boolean.toString(group.getIsUniversallyUnique()),
                 group.xgetVersionDate().getStringValue(),
                 group.getURNArray(0).getStringValue(),
                 group.getAgencyArray(0),
@@ -207,7 +200,6 @@ public class Lifecycle33ToDdi4 {
             piRefs.add(readReference(ref));
         }
         return new Ddi4StudyUnit(
-                Boolean.toString(su.getIsUniversallyUnique()),
                 su.xgetVersionDate().getStringValue(),
                 su.getURNArray(0).getStringValue(),
                 su.getAgencyArray(0),
@@ -330,7 +322,6 @@ public class Lifecycle33ToDdi4 {
     private static LogicalRecord readLogicalRecord(LogicalRecordType lr) {
         if (lr == null) return null;
         return new LogicalRecord(
-                Boolean.toString(lr.getIsUniversallyUnique()),
                 lr.getURNArray(0).getStringValue(),
                 lr.getAgencyArray(0),
                 lr.getIDArray(0).getStringValue(),

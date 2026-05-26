@@ -33,7 +33,6 @@ class Lifecycle33ToDdi4Test {
 
         Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
 
-        assertThat(pi.isUniversallyUnique()).isEqualTo("true");
         assertThat(pi.versionDate()).isEqualTo("2025-12-23T09:52:06.355Z");
         assertThat(pi.urn()).isEqualTo("urn:ddi:fr.insee:pi-id:1");
         assertThat(pi.agency()).isEqualTo("fr.insee");

@@ -58,7 +58,7 @@ class StudyUnitResourcesTest {
     @Test
     void createOrUpdateStudyUnit_shouldReturn201() {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                "true", "2026-04-03T12:00:00Z",
+                "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",
@@ -74,7 +74,7 @@ class StudyUnitResourcesTest {
     @Test
     void createOrUpdateStudyUnit_shouldReturn500OnError() {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                "true", "2026-04-03T12:00:00Z",
+                "2026-04-03T12:00:00Z",
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",

@@ -800,9 +800,6 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Parse a Group XML element to Ddi4Group
      */
     private Ddi4Group parseGroupElement(Element groupElement) {
-        String isUniversallyUnique = groupElement.getAttribute(
-            "isUniversallyUnique"
-        );
         String versionDate = groupElement.getAttribute("versionDate");
 
         String urn = getElementTextContent(
@@ -852,7 +849,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         return new Ddi4Group(
-            isUniversallyUnique.isEmpty() ? null : isUniversallyUnique,
             versionDate.isEmpty() ? null : versionDate,
             urn,
             agency,
@@ -870,9 +866,6 @@ public class DDIRepositoryImpl implements DDIRepository {
      * Parse a StudyUnit XML element to Ddi4StudyUnit
      */
     private Ddi4StudyUnit parseStudyUnitElement(Element studyUnitElement) {
-        String isUniversallyUnique = studyUnitElement.getAttribute(
-            "isUniversallyUnique"
-        );
         String versionDate = studyUnitElement.getAttribute("versionDate");
 
         String urn = getElementTextContent(
@@ -907,9 +900,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         return new Ddi4StudyUnit(
-            (isUniversallyUnique == null || isUniversallyUnique.isEmpty())
-                ? null
-                : isUniversallyUnique,
             (versionDate == null || versionDate.isEmpty()) ? null : versionDate,
             urn,
             agency,
@@ -1080,7 +1070,6 @@ public class DDIRepositoryImpl implements DDIRepository {
                 : currentTitle.value();
 
         var updatedPI = new Ddi4PhysicalInstance(
-            currentPI.isUniversallyUnique(),
             versionDate,
             currentPI.urn(),
             currentPI.agency(),
@@ -1109,7 +1098,6 @@ public class DDIRepositoryImpl implements DDIRepository {
             LogicalRecord updatedLR = currentDR.logicalRecord();
             if (updatedLR != null && request.logicalRecordLabel() != null) {
                 updatedLR = new LogicalRecord(
-                    updatedLR.isUniversallyUnique(),
                     updatedLR.urn(),
                     updatedLR.agency(),
                     updatedLR.id(),
@@ -1123,7 +1111,6 @@ public class DDIRepositoryImpl implements DDIRepository {
             }
 
             updatedDR = new Ddi4DataRelationship(
-                currentDR.isUniversallyUnique(),
                 versionDate,
                 currentDR.urn(),
                 currentDR.agency(),

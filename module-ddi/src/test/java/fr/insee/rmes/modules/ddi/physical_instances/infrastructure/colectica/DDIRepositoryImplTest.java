@@ -207,7 +207,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(itemResponses);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-10-23T12:28:43.615773Z",
+                "2025-10-23T12:28:43.615773Z",
                 "urn:ddi:fr.inserm.constances:2514afe4-7b08-4500-be25-7a852a10fd8c:1",
                 agencyId, instanceId, "1",
                 null,
@@ -326,7 +326,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(getListResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:test-id:1",
                 "fr.insee", "test-id", "1",
                 null,
@@ -478,7 +478,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(existingItemResponses);
         // Mock converter
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -487,12 +487,12 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
                 null,
-                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                new LogicalRecord("urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
                         null, null)
         );
 
@@ -597,7 +597,7 @@ class DDIRepositoryImplTest {
                 .thenReturn(itemResponses);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:32799021-0663-41cd-aca6-3ad8dbdae3e3:1",
                 agencyId, instanceId, "1",
                 null,
@@ -606,7 +606,6 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4Variable mockVariable = new Ddi4Variable(
-                "true",
                 "2025-12-10T11:55:33.138Z",
                 "urn:ddi:fr.insee:2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d:1",
                 agencyId,
@@ -624,12 +623,12 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:795aa4b8-acec-4ef8-8f08-3a200c7bdb10:1",
                 agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
                 null,
                 null,
-                new LogicalRecord("true", "urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
+                new LogicalRecord("urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
                         agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
                         null,
                         new VariablesInRecord(List.of(
@@ -638,11 +637,11 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4CodeList mockCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1",
                 agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1",
                 LangStrings.of("fr-FR", "cl"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         Reference.of(agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1", "Category"),
@@ -650,7 +649,7 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4Category mockCategory = new Ddi4Category(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1",
                 agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1",
                 LangStrings.of("fr-FR", "aq")
@@ -732,7 +731,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -741,11 +740,11 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
                 LangStrings.of("fr-FR", "cl"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         null, "a"))
@@ -807,7 +806,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -816,11 +815,11 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4CodeList localCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + localCodeListId + ":1",
                 agencyId, localCodeListId, "1",
                 LangStrings.of("fr-FR", "local-cl"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         null, "a"))
@@ -889,7 +888,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -898,22 +897,22 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4CodeList localCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + localCodeListId + ":1",
                 agencyId, localCodeListId, "1",
                 LangStrings.of("fr-FR", "local"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1",
                         agencyId, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "1",
                         null, "L1"))
         );
 
         Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
                 LangStrings.of("fr-FR", "muta"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb:1",
                         agencyId, "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "1",
                         null, "M1"))
@@ -980,7 +979,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -989,7 +988,7 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4Variable variable = new Ddi4Variable(
-                "true", "2025-12-10T11:55:33.138Z",
+                "2025-12-10T11:55:33.138Z",
                 "urn:ddi:fr.insee:" + variableId + ":1",
                 agencyId, variableId, "1",
                 null,
@@ -1004,11 +1003,11 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
                 LangStrings.of("fr-FR", "muta"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         null, "M1"))
@@ -1083,7 +1082,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -1092,11 +1091,11 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
                 agencyId, mutualizedCodeListId, "1",
                 LangStrings.of("fr-FR", "muta"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         Reference.of(agencyId, categoryId, "1", "Category"),
@@ -1104,7 +1103,7 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4Category category = new Ddi4Category(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId, categoryId, "1",
                 LangStrings.of("fr-FR", "cat")
@@ -1166,7 +1165,7 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-12-10T11:55:14.251595Z",
+                "2025-12-10T11:55:14.251595Z",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -1176,11 +1175,11 @@ class DDIRepositoryImplTest {
 
         // Note version "2" here
         Ddi4CodeList codeListVersion2 = new Ddi4CodeList(
-                "true", "2025-12-10T11:55:28.140Z",
+                "2025-12-10T11:55:28.140Z",
                 "urn:ddi:fr.insee:" + codeListId + ":2",
                 agencyId, codeListId, "2",
                 LangStrings.of("fr-FR", "cl"),
-                List.of(new Code("true",
+                List.of(new Code(
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         null, "v2"))
@@ -1743,14 +1742,14 @@ class DDIRepositoryImplTest {
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
         Ddi4CodeList mockCodeList = new Ddi4CodeList(
-                "true", "2024-10-31T10:43:38",
+                "2024-10-31T10:43:38",
                 "urn:ddi:fr.insee:" + codeListId + ":1",
                 agencyId, codeListId, "1",
                 LangStrings.of("fr-FR", "NAF rév. 2"),
                 List.of()
         );
         Ddi4Category mockCategory = new Ddi4Category(
-                "true", "2024-10-31T10:43:38",
+                "2024-10-31T10:43:38",
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId, categoryId, "1",
                 LangStrings.of("fr-FR", "Agriculture")
@@ -1802,7 +1801,7 @@ class DDIRepositoryImplTest {
 
         // Mock existing instance with a Label on DataRelationship
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -1815,12 +1814,12 @@ class DDIRepositoryImplTest {
         List<LangString> existingLrLabel = LangStrings.of("de-DE", "Existing LR Label");
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
                 existingDrLabel,
-                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                new LogicalRecord("urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
                         existingLrLabel, null)
         );
 
@@ -1888,7 +1887,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -1898,12 +1897,12 @@ class DDIRepositoryImplTest {
 
         // DataRelationship has NO existing Label (null)
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
                 null, // No existing label
-                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                new LogicalRecord("urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
                         null, null) // No existing label
         );
 
@@ -1974,7 +1973,7 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
 
         Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:" + instanceId + ":1",
                 agencyId, instanceId, "1",
                 null,
@@ -1987,12 +1986,12 @@ class DDIRepositoryImplTest {
         List<LangString> existingLrLabel = LangStrings.of("es-ES", "Old LR Label");
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
-                "true", "2025-01-01T00:00:00",
+                "2025-01-01T00:00:00",
                 "urn:ddi:fr.insee:dr-123:1",
                 agencyId, "dr-123", "1",
                 null,
                 existingDrLabel,
-                new LogicalRecord("true", "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                new LogicalRecord("urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
                         existingLrLabel, null)
         );
 

@@ -43,7 +43,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var piType = doc.addNewFragment().addNewPhysicalInstance();
 
-        piType.setIsUniversallyUnique(Boolean.parseBoolean(pi.isUniversallyUnique()));
+        piType.setIsUniversallyUnique(true);
         piType.setVersionDate(pi.versionDate());
         piType.addNewURN().setStringValue(pi.urn());
         piType.addAgency(pi.agency());
@@ -75,7 +75,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var drType = doc.addNewFragment().addNewDataRelationship();
 
-        drType.setIsUniversallyUnique(Boolean.parseBoolean(dr.isUniversallyUnique()));
+        drType.setIsUniversallyUnique(true);
         drType.setVersionDate(dr.versionDate());
         drType.addNewURN().setStringValue(dr.urn());
         drType.addAgency(dr.agency());
@@ -97,7 +97,7 @@ public class Ddi4ToLifecycle33 {
         if (dr.logicalRecord() != null) {
             LogicalRecord lr = dr.logicalRecord();
             var lrType = drType.addNewLogicalRecord();
-            lrType.setIsUniversallyUnique(Boolean.parseBoolean(lr.isUniversallyUnique()));
+            lrType.setIsUniversallyUnique(true);
             lrType.addNewURN().setStringValue(lr.urn());
             lrType.addAgency(lr.agency());
             lrType.addNewID().setStringValue(lr.id());
@@ -127,7 +127,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var varType = doc.addNewFragment().addNewVariable();
 
-        varType.setIsUniversallyUnique(Boolean.parseBoolean(var.isUniversallyUnique()));
+        varType.setIsUniversallyUnique(true);
         varType.setVersionDate(var.versionDate());
         if (var.isGeographic() != null && !var.isGeographic().isEmpty()) {
             varType.setIsGeographic(Boolean.parseBoolean(var.isGeographic()));
@@ -184,7 +184,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var clType = doc.addNewFragment().addNewCodeList();
 
-        clType.setIsUniversallyUnique(Boolean.parseBoolean(cl.isUniversallyUnique()));
+        clType.setIsUniversallyUnique(true);
         clType.setVersionDate(cl.versionDate());
         clType.addNewURN().setStringValue(cl.urn());
         clType.addAgency(cl.agency());
@@ -198,7 +198,7 @@ public class Ddi4ToLifecycle33 {
         if (cl.code() != null) {
             for (Code code : cl.code()) {
                 var codeType = clType.addNewCode();
-                codeType.setIsUniversallyUnique(Boolean.parseBoolean(code.isUniversallyUnique()));
+                codeType.setIsUniversallyUnique(true);
                 codeType.addNewURN().setStringValue(code.urn());
                 codeType.addAgency(code.agency());
                 codeType.addNewID().setStringValue(code.id());
@@ -221,7 +221,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var catType = doc.addNewFragment().addNewCategory();
 
-        catType.setIsUniversallyUnique(Boolean.parseBoolean(cat.isUniversallyUnique()));
+        catType.setIsUniversallyUnique(true);
         catType.setVersionDate(cat.versionDate());
         catType.setIsMissing(false);
         catType.addNewURN().setStringValue(cat.urn());
@@ -240,7 +240,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var groupType = doc.addNewFragment().addNewGroup();
 
-        groupType.setIsUniversallyUnique(Boolean.parseBoolean(group.isUniversallyUnique()));
+        groupType.setIsUniversallyUnique(true);
         groupType.setVersionDate(group.versionDate());
         groupType.addNewURN().setStringValue(group.urn());
         groupType.addAgency(group.agency());
@@ -279,7 +279,7 @@ public class Ddi4ToLifecycle33 {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var suType = doc.addNewFragment().addNewStudyUnit();
 
-        suType.setIsUniversallyUnique(Boolean.parseBoolean(studyUnit.isUniversallyUnique()));
+        suType.setIsUniversallyUnique(true);
         suType.setVersionDate(studyUnit.versionDate());
         suType.addNewURN().setStringValue(studyUnit.urn());
         suType.addAgency(studyUnit.agency());

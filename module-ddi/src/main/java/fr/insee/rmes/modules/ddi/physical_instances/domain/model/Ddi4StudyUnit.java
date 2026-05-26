@@ -12,7 +12,6 @@ import java.util.List;
  * used to generate the {@code <r:UserID>} tag in DDI3 XML.
  */
 public record Ddi4StudyUnit(
-        @JsonProperty("@isUniversallyUnique") String isUniversallyUnique,
         @JsonProperty("@versionDate") String versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
