@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -68,7 +67,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
                 "true", "2025-12-23T09:52:06.355Z",
                 "urn:ddi:fr.insee:new-pi-id:1", "fr.insee", "new-pi-id", "1",
-                new BasedOnObject(new BasedOnReference("fr.insee", "original-pi-id", "1", "PhysicalInstance")),
+                BasedOnObject.of(List.of(Reference.of("fr.insee", "original-pi-id", "1", "PhysicalInstance"))),
                 new Citation(LangStrings.of("fr-FR", "Test Instance")),
                 new DataRelationshipReference("fr.insee", "dr-id", "1", "DataRelationship"));
 
@@ -103,7 +102,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4DataRelationship dr = new Ddi4DataRelationship(
                 "true", "2025-12-23T09:52:06.355Z",
                 "urn:ddi:fr.insee:dr-id:1", "fr.insee", "dr-id", "1",
-                new BasedOnObject(new BasedOnReference("fr.insee", "original-dr", "1", "DataRelationship")),
+                BasedOnObject.of(List.of(Reference.of("fr.insee", "original-dr", "1", "DataRelationship"))),
                 LangStrings.of("fr-FR", "DR Label"),
                 new LogicalRecord("true", "urn:ddi:fr.insee:lr-id:1", "fr.insee", "lr-id", "1",
                         LangStrings.of("fr-FR", "LR Label"), null));
@@ -125,7 +124,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4Variable var = new Ddi4Variable(
                 "true", "2025-12-23T09:52:06.355Z",
                 "urn:ddi:fr.insee:var-id:1", "fr.insee", "var-id", "1",
-                new BasedOnObject(new BasedOnReference("fr.insee", "original-var", "1", "Variable")),
+                BasedOnObject.of(List.of(Reference.of("fr.insee", "original-var", "1", "Variable"))),
                 LangStrings.of("fr-FR", "TEST_VAR"),
                 LangStrings.of("fr-FR", "Test Variable"),
                 null, null, null);

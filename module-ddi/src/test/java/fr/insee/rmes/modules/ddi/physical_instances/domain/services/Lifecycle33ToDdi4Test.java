@@ -67,8 +67,10 @@ class Lifecycle33ToDdi4Test {
 
         Ddi4PhysicalInstance pi = converter.toPhysicalInstance(doc);
 
-        assertThat(pi.basedOnObject().basedOnReference().id()).isEqualTo("original-pi");
-        assertThat(pi.basedOnObject().basedOnReference().typeOfObject()).isEqualTo("PhysicalInstance");
+        assertThat(pi.basedOnObject().type()).isEqualTo("BasedOnObjectType");
+        assertThat(pi.basedOnObject().basedOnReferences()).hasSize(1);
+        assertThat(pi.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-pi");
+        assertThat(pi.basedOnObject().basedOnReferences().get(0).type()).isEqualTo("PhysicalInstance");
         assertThat(pi.dataRelationshipReference().id()).isEqualTo("dr-id");
         assertThat(pi.dataRelationshipReference().typeOfObject()).isEqualTo("DataRelationship");
     }
@@ -168,7 +170,7 @@ class Lifecycle33ToDdi4Test {
 
         Ddi4Variable var = converter.toVariable(doc);
 
-        assertThat(var.basedOnObject().basedOnReference().id()).isEqualTo("original-var");
+        assertThat(var.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-var");
         assertThat(var.variableName().get(0).value()).isEqualTo("VAR_NAME");
         assertThat(var.label().get(0).value()).isEqualTo("Variable Label");
         assertThat(var.description()).isNull();

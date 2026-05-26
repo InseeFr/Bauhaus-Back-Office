@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
@@ -12,7 +13,6 @@ import fr.insee.ddi.lifecycle33.reusable.RepresentationType;
 import fr.insee.ddi.lifecycle33.reusable.TextRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -51,10 +51,8 @@ public class Ddi4ToLifecycle33 {
         piType.addNewID().setStringValue(pi.id());
         piType.addVersion(pi.version());
 
-        if (pi.basedOnObject() != null && pi.basedOnObject().basedOnReference() != null) {
-            populateBasedOnReference(
-                    piType.addNewBasedOnObject().addNewBasedOnReference(),
-                    pi.basedOnObject().basedOnReference());
+        if (pi.basedOnObject() != null) {
+            populateBasedOnObject(piType.addNewBasedOnObject(), pi.basedOnObject());
         }
 
         Citation citation = pi.citation();
@@ -89,10 +87,8 @@ public class Ddi4ToLifecycle33 {
         drType.addNewID().setStringValue(dr.id());
         drType.addVersion(dr.version());
 
-        if (dr.basedOnObject() != null && dr.basedOnObject().basedOnReference() != null) {
-            populateBasedOnReference(
-                    drType.addNewBasedOnObject().addNewBasedOnReference(),
-                    dr.basedOnObject().basedOnReference());
+        if (dr.basedOnObject() != null) {
+            populateBasedOnObject(drType.addNewBasedOnObject(), dr.basedOnObject());
         }
 
         if (dr.label() != null && !dr.label().isEmpty()) {
@@ -146,10 +142,8 @@ public class Ddi4ToLifecycle33 {
         varType.addNewID().setStringValue(var.id());
         varType.addVersion(var.version());
 
-        if (var.basedOnObject() != null && var.basedOnObject().basedOnReference() != null) {
-            populateBasedOnReference(
-                    varType.addNewBasedOnObject().addNewBasedOnReference(),
-                    var.basedOnObject().basedOnReference());
+        if (var.basedOnObject() != null) {
+            populateBasedOnObject(varType.addNewBasedOnObject(), var.basedOnObject());
         }
 
         if (var.variableName() != null && !var.variableName().isEmpty()) {
@@ -327,11 +321,11 @@ public class Ddi4ToLifecycle33 {
         }
     }
 
-    private static void populateBasedOnReference(ReferenceType target, BasedOnReference source) {
-        target.addAgency(source.agency());
-        target.addNewID().setStringValue(source.id());
-        target.addVersion(source.version());
-        target.setTypeOfObject(TypeOfObjectType.Enum.forString(source.typeOfObject()));
+    private static void populateBasedOnObject(BasedOnObjectType target, BasedOnObject source) {
+        if (source.basedOnReferences() == null) return;
+        for (Reference ref : source.basedOnReferences()) {
+            populateReference(target.addNewBasedOnReference(), ref);
+        }
     }
 
     private static void populateCodeRepresentation(RepresentationType rep, CodeRepresentation source) {

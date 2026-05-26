@@ -30,7 +30,6 @@ import fr.insee.ddi.lifecycle33.reusable.TextRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.ddi.lifecycle33.reusable.UserIDType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -224,12 +223,11 @@ public class Lifecycle33ToDdi4 {
 
     private static BasedOnObject readBasedOnObject(BasedOnObjectType source) {
         if (source == null || source.sizeOfBasedOnReferenceArray() == 0) return null;
-        ReferenceType ref = source.getBasedOnReferenceArray(0);
-        return new BasedOnObject(new BasedOnReference(
-                ref.getAgencyArray(0),
-                ref.getIDArray(0).getStringValue(),
-                ref.getVersionArray(0),
-                typeOfObjectAsString(ref)));
+        List<Reference> refs = new ArrayList<>();
+        for (ReferenceType ref : source.getBasedOnReferenceArray()) {
+            refs.add(readReference(ref));
+        }
+        return BasedOnObject.of(refs);
     }
 
     private static DataRelationshipReference readDataRelationshipReference(ReferenceType ref) {
