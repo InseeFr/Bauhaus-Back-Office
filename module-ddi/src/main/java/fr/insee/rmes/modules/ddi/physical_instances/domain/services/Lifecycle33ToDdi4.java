@@ -270,7 +270,7 @@ public class Lifecycle33ToDdi4 {
         Reference clRef = codeRep.isSetCodeListReference()
                 ? readReference(codeRep.getCodeListReference())
                 : null;
-        return new CodeRepresentation(CodeRepresentation.TYPE,Boolean.toString(codeRep.getBlankIsMissingValue()), clRef);
+        return new CodeRepresentation(CodeRepresentation.TYPE, codeRep.getBlankIsMissingValue(), clRef);
     }
 
     private static Reference readReference(ReferenceType ref) {
@@ -298,7 +298,9 @@ public class Lifecycle33ToDdi4 {
     }
 
     private static RangeValue toRangeValue(NumberRangeValueType v) {
-        return new RangeValue(Boolean.toString(v.getIsInclusive()), v.getStringValue());
+        String text = v.getStringValue();
+        Double value = (text == null || text.isEmpty()) ? null : Double.parseDouble(text);
+        return new RangeValue(v.getIsInclusive(), value);
     }
 
     private static DateTimeRepresentation readDateTimeRepresentation(RepresentationType rep) {
@@ -318,8 +320,7 @@ public class Lifecycle33ToDdi4 {
         Integer maxLength = txt.isSetMaxLength() && txt.getMaxLength() != null
                 ? txt.getMaxLength().intValueExact() : null;
         String regExp = txt.isSetRegExp() ? txt.getRegExp() : null;
-        String blank = Boolean.toString(txt.getBlankIsMissingValue());
-        return new TextRepresentation(TextRepresentation.TYPE,maxLength, minLength, regExp, blank);
+        return new TextRepresentation(TextRepresentation.TYPE, maxLength, minLength, regExp, txt.getBlankIsMissingValue());
     }
 
     private static List<LangString> readStructuredString(StructuredStringType struct) {

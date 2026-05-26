@@ -197,7 +197,7 @@ class Lifecycle33ToDdi4Test {
 
         Ddi4Variable var = converter.toVariable(doc);
 
-        assertThat(var.variableRepresentation().codeRepresentation().blankIsMissingValue()).isEqualTo("true");
+        assertThat(var.variableRepresentation().codeRepresentation().blankIsMissingValue()).isEqualTo(true);
         assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
         assertThat(var.variableRepresentation().numericRepresentation()).isNull();
     }
@@ -225,10 +225,10 @@ class Lifecycle33ToDdi4Test {
         Ddi4Variable var = converter.toVariable(doc);
 
         assertThat(var.variableRepresentation().numericRepresentation().numericTypeCode()).isEqualTo("Integer");
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().isInclusive()).isEqualTo("false");
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().text()).isEqualTo("0");
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().isInclusive()).isEqualTo("true");
-        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().text()).isEqualTo("100");
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().isInclusive()).isEqualTo(false);
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0);
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().isInclusive()).isEqualTo(true);
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(100.0);
     }
 
     @Test
@@ -273,7 +273,7 @@ class Lifecycle33ToDdi4Test {
         assertThat(var.variableRepresentation().textRepresentation().minLength()).isEqualTo(1);
         assertThat(var.variableRepresentation().textRepresentation().maxLength()).isEqualTo(255);
         assertThat(var.variableRepresentation().textRepresentation().regExp()).isEqualTo("[A-Z]+");
-        assertThat(var.variableRepresentation().textRepresentation().blankIsMissingValue()).isEqualTo("true");
+        assertThat(var.variableRepresentation().textRepresentation().blankIsMissingValue()).isEqualTo(true);
     }
 
     @Test

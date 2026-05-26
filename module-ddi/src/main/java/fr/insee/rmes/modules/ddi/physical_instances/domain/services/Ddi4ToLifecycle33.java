@@ -28,6 +28,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import org.apache.xmlbeans.XmlCursor;
@@ -330,7 +331,7 @@ public class Ddi4ToLifecycle33 {
             codeRep = (CodeRepresentationBaseType)
                     cursor.getObject().changeType(CodeRepresentationBaseType.type);
         }
-        codeRep.setBlankIsMissingValue(Boolean.parseBoolean(source.blankIsMissingValue()));
+        codeRep.setBlankIsMissingValue(Boolean.TRUE.equals(source.blankIsMissingValue()));
 
         if (source.codeListReference() != null) {
             populateReference(codeRep.addNewCodeListReference(), source.codeListReference());
@@ -358,20 +359,32 @@ public class Ddi4ToLifecycle33 {
         if (source.numberRange() != null) {
             NumberRangeType nrt = numRep.addNewNumberRange();
             if (source.numberRange().low() != null) {
-                NumberRangeValueType low = nrt.addNewLow();
-                low.setIsInclusive(Boolean.parseBoolean(source.numberRange().low().isInclusive()));
-                low.setStringValue(source.numberRange().low().text());
+                populateRangeValue(nrt.addNewLow(), source.numberRange().low());
             }
             if (source.numberRange().high() != null) {
-                NumberRangeValueType high = nrt.addNewHigh();
-                high.setIsInclusive(Boolean.parseBoolean(source.numberRange().high().isInclusive()));
-                high.setStringValue(source.numberRange().high().text());
+                populateRangeValue(nrt.addNewHigh(), source.numberRange().high());
             }
         }
 
         if (source.numericTypeCode() != null) {
             numRep.addNewNumericTypeCode().setStringValue(source.numericTypeCode());
         }
+    }
+
+    private static void populateRangeValue(NumberRangeValueType target, RangeValue source) {
+        if (source.isInclusive() != null) {
+            target.setIsInclusive(source.isInclusive());
+        }
+        if (source.value() != null) {
+            target.setStringValue(formatRangeValue(source.value()));
+        }
+    }
+
+    private static String formatRangeValue(double value) {
+        if (value == Math.floor(value) && !Double.isInfinite(value)) {
+            return Long.toString((long) value);
+        }
+        return Double.toString(value);
     }
 
     private static void populateDateTimeRepresentation(RepresentationType rep, DateTimeRepresentation source) {
@@ -397,7 +410,7 @@ public class Ddi4ToLifecycle33 {
                     cursor.getObject().changeType(TextRepresentationBaseType.type);
         }
         if (source.blankIsMissingValue() != null) {
-            textRep.setBlankIsMissingValue(Boolean.parseBoolean(source.blankIsMissingValue()));
+            textRep.setBlankIsMissingValue(source.blankIsMissingValue());
         }
         if (source.maxLength() != null) {
             textRep.setMaxLength(BigInteger.valueOf(source.maxLength()));

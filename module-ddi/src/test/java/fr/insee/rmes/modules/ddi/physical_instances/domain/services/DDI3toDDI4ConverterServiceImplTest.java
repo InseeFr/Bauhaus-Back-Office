@@ -280,7 +280,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertNotNull(var.variableRepresentation());
         assertEquals("Demographic", var.variableRepresentation().variableRole());
         assertNotNull(var.variableRepresentation().codeRepresentation());
-        assertEquals("false", var.variableRepresentation().codeRepresentation().blankIsMissingValue());
+        assertEquals(false, var.variableRepresentation().codeRepresentation().blankIsMissingValue());
         assertEquals("CL_AGEMEN8", var.variableRepresentation().codeRepresentation().codeListReference().id());
     }
 
@@ -346,10 +346,10 @@ class DDI3toDDI4ConverterServiceImplTest {
         NumericRepresentation numRep = var.variableRepresentation().numericRepresentation();
         assertEquals("Integer", numRep.numericTypeCode());
         assertNotNull(numRep.numberRange());
-        assertEquals("true", numRep.numberRange().low().isInclusive());
-        assertEquals("0", numRep.numberRange().low().text());
-        assertEquals("true", numRep.numberRange().high().isInclusive());
-        assertEquals("120", numRep.numberRange().high().text());
+        assertEquals(true, numRep.numberRange().low().isInclusive());
+        assertEquals(0.0, numRep.numberRange().low().value());
+        assertEquals(true, numRep.numberRange().high().isInclusive());
+        assertEquals(120.0, numRep.numberRange().high().value());
     }
 
     @Test
@@ -585,7 +585,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(50, textRep.maxLength());
         assertEquals(1, textRep.minLength());
         assertEquals("[A-Za-z ]+", textRep.regExp());
-        assertEquals("false", textRep.blankIsMissingValue());
+        assertEquals(false, textRep.blankIsMissingValue());
     }
 
     @Test

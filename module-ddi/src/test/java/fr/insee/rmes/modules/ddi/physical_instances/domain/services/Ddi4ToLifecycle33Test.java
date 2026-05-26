@@ -145,7 +145,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithCodeRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null,
-                new CodeRepresentation(CodeRepresentation.TYPE,"true",
+                new CodeRepresentation(CodeRepresentation.TYPE,true,
                         Reference.of("fr.insee", "cl-id", "1", "CodeList")),
                 null, null, null));
 
@@ -163,7 +163,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null,
                 new NumericRepresentation(NumericRepresentation.TYPE,"Integer",
-                        new NumberRange(new RangeValue("false", "0"), new RangeValue("true", "100"))),
+                        new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
                 null, null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
@@ -195,7 +195,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithTextRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null, null, null,
-                new TextRepresentation(TextRepresentation.TYPE,255, 1, "[A-Z]+", "true")));
+                new TextRepresentation(TextRepresentation.TYPE,255, 1, "[A-Z]+", true)));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
 

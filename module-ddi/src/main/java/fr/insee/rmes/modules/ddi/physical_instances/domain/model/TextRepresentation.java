@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record TextRepresentation(
         @JsonProperty("$type") String type,
-        @JsonProperty("@maxLength") Integer maxLength,
-        @JsonProperty("@minLength") Integer minLength,
-        @JsonProperty("@regExp") String regExp,
-        @JsonProperty("@blankIsMissingValue") String blankIsMissingValue
+        @JsonProperty("MaxLength") Integer maxLength,
+        @JsonProperty("MinLength") Integer minLength,
+        @JsonProperty("RegExp") String regExp,
+        @JsonProperty("BlankIsMissingValue") Boolean blankIsMissingValue
 ) {
 
     public static final String TYPE = "TextRepresentationBaseType";
