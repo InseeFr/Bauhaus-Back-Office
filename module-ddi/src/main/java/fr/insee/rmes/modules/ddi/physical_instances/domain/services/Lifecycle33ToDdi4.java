@@ -34,7 +34,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -73,8 +72,7 @@ public class Lifecycle33ToDdi4 {
                 pi.getVersionArray(0),
                 readBasedOnObject(pi.isSetBasedOnObject() ? pi.getBasedOnObject() : null),
                 readCitation(pi.getCitation()),
-                readDataRelationshipReference(pi.sizeOfDataRelationshipReferenceArray() > 0
-                        ? pi.getDataRelationshipReferenceArray(0) : null)
+                readDataRelationshipReferences(pi.getDataRelationshipReferenceArray())
         );
     }
 
@@ -230,13 +228,13 @@ public class Lifecycle33ToDdi4 {
         return BasedOnObject.of(refs);
     }
 
-    private static DataRelationshipReference readDataRelationshipReference(ReferenceType ref) {
-        if (ref == null) return null;
-        return new DataRelationshipReference(
-                ref.getAgencyArray(0),
-                ref.getIDArray(0).getStringValue(),
-                ref.getVersionArray(0),
-                typeOfObjectAsString(ref));
+    private static List<Reference> readDataRelationshipReferences(ReferenceType[] refs) {
+        if (refs == null || refs.length == 0) return null;
+        List<Reference> result = new ArrayList<>();
+        for (ReferenceType ref : refs) {
+            result.add(readReference(ref));
+        }
+        return result;
     }
 
     private static String typeOfObjectAsString(ReferenceType ref) {

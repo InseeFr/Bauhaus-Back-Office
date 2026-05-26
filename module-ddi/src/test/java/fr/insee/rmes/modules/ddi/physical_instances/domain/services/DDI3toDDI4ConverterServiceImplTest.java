@@ -119,10 +119,11 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("SAPHIR - Fichier Individus RP99 (.sas7bdat)", pi.citation().title().get(0).value());
 
         assertNotNull(pi.dataRelationshipReference());
-        assertEquals("fr.insee", pi.dataRelationshipReference().agency());
-        assertEquals("saphir-rp99-sas", pi.dataRelationshipReference().id());
-        assertEquals("1", pi.dataRelationshipReference().version());
-        assertEquals("DataRelationship", pi.dataRelationshipReference().typeOfObject());
+        assertEquals(1, pi.dataRelationshipReference().size());
+        assertEquals("fr.insee", pi.dataRelationshipReference().get(0).agency());
+        assertEquals("saphir-rp99-sas", pi.dataRelationshipReference().get(0).id());
+        assertEquals("1", pi.dataRelationshipReference().get(0).version());
+        assertEquals("DataRelationship", pi.dataRelationshipReference().get(0).type());
     }
 
     @Test

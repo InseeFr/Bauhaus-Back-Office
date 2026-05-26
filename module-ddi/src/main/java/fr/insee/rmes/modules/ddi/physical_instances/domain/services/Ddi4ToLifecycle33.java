@@ -16,7 +16,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -63,14 +62,10 @@ public class Ddi4ToLifecycle33 {
             titleString.setStringValue(first.value());
         }
 
-        DataRelationshipReference dataRelationshipReference = pi.dataRelationshipReference();
-        if (dataRelationshipReference != null) {
-            ReferenceType refType = piType.addNewDataRelationshipReference();
-            refType.addAgency(dataRelationshipReference.agency());
-            refType.addNewID().setStringValue(dataRelationshipReference.id());
-            refType.addVersion(dataRelationshipReference.version());
-            refType.setTypeOfObject(
-                    TypeOfObjectType.Enum.forString(dataRelationshipReference.typeOfObject()));
+        if (pi.dataRelationshipReference() != null) {
+            for (Reference ref : pi.dataRelationshipReference()) {
+                populateReference(piType.addNewDataRelationshipReference(), ref);
+            }
         }
 
         return doc;

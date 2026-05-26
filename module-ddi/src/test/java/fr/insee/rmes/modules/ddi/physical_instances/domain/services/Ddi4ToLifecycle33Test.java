@@ -6,7 +6,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -69,7 +68,7 @@ class Ddi4ToLifecycle33Test {
                 "urn:ddi:fr.insee:new-pi-id:1", "fr.insee", "new-pi-id", "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-pi-id", "1", "PhysicalInstance"))),
                 new Citation(LangStrings.of("fr-FR", "Test Instance")),
-                new DataRelationshipReference("fr.insee", "dr-id", "1", "DataRelationship"));
+                List.of(Reference.of("fr.insee", "dr-id", "1", "DataRelationship")));
 
         String xml = converter.toPhysicalInstance(pi).xmlText(physicalInstanceXmlOptions());
 

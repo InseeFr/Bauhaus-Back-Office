@@ -71,8 +71,9 @@ class Lifecycle33ToDdi4Test {
         assertThat(pi.basedOnObject().basedOnReferences()).hasSize(1);
         assertThat(pi.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-pi");
         assertThat(pi.basedOnObject().basedOnReferences().get(0).type()).isEqualTo("PhysicalInstance");
-        assertThat(pi.dataRelationshipReference().id()).isEqualTo("dr-id");
-        assertThat(pi.dataRelationshipReference().typeOfObject()).isEqualTo("DataRelationship");
+        assertThat(pi.dataRelationshipReference()).hasSize(1);
+        assertThat(pi.dataRelationshipReference().get(0).id()).isEqualTo("dr-id");
+        assertThat(pi.dataRelationshipReference().get(0).type()).isEqualTo("DataRelationship");
     }
 
     @Test

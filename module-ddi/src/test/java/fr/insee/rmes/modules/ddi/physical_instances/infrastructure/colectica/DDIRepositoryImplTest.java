@@ -483,7 +483,7 @@ class DDIRepositoryImplTest {
                 agencyId, instanceId, "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "Old Label")),
-                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship"))
         );
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(
@@ -602,7 +602,7 @@ class DDIRepositoryImplTest {
                 agencyId, instanceId, "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "test")),
-                new DataRelationshipReference(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship")
+                List.of(Reference.of(agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1", "DataRelationship"))
         );
 
         Ddi4Variable mockVariable = new Ddi4Variable(
@@ -1807,7 +1807,7 @@ class DDIRepositoryImplTest {
                 agencyId, instanceId, "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "Old Label")),
-                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship"))
         );
 
         // Existing DataRelationship has a Label with "en-US" language
@@ -1893,7 +1893,7 @@ class DDIRepositoryImplTest {
                 agencyId, instanceId, "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "Old Label")),
-                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship"))
         );
 
         // DataRelationship has NO existing Label (null)
@@ -1979,7 +1979,7 @@ class DDIRepositoryImplTest {
                 agencyId, instanceId, "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "Old Label")),
-                new DataRelationshipReference(agencyId, "dr-123", "1", "DataRelationship")
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship"))
         );
 
         // Existing labels with specific languages (not fr-FR)

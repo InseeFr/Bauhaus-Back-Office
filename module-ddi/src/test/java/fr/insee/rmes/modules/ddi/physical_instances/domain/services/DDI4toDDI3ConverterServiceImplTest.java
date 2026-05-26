@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -48,7 +47,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee", "saphir-rp99-sas", "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "SAPHIR")),
-                new DataRelationshipReference("fr.insee", "saphir-rp99-sas", "1", "DataRelationship")
+                List.of(Reference.of("fr.insee", "saphir-rp99-sas", "1", "DataRelationship"))
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null);
 
@@ -175,7 +174,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee", "test-id", "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "Test")),
-                new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
+                List.of(Reference.of("fr.insee", "test", "1", "DataRelationship"))
         );
         Reference topLevelRef = Reference.of("fr.insee", "test-id", "1", "PhysicalInstance");
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(topLevelRef), List.of(pi), null, null, null, null);
