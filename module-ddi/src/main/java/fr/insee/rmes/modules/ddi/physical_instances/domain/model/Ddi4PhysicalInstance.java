@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4PhysicalInstance(
-        @JsonProperty("@versionDate") String versionDate,
+        @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,

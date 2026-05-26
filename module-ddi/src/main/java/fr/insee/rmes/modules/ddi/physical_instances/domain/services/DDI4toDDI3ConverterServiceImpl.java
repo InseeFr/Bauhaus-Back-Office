@@ -4,6 +4,7 @@ import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.instance.FragmentInstanceDocument;
 import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
@@ -49,6 +50,10 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         );
     }
 
+    private static String dateTimeOf(CogsDate versionDate) {
+        return versionDate != null ? versionDate.dateTime() : null;
+    }
+
     @Override
     public Ddi3Response convertDdi4ToDdi3(Ddi4Response ddi4) {
         logger.info("Converting DDI4 to DDI3");
@@ -60,7 +65,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 String xmlFragment = ddi4ToLifecycle33.toPhysicalInstance(pi)
                         .xmlText(fragmentXmlOptions(DDI_PHYSICAL_INSTANCE_NS));
                 items.add(createDdi3Item(itemTypes.get("PhysicalInstance"), pi.agency(), pi.version(),
-                        pi.id(), xmlFragment, pi.versionDate()));
+                        pi.id(), xmlFragment, dateTimeOf(pi.versionDate())));
             });
         }
         if (ddi4.dataRelationship() != null) {
@@ -68,7 +73,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 String xmlFragment = ddi4ToLifecycle33.toDataRelationship(dr)
                         .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
                 items.add(createDdi3Item(itemTypes.get("DataRelationship"), dr.agency(), dr.version(),
-                        dr.id(), xmlFragment, dr.versionDate()));
+                        dr.id(), xmlFragment, dateTimeOf(dr.versionDate())));
             });
         }
         if (ddi4.variable() != null) {
@@ -76,7 +81,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 String xmlFragment = ddi4ToLifecycle33.toVariable(var)
                         .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
                 items.add(createDdi3Item(itemTypes.get("Variable"), var.agency(), var.version(),
-                        var.id(), xmlFragment, var.versionDate()));
+                        var.id(), xmlFragment, dateTimeOf(var.versionDate())));
             });
         }
         if (ddi4.codeList() != null) {
@@ -84,7 +89,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 String xmlFragment = ddi4ToLifecycle33.toCodeList(cl)
                         .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
                 items.add(createDdi3Item(itemTypes.get("CodeList"), cl.agency(), cl.version(),
-                        cl.id(), xmlFragment, cl.versionDate()));
+                        cl.id(), xmlFragment, dateTimeOf(cl.versionDate())));
             });
         }
         if (ddi4.category() != null) {
@@ -92,7 +97,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 String xmlFragment = ddi4ToLifecycle33.toCategory(cat)
                         .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
                 items.add(createDdi3Item(itemTypes.get("Category"), cat.agency(), cat.version(),
-                        cat.id(), xmlFragment, cat.versionDate()));
+                        cat.id(), xmlFragment, dateTimeOf(cat.versionDate())));
             });
         }
 

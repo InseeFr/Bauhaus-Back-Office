@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
@@ -34,7 +35,7 @@ class StudyUnitServiceImplTest {
     @Test
     void createOrUpdate_shouldDelegateToRepository() {
         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                "2026-04-03T12:00:00Z",
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),
                 "http://id.insee.fr/operations/operation/op1",

@@ -106,7 +106,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.physicalInstance().size());
 
         Ddi4PhysicalInstance pi = result.physicalInstance().get(0);
-        assertEquals("2025-01-21T13:48:46.363", pi.versionDate());
+        assertEquals("2025-01-21T13:48:46.363", pi.versionDate().dateTime());
         assertEquals("urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1", pi.urn());
         assertEquals("fr.insee", pi.agency());
         assertEquals("saphir-rp99-sas", pi.id());
@@ -186,7 +186,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.dataRelationship().size());
 
         Ddi4DataRelationship dr = result.dataRelationship().get(0);
-        assertEquals("2025-01-21T13:48:46.363", dr.versionDate());
+        assertEquals("2025-01-21T13:48:46.363", dr.versionDate().dateTime());
         assertEquals("urn:ddi:fr.insee:DataRelationship.saphir-rp99-sas:1", dr.urn());
         assertEquals("fr.insee", dr.agency());
         assertEquals("saphir-rp99-sas", dr.id());
@@ -262,7 +262,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.variable().size());
 
         Ddi4Variable var = result.variable().get(0);
-        assertEquals("2025-01-21T13:48:46.363", var.versionDate());
+        assertEquals("2025-01-21T13:48:46.363", var.versionDate().dateTime());
         assertEquals("urn:ddi:fr.insee:Variable.AGEMEN8:1", var.urn());
         assertEquals("fr.insee", var.agency());
         assertEquals("AGEMEN8", var.id());
@@ -488,7 +488,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.category().size());
 
         Ddi4Category cat = result.category().get(0);
-        assertEquals("2025-01-21T13:48:46.363", cat.versionDate());
+        assertEquals("2025-01-21T13:48:46.363", cat.versionDate().dateTime());
         assertEquals("urn:ddi:fr.insee:Category.CAT_0:1", cat.urn());
         assertEquals("fr.insee", cat.agency());
         assertEquals("CAT_0", cat.id());

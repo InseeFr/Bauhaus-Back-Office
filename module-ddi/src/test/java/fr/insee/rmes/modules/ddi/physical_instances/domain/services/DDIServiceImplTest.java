@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
@@ -200,7 +201,7 @@ class DDIServiceImplTest {
         Reference suRef2 = Reference.of(agencyId, "su-2", "1", "StudyUnit");
 
         Ddi4Group group = new Ddi4Group(
-            "2025-01-09T09:00:00Z",
+            CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
             "urn:ddi:fr.insee:" + groupId + ":1",
             agencyId, groupId, "1",
             "bauhaus", citation, List.of(suRef1, suRef2),
@@ -209,7 +210,7 @@ class DDIServiceImplTest {
         );
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
-            "2025-01-09T09:00:00Z",
+            CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
             "urn:ddi:fr.insee:su-1:1",
             agencyId, "su-1", "1",
             new Citation(LangStrings.of("fr-FR", "BPE 2021")),
@@ -218,7 +219,7 @@ class DDIServiceImplTest {
         );
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
-            "2025-01-09T09:00:00Z",
+            CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
             "urn:ddi:fr.insee:su-2:1",
             agencyId, "su-2", "1",
             new Citation(LangStrings.of("fr-FR", "BPE 2022")),
@@ -346,7 +347,7 @@ class DDIServiceImplTest {
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
 
         Ddi4Group group = new Ddi4Group(
-                "2025-01-09T09:00:00Z",
+                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:grp-789:1",
                 "fr.insee", "grp-789", "1",
                 "bauhaus", null, List.of(),
@@ -420,7 +421,7 @@ class DDIServiceImplTest {
 
     private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
         Ddi4Group group = new Ddi4Group(
-                "2025-01-09T09:00:00Z",
+                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:" + groupId + ":1",
                 "fr.insee", groupId, "1",
                 "bauhaus", null, List.of(),

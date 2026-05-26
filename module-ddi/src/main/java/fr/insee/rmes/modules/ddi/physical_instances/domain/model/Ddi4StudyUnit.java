@@ -12,7 +12,7 @@ import java.util.List;
  * used to generate the {@code <r:UserID>} tag in DDI3 XML.
  */
 public record Ddi4StudyUnit(
-        @JsonProperty("@versionDate") String versionDate,
+        @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,

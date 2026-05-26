@@ -13,7 +13,7 @@ import java.util.List;
  * A group may reference more than one series.
  */
 public record Ddi4Group(
-        @JsonProperty("@versionDate") String versionDate,
+        @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,

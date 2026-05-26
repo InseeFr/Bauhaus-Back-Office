@@ -65,7 +65,7 @@ public abstract class AbstractColecticaItemRepository {
                     Integer.parseInt(item.version()),
                     item.id(),
                     ddi3Xml,
-                    item.versionDate(),
+                    item.versionDate() != null ? item.versionDate().dateTime() : null,
                     instanceConfiguration.versionResponsibility(),
                     false,
                     false,

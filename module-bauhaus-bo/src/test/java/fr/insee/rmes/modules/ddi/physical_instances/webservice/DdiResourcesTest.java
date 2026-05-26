@@ -651,7 +651,7 @@ class DdiResourcesTest {
         );
 
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
-            "2024-06-03T14:29:23.4049817Z",
+            CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
             "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
             "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1",
             null, citation, List.of(dataRelRef)
@@ -660,7 +660,7 @@ class DdiResourcesTest {
         List<LangString> drLabel = LangStrings.of("fr-FR", "Dessin de fichier thl-CASD");
 
         Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
-            "2024-06-03T14:29:23.4049817Z",
+            CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
             "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
             null, drLabel, null
@@ -731,7 +731,7 @@ class DdiResourcesTest {
 
         // Create Group
         Ddi4Group group = new Ddi4Group(
-            "2025-01-09T09:00:00.000000Z",
+            CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
             "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
             "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
             "abcde", citation, List.of(suRef1, suRef2),
@@ -743,7 +743,7 @@ class DdiResourcesTest {
         Citation su1Citation = new Citation(su1Title);
 
         Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
-            "2025-01-09T09:00:00.000000Z",
+            CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
             "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
             "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
             su1Citation,
@@ -755,7 +755,7 @@ class DdiResourcesTest {
         Citation su2Citation = new Citation(su2Title);
 
         Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
-            "2025-01-09T09:00:00.000000Z",
+            CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
             "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
             "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
             su2Citation,

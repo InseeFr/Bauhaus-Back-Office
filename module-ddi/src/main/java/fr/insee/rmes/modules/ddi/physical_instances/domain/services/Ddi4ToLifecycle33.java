@@ -44,7 +44,7 @@ public class Ddi4ToLifecycle33 {
         var piType = doc.addNewFragment().addNewPhysicalInstance();
 
         piType.setIsUniversallyUnique(true);
-        piType.setVersionDate(pi.versionDate());
+        piType.setVersionDate(pi.versionDate() != null ? pi.versionDate().dateTime() : null);
         piType.addNewURN().setStringValue(pi.urn());
         piType.addAgency(pi.agency());
         piType.addNewID().setStringValue(pi.id());
@@ -76,7 +76,7 @@ public class Ddi4ToLifecycle33 {
         var drType = doc.addNewFragment().addNewDataRelationship();
 
         drType.setIsUniversallyUnique(true);
-        drType.setVersionDate(dr.versionDate());
+        drType.setVersionDate(dr.versionDate() != null ? dr.versionDate().dateTime() : null);
         drType.addNewURN().setStringValue(dr.urn());
         drType.addAgency(dr.agency());
         drType.addNewID().setStringValue(dr.id());
@@ -128,7 +128,7 @@ public class Ddi4ToLifecycle33 {
         var varType = doc.addNewFragment().addNewVariable();
 
         varType.setIsUniversallyUnique(true);
-        varType.setVersionDate(var.versionDate());
+        varType.setVersionDate(var.versionDate() != null ? var.versionDate().dateTime() : null);
         if (var.isGeographic() != null && !var.isGeographic().isEmpty()) {
             varType.setIsGeographic(Boolean.parseBoolean(var.isGeographic()));
         }
@@ -185,7 +185,7 @@ public class Ddi4ToLifecycle33 {
         var clType = doc.addNewFragment().addNewCodeList();
 
         clType.setIsUniversallyUnique(true);
-        clType.setVersionDate(cl.versionDate());
+        clType.setVersionDate(cl.versionDate() != null ? cl.versionDate().dateTime() : null);
         clType.addNewURN().setStringValue(cl.urn());
         clType.addAgency(cl.agency());
         clType.addNewID().setStringValue(cl.id());
@@ -222,7 +222,7 @@ public class Ddi4ToLifecycle33 {
         var catType = doc.addNewFragment().addNewCategory();
 
         catType.setIsUniversallyUnique(true);
-        catType.setVersionDate(cat.versionDate());
+        catType.setVersionDate(cat.versionDate() != null ? cat.versionDate().dateTime() : null);
         catType.setIsMissing(false);
         catType.addNewURN().setStringValue(cat.urn());
         catType.addAgency(cat.agency());
@@ -241,7 +241,7 @@ public class Ddi4ToLifecycle33 {
         var groupType = doc.addNewFragment().addNewGroup();
 
         groupType.setIsUniversallyUnique(true);
-        groupType.setVersionDate(group.versionDate());
+        groupType.setVersionDate(group.versionDate() != null ? group.versionDate().dateTime() : null);
         groupType.addNewURN().setStringValue(group.urn());
         groupType.addAgency(group.agency());
         groupType.addNewID().setStringValue(group.id());
@@ -280,7 +280,7 @@ public class Ddi4ToLifecycle33 {
         var suType = doc.addNewFragment().addNewStudyUnit();
 
         suType.setIsUniversallyUnique(true);
-        suType.setVersionDate(studyUnit.versionDate());
+        suType.setVersionDate(studyUnit.versionDate() != null ? studyUnit.versionDate().dateTime() : null);
         suType.addNewURN().setStringValue(studyUnit.urn());
         suType.addAgency(studyUnit.agency());
         suType.addNewID().setStringValue(studyUnit.id());

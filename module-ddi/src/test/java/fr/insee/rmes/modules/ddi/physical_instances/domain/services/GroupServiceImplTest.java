@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
@@ -35,7 +36,7 @@ class GroupServiceImplTest {
     @Test
     void createOrUpdate_shouldDelegateToRepository() {
         Ddi4Group group = new Ddi4Group(
-                "2026-04-03T12:00:00Z",
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),

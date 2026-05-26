@@ -31,6 +31,7 @@ import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.ddi.lifecycle33.reusable.UserIDType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
@@ -64,7 +65,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a PhysicalInstance");
         }
         return new Ddi4PhysicalInstance(
-                pi.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(pi.xgetVersionDate().getStringValue()),
                 pi.getURNArray(0).getStringValue(),
                 pi.getAgencyArray(0),
                 pi.getIDArray(0).getStringValue(),
@@ -81,7 +82,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a DataRelationship");
         }
         return new Ddi4DataRelationship(
-                dr.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(dr.xgetVersionDate().getStringValue()),
                 dr.getURNArray(0).getStringValue(),
                 dr.getAgencyArray(0),
                 dr.getIDArray(0).getStringValue(),
@@ -102,7 +103,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Variable");
         }
         return new Ddi4Variable(
-                var.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(var.xgetVersionDate().getStringValue()),
                 var.getURNArray(0).getStringValue(),
                 var.getAgencyArray(0),
                 var.getIDArray(0).getStringValue(),
@@ -136,7 +137,7 @@ public class Lifecycle33ToDdi4 {
                     c.getValue() != null ? c.getValue().getStringValue() : null));
         }
         return new Ddi4CodeList(
-                cl.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(cl.xgetVersionDate().getStringValue()),
                 cl.getURNArray(0).getStringValue(),
                 cl.getAgencyArray(0),
                 cl.getIDArray(0).getStringValue(),
@@ -152,7 +153,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Category");
         }
         return new Ddi4Category(
-                cat.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(cat.xgetVersionDate().getStringValue()),
                 cat.getURNArray(0).getStringValue(),
                 cat.getAgencyArray(0),
                 cat.getIDArray(0).getStringValue(),
@@ -175,7 +176,7 @@ public class Lifecycle33ToDdi4 {
             suRefs.add(readReference(ref));
         }
         return new Ddi4Group(
-                group.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(group.xgetVersionDate().getStringValue()),
                 group.getURNArray(0).getStringValue(),
                 group.getAgencyArray(0),
                 group.getIDArray(0).getStringValue(),
@@ -200,7 +201,7 @@ public class Lifecycle33ToDdi4 {
             piRefs.add(readReference(ref));
         }
         return new Ddi4StudyUnit(
-                su.xgetVersionDate().getStringValue(),
+                CogsDate.ofDateTime(su.xgetVersionDate().getStringValue()),
                 su.getURNArray(0).getStringValue(),
                 su.getAgencyArray(0),
                 su.getIDArray(0).getStringValue(),

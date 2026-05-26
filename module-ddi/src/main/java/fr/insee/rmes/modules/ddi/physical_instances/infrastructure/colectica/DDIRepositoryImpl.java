@@ -849,7 +849,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         return new Ddi4Group(
-            versionDate.isEmpty() ? null : versionDate,
+            versionDate.isEmpty() ? null : CogsDate.ofDateTime(versionDate),
             urn,
             agency,
             id,
@@ -900,7 +900,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         );
 
         return new Ddi4StudyUnit(
-            (versionDate == null || versionDate.isEmpty()) ? null : versionDate,
+            (versionDate == null || versionDate.isEmpty()) ? null : CogsDate.ofDateTime(versionDate),
             urn,
             agency,
             id,
@@ -1070,7 +1070,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 : currentTitle.value();
 
         var updatedPI = new Ddi4PhysicalInstance(
-            versionDate,
+            CogsDate.ofDateTime(versionDate),
             currentPI.urn(),
             currentPI.agency(),
             currentPI.id(),
@@ -1111,7 +1111,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             }
 
             updatedDR = new Ddi4DataRelationship(
-                versionDate,
+                CogsDate.ofDateTime(versionDate),
                 currentDR.urn(),
                 currentDR.agency(),
                 currentDR.id(),

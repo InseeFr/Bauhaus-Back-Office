@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -106,7 +107,7 @@ public class LocalColecticaGroupInitConfiguration {
                         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
                         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                                versionDate,
+                                CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                                 defaultAgencyId,
                                 studyUnitId,
@@ -156,7 +157,7 @@ public class LocalColecticaGroupInitConfiguration {
                             .toList();
 
                     Ddi4Group group = new Ddi4Group(
-                            versionDate,
+                            CogsDate.ofDateTime(versionDate),
                             "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                             defaultAgencyId,
                             groupId,
