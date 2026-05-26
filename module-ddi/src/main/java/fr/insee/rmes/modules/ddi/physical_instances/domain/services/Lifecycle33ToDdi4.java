@@ -50,6 +50,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import org.apache.xmlbeans.XmlCursor;
@@ -137,7 +138,7 @@ public class Lifecycle33ToDdi4 {
                     c.getIDArray(0).getStringValue(),
                     c.getVersionArray(0),
                     catRef,
-                    c.getValue() != null ? c.getValue().getStringValue() : null));
+                    c.getValue() != null ? ValueType.of(c.getValue().getStringValue()) : null));
         }
         return new Ddi4CodeList(
                 Ddi4CodeList.TYPE,

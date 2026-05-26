@@ -210,8 +210,9 @@ public class Ddi4ToLifecycle33 {
                     populateReference(codeType.addNewCategoryReference(), code.categoryReference());
                 }
 
-                if (code.value() != null && !code.value().isEmpty()) {
-                    codeType.addNewValue().setStringValue(code.value());
+                if (code.value() != null && code.value().stringValue() != null
+                        && !code.value().stringValue().isEmpty()) {
+                    codeType.addNewValue().setStringValue(code.value().stringValue());
                 }
             }
         }

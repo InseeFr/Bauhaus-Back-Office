@@ -304,7 +304,7 @@ class Lifecycle33ToDdi4Test {
         assertThat(cl.label().get(0).value()).isEqualTo("CodeList Label");
         assertThat(cl.code()).hasSize(1);
         assertThat(cl.code().get(0).categoryReference().id()).isEqualTo("cat-id");
-        assertThat(cl.code().get(0).value()).isEqualTo("01");
+        assertThat(cl.code().get(0).value().stringValue()).isEqualTo("01");
     }
 
     @Test

@@ -9,7 +9,7 @@ public record Code(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("CategoryReference") Reference categoryReference,
-        @JsonProperty("Value") String value
+        @JsonProperty("Value") ValueType value
 ) {
 
     public static final String TYPE = "CodeType";

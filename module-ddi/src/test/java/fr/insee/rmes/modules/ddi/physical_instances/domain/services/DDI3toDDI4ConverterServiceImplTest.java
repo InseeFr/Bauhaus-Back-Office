@@ -436,12 +436,12 @@ class DDI3toDDI4ConverterServiceImplTest {
 
         Code code0 = cl.code().get(0);
         assertEquals("0", code0.id());
-        assertEquals("0", code0.value());
+        assertEquals("0", code0.value().stringValue());
         assertEquals("CAT_0", code0.categoryReference().id());
 
         Code code1 = cl.code().get(1);
         assertEquals("1", code1.id());
-        assertEquals("1", code1.value());
+        assertEquals("1", code1.value().stringValue());
         assertEquals("CAT_1", code1.categoryReference().id());
     }
 

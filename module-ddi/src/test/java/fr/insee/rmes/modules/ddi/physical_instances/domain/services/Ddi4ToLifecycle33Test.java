@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import org.apache.xmlbeans.XmlOptions;
 import org.assertj.core.api.Assertions;
@@ -216,7 +217,7 @@ class Ddi4ToLifecycle33Test {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:code-id:1", "fr.insee", "code-id", "1",
                         Reference.of("fr.insee", "cat-id", "1", "Category"),
-                        "01")));
+                        ValueType.of("01"))));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 

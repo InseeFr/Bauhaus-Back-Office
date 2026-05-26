@@ -645,7 +645,7 @@ class DDIRepositoryImplTest {
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         Reference.of(agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1", "Category"),
-                        "a"))
+                        ValueType.of("a")))
         );
 
         Ddi4Category mockCategory = new Ddi4Category(Ddi4Category.TYPE,
@@ -747,7 +747,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, "a"))
+                        null, ValueType.of("a")))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -822,7 +822,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, "a"))
+                        null, ValueType.of("a")))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -853,7 +853,7 @@ class DDIRepositoryImplTest {
         assertEquals(localCodeListId, result.codeList().get(0).id());
         assertNotNull(result.codeList().get(0).code(), "Codes of non-mutualized CodeList must be preserved");
         assertEquals(1, result.codeList().get(0).code().size());
-        assertEquals("a", result.codeList().get(0).code().get(0).value());
+        assertEquals("a", result.codeList().get(0).code().get(0).value().stringValue());
     }
 
     @Test
@@ -904,7 +904,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1",
                         agencyId, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "1",
-                        null, "L1"))
+                        null, ValueType.of("L1")))
         );
 
         Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
@@ -915,7 +915,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb:1",
                         agencyId, "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "1",
-                        null, "M1"))
+                        null, ValueType.of("M1")))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -943,7 +943,7 @@ class DDIRepositoryImplTest {
         assertNotNull(result.codeList());
         assertEquals(1, result.codeList().size());
         assertEquals(localCodeListId, result.codeList().get(0).id());
-        assertEquals("L1", result.codeList().get(0).code().get(0).value());
+        assertEquals("L1", result.codeList().get(0).code().get(0).value().stringValue());
     }
 
     @Test
@@ -1010,7 +1010,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, "M1"))
+                        null, ValueType.of("M1")))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -1099,7 +1099,7 @@ class DDIRepositoryImplTest {
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         Reference.of(agencyId, categoryId, "1", "Category"),
-                        "M1"))
+                        ValueType.of("M1")))
         );
 
         Ddi4Category category = new Ddi4Category(Ddi4Category.TYPE,
@@ -1182,7 +1182,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, "v2"))
+                        null, ValueType.of("v2")))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
