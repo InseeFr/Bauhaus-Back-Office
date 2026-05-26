@@ -97,6 +97,9 @@ class StudyUnitDDIItemConverterTest {
         assertNotNull(refs);
         assertEquals(1, refs.size());
         assertEquals("PhysicalInstance", refs.get(0).get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:c05c0443-fc56-4069-9bea-a9c7300ae0a0:1", refs.get(0).get("value").get(0).asText());
+        assertEquals("urn:ddi:fr.insee:c05c0443-fc56-4069-9bea-a9c7300ae0a0:1", refs.get(0).get("URN").asText());
+        assertEquals("fr.insee", refs.get(0).get("Agency").asText());
+        assertEquals("c05c0443-fc56-4069-9bea-a9c7300ae0a0", refs.get(0).get("ID").asText());
+        assertEquals("1", refs.get(0).get("Version").asText());
     }
 }

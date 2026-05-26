@@ -125,11 +125,17 @@ class GroupDDIItemConverterTest {
 
         JsonNode ref1 = refs.get(0);
         assertEquals("StudyUnit", ref1.get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:c2acc8ab-f73e-3bd7-a387-1aab8db15efb:1", ref1.get("value").get(0).asText());
+        assertEquals("urn:ddi:fr.insee:c2acc8ab-f73e-3bd7-a387-1aab8db15efb:1", ref1.get("URN").asText());
+        assertEquals("fr.insee", ref1.get("Agency").asText());
+        assertEquals("c2acc8ab-f73e-3bd7-a387-1aab8db15efb", ref1.get("ID").asText());
+        assertEquals("1", ref1.get("Version").asText());
 
         JsonNode ref2 = refs.get(1);
         assertEquals("StudyUnit", ref2.get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:cf6da9a8-066a-3a1d-a759-8a029085c0a9:1", ref2.get("value").get(0).asText());
+        assertEquals("urn:ddi:fr.insee:cf6da9a8-066a-3a1d-a759-8a029085c0a9:1", ref2.get("URN").asText());
+        assertEquals("fr.insee", ref2.get("Agency").asText());
+        assertEquals("cf6da9a8-066a-3a1d-a759-8a029085c0a9", ref2.get("ID").asText());
+        assertEquals("1", ref2.get("Version").asText());
     }
 
     @Test

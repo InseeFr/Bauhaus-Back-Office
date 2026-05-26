@@ -62,14 +62,14 @@ public abstract class AbstractDDIItemConverter implements DDIItemConverter {
     }
 
     protected ObjectNode buildReference(ReferenceType ref) {
-        String urn = ref.sizeOfURNArray() > 0 ? ref.getURNArray(0).getStringValue() : null;
-        if (urn == null) {
-            String agency = ref.sizeOfAgencyArray() > 0 ? ref.getAgencyArray(0) : null;
-            String id = ref.sizeOfIDArray() > 0 ? ref.getIDArray(0).getStringValue() : null;
-            String version = ref.sizeOfVersionArray() > 0 ? ref.getVersionArray(0) : null;
-            if (agency == null || id == null || version == null) return null;
-            urn = "urn:ddi:" + agency + ":" + id + ":" + version;
-        }
+        String agency = ref.sizeOfAgencyArray() > 0 ? ref.getAgencyArray(0) : null;
+        String id = ref.sizeOfIDArray() > 0 ? ref.getIDArray(0).getStringValue() : null;
+        String version = ref.sizeOfVersionArray() > 0 ? ref.getVersionArray(0) : null;
+        if (agency == null || id == null || version == null) return null;
+
+        String urn = ref.sizeOfURNArray() > 0
+                ? ref.getURNArray(0).getStringValue()
+                : "urn:ddi:" + agency + ":" + id + ":" + version;
 
         TypeOfObjectType.Enum typeEnum = ref.getTypeOfObject();
         String type = typeEnum != null ? typeEnum.toString() : null;
@@ -77,7 +77,10 @@ public abstract class AbstractDDIItemConverter implements DDIItemConverter {
 
         ObjectNode node = MAPPER.createObjectNode();
         node.put("$type", type);
-        node.putArray("value").add(urn);
+        node.put("URN", urn);
+        node.put("Agency", agency);
+        node.put("ID", id);
+        node.put("Version", version);
         return node;
     }
 }

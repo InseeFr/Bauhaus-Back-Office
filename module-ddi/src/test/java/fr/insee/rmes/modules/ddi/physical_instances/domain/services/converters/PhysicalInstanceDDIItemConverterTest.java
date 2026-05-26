@@ -92,6 +92,9 @@ class PhysicalInstanceDDIItemConverterTest {
         assertNotNull(refs);
         assertEquals(1, refs.size());
         assertEquals("DataRelationship", refs.get(0).get("$type").asText());
-        assertEquals("urn:ddi:fr.insee:e1099551-32c7-4ccb-9fa9-071553f319ac:1", refs.get(0).get("value").get(0).asText());
+        assertEquals("urn:ddi:fr.insee:e1099551-32c7-4ccb-9fa9-071553f319ac:1", refs.get(0).get("URN").asText());
+        assertEquals("fr.insee", refs.get(0).get("Agency").asText());
+        assertEquals("e1099551-32c7-4ccb-9fa9-071553f319ac", refs.get(0).get("ID").asText());
+        assertEquals("1", refs.get(0).get("Version").asText());
     }
 }
