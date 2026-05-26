@@ -99,7 +99,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 LangStrings.of("fr-FR", "Âge détaillé"),
                 null,
                 new VariableRepresentation(null,
-                        new CodeRepresentation("false", Reference.of("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
+                        new CodeRepresentation(CodeRepresentation.TYPE,"false", Reference.of("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
                         null, null, null),
                 null
         );

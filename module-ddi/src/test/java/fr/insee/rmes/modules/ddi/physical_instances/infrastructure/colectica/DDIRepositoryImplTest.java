@@ -616,7 +616,7 @@ class DDIRepositoryImplTest {
                 LangStrings.of("fr-FR", "Test Label"),
                 null,
                 new VariableRepresentation(null,
-                    new CodeRepresentation("false",
+                    new CodeRepresentation(CodeRepresentation.TYPE,"false",
                         Reference.of(agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1", "CodeList")),
                     null, null, null),
                 ""
@@ -996,7 +996,7 @@ class DDIRepositoryImplTest {
                 LangStrings.of("fr-FR", "Test Label"),
                 null,
                 new VariableRepresentation(null,
-                    new CodeRepresentation("false",
+                    new CodeRepresentation(CodeRepresentation.TYPE,"false",
                         Reference.of(agencyId, mutualizedCodeListId, "1", "CodeList")),
                     null, null, null),
                 ""

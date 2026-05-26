@@ -270,7 +270,7 @@ public class Lifecycle33ToDdi4 {
         Reference clRef = codeRep.isSetCodeListReference()
                 ? readReference(codeRep.getCodeListReference())
                 : null;
-        return new CodeRepresentation(Boolean.toString(codeRep.getBlankIsMissingValue()), clRef);
+        return new CodeRepresentation(CodeRepresentation.TYPE,Boolean.toString(codeRep.getBlankIsMissingValue()), clRef);
     }
 
     private static Reference readReference(ReferenceType ref) {
@@ -294,7 +294,7 @@ public class Lifecycle33ToDdi4 {
         }
         String typeCode = numRep.isSetNumericTypeCode() && numRep.getNumericTypeCode() != null
                 ? numRep.getNumericTypeCode().getStringValue() : null;
-        return new NumericRepresentation(typeCode, numberRange);
+        return new NumericRepresentation(NumericRepresentation.TYPE,typeCode, numberRange);
     }
 
     private static RangeValue toRangeValue(NumberRangeValueType v) {
@@ -307,7 +307,7 @@ public class Lifecycle33ToDdi4 {
         String typeCode = dt.getDateTypeCode() != null ? dt.getDateTypeCode().getStringValue() : null;
         String format = dt.isSetDateFieldFormat() && dt.getDateFieldFormat() != null
                 ? dt.getDateFieldFormat().getStringValue() : null;
-        return new DateTimeRepresentation(typeCode, format);
+        return new DateTimeRepresentation(DateTimeRepresentation.TYPE,typeCode, format);
     }
 
     private static TextRepresentation readTextRepresentation(RepresentationType rep) {
@@ -319,7 +319,7 @@ public class Lifecycle33ToDdi4 {
                 ? txt.getMaxLength().intValueExact() : null;
         String regExp = txt.isSetRegExp() ? txt.getRegExp() : null;
         String blank = Boolean.toString(txt.getBlankIsMissingValue());
-        return new TextRepresentation(maxLength, minLength, regExp, blank);
+        return new TextRepresentation(TextRepresentation.TYPE,maxLength, minLength, regExp, blank);
     }
 
     private static List<LangString> readStructuredString(StructuredStringType struct) {

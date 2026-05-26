@@ -145,7 +145,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithCodeRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null,
-                new CodeRepresentation("true",
+                new CodeRepresentation(CodeRepresentation.TYPE,"true",
                         Reference.of("fr.insee", "cl-id", "1", "CodeList")),
                 null, null, null));
 
@@ -162,7 +162,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithNumericRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null,
-                new NumericRepresentation("Integer",
+                new NumericRepresentation(NumericRepresentation.TYPE,"Integer",
                         new NumberRange(new RangeValue("false", "0"), new RangeValue("true", "100"))),
                 null, null));
 
@@ -180,7 +180,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithDateTimeRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null, null,
-                new DateTimeRepresentation("Date", "yyyy-MM-dd"),
+                new DateTimeRepresentation(DateTimeRepresentation.TYPE,"Date", "yyyy-MM-dd"),
                 null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
@@ -195,7 +195,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithTextRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null, null, null,
-                new TextRepresentation(255, 1, "[A-Z]+", "true")));
+                new TextRepresentation(TextRepresentation.TYPE,255, 1, "[A-Z]+", "true")));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
 
