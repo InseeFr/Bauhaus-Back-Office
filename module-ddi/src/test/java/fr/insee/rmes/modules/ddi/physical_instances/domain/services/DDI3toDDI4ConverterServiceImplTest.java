@@ -573,7 +573,7 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals(1, result.variable().size());
 
         Ddi4Variable var = result.variable().get(0);
-        assertEquals("true", var.isGeographic());
+        assertEquals(true, var.isGeographic());
         assertEquals("NAME", var.variableName().get(0).value());
         assertEquals("Name", var.label().get(0).value());
         assertEquals("Person name", var.description().get(0).value());

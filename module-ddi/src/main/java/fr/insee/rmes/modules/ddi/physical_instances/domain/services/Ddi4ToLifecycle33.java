@@ -130,8 +130,8 @@ public class Ddi4ToLifecycle33 {
 
         varType.setIsUniversallyUnique(true);
         varType.setVersionDate(var.versionDate() != null ? var.versionDate().dateTime() : null);
-        if (var.isGeographic() != null && !var.isGeographic().isEmpty()) {
-            varType.setIsGeographic(Boolean.parseBoolean(var.isGeographic()));
+        if (var.isGeographic() != null) {
+            varType.setIsGeographic(var.isGeographic());
         }
         varType.addNewURN().setStringValue(var.urn());
         varType.addAgency(var.agency());

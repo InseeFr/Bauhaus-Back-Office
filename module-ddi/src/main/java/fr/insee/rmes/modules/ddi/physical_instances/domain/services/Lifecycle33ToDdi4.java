@@ -119,7 +119,7 @@ public class Lifecycle33ToDdi4 {
                 var.isSetDescription()
                         ? readStructuredString(var.getDescription()) : null,
                 readVariableRepresentation(var.getVariableRepresentation()),
-                var.isSetIsGeographic() ? Boolean.toString(var.getIsGeographic()) : null
+                var.isSetIsGeographic() ? var.getIsGeographic() : null
         );
     }
 

@@ -619,7 +619,7 @@ class DDIRepositoryImplTest {
                     new CodeRepresentation(CodeRepresentation.TYPE,false,
                         Reference.of(agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1", "CodeList")),
                     null, null, null),
-                ""
+                null
         );
 
         Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
@@ -999,7 +999,7 @@ class DDIRepositoryImplTest {
                     new CodeRepresentation(CodeRepresentation.TYPE,false,
                         Reference.of(agencyId, mutualizedCodeListId, "1", "CodeList")),
                     null, null, null),
-                ""
+                null
         );
 
         Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,

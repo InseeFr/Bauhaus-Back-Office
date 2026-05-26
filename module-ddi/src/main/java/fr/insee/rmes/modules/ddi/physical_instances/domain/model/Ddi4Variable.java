@@ -16,7 +16,7 @@ public record Ddi4Variable(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("Description") List<LangString> description,
         @JsonProperty("VariableRepresentation") VariableRepresentation variableRepresentation,
-        @JsonProperty("@isGeographic") String isGeographic
+        @JsonProperty("IsGeographic") Boolean isGeographic
 ) {
 
     public static final String TYPE = "Variable";
