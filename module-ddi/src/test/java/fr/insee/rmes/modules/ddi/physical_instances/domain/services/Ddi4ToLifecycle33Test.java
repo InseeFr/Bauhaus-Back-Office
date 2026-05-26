@@ -41,7 +41,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildPhysicalInstanceWithoutBasedOnObject() {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:new-pi-id:1", "fr.insee", "new-pi-id", "1",
                 null,
@@ -64,7 +64,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildPhysicalInstanceWithBasedOnObjectAndDataRelationshipReference() {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:new-pi-id:1", "fr.insee", "new-pi-id", "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-pi-id", "1", "PhysicalInstance"))),
@@ -83,7 +83,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildDataRelationshipMinimal() {
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:dr-id:1", "fr.insee", "dr-id", "1",
                 null, null, null);
@@ -99,12 +99,12 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildDataRelationshipWithLabelAndLogicalRecord() {
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:dr-id:1", "fr.insee", "dr-id", "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-dr", "1", "DataRelationship"))),
                 LangStrings.of("fr-FR", "DR Label"),
-                new LogicalRecord("urn:ddi:fr.insee:lr-id:1", "fr.insee", "lr-id", "1",
+                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-id:1", "fr.insee", "lr-id", "1",
                         LangStrings.of("fr-FR", "LR Label"), null));
 
         String xml = converter.toDataRelationship(dr).xmlText(logicalProductXmlOptions());
@@ -121,7 +121,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildVariableWithBasedOnObjectAndLabel() {
-        Ddi4Variable var = new Ddi4Variable(
+        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:var-id:1", "fr.insee", "var-id", "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-var", "1", "Variable"))),
@@ -209,11 +209,11 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildCodeListWithCodes() {
-        Ddi4CodeList cl = new Ddi4CodeList(
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
                 LangStrings.of("fr-FR", "CodeList Label"),
-                List.of(new Code(
+                List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:code-id:1", "fr.insee", "code-id", "1",
                         Reference.of("fr.insee", "cat-id", "1", "Category"),
                         "01")));
@@ -233,7 +233,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildCategory() {
-        Ddi4Category cat = new Ddi4Category(
+        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cat-id:1", "fr.insee", "cat-id", "1",
                 LangStrings.of("fr-FR", "Category Label"));
@@ -249,7 +249,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithAllFields() {
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus",
@@ -271,7 +271,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildGroupWithoutOptionalFields() {
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus",
@@ -288,7 +288,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithOperationIri() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(
+        Ddi4StudyUnit su = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
@@ -308,7 +308,7 @@ class Ddi4ToLifecycle33Test {
 
     @Test
     void shouldBuildStudyUnitWithoutOperationIri() {
-        Ddi4StudyUnit su = new Ddi4StudyUnit(
+        Ddi4StudyUnit su = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
@@ -322,7 +322,7 @@ class Ddi4ToLifecycle33Test {
     }
 
     private static Ddi4Variable variableWithRepresentation(VariableRepresentation rep) {
-        return new Ddi4Variable(
+        return new Ddi4Variable(Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:var-rep:1", "fr.insee", "var-rep", "1",
                 null,

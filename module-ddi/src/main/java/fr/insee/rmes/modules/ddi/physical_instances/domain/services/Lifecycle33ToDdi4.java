@@ -65,6 +65,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a PhysicalInstance");
         }
         return new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime(pi.xgetVersionDate().getStringValue()),
                 pi.getURNArray(0).getStringValue(),
                 pi.getAgencyArray(0),
@@ -82,6 +83,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a DataRelationship");
         }
         return new Ddi4DataRelationship(
+                Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime(dr.xgetVersionDate().getStringValue()),
                 dr.getURNArray(0).getStringValue(),
                 dr.getAgencyArray(0),
@@ -103,6 +105,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Variable");
         }
         return new Ddi4Variable(
+                Ddi4Variable.TYPE,
                 CogsDate.ofDateTime(var.xgetVersionDate().getStringValue()),
                 var.getURNArray(0).getStringValue(),
                 var.getAgencyArray(0),
@@ -129,6 +132,7 @@ public class Lifecycle33ToDdi4 {
         for (CodeType c : cl.getCodeArray()) {
             Reference catRef = readReference(c.getCategoryReference());
             codes.add(new Code(
+                    Code.TYPE,
                     c.getURNArray(0).getStringValue(),
                     c.getAgencyArray(0),
                     c.getIDArray(0).getStringValue(),
@@ -137,6 +141,7 @@ public class Lifecycle33ToDdi4 {
                     c.getValue() != null ? c.getValue().getStringValue() : null));
         }
         return new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime(cl.xgetVersionDate().getStringValue()),
                 cl.getURNArray(0).getStringValue(),
                 cl.getAgencyArray(0),
@@ -153,6 +158,7 @@ public class Lifecycle33ToDdi4 {
             throw new IllegalArgumentException("Fragment does not contain a Category");
         }
         return new Ddi4Category(
+                Ddi4Category.TYPE,
                 CogsDate.ofDateTime(cat.xgetVersionDate().getStringValue()),
                 cat.getURNArray(0).getStringValue(),
                 cat.getAgencyArray(0),
@@ -176,6 +182,7 @@ public class Lifecycle33ToDdi4 {
             suRefs.add(readReference(ref));
         }
         return new Ddi4Group(
+                Ddi4Group.TYPE,
                 CogsDate.ofDateTime(group.xgetVersionDate().getStringValue()),
                 group.getURNArray(0).getStringValue(),
                 group.getAgencyArray(0),
@@ -201,6 +208,7 @@ public class Lifecycle33ToDdi4 {
             piRefs.add(readReference(ref));
         }
         return new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime(su.xgetVersionDate().getStringValue()),
                 su.getURNArray(0).getStringValue(),
                 su.getAgencyArray(0),
@@ -323,6 +331,7 @@ public class Lifecycle33ToDdi4 {
     private static LogicalRecord readLogicalRecord(LogicalRecordType lr) {
         if (lr == null) return null;
         return new LogicalRecord(
+                LogicalRecord.TYPE,
                 lr.getURNArray(0).getStringValue(),
                 lr.getAgencyArray(0),
                 lr.getIDArray(0).getStringValue(),

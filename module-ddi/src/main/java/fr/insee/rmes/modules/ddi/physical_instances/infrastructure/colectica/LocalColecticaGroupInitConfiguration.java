@@ -107,6 +107,7 @@ public class LocalColecticaGroupInitConfiguration {
                         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
                         Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                                Ddi4StudyUnit.TYPE,
                                 CogsDate.ofDateTime(versionDate),
                                 "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
                                 defaultAgencyId,
@@ -157,6 +158,7 @@ public class LocalColecticaGroupInitConfiguration {
                             .toList();
 
                     Ddi4Group group = new Ddi4Group(
+                            Ddi4Group.TYPE,
                             CogsDate.ofDateTime(versionDate),
                             "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
                             defaultAgencyId,

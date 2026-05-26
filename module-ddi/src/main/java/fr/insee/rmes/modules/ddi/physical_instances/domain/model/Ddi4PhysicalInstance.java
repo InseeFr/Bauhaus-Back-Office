@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4PhysicalInstance(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -14,4 +15,6 @@ public record Ddi4PhysicalInstance(
         @JsonProperty("Citation") Citation citation,
         @JsonProperty("DataRelationshipReference") List<Reference> dataRelationshipReference
 ) {
+
+    public static final String TYPE = "PhysicalInstance";
 }

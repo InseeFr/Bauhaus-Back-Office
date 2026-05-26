@@ -7,6 +7,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
  * following the DDI Lifecycle 3.3 reusable module structure.
  */
 public interface Ddi4Item {
+    String type();
     CogsDate versionDate();
     String urn();
     String agency();

@@ -82,7 +82,7 @@ class GraphDbStampCheckerTest {
     @Test
     void get_creators_stamps_ddi_physical_instance_returns_empty_list_when_group_has_no_series() throws StampFetchException, UnsupportedModuleException {
         // studyUnitReference=List.of(), seriesIris=List.of()
-        Ddi4Group group = new Ddi4Group(null, null, "fr.insee", "group-id", "1",
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,null, null, "fr.insee", "group-id", "1",
                 null, null, List.of(), List.of(), null);
         Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
         when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
@@ -97,7 +97,7 @@ class GraphDbStampCheckerTest {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String iri2 = "http://id.insee.fr/operations/serie/s1002";
         // studyUnitReference=null, seriesIris=List.of(iri1, iri2)
-        Ddi4Group group = new Ddi4Group(null, null, "fr.insee", "group-id", "1",
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,null, null, "fr.insee", "group-id", "1",
                 null, null, null, List.of(iri1, iri2), null);
         Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
         when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);
@@ -154,7 +154,7 @@ class GraphDbStampCheckerTest {
     void get_creators_stamps_ddi_physical_instance_normalizes_uris_to_stamp_codes() throws StampFetchException, UnsupportedModuleException, fr.insee.rmes.domain.exceptions.RmesException {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String orgIri = "http://id.insee.fr/organisations/insee/DG75-G401";
-        Ddi4Group group = new Ddi4Group(null, null, "fr.insee", "group-id", "1",
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,null, null, "fr.insee", "group-id", "1",
                 null, null, null, List.of(iri1), null);
         Ddi4GroupResponse groupResponse = new Ddi4GroupResponse(null, null, List.of(group), null);
         when(ddiRepository.getGroup("fr.insee", "group-id")).thenReturn(groupResponse);

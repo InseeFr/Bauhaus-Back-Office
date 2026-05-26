@@ -13,6 +13,7 @@ import java.util.List;
  * A group may reference more than one series.
  */
 public record Ddi4Group(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -24,4 +25,6 @@ public record Ddi4Group(
         List<String> seriesIris,
         String typeOfGroup
 ) implements Ddi4Item {
+
+    public static final String TYPE = "Group";
 }

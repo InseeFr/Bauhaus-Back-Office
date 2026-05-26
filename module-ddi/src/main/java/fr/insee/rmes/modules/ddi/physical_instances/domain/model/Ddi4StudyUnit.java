@@ -12,6 +12,7 @@ import java.util.List;
  * used to generate the {@code <r:UserID>} tag in DDI3 XML.
  */
 public record Ddi4StudyUnit(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -21,4 +22,6 @@ public record Ddi4StudyUnit(
         String operationIri,
         @JsonProperty("PhysicalInstanceReference") List<Reference> physicalInstanceReferences
 ) implements Ddi4Item {
+
+    public static final String TYPE = "StudyUnit";
 }

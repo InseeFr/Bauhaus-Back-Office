@@ -34,7 +34,7 @@ class StudyUnitServiceImplTest {
 
     @Test
     void createOrUpdate_shouldDelegateToRepository() {
-        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test StudyUnit")),

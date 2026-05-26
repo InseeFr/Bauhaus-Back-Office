@@ -48,7 +48,7 @@ class LocalColecticaGroupInitConfigurationTest {
     private RestClient restClient;
 
     private Ddi4Response piResponse(String agency, String id) {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
                 "urn:ddi:%s:%s:1".formatted(agency, id), agency, id, "1", null, null, null);
         return new Ddi4Response(null, null, List.of(pi), null, null, null, null);
     }

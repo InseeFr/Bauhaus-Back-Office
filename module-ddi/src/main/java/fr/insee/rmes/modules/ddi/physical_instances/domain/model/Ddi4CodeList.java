@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4CodeList(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -12,4 +13,6 @@ public record Ddi4CodeList(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("Code") List<Code> code
 ) {
+
+    public static final String TYPE = "CodeList";
 }

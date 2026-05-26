@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4Variable(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -17,4 +18,6 @@ public record Ddi4Variable(
         @JsonProperty("VariableRepresentation") VariableRepresentation variableRepresentation,
         @JsonProperty("@isGeographic") String isGeographic
 ) {
+
+    public static final String TYPE = "Variable";
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4DataRelationship(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -14,4 +15,6 @@ public record Ddi4DataRelationship(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("LogicalRecord") LogicalRecord logicalRecord
 ) {
+
+    public static final String TYPE = "DataRelationship";
 }

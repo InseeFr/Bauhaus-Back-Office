@@ -200,7 +200,7 @@ class DDIServiceImplTest {
         Reference suRef1 = Reference.of(agencyId, "su-1", "1", "StudyUnit");
         Reference suRef2 = Reference.of(agencyId, "su-2", "1", "StudyUnit");
 
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
             CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
             "urn:ddi:fr.insee:" + groupId + ":1",
             agencyId, groupId, "1",
@@ -209,7 +209,7 @@ class DDIServiceImplTest {
             "insee:StatisticalOperationSeries"
         );
 
-        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
             CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
             "urn:ddi:fr.insee:su-1:1",
             agencyId, "su-1", "1",
@@ -218,7 +218,7 @@ class DDIServiceImplTest {
             null
         );
 
-        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
             CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
             "urn:ddi:fr.insee:su-2:1",
             agencyId, "su-2", "1",
@@ -346,7 +346,7 @@ class DDIServiceImplTest {
         when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
 
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:grp-789:1",
                 "fr.insee", "grp-789", "1",
@@ -420,7 +420,7 @@ class DDIServiceImplTest {
     }
 
     private Ddi4GroupResponse groupResponseWithSeries(String groupId, String... seriesIris) {
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
                 "urn:ddi:fr.insee:" + groupId + ":1",
                 "fr.insee", groupId, "1",

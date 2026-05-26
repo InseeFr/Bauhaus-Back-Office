@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record Ddi4Category(
+        @JsonProperty("$type") String type,
         @JsonProperty("VersionDate") CogsDate versionDate,
         @JsonProperty("URN") String urn,
         @JsonProperty("Agency") String agency,
@@ -12,4 +13,6 @@ public record Ddi4Category(
         @JsonProperty("Version") String version,
         @JsonProperty("Label") List<LangString> label
 ) {
+
+    public static final String TYPE = "Category";
 }

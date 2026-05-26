@@ -42,7 +42,7 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldConvertPhysicalInstance() {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1",
                 "fr.insee", "saphir-rp99-sas", "1",
@@ -66,13 +66,13 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldConvertDataRelationship() {
-        Ddi4DataRelationship dr = new Ddi4DataRelationship(
+        Ddi4DataRelationship dr = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:DataRelationship.saphir-rp99-sas:1",
                 "fr.insee", "saphir-rp99-sas", "1",
                 null,
                 LangStrings.of("fr-FR", "SAPHIR - RP99"),
-                new LogicalRecord("urn:ddi:fr.insee:lr:1", "fr.insee", "saphir-rp99-sas", "1",
+                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr:1", "fr.insee", "saphir-rp99-sas", "1",
                         LangStrings.of("fr-FR", "SAPHIR - RP99"),
                         new VariablesInRecord(List.of()))
         );
@@ -90,7 +90,7 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldConvertVariable() {
-        Ddi4Variable var = new Ddi4Variable(
+        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:Variable.AGEMEN8:1",
                 "fr.insee", "AGEMEN8", "1",
@@ -119,7 +119,7 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldConvertCodeList() {
-        Ddi4CodeList cl = new Ddi4CodeList(
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1",
                 "fr.insee", "CL_AGEMEN8", "1",
@@ -140,7 +140,7 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldConvertCategory() {
-        Ddi4Category cat = new Ddi4Category(
+        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:Category.CAT_0:1",
                 "fr.insee", "CAT_0", "1",
@@ -169,7 +169,7 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldBuildFragmentInstanceDocumentWithTopLevelReference() {
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
                 "urn:ddi:fr.insee:PhysicalInstance.test:1",
                 "fr.insee", "test-id", "1",

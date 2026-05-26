@@ -650,7 +650,7 @@ class DdiResourcesTest {
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1", "DataRelationship"
         );
 
-        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
+        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
             CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
             "urn:ddi:fr.insee:9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd:1",
             "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1",
@@ -659,7 +659,7 @@ class DdiResourcesTest {
 
         List<LangString> drLabel = LangStrings.of("fr-FR", "Dessin de fichier thl-CASD");
 
-        Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(
+        Ddi4DataRelationship dataRelationship = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
             CogsDate.ofDateTime("2024-06-03T14:29:23.4049817Z"),
             "urn:ddi:fr.insee:d8283793-e88d-4cc7-a697-2951054e9a3a:1",
             "fr.insee", "d8283793-e88d-4cc7-a697-2951054e9a3a", "1",
@@ -730,7 +730,7 @@ class DdiResourcesTest {
         Reference suRef2 = Reference.of("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
 
         // Create Group
-        Ddi4Group group = new Ddi4Group(
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
             CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
             "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
             "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
@@ -742,7 +742,7 @@ class DdiResourcesTest {
         List<LangString> su1Title = LangStrings.of("fr-FR", "BPE 2021");
         Citation su1Citation = new Citation(su1Title);
 
-        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(
+        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
             CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
             "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
             "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
@@ -754,7 +754,7 @@ class DdiResourcesTest {
         List<LangString> su2Title = LangStrings.of("fr-FR", "BPE 2022");
         Citation su2Citation = new Citation(su2Title);
 
-        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(
+        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
             CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
             "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
             "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
