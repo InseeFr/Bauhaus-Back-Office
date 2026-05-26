@@ -7,7 +7,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -22,7 +21,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import org.apache.xmlbeans.XmlOptions;
@@ -257,7 +255,7 @@ class Ddi4ToLifecycle33Test {
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
-                List.of(new StudyUnitReference("fr.insee", "su-id-1", "1", "StudyUnit")),
+                List.of(Reference.of("fr.insee", "su-id-1", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries");
 
@@ -296,7 +294,7 @@ class Ddi4ToLifecycle33Test {
                 "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
                 new Citation(LangStrings.of("fr-FR", "Test SU")),
                 "http://id.insee.fr/operations/operation/op1",
-                List.of(new DDIReference("fr.insee", "pi-id", "1")));
+                List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")));
 
         String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
 

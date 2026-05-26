@@ -217,7 +217,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(), List.of(), List.of(), List.of()
         );
@@ -336,7 +336,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference("fr.insee", "test-id", "1", "PhysicalInstance")),
+                List.of(Reference.of("fr.insee", "test-id", "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(), List.of(), List.of(), List.of()
         );
@@ -498,7 +498,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );
@@ -633,7 +633,7 @@ class DDIRepositoryImplTest {
                         agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
                         null,
                         new VariablesInRecord(List.of(
-                                new VariableUsedReference(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable")
+                                Reference.of(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable")
                         )))
         );
 
@@ -658,7 +658,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(mockDataRelationship),
                 List.of(mockVariable),
@@ -753,7 +753,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(pi),
                 null,
                 null,
@@ -828,7 +828,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(pi),
                 null,
                 null,
@@ -921,7 +921,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(pi),
                 null,
                 null,
@@ -1016,7 +1016,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(pi),
                 null,
                 List.of(variable),
@@ -1112,7 +1112,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(pi),
                 null,
                 null,
@@ -1188,7 +1188,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(pi),
                 null,
                 null,
@@ -1414,7 +1414,7 @@ class DDIRepositoryImplTest {
         assertNotNull(result.topLevelReference());
         assertEquals(1, result.topLevelReference().size());
         assertEquals(groupId, result.topLevelReference().get(0).id());
-        assertEquals("Group", result.topLevelReference().get(0).typeOfObject());
+        assertEquals("Group", result.topLevelReference().get(0).type());
 
         // Verify ddiset endpoint was called
         verify(requestSpec).uri(eq(baseApiUrl + "ddiset/" + agencyId + "/" + groupId));
@@ -1757,7 +1757,7 @@ class DDIRepositoryImplTest {
         );
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, codeListId, "1", "CodeList")),
+                List.of(Reference.of(agencyId, codeListId, "1", "CodeList")),
                 List.of(), List.of(), List.of(),
                 List.of(mockCodeList),
                 List.of(mockCategory)
@@ -1826,7 +1826,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );
@@ -1909,7 +1909,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );
@@ -1998,7 +1998,7 @@ class DDIRepositoryImplTest {
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
-                List.of(new TopLevelReference(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(mockDataRelationship), List.of(), List.of(), List.of()
         );

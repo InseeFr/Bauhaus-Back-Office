@@ -8,7 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelatio
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import org.apache.xmlbeans.XmlException;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         List<Ddi4Variable> variables = new ArrayList<>();
         List<Ddi4CodeList> codeLists = new ArrayList<>();
         List<Ddi4Category> categories = new ArrayList<>();
-        List<TopLevelReference> topLevelReferences = new ArrayList<>();
+        List<Reference> topLevelReferences = new ArrayList<>();
 
         if (ddi3.items() != null) {
             for (Ddi3Response.Ddi3Item item : ddi3.items()) {
@@ -51,7 +51,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
                     String itemType = item.itemType();
                     if (itemTypes.get("PhysicalInstance").equals(itemType)) {
                         physicalInstances.add(lifecycle33ToDdi4.toPhysicalInstance(fragment));
-                        topLevelReferences.add(new TopLevelReference(
+                        topLevelReferences.add(Reference.of(
                             item.agencyId(),
                             item.identifier(),
                             item.version(),

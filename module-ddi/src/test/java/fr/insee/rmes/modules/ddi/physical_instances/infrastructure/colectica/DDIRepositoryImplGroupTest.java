@@ -90,7 +90,7 @@ class DDIRepositoryImplGroupTest {
                     "urn:ddi:fr.insee:group-uuid:1", "fr.insee", "group-uuid", "1",
                     "bauhaus",
                     new Citation(LangStrings.of("fr-FR", "s1001 Group")),
-                    List.of(new StudyUnitReference("fr.insee", "su-uuid-1", "1", "StudyUnit")),
+                    List.of(Reference.of("fr.insee", "su-uuid-1", "1", "StudyUnit")),
                     List.of("http://id.insee.fr/operations/serie/s1001"),
                     "insee:StatisticalOperationSeries"
             );

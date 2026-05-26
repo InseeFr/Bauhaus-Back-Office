@@ -750,7 +750,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         List<Ddi4Group> groups = new ArrayList<>();
         List<Ddi4StudyUnit> studyUnits = new ArrayList<>();
-        List<TopLevelReference> topLevelReferences = new ArrayList<>();
+        List<Reference> topLevelReferences = new ArrayList<>();
 
         // Parse Group elements
         NodeList groupNodes = doc.getElementsByTagNameNS(
@@ -766,7 +766,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             // Add top level reference for the group
             topLevelReferences.add(
-                new TopLevelReference(
+                Reference.of(
                     group.agency(),
                     group.id(),
                     group.version(),
@@ -835,7 +835,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         Citation citation = parseCitation(groupElement);
 
         // Parse StudyUnitReferences
-        List<StudyUnitReference> studyUnitReferences = parseStudyUnitReferences(
+        List<Reference> studyUnitReferences = parseStudyUnitReferences(
             groupElement
         );
 
@@ -968,10 +968,10 @@ public class DDIRepositoryImpl implements DDIRepository {
     /**
      * Parse StudyUnitReferences from a Group element
      */
-    private List<StudyUnitReference> parseStudyUnitReferences(
+    private List<Reference> parseStudyUnitReferences(
         Element groupElement
     ) {
-        List<StudyUnitReference> references = new ArrayList<>();
+        List<Reference> references = new ArrayList<>();
 
         NodeList refNodes = groupElement.getElementsByTagNameNS(
             "ddi:reusable:3_3",
@@ -1001,9 +1001,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 "TypeOfObject"
             );
 
-            references.add(
-                new StudyUnitReference(agency, id, version, typeOfObject)
-            );
+            references.add(Reference.of(agency, id, version, typeOfObject));
         }
 
         return references;

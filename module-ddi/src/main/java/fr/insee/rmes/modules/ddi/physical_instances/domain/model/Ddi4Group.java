@@ -21,7 +21,7 @@ public record Ddi4Group(
         @JsonProperty("Version") String version,
         @JsonProperty("VersionResponsibility") String versionResponsibility,
         @JsonProperty("Citation") Citation citation,
-        @JsonProperty("StudyUnitReference") List<StudyUnitReference> studyUnitReference,
+        @JsonProperty("StudyUnitReference") List<Reference> studyUnitReference,
         List<String> seriesIris,
         String typeOfGroup
 ) implements Ddi4Item {

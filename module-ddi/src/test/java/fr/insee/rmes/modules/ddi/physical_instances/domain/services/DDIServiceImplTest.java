@@ -12,8 +12,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
@@ -197,8 +196,8 @@ class DDIServiceImplTest {
         String groupId = "10a689ce-7006-429b-8e84-036b7787b422";
 
         Citation citation = new Citation(LangStrings.of("fr-FR", "Base permanente des équipements"));
-        StudyUnitReference suRef1 = new StudyUnitReference(agencyId, "su-1", "1", "StudyUnit");
-        StudyUnitReference suRef2 = new StudyUnitReference(agencyId, "su-2", "1", "StudyUnit");
+        Reference suRef1 = Reference.of(agencyId, "su-1", "1", "StudyUnit");
+        Reference suRef2 = Reference.of(agencyId, "su-2", "1", "StudyUnit");
 
         Ddi4Group group = new Ddi4Group(
             "true", "2025-01-09T09:00:00Z",
@@ -227,7 +226,7 @@ class DDIServiceImplTest {
             null
         );
 
-        TopLevelReference topLevelRef = new TopLevelReference(agencyId, groupId, "1", "Group");
+        Reference topLevelRef = Reference.of(agencyId, groupId, "1", "Group");
 
         Ddi4GroupResponse expectedResponse = new Ddi4GroupResponse(
             "ddi:4.0",

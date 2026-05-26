@@ -6,7 +6,7 @@ import java.util.List;
 
 public record Ddi4CodeListResponse(
         @JsonProperty("$schema") String schema,
-        List<TopLevelReference> topLevelReference,
+        @JsonProperty("TopLevelReference") List<Reference> topLevelReference,
         @JsonProperty("CodeList") List<Ddi4CodeList> codeList
 ) {
 }

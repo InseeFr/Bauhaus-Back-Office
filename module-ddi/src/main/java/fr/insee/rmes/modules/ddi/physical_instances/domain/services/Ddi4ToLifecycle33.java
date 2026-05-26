@@ -16,7 +16,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnReferenc
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
@@ -30,10 +29,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableUsedReference;
 import org.apache.xmlbeans.XmlCursor;
 
 import javax.xml.namespace.QName;
@@ -126,12 +123,8 @@ public class Ddi4ToLifecycle33 {
             if (lr.variablesInRecord() != null
                     && lr.variablesInRecord().variableUsedReference() != null) {
                 var virType = lrType.addNewVariablesInRecord();
-                for (VariableUsedReference ref : lr.variablesInRecord().variableUsedReference()) {
-                    ReferenceType refType = virType.addNewVariableUsedReference();
-                    refType.addAgency(ref.agency());
-                    refType.addNewID().setStringValue(ref.id());
-                    refType.addVersion(ref.version());
-                    refType.setTypeOfObject(TypeOfObjectType.Enum.forString(ref.typeOfObject()));
+                for (Reference ref : lr.variablesInRecord().variableUsedReference()) {
+                    populateReference(virType.addNewVariableUsedReference(), ref);
                 }
             }
         }
@@ -285,12 +278,8 @@ public class Ddi4ToLifecycle33 {
         }
 
         if (group.studyUnitReference() != null) {
-            for (StudyUnitReference suRef : group.studyUnitReference()) {
-                ReferenceType refType = groupType.addNewStudyUnitReference();
-                refType.addAgency(suRef.agency());
-                refType.addNewID().setStringValue(suRef.id());
-                refType.addVersion(suRef.version());
-                refType.setTypeOfObject(TypeOfObjectType.Enum.forString(suRef.typeOfObject()));
+            for (Reference suRef : group.studyUnitReference()) {
+                populateReference(groupType.addNewStudyUnitReference(), suRef);
             }
         }
 
@@ -322,12 +311,8 @@ public class Ddi4ToLifecycle33 {
         }
 
         if (studyUnit.physicalInstanceReferences() != null) {
-            for (DDIReference piRef : studyUnit.physicalInstanceReferences()) {
-                ReferenceType refType = suType.addNewPhysicalInstanceReference();
-                refType.addAgency(piRef.agency());
-                refType.addNewID().setStringValue(piRef.id());
-                refType.addVersion(piRef.version());
-                refType.setTypeOfObject(TypeOfObjectType.Enum.forString("PhysicalInstance"));
+            for (Reference piRef : studyUnit.physicalInstanceReferences()) {
+                populateReference(suType.addNewPhysicalInstanceReference(), piRef);
             }
         }
 

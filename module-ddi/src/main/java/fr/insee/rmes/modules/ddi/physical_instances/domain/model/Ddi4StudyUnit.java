@@ -20,6 +20,6 @@ public record Ddi4StudyUnit(
         @JsonProperty("Version") String version,
         @JsonProperty("Citation") Citation citation,
         String operationIri,
-        List<DDIReference> physicalInstanceReferences
+        @JsonProperty("PhysicalInstanceReference") List<Reference> physicalInstanceReferences
 ) implements Ddi4Item {
 }

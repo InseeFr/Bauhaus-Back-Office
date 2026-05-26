@@ -35,7 +35,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -51,10 +50,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableUsedReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import org.apache.xmlbeans.XmlCursor;
 
@@ -182,13 +179,9 @@ public class Lifecycle33ToDdi4 {
         for (UserIDType userId : group.getUserIDList()) {
             seriesIris.add(userId.getStringValue());
         }
-        List<StudyUnitReference> suRefs = new ArrayList<>();
+        List<Reference> suRefs = new ArrayList<>();
         for (ReferenceType ref : group.getStudyUnitReferenceArray()) {
-            suRefs.add(new StudyUnitReference(
-                    ref.getAgencyArray(0),
-                    ref.getIDArray(0).getStringValue(),
-                    ref.getVersionArray(0),
-                    typeOfObjectAsString(ref)));
+            suRefs.add(readReference(ref));
         }
         return new Ddi4Group(
                 Boolean.toString(group.getIsUniversallyUnique()),
@@ -212,12 +205,9 @@ public class Lifecycle33ToDdi4 {
         }
         String operationIri = su.sizeOfUserIDArray() > 0
                 ? su.getUserIDArray(0).getStringValue() : null;
-        List<DDIReference> piRefs = new ArrayList<>();
+        List<Reference> piRefs = new ArrayList<>();
         for (ReferenceType ref : su.getPhysicalInstanceReferenceArray()) {
-            piRefs.add(new DDIReference(
-                    ref.getAgencyArray(0),
-                    ref.getIDArray(0).getStringValue(),
-                    ref.getVersionArray(0)));
+            piRefs.add(readReference(ref));
         }
         return new Ddi4StudyUnit(
                 Boolean.toString(su.getIsUniversallyUnique()),
@@ -359,13 +349,9 @@ public class Lifecycle33ToDdi4 {
 
     private static VariablesInRecord readVariablesInRecord(VariablesInRecordType vir) {
         if (vir == null || vir.sizeOfVariableUsedReferenceArray() == 0) return null;
-        List<VariableUsedReference> refs = new ArrayList<>();
+        List<Reference> refs = new ArrayList<>();
         for (ReferenceType ref : vir.getVariableUsedReferenceArray()) {
-            refs.add(new VariableUsedReference(
-                    ref.getAgencyArray(0),
-                    ref.getIDArray(0).getStringValue(),
-                    ref.getVersionArray(0),
-                    typeOfObjectAsString(ref)));
+            refs.add(readReference(ref));
         }
         return new VariablesInRecord(refs);
     }

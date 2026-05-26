@@ -3,15 +3,13 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
@@ -129,7 +127,7 @@ public class LocalColecticaGroupInitConfiguration {
                         logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
                         Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null));
                         Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
-                        studyUnitService.addPhysicalInstance(studyUnit, new DDIReference(pi.agency(), pi.id(), pi.version()));
+                        studyUnitService.addPhysicalInstance(studyUnit, Reference.of(pi.agency(), pi.id(), pi.version(), "PhysicalInstance"));
                         physicalInstancesCreated++;
                         logger.info("Physical instance created and linked to study unit: operationId={}, piId={}", operation.operationId(), pi.id());
                     } catch (Exception e) {
@@ -149,8 +147,8 @@ public class LocalColecticaGroupInitConfiguration {
                     String groupLabel = series.seriesLabel() + " Group";
                     String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-                    List<StudyUnitReference> studyUnitRefs = series.operations().stream()
-                            .map(op -> new StudyUnitReference(
+                    List<Reference> studyUnitRefs = series.operations().stream()
+                            .map(op -> Reference.of(
                                     defaultAgencyId,
                                     generateDeterministicUuid(op.operationIri()),
                                     "1",

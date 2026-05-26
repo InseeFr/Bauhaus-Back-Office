@@ -4,7 +4,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.StudyUnitReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class GroupServiceImplTest {
                 "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
                 "bauhaus-test",
                 new Citation(LangStrings.of("fr-FR", "Test Group")),
-                List.of(new StudyUnitReference("fr.insee", "su-id", "1", "StudyUnit")),
+                List.of(Reference.of("fr.insee", "su-id", "1", "StudyUnit")),
                 List.of("http://id.insee.fr/operations/serie/s1001"),
                 "insee:StatisticalOperationSeries"
         );

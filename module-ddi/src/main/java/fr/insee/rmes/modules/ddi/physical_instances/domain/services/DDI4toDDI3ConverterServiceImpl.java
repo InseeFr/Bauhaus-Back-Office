@@ -6,7 +6,7 @@ import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
@@ -104,13 +104,13 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
     public String convertDdi4ToDdi3Xml(Ddi4Response ddi4) {
         logger.info("Converting DDI4 to DDI3 XML");
         Ddi3Response ddi3Response = convertDdi4ToDdi3(ddi4);
-        TopLevelReference topLevelReference = (ddi4.topLevelReference() != null && !ddi4.topLevelReference().isEmpty())
+        Reference topLevelReference = (ddi4.topLevelReference() != null && !ddi4.topLevelReference().isEmpty())
                 ? ddi4.topLevelReference().get(0)
                 : null;
         return buildFragmentInstanceDocument(ddi3Response, topLevelReference);
     }
 
-    private String buildFragmentInstanceDocument(Ddi3Response ddi3Response, TopLevelReference topLevelReference) {
+    private String buildFragmentInstanceDocument(Ddi3Response ddi3Response, Reference topLevelReference) {
         if (ddi3Response == null || ddi3Response.items() == null || ddi3Response.items().isEmpty()) {
             throw new IllegalArgumentException("Ddi3Response must contain at least one item");
         }
@@ -127,7 +127,7 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                     .filter(item -> tlrId.equals(item.identifier()) && tlrAgency.equals(item.agencyId()))
                     .findFirst()
                     .orElse(ddi3Response.items().getFirst());
-            typeOfObject = topLevelReference.typeOfObject();
+            typeOfObject = topLevelReference.type();
         } else {
             topLevelItem = ddi3Response.items().stream()
                     .filter(item -> itemTypes.get("PhysicalInstance").equals(item.itemType()))

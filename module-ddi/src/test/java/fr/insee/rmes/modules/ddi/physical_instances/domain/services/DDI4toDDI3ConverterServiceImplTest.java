@@ -13,7 +13,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import org.junit.jupiter.api.BeforeEach;
@@ -178,7 +177,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 new Citation(LangStrings.of("fr-FR", "Test")),
                 new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
         );
-        TopLevelReference topLevelRef = new TopLevelReference("fr.insee", "test-id", "1", "PhysicalInstance");
+        Reference topLevelRef = Reference.of("fr.insee", "test-id", "1", "PhysicalInstance");
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(topLevelRef), List.of(pi), null, null, null, null);
 
         String result = converter.convertDdi4ToDdi3Xml(ddi4);

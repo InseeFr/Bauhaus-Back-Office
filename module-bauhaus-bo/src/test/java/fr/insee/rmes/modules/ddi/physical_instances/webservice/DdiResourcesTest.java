@@ -666,7 +666,7 @@ class DdiResourcesTest {
             null, drLabel, null
         );
 
-        TopLevelReference topLevelRef = new TopLevelReference(
+        Reference topLevelRef = Reference.of(
             "fr.insee", "9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", "1", "PhysicalInstance"
         );
 
@@ -726,8 +726,8 @@ class DdiResourcesTest {
         Citation citation = new Citation(title);
 
         // Create StudyUnit references
-        StudyUnitReference suRef1 = new StudyUnitReference("fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1", "StudyUnit");
-        StudyUnitReference suRef2 = new StudyUnitReference("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
+        Reference suRef1 = Reference.of("fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1", "StudyUnit");
+        Reference suRef2 = Reference.of("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
 
         // Create Group
         Ddi4Group group = new Ddi4Group(
@@ -764,7 +764,7 @@ class DdiResourcesTest {
         );
 
         // Create TopLevelReference
-        TopLevelReference topLevelRef = new TopLevelReference(
+        Reference topLevelRef = Reference.of(
             "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1", "Group"
         );
 
