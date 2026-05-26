@@ -104,8 +104,8 @@ class Ddi4ToLifecycle33Test {
                 "urn:ddi:fr.insee:dr-id:1", "fr.insee", "dr-id", "1",
                 BasedOnObject.of(List.of(Reference.of("fr.insee", "original-dr", "1", "DataRelationship"))),
                 LangStrings.of("fr-FR", "DR Label"),
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-id:1", "fr.insee", "lr-id", "1",
-                        LangStrings.of("fr-FR", "LR Label"), null));
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-id:1", "fr.insee", "lr-id", "1",
+                        LangStrings.of("fr-FR", "LR Label"), null)));
 
         String xml = converter.toDataRelationship(dr).xmlText(logicalProductXmlOptions());
 

@@ -94,8 +94,7 @@ public class Lifecycle33ToDdi4 {
                         dr.sizeOfLabelArray() > 0 ? dr.getLabelArray(0) : null,
                         dr.sizeOfDataRelationshipNameArray() > 0
                                 ? dr.getDataRelationshipNameArray(0) : null),
-                readLogicalRecord(dr.sizeOfLogicalRecordArray() > 0
-                        ? dr.getLogicalRecordArray(0) : null)
+                readLogicalRecords(dr.getLogicalRecordArray())
         );
     }
 
@@ -343,6 +342,15 @@ public class Lifecycle33ToDdi4 {
                                 ? lr.getLogicalRecordNameArray(0) : null),
                 readVariablesInRecord(lr.getVariablesInRecord())
         );
+    }
+
+    private static List<LogicalRecord> readLogicalRecords(LogicalRecordType[] lrs) {
+        if (lrs == null || lrs.length == 0) return null;
+        List<LogicalRecord> result = new ArrayList<>();
+        for (LogicalRecordType lr : lrs) {
+            result.add(readLogicalRecord(lr));
+        }
+        return result;
     }
 
     private static VariablesInRecord readVariablesInRecord(VariablesInRecordType vir) {

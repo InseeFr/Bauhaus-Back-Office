@@ -492,8 +492,8 @@ class DDIRepositoryImplTest {
                 agencyId, "dr-123", "1",
                 null,
                 null,
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        null, null)
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        null, null))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -628,12 +628,12 @@ class DDIRepositoryImplTest {
                 agencyId, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10", "1",
                 null,
                 null,
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:8585972f-2dc2-4125-87b2-60fd3f243cf3:1",
                         agencyId, "8585972f-2dc2-4125-87b2-60fd3f243cf3", "1",
                         null,
                         new VariablesInRecord(List.of(
                                 Reference.of(agencyId, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", "1", "Variable")
-                        )))
+                        ))))
         );
 
         Ddi4CodeList mockCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
@@ -1819,8 +1819,8 @@ class DDIRepositoryImplTest {
                 agencyId, "dr-123", "1",
                 null,
                 existingDrLabel,
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        existingLrLabel, null)
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        existingLrLabel, null))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -1902,8 +1902,8 @@ class DDIRepositoryImplTest {
                 agencyId, "dr-123", "1",
                 null,
                 null, // No existing label
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        null, null) // No existing label
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        null, null)) // No existing label
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -1950,9 +1950,10 @@ class DDIRepositoryImplTest {
 
         // Also verify LogicalRecord label
         assertNotNull(updatedDr.logicalRecord());
-        assertNotNull(updatedDr.logicalRecord().label());
-        assertEquals("fr-FR", updatedDr.logicalRecord().label().get(0).language()); // Should use DEFAULT_LANG
-        assertEquals("New LR Label", updatedDr.logicalRecord().label().get(0).value());
+        assertEquals(1, updatedDr.logicalRecord().size());
+        assertNotNull(updatedDr.logicalRecord().get(0).label());
+        assertEquals("fr-FR", updatedDr.logicalRecord().get(0).label().get(0).language()); // Should use DEFAULT_LANG
+        assertEquals("New LR Label", updatedDr.logicalRecord().get(0).label().get(0).value());
     }
 
     @Test
@@ -1991,8 +1992,8 @@ class DDIRepositoryImplTest {
                 agencyId, "dr-123", "1",
                 null,
                 existingDrLabel,
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
-                        existingLrLabel, null)
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        existingLrLabel, null))
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
@@ -2036,9 +2037,9 @@ class DDIRepositoryImplTest {
         assertEquals("en-GB", updatedDr.label().get(0).language()); // Should preserve existing lang
         assertEquals("Updated DR Label", updatedDr.label().get(0).value()); // But update text
 
-        assertNotNull(updatedDr.logicalRecord().label());
-        assertEquals("es-ES", updatedDr.logicalRecord().label().get(0).language()); // Should preserve existing lang
-        assertEquals("Updated LR Label", updatedDr.logicalRecord().label().get(0).value()); // But update text
+        assertNotNull(updatedDr.logicalRecord().get(0).label());
+        assertEquals("es-ES", updatedDr.logicalRecord().get(0).label().get(0).language()); // Should preserve existing lang
+        assertEquals("Updated LR Label", updatedDr.logicalRecord().get(0).label().get(0).value()); // But update text
     }
 
     @Test

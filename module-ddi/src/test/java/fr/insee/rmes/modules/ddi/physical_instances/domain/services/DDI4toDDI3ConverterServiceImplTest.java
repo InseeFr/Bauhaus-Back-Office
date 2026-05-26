@@ -72,9 +72,9 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee", "saphir-rp99-sas", "1",
                 null,
                 LangStrings.of("fr-FR", "SAPHIR - RP99"),
-                new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr:1", "fr.insee", "saphir-rp99-sas", "1",
+                List.of(new LogicalRecord(LogicalRecord.TYPE,"urn:ddi:fr.insee:lr:1", "fr.insee", "saphir-rp99-sas", "1",
                         LangStrings.of("fr-FR", "SAPHIR - RP99"),
-                        new VariablesInRecord(List.of()))
+                        new VariablesInRecord(List.of())))
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, List.of(dr), null, null, null);
 

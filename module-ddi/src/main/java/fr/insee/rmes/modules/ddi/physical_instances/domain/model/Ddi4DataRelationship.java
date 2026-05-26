@@ -13,7 +13,7 @@ public record Ddi4DataRelationship(
         @JsonProperty("Version") String version,
         @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("Label") List<LangString> label,
-        @JsonProperty("LogicalRecord") LogicalRecord logicalRecord
+        @JsonProperty("LogicalRecord") List<LogicalRecord> logicalRecord
 ) {
 
     public static final String TYPE = "DataRelationship";

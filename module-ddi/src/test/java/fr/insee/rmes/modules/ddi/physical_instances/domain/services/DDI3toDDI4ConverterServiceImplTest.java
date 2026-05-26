@@ -196,9 +196,10 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("SAPHIR - RP99", dr.label().get(0).value());
 
         assertNotNull(dr.logicalRecord());
-        assertNotNull(dr.logicalRecord().variablesInRecord());
-        assertEquals(1, dr.logicalRecord().variablesInRecord().variableUsedReference().size());
-        assertEquals("AGEMEN8", dr.logicalRecord().variablesInRecord().variableUsedReference().get(0).id());
+        assertEquals(1, dr.logicalRecord().size());
+        assertNotNull(dr.logicalRecord().get(0).variablesInRecord());
+        assertEquals(1, dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().size());
+        assertEquals("AGEMEN8", dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().get(0).id());
     }
 
     @Test

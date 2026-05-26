@@ -96,27 +96,28 @@ public class Ddi4ToLifecycle33 {
         }
 
         if (dr.logicalRecord() != null) {
-            LogicalRecord lr = dr.logicalRecord();
-            var lrType = drType.addNewLogicalRecord();
-            lrType.setIsUniversallyUnique(true);
-            lrType.addNewURN().setStringValue(lr.urn());
-            lrType.addAgency(lr.agency());
-            lrType.addNewID().setStringValue(lr.id());
-            lrType.addVersion(lr.version());
+            for (LogicalRecord lr : dr.logicalRecord()) {
+                var lrType = drType.addNewLogicalRecord();
+                lrType.setIsUniversallyUnique(true);
+                lrType.addNewURN().setStringValue(lr.urn());
+                lrType.addAgency(lr.agency());
+                lrType.addNewID().setStringValue(lr.id());
+                lrType.addVersion(lr.version());
 
-            if (lr.label() != null && !lr.label().isEmpty()) {
-                LangString firstLrLabel = lr.label().get(0);
-                var nameString = lrType.addNewLogicalRecordName().addNewString();
-                nameString.setLang(firstLrLabel.language());
-                nameString.setStringValue(firstLrLabel.value());
-                writeLabelContent(lrType.addNewLabel().addNewContent(), firstLrLabel);
-            }
+                if (lr.label() != null && !lr.label().isEmpty()) {
+                    LangString firstLrLabel = lr.label().get(0);
+                    var nameString = lrType.addNewLogicalRecordName().addNewString();
+                    nameString.setLang(firstLrLabel.language());
+                    nameString.setStringValue(firstLrLabel.value());
+                    writeLabelContent(lrType.addNewLabel().addNewContent(), firstLrLabel);
+                }
 
-            if (lr.variablesInRecord() != null
-                    && lr.variablesInRecord().variableUsedReference() != null) {
-                var virType = lrType.addNewVariablesInRecord();
-                for (Reference ref : lr.variablesInRecord().variableUsedReference()) {
-                    populateReference(virType.addNewVariableUsedReference(), ref);
+                if (lr.variablesInRecord() != null
+                        && lr.variablesInRecord().variableUsedReference() != null) {
+                    var virType = lrType.addNewVariablesInRecord();
+                    for (Reference ref : lr.variablesInRecord().variableUsedReference()) {
+                        populateReference(virType.addNewVariableUsedReference(), ref);
+                    }
                 }
             }
         }

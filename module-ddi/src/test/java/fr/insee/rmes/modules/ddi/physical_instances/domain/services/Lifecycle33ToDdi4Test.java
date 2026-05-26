@@ -143,10 +143,11 @@ class Lifecycle33ToDdi4Test {
 
         Ddi4DataRelationship dr = converter.toDataRelationship(doc);
 
-        assertThat(dr.logicalRecord().id()).isEqualTo("lr-id");
-        assertThat(dr.logicalRecord().label().get(0).value()).isEqualTo("LR Label");
-        assertThat(dr.logicalRecord().variablesInRecord().variableUsedReference()).hasSize(1);
-        assertThat(dr.logicalRecord().variablesInRecord().variableUsedReference().get(0).id()).isEqualTo("var-1");
+        assertThat(dr.logicalRecord()).hasSize(1);
+        assertThat(dr.logicalRecord().get(0).id()).isEqualTo("lr-id");
+        assertThat(dr.logicalRecord().get(0).label().get(0).value()).isEqualTo("LR Label");
+        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference()).hasSize(1);
+        assertThat(dr.logicalRecord().get(0).variablesInRecord().variableUsedReference().get(0).id()).isEqualTo("var-1");
     }
 
     @Test

@@ -1097,21 +1097,20 @@ public class DDIRepositoryImpl implements DDIRepository {
                 request.dataRelationshipLabel()
             );
 
-            // Build updated LogicalRecord with new label if provided
-            LogicalRecord updatedLR = currentDR.logicalRecord();
-            if (updatedLR != null && request.logicalRecordLabel() != null) {
-                updatedLR = new LogicalRecord(
-                    LogicalRecord.TYPE,
-                    updatedLR.urn(),
-                    updatedLR.agency(),
-                    updatedLR.id(),
-                    updatedLR.version(),
-                    createLabelWithFallback(
-                        updatedLR.label(),
-                        request.logicalRecordLabel()
-                    ),
-                    updatedLR.variablesInRecord()
-                );
+            // Build updated LogicalRecord(s) with new label if provided
+            List<LogicalRecord> updatedLRs = currentDR.logicalRecord();
+            if (updatedLRs != null && request.logicalRecordLabel() != null) {
+                updatedLRs = updatedLRs.stream()
+                    .map(lr -> new LogicalRecord(
+                        LogicalRecord.TYPE,
+                        lr.urn(),
+                        lr.agency(),
+                        lr.id(),
+                        lr.version(),
+                        createLabelWithFallback(lr.label(), request.logicalRecordLabel()),
+                        lr.variablesInRecord()
+                    ))
+                    .toList();
             }
 
             updatedDR = new Ddi4DataRelationship(
@@ -1123,7 +1122,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 currentDR.version(),
                 currentDR.basedOnObject(),
                 drLabel,
-                updatedLR // Updated LogicalRecord with new label
+                updatedLRs
             );
         }
 
