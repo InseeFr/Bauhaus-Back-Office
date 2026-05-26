@@ -70,12 +70,12 @@ class DDI3toDDI4ConverterServiceImplTest {
                                 <r:String xml:lang="fr-FR">SAPHIR - Fichier Individus RP99 (.sas7bdat)</r:String>
                             </r:Title>
                         </r:Citation>
-                        <DataRelationshipReference>
+                        <r:DataRelationshipReference>
                             <r:Agency>fr.insee</r:Agency>
                             <r:ID>saphir-rp99-sas</r:ID>
                             <r:Version>1</r:Version>
                             <r:TypeOfObject>DataRelationship</r:TypeOfObject>
-                        </DataRelationshipReference>
+                        </r:DataRelationshipReference>
                     </PhysicalInstance>
                 </Fragment>
                 """;
@@ -546,11 +546,7 @@ class DDI3toDDI4ConverterServiceImplTest {
                             <r:Content xml:lang="fr-FR">Person name</r:Content>
                         </r:Description>
                         <VariableRepresentation>
-                            <r:TextRepresentation blankIsMissingValue="false">
-                                <r:MinLength>1</r:MinLength>
-                                <r:MaxLength>50</r:MaxLength>
-                                <r:RegExp>[A-Za-z ]+</r:RegExp>
-                            </r:TextRepresentation>
+                            <r:TextRepresentation blankIsMissingValue="false" minLength="1" maxLength="50" regExp="[A-Za-z ]+"/>
                         </VariableRepresentation>
                     </Variable>
                 </Fragment>

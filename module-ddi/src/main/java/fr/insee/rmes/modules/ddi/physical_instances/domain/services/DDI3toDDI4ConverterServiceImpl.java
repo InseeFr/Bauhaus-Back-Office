@@ -1,7 +1,16 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
+import org.apache.xmlbeans.XmlException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,16 +18,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DDI3toDDI4ConverterServiceImpl implements
-        DDI3toDDI4ConverterService {
+public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterService {
     static final Logger logger = LoggerFactory.getLogger(DDI3toDDI4ConverterServiceImpl.class);
 
     private final Map<String, String> itemTypes;
-    private final Ddi3XmlReader xmlReader;
+    private final Lifecycle33ToDdi4 lifecycle33ToDdi4;
 
     public DDI3toDDI4ConverterServiceImpl(Map<String, String> itemTypes) {
+        this(itemTypes, new Lifecycle33ToDdi4());
+    }
+
+    DDI3toDDI4ConverterServiceImpl(Map<String, String> itemTypes, Lifecycle33ToDdi4 lifecycle33ToDdi4) {
         this.itemTypes = itemTypes;
-        this.xmlReader = new Ddi3XmlReader();
+        this.lifecycle33ToDdi4 = lifecycle33ToDdi4;
     }
 
     @Override
@@ -35,10 +47,10 @@ public class DDI3toDDI4ConverterServiceImpl implements
         if (ddi3.items() != null) {
             for (Ddi3Response.Ddi3Item item : ddi3.items()) {
                 try {
+                    FragmentDocument fragment = FragmentDocument.Factory.parse(item.item());
                     String itemType = item.itemType();
                     if (itemTypes.get("PhysicalInstance").equals(itemType)) {
-                        Ddi4PhysicalInstance pi = xmlReader.parsePhysicalInstance(item.item());
-                        physicalInstances.add(pi);
+                        physicalInstances.add(lifecycle33ToDdi4.toPhysicalInstance(fragment));
                         topLevelReferences.add(new TopLevelReference(
                             item.agencyId(),
                             item.identifier(),
@@ -46,15 +58,15 @@ public class DDI3toDDI4ConverterServiceImpl implements
                             "PhysicalInstance"
                         ));
                     } else if (itemTypes.get("DataRelationship").equals(itemType)) {
-                        dataRelationships.add(xmlReader.parseDataRelationship(item.item()));
+                        dataRelationships.add(lifecycle33ToDdi4.toDataRelationship(fragment));
                     } else if (itemTypes.get("Variable").equals(itemType)) {
-                        variables.add(xmlReader.parseVariable(item.item()));
+                        variables.add(lifecycle33ToDdi4.toVariable(fragment));
                     } else if (itemTypes.get("CodeList").equals(itemType)) {
-                        codeLists.add(xmlReader.parseCodeList(item.item()));
+                        codeLists.add(lifecycle33ToDdi4.toCodeList(fragment));
                     } else if (itemTypes.get("Category").equals(itemType)) {
-                        categories.add(xmlReader.parseCategory(item.item()));
+                        categories.add(lifecycle33ToDdi4.toCategory(fragment));
                     }
-                } catch (Exception e) {
+                } catch (XmlException e) {
                     logger.error("Error parsing DDI3 item of type {}", item.itemType(), e);
                     throw new RuntimeException("Error parsing DDI3 item", e);
                 }

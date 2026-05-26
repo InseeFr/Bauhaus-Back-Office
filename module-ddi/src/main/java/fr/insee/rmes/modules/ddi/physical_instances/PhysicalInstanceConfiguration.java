@@ -15,7 +15,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4Co
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI4toDDI3ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIItemConvertServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIServiceImpl;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33ToDdi4;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.GroupServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.PhysicalInstanceDDIItemConverter;
@@ -46,8 +47,13 @@ public class PhysicalInstanceConfiguration {
     }
 
     @Bean
-    Ddi3XmlWriter ddi3XmlWriter(ColecticaConfiguration colecticaConfiguration) {
-        return new Ddi3XmlWriter(colecticaConfiguration.server().itemTypes());
+    Ddi4ToLifecycle33 ddi4ToLifecycle33() {
+        return new Ddi4ToLifecycle33();
+    }
+
+    @Bean
+    Lifecycle33ToDdi4 lifecycle33ToDdi4() {
+        return new Lifecycle33ToDdi4();
     }
 
     @Bean

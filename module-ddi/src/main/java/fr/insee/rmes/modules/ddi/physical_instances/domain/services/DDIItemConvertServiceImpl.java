@@ -7,17 +7,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.StringReader;
 import java.util.List;
 
 public class DDIItemConvertServiceImpl implements DDIItemConvertService {
 
     private final List<DDIItemConverter> converters;
-    private final XmlHelper xmlHelper;
+    private final DocumentBuilderFactory documentBuilderFactory;
 
     public DDIItemConvertServiceImpl(List<DDIItemConverter> converters) {
         this.converters = converters;
-        this.xmlHelper = new XmlHelper();
+        this.documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        this.documentBuilderFactory.setNamespaceAware(true);
     }
 
     @Override
@@ -32,7 +36,8 @@ public class DDIItemConvertServiceImpl implements DDIItemConvertService {
 
     private String resolveItemLocalName(String xmlFragment) {
         try {
-            Document doc = xmlHelper.parseXml(xmlFragment);
+            Document doc = documentBuilderFactory.newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(xmlFragment)));
             Element root = doc.getDocumentElement();
             if ("Fragment".equals(root.getLocalName())) {
                 NodeList children = root.getChildNodes();

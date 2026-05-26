@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaItem;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaResponse;
@@ -44,8 +44,7 @@ class DDIRepositoryImplGroupTest {
     @Mock
     private ColecticaAuthenticator authenticator;
 
-    @Mock
-    private Ddi3XmlWriter ddi3XmlWriter;
+    private final Ddi4ToLifecycle33 ddi4ToLifecycle33 = new Ddi4ToLifecycle33();
 
     @Mock
     private DDIRepository ddiRepository;
@@ -80,7 +79,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             groupRepository = new ColecticaGroupRepository(
-                    restClient, instanceConfiguration, authenticator, ddi3XmlWriter, ddiRepository
+                    restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33, ddiRepository
             );
         }
 
@@ -95,8 +94,6 @@ class DDIRepositoryImplGroupTest {
                     List.of("http://id.insee.fr/operations/serie/s1001"),
                     "insee:StatisticalOperationSeries"
             );
-
-            when(ddi3XmlWriter.buildGroupXml(group)).thenReturn("<Fragment>group-xml</Fragment>");
 
             groupRepository.createOrUpdate(group);
 
@@ -113,7 +110,11 @@ class DDIRepositoryImplGroupTest {
             assertThat(item.agencyId()).isEqualTo("fr.insee");
             assertThat(item.identifier()).isEqualTo("group-uuid");
             assertThat(item.version()).isEqualTo(1);
-            assertThat(item.item()).isEqualTo("<Fragment>group-xml</Fragment>");
+            assertThat(item.item())
+                    .startsWith("<Fragment")
+                    .contains(">urn:ddi:fr.insee:group-uuid:1<")
+                    .contains(">s1001 Group<")
+                    .contains(">su-uuid-1<");
         }
 
         @Test
@@ -161,7 +162,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             studyUnitRepository = new ColecticaStudyUnitRepository(
-                    restClient, instanceConfiguration, authenticator, ddi3XmlWriter, null
+                    restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33, null
             );
         }
 
@@ -174,8 +175,6 @@ class DDIRepositoryImplGroupTest {
                     "http://id.insee.fr/operations/operation/op1",
                     null
             );
-
-            when(ddi3XmlWriter.buildStudyUnitXml(studyUnit)).thenReturn("<Fragment>studyunit-xml</Fragment>");
 
             studyUnitRepository.createOrUpdate(studyUnit);
 
@@ -191,7 +190,11 @@ class DDIRepositoryImplGroupTest {
             assertThat(item.itemType()).isEqualTo("30ea0200-7121-4f01-8d21-a931a182b86d");
             assertThat(item.agencyId()).isEqualTo("fr.insee");
             assertThat(item.identifier()).isEqualTo("su-uuid");
-            assertThat(item.item()).isEqualTo("<Fragment>studyunit-xml</Fragment>");
+            assertThat(item.item())
+                    .startsWith("<Fragment")
+                    .contains(">urn:ddi:fr.insee:su-uuid:1<")
+                    .contains(">op1 Study Unit<")
+                    .contains(">http://id.insee.fr/operations/operation/op1<");
         }
     }
 

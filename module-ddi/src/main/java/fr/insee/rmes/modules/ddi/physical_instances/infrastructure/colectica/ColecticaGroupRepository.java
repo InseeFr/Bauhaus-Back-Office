@@ -4,7 +4,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -14,12 +14,6 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Colectica adapter for Group persistence.
- * <p>
- * Transforms {@link Ddi4Group} to DDI3 XML via {@link Ddi3XmlWriter},
- * then delegates the REST call to the parent class.
- */
 public class ColecticaGroupRepository extends AbstractColecticaItemRepository implements GroupRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaGroupRepository.class);
@@ -31,10 +25,10 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
             RestClient restClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ColecticaAuthenticator authenticator,
-            Ddi3XmlWriter ddi3XmlWriter,
+            Ddi4ToLifecycle33 ddi4ToLifecycle33,
             DDIRepository ddiRepository
     ) {
-        super(restClient, instanceConfiguration, authenticator, ddi3XmlWriter);
+        super(restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33);
         this.ddiRepository = ddiRepository;
     }
 
@@ -42,9 +36,7 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     public void createOrUpdate(Ddi4Group group) {
         logger.info("Creating/updating group in Colectica: id={}, agency={}, urn={}", group.id(), group.agency(), group.urn());
         try {
-            String ddi3Xml = ddi3XmlWriter.buildGroupXml(group);
-            logger.info("Generated DDI3 XML for group id={}: {}", group.id(), ddi3Xml);
-            createOrUpdateItem(GROUP_ITEM_TYPE, group, ddi3Xml);
+            createOrUpdateItem(GROUP_ITEM_TYPE, group);
             logger.info("Group successfully sent to Colectica: id={}", group.id());
         } catch (RuntimeException e) {
             logger.error("Unexpected error creating group in Colectica: id={}", group.id(), e);
@@ -64,16 +56,13 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     @Override
     public void deprecateAll() {
         logger.info("Deprecating all groups from Colectica");
-
         List<PartialGroup> groups = ddiRepository.getGroups();
         if (groups.isEmpty()) {
             logger.info("No groups found to deprecate");
             return;
         }
-
         authenticator.executeWithAuth(token -> {
             String url = instanceConfiguration.baseApiUrl() + "item/_updateState";
-
             List<Map<String, Object>> ids = groups.stream()
                     .map(group -> {
                         String agency = group.agency() != null ? group.agency() : instanceConfiguration.defaultAgencyId();
@@ -84,13 +73,11 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
                         );
                     })
                     .toList();
-
             Map<String, Object> requestBody = Map.of(
                     "ids", ids,
                     "state", true,
                     "applyToAllVersions", true
             );
-
             restClient.post()
                     .uri(url)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -98,7 +85,6 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
-
             logger.info("Deprecated {} group(s) from Colectica", groups.size());
             return null;
         });

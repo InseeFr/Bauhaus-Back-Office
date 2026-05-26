@@ -5,22 +5,14 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Colectica adapter for StudyUnit persistence.
- * <p>
- * Transforms {@link Ddi4StudyUnit} to DDI3 XML via {@link Ddi3XmlWriter},
- * then delegates the REST call to the parent class.
- */
 public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepository implements StudyUnitRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaStudyUnitRepository.class);
@@ -32,10 +24,10 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
             RestClient restClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
             ColecticaAuthenticator authenticator,
-            Ddi3XmlWriter ddi3XmlWriter,
+            Ddi4ToLifecycle33 ddi4ToLifecycle33,
             DDIRepository ddiRepository
     ) {
-        super(restClient, instanceConfiguration, authenticator, ddi3XmlWriter);
+        super(restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33);
         this.ddiRepository = ddiRepository;
     }
 
@@ -70,9 +62,7 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     public void createOrUpdate(Ddi4StudyUnit studyUnit) {
         logger.info("Creating/updating study unit in Colectica: id={}, agency={}, urn={}", studyUnit.id(), studyUnit.agency(), studyUnit.urn());
         try {
-            String ddi3Xml = ddi3XmlWriter.buildStudyUnitXml(studyUnit);
-            logger.info("Generated DDI3 XML for study unit id={}: {}", studyUnit.id(), ddi3Xml);
-            createOrUpdateItem(STUDY_UNIT_ITEM_TYPE, studyUnit, ddi3Xml);
+            createOrUpdateItem(STUDY_UNIT_ITEM_TYPE, studyUnit);
             logger.info("Study unit successfully sent to Colectica: id={}", studyUnit.id());
         } catch (RuntimeException e) {
             logger.error("Unexpected error creating study unit in Colectica: id={}", studyUnit.id(), e);

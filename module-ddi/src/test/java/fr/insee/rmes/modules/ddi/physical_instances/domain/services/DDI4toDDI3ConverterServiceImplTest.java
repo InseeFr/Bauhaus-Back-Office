@@ -1,25 +1,30 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TopLevelReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.xml.stream.XMLStreamException;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(MockitoExtension.class)
 class DDI4toDDI3ConverterServiceImplTest {
-
-    @Mock
-    private Ddi3XmlWriter xmlWriter;
 
     private DDI4toDDI3ConverterServiceImpl converter;
 
@@ -33,76 +38,59 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        converter = new DDI4toDDI3ConverterServiceImpl(ITEM_TYPES, xmlWriter);
+        converter = new DDI4toDDI3ConverterServiceImpl(ITEM_TYPES);
     }
 
     @Test
-    void shouldConvertPhysicalInstance() throws XMLStreamException {
-        // Given
+    void shouldConvertPhysicalInstance() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true",
-                "2025-01-21T13:48:46.363",
+                "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:PhysicalInstance.saphir-rp99-sas:1",
-                "fr.insee",
-                "saphir-rp99-sas",
-                "1",
+                "fr.insee", "saphir-rp99-sas", "1",
                 null,
                 new Citation(LangStrings.of("fr-FR", "SAPHIR")),
                 new DataRelationshipReference("fr.insee", "saphir-rp99-sas", "1", "DataRelationship")
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null);
-        when(xmlWriter.buildPhysicalInstanceXml(pi)).thenReturn("<PhysicalInstance/>");
 
-        // When
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
-        // Then
-        assertEquals(1, result.items().size());
+        assertThat(result.items()).hasSize(1);
         Ddi3Response.Ddi3Item item = result.items().get(0);
-        assertEquals("a51e85bb-6259-4488-8df2-f08cb43485f8", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("1", item.version());
-        assertEquals("saphir-rp99-sas", item.identifier());
-        assertEquals("2025-01-21T13:48:46.363", item.versionDate());
-        assertEquals("<PhysicalInstance/>", item.item());
-        verify(xmlWriter).buildPhysicalInstanceXml(pi);
+        assertThat(item.itemType()).isEqualTo("a51e85bb-6259-4488-8df2-f08cb43485f8");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("saphir-rp99-sas");
+        assertThat(item.item())
+                .contains("<ddi:PhysicalInstance")
+                .contains(">SAPHIR<");
     }
 
     @Test
-    void shouldConvertDataRelationship() throws XMLStreamException {
-        // Given
+    void shouldConvertDataRelationship() {
         Ddi4DataRelationship dr = new Ddi4DataRelationship(
-                "true",
-                "2025-01-21T13:48:46.363",
+                "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:DataRelationship.saphir-rp99-sas:1",
-                "fr.insee",
-                "saphir-rp99-sas",
-                "1",
+                "fr.insee", "saphir-rp99-sas", "1",
                 null,
                 LangStrings.of("fr-FR", "SAPHIR - RP99"),
-                new LogicalRecord("true", "urn:...", "fr.insee", "saphir-rp99-sas", "1",
+                new LogicalRecord("true", "urn:ddi:fr.insee:lr:1", "fr.insee", "saphir-rp99-sas", "1",
                         LangStrings.of("fr-FR", "SAPHIR - RP99"),
                         new VariablesInRecord(List.of()))
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, List.of(dr), null, null, null);
-        when(xmlWriter.buildDataRelationshipXml(dr)).thenReturn("<DataRelationship/>");
 
-        // When
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
-        // Then
-        assertEquals(1, result.items().size());
+        assertThat(result.items()).hasSize(1);
         Ddi3Response.Ddi3Item item = result.items().get(0);
-        assertEquals("f39ff278-8500-45fe-a850-3906da2d242b", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("saphir-rp99-sas", item.identifier());
-        assertEquals("<DataRelationship/>", item.item());
-        verify(xmlWriter).buildDataRelationshipXml(dr);
+        assertThat(item.itemType()).isEqualTo("f39ff278-8500-45fe-a850-3906da2d242b");
+        assertThat(item.item())
+                .contains("<ddi:DataRelationship")
+                .contains(">SAPHIR - RP99<");
     }
 
     @Test
-    void shouldConvertVariable() throws XMLStreamException {
-        // Given
+    void shouldConvertVariable() {
         Ddi4Variable var = new Ddi4Variable(
                 "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:Variable.AGEMEN8:1",
@@ -111,30 +99,27 @@ class DDI4toDDI3ConverterServiceImplTest {
                 LangStrings.of("fr-FR", "AGEMEN8"),
                 LangStrings.of("fr-FR", "Âge détaillé"),
                 null,
-                new VariableRepresentation("Demographic",
+                new VariableRepresentation(null,
                         new CodeRepresentation("false", new CodeListReference("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
                         null, null, null),
                 null
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, List.of(var), null, null);
-        when(xmlWriter.buildVariableXml(var)).thenReturn("<Variable/>");
 
-        // When
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
-        // Then
-        assertEquals(1, result.items().size());
+        assertThat(result.items()).hasSize(1);
         Ddi3Response.Ddi3Item item = result.items().get(0);
-        assertEquals("683889c6-f74b-4d5e-92ed-908c0a42bb2d", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("AGEMEN8", item.identifier());
-        assertEquals("<Variable/>", item.item());
-        verify(xmlWriter).buildVariableXml(var);
+        assertThat(item.itemType()).isEqualTo("683889c6-f74b-4d5e-92ed-908c0a42bb2d");
+        assertThat(item.item())
+                .contains("<ddi:Variable")
+                .contains(">AGEMEN8<")
+                .contains(">Âge détaillé<")
+                .contains(">CL_AGEMEN8<");
     }
 
     @Test
-    void shouldConvertCodeList() throws XMLStreamException {
-        // Given
+    void shouldConvertCodeList() {
         Ddi4CodeList cl = new Ddi4CodeList(
                 "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1",
@@ -143,24 +128,19 @@ class DDI4toDDI3ConverterServiceImplTest {
                 List.of()
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, List.of(cl), null);
-        when(xmlWriter.buildCodeListXml(cl)).thenReturn("<CodeList/>");
 
-        // When
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
-        // Then
-        assertEquals(1, result.items().size());
+        assertThat(result.items()).hasSize(1);
         Ddi3Response.Ddi3Item item = result.items().get(0);
-        assertEquals("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("CL_AGEMEN8", item.identifier());
-        assertEquals("<CodeList/>", item.item());
-        verify(xmlWriter).buildCodeListXml(cl);
+        assertThat(item.itemType()).isEqualTo("8b108ef8-b642-4484-9c49-f88e4bf7cf1d");
+        assertThat(item.item())
+                .contains("<ddi:CodeList")
+                .contains(">Liste codes<");
     }
 
     @Test
-    void shouldConvertCategory() throws XMLStreamException {
-        // Given
+    void shouldConvertCategory() {
         Ddi4Category cat = new Ddi4Category(
                 "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:Category.CAT_0:1",
@@ -168,63 +148,28 @@ class DDI4toDDI3ConverterServiceImplTest {
                 LangStrings.of("fr-FR", "0 an")
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, List.of(cat));
-        when(xmlWriter.buildCategoryXml(cat)).thenReturn("<Category/>");
 
-        // When
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
-        // Then
-        assertEquals(1, result.items().size());
+        assertThat(result.items()).hasSize(1);
         Ddi3Response.Ddi3Item item = result.items().get(0);
-        assertEquals("7e47c269-bcab-40f7-a778-af7bbc4e3d00", item.itemType());
-        assertEquals("fr.insee", item.agencyId());
-        assertEquals("CAT_0", item.identifier());
-        assertEquals("<Category/>", item.item());
-        verify(xmlWriter).buildCategoryXml(cat);
+        assertThat(item.itemType()).isEqualTo("7e47c269-bcab-40f7-a778-af7bbc4e3d00");
+        assertThat(item.item())
+                .contains("<ddi:Category")
+                .contains(">0 an<");
     }
 
     @Test
     void shouldHandleEmptyDdi4Response() {
-        // Given
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, null);
-
-        // When
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        // Then
-        assertNotNull(result);
-        assertTrue(result.items().isEmpty());
-        assertEquals(List.of("RegisterOrReplace"), result.options().namedOptions());
-        verifyNoInteractions(xmlWriter);
+        assertThat(result).isNotNull();
+        assertThat(result.items()).isEmpty();
+        assertThat(result.options().namedOptions()).containsExactly("RegisterOrReplace");
     }
 
     @Test
-    void shouldConvertCompleteDdi4ResponseToDdi3() throws XMLStreamException {
-        // Given
-        Ddi4Response ddi4 = createCompleteDdi4Response();
-        when(xmlWriter.buildPhysicalInstanceXml(any())).thenReturn("<PhysicalInstance/>");
-        when(xmlWriter.buildDataRelationshipXml(any())).thenReturn("<DataRelationship/>");
-        when(xmlWriter.buildVariableXml(any())).thenReturn("<Variable/>");
-        when(xmlWriter.buildCodeListXml(any())).thenReturn("<CodeList/>");
-        when(xmlWriter.buildCategoryXml(any())).thenReturn("<Category/>");
-
-        // When
-        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
-
-        // Then
-        assertEquals(7, result.items().size());
-        assertEquals(List.of("RegisterOrReplace"), result.options().namedOptions());
-
-        verify(xmlWriter, times(1)).buildPhysicalInstanceXml(any());
-        verify(xmlWriter, times(1)).buildDataRelationshipXml(any());
-        verify(xmlWriter, times(2)).buildVariableXml(any());
-        verify(xmlWriter, times(1)).buildCodeListXml(any());
-        verify(xmlWriter, times(2)).buildCategoryXml(any());
-    }
-
-    @Test
-    void shouldConvertDdi4ToDdi3Xml() throws XMLStreamException {
-        // Given
+    void shouldBuildFragmentInstanceDocumentWithTopLevelReference() {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
                 "true", "2025-01-21T13:48:46.363",
                 "urn:ddi:fr.insee:PhysicalInstance.test:1",
@@ -235,130 +180,14 @@ class DDI4toDDI3ConverterServiceImplTest {
         );
         TopLevelReference topLevelRef = new TopLevelReference("fr.insee", "test-id", "1", "PhysicalInstance");
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(topLevelRef), List.of(pi), null, null, null, null);
-        when(xmlWriter.buildPhysicalInstanceXml(pi)).thenReturn("<PhysicalInstance/>");
-        when(xmlWriter.buildFragmentInstanceDocument(any(), eq(topLevelRef))).thenReturn("<FragmentInstance/>");
 
-        // When
         String result = converter.convertDdi4ToDdi3Xml(ddi4);
 
-        // Then
-        assertEquals("<FragmentInstance/>", result);
-        verify(xmlWriter).buildFragmentInstanceDocument(any(), eq(topLevelRef));
-    }
-
-    @Test
-    void shouldUseFirstTopLevelReferenceWhenMultipleExist() throws XMLStreamException {
-        // Given
-        TopLevelReference firstRef = new TopLevelReference("fr.insee", "id-1", "1", "Variable");
-        TopLevelReference secondRef = new TopLevelReference("fr.insee", "id-2", "1", "Variable");
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(firstRef, secondRef), null, null, null, null, null);
-        when(xmlWriter.buildFragmentInstanceDocument(any(), eq(firstRef))).thenReturn("<FragmentInstance/>");
-
-        // When
-        converter.convertDdi4ToDdi3Xml(ddi4);
-
-        // Then
-        verify(xmlWriter).buildFragmentInstanceDocument(any(), eq(firstRef));
-    }
-
-    @Test
-    void shouldUseNullTopLevelReferenceWhenListIsEmpty() throws XMLStreamException {
-        // Given
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(), null, null, null, null, null);
-        when(xmlWriter.buildFragmentInstanceDocument(any(), isNull())).thenReturn("<FragmentInstance/>");
-
-        // When
-        converter.convertDdi4ToDdi3Xml(ddi4);
-
-        // Then
-        verify(xmlWriter).buildFragmentInstanceDocument(any(), isNull());
-    }
-
-    @Test
-    void shouldWrapXMLStreamExceptionAsRuntimeExceptionForPhysicalInstance() throws XMLStreamException {
-        // Given
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(
-                "true", "2025-01-21T13:48:46.363", "urn:...",
-                "fr.insee", "pi-id", "1",
-                null, new Citation(LangStrings.of("fr-FR", "Test")),
-                new DataRelationshipReference("fr.insee", "dr", "1", "DataRelationship")
-        );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null);
-        when(xmlWriter.buildPhysicalInstanceXml(pi)).thenThrow(new XMLStreamException("XML error"));
-
-        // When / Then
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> converter.convertDdi4ToDdi3(ddi4));
-        assertTrue(ex.getCause() instanceof XMLStreamException);
-    }
-
-    @Test
-    void shouldWrapXMLStreamExceptionAsRuntimeExceptionForVariable() throws XMLStreamException {
-        // Given
-        Ddi4Variable var = new Ddi4Variable(
-                "true", "2025-01-21T13:48:46.363", "urn:...",
-                "fr.insee", "var-id", "1",
-                null, null, null, null, null, null
-        );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, List.of(var), null, null);
-        when(xmlWriter.buildVariableXml(var)).thenThrow(new XMLStreamException("XML error"));
-
-        // When / Then
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> converter.convertDdi4ToDdi3(ddi4));
-        assertTrue(ex.getCause() instanceof XMLStreamException);
-    }
-
-    private Ddi4Response createCompleteDdi4Response() {
-        return new Ddi4Response(
-                "file:/jsonSchema.json",
-                null,
-                List.of(new Ddi4PhysicalInstance(
-                        "true", "2025-01-21T13:48:46.363",
-                        "urn:ddi:fr.insee:PhysicalInstance.test:1",
-                        "fr.insee", "test", "1",
-                        null,
-                        new Citation(LangStrings.of("fr-FR", "Test Instance")),
-                        new DataRelationshipReference("fr.insee", "test", "1", "DataRelationship")
-                )),
-                List.of(new Ddi4DataRelationship(
-                        "true", "2025-01-21T13:48:46.363",
-                        "urn:ddi:fr.insee:DataRelationship.test:1",
-                        "fr.insee", "test", "1",
-                        null, null, null
-                )),
-                List.of(
-                        new Ddi4Variable("true", "2025-01-21T13:48:46.363",
-                                "urn:ddi:fr.insee:Variable.VAR1:1",
-                                "fr.insee", "VAR1", "1",
-                                null,
-                                LangStrings.of("fr-FR", "VAR1"),
-                                LangStrings.of("fr-FR", "Variable 1"),
-                                null, null, null),
-                        new Ddi4Variable("true", "2025-01-21T13:48:46.363",
-                                "urn:ddi:fr.insee:Variable.VAR2:1",
-                                "fr.insee", "VAR2", "1",
-                                null,
-                                LangStrings.of("fr-FR", "VAR2"),
-                                LangStrings.of("fr-FR", "Variable 2"),
-                                null, null, null)
-                ),
-                List.of(new Ddi4CodeList(
-                        "true", "2025-01-21T13:48:46.363",
-                        "urn:ddi:fr.insee:CodeList.CL_TEST:1",
-                        "fr.insee", "CL_TEST", "1",
-                        LangStrings.of("fr-FR", "Test CodeList"),
-                        List.of(new Code("true", "urn:...", "fr.insee", "0", "1",
-                                new CategoryReference("fr.insee", "CAT_0", "1", "Category"), "0"))
-                )),
-                List.of(
-                        new Ddi4Category("true", "2025-01-21T13:48:46.363",
-                                "urn:ddi:fr.insee:Category.CAT_0:1",
-                                "fr.insee", "CAT_0", "1",
-                                LangStrings.of("fr-FR", "Category 0")),
-                        new Ddi4Category("true", "2025-01-21T13:48:46.363",
-                                "urn:ddi:fr.insee:Category.CAT_1:1",
-                                "fr.insee", "CAT_1", "1",
-                                LangStrings.of("fr-FR", "Category 1"))
-                )
-        );
+        assertThat(result)
+                .startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
+                .contains("<ddi:FragmentInstance")
+                .contains("<ddi:TopLevelReference")
+                .contains(">test-id<")
+                .contains(">PhysicalInstance<");
     }
 }

@@ -5,7 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi3XmlWriter;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -14,9 +14,6 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class ColecticaRepositoryConfiguration {
 
-    /**
-     * Creates the primary DDIRepository bean using the primary Colectica instance configuration.
-     */
     @Bean
     public DDIRepository primaryDDIRepository(
             RestClient restClient,
@@ -40,14 +37,14 @@ public class ColecticaRepositoryConfiguration {
             RestClient restClient,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator authenticator,
-            Ddi3XmlWriter ddi3XmlWriter,
+            Ddi4ToLifecycle33 ddi4ToLifecycle33,
             DDIRepository ddiRepository
     ) {
         return new ColecticaGroupRepository(
                 restClient,
                 colecticaConfiguration.server(),
                 authenticator,
-                ddi3XmlWriter,
+                ddi4ToLifecycle33,
                 ddiRepository
         );
     }
@@ -57,14 +54,14 @@ public class ColecticaRepositoryConfiguration {
             RestClient restClient,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaAuthenticator authenticator,
-            Ddi3XmlWriter ddi3XmlWriter,
+            Ddi4ToLifecycle33 ddi4ToLifecycle33,
             DDIRepository ddiRepository
     ) {
         return new ColecticaStudyUnitRepository(
                 restClient,
                 colecticaConfiguration.server(),
                 authenticator,
-                ddi3XmlWriter,
+                ddi4ToLifecycle33,
                 ddiRepository
         );
     }
