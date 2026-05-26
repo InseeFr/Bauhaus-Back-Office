@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -100,7 +100,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 LangStrings.of("fr-FR", "Âge détaillé"),
                 null,
                 new VariableRepresentation(null,
-                        new CodeRepresentation("false", new CodeListReference("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
+                        new CodeRepresentation("false", Reference.of("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
                         null, null, null),
                 null
         );

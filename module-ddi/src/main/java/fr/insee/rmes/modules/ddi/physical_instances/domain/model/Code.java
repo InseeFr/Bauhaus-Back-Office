@@ -8,7 +8,7 @@ public record Code(
         @JsonProperty("Agency") String agency,
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
-        @JsonProperty("CategoryReference") CategoryReference categoryReference,
+        @JsonProperty("CategoryReference") Reference categoryReference,
         @JsonProperty("Value") String value
 ) {
 }

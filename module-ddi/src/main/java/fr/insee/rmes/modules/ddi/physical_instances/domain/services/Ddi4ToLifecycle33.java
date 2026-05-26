@@ -18,6 +18,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -222,12 +223,7 @@ public class Ddi4ToLifecycle33 {
                 codeType.addVersion(code.version());
 
                 if (code.categoryReference() != null) {
-                    ReferenceType ref = codeType.addNewCategoryReference();
-                    ref.addAgency(code.categoryReference().agency());
-                    ref.addNewID().setStringValue(code.categoryReference().id());
-                    ref.addVersion(code.categoryReference().version());
-                    ref.setTypeOfObject(TypeOfObjectType.Enum.forString(
-                            code.categoryReference().typeOfObject()));
+                    populateReference(codeType.addNewCategoryReference(), code.categoryReference());
                 }
 
                 if (code.value() != null && !code.value().isEmpty()) {
@@ -363,11 +359,16 @@ public class Ddi4ToLifecycle33 {
         codeRep.setBlankIsMissingValue(Boolean.parseBoolean(source.blankIsMissingValue()));
 
         if (source.codeListReference() != null) {
-            ReferenceType ref = codeRep.addNewCodeListReference();
-            ref.addAgency(source.codeListReference().agency());
-            ref.addNewID().setStringValue(source.codeListReference().id());
-            ref.addVersion(source.codeListReference().version());
-            ref.setTypeOfObject(TypeOfObjectType.Enum.forString(source.codeListReference().typeOfObject()));
+            populateReference(codeRep.addNewCodeListReference(), source.codeListReference());
+        }
+    }
+
+    private static void populateReference(ReferenceType target, Reference source) {
+        target.addAgency(source.agency());
+        target.addNewID().setStringValue(source.id());
+        target.addVersion(source.version());
+        if (source.type() != null) {
+            target.setTypeOfObject(TypeOfObjectType.Enum.forString(source.type()));
         }
     }
 

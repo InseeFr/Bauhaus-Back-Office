@@ -31,11 +31,10 @@ import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.ddi.lifecycle33.reusable.UserIDType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnReference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
@@ -136,15 +135,7 @@ public class Lifecycle33ToDdi4 {
         }
         List<Code> codes = new ArrayList<>();
         for (CodeType c : cl.getCodeArray()) {
-            CategoryReference catRef = null;
-            ReferenceType ref = c.getCategoryReference();
-            if (ref != null) {
-                catRef = new CategoryReference(
-                        ref.getAgencyArray(0),
-                        ref.getIDArray(0).getStringValue(),
-                        ref.getVersionArray(0),
-                        typeOfObjectAsString(ref));
-            }
+            Reference catRef = readReference(c.getCategoryReference());
             codes.add(new Code(
                     Boolean.toString(c.getIsUniversallyUnique()),
                     c.getURNArray(0).getStringValue(),
@@ -289,16 +280,19 @@ public class Lifecycle33ToDdi4 {
     private static CodeRepresentation readCodeRepresentation(RepresentationType rep) {
         CodeRepresentationBaseType codeRep =
                 (CodeRepresentationBaseType) rep.changeType(CodeRepresentationBaseType.type);
-        CodeListReference clRef = null;
-        if (codeRep.isSetCodeListReference()) {
-            ReferenceType ref = codeRep.getCodeListReference();
-            clRef = new CodeListReference(
-                    ref.getAgencyArray(0),
-                    ref.getIDArray(0).getStringValue(),
-                    ref.getVersionArray(0),
-                    typeOfObjectAsString(ref));
-        }
+        Reference clRef = codeRep.isSetCodeListReference()
+                ? readReference(codeRep.getCodeListReference())
+                : null;
         return new CodeRepresentation(Boolean.toString(codeRep.getBlankIsMissingValue()), clRef);
+    }
+
+    private static Reference readReference(ReferenceType ref) {
+        if (ref == null) return null;
+        String agency = ref.sizeOfAgencyArray() > 0 ? ref.getAgencyArray(0) : null;
+        String id = ref.sizeOfIDArray() > 0 ? ref.getIDArray(0).getStringValue() : null;
+        String version = ref.sizeOfVersionArray() > 0 ? ref.getVersionArray(0) : null;
+        String type = typeOfObjectAsString(ref);
+        return Reference.of(agency, id, version, type);
     }
 
     private static NumericRepresentation readNumericRepresentation(RepresentationType rep) {

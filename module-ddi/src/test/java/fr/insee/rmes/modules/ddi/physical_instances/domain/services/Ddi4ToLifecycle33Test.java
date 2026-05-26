@@ -3,11 +3,10 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnReference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DDIReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DataRelationshipReference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
@@ -150,7 +149,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null,
                 new CodeRepresentation("true",
-                        new CodeListReference("fr.insee", "cl-id", "1", "CodeList")),
+                        Reference.of("fr.insee", "cl-id", "1", "CodeList")),
                 null, null, null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
@@ -219,7 +218,7 @@ class Ddi4ToLifecycle33Test {
                 LangStrings.of("fr-FR", "CodeList Label"),
                 List.of(new Code("true",
                         "urn:ddi:fr.insee:code-id:1", "fr.insee", "code-id", "1",
-                        new CategoryReference("fr.insee", "cat-id", "1", "Category"),
+                        Reference.of("fr.insee", "cat-id", "1", "Category"),
                         "01")));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());

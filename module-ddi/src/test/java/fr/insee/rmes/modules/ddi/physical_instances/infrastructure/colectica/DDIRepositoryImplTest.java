@@ -618,7 +618,7 @@ class DDIRepositoryImplTest {
                 null,
                 new VariableRepresentation(null,
                     new CodeRepresentation("false",
-                        new CodeListReference(agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1", "CodeList")),
+                        Reference.of(agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1", "CodeList")),
                     null, null, null),
                 ""
         );
@@ -645,7 +645,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code("true",
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        new CategoryReference(agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1", "Category"),
+                        Reference.of(agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1", "Category"),
                         "a"))
         );
 
@@ -998,7 +998,7 @@ class DDIRepositoryImplTest {
                 null,
                 new VariableRepresentation(null,
                     new CodeRepresentation("false",
-                        new CodeListReference(agencyId, mutualizedCodeListId, "1", "CodeList")),
+                        Reference.of(agencyId, mutualizedCodeListId, "1", "CodeList")),
                     null, null, null),
                 ""
         );
@@ -1043,7 +1043,7 @@ class DDIRepositoryImplTest {
         assertEquals(variableId, resultVariable.id());
         assertNotNull(resultVariable.variableRepresentation());
         assertNotNull(resultVariable.variableRepresentation().codeRepresentation());
-        CodeListReference ref = resultVariable.variableRepresentation().codeRepresentation().codeListReference();
+        Reference ref = resultVariable.variableRepresentation().codeRepresentation().codeListReference();
         assertNotNull(ref, "CodeListReference on Variable must survive filtering");
         assertEquals(agencyId, ref.agency());
         assertEquals(mutualizedCodeListId, ref.id());
@@ -1099,7 +1099,7 @@ class DDIRepositoryImplTest {
                 List.of(new Code("true",
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        new CategoryReference(agencyId, categoryId, "1", "Category"),
+                        Reference.of(agencyId, categoryId, "1", "Category"),
                         "M1"))
         );
 
