@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
@@ -208,6 +209,41 @@ class DdiResourcesTest {
         assertEquals("9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd", responseBody.physicalInstance().get(0).id());
 
         verify(ddiService).getDdi4PhysicalInstance(agencyId, id);
+    }
+
+    @Test
+    void getPhysicalInstanceCodesLists_usesDedicatedServiceCallAndMapsLabel() {
+        // Le endpoint /codeslists doit interroger une méthode dédiée du service
+        // (la PI complète n'inclut plus les CodeList) puis transformer la liste en
+        // CodeListSummaryResponse(agencyId, id, label).
+        String agencyId = "fr.insee";
+        String id = "pi-1";
+        Ddi4CodeList codeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                null,
+                "urn:ddi:fr.insee:cl-1:1",
+                agencyId, "cl-1", "1",
+                LangStrings.of("fr-FR", "ma cl"),
+                List.of()
+        );
+        when(ddiService.getPhysicalInstanceCodeLists(agencyId, id))
+                .thenReturn(List.of(codeList));
+
+        ResponseEntity<List<CodeListSummaryResponse>> result =
+                ddiResources.getPhysicalInstanceCodesLists(agencyId, id);
+
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
+        List<CodeListSummaryResponse> body = result.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals("cl-1", body.get(0).id());
+        assertEquals(agencyId, body.get(0).agencyId());
+        assertEquals("ma cl", body.get(0).label());
+
+        verify(ddiService).getPhysicalInstanceCodeLists(agencyId, id);
+        verify(ddiService, never()).getDdi4PhysicalInstance(anyString(), anyString());
     }
 
     @Test

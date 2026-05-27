@@ -240,12 +240,10 @@ public class DdiResources {
     public ResponseEntity<List<CodeListSummaryResponse>> getPhysicalInstanceCodesLists(
             @PathVariable String agencyId,
             @PathVariable(Constants.ID) String id) {
-        Ddi4Response physicalInstance = ddiService.getDdi4PhysicalInstance(agencyId, id);
-        List<CodeListSummaryResponse> codeLists = physicalInstance.codeList() != null
-                ? physicalInstance.codeList().stream()
-                    .map(CodeListSummaryResponse::fromDdi4CodeList)
-                    .toList()
-                : List.of();
+        List<CodeListSummaryResponse> codeLists = ddiService
+                .getPhysicalInstanceCodeLists(agencyId, id).stream()
+                .map(CodeListSummaryResponse::fromDdi4CodeList)
+                .toList();
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(codeLists);
