@@ -2,8 +2,10 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -105,6 +107,28 @@ class DDIServiceImplTest {
         assertEquals("test-schema", result.schema());
 
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
+    }
+
+    @Test
+    void getPhysicalInstanceCodeLists_delegatesToRepository() {
+        // Le endpoint /codeslists doit s'appuyer sur une méthode dédiée du repo
+        // au lieu de récupérer la PI complète (qui n'inclut plus les CodeList).
+        String agencyId = "fr.insee";
+        String instanceId = "pi-test";
+        List<Ddi4CodeList> expected = List.of(new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                null,
+                "urn:ddi:fr.insee:cl-1:1",
+                agencyId, "cl-1", "1",
+                LangStrings.of("fr-FR", "ma cl"),
+                List.<Code>of()
+        ));
+        when(ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId)).thenReturn(expected);
+
+        List<Ddi4CodeList> result = ddiService.getPhysicalInstanceCodeLists(agencyId, instanceId);
+
+        assertSame(expected, result);
+        verify(ddiRepository).getPhysicalInstanceCodeLists(agencyId, instanceId);
     }
 
     @Test

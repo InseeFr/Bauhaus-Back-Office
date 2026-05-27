@@ -559,13 +559,24 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void shouldGetPhysicalInstanceWithCodeListsAndCategories() {
-        // Given
+    void getPhysicalInstance_skipsCodeListAndCategoryItemTypes() {
+        // Les CodeList et Category sont volontairement omises de la réponse GET PI
+        // (chargées paresseusement au clic d'une variable) pour réduire le payload
+        // et le coût de conversion DDI3 -> DDI4 sur ce endpoint.
         String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                "CodeList", codeListType,
+                "Category", categoryType
+        ));
 
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(instanceId, 1, agencyId),
@@ -586,10 +597,10 @@ class DDIRepositoryImplTest {
             new ColecticaItemResponse("f39ff278-8500-45fe-a850-3906da2d242b", agencyId, 1, "795aa4b8-acec-4ef8-8f08-3a200c7bdb10",
                     "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
                     null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52",
+            new ColecticaItemResponse(codeListType, agencyId, 1, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52",
                     "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
                     null, null, false, false, false, null),
-            new ColecticaItemResponse("7e47c269-bcab-40f7-a778-af7bbc4e3d00", agencyId, 1, "d363a730-14d4-4c54-9464-982312cf9330",
+            new ColecticaItemResponse(categoryType, agencyId, 1, "d363a730-14d4-4c54-9464-982312cf9330",
                     "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
                     null, null, false, false, false, null)
         };
@@ -636,33 +647,14 @@ class DDIRepositoryImplTest {
                         ))))
         );
 
-        Ddi4CodeList mockCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:82466a9c-5266-434b-9dd3-329993717ad4:1",
-                agencyId, "2f70f505-4a9e-4abe-82d4-c4ddfed25d52", "1",
-                LangStrings.of("fr-FR", "cl"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
-                        agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        Reference.of(agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1", "Category"),
-                        ValueType.of("a")))
-        );
-
-        Ddi4Category mockCategory = new Ddi4Category(Ddi4Category.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:d363a730-14d4-4c54-9464-982312cf9330:1",
-                agencyId, "d363a730-14d4-4c54-9464-982312cf9330", "1",
-                LangStrings.of("fr-FR", "aq")
-        );
-
         Ddi4Response mockDdi4Response = new Ddi4Response(
                 "ddi:4.0",
                 List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
                 List.of(mockPhysicalInstance),
                 List.of(mockDataRelationship),
                 List.of(mockVariable),
-                List.of(mockCodeList),
-                List.of(mockCategory)
+                null,
+                null
         );
 
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
@@ -671,399 +663,59 @@ class DDIRepositoryImplTest {
         // When
         Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
 
-        // Then
+        // Then : la réponse contient PI / DR / Variable mais ni CodeList ni Category
         assertNotNull(result);
         assertNotNull(result.physicalInstance());
         assertEquals(1, result.physicalInstance().size());
         assertEquals(instanceId, result.physicalInstance().get(0).id());
-        assertEquals("test", result.physicalInstance().get(0).citation().title().get(0).value());
 
         assertNotNull(result.variable());
         assertEquals(1, result.variable().size());
-        assertEquals("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", result.variable().get(0).id());
-        assertEquals("name", result.variable().get(0).variableName().get(0).value());
 
-        assertNotNull(result.codeList());
-        assertEquals(1, result.codeList().size());
-        assertEquals("2f70f505-4a9e-4abe-82d4-c4ddfed25d52", result.codeList().get(0).id());
-        assertEquals("cl", result.codeList().get(0).label().get(0).value());
-
-        assertNotNull(result.category());
-        assertEquals(1, result.category().size());
-        assertEquals("d363a730-14d4-4c54-9464-982312cf9330", result.category().get(0).id());
-        assertEquals("aq", result.category().get(0).label().get(0).value());
+        assertNull(result.codeList(), "CodeList ne doit pas être renvoyée par GET PI");
+        assertNull(result.category(), "Category ne doit pas être renvoyée par GET PI");
 
         verify(requestSpec).uri(eq(baseApiUrl + "set/" + agencyId + "/" + instanceId));
         verify(requestSpec).uri(eq(baseApiUrl + "item/_getList"));
 
+        // Et surtout : les items CodeList/Category ne sont pas passés au converter
+        // (économie du coût de conversion DDI3 -> DDI4 sur ces items souvent volumineux)
         ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
         verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
 
         Ddi3Response capturedDdi3 = ddi3Captor.getValue();
         assertNotNull(capturedDdi3.items());
-        assertEquals(5, capturedDdi3.items().size()); // PI + Variable + DR + CodeList + Category
+        assertEquals(3, capturedDdi3.items().size(), "Seuls PI, Variable et DR sont convertis");
+        assertTrue(capturedDdi3.items().stream().noneMatch(i -> codeListType.equals(i.itemType())));
+        assertTrue(capturedDdi3.items().stream().noneMatch(i -> categoryType.equals(i.itemType())));
     }
 
     @Test
-    void getPhysicalInstance_removesMutualizedCodeListFromResponse() {
-        // Given : a PhysicalInstance whose single CodeList is part of the mutualized package
+    void getPhysicalInstanceCodeLists_keepsOnlyCodeListAndCategoryItems() {
+        // L'endpoint /codeslists doit fonctionner sans repasser par getPhysicalInstance
+        // (qui n'inclut plus les CodeList). On filtre côté repo pour ne convertir que
+        // les CodeList et Category, et on renvoie les CodeLists résultantes.
         String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
-        String mutualizedCodeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        ColecticaSetItem[] setItems = {
-            new ColecticaSetItem(instanceId, 1, agencyId),
-            new ColecticaSetItem(mutualizedCodeListId, 1, agencyId)
-        };
-        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
-
-        ColecticaItemResponse[] itemResponses = {
-            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, mutualizedCodeListId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
-                    null, null, false, false, false, null)
-        };
-        when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
-
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId, instanceId, "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                null
-        );
-
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
-                agencyId, mutualizedCodeListId, "1",
-                LangStrings.of("fr-FR", "cl"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
-                        agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, ValueType.of("a")))
-        );
-
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(pi),
-                null,
-                null,
-                List.of(mutualizedCodeList),
-                null
-        );
-
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
-
-        // The CodeList is registered as mutualized — spy to stub the cached lookup
-        ddiRepository = spy(ddiRepository);
-        doReturn(List.of(new PartialCodesList(mutualizedCodeListId, "cl", null, agencyId)))
-                .when(ddiRepository).getMutualizedCodesLists();
-
-        // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        // Then : the mutualized CodeList must be absent from the response
-        assertNotNull(result);
-        assertNull(result.codeList(),
-                "Mutualized CodeList should be filtered out of the PhysicalInstance JSON");
-    }
-
-    @Test
-    void getPhysicalInstance_keepsNonMutualizedCodeList() {
-        // Given : a PhysicalInstance with a CodeList that is NOT in the mutualized package
-        // (the mutualized package contains some other CodeLists)
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String agencyId = "fr.insee";
-        String localCodeListId = "11111111-1111-1111-1111-111111111111";
-        String mutualizedCodeListId = "99999999-9999-9999-9999-999999999999";
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        ColecticaSetItem[] setItems = {
-            new ColecticaSetItem(instanceId, 1, agencyId),
-            new ColecticaSetItem(localCodeListId, 1, agencyId)
-        };
-        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
-
-        ColecticaItemResponse[] itemResponses = {
-            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, localCodeListId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
-                    null, null, false, false, false, null)
-        };
-        when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
-
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId, instanceId, "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                null
-        );
-
-        Ddi4CodeList localCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + localCodeListId + ":1",
-                agencyId, localCodeListId, "1",
-                LangStrings.of("fr-FR", "local-cl"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
-                        agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, ValueType.of("a")))
-        );
-
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(pi),
-                null,
-                null,
-                List.of(localCodeList),
-                null
-        );
-
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
-
-        // The mutualized package contains ONLY some other CodeList — not the local one
-        ddiRepository = spy(ddiRepository);
-        doReturn(List.of(new PartialCodesList(mutualizedCodeListId, "other", null, agencyId)))
-                .when(ddiRepository).getMutualizedCodesLists();
-
-        // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        // Then : the local (non-mutualized) CodeList is preserved with its codes
-        assertNotNull(result);
-        assertNotNull(result.codeList(), "Non-mutualized CodeList should remain in the response");
-        assertEquals(1, result.codeList().size());
-        assertEquals(localCodeListId, result.codeList().get(0).id());
-        assertNotNull(result.codeList().get(0).code(), "Codes of non-mutualized CodeList must be preserved");
-        assertEquals(1, result.codeList().get(0).code().size());
-        assertEquals("a", result.codeList().get(0).code().get(0).value().stringValue());
-    }
-
-    @Test
-    void getPhysicalInstance_withMixedCodeLists_keepsOnlyNonMutualized() {
-        // Given : a PhysicalInstance with TWO CodeLists, one mutualized + one local
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String agencyId = "fr.insee";
-        String localCodeListId = "11111111-1111-1111-1111-111111111111";
-        String mutualizedCodeListId = "22222222-2222-2222-2222-222222222222";
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        ColecticaSetItem[] setItems = {
-            new ColecticaSetItem(instanceId, 1, agencyId),
-            new ColecticaSetItem(localCodeListId, 1, agencyId),
-            new ColecticaSetItem(mutualizedCodeListId, 1, agencyId)
-        };
-        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
-
-        ColecticaItemResponse[] itemResponses = {
-            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, localCodeListId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, mutualizedCodeListId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
-                    null, null, false, false, false, null)
-        };
-        when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
-
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId, instanceId, "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                null
-        );
-
-        Ddi4CodeList localCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + localCodeListId + ":1",
-                agencyId, localCodeListId, "1",
-                LangStrings.of("fr-FR", "local"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1",
-                        agencyId, "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "1",
-                        null, ValueType.of("L1")))
-        );
-
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
-                agencyId, mutualizedCodeListId, "1",
-                LangStrings.of("fr-FR", "muta"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb:1",
-                        agencyId, "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "1",
-                        null, ValueType.of("M1")))
-        );
-
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(pi),
-                null,
-                null,
-                List.of(localCodeList, mutualizedCodeList),
-                null
-        );
-
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
-
-        ddiRepository = spy(ddiRepository);
-        doReturn(List.of(new PartialCodesList(mutualizedCodeListId, "muta", null, agencyId)))
-                .when(ddiRepository).getMutualizedCodesLists();
-
-        // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        // Then : only the local CodeList remains, with its codes intact
-        assertNotNull(result);
-        assertNotNull(result.codeList());
-        assertEquals(1, result.codeList().size());
-        assertEquals(localCodeListId, result.codeList().get(0).id());
-        assertEquals("L1", result.codeList().get(0).code().get(0).value().stringValue());
-    }
-
-    @Test
-    void getPhysicalInstance_doesNotTouchVariablesWhenFilteringMutualizedCodeList() {
-        // Given : a Variable referencing a mutualized CodeList — the Variable (with its CodeListReference)
-        // MUST stay intact so the front can fetch the mutualized list on demand.
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String agencyId = "fr.insee";
-        String variableId = "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d";
-        String mutualizedCodeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
-
-        when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
-
-        ColecticaSetItem[] setItems = {
-            new ColecticaSetItem(instanceId, 1, agencyId),
-            new ColecticaSetItem(variableId, 1, agencyId),
-            new ColecticaSetItem(mutualizedCodeListId, 1, agencyId)
-        };
-        when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
-
-        ColecticaItemResponse[] itemResponses = {
-            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("683889c6-f74b-4d5e-92ed-908c0a42bb2d", agencyId, 1, variableId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, mutualizedCodeListId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
-                    null, null, false, false, false, null)
-        };
-        when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
-
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId, instanceId, "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                null
-        );
-
-        Ddi4Variable variable = new Ddi4Variable(Ddi4Variable.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:33.138Z"),
-                "urn:ddi:fr.insee:" + variableId + ":1",
-                agencyId, variableId, "1",
-                null,
-                LangStrings.of("fr-FR", "name"),
-                LangStrings.of("fr-FR", "Test Label"),
-                null,
-                new VariableRepresentation(null,
-                    new CodeRepresentation(CodeRepresentation.TYPE,false,
-                        Reference.of(agencyId, mutualizedCodeListId, "1", "CodeList")),
-                    null, null, null),
-                null
-        );
-
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
-                agencyId, mutualizedCodeListId, "1",
-                LangStrings.of("fr-FR", "muta"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
-                        agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, ValueType.of("M1")))
-        );
-
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(pi),
-                null,
-                List.of(variable),
-                List.of(mutualizedCodeList),
-                null
-        );
-
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
-
-        ddiRepository = spy(ddiRepository);
-        doReturn(List.of(new PartialCodesList(mutualizedCodeListId, "muta", null, agencyId)))
-                .when(ddiRepository).getMutualizedCodesLists();
-
-        // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        // Then : Variable + its CodeListReference are preserved (so front can call detail endpoint)
-        assertNotNull(result);
-        assertNull(result.codeList(), "Mutualized CodeList filtered");
-        assertNotNull(result.variable());
-        assertEquals(1, result.variable().size());
-        Ddi4Variable resultVariable = result.variable().get(0);
-        assertEquals(variableId, resultVariable.id());
-        assertNotNull(resultVariable.variableRepresentation());
-        assertNotNull(resultVariable.variableRepresentation().codeRepresentation());
-        Reference ref = resultVariable.variableRepresentation().codeRepresentation().codeListReference();
-        assertNotNull(ref, "CodeListReference on Variable must survive filtering");
-        assertEquals(agencyId, ref.agency());
-        assertEquals(mutualizedCodeListId, ref.id());
-    }
-
-    @Test
-    void getPhysicalInstance_doesNotTouchCategoriesWhenFilteringMutualizedCodeList() {
-        // Given : a Category referenced by a mutualized CodeList. Per contract, Category array
-        // is left intact (the front will still get it for any non-filtered CodeList that uses it,
-        // and orphan Categories are accepted).
-        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String agencyId = "fr.insee";
-        String mutualizedCodeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
+        String codeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
         String categoryId = "d363a730-14d4-4c54-9464-982312cf9330";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
+                "CodeList", codeListType,
+                "Category", categoryType
+        ));
 
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(instanceId, 1, agencyId),
-            new ColecticaSetItem(mutualizedCodeListId, 1, agencyId),
+            new ColecticaSetItem("2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d", 1, agencyId),
+            new ColecticaSetItem(codeListId, 1, agencyId),
             new ColecticaSetItem(categoryId, 1, agencyId)
         };
         when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
@@ -1072,37 +724,31 @@ class DDIRepositoryImplTest {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 1, mutualizedCodeListId,
+            new ColecticaItemResponse("683889c6-f74b-4d5e-92ed-908c0a42bb2d", agencyId, 1, "2636d17c-d59d-4aa7-bd02-9cab5c0bbc7d",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, codeListId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
                     null, null, false, false, false, null),
-            new ColecticaItemResponse("7e47c269-bcab-40f7-a778-af7bbc4e3d00", agencyId, 1, categoryId,
+            new ColecticaItemResponse(categoryType, agencyId, 1, categoryId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
                     null, null, false, false, false, null)
         };
-        when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
+        when(responseSpec.body(eq(ColecticaItemResponse[].class)))
+                .thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId, instanceId, "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                null
-        );
-
-        Ddi4CodeList mutualizedCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
+        Ddi4CodeList mockCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + mutualizedCodeListId + ":1",
-                agencyId, mutualizedCodeListId, "1",
-                LangStrings.of("fr-FR", "muta"),
+                "urn:ddi:fr.insee:" + codeListId + ":1",
+                agencyId, codeListId, "1",
+                LangStrings.of("fr-FR", "ma code list"),
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         Reference.of(agencyId, categoryId, "1", "Category"),
-                        ValueType.of("M1")))
+                        ValueType.of("a")))
         );
-
-        Ddi4Category category = new Ddi4Category(Ddi4Category.TYPE,
+        Ddi4Category mockCategory = new Ddi4Category(Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
                 "urn:ddi:fr.insee:" + categoryId + ":1",
                 agencyId, categoryId, "1",
@@ -1110,106 +756,60 @@ class DDIRepositoryImplTest {
         );
 
         Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(pi),
-                null,
-                null,
-                List.of(mutualizedCodeList),
-                List.of(category)
+                "ddi:4.0", null, null, null, null,
+                List.of(mockCodeList), List.of(mockCategory)
         );
-
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
                 .thenReturn(mockDdi4Response);
 
-        ddiRepository = spy(ddiRepository);
-        doReturn(List.of(new PartialCodesList(mutualizedCodeListId, "muta", null, agencyId)))
-                .when(ddiRepository).getMutualizedCodesLists();
-
         // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
+        List<Ddi4CodeList> result = ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId);
 
-        // Then : the Category array stays untouched even though its CodeList was filtered
+        // Then : les CodeLists sont renvoyées
         assertNotNull(result);
-        assertNull(result.codeList(), "Mutualized CodeList filtered");
-        assertNotNull(result.category(), "Categories must remain untouched");
-        assertEquals(1, result.category().size());
-        assertEquals(categoryId, result.category().get(0).id());
+        assertEquals(1, result.size());
+        assertEquals(codeListId, result.get(0).id());
+        assertEquals("ma code list", result.get(0).label().get(0).value());
+
+        // Et le converter n'a reçu que les items CodeList + Category (pas la PI ni les Variables)
+        ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
+
+        Ddi3Response capturedDdi3 = ddi3Captor.getValue();
+        assertEquals(2, capturedDdi3.items().size(), "Seules CodeList et Category sont converties");
+        assertTrue(capturedDdi3.items().stream().anyMatch(i -> codeListType.equals(i.itemType())));
+        assertTrue(capturedDdi3.items().stream().anyMatch(i -> categoryType.equals(i.itemType())));
     }
 
     @Test
-    void getPhysicalInstance_matchesMutualizedOnAgencyAndIdNotVersion() {
-        // Given : a PI containing CodeList (agency, id, version=2). The mutualized cache holds
-        // the same (agency, id) but version=1 — filtering must match on (agency, id) alone.
+    void getPhysicalInstanceCodeLists_returnsEmptyWhenNoCodeListInSet() {
         String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
         String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
-        String codeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
 
         when(instanceConfiguration.baseApiUrl()).thenReturn(baseApiUrl);
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+                "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
+        ));
 
         ColecticaSetItem[] setItems = {
-            new ColecticaSetItem(instanceId, 1, agencyId),
-            new ColecticaSetItem(codeListId, 2, agencyId)
+            new ColecticaSetItem(instanceId, 1, agencyId)
         };
         when(responseSpec.body(eq(ColecticaSetItem[].class))).thenReturn(setItems);
 
         ColecticaItemResponse[] itemResponses = {
             new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
-                    null, null, false, false, false, null),
-            new ColecticaItemResponse("8b108ef8-b642-4484-9c49-f88e4bf7cf1d", agencyId, 2, codeListId,
-                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
                     null, null, false, false, false, null)
         };
         when(responseSpec.body(eq(ColecticaItemResponse[].class))).thenReturn(itemResponses);
 
-        Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:14.251595Z"),
-                "urn:ddi:fr.insee:" + instanceId + ":1",
-                agencyId, instanceId, "1",
-                null,
-                new Citation(LangStrings.of("fr-FR", "test")),
-                null
-        );
+        List<Ddi4CodeList> result = ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId);
 
-        // Note version "2" here
-        Ddi4CodeList codeListVersion2 = new Ddi4CodeList(Ddi4CodeList.TYPE,
-                CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
-                "urn:ddi:fr.insee:" + codeListId + ":2",
-                agencyId, codeListId, "2",
-                LangStrings.of("fr-FR", "cl"),
-                List.of(new Code(Code.TYPE,
-                        "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
-                        agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
-                        null, ValueType.of("v2")))
-        );
-
-        Ddi4Response mockDdi4Response = new Ddi4Response(
-                "ddi:4.0",
-                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-                List.of(pi),
-                null,
-                null,
-                List.of(codeListVersion2),
-                null
-        );
-
-        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
-                .thenReturn(mockDdi4Response);
-
-        // The mutualized cache knows this (agency, id) — without specifying version
-        ddiRepository = spy(ddiRepository);
-        doReturn(List.of(new PartialCodesList(codeListId, "cl", null, agencyId)))
-                .when(ddiRepository).getMutualizedCodesLists();
-
-        // When
-        Ddi4Response result = ddiRepository.getPhysicalInstance(agencyId, instanceId);
-
-        // Then : even though versions differ, the CodeList is identified as mutualized and filtered
         assertNotNull(result);
-        assertNull(result.codeList(),
-                "Matching on (agency, id) — version must be ignored");
+        assertTrue(result.isEmpty(), "Aucune CodeList dans le set -> liste vide, pas d'appel au converter");
+        verifyNoInteractions(ddi3ToDdi4Converter);
     }
 
     @Test

@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -102,6 +103,11 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public Ddi4Response getDdi4PhysicalInstance(String agencyId, String id) {
         return this.ddiRepository.getPhysicalInstance(agencyId, id);
+    }
+
+    @Override
+    public List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id) {
+        return ddiRepository.getPhysicalInstanceCodeLists(agencyId, id);
     }
 
     @Override

@@ -22,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -572,9 +573,15 @@ public class DDIRepositoryImpl implements DDIRepository {
                     return null;
                 }
 
+                // Les CodeList et Category sont volontairement écartées du GET PI :
+                // payload réduit + on évite la conversion DDI3 -> DDI4 sur ces items,
+                // souvent les plus gros. Le front les charge paresseusement (clic
+                // sur une variable + endpoint dédié /codeslists).
+                Set<String> excludedTypes = codeListAndCategoryItemTypes();
                 List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(
                     itemResponses
                 )
+                    .filter(item -> !excludedTypes.contains(item.itemType()))
                     .map(item ->
                         new Ddi3Response.Ddi3Item(
                             item.itemType(),
@@ -603,38 +610,105 @@ public class DDIRepositoryImpl implements DDIRepository {
                 logger.info(
                     "Successfully converted Physical Instance to DDI4 format"
                 );
-                return filterMutualizedCodeLists(response);
+                return response;
             } catch (Exception e) {
                 throw new RuntimeException("Failed to process DDI response", e);
             }
         });
     }
 
-    private Ddi4Response filterMutualizedCodeLists(Ddi4Response response) {
-        if (response == null || response.codeList() == null || response.codeList().isEmpty()) {
-            return response;
-        }
-        Set<String> mutualizedKeys = getMutualizedCodesLists().stream()
-                .map(p -> p.agency() + "/" + p.id())
+    private Set<String> codeListAndCategoryItemTypes() {
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        if (types == null) return Set.of();
+        return Stream.of("CodeList", "Category")
+                .map(types::get)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        if (mutualizedKeys.isEmpty()) {
-            return response;
-        }
-        List<Ddi4CodeList> kept = response.codeList().stream()
-                .filter(cl -> !mutualizedKeys.contains(cl.agency() + "/" + cl.id()))
-                .toList();
-        if (kept.size() == response.codeList().size()) {
-            return response;
-        }
-        return new Ddi4Response(
-                response.schema(),
-                response.topLevelReference(),
-                response.physicalInstance(),
-                response.dataRelationship(),
-                response.variable(),
-                kept.isEmpty() ? null : kept,
-                response.category()
-        );
+    }
+
+    @Override
+    public List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id) {
+        return authenticator.executeWithAuth(token -> {
+            try {
+                String setUrl =
+                    instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
+                ColecticaSetItem[] setItems = restClient
+                    .get()
+                    .uri(setUrl)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(ColecticaSetItem[].class);
+
+                if (setItems == null || setItems.length == 0) {
+                    return List.of();
+                }
+
+                List<GetDescriptionsRequest.IdentifierRef> identifiers =
+                    Arrays.stream(setItems)
+                        .map(item ->
+                            new GetDescriptionsRequest.IdentifierRef(
+                                item.agencyId(),
+                                item.identifier(),
+                                item.version()
+                            )
+                        )
+                        .toList();
+
+                String getListUrl =
+                    instanceConfiguration.baseApiUrl() + "item/_getList";
+                ColecticaItemResponse[] itemResponses = restClient
+                    .post()
+                    .uri(getListUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .body(new GetDescriptionsRequest(identifiers))
+                    .retrieve()
+                    .body(ColecticaItemResponse[].class);
+
+                if (itemResponses == null || itemResponses.length == 0) {
+                    return List.of();
+                }
+
+                Set<String> codeListAndCategoryTypes = codeListAndCategoryItemTypes();
+                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(
+                    itemResponses
+                )
+                    .filter(item -> codeListAndCategoryTypes.contains(item.itemType()))
+                    .map(item ->
+                        new Ddi3Response.Ddi3Item(
+                            item.itemType(),
+                            item.agencyId(),
+                            String.valueOf(item.version()),
+                            item.identifier(),
+                            item.item(),
+                            item.versionDate(),
+                            item.versionResponsibility(),
+                            item.isPublished(),
+                            item.isDeprecated(),
+                            item.isProvisional(),
+                            item.itemFormat()
+                        )
+                    )
+                    .toList();
+
+                if (ddi3Items.isEmpty()) {
+                    return List.of();
+                }
+
+                Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                    new Ddi3Response(null, ddi3Items),
+                    "ddi:4.0"
+                );
+                return response != null && response.codeList() != null
+                    ? response.codeList()
+                    : List.of();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    "Failed to fetch CodeLists for PhysicalInstance",
+                    e
+                );
+            }
+        });
     }
 
     @Override

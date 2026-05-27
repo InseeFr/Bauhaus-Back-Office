@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -19,6 +20,7 @@ public interface DDIRepository {
     List<PartialGroup> getGroups();
     List<PartialStudyUnit> getStudyUnits();
     Ddi4Response getPhysicalInstance(String agencyId, String id);
+    List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id);
     Ddi4GroupResponse getGroup(String agencyId, String id);
     void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
