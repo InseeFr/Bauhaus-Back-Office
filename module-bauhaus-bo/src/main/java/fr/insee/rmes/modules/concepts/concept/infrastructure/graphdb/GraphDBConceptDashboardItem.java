@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.jspecify.annotations.Nullable;
 
 public record GraphDBConceptDashboardItem(
@@ -9,7 +10,7 @@ public record GraphDBConceptDashboardItem(
         String label,
         String created,
         @Nullable String modified,
-        boolean isValidated,
+        @Nullable String validationState,
         @Nullable String creator
 ) {
 
@@ -19,7 +20,7 @@ public record GraphDBConceptDashboardItem(
                 label,
                 created,
                 modified,
-                isValidated,
+                ValidationStatus.fromValue(validationState),
                 creator
         );
     }

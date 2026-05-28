@@ -10,7 +10,7 @@ public record ConceptDashboardItemResponse(
         String label,
         String created,
         @Nullable String modified,
-        boolean isValidated,
+        String validationState,
         @Nullable String creator
 ) {
 
@@ -20,7 +20,7 @@ public record ConceptDashboardItemResponse(
                 item.label(),
                 item.created(),
                 item.modified(),
-                item.isValidated(),
+                item.validationState().getValue(),
                 item.creator()
         );
     }

@@ -21,6 +21,7 @@ import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionNotFoundException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
@@ -38,6 +39,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +203,7 @@ public class ConceptsUtils extends RdfService {
 		/*Const*/
 		model.add(conceptURI, RDF.TYPE, SKOS.CONCEPT, RdfUtils.conceptGraph());
 		model.add(conceptURI, SKOS.IN_SCHEME, RdfUtils.conceptScheme(), RdfUtils.conceptGraph());
-		model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(false), RdfUtils.conceptGraph());
+		model.add(conceptURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(validationStateForWrite(concept)), RdfUtils.conceptGraph());
 		/*Required*/
 		model.add(conceptURI, SKOS.NOTATION, RdfUtils.setLiteralString(concept.getId()), RdfUtils.conceptGraph());
 		model.add(conceptURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(concept.getPrefLabelLg1(), languages.lg1()), RdfUtils.conceptGraph());
@@ -244,11 +246,34 @@ public class ConceptsUtils extends RdfService {
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
 			IRI conceptURI = RdfUtils.conceptIRI(conceptsToValidate.getString(i));
 			conceptsToValidateList.add(conceptURI);
-			model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
+			model.add(conceptURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.conceptGraph());
 			logger.info("Validate concept : {}" , conceptURI);
 		}
 		repoGestion.objectsValidation(conceptsToValidateList, model);
 		conceptsPublication.publishConcepts(conceptsToValidate);
+	}
+
+	private ValidationStatus validationStateForWrite(Concept concept) throws RmesException {
+		if (Boolean.TRUE.equals(concept.getCreation())) {
+			return ValidationStatus.UNPUBLISHED;
+		}
+		String current = getCurrentValidationStatus(concept.getId());
+		if (ValidationStatus.VALIDATED.getValue().equals(current) || ValidationStatus.MODIFIED.getValue().equals(current)) {
+			return ValidationStatus.MODIFIED;
+		}
+		return ValidationStatus.UNPUBLISHED;
+	}
+
+	private String getCurrentValidationStatus(String id) throws RmesException {
+		try {
+			JSONObject response = repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptValidationStatus(id));
+			if (response != null && response.has("state")) {
+				return response.getString("state");
+			}
+		} catch (JSONException e) {
+			logger.debug("No current validation status for concept {}", id);
+		}
+		return ValidationStatus.UNPUBLISHED.getValue();
 	}
 
 	public JSONArray getGraphsWithConcept(String id) throws RmesException {

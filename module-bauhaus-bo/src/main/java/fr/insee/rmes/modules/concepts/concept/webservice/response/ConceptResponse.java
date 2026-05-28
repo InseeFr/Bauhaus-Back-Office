@@ -22,7 +22,7 @@ public record ConceptResponse(
         @Nullable String modified,
         @Nullable String valid,
         int conceptVersion,
-        String isValidated,
+        String validationState,
         @Nullable List<String> altLabelLg1,
         @Nullable List<String> altLabelLg2,
         List<String> collections
@@ -47,7 +47,7 @@ public record ConceptResponse(
                 concept.modified().map(LocalDateTime::toString).orElse(null),
                 null,
                 concept.version().value(),
-                Boolean.toString(concept.isValidated()),
+                concept.validationState().getValue(),
                 null,
                 null,
                 concept.collectionIds()

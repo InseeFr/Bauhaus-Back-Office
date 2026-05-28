@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.MalformedConcept
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ class ConceptTest {
         assertThat(concept.creator()).isEqualTo("HIE000000");
         assertThat(concept.contributor()).isEmpty();
         assertThat(concept.disseminationStatus()).isEqualTo(DISSEMINATION_STATUS);
-        assertThat(concept.isValidated()).isFalse();
+        assertThat(concept.validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
         assertThat(concept.version()).isEqualTo(ConceptVersion.initial());
         assertThat(concept.modified()).isEmpty();
         assertThat(concept.collectionIds()).containsExactly("Collection-001");
@@ -71,7 +72,7 @@ class ConceptTest {
                 DISSEMINATION_STATUS,
                 LocalDateTime.now(),
                 null,
-                false,
+                ValidationStatus.UNPUBLISHED,
                 ConceptVersion.initial(),
                 Collections.emptyList()
         )).isInstanceOf(MalformedConceptException.class)

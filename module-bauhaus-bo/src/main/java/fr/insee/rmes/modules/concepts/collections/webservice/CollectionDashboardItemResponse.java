@@ -8,7 +8,7 @@ public record CollectionDashboardItemResponse(
         String label,
         String created,
         @Nullable String modified,
-        boolean isValidated,
+        String validationState,
         @Nullable String creator,
         int nbMembers
 ) {
@@ -18,7 +18,7 @@ public record CollectionDashboardItemResponse(
                 item.label(),
                 item.created(),
                 item.modified(),
-                item.isValidated(),
+                item.validationState().getValue(),
                 item.creator(),
                 item.nbMembers()
         );

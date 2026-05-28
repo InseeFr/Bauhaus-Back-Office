@@ -1,8 +1,8 @@
 <http://rdf.insee.fr/graphes/concepts/definitions> {
     <http://bauhaus//concepts/definitions/Legacy_collection_001>
             a       <http://www.w3.org/2004/02/skos/core#Collection> ;
-            <http://rdf.insee.fr/def/base#isValidated>
-                    "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://rdf.insee.fr/def/base#validationState>
+                    "Unpublished" ;
             <http://purl.org/dc/terms/title>
                     "Legacy collection"@fr ;
             <http://purl.org/dc/terms/created>

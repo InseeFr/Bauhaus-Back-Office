@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,7 @@ class GraphDBConceptTest {
                 "2026-01-02T11:00:00",
                 "2026-12-31",
                 3,
-                "true",
+                "Validated",
                 List.of("alt-fr-1", "alt-fr-2"),
                 List.of("alt-en-1"),
                 List.of("Collection-001")
@@ -48,7 +49,7 @@ class GraphDBConceptTest {
         assertThat(concept.disseminationStatus()).isEqualTo(DISSEMINATION_STATUS);
         assertThat(concept.created()).isEqualTo(LocalDateTime.of(2026, 1, 1, 10, 0));
         assertThat(concept.modified()).contains(LocalDateTime.of(2026, 1, 2, 11, 0));
-        assertThat(concept.isValidated()).isTrue();
+        assertThat(concept.validationState()).isEqualTo(ValidationStatus.VALIDATED);
         assertThat(concept.version()).isEqualTo(new ConceptVersion(3));
         assertThat(concept.collectionIds()).containsExactly("Collection-001");
     }
@@ -67,7 +68,7 @@ class GraphDBConceptTest {
                 null,
                 null,
                 1,
-                "false",
+                "Unpublished",
                 null,
                 null,
                 null
@@ -78,7 +79,7 @@ class GraphDBConceptTest {
         assertThat(concept.alternativeLabels()).isEmpty();
         assertThat(concept.contributor()).isEmpty();
         assertThat(concept.modified()).isEmpty();
-        assertThat(concept.isValidated()).isFalse();
+        assertThat(concept.validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
         assertThat(concept.collectionIds()).isEmpty();
     }
 
@@ -90,7 +91,7 @@ class GraphDBConceptTest {
                 null, null, null, null, null,
                 "2026-01-01T10:00:00.000+01:00",
                 "2026-06-01T15:30:00.000+02:00",
-                null, 1, "false",
+                null, 1, "Unpublished",
                 null, null, null
         );
 
@@ -109,7 +110,7 @@ class GraphDBConceptTest {
                 "Concept",
                 null, null, null, null, null,
                 "2026-01-01T10:00:00",
-                null, null, 0, "false",
+                null, null, 0, "Unpublished",
                 null, null, null
         );
 

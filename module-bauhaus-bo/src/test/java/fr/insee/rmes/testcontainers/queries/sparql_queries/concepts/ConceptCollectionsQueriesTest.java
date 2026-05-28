@@ -65,14 +65,14 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         assertNotNull(agricultureCollection, "Agriculture collection should exist");
         assertEquals("3", agricultureCollection.getString("nbMembers"), "Agriculture collection should have 3 members");
         assertEquals("Collection Agriculture", agricultureCollection.getString("label"));
-        assertEquals("true", agricultureCollection.getString("isValidated"));
+        assertEquals("Validated", agricultureCollection.getString("validationState"));
         assertEquals("DG75-L201", agricultureCollection.getString("creator"));
 
         // Find Commerce collection and verify its member count
         JSONObject commerceCollection = findCollectionById(result, "c2000");
         assertNotNull(commerceCollection, "Commerce collection should exist");
         assertEquals("2", commerceCollection.getString("nbMembers"), "Commerce collection should have 2 members");
-        assertEquals("false", commerceCollection.getString("isValidated"));
+        assertEquals("Unpublished", commerceCollection.getString("validationState"));
 
         // Find Emploi collection and verify its member count
         JSONObject emploiCollection = findCollectionById(result, "c3000");

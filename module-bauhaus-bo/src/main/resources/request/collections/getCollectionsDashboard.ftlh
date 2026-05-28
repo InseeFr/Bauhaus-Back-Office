@@ -1,4 +1,4 @@
-SELECT ?id ?label ?created ?modified ?isValidated ?creator
+SELECT ?id ?label ?created ?modified ?validationState ?creator
 (count(?member) AS ?nbMembers)
 WHERE {
     ?collection rdf:type skos:Collection .
@@ -6,10 +6,10 @@ WHERE {
     ?collection dcterms:title ?label .
     ?collection dcterms:created ?created .
     OPTIONAL {?collection dcterms:modified ?modified} .
-    ?collection insee:isValidated ?isValidated
+    ?collection insee:validationState ?validationState
     OPTIONAL {?collection dc:creator ?creator} .
     FILTER (lang(?label) = '${LG1}')
     ?collection skos:member ?member .
 }
-GROUP BY ?id ?label ?created ?modified ?isValidated ?creator
+GROUP BY ?id ?label ?created ?modified ?validationState ?creator
 ORDER BY ?label

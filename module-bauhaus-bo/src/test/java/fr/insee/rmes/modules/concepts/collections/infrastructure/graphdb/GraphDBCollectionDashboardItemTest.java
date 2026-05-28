@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,7 +15,7 @@ class GraphDBCollectionDashboardItemTest {
                 "Label FR",
                 "2024-01-01T10:00:00",
                 "2024-06-01T15:30:00",
-                true,
+                "Validated",
                 "creator1",
                 "5"
         );
@@ -26,7 +27,7 @@ class GraphDBCollectionDashboardItemTest {
         assertEquals("Label FR", domain.label());
         assertEquals("2024-01-01T10:00:00", domain.created());
         assertEquals("2024-06-01T15:30:00", domain.modified());
-        assertTrue(domain.isValidated());
+        assertEquals(ValidationStatus.VALIDATED, domain.validationState());
         assertEquals("creator1", domain.creator());
         assertEquals(5, domain.nbMembers());
     }
@@ -38,7 +39,7 @@ class GraphDBCollectionDashboardItemTest {
                 "Label FR",
                 "2024-01-01T10:00:00",
                 null,
-                false,
+                "Unpublished",
                 null,
                 "0"
         );
@@ -50,7 +51,7 @@ class GraphDBCollectionDashboardItemTest {
         assertEquals("Label FR", domain.label());
         assertEquals("2024-01-01T10:00:00", domain.created());
         assertNull(domain.modified());
-        assertFalse(domain.isValidated());
+        assertEquals(ValidationStatus.UNPUBLISHED, domain.validationState());
         assertNull(domain.creator());
         assertEquals(0, domain.nbMembers());
     }

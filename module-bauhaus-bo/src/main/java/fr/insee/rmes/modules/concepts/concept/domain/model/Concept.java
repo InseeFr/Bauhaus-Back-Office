@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.MalformedConcept
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 public class Concept extends CompactConcept {
 
-    private static final boolean DEFAULT_VALIDATION_STATE = false;
+    private static final ValidationStatus DEFAULT_VALIDATION_STATE = ValidationStatus.UNPUBLISHED;
 
     private final List<LocalisedLabel> alternativeLabels;
     private final String creator;
@@ -20,7 +21,7 @@ public class Concept extends CompactConcept {
     private final String disseminationStatus;
     private final LocalDateTime created;
     private final @Nullable LocalDateTime modified;
-    private final boolean isValidated;
+    private final ValidationStatus validationState;
     private final ConceptVersion version;
     private final List<String> collectionIds;
 
@@ -32,7 +33,7 @@ public class Concept extends CompactConcept {
             String disseminationStatus,
             LocalDateTime created,
             @Nullable LocalDateTime modified,
-            boolean isValidated,
+            ValidationStatus validationState,
             ConceptVersion version,
             List<String> collectionIds
     ) {
@@ -52,7 +53,7 @@ public class Concept extends CompactConcept {
         this.disseminationStatus = disseminationStatus;
         this.created = created;
         this.modified = modified;
-        this.isValidated = isValidated;
+        this.validationState = validationState;
         this.version = version;
         this.collectionIds = collectionIds;
     }
@@ -96,8 +97,8 @@ public class Concept extends CompactConcept {
         return Optional.ofNullable(modified);
     }
 
-    public boolean isValidated() {
-        return isValidated;
+    public ValidationStatus validationState() {
+        return validationState;
     }
 
     public ConceptVersion version() {

@@ -24,7 +24,6 @@ public class Concept {
 	private List<Link> links;
 	private String created;
 	private String modified;
-	private String isValidated;
 	private Boolean creation;
 	private Boolean versioning;
 	private List<String> collections;
@@ -33,11 +32,9 @@ public class Concept {
 	public Concept(String id, boolean isNew) {
 		this.id = id;
 		this.modified = LocalDateTime.now().toString();
-		this.isValidated = "false";
-		
+
 		if (isNew) {
 			this.created = LocalDateTime.now().toString();
-			this.isValidated = "false";
 			this.creation = true;
 			this.versioning = false;
 		}else {
@@ -60,10 +57,6 @@ public class Concept {
 		return modified;
 	}
 
-	public String getIsValidated() {
-		return isValidated;
-	}
-	
 	public String getId() {
 		return id;
 	}

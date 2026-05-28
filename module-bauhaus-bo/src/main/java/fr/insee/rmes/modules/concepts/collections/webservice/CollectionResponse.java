@@ -13,7 +13,7 @@ public record CollectionResponse(
         LocalDateTime created,
         LocalDateTime modified,
         List<LocalisedLabelResponse> descriptions,
-        boolean isValidated,
+        String validationState,
         String creator,
         String contributor
 ) {
@@ -28,7 +28,7 @@ public record CollectionResponse(
                 collection.created(),
                 collection.modified().orElse(null),
                 collection.descriptions().stream().map(LocalisedLabelResponse::fromDomain).toList(),
-                collection.isValidated(),
+                collection.validationState().getValue(),
                 collection.creator(),
                 collection.contributor().orElse(null)
         );

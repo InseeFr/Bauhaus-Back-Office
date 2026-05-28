@@ -3,6 +3,7 @@ package fr.insee.rmes.utils;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -147,11 +148,11 @@ public class ExportUtils {
 
     }
 
-    public static String toValidationStatus(String boolStatus, boolean fem) {
-        if ("true".equals(boolStatus)) {
-            return fem ? "Publiée" : "Publié";
-        } else {
-            return "Provisoire";
-        }
+    public static String toValidationStatus(String validationState, boolean fem) {
+        return switch (ValidationStatus.fromValue(validationState)) {
+            case VALIDATED -> fem ? "Publiée" : "Publié";
+            case MODIFIED -> fem ? "Provisoire déjà publiée" : "Provisoire déjà publié";
+            case UNPUBLISHED -> "Provisoire";
+        };
     }
 }

@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.jspecify.annotations.Nullable;
 
 public record GraphDBCollectionDashboardItem(
@@ -9,7 +10,7 @@ public record GraphDBCollectionDashboardItem(
         String label,
         String created,
         @Nullable String modified,
-        boolean isValidated,
+        @Nullable String validationState,
         @Nullable String creator,
         String nbMembers
 ) {
@@ -19,7 +20,7 @@ public record GraphDBCollectionDashboardItem(
                 label,
                 created,
                 modified,
-                isValidated,
+                ValidationStatus.fromValue(validationState),
                 creator,
                 Integer.parseInt(nbMembers)
         );

@@ -118,7 +118,7 @@ class CollectionExportBuilderTest {
                 .put("prefLabelLg2", "Collection EN")
                 .put("created", "2025-01-01T00:00:00")
                 .put("modified", "2025-01-02T00:00:00")
-                .put("isValidated", "true")
+                .put("isValidated", "Validated")
                 .put("creator", "Creator")
                 .put("contributor", "Contributor");
 
@@ -149,7 +149,7 @@ class CollectionExportBuilderTest {
                 .put("id", id)
                 .put("prefLabelLg1", "Collection FR")
                 .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "false")
+                .put("isValidated", "Unpublished")
                 .put("creator", "Creator");
 
         JSONArray members = new JSONArray()
@@ -302,7 +302,7 @@ class CollectionExportBuilderTest {
                 .put("id", id)
                 .put("prefLabelLg1", "Collection FR")
                 .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "true");
+                .put("isValidated", "Validated");
 
         JSONArray emptyMembers = new JSONArray();
 
@@ -326,7 +326,7 @@ class CollectionExportBuilderTest {
                 .put("id", id)
                 .put("prefLabelLg1", "Collection")
                 .put("created", "2025-01-01T00:00:00")
-                .put("isValidated", "true");
+                .put("isValidated", "Validated");
 
         JSONArray members = new JSONArray()
                 .put(new JSONObject().put("id", "m3").put("prefLabelLg1", "Zebra"))

@@ -11,9 +11,12 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionMember;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionToValidate;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CompactCollection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
+import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
@@ -39,7 +42,7 @@ class DomainCollectionsServiceTest {
             Collections.emptyList(),
             LocalDateTime.of(1982, 7, 19, 0, 0),
             null,
-            false,
+            ValidationStatus.UNPUBLISHED,
             null);
 
     static final CompactCollection[] COMPACT_COLLECTIONS = {
@@ -116,9 +119,56 @@ class DomainCollectionsServiceTest {
     }
 
     @Test
+    void update_marks_modified_when_existing_collection_is_validated() throws Throwable {
+        Collection existing = collectionWith(ValidationStatus.VALIDATED);
+        when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(existing));
+
+        domainCollectionsService.update(updateCommand());
+
+        ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(collectionsRepository).update(captor.capture());
+        assertThat(captor.getValue().validationState()).isEqualTo(ValidationStatus.MODIFIED);
+    }
+
+    @Test
+    void update_stays_unpublished_when_existing_collection_is_unpublished() throws Throwable {
+        Collection existing = collectionWith(ValidationStatus.UNPUBLISHED);
+        when(collectionsRepository.getCollection(ID)).thenReturn(Optional.of(existing));
+
+        domainCollectionsService.update(updateCommand());
+
+        ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+        verify(collectionsRepository).update(captor.capture());
+        assertThat(captor.getValue().validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
+    }
+
+    private static Collection collectionWith(ValidationStatus state) {
+        return new Collection(
+                ID,
+                List.of(LocalisedLabel.ofDefaultLanguage("fr")),
+                "creator",
+                null,
+                Collections.emptyList(),
+                LocalDateTime.now(),
+                null,
+                state,
+                Collections.emptyList());
+    }
+
+    private static UpdateCollectionCommand updateCommand() throws Throwable {
+        return new UpdateCollectionCommand(
+                ID.value(),
+                List.of(LocalisedLabel.ofDefaultLanguage("fr")),
+                null,
+                "creator",
+                null,
+                Collections.emptyList());
+    }
+
+    @Test
     void dashboard_items_should_be_returned() throws CollectionsFetchException {
         // Given
-        var dashboardItem = new CollectionDashboardItem(ID, "Label", "2024-01-01T10:00:00", null, false, "creator1", 2);
+        var dashboardItem = new CollectionDashboardItem(ID, "Label", "2024-01-01T10:00:00", null, ValidationStatus.UNPUBLISHED, "creator1", 2);
         when(collectionsRepository.getDashboard()).thenReturn(List.of(dashboardItem));
         // When
         var result = domainCollectionsService.getDashboard();

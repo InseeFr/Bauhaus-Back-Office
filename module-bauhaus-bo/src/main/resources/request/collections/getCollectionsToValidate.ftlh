@@ -4,7 +4,8 @@ WHERE {
     BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) .
     ?collection dcterms:title ?label .
     ?collection dc:creator ?creator .
-    ?collection insee:isValidated 'false'^^xsd:boolean .
+    ?collection insee:validationState ?validationState .
+    FILTER(?validationState != 'Validated') .
     FILTER (lang(?label) = '${LG1}')
 }
 ORDER BY ?label

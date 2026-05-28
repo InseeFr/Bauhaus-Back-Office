@@ -129,6 +129,13 @@ public class ConceptConceptsQueries {
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}
 
+	public String getConceptValidationStatus(String conceptId) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("ID", conceptId);
+		return buildConceptRequest("getConceptValidationStatus.ftlh", params);
+	}
+
 	public String checkIfExists(String id) {
 		return "ASK \n"
 				+ "WHERE  \n"

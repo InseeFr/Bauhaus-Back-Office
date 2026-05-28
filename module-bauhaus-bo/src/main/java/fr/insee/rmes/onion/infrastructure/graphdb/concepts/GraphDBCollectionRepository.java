@@ -6,6 +6,7 @@ import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -41,7 +42,7 @@ public class GraphDBCollectionRepository implements CollectionRepository  {
         Model model = new LinkedHashModel();
         IRI collectionURI = RdfUtils.collectionIRI(collection.getId());
         model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, RdfUtils.conceptGraph());
-        model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(collection.getIsValidated()), RdfUtils.conceptGraph());
+        model.add(collectionURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(Boolean.TRUE.equals(collection.getIsValidated()) ? ValidationStatus.VALIDATED : ValidationStatus.UNPUBLISHED), RdfUtils.conceptGraph());
         model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(collection.getPrefLabelLg1(), this.lg1), RdfUtils.conceptGraph());
         model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(collection.getCreated()), RdfUtils.conceptGraph());
         RdfUtils.addTripleDate(collectionURI, DCTERMS.MODIFIED, LocalDateTime.now().toString(), model, RdfUtils.conceptGraph());

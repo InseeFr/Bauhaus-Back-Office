@@ -75,11 +75,11 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
         String collectionId = "Collection-bug-1453";
 
         createCollection(restClient, collectionId);
-        assertCollectionInDashboard(fetchDashboard(restClient), collectionId, false, 1);
+        assertCollectionInDashboard(fetchDashboard(restClient), collectionId, "Unpublished", 1);
 
         validateCollection(restClient, collectionId);
 
-        assertCollectionInDashboard(fetchDashboard(restClient), collectionId, true, 1);
+        assertCollectionInDashboard(fetchDashboard(restClient), collectionId, "Validated", 1);
     }
 
     @Test
@@ -92,15 +92,15 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
         validateCollection(restClient, collectionId);
 
         boolean hasGestionIri = sparqlAsk(restClient, BAUHAUS_TEST_REPOSITORY,
-                askIsValidatedTrueWithPrefix(collectionId, "http://bauhaus/"));
+                askValidatedWithPrefix(collectionId, "http://bauhaus/"));
         boolean hasPublicationIri = sparqlAsk(restClient, BAUHAUS_TEST_PUBLICATION_REPOSITORY,
-                askIsValidatedTrueWithPrefix(collectionId, "http://id.insee.fr/"));
+                askValidatedWithPrefix(collectionId, "http://id.insee.fr/"));
 
         assertThat(hasGestionIri)
-                .as("Le graphe gestion doit contenir <http://bauhaus/.../%s> insee:isValidated true", collectionId)
+                .as("Le graphe gestion doit contenir <http://bauhaus/.../%s> insee:validationState 'Validated'", collectionId)
                 .isTrue();
         assertThat(hasPublicationIri)
-                .as("Le graphe publication doit contenir <http://id.insee.fr/.../%s> insee:isValidated true. "
+                .as("Le graphe publication doit contenir <http://id.insee.fr/.../%s> insee:validationState 'Validated'. "
                         + "Si absent, ConceptsPublication.publishCollection a filtré le triplet "
                         + "ou écrit une IRI doublée par tranformBaseURIToPublish.", collectionId)
                 .isTrue();
@@ -139,25 +139,25 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
                 .body(String.class));
     }
 
-    private static void assertCollectionInDashboard(JSONArray dashboard, String id, boolean expectedValidated, int expectedCount) {
+    private static void assertCollectionInDashboard(JSONArray dashboard, String id, String expectedValidationState, int expectedCount) {
         long matches = 0;
         for (int i = 0; i < dashboard.length(); i++) {
             JSONObject row = dashboard.getJSONObject(i);
             if (id.equals(row.getString("id"))) {
                 matches++;
-                assertThat(row.getBoolean("isValidated"))
-                        .as("isValidated for collection %s", id)
-                        .isEqualTo(expectedValidated);
+                assertThat(row.getString("validationState"))
+                        .as("validationState for collection %s", id)
+                        .isEqualTo(expectedValidationState);
             }
         }
         assertThat(matches)
-                .as("Number of rows for collection %s in dashboard (duplicates indicate duplicated isValidated triples — bug #1453)", id)
+                .as("Number of rows for collection %s in dashboard (duplicates indicate duplicated validationState triples — bug #1453)", id)
                 .isEqualTo(expectedCount);
     }
 
-    private static String askIsValidatedTrueWithPrefix(String collectionId, String prefix) {
+    private static String askValidatedWithPrefix(String collectionId, String prefix) {
         return "PREFIX insee: <http://rdf.insee.fr/def/base#> "
-                + "ASK { ?s insee:isValidated true . "
+                + "ASK { ?s insee:validationState 'Validated' . "
                 + "FILTER(STRSTARTS(STR(?s), \"" + prefix + "\") "
                 + "&& !STRSTARTS(STR(?s), \"" + prefix + "http://\") "
                 + "&& CONTAINS(STR(?s), \"" + collectionId + "\")) }";

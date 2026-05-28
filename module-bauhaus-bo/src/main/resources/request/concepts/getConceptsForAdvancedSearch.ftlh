@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus ?validationStatus ?definition ?creator ?isTopConceptOf ?valid ?altLabel
+SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus ?validationState ?definition ?creator ?isTopConceptOf ?valid ?altLabel
 WHERE
 {
     GRAPH <${CONCEPTS_GRAPH}> {
@@ -19,7 +19,7 @@ WHERE
         OPTIONAL {?concept dcterms:valid ?valid} .
 
         ?concept insee:disseminationStatus ?disseminationStatus .
-        ?concept insee:isValidated ?validationStatus .
+        ?concept insee:validationState ?validationState .
 
         ?concept dc:creator ?creator .
         OPTIONAL{

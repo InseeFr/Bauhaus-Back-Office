@@ -10,8 +10,8 @@
                     "2020-01-15T10:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
             <http://purl.org/dc/terms/modified>
                     "2023-06-20T14:30:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-            <http://rdf.insee.fr/def/base#isValidated>
-                    "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://rdf.insee.fr/def/base#validationState>
+                    "Validated" ;
             <http://purl.org/dc/elements/1.1/creator>
                     "DG75-L201" ;
             <http://purl.org/dc/elements/1.1/contributor>
@@ -32,8 +32,8 @@
                     "2021-03-10T09:15:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
             <http://purl.org/dc/terms/modified>
                     "2023-09-05T11:45:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-            <http://rdf.insee.fr/def/base#isValidated>
-                    "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://rdf.insee.fr/def/base#validationState>
+                    "Unpublished" ;
             <http://purl.org/dc/elements/1.1/creator>
                     "DG75-L202" ;
             <http://purl.org/dc/elements/1.1/contributor>
@@ -51,8 +51,8 @@
                     "Collection Emploi et marché du travail"@fr , "Employment and Labour Market Collection"@en ;
             <http://purl.org/dc/terms/created>
                     "2019-11-22T08:30:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-            <http://rdf.insee.fr/def/base#isValidated>
-                    "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://rdf.insee.fr/def/base#validationState>
+                    "Validated" ;
             <http://purl.org/dc/elements/1.1/creator>
                     "DG75-L203" ;
             <http://purl.org/dc/elements/1.1/contributor>
@@ -72,8 +72,8 @@
                     "Collection Démographie"@fr , "Demographics Collection"@en ;
             <http://purl.org/dc/terms/created>
                     "2024-01-10T13:20:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-            <http://rdf.insee.fr/def/base#isValidated>
-                    "false"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://rdf.insee.fr/def/base#validationState>
+                    "Unpublished" ;
             <http://purl.org/dc/elements/1.1/creator>
                     "DG75-L204" ;
             <http://purl.org/dc/elements/1.1/contributor>
@@ -90,8 +90,8 @@
                     "Collection Vide"@fr , "Empty Collection"@en ;
             <http://purl.org/dc/terms/created>
                     "2024-02-01T10:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ;
-            <http://rdf.insee.fr/def/base#isValidated>
-                    "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
+            <http://rdf.insee.fr/def/base#validationState>
+                    "Validated" ;
             <http://purl.org/dc/elements/1.1/creator>
                     "DG75-L205" ;
             <http://purl.org/dc/elements/1.1/contributor>

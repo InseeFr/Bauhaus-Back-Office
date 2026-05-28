@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCo
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionsRepository;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +58,22 @@ public class DomainCollectionsService implements CollectionsService {
 
     @Override
     public void update(UpdateCollectionCommand updateCommand) throws CollectionsSaveException {
-        Collection collection = Collection.create(updateCommand, updateCommand.collectionId());
+        ValidationStatus next = nextValidationStateForUpdate(updateCommand.collectionId());
+        Collection collection = Collection.create(updateCommand, updateCommand.collectionId(), next);
         this.repository.update(collection);
+    }
+
+    private ValidationStatus nextValidationStateForUpdate(CollectionId id) throws CollectionsSaveException {
+        try {
+            ValidationStatus current = this.repository.getCollection(id)
+                    .map(Collection::validationState)
+                    .orElse(ValidationStatus.UNPUBLISHED);
+            return (current == ValidationStatus.VALIDATED || current == ValidationStatus.MODIFIED)
+                    ? ValidationStatus.MODIFIED
+                    : ValidationStatus.UNPUBLISHED;
+        } catch (CollectionsFetchException e) {
+            throw new CollectionsSaveException(new Exception(e));
+        }
     }
 
     @Override

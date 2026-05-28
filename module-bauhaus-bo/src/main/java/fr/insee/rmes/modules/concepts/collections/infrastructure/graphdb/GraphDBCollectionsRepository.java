@@ -132,7 +132,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         Resource graph = graphDBCollectionProperties.getResourceGraph();
 
         model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, graph);
-        model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(graphDBCollection.isValidated()), graph);
+        model.add(collectionURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(graphDBCollection.validationState()), graph);
         model.add(collectionURI, DCTERMS.TITLE, RdfUtils.setLiteralString(graphDBCollection.prefLabelLg1(),
                 graphDBCollection.prefLabelLg1_lg()), graph);
         model.add(collectionURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(graphDBCollection.created()), graph);

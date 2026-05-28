@@ -173,7 +173,7 @@ class ConceptsImplTest {
                     "valid": "2023-10-18T00:00:00",
                     "creator": "SSM-SDES",
                     "contributor": "DG75-L201",
-                    "isValidated": "false",
+                    "validationState": "Unpublished",
                     "prefLabelLg1": "Accidents corporels de la circulation",
                     "prefLabelLg2": "Road accidents",
                     "created": "2002-12-23T00:00:00",

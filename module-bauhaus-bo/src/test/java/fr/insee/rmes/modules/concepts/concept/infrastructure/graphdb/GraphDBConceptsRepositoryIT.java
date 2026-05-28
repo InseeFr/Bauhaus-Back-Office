@@ -8,6 +8,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -75,7 +76,7 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
         assertThat(concept.creator()).isEqualTo("http://bauhaus/HIE000000");
         assertThat(concept.contributor()).contains("http://bauhaus/HIE000001");
         assertThat(concept.disseminationStatus()).isEqualTo(DISSEMINATION_STATUS);
-        assertThat(concept.isValidated()).isFalse();
+        assertThat(concept.validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
         assertThat(concept.collectionIds()).isEmpty();
     }
 
@@ -140,13 +141,13 @@ class GraphDBConceptsRepositoryIT extends WithGraphDBContainer {
 
     @Test
     @Order(8)
-    @DisplayName("validate flips isValidated on the seeded concept")
+    @DisplayName("validate sets validationState=Validated on the seeded concept")
     void validate_marks_concept_as_validated() throws ConceptsSaveException, ConceptsFetchException {
         repository.validate(List.of(SEEDED));
 
         var refetched = repository.getConcept(SEEDED);
         assertThat(refetched).isPresent();
-        assertThat(refetched.get().isValidated()).isTrue();
+        assertThat(refetched.get().validationState()).isEqualTo(ValidationStatus.VALIDATED);
     }
 
     @Test

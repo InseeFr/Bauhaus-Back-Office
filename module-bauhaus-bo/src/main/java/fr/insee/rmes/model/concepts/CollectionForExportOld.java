@@ -1,5 +1,6 @@
 package fr.insee.rmes.model.concepts;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import fr.insee.rmes.Constants;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,6 +21,7 @@ public class CollectionForExportOld extends CollectionForExport{
     private String modified;//
 
     //STATUS
+    @JsonAlias("validationState")
     private String isValidated;//
 
     //LINKS

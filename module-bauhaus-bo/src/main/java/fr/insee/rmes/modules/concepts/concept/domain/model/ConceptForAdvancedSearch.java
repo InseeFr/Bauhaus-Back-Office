@@ -10,7 +10,7 @@ public record ConceptForAdvancedSearch(
         String created,
         String modified,
         String disseminationStatus,
-        String validationStatus,
+        String validationState,
         String definition,
         String creator,
         String isTopConceptOf,

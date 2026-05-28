@@ -1,5 +1,5 @@
 SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified ?descriptionLg1 ?descriptionLg2
-?isValidated ?creator ?contributor
+?validationState ?creator ?contributor
 WHERE {
     ?collection rdf:type skos:Collection .
     FILTER(STRENDS(STR(?collection),'/concepts/definitions/${ID}')) .
@@ -19,7 +19,7 @@ WHERE {
     OPTIONAL {?collection dcterms:description ?descriptionLg2 .
     FILTER (lang(?descriptionLg2) = '${LG2}') } .
 
-    ?collection insee:isValidated ?isValidated
+    ?collection insee:validationState ?validationState
     OPTIONAL {?collection dc:creator ?creator} .
     ?collection dc:contributor ?contributor .
 }

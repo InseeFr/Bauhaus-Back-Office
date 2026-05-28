@@ -13,7 +13,7 @@ SELECT ?id ?prefLabelLg1 ?altLabelLg1 ?creator ?contributor ?disseminationStatus
             ?member skos:altLabel ?altLabelLg1 .
 				 FILTER (lang(?altLabelLg1) = 'fr') .
             } }
-    			OPTIONAL {?member insee:isValidated ?isValidated . }
+    			OPTIONAL {?member insee:validationState ?isValidated . }
         	    OPTIONAL {?member dc:creator ?creator .}
         	    OPTIONAL {?member dc:contributor ?contributor .}
         		OPTIONAL {	?member insee:disseminationStatus ?disseminationStatus .}

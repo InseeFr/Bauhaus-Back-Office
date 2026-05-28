@@ -5,7 +5,8 @@ SELECT DISTINCT ?id ?label ?creator ?valid
 		    BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) .
 		    ?concept skos:prefLabel ?label .
 		    ?concept dc:creator ?creator .
-		    ?concept insee:isValidated 'false'^^xsd:boolean .
+		    ?concept insee:validationState ?validationState .
+		    FILTER(?validationState != 'Validated') .
 		    OPTIONAL {?concept dcterms:valid ?valid .}
 		    FILTER (lang(?label) = '${LG1}') .
 		}

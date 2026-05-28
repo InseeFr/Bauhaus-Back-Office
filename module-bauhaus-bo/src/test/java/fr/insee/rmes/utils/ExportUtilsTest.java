@@ -26,11 +26,13 @@ class ExportUtilsTest {
     @Test
     void shouldReturnResultsWhenValidationStatus() {
         List<String> actual= new ArrayList<>();
-        actual.add(ExportUtils.toValidationStatus("true",true));
-        actual.add(ExportUtils.toValidationStatus("true",false));
-        actual.add(ExportUtils.toValidationStatus("false",true));
-        actual.add(ExportUtils.toValidationStatus("false",false));
-        assertEquals("[Publiée, Publié, Provisoire, Provisoire]",actual.toString());
+        actual.add(ExportUtils.toValidationStatus("Validated",true));
+        actual.add(ExportUtils.toValidationStatus("Validated",false));
+        actual.add(ExportUtils.toValidationStatus("Modified",true));
+        actual.add(ExportUtils.toValidationStatus("Modified",false));
+        actual.add(ExportUtils.toValidationStatus("Unpublished",true));
+        actual.add(ExportUtils.toValidationStatus("Unpublished",false));
+        assertEquals("[Publiée, Publié, Provisoire déjà publiée, Provisoire déjà publié, Provisoire, Provisoire]",actual.toString());
     }
 
     @Test

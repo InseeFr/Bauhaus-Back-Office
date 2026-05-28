@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public record GraphDBConcept(
         @Nullable String modified,
         @Nullable String valid,
         int conceptVersion,
-        @Nullable String isValidated,
+        @Nullable String validationState,
         List<String> altLabelLg1,
         List<String> altLabelLg2,
         List<String> collectionIds
@@ -48,7 +49,7 @@ public record GraphDBConcept(
                 Objects.requireNonNullElse(disseminationStatus, ""),
                 parseDateTime(Objects.requireNonNullElse(created, LocalDateTime.now().toString())),
                 modified == null ? null : parseDateTime(modified),
-                "true".equalsIgnoreCase(isValidated),
+                ValidationStatus.fromValue(validationState),
                 new ConceptVersion(Math.max(conceptVersion, 1)),
                 collectionIds
         );

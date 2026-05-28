@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDB
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -48,7 +49,7 @@ public class CollectionsUtils  {
 		for (int i = 0; i < collectionsToValidate.length(); i++) {
 			IRI collectionURI = collectionProperties.getResourceIRI(collectionsToValidate.getString(i).replace(" ", ""));
 			collectionsToValidateList.add(collectionURI);
-			model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
+			model.add(collectionURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.conceptGraph());
 			logger.info("Validate collection : {}" , collectionURI);
 		}
 

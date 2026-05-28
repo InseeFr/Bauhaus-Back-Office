@@ -5,6 +5,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -83,6 +84,7 @@ class GraphDBCollectionRepositoryTest {
             utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralDateTime(nullable(String.class))).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralString(nullable(String.class))).thenReturn(lit); // (String) accepte null
+            utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenReturn(lit); // (ValidationStatus)
             utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(lit);          // (String, lang)
 
             utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))
@@ -99,7 +101,7 @@ class GraphDBCollectionRepositoryTest {
             Model model = modelCaptor.getValue();
 
             assertThat(model.contains(subj, RDF.TYPE, SKOS.COLLECTION, graph)).isTrue();
-            assertThat(model.contains(subj, INSEE.IS_VALIDATED, lit, graph)).isTrue();
+            assertThat(model.contains(subj, INSEE.VALIDATION_STATE, lit, graph)).isTrue();
             assertThat(model.contains(subj, DCTERMS.TITLE, lit, graph)).isTrue();   // lg1
             assertThat(model.contains(subj, DCTERMS.CREATED, lit, graph)).isTrue();
             assertThat(model.contains(subj, DC.CONTRIBUTOR, lit, graph)).isTrue();
@@ -141,6 +143,7 @@ class GraphDBCollectionRepositoryTest {
             utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralDateTime(nullable(String.class))).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralString(nullable(String.class))).thenReturn(lit);
+            utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(lit);
 
             utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))
@@ -177,6 +180,7 @@ class GraphDBCollectionRepositoryTest {
             utils.when(() -> RdfUtils.setLiteralBoolean(any())).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralString(any(), any())).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralString(nullable(String.class))).thenReturn(lit);
+            utils.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenReturn(lit);
             utils.when(() -> RdfUtils.setLiteralDateTime(any())).thenReturn(lit);
 
             utils.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(LinkedHashModel.class), any()))

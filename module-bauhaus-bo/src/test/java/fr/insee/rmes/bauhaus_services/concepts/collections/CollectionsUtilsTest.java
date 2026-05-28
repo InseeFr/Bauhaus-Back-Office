@@ -4,20 +4,26 @@ import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -85,6 +91,29 @@ class CollectionsUtilsTest {
         // Then
         verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
         verify(repositoryGestion, times(1)).objectsValidation(argThat(list -> list.size() == 1), any());
+    }
+
+    @Test
+    void shouldWriteValidatedStateWhenValidating() throws RmesException {
+        // Given
+        String body = "[\"collection1\"]";
+
+        // When
+        collectionsUtils.collectionsValidation(body);
+
+        // Then - validation writes validationState=Validated
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).objectsValidation(anyList(), modelCaptor.capture());
+        assertEquals(ValidationStatus.VALIDATED.getValue(), validationStateOf(modelCaptor.getValue()));
+    }
+
+    private static String validationStateOf(Model model) {
+        for (Statement st : model) {
+            if (st.getPredicate().equals(INSEE.VALIDATION_STATE)) {
+                return st.getObject().stringValue();
+            }
+        }
+        return null;
     }
 
     @Test

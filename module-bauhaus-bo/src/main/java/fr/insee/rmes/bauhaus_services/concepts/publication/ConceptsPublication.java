@@ -47,7 +47,7 @@ public class ConceptsPublication extends RdfService{
 
 	String[] notes = {"scopeNote","definition","editorialNote"} ;
 	String[] links = {"inScheme","disseminationStatus","references"};
-	String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
+	String[] ignoredAttrs = {"validationState","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
 
 	public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {

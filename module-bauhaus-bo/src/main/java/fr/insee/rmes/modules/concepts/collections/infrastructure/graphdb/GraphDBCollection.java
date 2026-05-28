@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -27,7 +28,7 @@ public record GraphDBCollection(
 
         @Nullable String descriptionLg2,
         @Nullable String descriptionLg2_lg,
-        boolean isValidated,
+        @Nullable String validationState,
         String creator,
         String contributor,
         List<String> conceptIds
@@ -72,7 +73,7 @@ public record GraphDBCollection(
 
 
 
-                collection.isValidated(),
+                collection.validationState().getValue(),
                 collection.creator(),
                 collection.contributor().orElse(null),
                 collection.conceptIds().stream().map(ConceptId::value).toList()
@@ -97,7 +98,7 @@ public record GraphDBCollection(
                 toLocalisedDescriptions(),
                 parseDateTime(created),
                 Objects.isNull(modified) ? null : parseDateTime(modified),
-                isValidated,
+                ValidationStatus.fromValue(validationState),
                 conceptIds.stream()
                         .map(ConceptId::new)
                         .toList());
@@ -150,7 +151,7 @@ public record GraphDBCollection(
                 descriptionLg1_lg,
                 descriptionLg2,
                 descriptionLg2_lg,
-                isValidated,
+                validationState,
                 creator,
                 contributor,
                 Arrays.stream(graphDBConcepts).map(GraphDBConcept::id).toList()

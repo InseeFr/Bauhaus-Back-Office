@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -39,7 +40,7 @@ class GraphDBCollectionTest {
                 descriptions,
                 created,
                 modified,
-                true,
+                ValidationStatus.VALIDATED,
                 conceptIds
         );
 
@@ -59,7 +60,7 @@ class GraphDBCollectionTest {
         assertEquals("EN", graphDBCollection.descriptionLg2_lg());
         assertEquals(created.toString(), graphDBCollection.created());
         assertEquals(modified.toString(), graphDBCollection.modified());
-        assertTrue(graphDBCollection.isValidated());
+        assertEquals("Validated", graphDBCollection.validationState());
         assertEquals("creator1", graphDBCollection.creator());
         assertEquals("contributor1", graphDBCollection.contributor());
         assertEquals(2, graphDBCollection.conceptIds().size());
@@ -82,7 +83,7 @@ class GraphDBCollectionTest {
                 List.of(),
                 created,
                 null,
-                false,
+                ValidationStatus.UNPUBLISHED,
                 List.of()
         );
 
@@ -102,7 +103,7 @@ class GraphDBCollectionTest {
         assertNull(graphDBCollection.descriptionLg2_lg());
         assertNull(graphDBCollection.modified());
         assertNull(graphDBCollection.contributor());
-        assertFalse(graphDBCollection.isValidated());
+        assertEquals("Unpublished", graphDBCollection.validationState());
         assertTrue(graphDBCollection.conceptIds().isEmpty());
     }
 
@@ -122,7 +123,7 @@ class GraphDBCollectionTest {
                 descriptions,
                 created,
                 null,
-                false,
+                ValidationStatus.UNPUBLISHED,
                 List.of()
         );
 
@@ -151,7 +152,7 @@ class GraphDBCollectionTest {
                 "fr",
                 "Description EN",
                 "en",
-                true,
+                "Validated",
                 "creator1",
                 "contributor1",
                 List.of("concept1", "concept2")
@@ -175,7 +176,7 @@ class GraphDBCollectionTest {
         assertEquals(Lang.EN, collection.descriptions().get(1).lang());
         assertEquals(LocalDateTime.parse("2024-01-01T10:00:00"), collection.created());
         assertEquals(LocalDateTime.parse("2024-06-01T15:30:00"), collection.modified().orElse(null));
-        assertTrue(collection.isValidated());
+        assertEquals(ValidationStatus.VALIDATED, collection.validationState());
         assertEquals("creator1", collection.creator());
         assertEquals("contributor1", collection.contributor().orElse(null));
         assertEquals(2, collection.conceptIds().size());
@@ -198,7 +199,7 @@ class GraphDBCollectionTest {
                 null,
                 null,
                 null,
-                false,
+                "Unpublished",
                 "creator1",
                 null,
                 List.of()
@@ -215,7 +216,7 @@ class GraphDBCollectionTest {
         assertTrue(collection.descriptions().isEmpty());
         assertNull(collection.modified().orElse(null));
         assertNull(collection.contributor().orElse(null));
-        assertFalse(collection.isValidated());
+        assertEquals(ValidationStatus.UNPUBLISHED, collection.validationState());
         assertTrue(collection.conceptIds().isEmpty());
     }
 
@@ -234,7 +235,7 @@ class GraphDBCollectionTest {
                 "fr",
                 null,
                 null,
-                false,
+                "Unpublished",
                 "creator1",
                 null,
                 List.of()
@@ -264,7 +265,7 @@ class GraphDBCollectionTest {
                 "fr",
                 "Description EN",
                 "en",
-                true,
+                "Validated",
                 "creator1",
                 "contributor1",
                 List.of("concept1", "concept2")
@@ -296,7 +297,7 @@ class GraphDBCollectionTest {
         assertEquals("en", updatedGraphDBCollection.prefLabelLg2_lg());
         assertEquals("creator1", updatedGraphDBCollection.creator());
         assertEquals("contributor1", updatedGraphDBCollection.contributor());
-        assertTrue(updatedGraphDBCollection.isValidated());
+        assertEquals("Validated", updatedGraphDBCollection.validationState());
     }
 
     @Test
@@ -314,7 +315,7 @@ class GraphDBCollectionTest {
                 null,
                 null,
                 null,
-                false,
+                "Unpublished",
                 "creator1",
                 null,
                 List.of("concept1", "concept2")
@@ -353,7 +354,7 @@ class GraphDBCollectionTest {
                 descriptions,
                 created,
                 modified,
-                true,
+                ValidationStatus.VALIDATED,
                 conceptIds
         );
 
@@ -369,7 +370,7 @@ class GraphDBCollectionTest {
         assertEquals(originalCollection.descriptions().size(), convertedCollection.descriptions().size());
         assertEquals(originalCollection.created(), convertedCollection.created());
         assertEquals(originalCollection.modified().orElse(null), convertedCollection.modified().orElse(null));
-        assertEquals(originalCollection.isValidated(), convertedCollection.isValidated());
+        assertEquals(originalCollection.validationState(), convertedCollection.validationState());
         assertEquals(originalCollection.creator(), convertedCollection.creator());
         assertEquals(originalCollection.contributor().orElse(null), convertedCollection.contributor().orElse(null));
         assertEquals(originalCollection.conceptIds().size(), convertedCollection.conceptIds().size());
@@ -390,7 +391,7 @@ class GraphDBCollectionTest {
                 List.of(),
                 created,
                 null,
-                false,
+                ValidationStatus.UNPUBLISHED,
                 List.of()
         );
 
@@ -404,7 +405,7 @@ class GraphDBCollectionTest {
         assertEquals(originalCollection.created(), convertedCollection.created());
         assertNull(convertedCollection.modified().orElse(null));
         assertNull(convertedCollection.contributor().orElse(null));
-        assertFalse(convertedCollection.isValidated());
+        assertEquals(ValidationStatus.UNPUBLISHED, convertedCollection.validationState());
         assertTrue(convertedCollection.descriptions().isEmpty());
         assertTrue(convertedCollection.conceptIds().isEmpty());
     }
@@ -425,7 +426,7 @@ class GraphDBCollectionTest {
                 null,
                 null,
                 null,
-                false,
+                "Unpublished",
                 "creator1",
                 null,
                 List.of()
@@ -455,7 +456,7 @@ class GraphDBCollectionTest {
                 null,
                 null,
                 null,
-                false,
+                "Unpublished",
                 "creator1",
                 null,
                 List.of()

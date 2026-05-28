@@ -11,10 +11,12 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.modules.concepts.collections.domain.port.clientside.CollectionsService;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -23,7 +25,9 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -33,6 +37,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,6 +47,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -79,6 +85,7 @@ class ConceptsUtilsTest {
 
     @BeforeEach
     void setUp() {
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         conceptConceptsQueries = new ConceptConceptsQueries(new BauhausLanguagesProperties("fr", "en"), GraphsPropertiesStub.stub());
 
         conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, publicationUtils, conceptConceptsQueries, null);
@@ -214,8 +221,76 @@ class ConceptsUtilsTest {
         Resource mockResource = factory.createIRI("http://example.com/concept");
         when(publicationUtils.tranformBaseURIToPublish(any())).thenReturn(mockResource);
 
-        // When/Then - Should not throw exception
-        assertDoesNotThrow(() -> conceptsUtils.conceptsValidation(body));
+        // When
+        conceptsUtils.conceptsValidation(body);
+
+        // Then - the validation writes validationState=Validated on the management graph
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repoGestion).objectsValidation(anyList(), modelCaptor.capture());
+        assertEquals(ValidationStatus.VALIDATED.getValue(), validationStateOf(modelCaptor.getValue()));
+    }
+
+    @Test
+    void shouldCreateConceptAsUnpublished() throws RmesException {
+        // Given
+        String body = "{\"prefLabelLg1\":\"Test Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID()))
+                .thenReturn(new JSONObject().put(Constants.NOTATION, "c0010"));
+
+        // When
+        conceptsUtils.setConcept(body);
+
+        // Then
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
+        assertEquals(ValidationStatus.UNPUBLISHED.getValue(), validationStateOf(modelCaptor.getValue()));
+    }
+
+    @Test
+    void shouldMarkConceptAsModifiedWhenUpdatingValidatedConcept() throws RmesException {
+        // Given an existing concept currently Validated
+        String id = "c1";
+        String body = "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id)))
+                .thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptValidationStatus(id)))
+                .thenReturn(new JSONObject().put("state", ValidationStatus.VALIDATED.getValue()));
+
+        // When updating it
+        conceptsUtils.setConcept(id, body);
+
+        // Then it transitions to Modified (provisoire déjà publiée)
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
+        assertEquals(ValidationStatus.MODIFIED.getValue(), validationStateOf(modelCaptor.getValue()));
+    }
+
+    @Test
+    void shouldStayUnpublishedWhenUpdatingUnpublishedConcept() throws RmesException {
+        // Given an existing concept currently Unpublished
+        String id = "c1";
+        String body = "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id)))
+                .thenReturn(new JSONObject());
+        when(repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptValidationStatus(id)))
+                .thenReturn(new JSONObject().put("state", ValidationStatus.UNPUBLISHED.getValue()));
+
+        // When updating it
+        conceptsUtils.setConcept(id, body);
+
+        // Then it stays Unpublished
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repoGestion).loadConcept(any(), modelCaptor.capture(), any());
+        assertEquals(ValidationStatus.UNPUBLISHED.getValue(), validationStateOf(modelCaptor.getValue()));
+    }
+
+    private static String validationStateOf(Model model) {
+        for (Statement st : model) {
+            if (st.getPredicate().equals(INSEE.VALIDATION_STATE)) {
+                return st.getObject().stringValue();
+            }
+        }
+        return null;
     }
 
     @Test

@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,7 @@ class ConceptResponseTest {
                 "http://id.insee.fr/codes/base/statutDiffusion/Prive",
                 LocalDateTime.of(2026, 1, 1, 10, 0),
                 LocalDateTime.of(2026, 2, 2, 11, 0),
-                false,
+                ValidationStatus.UNPUBLISHED,
                 new ConceptVersion(2),
                 List.of("Collection-001")
         );
@@ -47,8 +48,8 @@ class ConceptResponseTest {
         assertThat(json.getString("contributor")).isEqualTo("http://bauhaus/HIE000001");
         assertThat(json.getString("disseminationStatus"))
                 .isEqualTo("http://id.insee.fr/codes/base/statutDiffusion/Prive");
-        // isValidated is a string ("true"/"false"), not a boolean — preserves legacy quirk.
-        assertThat(json.getString("isValidated")).isEqualTo("false");
+        // validationState is the 3-state string, aligned with the other objects.
+        assertThat(json.getString("validationState")).isEqualTo("Unpublished");
         assertThat(json.has("created")).isTrue();
         assertThat(json.getJSONArray("collections").length()).isEqualTo(1);
         assertThat(json.getInt("conceptVersion")).isEqualTo(2);
@@ -64,7 +65,7 @@ class ConceptResponseTest {
                 "http://id.insee.fr/codes/base/statutDiffusion/Prive",
                 LocalDateTime.of(2026, 1, 1, 10, 0),
                 null, // modified
-                false,
+                ValidationStatus.UNPUBLISHED,
                 ConceptVersion.initial(),
                 Collections.emptyList()
         );

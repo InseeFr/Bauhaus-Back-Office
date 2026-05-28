@@ -15,6 +15,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConcep
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.UpdateConceptCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ class DomainConceptsServiceTest {
             "http://id.insee.fr/codes/base/statutDiffusion/Prive",
             LocalDateTime.of(2026, 1, 1, 10, 0),
             null,
-            false,
+            ValidationStatus.UNPUBLISHED,
             ConceptVersion.initial(),
             Collections.emptyList()
     );
@@ -120,7 +121,7 @@ class DomainConceptsServiceTest {
     @Test
     void getConceptsDashboard_delegates_to_repository() throws ConceptsFetchException {
         var item = new ConceptDashboardItem(
-                new ConceptId("c00001"), "Mon concept", "2026-01-01T00:00:00", null, false, "HIE000000");
+                new ConceptId("c00001"), "Mon concept", "2026-01-01T00:00:00", null, ValidationStatus.UNPUBLISHED, "HIE000000");
         when(conceptsRepository.getConceptsDashboard()).thenReturn(List.of(item));
 
         List<ConceptDashboardItem> result = domainConceptsService.getConceptsDashboard();
@@ -157,7 +158,7 @@ class DomainConceptsServiceTest {
         assertThat(saved.creator()).isEqualTo("HIE000000");
         assertThat(saved.disseminationStatus())
                 .isEqualTo("http://id.insee.fr/codes/base/statutDiffusion/Prive");
-        assertThat(saved.isValidated()).isFalse();
+        assertThat(saved.validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
         assertThat(saved.version()).isEqualTo(ConceptVersion.initial());
     }
 

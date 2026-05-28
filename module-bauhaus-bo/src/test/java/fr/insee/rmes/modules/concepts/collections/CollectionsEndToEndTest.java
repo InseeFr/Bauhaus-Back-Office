@@ -122,7 +122,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                    "descriptions": [],
                    "creator" : "http://bauhaus/HIE000000",
                    "contributor" : "http://bauhaus/HIE000000",
-                   "isValidated": false,
+                   "validationState": "Unpublished",
                 }
                 """.formatted(uuid), fetchedCollections, false);
         assertThat((new JSONObject(fetchedCollections)).getString("created")).matches(ISO_8601_DATE_TIME_PATTERN);
@@ -156,7 +156,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                    "descriptions": [],
                    "creator" : "http://bauhaus/HIE000001",
                    "contributor" : "http://bauhaus/HIE000002",
-                   "isValidated": false,
+                   "validationState": "Unpublished",
                 }
                 """.formatted(uuid), fetchedCollections, false);
 
@@ -170,7 +170,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                   {
                     "id": "%s",
                     "label": "label fr v2",
-                    "isValidated": false,
+                    "validationState": "Unpublished",
                     "nbMembers": 1
                   }
                 ]
@@ -252,7 +252,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
 
     @Test
     @Order(4)
-    @DisplayName("PUT /{id}/validate flips isValidated to true on the collection")
+    @DisplayName("PUT /{id}/validate sets validationState=Validated on the collection")
     void ok_when_collection_validated() {
         String collectionsEndpoint = "http://localhost:" + serverPort + "/api/concepts/collections";
         RestClient restClient = RestClient.create();
@@ -279,7 +279,7 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
-        assertThat(new JSONObject(fetched).getBoolean("isValidated")).isTrue();
+        assertThat(new JSONObject(fetched).getString("validationState")).isEqualTo("Validated");
     }
 
     @Test

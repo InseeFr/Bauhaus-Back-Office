@@ -120,7 +120,7 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
         assertThat(fetchedJson.optString("prefLabelLg2")).isEqualTo("E2E concept");
         assertThat(fetchedJson.getString("disseminationStatus")).isEqualTo(DISSEMINATION_STATUS_PRIVE);
         assertThat(fetchedJson.getString("contributor")).isEqualTo(CONTRIBUTOR);
-        assertThat(fetchedJson.getString("isValidated")).isEqualTo("false");
+        assertThat(fetchedJson.getString("validationState")).isEqualTo("Unpublished");
         assertThat(fetchedJson.has("created")).isTrue();
         JSONAssert.assertEquals("""
                 {"collections": []}

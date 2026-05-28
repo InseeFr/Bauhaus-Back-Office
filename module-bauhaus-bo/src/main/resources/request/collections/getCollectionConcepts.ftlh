@@ -23,7 +23,7 @@ from <${CONCEPT_GRAPH}>
         		?member skos:altLabel ?altLabelLg2V  
 				 FILTER (lang(?altLabelLg2V) = '${LG2}')
     				}
-    			OPTIONAL {?member insee:isValidated ?isValidated . }
+    			OPTIONAL {?member insee:validationState ?isValidated . }
         	    OPTIONAL {?member dc:creator ?creator .}
         	    OPTIONAL {?member dc:contributor ?contributor .}
         		OPTIONAL {	?member insee:disseminationStatus ?disseminationStatus .}

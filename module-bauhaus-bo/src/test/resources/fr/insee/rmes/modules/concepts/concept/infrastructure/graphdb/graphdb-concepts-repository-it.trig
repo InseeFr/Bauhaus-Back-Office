@@ -17,7 +17,7 @@
             dc:creator <http://bauhaus/HIE000000> ;
             dc:contributor <http://bauhaus/HIE000001> ;
             insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/Prive> ;
-            insee:isValidated "false"^^xsd:boolean ;
+            insee:validationState "Unpublished" ;
             dcterms:created "2026-01-01T10:00:00"^^xsd:dateTime ;
             skos:scopeNote <http://bauhaus/concepts/definition/c0042/definitionCourte/v1/fr> .
 

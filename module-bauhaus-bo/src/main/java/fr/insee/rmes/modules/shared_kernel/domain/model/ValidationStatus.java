@@ -15,6 +15,17 @@ public enum ValidationStatus {
 		return value;
 	}
 
+	public static ValidationStatus fromValue(String value) {
+		if (value != null) {
+			for (ValidationStatus status : values()) {
+				if (status.value.equalsIgnoreCase(value)) {
+					return status;
+				}
+			}
+		}
+		return UNPUBLISHED;
+	}
+
 	@Override
 	public String toString() {
 		return value;

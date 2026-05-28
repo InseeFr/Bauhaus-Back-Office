@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,7 +14,7 @@ class GraphDBConceptDashboardItemTest {
                 "Concept",
                 "2026-01-01T10:00:00",
                 "2026-01-02T11:00:00",
-                true,
+                "Validated",
                 "HIE000000"
         );
 
@@ -23,7 +24,7 @@ class GraphDBConceptDashboardItemTest {
         assertThat(domain.label()).isEqualTo("Concept");
         assertThat(domain.created()).isEqualTo("2026-01-01T10:00:00");
         assertThat(domain.modified()).isEqualTo("2026-01-02T11:00:00");
-        assertThat(domain.isValidated()).isTrue();
+        assertThat(domain.validationState()).isEqualTo(ValidationStatus.VALIDATED);
         assertThat(domain.creator()).isEqualTo("HIE000000");
     }
 
@@ -34,7 +35,7 @@ class GraphDBConceptDashboardItemTest {
                 "Concept",
                 "2026-01-01T10:00:00",
                 null,
-                false,
+                "Unpublished",
                 null
         );
 
@@ -42,6 +43,6 @@ class GraphDBConceptDashboardItemTest {
 
         assertThat(domain.modified()).isNull();
         assertThat(domain.creator()).isNull();
-        assertThat(domain.isValidated()).isFalse();
+        assertThat(domain.validationState()).isEqualTo(ValidationStatus.UNPUBLISHED);
     }
 }

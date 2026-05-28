@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.concepts.collections.domain.model;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.MalformedCollectionException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.commands.CreateCollectionCommand;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -14,14 +15,14 @@ import java.util.Optional;
 
 public class Collection extends CompactCollection {
 
-    private static final boolean DEFAULT_VALIDATION_STATE = false;
+    private static final ValidationStatus DEFAULT_VALIDATION_STATE = ValidationStatus.UNPUBLISHED;
     private final @Nullable List<LocalisedLabel> alternativeLabels;
     private final String creator;
     private final @Nullable String contributor;
     private final List<LocalisedLabel> descriptions;
     private final LocalDateTime created;
     private final @Nullable LocalDateTime modified;
-    private final boolean isValidated;
+    private final ValidationStatus validationState;
     private final List<ConceptId> conceptIds;
 
     public Collection(CollectionId id,
@@ -31,7 +32,7 @@ public class Collection extends CompactCollection {
                       List<LocalisedLabel> descriptions,
                       LocalDateTime created,
                       @Nullable LocalDateTime modified,
-                      boolean isValidated,
+                      ValidationStatus validationState,
                       List<ConceptId> conceptIds) {
         var prefLabel = labels.stream().filter(l -> l.lang().equals(Lang.defaultLanguage())).findFirst();
         var alternativeLabels = labels.stream().filter(l -> !l.lang().equals(Lang.defaultLanguage())).toList();
@@ -45,11 +46,15 @@ public class Collection extends CompactCollection {
         this.descriptions = descriptions;
         this.created = created;
         this.modified = modified;
-        this.isValidated = isValidated;
+        this.validationState = validationState;
         this.conceptIds = conceptIds;
     }
 
     public static Collection create(CreateCollectionCommand createCollection, CollectionId collectionId) {
+        return create(createCollection, collectionId, DEFAULT_VALIDATION_STATE);
+    }
+
+    public static Collection create(CreateCollectionCommand createCollection, CollectionId collectionId, ValidationStatus validationState) {
         return new Collection(
                 collectionId,
                 createCollection.labels(),
@@ -58,7 +63,7 @@ public class Collection extends CompactCollection {
                 createCollection.descriptions(),
                 LocalDateTime.now(),
                 null,
-                DEFAULT_VALIDATION_STATE,
+                validationState,
                 createCollection.conceptsIdendifiers().stream()
                         .map(ConceptId::new)
                         .toList()
@@ -90,8 +95,8 @@ public class Collection extends CompactCollection {
         return Optional.ofNullable(modified);
     }
 
-    public boolean isValidated() {
-        return isValidated;
+    public ValidationStatus validationState() {
+        return validationState;
     }
 
     public List<ConceptId> conceptIds() {
