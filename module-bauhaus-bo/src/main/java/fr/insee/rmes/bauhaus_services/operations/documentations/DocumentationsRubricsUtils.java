@@ -18,6 +18,7 @@ import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -199,14 +200,23 @@ DocumentationsRubricsUtils extends RdfService {
 
 		for (DocumentationRubric rubric : rubrics) {
 			RangeType type = getRangeType(rubric);
+			String idAttribute = rubric.getIdAttribute();
+			String predicate = attributesUriList.get(idAttribute);
+			if (predicate == null) {
+				logger.warn("idAttribute '{}' introuvable dans la MSD pour le sims {}. Attributs connus : {}",
+						idAttribute, simsId, attributesUriList.keySet());
+				throw new RmesBadRequestException("idAttribute not found", idAttribute);
+			}
 			IRI predicateUri;
 			IRI attributeUri;
 			try {
-				String predicate = attributesUriList.get(rubric.getIdAttribute());
 				predicateUri = RdfUtils.toURI(predicate);
 				attributeUri = getAttributeUri(simsId, predicate);
-			} catch (Exception _) {
-				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idAttribute not found", rubric.getIdAttribute());
+			} catch (RuntimeException e) {
+				logger.error("URI invalide pour l'idAttribute '{}' (predicate '{}') du sims {}",
+						idAttribute, predicate, simsId, e);
+				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Invalid attribute URI",
+						"idAttribute=" + idAttribute + ", predicate=" + predicate, e);
 			}
 			RdfUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
 			addRubricByRangeType(model, graph, rubric, type, predicateUri, attributeUri);

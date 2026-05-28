@@ -13,6 +13,8 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import org.apache.http.HttpStatus;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
@@ -385,6 +387,29 @@ class DocumentationsRubricsUtilsTest {
 				.anyMatch(stmt -> stmt.getObject().stringValue().equals(geoUri));
 
 		assertTrue(hasGeoUri, "Le modèle devrait contenir l'URI de la géographie");
+	}
+
+	@Test
+	void shouldThrowBadRequestWhenIdAttributeNotFoundInMsd() throws RmesException {
+		// Given
+		String simsId = "1000";
+		String unknownAttributeId = "UNKNOWN_ATTRIBUTE";
+
+		DocumentationRubric rubric = new DocumentationRubric();
+		rubric.setIdAttribute(unknownAttributeId);
+		rubric.setRangeType(RangeType.STRING.getJsonType());
+		rubric.setLabelLg1("valeur");
+
+		when(msdUtils.getMetadataAttributesUri())
+				.thenReturn(Map.of("OTHER_ATTRIBUTE", "http://rdf.insee.fr/def/base/simsv2fr/attribut/other"));
+
+		// When / Then
+		RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+				() -> documentationsRubricsUtils.addRubricsToModel(model, simsId, graph, List.of(rubric)));
+
+		assertEquals(HttpStatus.SC_BAD_REQUEST, exception.getStatus());
+		assertTrue(exception.getDetails().contains(unknownAttributeId),
+				"Le détail de l'exception devrait mentionner l'idAttribute introuvable : " + exception.getDetails());
 	}
 
 	@Test
