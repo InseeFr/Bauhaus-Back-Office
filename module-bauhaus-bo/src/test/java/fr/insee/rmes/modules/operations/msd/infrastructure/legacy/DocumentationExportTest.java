@@ -382,6 +382,11 @@ class DocumentationExportTest {
                 .thenReturn(Map.of(
                         "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
                 ));
+        // Mock batch organization lookup for contributors (now resolved to labels like creators)
+        when(organisationService.getOrganisationsMap(List.of("DG75-L002")))
+                .thenReturn(Map.of(
+                        "DG75-L002", new fr.insee.rmes.domain.model.OrganisationOption("DG75-L002", "Administration du comité du Label")
+                ));
 
         // Mock documentation
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new fr.insee.rmes.model.operations.documentations.Documentation());
@@ -403,11 +408,9 @@ class DocumentationExportTest {
         // Verify abstract
         assertThat(indicatorFile).contains("<abstractLg1>L'Indicateur 17.i2");
 
-        // Verify contributors
+        // Verify contributors (now serialized as labels, like creators)
         assertThat(indicatorFile)
-                .contains("<contributors><contributors>")
-                .contains("<id>DG75-L002</id>")
-                .contains("<labelLg1>Administration du comité du Label</labelLg1>");
+                .contains("<contributors>Administration du comité du Label</contributors>");
 
         // Verify creators (should contain organization value instead of stamp)
         assertThat(indicatorFile).contains("<creators>");
@@ -445,14 +448,8 @@ class DocumentationExportTest {
         indicator.setUpdated("2025-11-05T10:11:04.793047");
         indicator.setValidationState("Unpublished");
 
-        // Set contributors
-        OperationsLink contributor = OperationsLink.of(
-                "DG75-L002",
-                "organization",
-                "Administration du comité du Label",
-                null
-        );
-        indicator.setContributors(List.of(contributor));
+        // Set contributors (now a plain IRI/stamp list, like creators)
+        indicator.setContributors(List.of("DG75-L002"));
 
         // Set creators
         indicator.setCreators(List.of("HIE2004993"));

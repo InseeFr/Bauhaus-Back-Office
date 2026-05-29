@@ -122,25 +122,18 @@ public class IndicatorsUtils {
 		if (indicator.getCreators() != null) {
 			values.addAll(indicator.getCreators());
 		}
-		addLinkIds(values, indicator.getContributors());
-		addLinkIds(values, indicator.getPublishers());
+		if (indicator.getContributors() != null) {
+			values.addAll(indicator.getContributors());
+		}
+		if (indicator.getPublishers() != null) {
+			values.addAll(indicator.getPublishers());
+		}
 		if (values.isEmpty()) {
 			return;
 		}
 		List<String> unknown = organisationLookup.findUnknown(values);
 		if (!unknown.isEmpty()) {
 			throw new RmesBadRequestException("Unknown organisation references: " + unknown);
-		}
-	}
-
-	private static void addLinkIds(List<String> target, List<OperationsLink> links) {
-		if (links == null) {
-			return;
-		}
-		for (OperationsLink link : links) {
-			if (link != null && !link.isEmpty()) {
-				target.add(link.getId());
-			}
 		}
 	}
 
@@ -166,11 +159,7 @@ public class IndicatorsUtils {
 		} catch (RmesException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
         }
-        if (indicatorJson.has(Constants.CONTRIBUTORS)) {
-			List<OperationsLink> contributors = buildListFromJsonToArray(indicatorJson, Constants.CONTRIBUTORS);
-			indicator.setContributors(contributors);
-		}
-		if (indicatorJson.has(Constants.SEEALSO)) {
+        if (indicatorJson.has(Constants.SEEALSO)) {
 			List<OperationsLink> seeAlsoes = buildListFromJsonToArray(indicatorJson, Constants.SEEALSO);
 			indicator.setSeeAlso(seeAlsoes);
 		}
@@ -215,18 +204,28 @@ public class IndicatorsUtils {
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
 		addIndicatorCreators(id, indicator);
+		addIndicatorPublishers(id, indicator);
+		addIndicatorContributors(id, indicator);
 		return indicator;
 	}
 
 
 	private void addIndicatorCreators(String id, JSONObject indicator) throws RmesException {
-		indicator.put(Constants.CREATORS, ownersUtils.getIndicatorCreators(id));
+		// URI des organisations (objets de dc:creator), pas des stamps.
+		// NB : ParentUtils.getIndicatorCreators (canonicalize -> stamps) reste utilisé
+		// pour le contrôle d'accès par stamp.
+		indicator.put(Constants.CREATORS, repositoryGestion.getResponseAsJSONList(operationIndicatorsQueries.getCreatorsById(id)));
 	}
 
 
 	private void addIndicatorPublishers(String id, JSONObject indicator) throws RmesException {
-		JSONArray publishers = repositoryGestion.getResponseAsJSONList(operationIndicatorsQueries.getPublishersById(id));
-		indicator.put(Constants.PUBLISHERS, publishers);
+		// Renvoie les URI des organisations (objets du triplet dcterms:publisher), pas des stamps.
+		indicator.put(Constants.PUBLISHERS, repositoryGestion.getResponseAsJSONList(operationIndicatorsQueries.getPublishersById(id)));
+	}
+
+	private void addIndicatorContributors(String id, JSONObject indicator) throws RmesException {
+		// Renvoie les URI des organisations (objets du triplet dcterms:contributor), pas des stamps.
+		indicator.put(Constants.CONTRIBUTORS, repositoryGestion.getResponseAsJSONList(operationIndicatorsQueries.getContributorsById(id)));
 	}
 
 	/**
@@ -240,8 +239,6 @@ public class IndicatorsUtils {
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
 		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
-		addOneOrganizationLink(idIndic,indicator, DCTERMS.CONTRIBUTOR);
-		addOneOrganizationLink(idIndic,indicator, DCTERMS.PUBLISHER);
 		famOpeSerIndUtils.fixOrganizationsNames(indicator);
 	}
 
@@ -455,17 +452,17 @@ public class IndicatorsUtils {
 		}
 	}
 
-	void addOrganisationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI indicURI) throws RmesException {
-		addOrganisationLinks(links, predicate, model, indicURI, RdfUtils.productsGraph());
+	void addOrganisationLinks(List<String> orgRefs, IRI predicate, Model model, IRI indicURI) throws RmesException {
+		addOrganisationLinks(orgRefs, predicate, model, indicURI, RdfUtils.productsGraph());
 	}
 
-	void addOrganisationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI indicURI, Resource graph) throws RmesException {
-		if (links == null) {
+	void addOrganisationLinks(List<String> orgRefs, IRI predicate, Model model, IRI indicURI, Resource graph) throws RmesException {
+		if (orgRefs == null) {
 			return;
 		}
-		for (OperationsLink link : links) {
-			if (!link.isEmpty()) {
-				Optional<String> resolved = organisationLookup.resolve(link.getId());
+		for (String orgRef : orgRefs) {
+			if (orgRef != null && !orgRef.isEmpty()) {
+				Optional<String> resolved = organisationLookup.resolve(orgRef);
 				if (resolved.isPresent()) {
 					RdfUtils.addTripleUri(indicURI, predicate, resolved.get(), model, graph);
 				}

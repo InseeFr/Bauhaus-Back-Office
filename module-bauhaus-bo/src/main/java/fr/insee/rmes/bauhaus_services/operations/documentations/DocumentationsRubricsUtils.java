@@ -54,6 +54,16 @@ DocumentationsRubricsUtils extends RdfService {
 
 	static final Logger logger = LoggerFactory.getLogger(DocumentationsRubricsUtils.class);
 
+	/**
+	 * idAttribute de la rubrique « fantôme » que la requête de lecture
+	 * (getDocumentationRubricsQuery) peut faire remonter : l'arête structurelle
+	 * sdmx-mm:metadataReport, dont l'idAttribute est dérivé du local name du prédicat
+	 * (cf. BIND REPLACE côté SPARQL puis upperCase dans DocumentationRubric#getIdAttribute).
+	 * Ce n'est pas un attribut de la MSD : on l'ignore à l'écriture au lieu d'échouer.
+	 */
+	private static final String METADATA_REPORT_PHANTOM_ID = StringUtils.upperCase(
+			StringUtils.substringAfterLast(SDMX_MM.METADATA_REPORT_PREDICATE.stringValue(), "/"));
+
 	private final MetadataStructureDefUtils msdUtils;
 
 	private final DocumentationQueries documentationQueries;
@@ -203,6 +213,11 @@ DocumentationsRubricsUtils extends RdfService {
 			String idAttribute = rubric.getIdAttribute();
 			String predicate = attributesUriList.get(idAttribute);
 			if (predicate == null) {
+				if (METADATA_REPORT_PHANTOM_ID.equals(idAttribute)) {
+					logger.warn("Rubrique fantôme '{}' ignorée pour le sims {} : arête structurelle metadataReport "
+							+ "remontée par la requête de lecture, ce n'est pas un attribut de la MSD", idAttribute, simsId);
+					continue;
+				}
 				logger.warn("idAttribute '{}' introuvable dans la MSD pour le sims {}. Attributs connus : {}",
 						idAttribute, simsId, attributesUriList.keySet());
 				throw new RmesBadRequestException("idAttribute not found", idAttribute);

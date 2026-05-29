@@ -32,10 +32,12 @@ public class Indicator {
 
 	public String accrualPeriodicityList;
 
-	public List<OperationsLink> publishers;
+	@JsonFormat(shape = Shape.ARRAY)
+	public List<String> publishers;
 
-	public List<OperationsLink> contributors;
-	
+	@JsonFormat(shape = Shape.ARRAY)
+	public List<String> contributors;
+
 	@JsonFormat(shape = Shape.ARRAY)
 	public List<String> creators;
 
@@ -122,12 +124,12 @@ public class Indicator {
 	}
 
 
-	public List<OperationsLink> getPublishers() {
+	public List<String> getPublishers() {
 		return publishers;
 	}
 
 
-	public List<OperationsLink> getContributors() {
+	public List<String> getContributors() {
 		return contributors;
 	}
 
@@ -171,7 +173,7 @@ public class Indicator {
 		this.validationState = validationState;
 	}
 
-	public void setPublishers(List<OperationsLink> publishers) {
+	public void setPublishers(List<String> publishers) {
 		this.publishers = publishers;
 	}
 	
@@ -219,7 +221,7 @@ public class Indicator {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setContributors(List<OperationsLink> contributors) {
+	public void setContributors(List<String> contributors) {
 		this.contributors = contributors;
 	}
 

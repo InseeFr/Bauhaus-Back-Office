@@ -410,12 +410,15 @@ public class DocumentationExport {
 	}
 
 	/**
-	 * Transforms organization stamps in indicator creators to organization labels
+	 * Transforms organization stamps in indicator creators, contributors and publishers
+	 * to organization labels (all three are now plain IRI/stamp lists).
 	 * @param indicator The indicator object to transform
 	 * @throws RmesException if organization retrieval fails
 	 */
 	private void transformIndicatorCreatorsStampsToLabels(Indicator indicator) throws RmesException {
 		indicator.setCreators(transformStampsToLabels(indicator.getCreators()));
+		indicator.setContributors(transformStampsToLabels(indicator.getContributors()));
+		indicator.setPublishers(transformStampsToLabels(indicator.getPublishers()));
 	}
 
 	private interface Exporter{

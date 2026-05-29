@@ -12,6 +12,11 @@ WHERE {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
 
+			<#-- L'arête structurelle metadataReport (présente sur chaque attribut) ne doit
+			     jamais être remontée comme une rubrique : sinon elle génère un idAttribute
+			     fantôme 'SDMX-MM#METADATAREPORT' qui fait échouer l'enregistrement. -->
+			FILTER(?attr != sdmx-mm:metadataReport)
+
 
  		<#-- RangeType.DATE : value -->
 		{{

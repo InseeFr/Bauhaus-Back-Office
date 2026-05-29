@@ -43,7 +43,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -410,6 +413,40 @@ class DocumentationsRubricsUtilsTest {
 		assertEquals(HttpStatus.SC_BAD_REQUEST, exception.getStatus());
 		assertTrue(exception.getDetails().contains(unknownAttributeId),
 				"Le détail de l'exception devrait mentionner l'idAttribute introuvable : " + exception.getDetails());
+	}
+
+	@Test
+	void shouldIgnorePhantomMetadataReportRubricInsteadOfFailing() throws RmesException {
+		// Given : le front renvoie une rubrique fantôme issue de l'arête structurelle
+		// sdmx-mm:metadataReport (round-trip depuis getDocumentationRubricsQuery), au
+		// milieu d'attributs valides. getIdAttribute() la met en majuscules.
+		String simsId = "1000";
+
+		DocumentationRubric phantom = new DocumentationRubric();
+		phantom.setIdAttribute("sdmx-mm#metadataReport"); // -> SDMX-MM#METADATAREPORT
+		phantom.setRangeType(RangeType.ORGANIZATION.getJsonType());
+		phantom.setSingleValue(simsId);
+
+		String attributeId = "DATE_ATTRIBUTE";
+		DocumentationRubric valid = new DocumentationRubric();
+		valid.setIdAttribute(attributeId);
+		valid.setRangeType(RangeType.DATE.getJsonType());
+		valid.setSingleValue("2024-01-15");
+
+		setupBasicMocks(attributeId, "dateAttribute");
+
+		// When / Then : pas d'exception, la rubrique fantôme est ignorée
+		assertDoesNotThrow(() ->
+				documentationsRubricsUtils.addRubricsToModel(model, simsId, graph, List.of(phantom, valid)));
+
+		// L'attribut valide est tout de même traité
+		boolean hasValidAttribute = model.stream()
+				.anyMatch(stmt -> stmt.getPredicate().toString().contains("dateAttribute"));
+		assertTrue(hasValidAttribute, "L'attribut valide devrait être traité malgré la rubrique fantôme");
+
+		// La rubrique fantôme (rangeType ORGANIZATION) est court-circuitée avant toute
+		// résolution : l'organisationLookup ne doit jamais être appelé.
+		verify(organisationLookup, never()).resolve(any());
 	}
 
 	@Test

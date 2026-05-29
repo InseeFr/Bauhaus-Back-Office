@@ -192,10 +192,10 @@ class IndicatorsUtilsTest {
         List<String> creators = new ArrayList<>();
         indicator.setCreators(creators);
 
-        List<OperationsLink> pubList = new ArrayList<>();
+        List<String> pubList = new ArrayList<>();
         indicator.setPublishers(pubList);
 
-        List<OperationsLink> contrList = new ArrayList<>();
+        List<String> contrList = new ArrayList<>();
         indicator.setContributors(contrList);
 
         OperationsLink wgb = OperationsLink.of("s1034",null,"Autres indicateurs","Other indexes");
@@ -295,10 +295,8 @@ class IndicatorsUtilsTest {
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI indicURI = vf.createIRI("http://bauhaus/indicators/i1");
         Model model = new LinkedHashModel();
-        OperationsLink link = new OperationsLink();
-        link.id = "http://bauhaus/organisations/DG75-A001";
 
-        indicatorsUtils.addOrganisationLinks(List.of(link), DCTERMS.CONTRIBUTOR, model, indicURI, TEST_GRAPH);
+        indicatorsUtils.addOrganisationLinks(List.of("http://bauhaus/organisations/DG75-A001"), DCTERMS.CONTRIBUTOR, model, indicURI, TEST_GRAPH);
 
         IRI contributor = vf.createIRI(DCTERMS.CONTRIBUTOR.toString());
         List<Value> contributors = model.filter(indicURI, contributor, null).stream()

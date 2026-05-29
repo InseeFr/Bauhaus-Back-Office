@@ -53,6 +53,14 @@
       <artifactId>spring-boot-resttestclient</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Fournit org.springframework.boot.restclient.RestTemplateBuilder, requis par
+         TestRestTemplateTestAutoConfiguration de spring-boot-resttestclient (Spring Boot 4
+         a séparé RestTemplateBuilder dans ce module et ne l'apporte pas transitivement). -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-restclient</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>

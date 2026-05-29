@@ -100,6 +100,14 @@ public class OperationIndicatorsQueries {
 		return buildIndicatorRequest("getPublishersById.ftlh", params);
 	}
 
+	public String getContributorsById(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
+		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
+		params.put("ID", id);
+		return buildIndicatorRequest("getContributorsById.ftlh", params);
+	}
+
 	public String indicatorLinks(String id, IRI linkPredicate) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());

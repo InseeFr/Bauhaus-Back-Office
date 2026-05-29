@@ -283,7 +283,7 @@ rbac:
         read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept_concept:
-        create: STAMP
+        create: ALL
         read: ALL
         update: STAMP
         publish: STAMP
@@ -323,7 +323,7 @@ rbac:
         read: ALL
     Gestionnaire_ensemble_concepts_RMESGNCS:
       concept_concept:
-        create: STAMP
+        create: ALL
         read: ALL
         update: STAMP
         publish: STAMP
@@ -370,14 +370,14 @@ rbac:
         update: STAMP
         publish: STAMP
       operation_operation:
-        create: STAMP
+        create: ALL
         read: ALL
         update: STAMP
         publish: STAMP
       operation_indicator:
         read: ALL
       operation_sims:
-        create: STAMP
+        create: ALL
         read: ALL
         update: STAMP
         publish: STAMP
@@ -464,12 +464,12 @@ rbac:
         update: STAMP
         publish: STAMP
       operation_indicator:
-        create: STAMP
+        create: ALL
         read: ALL
         update: STAMP
         publish: STAMP
       operation_sims:
-        create: STAMP
+        create: ALL
         read: ALL
         update: STAMP
         publish: STAMP
@@ -550,5 +550,3 @@ rbac:
         read: ALL
       codeslist_partialcodeslist:
         read: ALL
-
-
