@@ -1,5 +1,5 @@
 SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus
-		?additionalMaterial ?created ?modified ?valid ?conceptVersion ?validationState
+		?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated
 			WHERE { GRAPH <${CONCEPTS_GRAPH}>
 			    {
 				?concept skos:prefLabel ?prefLabelLg1 .
@@ -9,7 +9,7 @@ SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatu
 				BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) .
 				?concept ?versionnedNote ?versionnedNoteURI .
 				?versionnedNoteURI insee:conceptVersion ?conceptVersion .
- 				?concept insee:validationState ?validationState .
+ 				?concept insee:isValidated ?isValidated .
 				FILTER (lang(?prefLabelLg1) = '${LG1}') .
 				OPTIONAL {?concept skos:prefLabel ?prefLabelLg2 .
 				FILTER (lang(?prefLabelLg2) = '${LG2}') } .
