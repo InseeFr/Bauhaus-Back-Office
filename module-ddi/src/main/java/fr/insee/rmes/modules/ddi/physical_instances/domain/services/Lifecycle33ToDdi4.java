@@ -325,8 +325,11 @@ public class Lifecycle33ToDdi4 {
 
     private static List<LangString> readStructuredString(StructuredStringType struct) {
         if (struct == null || struct.sizeOfContentArray() == 0) return null;
-        ContentType content = struct.getContentArray(0);
-        return LangStrings.of(content.getLang(), readContentText(content));
+        List<LangString> langStrings = new ArrayList<>();
+        for (ContentType content : struct.getContentArray()) {
+            langStrings.add(new LangString(content.getLang(), readContentText(content)));
+        }
+        return langStrings;
     }
 
     private static LogicalRecord readLogicalRecord(LogicalRecordType lr) {
@@ -371,8 +374,11 @@ public class Lifecycle33ToDdi4 {
 
     private static List<LangString> readLabel(LabelType label) {
         if (label == null || label.sizeOfContentArray() == 0) return null;
-        ContentType content = label.getContentArray(0);
-        return LangStrings.of(content.getLang(), readContentText(content));
+        List<LangString> langStrings = new ArrayList<>();
+        for (ContentType content : label.getContentArray()) {
+            langStrings.add(new LangString(content.getLang(), readContentText(content)));
+        }
+        return langStrings;
     }
 
     private static List<LangString> readName(NameType name) {

@@ -8,10 +8,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class Lifecycle33ToDdi4Test {
 
@@ -178,6 +180,30 @@ class Lifecycle33ToDdi4Test {
     }
 
     @Test
+    void shouldParseVariableWithDescriptionInEveryLanguage() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var-id</r:ID><r:Version>1</r:Version>
+                    <r:Description>
+                        <r:Content xml:lang="en-IE">English description</r:Content>
+                        <r:Content xml:lang="fr-FR">Description française</r:Content>
+                    </r:Description>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable var = converter.toVariable(doc);
+
+        assertThat(var.description())
+                .extracting(LangString::language, LangString::value)
+                .containsExactly(
+                        tuple("en-IE", "English description"),
+                        tuple("fr-FR", "Description française"));
+    }
+
+    @Test
     void shouldParseVariableWithCodeRepresentation() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""
             <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
@@ -323,6 +349,31 @@ class Lifecycle33ToDdi4Test {
 
         assertThat(cat.id()).isEqualTo("cat-id");
         assertThat(cat.label().get(0).value()).isEqualTo("Category Label");
+    }
+
+    @Test
+    void shouldParseCategoryWithLabelInEveryLanguage() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:cat-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cat-id</r:ID><r:Version>1</r:Version>
+                    <r:Label>
+                        <r:Content xml:lang="en-IE">Growing of non-perennial crops</r:Content>
+                        <r:Content xml:lang="fr-FR">Cultures non permanentes</r:Content>
+                    </r:Label>
+                </Category>
+            </Fragment>
+            """);
+
+        Ddi4Category cat = converter.toCategory(doc);
+
+        assertThat(cat.label()).hasSize(2);
+        assertThat(cat.label())
+                .extracting(LangString::language, LangString::value)
+                .containsExactly(
+                        tuple("en-IE", "Growing of non-perennial crops"),
+                        tuple("fr-FR", "Cultures non permanentes"));
     }
 
     @Test
