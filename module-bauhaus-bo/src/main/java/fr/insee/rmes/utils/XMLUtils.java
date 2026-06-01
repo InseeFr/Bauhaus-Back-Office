@@ -179,7 +179,10 @@ public class XMLUtils {
             logger.info(XMLConstants.FEATURE_SECURE_PROCESSING+" unsuported for net.sf.saxon.TransformerFactoryImpl");
         }
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "file,jar:file");
+		// "jar:nested" is required since Spring Boot 3.2+ : resources bundled in the fat-jar are
+		// exposed through the "jar:nested:" URL scheme (was "jar:file:" before). xsl:include hrefs
+		// (e.g. sims2fodt.xsl -> sims2fodt-organization.xsl) are resolved against that base URI.
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "file,jar:file,jar:nested");
 		return factory;
 	}
 	
