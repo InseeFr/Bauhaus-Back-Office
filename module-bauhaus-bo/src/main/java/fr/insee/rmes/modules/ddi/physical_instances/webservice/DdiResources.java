@@ -312,6 +312,7 @@ public class DdiResources {
     }
 
     @GetMapping(value = "/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<String> getItemXmlByVersion(
             @PathVariable String agency,
             @PathVariable String id,
@@ -326,7 +327,8 @@ public class DdiResources {
     }
 
     @GetMapping(value = "/item/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonNode> getItemJsonByVersion(
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    public ResponseEntity<String> getItemJsonByVersion(
             @PathVariable String agency,
             @PathVariable String id,
             @PathVariable String version) {
@@ -336,7 +338,7 @@ public class DdiResources {
         }
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(ddiItemConvertService.convert(xml));
+                .body(ddiItemConvertService.convert(xml).toString());
     }
 
     @GetMapping(value = "/item/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
@@ -355,7 +357,7 @@ public class DdiResources {
 
     @GetMapping(value = "/item/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
-    public ResponseEntity<JsonNode> getItemJson(
+    public ResponseEntity<String> getItemJson(
             @PathVariable String agency,
             @PathVariable String id) {
         String xml = ddiService.getItemXml(agency, id);
@@ -364,7 +366,7 @@ public class DdiResources {
         }
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(ddiItemConvertService.convert(xml));
+                .body(ddiItemConvertService.convert(xml).toString());
     }
 
     @PostMapping("/validate")

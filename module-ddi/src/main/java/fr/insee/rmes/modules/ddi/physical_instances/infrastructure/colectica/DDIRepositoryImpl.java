@@ -604,7 +604,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 logger.info("Converting DDI3 to DDI4 using converter service");
                 var response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
                     ddi3Response,
-                    "ddi:4.0"
+                    Ddi4Response.SCHEMA
                 );
 
                 logger.info(
@@ -697,7 +697,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
                 Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
                     new Ddi3Response(null, ddi3Items),
-                    "ddi:4.0"
+                    Ddi4Response.SCHEMA
                 );
                 return response != null && response.codeList() != null
                     ? response.codeList()
@@ -863,7 +863,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
 
         return new Ddi4GroupResponse(
-            "ddi:4.0",
+            Ddi4Response.SCHEMA,
             topLevelReferences,
             groups,
             studyUnits
@@ -1539,85 +1539,205 @@ public class DDIRepositoryImpl implements DDIRepository {
      */
     @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
-        logger.info("Fetching mutualized codes list {}/{}", agencyId, id);
+        return getCodeList(agencyId, id, null);
+    }
+
+    /**
+     * Returns the full DDI4 representation of one code list (codes + categories) for an optional
+     * {@code version} (latest when null), via the {@code set/} + {@code _getList} + DDI3→DDI4
+     * conversion pipeline. Backs both {@code getMutualizedCodesList} (#485, latest) and the
+     * versioned {@code /codelist} endpoint.
+     */
+    @Override
+    public Ddi4Response getCodeList(String agencyId, String id, String version) {
+        logger.info("Fetching code list {}/{}/{}", agencyId, id, version);
 
         return authenticator.executeWithAuth(token -> {
             try {
-                String setUrl =
-                    instanceConfiguration.baseApiUrl() +
-                    "set/" +
-                    agencyId +
-                    "/" +
-                    id;
-                ColecticaSetItem[] setItems = restClient
-                    .get()
-                    .uri(setUrl)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .retrieve()
-                    .body(ColecticaSetItem[].class);
-
-                if (setItems == null || setItems.length == 0) {
-                    return null;
-                }
-
-                List<GetDescriptionsRequest.IdentifierRef> identifiers =
-                    Arrays.stream(setItems)
-                        .map(item ->
-                            new GetDescriptionsRequest.IdentifierRef(
-                                item.agencyId(),
-                                item.identifier(),
-                                item.version()
-                            )
-                        )
-                        .toList();
-
-                String getListUrl =
-                    instanceConfiguration.baseApiUrl() + "item/_getList";
-                ColecticaItemResponse[] itemResponses = restClient
-                    .post()
-                    .uri(getListUrl)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(new GetDescriptionsRequest(identifiers))
-                    .retrieve()
-                    .body(ColecticaItemResponse[].class);
-
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
-
-                List<Ddi3Response.Ddi3Item> ddi3Items = Arrays.stream(
-                    itemResponses
-                )
-                    .map(item ->
-                        new Ddi3Response.Ddi3Item(
-                            item.itemType(),
-                            item.agencyId(),
-                            String.valueOf(item.version()),
-                            item.identifier(),
-                            item.item(),
-                            item.versionDate(),
-                            item.versionResponsibility(),
-                            item.isPublished(),
-                            item.isDeprecated(),
-                            item.isProvisional(),
-                            item.itemFormat()
-                        )
-                    )
-                    .toList();
-
-                Ddi3Response ddi3Response = new Ddi3Response(null, ddi3Items);
-                return ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                    ddi3Response,
-                    "ddi:4.0"
-                );
+                Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(itemResponses));
+                return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
             } catch (Exception e) {
                 throw new RuntimeException(
-                    "Failed to fetch mutualized codes list",
-                    e
-                );
+                    "Failed to fetch code list " + agencyId + "/" + id + "/" + version, e);
             }
         });
+    }
+
+    /**
+     * Returns the DDI 3.3 representation of a code list set (CodeList + its referenced Categories)
+     * as a single multi-fragment {@code <FragmentInstance>} (#485).
+     */
+    @Override
+    public String getCodeListXml(String agencyId, String id, String version) {
+        logger.info("Fetching code list XML {}/{}/{}", agencyId, id, version);
+
+        return authenticator.executeWithAuth(token -> {
+            try {
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                if (itemResponses == null || itemResponses.length == 0) {
+                    return null;
+                }
+                return assembleFragmentInstance(fragmentXmls(Arrays.stream(itemResponses).toList()));
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    "Failed to fetch code list XML " + agencyId + "/" + id + "/" + version, e);
+            }
+        });
+    }
+
+    /**
+     * Fetches the items of a Colectica set ({@code set/} → {@code item/_getList}) for an optional
+     * {@code version} appended to the set URL (latest when null). Shared by the code list and
+     * data relationship accessors.
+     */
+    private ColecticaItemResponse[] fetchSetItems(String agencyId, String id, String version, String token) {
+        String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
+        if (version != null && !version.isBlank()) {
+            setUrl += "/" + version;
+        }
+        ColecticaSetItem[] setItems = restClient
+            .get()
+            .uri(setUrl)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .retrieve()
+            .body(ColecticaSetItem[].class);
+
+        if (setItems == null || setItems.length == 0) {
+            return null;
+        }
+
+        List<GetDescriptionsRequest.IdentifierRef> identifiers =
+            Arrays.stream(setItems)
+                .map(item ->
+                    new GetDescriptionsRequest.IdentifierRef(
+                        item.agencyId(),
+                        item.identifier(),
+                        item.version()
+                    )
+                )
+                .toList();
+
+        String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
+        return restClient
+            .post()
+            .uri(getListUrl)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .body(new GetDescriptionsRequest(identifiers))
+            .retrieve()
+            .body(ColecticaItemResponse[].class);
+    }
+
+    private List<Ddi3Response.Ddi3Item> toDdi3Items(ColecticaItemResponse[] itemResponses) {
+        return Arrays.stream(itemResponses)
+            .map(item ->
+                new Ddi3Response.Ddi3Item(
+                    item.itemType(),
+                    item.agencyId(),
+                    String.valueOf(item.version()),
+                    item.identifier(),
+                    item.item(),
+                    item.versionDate(),
+                    item.versionResponsibility(),
+                    item.isPublished(),
+                    item.isDeprecated(),
+                    item.isProvisional(),
+                    item.itemFormat()
+                )
+            )
+            .toList();
+    }
+
+    private List<String> fragmentXmls(List<ColecticaItemResponse> items) {
+        return items.stream()
+            .map(ColecticaItemResponse::item)
+            .filter(Objects::nonNull)
+            .toList();
+    }
+
+    /**
+     * Wraps DDI 3.3 {@code <Fragment>} documents (as returned by Colectica) into a single
+     * {@code <FragmentInstance>}. Each fragment already declares its own namespaces, so leading
+     * XML declarations are stripped before concatenation.
+     */
+    private String assembleFragmentInstance(List<String> fragmentXmls) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+        sb.append("<ddi:FragmentInstance xmlns:ddi=\"ddi:instance:3_3\" xmlns:r=\"ddi:reusable:3_3\">\n");
+        for (String fragmentXml : fragmentXmls) {
+            sb.append(stripXmlDeclaration(fragmentXml)).append("\n");
+        }
+        sb.append("</ddi:FragmentInstance>");
+        return sb.toString();
+    }
+
+    private String stripXmlDeclaration(String xml) {
+        String trimmed = xml.stripLeading();
+        if (trimmed.startsWith("<?xml")) {
+            int end = trimmed.indexOf("?>");
+            if (end >= 0) {
+                return trimmed.substring(end + 2).stripLeading();
+            }
+        }
+        return trimmed;
+    }
+
+    /**
+     * Returns every DataRelationship of a PhysicalInstance set as DDI4 (#447), latest version when
+     * {@code version} is null. Only the DataRelationship fragments of the set are converted.
+     */
+    @Override
+    public Ddi4Response getDataRelationships(String agencyId, String id, String version) {
+        logger.info("Fetching data relationships {}/{}/{}", agencyId, id, version);
+
+        return authenticator.executeWithAuth(token -> {
+            try {
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                if (itemResponses == null || itemResponses.length == 0) {
+                    return null;
+                }
+                ColecticaItemResponse[] dataRelationships = filterDataRelationships(itemResponses);
+                Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(dataRelationships));
+                return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    "Failed to fetch data relationships " + agencyId + "/" + id + "/" + version, e);
+            }
+        });
+    }
+
+    /**
+     * Returns every DataRelationship of a PhysicalInstance set as a DDI 3.3 multi-fragment
+     * {@code <FragmentInstance>} (#447), latest version when {@code version} is null.
+     */
+    @Override
+    public String getDataRelationshipsXml(String agencyId, String id, String version) {
+        logger.info("Fetching data relationships XML {}/{}/{}", agencyId, id, version);
+
+        return authenticator.executeWithAuth(token -> {
+            try {
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                if (itemResponses == null || itemResponses.length == 0) {
+                    return null;
+                }
+                ColecticaItemResponse[] dataRelationships = filterDataRelationships(itemResponses);
+                return assembleFragmentInstance(fragmentXmls(Arrays.stream(dataRelationships).toList()));
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    "Failed to fetch data relationships XML " + agencyId + "/" + id + "/" + version, e);
+            }
+        });
+    }
+
+    private ColecticaItemResponse[] filterDataRelationships(ColecticaItemResponse[] itemResponses) {
+        String dataRelationshipType = instanceConfiguration.itemTypes().get("DataRelationship");
+        return Arrays.stream(itemResponses)
+            .filter(item -> Objects.equals(item.itemType(), dataRelationshipType))
+            .toArray(ColecticaItemResponse[]::new);
     }
 
     /**

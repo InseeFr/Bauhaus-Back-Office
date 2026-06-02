@@ -539,11 +539,11 @@ class DdiResourcesTest {
         when(ddiService.getItemXml(agency, id, version)).thenReturn(xml);
         when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
 
-        ResponseEntity<JsonNode> response = ddiResources.getItemJsonByVersion(agency, id, version);
+        ResponseEntity<String> response = ddiResources.getItemJsonByVersion(agency, id, version);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expectedJson, response.getBody());
+        assertEquals(expectedJson.toString(), response.getBody());
         verify(ddiItemConvertService).convert(xml);
     }
 
@@ -551,7 +551,7 @@ class DdiResourcesTest {
     void getItemJsonByVersion_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id", "1")).thenReturn(null);
 
-        ResponseEntity<JsonNode> response = ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1");
+        ResponseEntity<String> response = ddiResources.getItemJsonByVersion("fr.insee", "unknown-id", "1");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
@@ -591,11 +591,11 @@ class DdiResourcesTest {
         when(ddiService.getItemXml(agency, id)).thenReturn(xml);
         when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
 
-        ResponseEntity<JsonNode> response = ddiResources.getItemJson(agency, id);
+        ResponseEntity<String> response = ddiResources.getItemJson(agency, id);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expectedJson, response.getBody());
+        assertEquals(expectedJson.toString(), response.getBody());
         verify(ddiItemConvertService).convert(xml);
     }
 
@@ -603,7 +603,7 @@ class DdiResourcesTest {
     void getItemJson_shouldReturn404_whenItemNotFound() {
         when(ddiService.getItemXml("fr.insee", "unknown-id")).thenReturn(null);
 
-        ResponseEntity<JsonNode> response = ddiResources.getItemJson("fr.insee", "unknown-id");
+        ResponseEntity<String> response = ddiResources.getItemJson("fr.insee", "unknown-id");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());

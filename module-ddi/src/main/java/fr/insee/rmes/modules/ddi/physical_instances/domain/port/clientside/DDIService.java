@@ -28,6 +28,10 @@ public interface DDIService {
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
     List<PartialCodesList> getMutualizedCodesLists();
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
+    Ddi4Response getCodeList(String agencyId, String id, String version);
+    String getCodeListXml(String agencyId, String id, String version);
+    Ddi4Response getDataRelationships(String agencyId, String id, String version);
+    String getDataRelationshipsXml(String agencyId, String id, String version);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);

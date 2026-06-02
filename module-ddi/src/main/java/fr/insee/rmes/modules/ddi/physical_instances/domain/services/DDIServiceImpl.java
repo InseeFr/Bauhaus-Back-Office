@@ -141,6 +141,30 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public Ddi4Response getCodeList(String agencyId, String id, String version) {
+        logger.info("Getting code list {}/{}/{}", agencyId, id, version);
+        return ddiRepository.getCodeList(agencyId, id, version);
+    }
+
+    @Override
+    public String getCodeListXml(String agencyId, String id, String version) {
+        logger.info("Getting code list DDI 3.3 XML {}/{}/{}", agencyId, id, version);
+        return ddiRepository.getCodeListXml(agencyId, id, version);
+    }
+
+    @Override
+    public Ddi4Response getDataRelationships(String agencyId, String id, String version) {
+        logger.info("Getting data relationships {}/{}/{}", agencyId, id, version);
+        return ddiRepository.getDataRelationships(agencyId, id, version);
+    }
+
+    @Override
+    public String getDataRelationshipsXml(String agencyId, String id, String version) {
+        logger.info("Getting data relationships DDI 3.3 XML {}/{}/{}", agencyId, id, version);
+        return ddiRepository.getDataRelationshipsXml(agencyId, id, version);
+    }
+
+    @Override
     public String getItemXml(String agency, String id, String version) {
         logger.info("Getting DDI 3.3 XML for {}/{}/{}", agency, id, version);
         return ddiRepository.getItemXml(agency, id, version);

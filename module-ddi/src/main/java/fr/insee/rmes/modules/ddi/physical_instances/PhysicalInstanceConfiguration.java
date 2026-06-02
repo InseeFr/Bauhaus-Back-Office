@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
@@ -19,7 +20,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecy
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33ToDdi4;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.GroupServiceImpl;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.PhysicalInstanceDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.StudyUnitServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
@@ -77,12 +77,12 @@ public class PhysicalInstanceConfiguration {
     }
 
     @Bean
-    DDIItemConverter physicalInstanceDDIItemConverter() {
-        return new PhysicalInstanceDDIItemConverter();
-    }
-
-    @Bean
-    DDIItemConvertService ddiItemConvertService(List<DDIItemConverter> converters) {
-        return new DDIItemConvertServiceImpl(converters);
+    DDIItemConvertService ddiItemConvertService(List<DDIItemConverter> converters,
+                                                DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
+                                                ColecticaConfiguration colecticaConfiguration,
+                                                ObjectMapper objectMapper) {
+        return new DDIItemConvertServiceImpl(
+                converters, ddi3toDdi4ConverterService,
+                colecticaConfiguration.server().itemTypes(), objectMapper);
     }
 }

@@ -13,4 +13,6 @@ public record Ddi4Response(
         @JsonProperty("CodeList") List<Ddi4CodeList> codeList,
         @JsonProperty("Category") List<Ddi4Category> category
 ) {
+    /** Identifiant du schéma DDI 4 porté par le champ {@code $schema} des réponses. */
+    public static final String SCHEMA = "ddi:4.0";
 }
