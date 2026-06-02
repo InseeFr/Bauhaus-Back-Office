@@ -15,8 +15,8 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2
 				OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . 
 				FILTER (lang(?labelLg2) = '${LG2}')} . 
 
-				?uriLinked adms:identifier ?id
-					
+				BIND(STR(?uriLinked) AS ?id)
+
 				<#if ID_SERIES != ""> 
 					 	FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) . 
 				</#if> 

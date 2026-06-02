@@ -1,5 +1,6 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 
+import fr.insee.rmes.Constants;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -9,6 +10,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import fr.insee.rmes.utils.JSONUtils;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -98,6 +100,16 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
         JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsById("s1236"));
         assertEquals(1, creators.length());
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
+    }
+
+    @Test
+    void should_return_series_contributors_with_organisation_uri_as_id() throws RmesException {
+        JSONArray contributors = repositoryGestion.getResponseAsArray(
+                operationSeriesQueries.seriesLinks("s1215", DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS));
+        assertEquals(1, contributors.length());
+        JSONObject contributor = contributors.getJSONObject(0);
+        assertEquals("http://bauhaus/organisations/sdes", contributor.getString("id"));
+        assertEquals("Service des données et études statistiques", contributor.getString("labelLg1"));
     }
 
     @Test

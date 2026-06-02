@@ -9597,3 +9597,11 @@
             <http://www.w3.org/2004/02/skos/core#prefLabel>
                     "Tourist flows in Reunion Island (survey with travelers from this airports of Roland Garros and Saint-Pierre Pierrefonds)"@en , "Flux touristiques à La Réunion (enquête auprès des voyageurs au départ des aéroports Roland Garros et Saint-Pierre Pierrefonds)"@fr .
 }
+
+<http://rdf.insee.fr/graphes/organisations> {
+    <http://bauhaus/organisations/sdes>
+            <http://www.w3.org/ns/adms#identifier>
+                    "SDES" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Service des données et études statistiques"@fr , "Department for statistical data and studies"@en .
+}
