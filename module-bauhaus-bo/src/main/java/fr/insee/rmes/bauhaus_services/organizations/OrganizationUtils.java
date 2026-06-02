@@ -10,6 +10,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.organisations.domain.OrganisationLabel;
 import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganizationQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -43,9 +44,20 @@ public class OrganizationUtils  extends RdfService {
 	
 	public JSONObject getOrganizationJson(String organizationIdentifier) throws RmesException {
 		JSONObject orga = repoGestion.getResponseAsObject(organizationQueries.organizationQuery(organizationIdentifier));
+		foldAcronymIntoLabels(orga);
 		orga.put(Constants.ID, organizationIdentifier);
 		return orga;
 
+	}
+
+	private static void foldAcronymIntoLabels(JSONObject orga) {
+		String acronym = orga.optString("acronym", null);
+		if (acronym == null || acronym.isBlank()) {
+			return;
+		}
+		orga.put("labelLg1", OrganisationLabel.withAcronym(orga.optString("labelLg1", null), acronym));
+		orga.put("labelLg2", OrganisationLabel.withAcronym(orga.optString("labelLg2", null), acronym));
+		orga.remove("acronym");
 	}
 	
 }

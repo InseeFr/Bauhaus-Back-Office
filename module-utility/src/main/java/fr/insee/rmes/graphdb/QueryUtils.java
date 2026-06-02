@@ -30,6 +30,7 @@ public class QueryUtils {
                     PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>\s
                     PREFIX dcat:<http://www.w3.org/ns/dcat#>\s
                     PREFIX adms: <http://www.w3.org/ns/adms#>\s
+                    PREFIX vaem:<http://www.linkedmodel.org/schema/vaem#>\s
                     PREFIX dcmitype:<http://purl.org/dc/dcmitype/>\s
                     \s
                     """;

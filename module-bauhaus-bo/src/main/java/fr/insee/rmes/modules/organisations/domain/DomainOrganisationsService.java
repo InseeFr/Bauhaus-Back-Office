@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.organisations.domain;
 
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 
@@ -18,6 +19,11 @@ public class DomainOrganisationsService implements OrganisationsService {
     @Override
     public CompactOrganisation getCompactOrganisation(String id) throws OrganisationFetchException {
         return this.organisationsRepository.getCompactOrganisation(id);
+    }
+
+    @Override
+    public List<OrganisationSummary> getOrganisations() throws OrganisationFetchException {
+        return this.organisationsRepository.getOrganisations();
     }
 
     @Override

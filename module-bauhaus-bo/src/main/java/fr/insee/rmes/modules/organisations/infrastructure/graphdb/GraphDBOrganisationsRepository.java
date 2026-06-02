@@ -2,8 +2,10 @@ package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
+import fr.insee.rmes.modules.organisations.domain.OrganisationLabel;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
@@ -36,6 +38,26 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
             return graphDbOrganisation.toDomain();
 
         } catch (Exception e) {
+            throw new OrganisationFetchException();
+        }
+    }
+
+    @Override
+    public List<OrganisationSummary> getOrganisations() throws OrganisationFetchException {
+        try {
+            JSONArray organisations = this.repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
+            List<OrganisationSummary> result = new ArrayList<>();
+            for (int i = 0; i < organisations.length(); i++) {
+                JSONObject org = organisations.getJSONObject(i);
+                String acronym = org.optString("acronym", null);
+                result.add(new OrganisationSummary(
+                        org.optString("iri", null),
+                        org.optString("id", null),
+                        OrganisationLabel.withAcronym(org.optString("label", null), acronym),
+                        OrganisationLabel.withAcronym(org.optString("labelLg2", null), acronym)));
+            }
+            return result;
+        } catch (RmesException e) {
             throw new OrganisationFetchException();
         }
     }

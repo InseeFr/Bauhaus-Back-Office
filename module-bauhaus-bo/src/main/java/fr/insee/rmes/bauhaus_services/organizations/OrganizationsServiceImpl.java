@@ -16,8 +16,6 @@ import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganizationQu
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,8 +29,6 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	private final FamOpeSerIndUtils famOpeSerUtils;
 
 	private final OrganizationQueries organizationQueries;
-
-	static final Logger logger = LoggerFactory.getLogger(OrganizationsServiceImpl.class);
 
 	public OrganizationsServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
 									RepositoryPublication repositoryPublication,
@@ -63,13 +59,6 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 		JSONObject orga = repoGestion.getResponseAsObject(organizationQueries.getUriById(organizationIdentifier));
 		if (!orga.has(Constants.URI)) {return null;}
 		return QueryUtils.correctEmptyGroupConcat(orga.getString(Constants.URI));
-	}
-
-	@Override
-	public String getOrganizationsJson() throws RmesException {
-		logger.info("Starting to get organizations list");
-		String resQuery = repoGestion.getResponseAsArray(organizationQueries.organizationsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override

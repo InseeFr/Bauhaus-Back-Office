@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.organisations.webservice;
 
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.http.HttpStatus;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/organizations")
@@ -50,23 +53,24 @@ public class OrganisationsResources {
 	@GetMapping(value = "", 
 			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<Object> getOrganizations(@RequestHeader(required=false) String accept) {
-		String resultat;
-
         if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
-				resultat=XMLUtils.produceXMLResponse(organizationsService.getOrganizations());
+				return ResponseEntity.status(HttpStatus.SC_OK).body(XMLUtils.produceXMLResponse(organizationsService.getOrganizations()));
 			} catch (RmesException e) {
 				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 			}
 		}
-		else try {
+		try {
 			logger.info("[OrganizationsResources] Starting fetching organizations");
-			resultat = organizationsService.getOrganizationsJson();
+			List<OrganisationResponse> resultat = organisationsService.getOrganisations().stream()
+					.map(OrganisationResponse::fromDomain)
+					.toList();
 			logger.info("[OrganizationsResources] fetching organizations is now done");
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+			return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
+		} catch (OrganisationFetchException e) {
+			logger.error("[OrganizationsResources] failed to fetch organizations", e);
+			return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body("Failed to fetch organizations");
 		}
-		return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
 	}
 
 }

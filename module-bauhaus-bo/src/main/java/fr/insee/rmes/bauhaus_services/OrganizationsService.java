@@ -14,8 +14,6 @@ public interface OrganizationsService {
 	
 	String getOrganizationUriById(String organizationIdentifier) throws RmesException;
 
-	String getOrganizationsJson() throws RmesException;
-	
 	List<Organization> getOrganizations() throws RmesException;
 
 }

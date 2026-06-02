@@ -1,4 +1,4 @@
-SELECT ?labelLg1 ?labelLg2 ?altLabel ?type ?motherOrganization ?linkedTo ?seeAlso
+SELECT ?labelLg1 ?labelLg2 ?altLabel ?acronym ?type ?motherOrganization ?linkedTo ?seeAlso
 FROM <${ORGANIZATIONS_GRAPH}>
 FROM <${ORGANIZATIONS_INSEE_GRAPH}>
 WHERE {
@@ -9,6 +9,7 @@ WHERE {
     OPTIONAL {?organization skos:prefLabel ?labelLg2 .
     FILTER (lang(?labelLg2) = '${LG2}') }
     OPTIONAL {?organization skos:altLabel ?altLabel .}
+    OPTIONAL {?organization vaem:acronym ?acronym .}
 
     OPTIONAL {?organization rdf:type ?type .
     FILTER (!strstarts(str(?type),str(org:))) }

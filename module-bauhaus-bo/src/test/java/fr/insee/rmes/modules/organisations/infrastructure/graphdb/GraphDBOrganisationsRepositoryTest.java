@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,6 +40,105 @@ class GraphDBOrganisationsRepositoryTest {
         lenient().when(organizationQueries.generateCompactOrganisationsQuery(any())).thenReturn("mock-query");
         lenient().when(organizationQueries.checkIfOrganisationExistsQuery(anyString())).thenReturn("mock-query");
         lenient().when(organizationQueries.getOrganizationIdenfier(any(), anyString(), any())).thenReturn("mock-query");
+        lenient().when(organizationQueries.organizationsQuery()).thenReturn("mock-query");
+    }
+
+    @Test
+    void shouldGetAllOrganisationsMappedFromSparqlRows() throws RmesException, OrganisationFetchException {
+        // Given
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(new JSONObject("""
+            {
+                "iri": "http://bauhaus/organisations/ORG-002",
+                "id": "ORG-002",
+                "label": "Service des données",
+                "labelLg2": "Data Department"
+            }
+            """));
+
+        when(repositoryGestion.getResponseAsArray("mock-query")).thenReturn(jsonArray);
+
+        // When
+        List<OrganisationSummary> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).containsExactly(
+            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
+        );
+
+        verify(repositoryGestion).getResponseAsArray("mock-query");
+    }
+
+    @Test
+    void shouldAppendAcronymInParenthesesToBothLabelsWhenPresent() throws RmesException, OrganisationFetchException {
+        // Given
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(new JSONObject("""
+            {
+                "iri": "http://bauhaus/organisations/5c499713",
+                "id": "HIE2171581",
+                "label": "Direction générale de l'Administration et de la Fonction publique",
+                "labelLg2": "Directorate-General for Administration and the Civil Service",
+                "acronym": "DGAFP"
+            }
+            """));
+
+        when(repositoryGestion.getResponseAsArray("mock-query")).thenReturn(jsonArray);
+
+        // When
+        List<OrganisationSummary> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).containsExactly(new OrganisationSummary(
+                "http://bauhaus/organisations/5c499713",
+                "HIE2171581",
+                "Direction générale de l'Administration et de la Fonction publique (DGAFP)",
+                "Directorate-General for Administration and the Civil Service (DGAFP)"));
+    }
+
+    @Test
+    void shouldFallBackToAcronymWhenLabelIsMissing() throws RmesException, OrganisationFetchException {
+        // Given
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(new JSONObject("""
+            {
+                "iri": "http://bauhaus/organisations/d94861cf",
+                "id": "HIE-DGPN",
+                "acronym": "DGPN"
+            }
+            """));
+
+        when(repositoryGestion.getResponseAsArray("mock-query")).thenReturn(jsonArray);
+
+        // When
+        List<OrganisationSummary> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).containsExactly(
+            new OrganisationSummary("http://bauhaus/organisations/d94861cf", "HIE-DGPN", "DGPN", "DGPN"));
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoOrganisationExists() throws RmesException, OrganisationFetchException {
+        // Given
+        when(repositoryGestion.getResponseAsArray("mock-query")).thenReturn(new JSONArray());
+
+        // When
+        List<OrganisationSummary> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldThrowOrganisationFetchExceptionWhenListingFails() throws RmesException {
+        // Given
+        when(repositoryGestion.getResponseAsArray("mock-query"))
+            .thenThrow(new RmesException(500, "Database error", "Error accessing repository"));
+
+        // When/Then
+        assertThatThrownBy(() -> repository.getOrganisations())
+            .isInstanceOf(OrganisationFetchException.class);
     }
 
     @Test

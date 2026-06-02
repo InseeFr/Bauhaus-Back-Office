@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -56,6 +57,24 @@ class DomainOrganisationsServiceTest {
         assertThat(result.iri()).isEqualTo(iri);
 
         verify(organisationsRepository, times(1)).getCompactOrganisation(organisationId);
+    }
+
+    @Test
+    void shouldGetAllOrganisationsDelegatingToRepository() throws OrganisationFetchException {
+        // Given
+        List<OrganisationSummary> expected = List.of(
+            new OrganisationSummary("http://bauhaus/organisations/ORG-001", "ORG-001", "Direction des statistiques", "Statistics Directorate"),
+            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
+        );
+        when(organisationsRepository.getOrganisations()).thenReturn(expected);
+
+        // When
+        List<OrganisationSummary> result = service.getOrganisations();
+
+        // Then
+        assertThat(result).isEqualTo(expected);
+        verify(organisationsRepository, times(1)).getOrganisations();
+        verifyNoMoreInteractions(organisationsRepository);
     }
 
     @Test

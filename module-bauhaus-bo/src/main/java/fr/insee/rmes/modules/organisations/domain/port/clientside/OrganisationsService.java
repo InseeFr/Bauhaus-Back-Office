@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.organisations.domain.port.clientside;
 
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +39,18 @@ public interface OrganisationsService {
      *         or if no organization is found with the given identifier
      */
     CompactOrganisation getCompactOrganisation(String id) throws OrganisationFetchException;
+
+    /**
+     * Retrieves the full list of organisations as lightweight summaries.
+     * <p>
+     * This is the data backing the front-end organisations list. Each summary
+     * exposes the IRI, the identifier and the labels in both configured languages.
+     * </p>
+     *
+     * @return the list of {@link OrganisationSummary}, ordered by label
+     * @throws OrganisationFetchException if the retrieval operation fails
+     */
+    List<OrganisationSummary> getOrganisations() throws OrganisationFetchException;
 
     /**
      * Retrieves multiple compact organizations by their identifiers in a single batch operation.

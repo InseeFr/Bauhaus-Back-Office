@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.organisations.domain.port.serverside;
 
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +51,16 @@ public interface OrganisationsRepository {
      *         if the identifier is invalid, or if no organization is found with the given identifier
      */
     CompactOrganisation getCompactOrganisation(String id) throws OrganisationFetchException;
+
+    /**
+     * Retrieves the full list of organisations as lightweight summaries by executing
+     * the organisations listing SPARQL query and mapping each row to an
+     * {@link OrganisationSummary}.
+     *
+     * @return the list of {@link OrganisationSummary}, ordered by label
+     * @throws OrganisationFetchException if the retrieval operation fails
+     */
+    List<OrganisationSummary> getOrganisations() throws OrganisationFetchException;
 
     /**
      * Retrieves multiple compact organizations by their identifiers in a single batch operation.
