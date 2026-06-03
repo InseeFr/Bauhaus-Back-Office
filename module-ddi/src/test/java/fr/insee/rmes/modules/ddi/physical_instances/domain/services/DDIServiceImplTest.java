@@ -10,8 +10,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
@@ -81,6 +84,126 @@ class DDIServiceImplTest {
         assertEquals("Physical Instance 3", result.get(2).label());
 
         verify(ddiRepository).getPhysicalInstances();
+    }
+
+    @Test
+    void shouldGetLogicalProducts() {
+        // Given
+        List<PartialLogicalProduct> expectedProducts = List.of(
+                new PartialLogicalProduct("lp-1", "Logical Product 1", new Date(), "fr.insee"),
+                new PartialLogicalProduct("lp-2", "Logical Product 2", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getLogicalProducts()).thenReturn(expectedProducts);
+
+        // When
+        List<PartialLogicalProduct> result = ddiService.getLogicalProducts();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("lp-1", result.get(0).id());
+        assertEquals("Logical Product 1", result.get(0).label());
+        assertEquals("lp-2", result.get(1).id());
+        assertEquals("Logical Product 2", result.get(1).label());
+
+        verify(ddiRepository).getLogicalProducts();
+    }
+
+    @Test
+    void shouldGetLogicalProductsByGroup() {
+        // Given
+        List<PartialLogicalProduct> expectedProducts = List.of(
+                new PartialLogicalProduct("lp-1", "Produit Logique 1", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-1")).thenReturn(expectedProducts);
+
+        // When
+        List<PartialLogicalProduct> result = ddiService.getLogicalProductsByGroup("fr.insee", "group-1");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("lp-1", result.get(0).id());
+
+        verify(ddiRepository).getLogicalProductsByGroup("fr.insee", "group-1");
+    }
+
+    @Test
+    void shouldGetCodeListSchemes() {
+        // Given
+        List<PartialCodeListScheme> expected = List.of(
+                new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee"),
+                new PartialCodeListScheme("cls-2", "Schéma 2", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getCodeListSchemes()).thenReturn(expected);
+
+        // When
+        List<PartialCodeListScheme> result = ddiService.getCodeListSchemes();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("cls-1", result.get(0).id());
+
+        verify(ddiRepository).getCodeListSchemes();
+    }
+
+    @Test
+    void shouldGetCodeListSchemesByLogicalProduct() {
+        // Given
+        List<PartialCodeListScheme> expectedSchemes = List.of(
+                new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1")).thenReturn(expectedSchemes);
+
+        // When
+        List<PartialCodeListScheme> result = ddiService.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("cls-1", result.get(0).id());
+
+        verify(ddiRepository).getCodeListSchemesByLogicalProduct("fr.insee", "lp-1");
+    }
+
+    @Test
+    void shouldGetCodeListsByCodeListScheme() {
+        // Given
+        List<PartialCodesList> expected = List.of(
+                new PartialCodesList("code-list-1", "Liste 1", new Date(), "fr.insee")
+        );
+        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-1")).thenReturn(expected);
+
+        // When
+        List<PartialCodesList> result = ddiService.getCodeListsByCodeListScheme("fr.insee", "cls-1");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("code-list-1", result.get(0).id());
+
+        verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-1");
+    }
+
+    @Test
+    void shouldGetVariablesUsingCodeList() {
+        // Given
+        List<CodeListVariableUsage> expected = List.of(
+                new CodeListVariableUsage("fr.insee", "pi-1", "fr.insee", "var-1")
+        );
+        when(ddiRepository.getVariablesUsingCodeList("fr.insee", "cl-1")).thenReturn(expected);
+
+        // When
+        List<CodeListVariableUsage> result = ddiService.getVariablesUsingCodeList("fr.insee", "cl-1");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("var-1", result.get(0).variableId());
+        assertEquals("pi-1", result.get(0).physicalInstanceId());
+
+        verify(ddiRepository).getVariablesUsingCodeList("fr.insee", "cl-1");
     }
 
     @Test

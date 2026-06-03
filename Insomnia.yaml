@@ -652,6 +652,234 @@ collection:
             send: true
             store: true
           rebuildPath: true
+  - name: DDI (issues 447 / 485 / 486)
+    meta:
+      id: fld_ddi_00000000000000000000000000000000
+      created: 1765280600000
+      modified: 1765280600000
+      description: "Endpoints DDI avec négociation de contenu DDI 3 XML / DDI 4 JSON (Accept)."
+      sortKey: -1765280600000
+    children:
+      - url: "{{ _.API_URL }}/ddi/item/{{ _.DDI_AGENCY }}/{{ _.DDI_ITEM_ID }}"
+        name: "#486 Item — DDI 4 JSON"
+        meta:
+          id: req_ddi_item_json_0000000000000000000000
+          created: 1765280600001
+          modified: 1765280600001
+          isPrivate: false
+          description: "Passe-plat d'un objet quelconque (sans référencés) en DDI 4 JSON."
+          sortKey: -1765280600001
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/ddi/item/{{ _.DDI_AGENCY }}/{{ _.DDI_ITEM_ID }}"
+        name: "#486 Item — DDI 3 XML"
+        meta:
+          id: req_ddi_item_xml_00000000000000000000000
+          created: 1765280600002
+          modified: 1765280600002
+          isPrivate: false
+          description: "Même objet en DDI 3.3 XML (fragment brut Colectica)."
+          sortKey: -1765280600002
+        method: GET
+        headers:
+          - name: Accept
+            value: application/xml
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/ddi/item/{{ _.DDI_AGENCY }}/{{ _.DDI_CODELIST_ID }}"
+        name: "#486 Item CodeList — DDI 4 JSON (fallback générique)"
+        meta:
+          id: req_ddi_item_codelist_json_000000000000
+          created: 1765280600003
+          modified: 1765280600003
+          isPrivate: false
+          description: "Type non couvert par un converter dédié → fallback DDI3→DDI4."
+          sortKey: -1765280600003
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/ddi/item/{{ _.DDI_AGENCY }}/{{ _.DDI_ITEM_ID }}/{{ _.DDI_VERSION }}"
+        name: "#486 Item (version) — DDI 3 XML"
+        meta:
+          id: req_ddi_item_version_xml_00000000000000
+          created: 1765280600004
+          modified: 1765280600004
+          isPrivate: false
+          description: "Version explicite de l'objet, en DDI 3.3 XML."
+          sortKey: -1765280600004
+        method: GET
+        headers:
+          - name: Accept
+            value: application/xml
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/codelist/{{ _.DDI_AGENCY }}/{{ _.DDI_CODELIST_ID }}"
+        name: "#485 CodeList + Categories — DDI 4 JSON"
+        meta:
+          id: req_ddi_codelist_json_00000000000000000
+          created: 1765280600005
+          modified: 1765280600005
+          isPrivate: false
+          description: "CodeList et ses Categories référencées, en DDI 4 JSON."
+          sortKey: -1765280600005
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/codelist/{{ _.DDI_AGENCY }}/{{ _.DDI_CODELIST_ID }}"
+        name: "#485 CodeList + Categories — DDI 3 XML"
+        meta:
+          id: req_ddi_codelist_xml_000000000000000000
+          created: 1765280600006
+          modified: 1765280600006
+          isPrivate: false
+          description: "Set complet en DDI 3.3 XML (FragmentInstance multi-fragments)."
+          sortKey: -1765280600006
+        method: GET
+        headers:
+          - name: Accept
+            value: application/xml
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/codelist/{{ _.DDI_AGENCY }}/{{ _.DDI_CODELIST_ID }}/{{ _.DDI_VERSION }}"
+        name: "#485 CodeList (version) — DDI 4 JSON"
+        meta:
+          id: req_ddi_codelist_version_json_00000000
+          created: 1765280600007
+          modified: 1765280600007
+          isPrivate: false
+          description: "Version explicite de la code list, en DDI 4 JSON."
+          sortKey: -1765280600007
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
+        name: "#447 Variables (DataRelationship) — DDI 4 JSON"
+        meta:
+          id: req_ddi_variables_json_00000000000000000
+          created: 1765280600008
+          modified: 1765280600008
+          isPrivate: false
+          description: "Tous les DataRelationship d'une PhysicalInstance, en DDI 4 JSON."
+          sortKey: -1765280600008
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
+        name: "#447 Variables (DataRelationship) — DDI 3 XML"
+        meta:
+          id: req_ddi_variables_xml_000000000000000000
+          created: 1765280600009
+          modified: 1765280600009
+          isPrivate: false
+          description: "Mêmes DataRelationship en DDI 3.3 XML (FragmentInstance)."
+          sortKey: -1765280600009
+        method: GET
+        headers:
+          - name: Accept
+            value: application/xml
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.API_URL }}/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/{{ _.DDI_VERSION }}/variables"
+        name: "#447 Variables (version) — DDI 4 JSON"
+        meta:
+          id: req_ddi_variables_version_json_0000000
+          created: 1765280600010
+          modified: 1765280600010
+          isPrivate: false
+          description: "Version explicite de la PhysicalInstance, en DDI 4 JSON."
+          sortKey: -1765280600010
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
 cookieJar:
   name: Default Jar
   meta:
@@ -670,3 +898,8 @@ environments:
     CONCEPT_ID: c2000
     CONCEPT_VERSION: "1"
     COLLECTION_ID: c2000
+    DDI_AGENCY: fr.insee
+    DDI_ITEM_ID: 9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd
+    DDI_PI_ID: 9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd
+    DDI_CODELIST_ID: 2a22ba00-a977-4a61-a582-99025c6b0582
+    DDI_VERSION: "1"

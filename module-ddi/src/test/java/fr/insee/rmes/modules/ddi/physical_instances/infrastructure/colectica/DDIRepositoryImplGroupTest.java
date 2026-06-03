@@ -3,70 +3,47 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaCreateItemRequest;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaItem;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItem;
+import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestClient;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DDIRepositoryImplGroupTest {
 
     @Mock
-    private RestClient restClient;
-
-    @Mock(answer = Answers.RETURNS_SELF)
-    private RestClient.RequestBodyUriSpec requestSpec;
-
-    @Mock
-    private RestClient.ResponseSpec responseSpec;
+    private ColecticaClient colecticaClient;
 
     @Mock
     private ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
-
-    @Mock
-    private ColecticaAuthenticator authenticator;
 
     private final Ddi4ToLifecycle33 ddi4ToLifecycle33 = new Ddi4ToLifecycle33();
 
     @Mock
     private DDIRepository ddiRepository;
 
-    private static final String TEST_TOKEN = "test-token-123";
     private static final String BASE_API_URL = "http://localhost:8082/api/v1/";
 
     @BeforeEach
     void setUp() {
-        lenient().when(authenticator.executeWithAuth(any())).thenAnswer(invocation -> {
-            Function<String, ?> function = invocation.getArgument(0);
-            return function.apply(TEST_TOKEN);
-        });
-
-        lenient().when(instanceConfiguration.baseApiUrl()).thenReturn(BASE_API_URL);
         lenient().when(instanceConfiguration.defaultAgencyId()).thenReturn("fr.insee");
         lenient().when(instanceConfiguration.versionResponsibility()).thenReturn("bauhaus");
         lenient().when(instanceConfiguration.itemFormat()).thenReturn("DC337820-AF3A-4C0B-82F9-CF02535CDE83");
-
-        lenient().when(restClient.post()).thenReturn(requestSpec);
-        lenient().when(requestSpec.retrieve()).thenReturn(responseSpec);
-        lenient().when(responseSpec.body(eq(String.class))).thenReturn(null);
     }
 
     // --- ColecticaGroupRepository ---
@@ -79,7 +56,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             groupRepository = new ColecticaGroupRepository(
-                    restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33, ddiRepository
+                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, ddiRepository
             );
         }
 
@@ -97,11 +74,10 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.createOrUpdate(group);
 
-            verify(requestSpec).uri(eq(BASE_API_URL + "item"));
-            ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-            verify(requestSpec).body(captor.capture());
+            ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+            verify(colecticaClient).createOrUpdateItems(captor.capture());
 
-            ColecticaCreateItemRequest request = (ColecticaCreateItemRequest) captor.getValue();
+            ColecticaCreateItemRequest request = captor.getValue();
             assertThat(request).isNotNull();
             assertThat(request.items()).hasSize(1);
 
@@ -118,7 +94,6 @@ class DDIRepositoryImplGroupTest {
         }
 
         @Test
-        @SuppressWarnings("unchecked")
         void deprecateAll_shouldDeprecateAllGroups() {
             when(ddiRepository.getGroups()).thenReturn(List.of(
                     new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of()),
@@ -127,19 +102,18 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.deprecateAll();
 
-            verify(requestSpec).uri(eq(BASE_API_URL + "item/_updateState"));
-            ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-            verify(requestSpec).body(captor.capture());
+            ArgumentCaptor<UpdateItemStateRequest> captor = ArgumentCaptor.forClass(UpdateItemStateRequest.class);
+            verify(colecticaClient).updateItemState(captor.capture());
 
-            Map<String, Object> body = (Map<String, Object>) captor.getValue();
+            UpdateItemStateRequest body = captor.getValue();
             assertThat(body).isNotNull();
-            assertThat(body.get("state")).isEqualTo(true);
-            assertThat(body.get("applyToAllVersions")).isEqualTo(true);
+            assertThat(body.state()).isTrue();
+            assertThat(body.applyToAllVersions()).isTrue();
 
-            List<Map<String, Object>> ids = (List<Map<String, Object>>) body.get("ids");
+            List<UpdateItemStateRequest.ItemIdentifier> ids = body.ids();
             assertThat(ids).hasSize(2);
-            assertThat(ids.get(0).get("identifier")).isEqualTo("group-id-1");
-            assertThat(ids.get(1).get("identifier")).isEqualTo("group-id-2");
+            assertThat(ids.get(0).identifier()).isEqualTo("group-id-1");
+            assertThat(ids.get(1).identifier()).isEqualTo("group-id-2");
         }
 
         @Test
@@ -148,7 +122,7 @@ class DDIRepositoryImplGroupTest {
 
             groupRepository.deprecateAll();
 
-            verify(requestSpec, never()).uri(eq(BASE_API_URL + "item/_updateState"));
+            verify(colecticaClient, never()).updateItemState(any());
         }
     }
 
@@ -162,7 +136,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             studyUnitRepository = new ColecticaStudyUnitRepository(
-                    restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33, null
+                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, null
             );
         }
 
@@ -178,11 +152,10 @@ class DDIRepositoryImplGroupTest {
 
             studyUnitRepository.createOrUpdate(studyUnit);
 
-            verify(requestSpec).uri(eq(BASE_API_URL + "item"));
-            ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-            verify(requestSpec).body(captor.capture());
+            ArgumentCaptor<ColecticaCreateItemRequest> captor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+            verify(colecticaClient).createOrUpdateItems(captor.capture());
 
-            ColecticaCreateItemRequest request = (ColecticaCreateItemRequest) captor.getValue();
+            ColecticaCreateItemRequest request = captor.getValue();
             assertThat(request).isNotNull();
             assertThat(request.items()).hasSize(1);
 

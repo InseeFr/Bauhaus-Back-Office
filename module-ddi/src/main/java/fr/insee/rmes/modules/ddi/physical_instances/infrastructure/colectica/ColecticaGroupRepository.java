@@ -5,14 +5,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.client.RestClient;
 
 import java.util.List;
-import java.util.Map;
 
 public class ColecticaGroupRepository extends AbstractColecticaItemRepository implements GroupRepository {
 
@@ -22,13 +20,12 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     private final DDIRepository ddiRepository;
 
     public ColecticaGroupRepository(
-            RestClient restClient,
+            ColecticaClient colecticaClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-            ColecticaAuthenticator authenticator,
             Ddi4ToLifecycle33 ddi4ToLifecycle33,
             DDIRepository ddiRepository
     ) {
-        super(restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33);
+        super(colecticaClient, instanceConfiguration, ddi4ToLifecycle33);
         this.ddiRepository = ddiRepository;
     }
 
@@ -61,32 +58,14 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
             logger.info("No groups found to deprecate");
             return;
         }
-        authenticator.executeWithAuth(token -> {
-            String url = instanceConfiguration.baseApiUrl() + "item/_updateState";
-            List<Map<String, Object>> ids = groups.stream()
-                    .map(group -> {
-                        String agency = group.agency() != null ? group.agency() : instanceConfiguration.defaultAgencyId();
-                        return Map.<String, Object>of(
-                                "agencyId", agency,
-                                "identifier", group.id(),
-                                "version", 1
-                        );
-                    })
-                    .toList();
-            Map<String, Object> requestBody = Map.of(
-                    "ids", ids,
-                    "state", true,
-                    "applyToAllVersions", true
-            );
-            restClient.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
-            logger.info("Deprecated {} group(s) from Colectica", groups.size());
-            return null;
-        });
+        List<UpdateItemStateRequest.ItemIdentifier> ids = groups.stream()
+                .map(group -> {
+                    String agency = group.agency() != null ? group.agency() : instanceConfiguration.defaultAgencyId();
+                    return new UpdateItemStateRequest.ItemIdentifier(agency, group.id(), 1);
+                })
+                .toList();
+        colecticaClient.updateItemState(
+                new UpdateItemStateRequest(ids, true, true));
+        logger.info("Deprecated {} group(s) from Colectica", groups.size());
     }
 }

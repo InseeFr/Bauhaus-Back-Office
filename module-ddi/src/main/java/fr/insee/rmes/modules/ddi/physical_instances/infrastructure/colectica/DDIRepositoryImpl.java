@@ -7,11 +7,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.PackageRef;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.*;
+import fr.insee.rmes.colectica.client.dto.*;
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.ItemReference;
+import fr.insee.rmes.colectica.client.RelationshipDirection;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,8 +34,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
-import org.springframework.web.client.RestClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -50,12 +50,11 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     private final String defaultLang;
 
-    private final RestClient restClient;
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaConfiguration colecticaConfiguration;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
-    private final ColecticaAuthenticator authenticator;
+    private final ColecticaClient colecticaClient;
 
     private volatile CachedCodesList mutualizedCache;
 
@@ -66,19 +65,17 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     public DDIRepositoryImpl(
-        RestClient restClient,
         ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
         DDI3toDDI4ConverterService ddi3ToDdi4Converter,
         DDI4toDDI3ConverterService ddi4ToDdi3Converter,
         ColecticaConfiguration colecticaConfiguration,
-        ColecticaAuthenticator authenticator
+        ColecticaClient colecticaClient
     ) {
-        this.restClient = restClient;
         this.instanceConfiguration = instanceConfiguration;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
-        this.authenticator = authenticator;
+        this.colecticaClient = colecticaClient;
         this.defaultLang = colecticaConfiguration.langs().getFirst();
     }
 
@@ -88,30 +85,9 @@ public class DDIRepositoryImpl implements DDIRepository {
             "Getting physical instances from Colectica API via HTTP (primary instance)"
         );
 
-        return authenticator.executeWithAuth(token -> {
-            // Set up the request with authorization header
-            String url = instanceConfiguration.baseApiUrl() + "_query";
 
-            // Create request body with itemTypes from configuration
-            QueryRequest requestBody = new QueryRequest(
-                List.of(
-                    instanceConfiguration.itemTypes().get("PhysicalInstance")
-                )
-            );
-
-            // Create headers with Bearer token and Content-Type
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
-
-            ColecticaResponse response = restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(requestBody)
-                .retrieve()
-                .body(ColecticaResponse.class);
+            ColecticaResponse response = colecticaClient.query(
+                List.of(instanceConfiguration.itemTypes().get("PhysicalInstance")));
 
             return response
                 .results()
@@ -133,26 +109,49 @@ public class DDIRepositoryImpl implements DDIRepository {
                     return new PartialPhysicalInstance(id, label, date, agency);
                 })
                 .toList();
-        });
+        
+    }
+
+    @Override
+    public List<PartialLogicalProduct> getLogicalProducts() {
+        logger.info(
+            "Getting logical products from Colectica API via HTTP (primary instance)"
+        );
+
+
+            ColecticaResponse response = colecticaClient.query(
+                List.of(instanceConfiguration.itemTypes().get("LogicalProduct")));
+
+            return response
+                .results()
+                .stream()
+                .map(item -> {
+                    String id = item.identifier();
+                    String label = extractLabelFromItem(item);
+                    SimpleDateFormat formatter = new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss"
+                    );
+                    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date date = null;
+                    try {
+                        date = formatter.parse(item.versionDate());
+                    } catch (ParseException | NullPointerException _) {
+                        logger.debug("Impossible to parse");
+                    }
+                    String agency = item.agencyId();
+                    return new PartialLogicalProduct(id, label, date, agency);
+                })
+                .toList();
+        
     }
 
     @Override
     public List<PartialGroup> getGroups() {
         logger.info("Getting groups from Colectica API via HTTP");
 
-        return authenticator.executeWithAuth(token -> {
-            String url = instanceConfiguration.baseApiUrl() + "_query";
-            QueryRequest requestBody = new QueryRequest(
-                List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23")
-            );
-            ColecticaResponse response = restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(requestBody)
-                .retrieve()
-                .body(ColecticaResponse.class);
+
+            ColecticaResponse response = colecticaClient.query(
+                List.of("4bd6eef6-99df-40e6-9b11-5b8f64e5cb23"));
 
             if (
                 response == null ||
@@ -175,16 +174,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 )
                 .toList();
 
-            String getListUrl =
-                instanceConfiguration.baseApiUrl() + "item/_getList";
-            ColecticaItemResponse[] itemResponses = restClient
-                .post()
-                .uri(getListUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(new GetDescriptionsRequest(identifiers))
-                .retrieve()
-                .body(ColecticaItemResponse[].class);
+            ColecticaItemResponse[] itemResponses =
+                colecticaClient.getDescriptions(identifiers);
 
             Map<String, List<String>> seriesIrisByGroupId = new HashMap<>();
             if (itemResponses != null) {
@@ -229,7 +220,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     );
                 })
                 .toList();
-        });
+        
     }
 
     private List<String> extractUserIdsFromGroupXml(String xml) {
@@ -265,21 +256,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     public List<PartialStudyUnit> getStudyUnits() {
         logger.info("Getting study units from Colectica API via HTTP");
 
-        return authenticator.executeWithAuth(token -> {
-            String url = instanceConfiguration.baseApiUrl() + "_query";
 
-            QueryRequest requestBody = new QueryRequest(
-                List.of("30ea0200-7121-4f01-8d21-a931a182b86d")
-            );
-
-            ColecticaResponse response = restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(requestBody)
-                .retrieve()
-                .body(ColecticaResponse.class);
+            ColecticaResponse response = colecticaClient.query(
+                List.of("30ea0200-7121-4f01-8d21-a931a182b86d"));
 
             return response
                 .results()
@@ -304,7 +283,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     return new PartialStudyUnit(id, label, date, agency);
                 })
                 .toList();
-        });
+        
     }
 
     private String extractLabelFromItem(ColecticaItem item) {
@@ -528,20 +507,10 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public Ddi4Response getPhysicalInstance(String agencyId, String id) {
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                String setUrl =
-                    instanceConfiguration.baseApiUrl() +
-                    "set/" +
-                    agencyId +
-                    "/" +
-                    id;
-                ColecticaSetItem[] setItems = restClient
-                    .get()
-                    .uri(setUrl)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .retrieve()
-                    .body(ColecticaSetItem[].class);
+                ColecticaSetItem[] setItems =
+                    colecticaClient.getSet(agencyId, id, null);
 
                 if (setItems == null || setItems.length == 0) {
                     return null;
@@ -558,16 +527,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                         )
                         .toList();
 
-                String getListUrl =
-                    instanceConfiguration.baseApiUrl() + "item/_getList";
-                ColecticaItemResponse[] itemResponses = restClient
-                    .post()
-                    .uri(getListUrl)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(new GetDescriptionsRequest(identifiers))
-                    .retrieve()
-                    .body(ColecticaItemResponse[].class);
+                ColecticaItemResponse[] itemResponses =
+                    colecticaClient.getDescriptions(identifiers);
 
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
@@ -614,7 +575,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to process DDI response", e);
             }
-        });
+        
     }
 
     private Set<String> codeListAndCategoryItemTypes() {
@@ -628,16 +589,10 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     @Override
     public List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id) {
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                String setUrl =
-                    instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
-                ColecticaSetItem[] setItems = restClient
-                    .get()
-                    .uri(setUrl)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .retrieve()
-                    .body(ColecticaSetItem[].class);
+                ColecticaSetItem[] setItems =
+                    colecticaClient.getSet(agencyId, id, null);
 
                 if (setItems == null || setItems.length == 0) {
                     return List.of();
@@ -654,16 +609,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                         )
                         .toList();
 
-                String getListUrl =
-                    instanceConfiguration.baseApiUrl() + "item/_getList";
-                ColecticaItemResponse[] itemResponses = restClient
-                    .post()
-                    .uri(getListUrl)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .body(new GetDescriptionsRequest(identifiers))
-                    .retrieve()
-                    .body(ColecticaItemResponse[].class);
+                ColecticaItemResponse[] itemResponses =
+                    colecticaClient.getDescriptions(identifiers);
 
                 if (itemResponses == null || itemResponses.length == 0) {
                     return List.of();
@@ -708,7 +655,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     e
                 );
             }
-        });
+        
     }
 
     @Override
@@ -719,36 +666,20 @@ public class DDIRepositoryImpl implements DDIRepository {
             id
         );
 
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint
-                String ddisetUrl =
-                    instanceConfiguration.baseApiUrl() +
-                    "ddiset/" +
-                    agencyId +
-                    "/" +
-                    id;
-
-                logger.info(
-                    "Fetching full DDI set for Group from: {}",
-                    ddisetUrl
-                );
-
-                // Read raw bytes and decode as UTF-8 explicitly. body(String.class) lets
-                // Spring's StringHttpMessageConverter pick the charset from the response's
-                // Content-Type, which Colectica omits — Spring then falls back to ISO-8859-1
-                // and produces mojibake on accented characters.
-                byte[] ddisetBytes = restClient
-                    .get()
-                    .uri(ddisetUrl)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                    .retrieve()
-                    .body(byte[].class);
+                // Fetch the full DDI set (Group + StudyUnits) using the ddiset endpoint.
+                // Read raw bytes and decode as UTF-8 explicitly: Colectica omits the charset, so
+                // Spring's StringHttpMessageConverter would fall back to ISO-8859-1 and produce
+                // mojibake on accented characters.
+                logger.info("Fetching full DDI set for Group {}/{}", agencyId, id);
+                byte[] ddisetBytes = colecticaClient.getDdiSet(agencyId, id);
 
                 if (ddisetBytes == null || ddisetBytes.length == 0) {
                     logger.error(
-                        "Received empty response from Colectica API for ddiset URL: {}",
-                        ddisetUrl
+                        "Received empty response from Colectica API for ddiset {}/{}",
+                        agencyId,
+                        id
                     );
                     return null;
                 }
@@ -809,7 +740,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                     e
                 );
             }
-        });
+        
     }
 
     /**
@@ -1229,7 +1160,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             id
         );
 
-        authenticator.executeWithAuth(token -> {
+
             // Convert DDI4 to DDI3
             Ddi3Response ddi3Response = ddi4ToDdi3Converter.convertDdi4ToDdi3(
                 ddi4Response
@@ -1269,38 +1200,25 @@ public class DDIRepositoryImpl implements DDIRepository {
                 new ColecticaCreateItemRequest(colecticaItems);
 
             // Send to Colectica
-            String url = instanceConfiguration.baseApiUrl() + "item";
-
             logger.info(
-                "Sending full update request to Colectica with {} items: {}",
-                colecticaItems.size(),
-                url
+                "Sending full update request to Colectica with {} items",
+                colecticaItems.size()
             );
 
-            restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(updateRequest)
-                .retrieve()
-                .body(String.class);
+            colecticaClient.createOrUpdateItems(updateRequest);
 
             logger.info(
                 "Successfully updated full physical instance with id: {} ({} items saved)",
                 id,
                 colecticaItems.size()
             );
-
-            return null;
-        });
     }
 
     @Override
     public Ddi4Response createPhysicalInstance(
         CreatePhysicalInstanceRequest request
     ) {
-        return authenticator.executeWithAuth(token -> {
+
             // Generate UUIDs for physical instance and data relationship
             String physicalInstanceId = UUID.randomUUID().toString();
             String dataRelationshipId = UUID.randomUUID().toString();
@@ -1388,20 +1306,11 @@ public class DDIRepositoryImpl implements DDIRepository {
                 new ColecticaCreateItemRequest(itemsToCreate);
 
             // Send to Colectica
-            String url = instanceConfiguration.baseApiUrl() + "item";
-
-            restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(createRequest)
-                .retrieve()
-                .body(String.class);
+            colecticaClient.createOrUpdateItems(createRequest);
 
             // Return the created instance
             return getPhysicalInstance(agencyId, physicalInstanceId);
-        });
+        
     }
 
     /**
@@ -1552,9 +1461,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4Response getCodeList(String agencyId, String id, String version) {
         logger.info("Fetching code list {}/{}/{}", agencyId, id, version);
 
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
@@ -1564,7 +1473,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 throw new RuntimeException(
                     "Failed to fetch code list " + agencyId + "/" + id + "/" + version, e);
             }
-        });
+        
     }
 
     /**
@@ -1575,9 +1484,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     public String getCodeListXml(String agencyId, String id, String version) {
         logger.info("Fetching code list XML {}/{}/{}", agencyId, id, version);
 
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
@@ -1586,7 +1495,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 throw new RuntimeException(
                     "Failed to fetch code list XML " + agencyId + "/" + id + "/" + version, e);
             }
-        });
+        
     }
 
     /**
@@ -1594,17 +1503,8 @@ public class DDIRepositoryImpl implements DDIRepository {
      * {@code version} appended to the set URL (latest when null). Shared by the code list and
      * data relationship accessors.
      */
-    private ColecticaItemResponse[] fetchSetItems(String agencyId, String id, String version, String token) {
-        String setUrl = instanceConfiguration.baseApiUrl() + "set/" + agencyId + "/" + id;
-        if (version != null && !version.isBlank()) {
-            setUrl += "/" + version;
-        }
-        ColecticaSetItem[] setItems = restClient
-            .get()
-            .uri(setUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-            .retrieve()
-            .body(ColecticaSetItem[].class);
+    private ColecticaItemResponse[] fetchSetItems(String agencyId, String id, String version) {
+        ColecticaSetItem[] setItems = colecticaClient.getSet(agencyId, id, version);
 
         if (setItems == null || setItems.length == 0) {
             return null;
@@ -1621,15 +1521,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 )
                 .toList();
 
-        String getListUrl = instanceConfiguration.baseApiUrl() + "item/_getList";
-        return restClient
-            .post()
-            .uri(getListUrl)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-            .body(new GetDescriptionsRequest(identifiers))
-            .retrieve()
-            .body(ColecticaItemResponse[].class);
+        return colecticaClient.getDescriptions(identifiers);
     }
 
     private List<Ddi3Response.Ddi3Item> toDdi3Items(ColecticaItemResponse[] itemResponses) {
@@ -1694,9 +1586,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     public Ddi4Response getDataRelationships(String agencyId, String id, String version) {
         logger.info("Fetching data relationships {}/{}/{}", agencyId, id, version);
 
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
@@ -1707,7 +1599,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 throw new RuntimeException(
                     "Failed to fetch data relationships " + agencyId + "/" + id + "/" + version, e);
             }
-        });
+        
     }
 
     /**
@@ -1718,9 +1610,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     public String getDataRelationshipsXml(String agencyId, String id, String version) {
         logger.info("Fetching data relationships XML {}/{}/{}", agencyId, id, version);
 
-        return authenticator.executeWithAuth(token -> {
+
             try {
-                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version, token);
+                ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
@@ -1730,7 +1622,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 throw new RuntimeException(
                     "Failed to fetch data relationships XML " + agencyId + "/" + id + "/" + version, e);
             }
-        });
+        
     }
 
     private ColecticaItemResponse[] filterDataRelationships(ColecticaItemResponse[] itemResponses) {
@@ -1738,6 +1630,171 @@ public class DDIRepositoryImpl implements DDIRepository {
         return Arrays.stream(itemResponses)
             .filter(item -> Objects.equals(item.itemType(), dataRelationshipType))
             .toArray(ColecticaItemResponse[]::new);
+    }
+
+    /**
+     * Returns every LogicalProduct directly referenced by the group {@code agencyId/groupId}.
+     * We ask Colectica for the group's {@code bysubject} relationships filtered server-side to the
+     * LogicalProduct item type ({@code _query/relationship/bysubject/descriptions}), which returns
+     * lightweight references only — avoiding the full {@code set/} + {@code _getList} download that
+     * would fetch every item (code lists, categories…) just to read its type. Labels are then
+     * resolved through the repository-wide {@link #getLogicalProducts} query (the relationship
+     * descriptions carry no label).
+     */
+    @Override
+    public List<PartialLogicalProduct> getLogicalProductsByGroup(String agencyId, String groupId) {
+        logger.info("Fetching logical products for group {}/{}", agencyId, groupId);
+        String logicalProductType = instanceConfiguration.itemTypes().get("LogicalProduct");
+
+        Set<String> logicalProductIds = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT,
+                    new ItemReference(agencyId, groupId),
+                    List.of(logicalProductType))
+                .stream()
+                .map(ItemReference::identifier)
+                .collect(Collectors.toSet());
+
+        if (logicalProductIds.isEmpty()) {
+            return List.of();
+        }
+
+        return getLogicalProducts().stream()
+            .filter(lp -> logicalProductIds.contains(lp.id()))
+            .toList();
+    }
+
+    /**
+     * Returns every CodeListScheme directly referenced by the logical product {@code agencyId/logicalProductId}.
+     * Same lightweight strategy as {@link #getLogicalProductsByGroup}: a server-side type-filtered
+     * {@code bysubject} relationship query yields the referenced identifiers, then labels are
+     * resolved through the repository-wide {@link #getCodeListSchemes} query.
+     */
+    @Override
+    public List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId) {
+        logger.info("Fetching code list schemes for logical product {}/{}", agencyId, logicalProductId);
+        String codeListSchemeType = instanceConfiguration.itemTypes().get("CodeListScheme");
+
+        Set<String> codeListSchemeIds = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT,
+                    new ItemReference(agencyId, logicalProductId),
+                    List.of(codeListSchemeType))
+                .stream()
+                .map(ItemReference::identifier)
+                .collect(Collectors.toSet());
+
+        if (codeListSchemeIds.isEmpty()) {
+            return List.of();
+        }
+
+        return getCodeListSchemes().stream()
+            .filter(scheme -> codeListSchemeIds.contains(scheme.id()))
+            .toList();
+    }
+
+    /**
+     * Returns every CodeList directly referenced by the code list scheme {@code agencyId/codeListSchemeId}.
+     * Same lightweight strategy as {@link #getCodeListSchemesByLogicalProduct}: a server-side type-filtered
+     * {@code bysubject} relationship query yields the referenced identifiers, then labels are resolved
+     * through the repository-wide {@link #getCodeLists} query.
+     */
+    @Override
+    public List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId) {
+        logger.info("Fetching code lists for code list scheme {}/{}", agencyId, codeListSchemeId);
+        String codeListType = instanceConfiguration.itemTypes().get("CodeList");
+
+        Set<String> codeListIds = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT,
+                    new ItemReference(agencyId, codeListSchemeId),
+                    List.of(codeListType))
+                .stream()
+                .map(ItemReference::identifier)
+                .collect(Collectors.toSet());
+
+        if (codeListIds.isEmpty()) {
+            return List.of();
+        }
+
+        return getCodeLists().stream()
+            .filter(codeList -> codeListIds.contains(codeList.id()))
+            .toList();
+    }
+
+    /**
+     * Repository-wide {@code _query} of every CodeList, carrying labels (which the relationship
+     * descriptions do not). Used to resolve the labels of the code lists referenced by a code list scheme.
+     */
+    private List<PartialCodesList> getCodeLists() {
+        logger.info("Getting code lists from Colectica API via HTTP (primary instance)");
+        ColecticaResponse response = colecticaClient.query(
+            List.of(instanceConfiguration.itemTypes().get("CodeList")));
+        return response
+            .results()
+            .stream()
+            .map(item -> new PartialCodesList(
+                item.identifier(),
+                extractLabelFromItem(item),
+                parseColecticaDate(item.versionDate()),
+                item.agencyId()))
+            .toList();
+    }
+
+    /**
+     * Returns every Variable that uses the code list {@code codeListAgencyId/codeListId}, paired with the
+     * PhysicalInstance it belongs to. Walks the {@code byobject} relationship graph (« who references X »):
+     * CodeList ← Variable, Variable ← DataRelationship, DataRelationship ← PhysicalInstance.
+     */
+    @Override
+    public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
+        logger.info("Fetching variables using code list {}/{}", codeListAgencyId, codeListId);
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        String variableType = types.get("Variable");
+        String dataRelationshipType = types.get("DataRelationship");
+        String physicalInstanceType = types.get("PhysicalInstance");
+
+        List<ItemReference> variables = colecticaClient.findRelatedDescriptions(
+            RelationshipDirection.BY_OBJECT,
+            new ItemReference(codeListAgencyId, codeListId),
+            List.of(variableType));
+
+        List<CodeListVariableUsage> usages = new ArrayList<>();
+        for (ItemReference variable : variables) {
+            List<ItemReference> dataRelationships = colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_OBJECT, variable, List.of(dataRelationshipType));
+            for (ItemReference dataRelationship : dataRelationships) {
+                List<ItemReference> physicalInstances = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_OBJECT, dataRelationship, List.of(physicalInstanceType));
+                for (ItemReference physicalInstance : physicalInstances) {
+                    usages.add(new CodeListVariableUsage(
+                        physicalInstance.agencyId(), physicalInstance.identifier(),
+                        variable.agencyId(), variable.identifier()));
+                }
+            }
+        }
+        return usages.stream().distinct().toList();
+    }
+
+    /**
+     * Repository-wide {@code _query} of every CodeListScheme, carrying labels (which the relationship
+     * descriptions do not). Also used to resolve the labels of the schemes referenced by a logical product.
+     */
+    @Override
+    public List<PartialCodeListScheme> getCodeListSchemes() {
+        logger.info("Getting code list schemes from Colectica API via HTTP (primary instance)");
+
+
+            ColecticaResponse response = colecticaClient.query(
+                List.of(instanceConfiguration.itemTypes().get("CodeListScheme")));
+
+            return response
+                .results()
+                .stream()
+                .map(item -> new PartialCodeListScheme(
+                    item.identifier(),
+                    extractLabelFromItem(item),
+                    parseColecticaDate(item.versionDate()),
+                    item.agencyId()))
+                .toList();
+        
     }
 
     /**
@@ -1784,18 +1841,11 @@ public class DDIRepositoryImpl implements DDIRepository {
         String packageKey = rootPackage.agencyId() + "/" + rootPackage.identifier();
         logger.info("Fetching CodeLists under package {}", packageKey);
 
-        return authenticator.executeWithAuth(token -> {
+
             String codeListType = instanceConfiguration.itemTypes().get("CodeList");
-            String queryUrl = instanceConfiguration.baseApiUrl() + "_query";
 
             long t0 = System.currentTimeMillis();
-            ColecticaResponse response = restClient.post()
-                .uri(queryUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(new QueryRequest(List.of(codeListType)))
-                .retrieve()
-                .body(ColecticaResponse.class);
+            ColecticaResponse response = colecticaClient.query(List.of(codeListType));
             long queryMs = System.currentTimeMillis() - t0;
             int total = response == null || response.results() == null ? 0 : response.results().size();
             logger.info("_query CodeList returned {} items in {} ms", total, queryMs);
@@ -1814,7 +1864,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 if (item == null) continue;
                 Optional<String> label = extractStrictLabel(item);
                 if (label.isEmpty()) continue;
-                if (!isDescendantOfPackage(item.agencyId(), item.identifier(), packageKey, descendantCache, token)) {
+                if (!isDescendantOfPackage(item.agencyId(), item.identifier(), packageKey, descendantCache)) {
                     continue;
                 }
                 String key = item.agencyId() + "/" + item.identifier();
@@ -1827,38 +1877,30 @@ public class DDIRepositoryImpl implements DDIRepository {
                 parentLookups, System.currentTimeMillis() - t1, collected.size(), descendantCache.size());
 
             return List.copyOf(collected.values());
-        });
+        
     }
 
     private boolean isDescendantOfPackage(
         String agencyId, String identifier, String packageKey,
-        Map<String, Boolean> cache, String token
+        Map<String, Boolean> cache
     ) {
         String key = agencyId + "/" + identifier;
         if (cache.containsKey(key)) return cache.get(key);
         // tentative false to break cycles
         cache.put(key, false);
 
-        String url = instanceConfiguration.baseApiUrl() + "_query/relationship/byobject/descriptions";
-        ColecticaParentRef[] parents;
+        List<ItemReference> parents;
         try {
-            parents = restClient.post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(new RelationshipBySubjectRequest(
-                    List.of(),
-                    new RelationshipBySubjectRequest.TargetItemRef(agencyId, identifier)
-                ))
-                .retrieve()
-                .body(ColecticaParentRef[].class);
+            parents = colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, identifier),
+                List.of());
         } catch (RuntimeException e) {
             logger.warn("byobject lookup failed for {}/{}: {}", agencyId, identifier, e.getMessage());
             return false;
         }
-        if (parents == null) return false;
-        for (ColecticaParentRef parent : parents) {
-            if (isDescendantOfPackage(parent.agencyId(), parent.identifier(), packageKey, cache, token)) {
+        for (ItemReference parent : parents) {
+            if (isDescendantOfPackage(parent.agencyId(), parent.identifier(), packageKey, cache)) {
                 cache.put(key, true);
                 return true;
             }
@@ -1917,30 +1959,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         String id,
         String version
     ) {
-        return authenticator.executeWithAuth(token -> {
-            String encodedAgency = URLEncoder.encode(
-                agency,
-                StandardCharsets.UTF_8
-            );
-            String encodedId = URLEncoder.encode(id, StandardCharsets.UTF_8);
-
-            String url =
-                instanceConfiguration.baseApiUrl() +
-                "item/" +
-                encodedAgency +
-                "/" +
-                encodedId;
-            if (version != null && !version.isBlank()) {
-                url += "/" + URLEncoder.encode(version, StandardCharsets.UTF_8);
-            }
-
-            return restClient
-                .get()
-                .uri(url)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .retrieve()
-                .body(ColecticaItemResponse.class);
-        });
+        return colecticaClient.getItem(agency, id, version);
     }
 
     private ColecticaItemResponse addPhysicalInstanceReferenceToStudyUnit(
@@ -2113,60 +2132,24 @@ public class DDIRepositoryImpl implements DDIRepository {
         String agencyId,
         String id
     ) {
-        return authenticator.executeWithAuth(token -> {
-            String url =
-                instanceConfiguration.baseApiUrl() +
-                "_query/relationship/byobject/descriptions";
 
-            RelationshipBySubjectRequest piRequest =
-                new RelationshipBySubjectRequest(
-                    List.of(STUDY_UNIT_ITEM_TYPE),
-                    new RelationshipBySubjectRequest.TargetItemRef(agencyId, id)
-                );
-            ColecticaParentRef[] studyUnitItems = restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(piRequest)
-                .retrieve()
-                .body(ColecticaParentRef[].class);
-
-            ColecticaParentRef studyUnitItem = Arrays.stream(
-                studyUnitItems != null
-                    ? studyUnitItems
-                    : new ColecticaParentRef[0]
-            )
+            ItemReference studyUnitItem = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_OBJECT,
+                    new ItemReference(agencyId, id),
+                    List.of(STUDY_UNIT_ITEM_TYPE))
+                .stream()
                 .findFirst()
                 .orElseThrow(() ->
                     new RuntimeException(
-                        "No study unit found for physical instance " +
-                            agencyId +
-                            "/" +
-                            id
+                        "No study unit found for physical instance " + agencyId + "/" + id
                     )
                 );
 
-            RelationshipBySubjectRequest suRequest =
-                new RelationshipBySubjectRequest(
-                    List.of(GROUP_ITEM_TYPE),
-                    new RelationshipBySubjectRequest.TargetItemRef(
-                        studyUnitItem.agencyId(),
-                        studyUnitItem.identifier()
-                    )
-                );
-            ColecticaParentRef[] groupItems = restClient
-                .post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .body(suRequest)
-                .retrieve()
-                .body(ColecticaParentRef[].class);
-
-            ColecticaParentRef groupItem = Arrays.stream(
-                groupItems != null ? groupItems : new ColecticaParentRef[0]
-            )
+            ItemReference groupItem = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_OBJECT,
+                    new ItemReference(studyUnitItem.agencyId(), studyUnitItem.identifier()),
+                    List.of(GROUP_ITEM_TYPE))
+                .stream()
                 .findFirst()
                 .orElseThrow(() ->
                     new RuntimeException(
@@ -2183,6 +2166,6 @@ public class DDIRepositoryImpl implements DDIRepository {
                 groupItem.agencyId(),
                 groupItem.identifier()
             );
-        });
+        
     }
 }

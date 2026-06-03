@@ -353,6 +353,7 @@
     </repository>
   </repositories>
   <modules>
+    <module>colectica-client</module>
     <module>module-utility</module>
     <module>module-testcontainer-graphdb</module>
     <module>module-operation</module>

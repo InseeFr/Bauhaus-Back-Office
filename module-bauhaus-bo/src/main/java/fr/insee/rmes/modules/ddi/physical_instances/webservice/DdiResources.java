@@ -5,17 +5,14 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
-import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
@@ -138,33 +135,6 @@ public class DdiResources {
                 .body(response);
     }
 
-    @GetMapping("/group")
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
-    public ResponseEntity<List<PartialGroupResponse>> getGroups() {
-        List<PartialGroup> groups = resolveGroups();
-
-        List<PartialGroupResponse> responses = groups.stream()
-                .map(group -> {
-                    var response = PartialGroupResponse.fromDomain(group);
-                    response.add(linkTo(DdiResources.class)
-                            .slash("group")
-                            .slash(group.agency())
-                            .slash(group.id())
-                            .withSelfRel());
-                    return response;
-                })
-                .toList();
-
-        return ResponseEntity.ok()
-                .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
-                .body(responses);
-    }
-
-    private List<PartialGroup> resolveGroups() {
-        return resolveByReadStampStrategy(
-                ddiService::getGroupsFilteredByStamp, ddiService::getGroups);
-    }
-
     private List<PartialPhysicalInstance> resolvePhysicalInstances() {
         return resolveByReadStampStrategy(
                 ddiService::getPhysicalInstancesFilteredByStamp, ddiService::getPhysicalInstances);
@@ -189,17 +159,6 @@ public class DdiResources {
             // fall through to unfiltered
         }
         return unfiltered.get();
-    }
-
-    @GetMapping("/group/{agencyId}/{id}")
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
-    public ResponseEntity<Ddi4GroupResponse> getDdi4Group(
-            @PathVariable String agencyId,
-            @PathVariable(Constants.ID) String id) {
-        Ddi4GroupResponse response = ddiService.getDdi4Group(agencyId, id);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response);
     }
 
     @PostMapping("/physical-instance")

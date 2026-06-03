@@ -1,12 +1,15 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -67,6 +70,42 @@ public class DDIServiceImpl implements DDIService {
                         .getOrDefault(groupKeyByInstance.get(instance), List.of())
                         .stream().anyMatch(userStamps::contains))
                 .toList();
+    }
+
+    @Override
+    public List<PartialLogicalProduct> getLogicalProducts() {
+        logger.info("Starting to get logical products list");
+        return ddiRepository.getLogicalProducts();
+    }
+
+    @Override
+    public List<PartialLogicalProduct> getLogicalProductsByGroup(String agencyId, String groupId) {
+        logger.info("Starting to get logical products for group {}/{}", agencyId, groupId);
+        return ddiRepository.getLogicalProductsByGroup(agencyId, groupId);
+    }
+
+    @Override
+    public List<PartialCodeListScheme> getCodeListSchemes() {
+        logger.info("Starting to get code list schemes list");
+        return ddiRepository.getCodeListSchemes();
+    }
+
+    @Override
+    public List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId) {
+        logger.info("Starting to get code list schemes for logical product {}/{}", agencyId, logicalProductId);
+        return ddiRepository.getCodeListSchemesByLogicalProduct(agencyId, logicalProductId);
+    }
+
+    @Override
+    public List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId) {
+        logger.info("Starting to get code lists for code list scheme {}/{}", agencyId, codeListSchemeId);
+        return ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
+        logger.info("Starting to get variables using code list {}/{}", codeListAgencyId, codeListId);
+        return ddiRepository.getVariablesUsingCodeList(codeListAgencyId, codeListId);
     }
 
     @Override

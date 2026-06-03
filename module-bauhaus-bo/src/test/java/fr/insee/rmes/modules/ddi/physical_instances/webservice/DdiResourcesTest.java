@@ -7,7 +7,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
-import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialGroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
@@ -122,67 +121,6 @@ class DdiResourcesTest {
         assertEquals("http://localhost:8080/ddi/physical-instance/fr.insee/pi-2", result.get(1).getRequiredLink("self").getHref());
         
         verify(ddiService).getPhysicalInstances();
-    }
-
-    @Test
-    void shouldGetGroups() throws Exception, MissingUserInformationException {
-        List<PartialGroup> expectedGroups = new ArrayList<>();
-        expectedGroups.add(new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of()));
-        expectedGroups.add(new PartialGroup("group-2", "Recensement de la population", new Date(), "fr.insee", List.of()));
-        when(userProvider.findUser()).thenReturn(Optional.empty());
-        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
-                .thenReturn(RBAC.Strategy.ALL);
-        when(ddiService.getGroups()).thenReturn(expectedGroups);
-
-        ResponseEntity<List<PartialGroupResponse>> response = ddiResources.getGroups();
-
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialGroupResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(2, result.size());
-
-        // Verify first group data and links
-        assertEquals("group-1", result.getFirst().getId());
-        assertEquals("Base permanente des équipements", result.getFirst().getLabel());
-        assertNotNull(result.getFirst().getLinks());
-        assertEquals(1, result.getFirst().getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/group/fr.insee/group-1", result.getFirst().getRequiredLink("self").getHref());
-
-        // Verify second group data and links
-        assertEquals("group-2", result.get(1).getId());
-        assertEquals("Recensement de la population", result.get(1).getLabel());
-        assertNotNull(result.get(1).getLinks());
-        assertEquals(1, result.get(1).getLinks().toList().size());
-        assertEquals("http://localhost:8080/ddi/group/fr.insee/group-2", result.get(1).getRequiredLink("self").getHref());
-
-        verify(ddiService).getGroups();
-    }
-
-    @Test
-    void shouldGetDdi4Group() {
-        // Given
-        String agencyId = "fr.insee";
-        String id = "10a689ce-7006-429b-8e84-036b7787b422";
-        Ddi4GroupResponse expectedResponse = createMockDdi4GroupResponse();
-        when(ddiService.getDdi4Group(agencyId, id)).thenReturn(expectedResponse);
-
-        // When
-        ResponseEntity<Ddi4GroupResponse> result = ddiResources.getDdi4Group(agencyId, id);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
-
-        Ddi4GroupResponse responseBody = result.getBody();
-        assertNotNull(responseBody);
-        assertEquals("test-schema", responseBody.schema());
-        assertEquals(1, responseBody.group().size());
-        assertEquals(2, responseBody.studyUnit().size());
-        assertEquals("10a689ce-7006-429b-8e84-036b7787b422", responseBody.group().get(0).id());
-
-        verify(ddiService).getDdi4Group(agencyId, id);
     }
 
     @Test
@@ -610,30 +548,6 @@ class DdiResourcesTest {
     }
 
     @Test
-    void shouldGetGroupsFilteredByStamp() throws Exception, MissingUserInformationException {
-        String iri = "http://id.insee.fr/operations/serie/s1001";
-        List<PartialGroup> filteredGroups = List.of(
-                new PartialGroup("group-1", "Base permanente des équipements", new Date(), "fr.insee", List.of(iri))
-        );
-        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
-        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
-        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
-                .thenReturn(RBAC.Strategy.STAMP);
-        when(ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"))).thenReturn(filteredGroups);
-
-        ResponseEntity<List<PartialGroupResponse>> response = ddiResources.getGroups();
-
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCode().value());
-        List<PartialGroupResponse> result = response.getBody();
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("group-1", result.getFirst().getId());
-
-        verify(ddiService).getGroupsFilteredByStamp(Set.of("stamp-A"));
-    }
-
-    @Test
     void shouldGetPhysicalInstancesFilteredByStamp() throws Exception, MissingUserInformationException {
         List<PartialPhysicalInstance> filteredInstances = List.of(
                 new PartialPhysicalInstance("pi-1", "Physical Instance 1", new Date(), "fr.insee")
@@ -757,59 +671,5 @@ class DdiResourcesTest {
         );
     }
 
-    private Ddi4GroupResponse createMockDdi4GroupResponse() {
-        List<LangString> title = LangStrings.of("fr-FR", "Base permanente des équipements");
-        Citation citation = new Citation(title);
-
-        // Create StudyUnit references
-        Reference suRef1 = Reference.of("fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1", "StudyUnit");
-        Reference suRef2 = Reference.of("fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1", "StudyUnit");
-
-        // Create Group
-        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
-            CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
-            "urn:ddi:fr.insee:10a689ce-7006-429b-8e84-036b7787b422:1",
-            "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1",
-            "abcde", citation, List.of(suRef1, suRef2),
-            List.of("http://id.insee.fr/operations/serie/s1001"),
-            "insee:StatisticalOperationSeries"
-        );
-
-        List<LangString> su1Title = LangStrings.of("fr-FR", "BPE 2021");
-        Citation su1Citation = new Citation(su1Title);
-
-        Ddi4StudyUnit studyUnit1 = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
-            CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
-            "urn:ddi:fr.insee:89f5e04d-da22-485f-9c08-5fbe452b6c90:1",
-            "fr.insee", "89f5e04d-da22-485f-9c08-5fbe452b6c90", "1",
-            su1Citation,
-            "http://id.insee.fr/operations/operation/op1",
-            null
-        );
-
-        List<LangString> su2Title = LangStrings.of("fr-FR", "BPE 2022");
-        Citation su2Citation = new Citation(su2Title);
-
-        Ddi4StudyUnit studyUnit2 = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
-            CogsDate.ofDateTime("2025-01-09T09:00:00.000000Z"),
-            "urn:ddi:fr.insee:820a7c14-0ac4-42bc-a8c1-d39f60e304ee:1",
-            "fr.insee", "820a7c14-0ac4-42bc-a8c1-d39f60e304ee", "1",
-            su2Citation,
-            "http://id.insee.fr/operations/operation/op2",
-            null
-        );
-
-        // Create TopLevelReference
-        Reference topLevelRef = Reference.of(
-            "fr.insee", "10a689ce-7006-429b-8e84-036b7787b422", "1", "Group"
-        );
-
-        return new Ddi4GroupResponse(
-            "test-schema",
-            List.of(topLevelRef),
-            List.of(group),
-            List.of(studyUnit1, studyUnit2)
-        );
-    }
 
 }

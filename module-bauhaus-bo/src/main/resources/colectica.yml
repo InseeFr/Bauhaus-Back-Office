@@ -9,9 +9,11 @@ fr.insee.rmes.bauhaus.colectica:
     # Primary Colectica Instance
     itemTypes:
       PhysicalInstance: a51e85bb-6259-4488-8df2-f08cb43485f8
+      LogicalProduct: 965c8d28-7d48-4950-bea7-04b27e52bb9b
       DataRelationship: f39ff278-8500-45fe-a850-3906da2d242b
       Variable: 683889c6-f74b-4d5e-92ed-908c0a42bb2d
       CodeList: 8b108ef8-b642-4484-9c49-f88e4bf7cf1d
+      CodeListScheme: 4193d389-b5ae-4368-b399-cd5a7ee3653c
       Category: 7e47c269-bcab-40f7-a778-af7bbc4e3d00
       StudyUnit: 30ea0200-7121-4f01-8d21-a931a182b86d
     versionResponsibility: abcde

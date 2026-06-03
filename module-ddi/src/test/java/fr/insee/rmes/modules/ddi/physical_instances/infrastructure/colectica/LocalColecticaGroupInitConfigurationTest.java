@@ -8,9 +8,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
+import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
-import org.springframework.web.client.RestClient;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,10 +42,7 @@ class LocalColecticaGroupInitConfigurationTest {
     private RepositoryGestion repositoryGestion;
 
     @Mock
-    private ColecticaAuthenticator colecticaAuthenticator;
-
-    @Mock
-    private RestClient restClient;
+    private ColecticaClient colecticaClient;
 
     private Ddi4Response piResponse(String agency, String id) {
         Ddi4PhysicalInstance pi = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,CogsDate.ofDateTime("2026-01-01T00:00:00Z"),
@@ -89,7 +86,7 @@ class LocalColecticaGroupInitConfigurationTest {
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
                 groupService, studyUnitService, ddiService, repositoryGestion,
-                createColecticaConfig(), colecticaAuthenticator, restClient,
+                createColecticaConfig(), colecticaClient,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
 
@@ -133,7 +130,7 @@ class LocalColecticaGroupInitConfigurationTest {
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
                 groupService, studyUnitService, ddiService, repositoryGestion,
-                createColecticaConfig(), colecticaAuthenticator, restClient,
+                createColecticaConfig(), colecticaClient,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
 
@@ -181,7 +178,7 @@ class LocalColecticaGroupInitConfigurationTest {
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
                 groupService, studyUnitService, ddiService, repositoryGestion,
-                createColecticaConfig(), colecticaAuthenticator, restClient,
+                createColecticaConfig(), colecticaClient,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
 

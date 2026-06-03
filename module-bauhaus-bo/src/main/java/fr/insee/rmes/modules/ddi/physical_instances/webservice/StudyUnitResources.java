@@ -4,6 +4,8 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
+import fr.insee.rmes.modules.users.domain.model.RBAC;
+import fr.insee.rmes.modules.users.webservice.HasAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -36,6 +38,7 @@ public class StudyUnitResources {
     }
 
     @GetMapping
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
     public ResponseEntity<List<PartialStudyUnit>> getStudyUnits() {
         logger.info("GET /ddi/study-units - Getting all study units");
         try {
@@ -48,6 +51,7 @@ public class StudyUnitResources {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.CREATE)
     public ResponseEntity<Void> createOrUpdateStudyUnit(@RequestBody Ddi4StudyUnit studyUnit) {
         logger.info("POST /ddi/study-units - Creating/updating study unit: id={}", studyUnit.id());
         try {

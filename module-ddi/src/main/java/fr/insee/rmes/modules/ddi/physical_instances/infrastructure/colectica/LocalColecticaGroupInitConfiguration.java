@@ -14,9 +14,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaItem;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.ColecticaResponse;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.dto.QueryRequest;
+import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,9 +26,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.client.RestClient;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -68,8 +64,7 @@ public class LocalColecticaGroupInitConfiguration {
             DDIService ddiService,
             RepositoryGestion repositoryGestion,
             ColecticaConfiguration colecticaConfiguration,
-            ColecticaAuthenticator colecticaAuthenticator,
-            RestClient restClient,
+            ColecticaClient colecticaClient,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
             @Value("${fr.insee.rmes.bauhaus.operations.graph}") String operationsGraph
     ) {
@@ -183,27 +178,17 @@ public class LocalColecticaGroupInitConfiguration {
 
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
-            verifyItemsInColectica(colecticaAuthenticator, restClient, colecticaConfiguration);
+            verifyItemsInColectica(colecticaClient);
         };
     }
 
-    private void verifyItemsInColectica(ColecticaAuthenticator authenticator, RestClient restClient,
-                                         ColecticaConfiguration colecticaConfiguration) {
+    private void verifyItemsInColectica(ColecticaClient colecticaClient) {
         String groupItemType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
         String studyUnitItemType = "752a535b-b548-4fbe-97e4-f26a02d9e413";
-        String queryUrl = colecticaConfiguration.server().baseApiUrl() + "_query";
 
-        authenticator.executeWithAuth(token -> {
-            // Query Groups
-            try {
-                QueryRequest groupQuery = new QueryRequest(List.of(groupItemType));
-                ColecticaResponse groupResponse = restClient.post()
-                        .uri(queryUrl)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .body(groupQuery)
-                        .retrieve()
-                        .body(ColecticaResponse.class);
+        // Query Groups
+        try {
+            ColecticaResponse groupResponse = colecticaClient.query(List.of(groupItemType));
                 logger.info("=== VERIFICATION: Groups total={} ===", groupResponse != null ? groupResponse.totalResults() : "null");
                 if (groupResponse != null && groupResponse.results() != null) {
                     int count = 0;
@@ -227,14 +212,7 @@ public class LocalColecticaGroupInitConfiguration {
 
             // Query StudyUnits
             try {
-                QueryRequest suQuery = new QueryRequest(List.of(studyUnitItemType));
-                ColecticaResponse suResponse = restClient.post()
-                        .uri(queryUrl)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .body(suQuery)
-                        .retrieve()
-                        .body(ColecticaResponse.class);
+                ColecticaResponse suResponse = colecticaClient.query(List.of(studyUnitItemType));
                 logger.info("=== VERIFICATION: StudyUnits total={} ===", suResponse != null ? suResponse.totalResults() : "null");
                 if (suResponse != null && suResponse.results() != null) {
                     int count = 0;
@@ -255,9 +233,6 @@ public class LocalColecticaGroupInitConfiguration {
             } catch (Exception e) {
                 logger.error("Failed to verify study units", e);
             }
-
-            return null;
-        });
     }
 
     List<SeriesWithOperations> querySeriesAndOperations(RepositoryGestion repositoryGestion, String graphUri) throws RmesException {

@@ -6,9 +6,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
+import fr.insee.rmes.colectica.client.ColecticaClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +21,12 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     private final DDIRepository ddiRepository;
 
     public ColecticaStudyUnitRepository(
-            RestClient restClient,
+            ColecticaClient colecticaClient,
             ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
-            ColecticaAuthenticator authenticator,
             Ddi4ToLifecycle33 ddi4ToLifecycle33,
             DDIRepository ddiRepository
     ) {
-        super(restClient, instanceConfiguration, authenticator, ddi4ToLifecycle33);
+        super(colecticaClient, instanceConfiguration, ddi4ToLifecycle33);
         this.ddiRepository = ddiRepository;
     }
 
