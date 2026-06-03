@@ -64,6 +64,20 @@ class GroupServiceImplTest {
     }
 
     @Test
+    void getAll_shouldBeSortedByLabelDescending() {
+        when(groupRepository.getAll()).thenReturn(List.of(
+                new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
+                new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
+                new PartialGroup("g-b", "Bravo", new Date(), "fr.insee", List.of())
+        ));
+
+        List<PartialGroup> result = groupService.getAll();
+
+        assertThat(result).extracting(PartialGroup::label)
+                .containsExactly("Charlie", "Bravo", "alpha");
+    }
+
+    @Test
     void deprecateAll_shouldDelegateToRepository() {
         groupService.deprecateAll();
 

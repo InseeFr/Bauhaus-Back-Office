@@ -87,6 +87,41 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void getPhysicalInstances_shouldBeSortedByLabelAscending() {
+        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(
+                new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee"),
+                new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee"),
+                new PartialPhysicalInstance("pi-b", "Bravo", new Date(), "fr.insee")
+        ));
+
+        List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
+
+        assertEquals(List.of("alpha", "Bravo", "Charlie"),
+                result.stream().map(PartialPhysicalInstance::label).toList());
+    }
+
+    @Test
+    void getPhysicalInstancesFilteredByStamp_shouldBeSortedByLabelAscending() {
+        PartialPhysicalInstance piC = new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee");
+        PartialPhysicalInstance piA = new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee");
+        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(piC, piA));
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-c"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su", "fr.insee", "g1"));
+        when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-a"))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su", "fr.insee", "g1"));
+        String iri = "http://id.insee.fr/operations/serie/s1";
+        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri)))
+                .thenReturn(Map.of(iri, List.of("stamp-A")));
+
+        List<PartialPhysicalInstance> result =
+                ddiService.getPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+
+        assertEquals(List.of("alpha", "Charlie"),
+                result.stream().map(PartialPhysicalInstance::label).toList());
+    }
+
+    @Test
     void shouldGetLogicalProducts() {
         // Given
         List<PartialLogicalProduct> expectedProducts = List.of(
@@ -326,15 +361,45 @@ class DDIServiceImplTest {
         // When
         List<PartialGroup> result = ddiService.getGroups();
 
-        // Then
+        // Then : tri par label en ordre décroissant (Z-A)
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("group-1", result.get(0).id());
-        assertEquals("Base permanente des équipements", result.get(0).label());
-        assertEquals("group-2", result.get(1).id());
-        assertEquals("Recensement de la population", result.get(1).label());
+        assertEquals("group-2", result.get(0).id());
+        assertEquals("Recensement de la population", result.get(0).label());
+        assertEquals("group-1", result.get(1).id());
+        assertEquals("Base permanente des équipements", result.get(1).label());
 
         verify(ddiRepository).getGroups();
+    }
+
+    @Test
+    void getGroups_shouldBeSortedByLabelDescending() {
+        when(ddiRepository.getGroups()).thenReturn(List.of(
+                new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
+                new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
+                new PartialGroup("g-b", "Bravo", new Date(), "fr.insee", List.of())
+        ));
+
+        List<PartialGroup> result = ddiService.getGroups();
+
+        assertEquals(List.of("Charlie", "Bravo", "alpha"),
+                result.stream().map(PartialGroup::label).toList());
+    }
+
+    @Test
+    void getGroupsFilteredByStamp_shouldBeSortedByLabelDescending() {
+        String iri = "http://id.insee.fr/operations/serie/s1001";
+        when(ddiRepository.getGroups()).thenReturn(List.of(
+                new PartialGroup("g-a", "alpha", null, "fr.insee", List.of(iri)),
+                new PartialGroup("g-c", "Charlie", null, "fr.insee", List.of(iri))
+        ));
+        when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri)))
+                .thenReturn(Map.of(iri, List.of("stamp-A")));
+
+        List<PartialGroup> result = ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"));
+
+        assertEquals(List.of("Charlie", "alpha"),
+                result.stream().map(PartialGroup::label).toList());
     }
 
     @Test
@@ -395,10 +460,36 @@ class DDIServiceImplTest {
         assertEquals(groupId, result.group().get(0).id());
         assertEquals("Base permanente des équipements", result.group().get(0).citation().title().get(0).value());
         assertEquals(2, result.studyUnit().size());
-        assertEquals("BPE 2021", result.studyUnit().get(0).citation().title().get(0).value());
-        assertEquals("BPE 2022", result.studyUnit().get(1).citation().title().get(0).value());
+        // tri par label décroissant (Z-A) : 2022 avant 2021
+        assertEquals("BPE 2022", result.studyUnit().get(0).citation().title().get(0).value());
+        assertEquals("BPE 2021", result.studyUnit().get(1).citation().title().get(0).value());
 
         verify(ddiRepository).getGroup(agencyId, groupId);
+    }
+
+    @Test
+    void getDdi4Group_shouldSortStudyUnitsByLabelDescending() {
+        String agencyId = "fr.insee";
+        String groupId = "g1";
+        Ddi4StudyUnit su2012 = studyUnitWithTitle("su-2012", "Enquête innovation 2012");
+        Ddi4StudyUnit su2014 = studyUnitWithTitle("su-2014", "Enquête innovation 2014");
+        Ddi4StudyUnit su2010 = studyUnitWithTitle("su-2010", "Enquête innovation 2010");
+        when(ddiRepository.getGroup(agencyId, groupId)).thenReturn(
+                new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(), List.of(su2012, su2014, su2010)));
+
+        Ddi4GroupResponse result = ddiService.getDdi4Group(agencyId, groupId);
+
+        assertEquals(
+                List.of("Enquête innovation 2014", "Enquête innovation 2012", "Enquête innovation 2010"),
+                result.studyUnit().stream().map(su -> su.citation().title().get(0).value()).toList());
+    }
+
+    private Ddi4StudyUnit studyUnitWithTitle(String id, String title) {
+        return new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
+                "urn:ddi:fr.insee:" + id + ":1", "fr.insee", id, "1",
+                new Citation(LangStrings.of("fr-FR", title)),
+                "http://id.insee.fr/operations/operation/op", null);
     }
 
     @Test

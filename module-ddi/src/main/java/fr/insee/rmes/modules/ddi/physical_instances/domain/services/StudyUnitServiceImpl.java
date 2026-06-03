@@ -29,7 +29,9 @@ public class StudyUnitServiceImpl extends AbstractDdiItemService<Ddi4StudyUnit> 
     @Override
     public List<PartialStudyUnit> getAll() {
         logger.info("Getting all study units");
-        return studyUnitRepository.getAll();
+        return studyUnitRepository.getAll().stream()
+                .sorted(LabelComparators.byLabelDescending(PartialStudyUnit::label))
+                .toList();
     }
 
     @Override

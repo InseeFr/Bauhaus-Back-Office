@@ -59,4 +59,18 @@ class StudyUnitServiceImplTest {
         assertThat(result).isEqualTo(expected);
         verify(studyUnitRepository).getAll();
     }
+
+    @Test
+    void getAll_shouldBeSortedByLabelDescending() {
+        when(studyUnitRepository.getAll()).thenReturn(List.of(
+                new PartialStudyUnit("su-a", "alpha", new Date(), "fr.insee"),
+                new PartialStudyUnit("su-c", "Charlie", new Date(), "fr.insee"),
+                new PartialStudyUnit("su-b", "Bravo", new Date(), "fr.insee")
+        ));
+
+        List<PartialStudyUnit> result = studyUnitService.getAll();
+
+        assertThat(result).extracting(PartialStudyUnit::label)
+                .containsExactly("Charlie", "Bravo", "alpha");
+    }
 }

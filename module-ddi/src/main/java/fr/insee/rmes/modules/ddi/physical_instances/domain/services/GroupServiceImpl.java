@@ -29,7 +29,9 @@ public class GroupServiceImpl extends AbstractDdiItemService<Ddi4Group> implemen
     @Override
     public List<PartialGroup> getAll() {
         logger.info("Getting all groups");
-        return groupRepository.getAll();
+        return groupRepository.getAll().stream()
+                .sorted(LabelComparators.byLabelDescending(PartialGroup::label))
+                .toList();
     }
 
     @Override

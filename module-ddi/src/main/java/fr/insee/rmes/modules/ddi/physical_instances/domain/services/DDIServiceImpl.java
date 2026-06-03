@@ -1,8 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -42,7 +44,9 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Starting to get physical instances list");
-        return ddiRepository.getPhysicalInstances();
+        return ddiRepository.getPhysicalInstances().stream()
+                .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
+                .toList();
     }
 
     @Override
@@ -69,6 +73,7 @@ public class DDIServiceImpl implements DDIService {
                 .filter(instance -> stampsByGroupKey
                         .getOrDefault(groupKeyByInstance.get(instance), List.of())
                         .stream().anyMatch(userStamps::contains))
+                .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
                 .toList();
     }
 
@@ -111,7 +116,9 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
-        return ddiRepository.getGroups();
+        return ddiRepository.getGroups().stream()
+                .sorted(LabelComparators.byLabelDescending(PartialGroup::label))
+                .toList();
     }
 
     @Override
@@ -131,12 +138,29 @@ public class DDIServiceImpl implements DDIService {
                             List<String> creators = creatorsByIri.getOrDefault(iri, List.of());
                             return creators.stream().anyMatch(userStamps::contains);
                         }))
+                .sorted(LabelComparators.byLabelDescending(PartialGroup::label))
                 .toList();
     }
 
     @Override
     public Ddi4GroupResponse getDdi4Group(String agencyId, String id) {
-        return ddiRepository.getGroup(agencyId, id);
+        Ddi4GroupResponse response = ddiRepository.getGroup(agencyId, id);
+        if (response == null || response.studyUnit() == null) {
+            return response;
+        }
+        List<Ddi4StudyUnit> sortedStudyUnits = response.studyUnit().stream()
+                .sorted(LabelComparators.byLabelDescending(DDIServiceImpl::studyUnitLabel))
+                .toList();
+        return new Ddi4GroupResponse(response.schema(), response.topLevelReference(),
+                response.group(), sortedStudyUnits);
+    }
+
+    private static String studyUnitLabel(Ddi4StudyUnit studyUnit) {
+        Citation citation = studyUnit.citation();
+        if (citation == null || citation.title() == null || citation.title().isEmpty()) {
+            return "";
+        }
+        return citation.title().getFirst().value();
     }
 
     @Override
