@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -44,12 +44,12 @@ class PublicEndpointMatcherTest {
     MockMvc mvc;
 
     @Test
-    void publicEndpointIsReachableWithoutAuthentication() throws Exception {
+    void public_endpoint_is_reachable_without_authentication() throws Exception {
         mvc.perform(get("/probe/public")).andExpect(status().isOk());
     }
 
     @Test
-    void nonPublicEndpointIsRejectedWithoutAuthentication() throws Exception {
+    void non_public_endpoint_is_rejected_without_authentication() throws Exception {
         mvc.perform(get("/probe/private")).andExpect(status().isUnauthorized());
     }
 

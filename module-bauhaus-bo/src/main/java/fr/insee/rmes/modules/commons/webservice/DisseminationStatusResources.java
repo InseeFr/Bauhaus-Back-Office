@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.commons.webservice;
 
 import fr.insee.rmes.modules.commons.domain.port.clientside.DisseminationStatusService;
-import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

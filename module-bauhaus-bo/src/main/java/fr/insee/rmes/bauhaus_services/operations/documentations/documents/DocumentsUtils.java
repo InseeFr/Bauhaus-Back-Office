@@ -31,7 +31,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -55,6 +57,7 @@ import java.net.URI;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,18 +99,22 @@ public class DocumentsUtils extends RdfService {
      */
     public void addDocumentsAndLinksToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
             throws RmesException {
-        if (documents != null && !documents.isEmpty()) {
-            for (Document doc : documents) {
-                IRI url = RdfUtils.toURI(doc.getUrl());
-                IRI docUri;
-                if (StringUtils.isNotEmpty(doc.getUri())) {
-                    docUri = RdfUtils.toURI(doc.getUri());
-                } else {
-                    docUri = getDocumentUri(url);
-                }
-                RdfUtils.addTripleUri(textUri, INSEE.ADDITIONALMATERIAL, docUri, model, graph);
+        if (documents == null || documents.isEmpty()) {
+            return;
+        }
+        List<Value> docUris = new ArrayList<>(documents.size());
+        for (Document doc : documents) {
+            if (StringUtils.isNotEmpty(doc.getUri())) {
+                docUris.add(RdfUtils.toURI(doc.getUri()));
+            } else {
+                docUris.add(getDocumentUri(RdfUtils.toURI(doc.getUrl())));
             }
         }
+        Resource head = RdfUtils.createBlankNode();
+        Model listModel = new LinkedHashModel();
+        RDFCollections.asRDF(docUris, head, listModel);
+        listModel.forEach(st -> model.add(st.getSubject(), st.getPredicate(), st.getObject(), graph));
+        model.add(textUri, INSEE.ADDITIONALMATERIAL, head, graph);
     }
 
 
@@ -121,8 +128,9 @@ public class DocumentsUtils extends RdfService {
      */
     public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
         JSONArray allDocs = repoGestion.getResponseAsArray(operationDocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
-        formatDateInJsonArray(allDocs);
-        return allDocs;
+        JSONArray ordered = RdfListOrderer.orderByList(allDocs, "listCell", "listNext");
+        formatDateInJsonArray(ordered);
+        return ordered;
     }
 
     /**

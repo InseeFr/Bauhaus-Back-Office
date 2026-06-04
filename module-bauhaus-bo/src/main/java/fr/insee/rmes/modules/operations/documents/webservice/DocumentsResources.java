@@ -7,7 +7,7 @@ import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
-import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

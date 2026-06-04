@@ -31,7 +31,7 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
-import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

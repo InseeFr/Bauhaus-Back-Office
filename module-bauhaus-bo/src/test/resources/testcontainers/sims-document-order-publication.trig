@@ -1,0 +1,69 @@
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix schema:   <http://schema.org/> .
+@prefix dctype:   <http://purl.org/dc/dcmitype/> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix sdmx-mm:  <http://www.w3.org/ns/sdmx-mm#> .
+@prefix insee:    <http://rdf.insee.fr/def/base#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# SIMS 7777 : rubrique S.3.1 (RICHTEXT) avec une liste ORDONNÉE de documents
+# (rdf:List : 801 -> 802 -> 803). Sert à vérifier que l'ordre survit à la
+# publication (graphe gestion -> graphe publication).
+
+<http://rdf.insee.fr/graphes/qualite/documents> {
+    <http://bauhaus/documents/document/801>
+        a            foaf:Document ;
+        rdfs:label   "Document A"@fr ;
+        schema:url   <http://example.org/docA.pdf> .
+
+    <http://bauhaus/documents/document/802>
+        a            foaf:Document ;
+        rdfs:label   "Document B"@fr ;
+        schema:url   <http://example.org/docB.pdf> .
+
+    <http://bauhaus/documents/document/803>
+        a            foaf:Document ;
+        rdfs:label   "Document C"@fr ;
+        schema:url   <http://example.org/docC.pdf> .
+}
+
+<http://rdf.insee.fr/graphes/qualite/rapport/7777> {
+    <http://bauhaus/qualite/rapport/7777>
+        a                       sdmx-mm:MetadataReport ;
+        rdfs:label              "Rapport ordre des documents (publication)"@fr ;
+        sdmx-mm:target          <http://bauhaus/operations/operation/s7777> ;
+        insee:validationState   "Unpublished" .
+
+    <http://bauhaus/qualite/attribut/7777/S.3.1>
+        a                        sdmx-mm:ReportedAttribute ;
+        simsv2fr:S.3.1           <http://bauhaus/qualite/attribut/7777/S.3.1/texte> ;
+        sdmx-mm:metadataReport   <http://bauhaus/qualite/rapport/7777> .
+
+    <http://bauhaus/qualite/attribut/7777/S.3.1/texte>
+        a                          dctype:Text ;
+        rdf:value                  "Champ de l'enquête"@fr ;
+        dcterms:language           <http://bauhaus/codes/langue/fr> ;
+        insee:additionalMaterial   _:pubcell801 .
+
+    _:pubcell801
+        rdf:first   <http://bauhaus/documents/document/801> ;
+        rdf:rest    _:pubcell802 .
+
+    _:pubcell802
+        rdf:first   <http://bauhaus/documents/document/802> ;
+        rdf:rest    _:pubcell803 .
+
+    _:pubcell803
+        rdf:first   <http://bauhaus/documents/document/803> ;
+        rdf:rest    rdf:nil .
+}
+
+# Opération cible du SIMS : doit être publiée pour autoriser la publication du SIMS
+<http://rdf.insee.fr/graphes/operations> {
+    <http://bauhaus/operations/operation/s7777>
+        a                       <http://bauhaus/def/base#Operation> ;
+        rdfs:label              "Opération ordre des documents"@fr ;
+        insee:validationState   "Validated" .
+}

@@ -81,7 +81,7 @@ public class UserConfiguration {
 
     /**
      * Matches every request mapped to a handler annotated with
-     * {@link fr.insee.rmes.modules.users.webservice.PublicEndpoint @PublicEndpoint}. This keeps the
+     * {@link fr.insee.rmes.modules.commons.security.PublicEndpoint @PublicEndpoint}. This keeps the
      * public/private decision next to each endpoint instead of in a central URL list; the filter
      * chain only ever references this single matcher.
      */

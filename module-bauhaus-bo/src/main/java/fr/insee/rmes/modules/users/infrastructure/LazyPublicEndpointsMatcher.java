@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
-import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 /**
  * A {@link RequestMatcher} that matches every request mapped to a handler annotated with
- * {@link fr.insee.rmes.modules.users.webservice.PublicEndpoint @PublicEndpoint}.
+ * {@link fr.insee.rmes.modules.commons.security.PublicEndpoint @PublicEndpoint}.
  * <p>
  * The set of public patterns is resolved lazily, on the first request, from the
  * {@link RequestMappingHandlerMapping}. Resolving lazily (rather than at bean-construction

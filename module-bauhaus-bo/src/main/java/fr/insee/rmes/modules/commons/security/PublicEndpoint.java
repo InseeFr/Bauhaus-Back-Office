@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.users.webservice;
+package fr.insee.rmes.modules.commons.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,6 +15,11 @@ import java.lang.annotation.Target;
  * {@code SecurityFilterChain}.
  * <p>
  * Fail-safe by design: an endpoint <em>without</em> this annotation stays authenticated.
+ * <p>
+ * Lives in the shared {@code commons.security} package because it is a cross-cutting marker
+ * used by controllers of every module (the {@code webservice} layer) and read by the security
+ * {@code infrastructure} ({@code LazyPublicEndpointsMatcher}); a neutral home keeps the
+ * hexagonal rule "infrastructure must not depend on webservice" satisfied.
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
