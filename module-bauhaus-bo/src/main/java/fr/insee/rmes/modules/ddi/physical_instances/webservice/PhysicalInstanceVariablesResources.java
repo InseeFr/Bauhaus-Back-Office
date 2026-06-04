@@ -3,8 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
-import fr.insee.rmes.modules.users.domain.model.RBAC;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/structures")
 @ConditionalOnModule("ddi")
+@PublicEndpoint
 public class PhysicalInstanceVariablesResources {
 
     private final DDIService ddiService;
@@ -32,37 +32,57 @@ public class PhysicalInstanceVariablesResources {
         this.ddiService = ddiService;
     }
 
-    @GetMapping(value = "/{agency}/{id}/{version}/variables", produces = MediaType.APPLICATION_XML_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}/{version}/variables",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
     public ResponseEntity<String> getVariablesXmlByVersion(
-            @PathVariable String agency,
-            @PathVariable String id,
-            @PathVariable String version) {
-        return DdiResponses.xml(ddiService.getDataRelationshipsXml(agency, id, version));
+        @PathVariable String agency,
+        @PathVariable String id,
+        @PathVariable String version
+    ) {
+        return DdiResponses.xml(
+            ddiService.getDataRelationshipsXml(agency, id, version)
+        );
     }
 
-    @GetMapping(value = "/{agency}/{id}/{version}/variables", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}/{version}/variables",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<Ddi4Response> getVariablesJsonByVersion(
-            @PathVariable String agency,
-            @PathVariable String id,
-            @PathVariable String version) {
-        return DdiResponses.json(ddiService.getDataRelationships(agency, id, version));
+        @PathVariable String agency,
+        @PathVariable String id,
+        @PathVariable String version
+    ) {
+        return DdiResponses.json(
+            ddiService.getDataRelationships(agency, id, version)
+        );
     }
 
-    @GetMapping(value = "/{agency}/{id}/variables", produces = MediaType.APPLICATION_XML_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}/variables",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
     public ResponseEntity<String> getVariablesXml(
-            @PathVariable String agency,
-            @PathVariable String id) {
-        return DdiResponses.xml(ddiService.getDataRelationshipsXml(agency, id, null));
+        @PathVariable String agency,
+        @PathVariable String id
+    ) {
+        return DdiResponses.xml(
+            ddiService.getDataRelationshipsXml(agency, id, null)
+        );
     }
 
-    @GetMapping(value = "/{agency}/{id}/variables", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}/variables",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<Ddi4Response> getVariablesJson(
-            @PathVariable String agency,
-            @PathVariable String id) {
-        return DdiResponses.json(ddiService.getDataRelationships(agency, id, null));
+        @PathVariable String agency,
+        @PathVariable String id
+    ) {
+        return DdiResponses.json(
+            ddiService.getDataRelationships(agency, id, null)
+        );
     }
 }

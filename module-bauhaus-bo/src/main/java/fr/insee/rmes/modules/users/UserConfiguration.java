@@ -10,11 +10,13 @@ import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.infrastructure.DevAuthenticationFilter;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
+import fr.insee.rmes.modules.users.infrastructure.LazyPublicEndpointsMatcher;
 import fr.insee.rmes.modules.users.infrastructure.OidcUserDecoder;
 import fr.insee.rmes.modules.users.infrastructure.RoleClaimExtractor;
 import fr.insee.rmes.BauhausConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,8 +32,10 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -42,7 +46,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity(securedEnabled = true)
 public class UserConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(UserConfiguration.class);
-    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/disseminationStatus"};
 
     private final Optional<String> allowedOrigin;
     private final BauhausConfiguration bauhausConfiguration;
@@ -76,8 +79,19 @@ public class UserConfiguration {
     }
 
 
+    /**
+     * Matches every request mapped to a handler annotated with
+     * {@link fr.insee.rmes.modules.users.webservice.PublicEndpoint @PublicEndpoint}. This keeps the
+     * public/private decision next to each endpoint instead of in a central URL list; the filter
+     * chain only ever references this single matcher.
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public RequestMatcher publicEndpointsMatcher(ObjectProvider<RequestMappingHandlerMapping> handlerMapping) {
+        return new LazyPublicEndpointsMatcher(handlerMapping);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, RequestMatcher publicEndpointsMatcher) throws Exception {
         boolean isProd = "PROD".equalsIgnoreCase(bauhausConfiguration.env());
 
         http.sessionManagement(AbstractHttpConfigurer::disable)
@@ -91,11 +105,7 @@ public class UserConfiguration {
         http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()))
                 .authorizeHttpRequests(
                         authorizeHttpRequest -> authorizeHttpRequest
-                                .requestMatchers(PUBLIC_RESOURCES_ANT_PATTERNS).permitAll()
-                                .requestMatchers("/healthcheck").permitAll()
-.requestMatchers("/documents/document/*/file").permitAll()
-                                .requestMatchers("/operations/operation/codebook").permitAll()
-                                .requestMatchers("/colectica/**").permitAll()
+                                .requestMatchers(publicEndpointsMatcher).permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS).permitAll()
                                 .anyRequest().authenticated()
                 );

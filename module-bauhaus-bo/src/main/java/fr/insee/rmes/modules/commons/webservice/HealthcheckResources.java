@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.commons.webservice;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class HealthcheckResources extends GenericResources {
         this.documentsStorageGestion = documentsStorageGestion;
     }
 
+    @PublicEndpoint
     @GetMapping(value = "",
             produces = {MediaType.TEXT_PLAIN_VALUE})
     public ResponseEntity<Object> getHealthcheck() {

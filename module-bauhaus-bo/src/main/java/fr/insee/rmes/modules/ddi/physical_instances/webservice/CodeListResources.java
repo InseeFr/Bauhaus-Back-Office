@@ -3,8 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
-import fr.insee.rmes.modules.users.domain.model.RBAC;
-import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/codelist")
 @ConditionalOnModule("ddi")
+@PublicEndpoint
 public class CodeListResources {
 
     private final DDIService ddiService;
@@ -28,37 +28,49 @@ public class CodeListResources {
         this.ddiService = ddiService;
     }
 
-    @GetMapping(value = "/{agency}/{id}/{version}", produces = MediaType.APPLICATION_XML_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}/{version}",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
     public ResponseEntity<String> getCodeListXmlByVersion(
-            @PathVariable String agency,
-            @PathVariable String id,
-            @PathVariable String version) {
+        @PathVariable String agency,
+        @PathVariable String id,
+        @PathVariable String version
+    ) {
         return DdiResponses.xml(ddiService.getCodeListXml(agency, id, version));
     }
 
-    @GetMapping(value = "/{agency}/{id}/{version}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}/{version}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<Ddi4Response> getCodeListJsonByVersion(
-            @PathVariable String agency,
-            @PathVariable String id,
-            @PathVariable String version) {
+        @PathVariable String agency,
+        @PathVariable String id,
+        @PathVariable String version
+    ) {
         return DdiResponses.json(ddiService.getCodeList(agency, id, version));
     }
 
-    @GetMapping(value = "/{agency}/{id}", produces = MediaType.APPLICATION_XML_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
     public ResponseEntity<String> getCodeListXml(
-            @PathVariable String agency,
-            @PathVariable String id) {
+        @PathVariable String agency,
+        @PathVariable String id
+    ) {
         return DdiResponses.xml(ddiService.getCodeListXml(agency, id, null));
     }
 
-    @GetMapping(value = "/{agency}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @GetMapping(
+        value = "/{agency}/{id}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<Ddi4Response> getCodeListJson(
-            @PathVariable String agency,
-            @PathVariable String id) {
+        @PathVariable String agency,
+        @PathVariable String id
+    ) {
         return DdiResponses.json(ddiService.getCodeList(agency, id, null));
     }
 }

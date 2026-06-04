@@ -31,6 +31,7 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import fr.insee.rmes.modules.users.webservice.PublicEndpoint;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -360,10 +361,7 @@ public class DdiResources {
         value = "/item/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @PublicEndpoint
     public ResponseEntity<String> getItemXmlByVersion(
         @PathVariable String agency,
         @PathVariable String id,
@@ -382,10 +380,7 @@ public class DdiResources {
         value = "/item/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @PublicEndpoint
     public ResponseEntity<String> getItemJsonByVersion(
         @PathVariable String agency,
         @PathVariable String id,
@@ -404,10 +399,7 @@ public class DdiResources {
         value = "/item/{agency}/{id}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @PublicEndpoint
     public ResponseEntity<String> getItemXml(
         @PathVariable String agency,
         @PathVariable String id
@@ -425,10 +417,7 @@ public class DdiResources {
         value = "/item/{agency}/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @HasAccess(
-        module = RBAC.Module.DDI_PHYSICALINSTANCE,
-        privilege = RBAC.Privilege.READ
-    )
+    @PublicEndpoint
     public ResponseEntity<String> getItemJson(
         @PathVariable String agency,
         @PathVariable String id
