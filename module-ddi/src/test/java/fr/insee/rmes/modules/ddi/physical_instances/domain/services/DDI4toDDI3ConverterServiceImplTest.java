@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -32,6 +33,7 @@ class DDI4toDDI3ConverterServiceImplTest {
         "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
         "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
         "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
+        "CodeListScheme", "c5084949-3e3a-4b7f-9f5b-1a2b3c4d5e6f",
         "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
     );
 
@@ -156,6 +158,26 @@ class DDI4toDDI3ConverterServiceImplTest {
         assertThat(item.item())
                 .contains("<ddi:Category")
                 .contains(">0 an<");
+    }
+
+    @Test
+    void shouldConvertCodeListSchemeToDdi3Item() {
+        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(Ddi4CodeListScheme.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:CLS_1:1", "fr.insee", "CLS_1", "1",
+                LangStrings.of("fr-FR", "Schéma listes"),
+                List.of(Reference.of("fr.insee", "CL_AGEMEN8", "1", "CodeList")));
+
+        Ddi3Response.Ddi3Item item = converter.toCodeListSchemeItem(scheme);
+
+        assertThat(item.itemType()).isEqualTo("c5084949-3e3a-4b7f-9f5b-1a2b3c4d5e6f");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("CLS_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<ddi:CodeListScheme")
+                .contains(">Schéma listes<")
+                .contains(">CL_AGEMEN8<");
     }
 
     @Test

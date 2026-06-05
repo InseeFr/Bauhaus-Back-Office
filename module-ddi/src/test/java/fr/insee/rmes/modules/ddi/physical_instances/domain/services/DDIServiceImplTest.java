@@ -222,6 +222,56 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldAggregateCodeListsAcrossAllLogicalProductsAndSchemesOfGroup() {
+        // Given : group -> 2 LP, chaque LP -> 1 CLS, chaque CLS -> des listes de codes,
+        // avec une liste partagée (cl-shared) entre les deux schémas.
+        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-1")).thenReturn(List.of(
+                new PartialLogicalProduct("lp-1", "Produit Logique 1", new Date(), "fr.insee"),
+                new PartialLogicalProduct("lp-2", "Produit Logique 2", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1")).thenReturn(List.of(
+                new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-2")).thenReturn(List.of(
+                new PartialCodeListScheme("cls-2", "Schéma 2", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-1")).thenReturn(List.of(
+                new PartialCodesList("cl-1", "Liste 1", new Date(), "fr.insee"),
+                new PartialCodesList("cl-shared", "Liste partagée", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-2")).thenReturn(List.of(
+                new PartialCodesList("cl-2", "Liste 2", new Date(), "fr.insee"),
+                new PartialCodesList("cl-shared", "Liste partagée", new Date(), "fr.insee")
+        ));
+
+        // When
+        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-1");
+
+        // Then : toutes les listes de tous les CLS de tous les LP, dédupliquées par agency/id.
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals(Set.of("cl-1", "cl-2", "cl-shared"),
+                result.stream().map(PartialCodesList::id).collect(java.util.stream.Collectors.toSet()));
+
+        verify(ddiRepository).getLogicalProductsByGroup("fr.insee", "group-1");
+        verify(ddiRepository).getCodeListSchemesByLogicalProduct("fr.insee", "lp-1");
+        verify(ddiRepository).getCodeListSchemesByLogicalProduct("fr.insee", "lp-2");
+        verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-1");
+        verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-2");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenGroupHasNoLogicalProduct() {
+        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-empty")).thenReturn(List.of());
+
+        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-empty");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(ddiRepository).getLogicalProductsByGroup("fr.insee", "group-empty");
+    }
+
+    @Test
     void shouldGetVariablesUsingCodeList() {
         // Given
         List<CodeListVariableUsage> expected = List.of(

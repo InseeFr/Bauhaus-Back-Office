@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 
 public interface DDI4toDDI3ConverterService {
@@ -18,4 +19,12 @@ public interface DDI4toDDI3ConverterService {
      * @return DDI3 XML document as String (FragmentInstance format)
      */
     String convertDdi4ToDdi3Xml(Ddi4Response ddi4);
+
+    /**
+     * Serialize a single CodeListScheme to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica alongside a PhysicalInstance save.
+     * @param scheme the code list scheme to serialize
+     * @return the DDI3 item for the scheme
+     */
+    Ddi3Response.Ddi3Item toCodeListSchemeItem(Ddi4CodeListScheme scheme);
 }

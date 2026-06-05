@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import fr.insee.ddi.lifecycle33.group.GroupType;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategoryType;
+import fr.insee.ddi.lifecycle33.logicalproduct.CodeListSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.DataRelationshipType;
@@ -38,6 +39,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -149,6 +151,27 @@ public class Lifecycle33ToDdi4 {
                 cl.getVersionArray(0),
                 cl.sizeOfLabelArray() > 0 ? readLabel(cl.getLabelArray(0)) : null,
                 codes.isEmpty() ? null : codes
+        );
+    }
+
+    public Ddi4CodeListScheme toCodeListScheme(FragmentDocument doc) {
+        CodeListSchemeType scheme = doc.getFragment().getCodeListScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a CodeListScheme");
+        }
+        List<Reference> codeListReferences = new ArrayList<>();
+        for (ReferenceType ref : scheme.getCodeListReferenceArray()) {
+            codeListReferences.add(readReference(ref));
+        }
+        return new Ddi4CodeListScheme(
+                Ddi4CodeListScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                codeListReferences.isEmpty() ? null : codeListReferences
         );
     }
 

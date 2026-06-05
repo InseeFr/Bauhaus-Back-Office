@@ -108,6 +108,22 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId) {
+        logger.info("Starting to get all code lists for group {}/{} (all logical products / code list schemes)", agencyId, groupId);
+
+        // Group -> LogicalProduct -> CodeListScheme -> CodeList, agrégé et dédupliqué par agency/id.
+        Map<String, PartialCodesList> codeListsByKey = new LinkedHashMap<>();
+        for (PartialLogicalProduct logicalProduct : ddiRepository.getLogicalProductsByGroup(agencyId, groupId)) {
+            for (PartialCodeListScheme scheme : ddiRepository.getCodeListSchemesByLogicalProduct(logicalProduct.agency(), logicalProduct.id())) {
+                for (PartialCodesList codeList : ddiRepository.getCodeListsByCodeListScheme(scheme.agency(), scheme.id())) {
+                    codeListsByKey.putIfAbsent(codeList.agency() + "|" + codeList.id(), codeList);
+                }
+            }
+        }
+        return List.copyOf(codeListsByKey.values());
+    }
+
+    @Override
     public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
         logger.info("Starting to get variables using code list {}/{}", codeListAgencyId, codeListId);
         return ddiRepository.getVariablesUsingCodeList(codeListAgencyId, codeListId);

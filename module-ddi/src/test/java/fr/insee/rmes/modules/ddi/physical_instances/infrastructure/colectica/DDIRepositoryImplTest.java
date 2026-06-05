@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -2241,6 +2242,116 @@ class DDIRepositoryImplTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";
+    private static final String GROUP_ITEM_TYPE = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
+
+    @Test
+    void updateFullPhysicalInstance_attachesNonMutualizedCodeListsToGroupCodeListScheme() {
+        // The converted PhysicalInstance produces at least one item so the save proceeds.
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+            "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00",
+            "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+            .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+            "LogicalProduct", "lp-type", "CodeListScheme", "cls-type"));
+
+        // Mutualized package + descendant detection: CL_MUT descends from it, CL_NEW does not.
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "CL_MUT")), eq(List.of())))
+            .thenReturn(List.of(new ItemReference("fr.insee", "PKG")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "CL_NEW")), eq(List.of())))
+            .thenReturn(List.of());
+
+        // Parents: PI -> StudyUnit -> Group
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+
+        // Scheme resolution: Group -> LogicalProduct -> CodeListScheme
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of("cls-type"))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "CLS_1")));
+
+        // Existing scheme already references CL_EXISTING.
+        ColecticaItemResponse existingScheme = new ColecticaItemResponse(
+            "cls-type", "fr.insee", 1, "CLS_1", "<scheme/>", "2026-01-01T00:00:00",
+            "resp", false, false, false, "fmt");
+        when(colecticaClient.getItem("fr.insee", "CLS_1", null)).thenReturn(existingScheme);
+        Ddi4CodeListScheme parsedScheme = new Ddi4CodeListScheme(Ddi4CodeListScheme.TYPE,
+            CogsDate.ofDateTime("2026-01-01T00:00:00"), "urn:ddi:fr.insee:CLS_1:1",
+            "fr.insee", "CLS_1", "1", LangStrings.of("fr-FR", "Scheme"),
+            new java.util.ArrayList<>(List.of(Reference.of("fr.insee", "CL_EXISTING", "1", "CodeList"))));
+        when(ddi3ToDdi4Converter.toCodeListScheme("<scheme/>")).thenReturn(parsedScheme);
+
+        Ddi3Response.Ddi3Item schemeItem = new Ddi3Response.Ddi3Item(
+            "cls-type", "fr.insee", "1", "CLS_1", "<scheme-updated/>", "2026-01-01T00:00:00",
+            "resp", false, false, false, "fmt");
+        ArgumentCaptor<Ddi4CodeListScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture())).thenReturn(schemeItem);
+
+        Ddi4CodeList clMut = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null);
+        Ddi4CodeList clNew = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "new"), null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clMut, clNew), null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        // The merged scheme keeps CL_EXISTING and adds the non-mutualized CL_NEW, but not CL_MUT.
+        assertThat(schemeCaptor.getValue().codeListReference())
+            .extracting(Reference::id)
+            .containsExactlyInAnyOrder("CL_EXISTING", "CL_NEW");
+
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+            ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+            .extracting(ColecticaItemResponse::identifier)
+            .contains("CLS_1");
+    }
+
+    @Test
+    void updateFullPhysicalInstance_doesNotTouchSchemeWhenAllCodeListsAreMutualized() {
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+            "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00",
+            "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+            .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "CL_MUT")), eq(List.of())))
+            .thenReturn(List.of(new ItemReference("fr.insee", "PKG")));
+
+        Ddi4CodeList clMut = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clMut), null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        // No scheme resolution, no scheme item: only the converted items are sent.
+        verify(colecticaClient, never()).getItem(anyString(), anyString(), any());
+        verify(ddi4ToDdi3Converter, never()).toCodeListSchemeItem(any());
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+            ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+            .extracting(ColecticaItemResponse::identifier)
+            .containsExactly("pi-1");
     }
 
 }

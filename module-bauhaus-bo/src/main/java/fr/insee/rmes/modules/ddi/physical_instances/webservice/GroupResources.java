@@ -254,6 +254,37 @@ public class GroupResources {
         }
     }
 
+    @GetMapping("/groups/{agencyId}/{id}/codes-list")
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
+    public ResponseEntity<List<PartialCodesList>> getGroupCodesLists(
+        @PathVariable String agencyId,
+        @PathVariable(Constants.ID) String id
+    ) {
+        logger.info(
+            "GET /ddi/groups/{}/{}/codes-list - Getting all code lists of group (all logical products / code list schemes)",
+            agencyId,
+            id
+        );
+        try {
+            List<PartialCodesList> codeLists = ddiService.getCodeListsByGroup(
+                agencyId,
+                id
+            );
+            return ResponseEntity.ok(codeLists);
+        } catch (Exception e) {
+            logger.error(
+                "Failed to get code lists for group: agencyId={}, id={}",
+                agencyId,
+                id,
+                e
+            );
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     private List<PartialGroup> resolveGroups() {
         return resolveByReadStampStrategy(
             ddiService::getGroupsFilteredByStamp,

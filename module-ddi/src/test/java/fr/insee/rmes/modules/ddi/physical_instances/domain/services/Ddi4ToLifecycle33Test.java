@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -230,6 +231,28 @@ class Ddi4ToLifecycle33Test {
                 .contains("<r:CategoryReference")
                 .contains(">cat-id<")
                 .contains(">01</r:Value>");
+    }
+
+    @Test
+    void shouldBuildCodeListSchemeWithCodeListReferences() {
+        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(Ddi4CodeListScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:cls-id:1", "fr.insee", "cls-id", "1",
+                LangStrings.of("fr-FR", "CodeListScheme Label"),
+                List.of(
+                        Reference.of("fr.insee", "cl-1", "1", "CodeList"),
+                        Reference.of("fr.insee", "cl-2", "1", "CodeList")));
+
+        String xml = converter.toCodeListScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:CodeListScheme")
+                .contains(">urn:ddi:fr.insee:cls-id:1<")
+                .contains("<r:Label")
+                .contains(">CodeListScheme Label<")
+                .contains("<r:CodeListReference")
+                .contains(">cl-1<")
+                .contains(">cl-2<");
     }
 
     @Test

@@ -4,6 +4,7 @@ import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -82,5 +83,16 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
             codeLists.isEmpty() ? null : codeLists,
             categories.isEmpty() ? null : categories
         );
+    }
+
+    @Override
+    public Ddi4CodeListScheme toCodeListScheme(String fragmentXml) {
+        try {
+            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            return lifecycle33ToDdi4.toCodeListScheme(fragment);
+        } catch (XmlException e) {
+            logger.error("Error parsing CodeListScheme fragment", e);
+            throw new RuntimeException("Error parsing CodeListScheme fragment", e);
+        }
     }
 }

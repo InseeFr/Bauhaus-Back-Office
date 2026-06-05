@@ -40,6 +40,7 @@ public interface DDIService {
     List<PartialCodeListScheme> getCodeListSchemes();
     List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId);
     List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId);
+    List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId);
     List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);

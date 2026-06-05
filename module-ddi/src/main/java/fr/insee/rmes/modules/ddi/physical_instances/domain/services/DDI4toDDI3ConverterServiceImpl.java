@@ -6,6 +6,7 @@ import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -103,6 +104,14 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
 
         Ddi3Response.Ddi3Options options = new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace"));
         return new Ddi3Response(options, items);
+    }
+
+    @Override
+    public Ddi3Response.Ddi3Item toCodeListSchemeItem(Ddi4CodeListScheme scheme) {
+        String xmlFragment = ddi4ToLifecycle33.toCodeListScheme(scheme)
+                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(itemTypes.get("CodeListScheme"), scheme.agency(), scheme.version(),
+                scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
     }
 
     @Override

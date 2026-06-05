@@ -1178,22 +1178,11 @@ public class DDIRepositoryImpl implements DDIRepository {
             List<ColecticaItemResponse> colecticaItems = ddi3Response
                 .items()
                 .stream()
-                .map(ddi3Item ->
-                    new ColecticaItemResponse(
-                        ddi3Item.itemType(),
-                        ddi3Item.agencyId(),
-                        Integer.parseInt(ddi3Item.version()),
-                        ddi3Item.identifier(),
-                        ddi3Item.item(),
-                        ddi3Item.versionDate(),
-                        ddi3Item.versionResponsibility(),
-                        ddi3Item.isPublished(),
-                        ddi3Item.isDeprecated(),
-                        ddi3Item.isProvisional(),
-                        ddi3Item.itemFormat()
-                    )
-                )
-                .toList();
+                .map(this::toColecticaItem)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+            // File the non-mutualized code lists under the group's CodeListScheme (#…)
+            appendGroupCodeListSchemeUpdate(agencyId, id, ddi4Response, colecticaItems);
 
             // Create request with all items
             ColecticaCreateItemRequest updateRequest =
@@ -1212,6 +1201,131 @@ public class DDIRepositoryImpl implements DDIRepository {
                 id,
                 colecticaItems.size()
             );
+    }
+
+    private ColecticaItemResponse toColecticaItem(Ddi3Response.Ddi3Item ddi3Item) {
+        return new ColecticaItemResponse(
+            ddi3Item.itemType(),
+            ddi3Item.agencyId(),
+            Integer.parseInt(ddi3Item.version()),
+            ddi3Item.identifier(),
+            ddi3Item.item(),
+            ddi3Item.versionDate(),
+            ddi3Item.versionResponsibility(),
+            ddi3Item.isPublished(),
+            ddi3Item.isDeprecated(),
+            ddi3Item.isProvisional(),
+            ddi3Item.itemFormat()
+        );
+    }
+
+    /**
+     * Files the non-mutualized code lists of the physical instance being saved under the
+     * CodeListScheme of its group, by appending a (merged) CodeListScheme item to the batch
+     * that will be sent to Colectica.
+     *
+     * <p>Flow: keep only the code lists that are <em>not</em> descendants of the configured
+     * mutualized codes package, resolve the group (PhysicalInstance → StudyUnit → Group) and
+     * its CodeListScheme (Group → LogicalProduct → CodeListScheme), then add a
+     * {@code CodeListReference} for each new code list to the existing scheme — preserving the
+     * references it already holds. Re-saved at the same version (RegisterOrReplace).
+     */
+    private void appendGroupCodeListSchemeUpdate(
+        String agencyId,
+        String id,
+        Ddi4Response ddi4Response,
+        List<ColecticaItemResponse> colecticaItems
+    ) {
+        List<Ddi4CodeList> codeLists = ddi4Response.codeList();
+        if (codeLists == null || codeLists.isEmpty()) {
+            return;
+        }
+
+        List<Ddi4CodeList> nonMutualized = filterNonMutualizedCodeLists(codeLists);
+        if (nonMutualized.isEmpty()) {
+            return;
+        }
+
+        PhysicalInstanceParents parents = getPhysicalInstanceParents(agencyId, id);
+        ItemReference schemeRef = resolveGroupCodeListScheme(parents.groupAgency(), parents.groupId());
+
+        ColecticaItemResponse existing = colecticaClient.getItem(
+            schemeRef.agencyId(), schemeRef.identifier(), null);
+        Ddi4CodeListScheme current = ddi3ToDdi4Converter.toCodeListScheme(existing.item());
+
+        List<Reference> mergedRefs = new ArrayList<>(
+            current.codeListReference() != null ? current.codeListReference() : List.of());
+        Set<String> existingKeys = mergedRefs.stream()
+            .map(ref -> ref.agency() + "/" + ref.id())
+            .collect(Collectors.toSet());
+
+        boolean changed = false;
+        for (Ddi4CodeList codeList : nonMutualized) {
+            String key = codeList.agency() + "/" + codeList.id();
+            if (existingKeys.add(key)) {
+                mergedRefs.add(Reference.of(
+                    codeList.agency(), codeList.id(), codeList.version(), Ddi4CodeList.TYPE));
+                changed = true;
+            }
+        }
+        if (!changed) {
+            return;
+        }
+
+        Ddi4CodeListScheme updated = new Ddi4CodeListScheme(
+            current.type(), current.versionDate(), current.urn(),
+            current.agency(), current.id(), current.version(),
+            current.label(), mergedRefs);
+
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
+        logger.info(
+            "Filed {} non-mutualized code list(s) under code list scheme {}/{} of group {}/{}",
+            nonMutualized.size(), schemeRef.agencyId(), schemeRef.identifier(),
+            parents.groupAgency(), parents.groupId());
+    }
+
+    /**
+     * Keeps only the code lists that are not descendants of the configured mutualized codes
+     * package. When no mutualized package is configured, every code list is considered
+     * non-mutualized.
+     */
+    private List<Ddi4CodeList> filterNonMutualizedCodeLists(List<Ddi4CodeList> codeLists) {
+        PackageRef rootPackage = colecticaConfiguration.mutualizedCodesPackage();
+        if (rootPackage == null) {
+            return codeLists;
+        }
+        String packageKey = rootPackage.agencyId() + "/" + rootPackage.identifier();
+        Map<String, Boolean> descendantCache = new HashMap<>();
+        descendantCache.put(packageKey, true);
+        return codeLists.stream()
+            .filter(cl -> !isDescendantOfPackage(cl.agency(), cl.id(), packageKey, descendantCache))
+            .toList();
+    }
+
+    /**
+     * Resolves the CodeListScheme of a group by walking Group → LogicalProduct → CodeListScheme
+     * via {@code bysubject} relationships. Throws when none exists (the scheme is expected to
+     * already be in place for the group).
+     */
+    private ItemReference resolveGroupCodeListScheme(String groupAgency, String groupId) {
+        String logicalProductType = instanceConfiguration.itemTypes().get("LogicalProduct");
+        String codeListSchemeType = instanceConfiguration.itemTypes().get("CodeListScheme");
+        for (ItemReference logicalProduct : colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(groupAgency, groupId),
+                List.of(logicalProductType))) {
+            Optional<ItemReference> scheme = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT,
+                    logicalProduct,
+                    List.of(codeListSchemeType))
+                .stream()
+                .findFirst();
+            if (scheme.isPresent()) {
+                return scheme.get();
+            }
+        }
+        throw new IllegalStateException(
+            "No CodeListScheme found for group " + groupAgency + "/" + groupId);
     }
 
     @Override

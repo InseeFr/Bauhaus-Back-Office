@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -331,6 +332,37 @@ class Lifecycle33ToDdi4Test {
         assertThat(cl.code()).hasSize(1);
         assertThat(cl.code().get(0).categoryReference().id()).isEqualTo("cat-id");
         assertThat(cl.code().get(0).value().stringValue()).isEqualTo("01");
+    }
+
+    @Test
+    void shouldParseCodeListSchemeWithCodeListReferences() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeListScheme xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:cls-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cls-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">CodeListScheme Label</r:Content></r:Label>
+                    <r:CodeListReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>cl-1</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>CodeList</r:TypeOfObject>
+                    </r:CodeListReference>
+                    <r:CodeListReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>cl-2</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>CodeList</r:TypeOfObject>
+                    </r:CodeListReference>
+                </CodeListScheme>
+            </Fragment>
+            """);
+
+        Ddi4CodeListScheme scheme = converter.toCodeListScheme(doc);
+
+        assertThat(scheme.id()).isEqualTo("cls-id");
+        assertThat(scheme.agency()).isEqualTo("fr.insee");
+        assertThat(scheme.version()).isEqualTo("1");
+        assertThat(scheme.label().get(0).value()).isEqualTo("CodeListScheme Label");
+        assertThat(scheme.codeListReference())
+                .extracting(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference::id)
+                .containsExactly("cl-1", "cl-2");
     }
 
     @Test

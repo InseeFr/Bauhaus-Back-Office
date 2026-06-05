@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -214,6 +215,30 @@ public class Ddi4ToLifecycle33 {
                         && !code.value().stringValue().isEmpty()) {
                     codeType.addNewValue().setStringValue(code.value().stringValue());
                 }
+            }
+        }
+
+        return doc;
+    }
+
+    public FragmentDocument toCodeListScheme(Ddi4CodeListScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewCodeListScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.codeListReference() != null) {
+            for (Reference ref : scheme.codeListReference()) {
+                populateReference(schemeType.addNewCodeListReference(), ref);
             }
         }
 

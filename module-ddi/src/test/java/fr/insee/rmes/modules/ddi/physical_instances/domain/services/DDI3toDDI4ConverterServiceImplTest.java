@@ -55,6 +55,32 @@ class DDI3toDDI4ConverterServiceImplTest {
     }
 
     @Test
+    void shouldParseCodeListSchemeFromFragmentXml() {
+        String codeListSchemeXml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                    <CodeListScheme xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                        <r:URN>urn:ddi:fr.insee:cls-id:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>cls-id</r:ID><r:Version>1</r:Version>
+                        <r:Label><r:Content xml:lang="fr-FR">Schéma listes</r:Content></r:Label>
+                        <r:CodeListReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cl-1</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>CodeList</r:TypeOfObject>
+                        </r:CodeListReference>
+                    </CodeListScheme>
+                </Fragment>
+                """;
+
+        Ddi4CodeListScheme scheme = converter.toCodeListScheme(codeListSchemeXml);
+
+        assertEquals("cls-id", scheme.id());
+        assertEquals("fr.insee", scheme.agency());
+        assertEquals("1", scheme.version());
+        assertEquals(1, scheme.codeListReference().size());
+        assertEquals("cl-1", scheme.codeListReference().get(0).id());
+    }
+
+    @Test
     void shouldConvertPhysicalInstanceFromDdi3() {
         // Given
         String physicalInstanceXml = """
