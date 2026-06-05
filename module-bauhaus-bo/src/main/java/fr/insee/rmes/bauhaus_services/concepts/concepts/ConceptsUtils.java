@@ -157,7 +157,7 @@ public class ConceptsUtils extends RdfService {
 		try {
 			concept =  mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Concept deserialization failed", e);
 		}
 		if (!isNewConcept && concept.getCreated() == null) {
 			JSONObject existing = repoGestion.getResponseAsObject(conceptConceptsQueries.getConceptCreated(id));

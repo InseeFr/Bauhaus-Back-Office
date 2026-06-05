@@ -7,6 +7,7 @@ import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,36 @@ class DatasetQueriesTest extends WithGraphDBContainer {
                 altIdentifiers.contains("DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES"),
                 "Expected altIdentifier DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES, got: " + altIdentifiers
         );
+    }
+
+    @Test
+    void should_return_one_row_per_dataset_for_search_even_with_multivalued_properties() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch("http://rdf.insee.fr/graphes/catalogue", "http://rdf.insee.fr/graphes/adms"));
+
+        Set<String> ids = new HashSet<>();
+        for (int i = 0; i < result.length(); i++) {
+            ids.add(result.getJSONObject(i).getString("id"));
+        }
+
+        // Une ligne par dataset : pas de duplication due au produit cartésien des OPTIONAL multi-valués.
+        assertEquals(ids.size(), result.length(), "Search must return exactly one row per dataset");
+        assertEquals(3, result.length());
+    }
+
+    @Test
+    void should_aggregate_was_generated_iris_in_search_for_multivalued_dataset() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetsForSearch("http://rdf.insee.fr/graphes/catalogue", "http://rdf.insee.fr/graphes/adms"));
+
+        String wasGeneratedIRIs = null;
+        for (int i = 0; i < result.length(); i++) {
+            JSONObject row = result.getJSONObject(i);
+            if ("jeuDeDonneesTousChampsEtMultiValeurs".equals(row.getString("id"))) {
+                wasGeneratedIRIs = row.optString("wasGeneratedIRIs");
+            }
+        }
+
+        assertTrue(wasGeneratedIRIs != null && wasGeneratedIRIs.contains("http://bauhaus/operations/operation/s2159"));
+        assertTrue(wasGeneratedIRIs != null && wasGeneratedIRIs.contains("http://bauhaus/operations/operation/s2160"));
     }
 
     @Test

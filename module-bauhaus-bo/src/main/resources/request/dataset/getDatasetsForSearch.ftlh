@@ -1,4 +1,12 @@
-SELECT ?id ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated ?altIdentifier
+SELECT ?id
+       (SAMPLE(?labelLg1) AS ?labelLg1)
+       (SAMPLE(?creator) AS ?creator)
+       (SAMPLE(?disseminationStatus) AS ?disseminationStatus)
+       (SAMPLE(?validationStatus) AS ?validationStatus)
+       (GROUP_CONCAT(DISTINCT ?wasGeneratedIRI; separator=" ") AS ?wasGeneratedIRIs)
+       (SAMPLE(?created) AS ?created)
+       (SAMPLE(?updated) AS ?updated)
+       (SAMPLE(?altIdentifier) AS ?altIdentifier)
 
 FROM <${DATASET_GRAPH}>
 FROM <${ADMS_GRAPH}>
@@ -26,7 +34,7 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uri prov:wasGeneratedBy ?wasGeneratedIRIs .
+        ?uri prov:wasGeneratedBy ?wasGeneratedIRI .
     }
 
     OPTIONAL {
@@ -43,3 +51,4 @@ WHERE {
         ?admsIdentifierUri skos:notation ?altIdentifier .
     }
 }
+GROUP BY ?id
