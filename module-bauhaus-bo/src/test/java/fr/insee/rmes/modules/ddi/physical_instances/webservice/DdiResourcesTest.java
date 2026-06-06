@@ -575,7 +575,7 @@ class DdiResourcesTest {
     void getPhysicalInstanceParents_serializesStampsField() {
         when(ddiService.getPhysicalInstanceParents("fr.insee", "pi-1"))
                 .thenReturn(new PhysicalInstanceParents(
-                        "fr.insee", "su-1", "fr.insee", "grp-1", List.of("stamp-A", "stamp-B")));
+                        "fr.insee", "su-1", "fr.insee", "grp-1", "Mon groupe", List.of("stamp-A", "stamp-B")));
 
         ResponseEntity<PhysicalInstanceParentsResponse> response =
                 ddiResources.getPhysicalInstanceParents("fr.insee", "pi-1");
@@ -585,11 +585,13 @@ class DdiResourcesTest {
         PhysicalInstanceParentsResponse body = response.getBody();
         assertNotNull(body);
         assertEquals(List.of("stamp-A", "stamp-B"), body.stamps());
+        assertEquals("Mon groupe", body.group().label());
 
         JsonNode json = new ObjectMapper().valueToTree(body);
         assertTrue(json.has("stamps"));
         assertEquals("stamp-A", json.get("stamps").get(0).asText());
         assertEquals("stamp-B", json.get("stamps").get(1).asText());
+        assertEquals("Mon groupe", json.get("group").get("label").asText());
     }
 
     private Ddi4Response createMockDdi4Response() {

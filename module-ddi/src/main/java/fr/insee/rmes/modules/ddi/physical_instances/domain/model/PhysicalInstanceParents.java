@@ -7,6 +7,7 @@ public record PhysicalInstanceParents(
     String studyUnitId,
     String groupAgency,
     String groupId,
+    String groupLabel,
     List<String> stamps
 ) {
     public PhysicalInstanceParents {
@@ -14,15 +15,19 @@ public record PhysicalInstanceParents(
     }
 
     /**
-     * Construit des parents sans stamps résolus : le repository ne connaît que
-     * la relation Colectica ; les stamps sont peuplés ensuite par le service.
+     * Construit des parents sans label ni stamps résolus : le repository ne connaît que
+     * la relation Colectica ; le label du groupe et les stamps sont peuplés ensuite par le service.
      */
     public PhysicalInstanceParents(String studyUnitAgency, String studyUnitId,
                                    String groupAgency, String groupId) {
-        this(studyUnitAgency, studyUnitId, groupAgency, groupId, List.of());
+        this(studyUnitAgency, studyUnitId, groupAgency, groupId, null, List.of());
     }
 
     public PhysicalInstanceParents withStamps(List<String> stamps) {
-        return new PhysicalInstanceParents(studyUnitAgency, studyUnitId, groupAgency, groupId, stamps);
+        return new PhysicalInstanceParents(studyUnitAgency, studyUnitId, groupAgency, groupId, groupLabel, stamps);
+    }
+
+    public PhysicalInstanceParents withGroupLabel(String groupLabel) {
+        return new PhysicalInstanceParents(studyUnitAgency, studyUnitId, groupAgency, groupId, groupLabel, stamps);
     }
 }

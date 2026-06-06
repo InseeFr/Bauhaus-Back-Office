@@ -9,12 +9,12 @@ public record PhysicalInstanceParentsResponse(
     ParentRef group,
     List<String> stamps
 ) {
-    public record ParentRef(String agency, String id) {}
+    public record ParentRef(String agency, String id, String label) {}
 
     public static PhysicalInstanceParentsResponse fromDomain(PhysicalInstanceParents parents) {
         return new PhysicalInstanceParentsResponse(
-            new ParentRef(parents.studyUnitAgency(), parents.studyUnitId()),
-            new ParentRef(parents.groupAgency(), parents.groupId()),
+            new ParentRef(parents.studyUnitAgency(), parents.studyUnitId(), null),
+            new ParentRef(parents.groupAgency(), parents.groupId(), parents.groupLabel()),
             parents.stamps()
         );
     }

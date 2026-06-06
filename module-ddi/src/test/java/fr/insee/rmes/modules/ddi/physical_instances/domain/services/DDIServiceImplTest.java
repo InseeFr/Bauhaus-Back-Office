@@ -655,6 +655,31 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetPhysicalInstanceParents_resolvesParentGroupLabel() {
+        String agencyId = "fr.insee";
+        String id = "pi-123";
+
+        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
+                "urn:ddi:fr.insee:grp-789:1",
+                "fr.insee", "grp-789", "1",
+                "bauhaus",
+                new Citation(LangStrings.of("fr-FR", "Base permanente des équipements")),
+                null, List.of(),
+                "insee:StatisticalOperationSeries"
+        );
+        when(ddiRepository.getGroup("fr.insee", "grp-789")).thenReturn(
+                new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group), List.of()));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
+
+        assertEquals("Base permanente des équipements", result.groupLabel());
+    }
+
+    @Test
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
         PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
         PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");

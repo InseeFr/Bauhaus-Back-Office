@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariabl
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
@@ -259,7 +260,33 @@ public class DDIServiceImpl implements DDIService {
     public PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id) {
         logger.info("Getting parents for physical instance {}/{}", agencyId, id);
         PhysicalInstanceParents parents = ddiRepository.getPhysicalInstanceParents(agencyId, id);
-        return parents.withStamps(resolveGroupCreatorStamps(parents.groupAgency(), parents.groupId()));
+        // Un seul appel Colectica pour le groupe parent : il sert à la fois au label
+        // affiché (section « groupe » du sélecteur de listes de codes) et aux stamps créateurs.
+        Ddi4GroupResponse groupResponse = ddiRepository.getGroup(parents.groupAgency(), parents.groupId());
+        return parents
+                .withGroupLabel(extractGroupLabel(groupResponse))
+                .withStamps(resolveGroupCreatorStamps(groupResponse));
+    }
+
+    /**
+     * Libellé du groupe parent : premier titre de la {@code Citation} disponible
+     * (peu importe la langue), ou {@code null} si le groupe n'a pas de titre.
+     */
+    private String extractGroupLabel(Ddi4GroupResponse groupResponse) {
+        if (groupResponse == null || groupResponse.group() == null) {
+            return null;
+        }
+        return groupResponse.group().stream()
+                .map(Ddi4Group::citation)
+                .filter(citation -> citation != null && citation.title() != null && !citation.title().isEmpty())
+                .map(citation -> citation.title().getFirst().value())
+                .filter(value -> value != null && !value.isBlank())
+                .findFirst()
+                .orElse(null);
+    }
+
+    private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
+        return resolveGroupCreatorStamps(ddiRepository.getGroup(groupAgency, groupId));
     }
 
     /**
@@ -267,8 +294,7 @@ public class DDIServiceImpl implements DDIService {
      * Même résolution groupe → séries → créateurs que {@code getGroupsFilteredByStamp}
      * et que {@code GraphDbStampChecker.getCreatorsStamps} pour DDI_PHYSICALINSTANCE.
      */
-    private List<String> resolveGroupCreatorStamps(String groupAgency, String groupId) {
-        Ddi4GroupResponse groupResponse = ddiRepository.getGroup(groupAgency, groupId);
+    private List<String> resolveGroupCreatorStamps(Ddi4GroupResponse groupResponse) {
         List<String> seriesIris = groupResponse == null || groupResponse.group() == null
                 ? List.of()
                 : groupResponse.group().stream()
