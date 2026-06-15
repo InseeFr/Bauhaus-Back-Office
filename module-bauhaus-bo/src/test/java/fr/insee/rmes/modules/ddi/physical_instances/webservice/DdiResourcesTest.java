@@ -673,5 +673,85 @@ class DdiResourcesTest {
         );
     }
 
+    // --- #485 : GET /ddi/codelist/{agency}/{id}[/{version}] ---
+
+    private static final String CL_AGENCY = "fr.insee";
+    private static final String CL_ID = "fc65a527-a04b-4505-85de-0a181e54dbad";
+    private static final String CL_VERSION = "2";
+
+    private static Ddi4Response emptyDdi4() {
+        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null);
+    }
+
+    @Test
+    void getCodeListXml_returns200WithXml() {
+        String xml = "<ddi:FragmentInstance><Fragment><CodeList/></Fragment></ddi:FragmentInstance>";
+        when(ddiService.getCodeListXml(CL_AGENCY, CL_ID, null)).thenReturn(xml);
+
+        ResponseEntity<String> response = ddiResources.getCodeListXml(CL_AGENCY, CL_ID);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
+        assertEquals(xml, response.getBody());
+        verify(ddiService).getCodeListXml(CL_AGENCY, CL_ID, null);
+    }
+
+    @Test
+    void getCodeListXml_returns404WhenNull() {
+        when(ddiService.getCodeListXml(CL_AGENCY, "unknown", null)).thenReturn(null);
+
+        ResponseEntity<String> response = ddiResources.getCodeListXml(CL_AGENCY, "unknown");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getCodeListJson_returns200WithDdi4() {
+        Ddi4Response ddi4 = emptyDdi4();
+        when(ddiService.getCodeList(CL_AGENCY, CL_ID, null)).thenReturn(ddi4);
+
+        ResponseEntity<Ddi4Response> response = ddiResources.getCodeListJson(CL_AGENCY, CL_ID);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertEquals(ddi4, response.getBody());
+        verify(ddiService).getCodeList(CL_AGENCY, CL_ID, null);
+    }
+
+    @Test
+    void getCodeListJson_returns404WhenNull() {
+        when(ddiService.getCodeList(CL_AGENCY, "unknown", null)).thenReturn(null);
+
+        ResponseEntity<Ddi4Response> response = ddiResources.getCodeListJson(CL_AGENCY, "unknown");
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void getCodeListXmlByVersion_returns200WithXml() {
+        String xml = "<ddi:FragmentInstance/>";
+        when(ddiService.getCodeListXml(CL_AGENCY, CL_ID, CL_VERSION)).thenReturn(xml);
+
+        ResponseEntity<String> response = ddiResources.getCodeListXmlByVersion(CL_AGENCY, CL_ID, CL_VERSION);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
+        assertEquals(xml, response.getBody());
+        verify(ddiService).getCodeListXml(CL_AGENCY, CL_ID, CL_VERSION);
+    }
+
+    @Test
+    void getCodeListJsonByVersion_returns200WithDdi4() {
+        Ddi4Response ddi4 = emptyDdi4();
+        when(ddiService.getCodeList(CL_AGENCY, CL_ID, CL_VERSION)).thenReturn(ddi4);
+
+        ResponseEntity<Ddi4Response> response = ddiResources.getCodeListJsonByVersion(CL_AGENCY, CL_ID, CL_VERSION);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ddi4, response.getBody());
+        verify(ddiService).getCodeList(CL_AGENCY, CL_ID, CL_VERSION);
+    }
 
 }

@@ -431,6 +431,62 @@ public class DdiResources {
             .body(ddiItemConvertService.convert(xml).toString());
     }
 
+    /**
+     * Endpoint #485 : {@code GET /ddi/codelist/{agency}/{id}[/{version}]} renvoie une CodeList et ses
+     * Categories référencées, en DDI 3.3 XML (multi-fragments {@code <FragmentInstance>}) ou DDI 4 JSON
+     * selon la négociation de contenu. Le préfixe {@code /ddi} est requis par la redirection Gravitee,
+     * qui ne route vers Bauhaus que les chemins commençant par {@code /ddi/}.
+     */
+    @GetMapping(
+        value = "/codelist/{agency}/{id}/{version}",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<String> getCodeListXmlByVersion(
+        @PathVariable String agency,
+        @PathVariable String id,
+        @PathVariable String version
+    ) {
+        return DdiResponses.xml(ddiService.getCodeListXml(agency, id, version));
+    }
+
+    @GetMapping(
+        value = "/codelist/{agency}/{id}/{version}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<Ddi4Response> getCodeListJsonByVersion(
+        @PathVariable String agency,
+        @PathVariable String id,
+        @PathVariable String version
+    ) {
+        return DdiResponses.json(ddiService.getCodeList(agency, id, version));
+    }
+
+    @GetMapping(
+        value = "/codelist/{agency}/{id}",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<String> getCodeListXml(
+        @PathVariable String agency,
+        @PathVariable String id
+    ) {
+        return DdiResponses.xml(ddiService.getCodeListXml(agency, id, null));
+    }
+
+    @GetMapping(
+        value = "/codelist/{agency}/{id}",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<Ddi4Response> getCodeListJson(
+        @PathVariable String agency,
+        @PathVariable String id
+    ) {
+        return DdiResponses.json(ddiService.getCodeList(agency, id, null));
+    }
+
     @PostMapping("/validate")
     @HasAccess(
         module = RBAC.Module.DDI_PHYSICALINSTANCE,
