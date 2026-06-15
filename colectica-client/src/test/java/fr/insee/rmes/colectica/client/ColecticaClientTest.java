@@ -297,4 +297,30 @@ class ColecticaClientTest {
         f.server.verify();
         assertThat(calls.get()).isEqualTo(2);
     }
+
+    @Test
+    void bearerToken_runsInvalidateHookOnUnauthorizedSoSupplierIssuesFreshToken() {
+        // Models a caching supplier: the same token is returned until onInvalidate() is run.
+        AtomicInteger version = new AtomicInteger(1);
+        AtomicInteger invalidations = new AtomicInteger();
+        Supplier<String> supplier = () -> "tok-" + version.get();
+        Runnable onInvalidate = () -> {
+            invalidations.incrementAndGet();
+            version.incrementAndGet();
+        };
+        Fixture f = newFixture(new ColecticaCredentials.BearerToken(supplier, onInvalidate));
+
+        f.server.expect(requestTo(BASE_API_URL + "_query"))
+            .andExpect(header("Authorization", "Bearer tok-1"))
+            .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        f.server.expect(requestTo(BASE_API_URL + "_query"))
+            .andExpect(header("Authorization", "Bearer tok-2"))
+            .andRespond(withSuccess("{\"TotalResults\":0,\"ReturnedResults\":0,\"Results\":[]}",
+                MediaType.APPLICATION_JSON));
+
+        f.client.query(List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(invalidations.get()).isEqualTo(1);
+    }
 }

@@ -226,10 +226,11 @@ public class ColecticaClient {
     }
 
     private void invalidateToken() {
-        if (credentials instanceof ColecticaCredentials.UserPassword) {
-            cachedToken = null;
+        switch (credentials) {
+            case ColecticaCredentials.UserPassword ignored -> cachedToken = null;
+            // Let the supplier drop its cached token so the retry re-queries a fresh one.
+            case ColecticaCredentials.BearerToken bearer -> bearer.onInvalidate().run();
         }
-        // BearerToken: the supplier owns refresh, nothing to invalidate here.
     }
 
     private String authenticate(String username, String password) {

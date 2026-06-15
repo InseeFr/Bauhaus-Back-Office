@@ -1085,6 +1085,8 @@ class DDIRepositoryImplTest {
     }
 
     private static final String CODE_LIST_TYPE = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+    private static final String CODE_LIST_SCHEME_TYPE = "4193d389-b5ae-4368-b399-cd5a7ee3653c";
+    private static final String CODE_LIST_GROUP_TYPE = "394b9ff3-7248-4ede-b945-9bebdbf56bed";
     private static final String CATEGORY_TYPE = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
     private static final String VARIABLE_TYPE = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
     private static final String DATA_RELATIONSHIP_TYPE = "f39ff278-8500-45fe-a850-3906da2d242b";
@@ -1094,6 +1096,8 @@ class DDIRepositoryImplTest {
     private static Map<String, String> standardItemTypes() {
         return Map.of(
             "CodeList", CODE_LIST_TYPE,
+            "CodeListScheme", CODE_LIST_SCHEME_TYPE,
+            "CodeListGroup", CODE_LIST_GROUP_TYPE,
             "Category", CATEGORY_TYPE,
             "Variable", VARIABLE_TYPE,
             "DataRelationship", DATA_RELATIONSHIP_TYPE,
@@ -1135,11 +1139,22 @@ class DDIRepositoryImplTest {
         verifyNoInteractions(colecticaClient);
     }
 
+    /** package → CodeListScheme → CodeListGroup → CodeList */
+    private void stubChildren(String agencyId, String parentId, String childType, ItemReference... children) {
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference(agencyId, parentId)),
+                eq(List.of(childType))))
+            .thenReturn(List.of(children));
+    }
+
     @Test
-    void codeListsDirectlyUnderPackage_areKept() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
+    void walksPackageTreeTopDownToCollectCodeLists() {
+        // package → scheme → group → [cl1, cl2], walked top-down via bysubject relationships.
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupId = "group-1";
         String cl1Id = "cl-1";
         String cl2Id = "cl-2";
 
@@ -1147,17 +1162,19 @@ class DDIRepositoryImplTest {
             .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
-        ColecticaResponse queryResponse = new ColecticaResponse(
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(agencyId, groupId, CODE_LIST_TYPE,
+            new ItemReference(agencyId, cl1Id), new ItemReference(agencyId, cl2Id));
+
+        // Labels are resolved through a single repository-wide CodeList query.
+        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(new ColecticaResponse(
             List.of(
                 codeListItem(cl1Id, "Niveau 1", "2024-10-31T10:43:38"),
                 codeListItem(cl2Id, "Niveau 2", "2024-10-31T10:43:38")
             ),
             2, 2, null, null, null
-        );
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse);
-        // Each byobject lookup returns the package as direct parent → CodeLists kept
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList()))
-            .thenReturn(List.of(new ItemReference(agencyId, packageId)));
+        ));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1165,79 +1182,48 @@ class DDIRepositoryImplTest {
         assertEquals(cl1Id, result.get(0).id());
         assertEquals("Niveau 1", result.get(0).label());
         assertEquals(agencyId, result.get(0).agency());
+        assertEquals(cl2Id, result.get(1).id());
 
-        verify(colecticaClient).query(anyList());
-        verify(colecticaClient, atLeastOnce())
+        // Never walks up the parent chain anymore.
+        verify(colecticaClient, never())
             .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
     }
 
     @Test
-    void codeListNotDescendantOfPackage_isFilteredOut() {
+    void packageWithNoCodeListScheme_returnsEmptyWithoutResolvingLabels() {
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
-        String orphanId = "cl-orphan";
 
         when(colecticaConfiguration.mutualizedCodesPackage())
             .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
-        ColecticaResponse queryResponse = new ColecticaResponse(
-            List.of(codeListItem(orphanId, "Not in package", "2024-10-31T10:43:38")),
-            1, 1, null, null, null
-        );
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse);
-        // byobject returns no parents → not a descendant of the package
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList()))
-            .thenReturn(List.of());
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE /* no children */);
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
         assertTrue(result.isEmpty());
+        // No CodeList found in the tree → no point querying for labels.
+        verify(colecticaClient, never()).query(anyList());
     }
 
     @Test
-    void codeListUnderGroupUnderPackage_isKept() {
-        // CodeList → Group → Package. Walking up takes 2 byobject calls.
-        String baseApiUrl = "http://localhost:8082/api/v1/";
+    void codeListWithoutStrictLabel_isFilteredOut() {
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
-        String groupId = "grp-mid";
-        String clId = "cl-nested";
-
-        when(colecticaConfiguration.mutualizedCodesPackage())
-            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
-        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-
-        when(colecticaClient.query(anyList())).thenReturn(new ColecticaResponse(
-            List.of(codeListItem(clId, "Nested", "2024-10-31T10:43:38")),
-            1, 1, null, null, null
-        ));
-        // parents of cl-nested → grp-mid
-        when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT), eq(new ItemReference(agencyId, clId)), anyList()))
-            .thenReturn(List.of(new ItemReference(agencyId, groupId)));
-        // parents of grp-mid → pkg-1
-        when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT), eq(new ItemReference(agencyId, groupId)), anyList()))
-            .thenReturn(List.of(new ItemReference(agencyId, packageId)));
-
-        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
-
-        assertEquals(1, result.size());
-        assertEquals(clId, result.get(0).id());
-    }
-
-    @Test
-    void codeListWithEmptyLabel_isFilteredOut() {
-        // Empty label is filtered BEFORE any ancestor walk, so no byobject mock is needed.
-        String agencyId = "fr.insee";
-        String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupId = "group-1";
         String labelledId = "cl-labelled";
         String blankId = "cl-blank";
 
         when(colecticaConfiguration.mutualizedCodesPackage())
             .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(agencyId, groupId, CODE_LIST_TYPE,
+            new ItemReference(agencyId, labelledId), new ItemReference(agencyId, blankId));
 
         ColecticaItem blank = new ColecticaItem(
             null,
@@ -1248,13 +1234,10 @@ class DDIRepositoryImplTest {
             agencyId, 1, blankId, null, null, "2024-10-31T10:43:38",
             null, false, false, false, "DDI", 1L, 0
         );
-        ColecticaResponse queryResponse = new ColecticaResponse(
+        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(new ColecticaResponse(
             List.of(codeListItem(labelledId, "Has label", "2024-10-31T10:43:38"), blank),
             2, 2, null, null, null
-        );
-        when(colecticaClient.query(anyList())).thenReturn(queryResponse);
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList()))
-            .thenReturn(List.of(new ItemReference(agencyId, packageId)));
+        ));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -1266,18 +1249,21 @@ class DDIRepositoryImplTest {
     void secondCallWithinTtl_isServedFromCache() {
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupId = "group-1";
         String clId = "cl-1";
 
         when(colecticaConfiguration.mutualizedCodesPackage())
             .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
-        when(colecticaClient.query(anyList())).thenReturn(new ColecticaResponse(
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(agencyId, groupId, CODE_LIST_TYPE, new ItemReference(agencyId, clId));
+        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(new ColecticaResponse(
             List.of(codeListItem(clId, "label", "2024-10-31T10:43:38")),
             1, 1, null, null, null
         ));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList()))
-            .thenReturn(List.of(new ItemReference(agencyId, packageId)));
 
         // First call hits Colectica, second must be served from cache.
         List<PartialCodesList> first = ddiRepository.getMutualizedCodesLists();
@@ -1286,29 +1272,33 @@ class DDIRepositoryImplTest {
         assertEquals(1, first.size());
         assertEquals(first, second);
 
-        // _query is called exactly once across both invocations
-        verify(colecticaClient, times(1)).query(anyList());
+        // The package tree is walked exactly once across both invocations.
+        verify(colecticaClient, times(1)).findRelatedDescriptions(
+            eq(RelationshipDirection.BY_SUBJECT), eq(new ItemReference(agencyId, packageId)), anyList());
     }
 
     @Test
-    void duplicateCodeListInQueryResponse_appearsOnce() {
+    void sameCodeListReachableViaTwoGroups_appearsOnce() {
         String agencyId = "fr.insee";
         String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupAId = "group-a";
+        String groupBId = "group-b";
         String sharedClId = "cl-shared";
 
         when(colecticaConfiguration.mutualizedCodesPackage())
             .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
         when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
 
-        when(colecticaClient.query(anyList())).thenReturn(new ColecticaResponse(
-            List.of(
-                codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38"),
-                codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38")
-            ),
-            2, 2, null, null, null
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE,
+            new ItemReference(agencyId, groupAId), new ItemReference(agencyId, groupBId));
+        stubChildren(agencyId, groupAId, CODE_LIST_TYPE, new ItemReference(agencyId, sharedClId));
+        stubChildren(agencyId, groupBId, CODE_LIST_TYPE, new ItemReference(agencyId, sharedClId));
+        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(new ColecticaResponse(
+            List.of(codeListItem(sharedClId, "Shared label", "2024-10-31T10:43:38")),
+            1, 1, null, null, null
         ));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList()))
-            .thenReturn(List.of(new ItemReference(agencyId, packageId)));
 
         List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
 
@@ -2257,17 +2247,16 @@ class DDIRepositoryImplTest {
             .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
-            "LogicalProduct", "lp-type", "CodeListScheme", "cls-type"));
+            "LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE,
+            "CodeListGroup", CODE_LIST_GROUP_TYPE, "CodeList", CODE_LIST_TYPE));
 
-        // Mutualized package + descendant detection: CL_MUT descends from it, CL_NEW does not.
+        // Mutualized package: walking it top-down (scheme → group → code list) reaches CL_MUT only;
+        // CL_NEW is not part of the package tree.
         when(colecticaConfiguration.mutualizedCodesPackage())
             .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "CL_MUT")), eq(List.of())))
-            .thenReturn(List.of(new ItemReference("fr.insee", "PKG")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "CL_NEW")), eq(List.of())))
-            .thenReturn(List.of());
+        stubChildren("fr.insee", "PKG", CODE_LIST_SCHEME_TYPE, new ItemReference("fr.insee", "SCHEME_M"));
+        stubChildren("fr.insee", "SCHEME_M", CODE_LIST_GROUP_TYPE, new ItemReference("fr.insee", "GROUP_M"));
+        stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         // Parents: PI -> StudyUnit -> Group
         when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
@@ -2282,7 +2271,7 @@ class DDIRepositoryImplTest {
                 eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
         when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of("cls-type"))))
+                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of(CODE_LIST_SCHEME_TYPE))))
             .thenReturn(List.of(new ItemReference("fr.insee", "CLS_1")));
 
         // Existing scheme already references CL_EXISTING.
@@ -2331,11 +2320,16 @@ class DDIRepositoryImplTest {
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
             .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+            "CodeListScheme", CODE_LIST_SCHEME_TYPE,
+            "CodeListGroup", CODE_LIST_GROUP_TYPE, "CodeList", CODE_LIST_TYPE));
+
+        // CL_MUT belongs to the package tree (package → scheme → group → CL_MUT).
         when(colecticaConfiguration.mutualizedCodesPackage())
             .thenReturn(new ColecticaConfiguration.PackageRef("fr.insee", "PKG", 1));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "CL_MUT")), eq(List.of())))
-            .thenReturn(List.of(new ItemReference("fr.insee", "PKG")));
+        stubChildren("fr.insee", "PKG", CODE_LIST_SCHEME_TYPE, new ItemReference("fr.insee", "SCHEME_M"));
+        stubChildren("fr.insee", "SCHEME_M", CODE_LIST_GROUP_TYPE, new ItemReference("fr.insee", "GROUP_M"));
+        stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         Ddi4CodeList clMut = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
             "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null);

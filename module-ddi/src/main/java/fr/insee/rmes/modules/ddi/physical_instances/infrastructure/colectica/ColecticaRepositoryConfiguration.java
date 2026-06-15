@@ -29,7 +29,8 @@ public class ColecticaRepositoryConfiguration {
         var server = colecticaConfiguration.server();
         ColecticaCredentials credentials =
                 "token".equals(server.authenticationMode())
-                        ? new ColecticaCredentials.BearerToken(colecticaTokenService::getAccessToken)
+                        ? new ColecticaCredentials.BearerToken(
+                                colecticaTokenService::getAccessToken, colecticaTokenService::invalidate)
                         : new ColecticaCredentials.UserPassword(server.username(), server.password());
         return new ColecticaClient(RestClient.create(), server.baseApiUrl(), server.baseServerUrl(), credentials);
     }

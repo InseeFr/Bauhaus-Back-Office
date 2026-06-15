@@ -124,4 +124,64 @@ class KeycloakServiceTest {
         String token = JWT.create().sign(Algorithm.HMAC256("secret"));
         assertFalse(keycloakService.isTokenValid(token));
     }
+
+    private void stubKeycloakReturns(String accessToken) {
+        when(responseSpec.body(eq(Token.class))).thenReturn(new Token() {
+            @Override
+            public String getAccessToken() {
+                return accessToken;
+            }
+        });
+    }
+
+    private static String jwtExpiringIn(long seconds) {
+        return JWT.create()
+                .withExpiresAt(Date.from(Instant.now().plusSeconds(seconds)))
+                .sign(Algorithm.HMAC256("secret"));
+    }
+
+    @Test
+    void getAccessToken_cachesTokenAndDoesNotCallKeycloakAgainWhileValid() {
+        String jwt = jwtExpiringIn(300);
+        stubKeycloakReturns(jwt);
+
+        String first = keycloakService.getAccessToken();
+        String second = keycloakService.getAccessToken();
+
+        assertEquals(jwt, first);
+        assertEquals(jwt, second);
+        verify(testRestClient, times(1)).post();
+    }
+
+    @Test
+    void getAccessToken_refetchesWhenCachedTokenIsExpired() {
+        stubKeycloakReturns(jwtExpiringIn(-10));
+
+        keycloakService.getAccessToken();
+        keycloakService.getAccessToken();
+
+        verify(testRestClient, times(2)).post();
+    }
+
+    @Test
+    void getAccessToken_refetchesWhenTokenExpiresWithinSafetyMargin() {
+        // exp in 10s while the refresh margin is larger → treated as stale to avoid mid-call expiry.
+        stubKeycloakReturns(jwtExpiringIn(10));
+
+        keycloakService.getAccessToken();
+        keycloakService.getAccessToken();
+
+        verify(testRestClient, times(2)).post();
+    }
+
+    @Test
+    void invalidate_forcesRefetchOnNextCall() {
+        stubKeycloakReturns(jwtExpiringIn(300));
+
+        keycloakService.getAccessToken();
+        keycloakService.invalidate();
+        keycloakService.getAccessToken();
+
+        verify(testRestClient, times(2)).post();
+    }
 }
