@@ -9,6 +9,7 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
@@ -67,6 +68,7 @@ public class DdiResources {
     private final DDIItemConvertService ddiItemConvertService;
     private final UserProvider userProvider;
     private final RbacFetcher rbacFetcher;
+    private final UriUtils uriUtils;
 
     public DdiResources(
         DDIService ddiService,
@@ -74,7 +76,8 @@ public class DdiResources {
         DDI3toDDI4ConverterService ddi3toDdi4ConverterService,
         DDIItemConvertService ddiItemConvertService,
         UserProvider userProvider,
-        RbacFetcher rbacFetcher
+        RbacFetcher rbacFetcher,
+        UriUtils uriUtils
     ) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
@@ -82,6 +85,7 @@ public class DdiResources {
         this.ddiItemConvertService = ddiItemConvertService;
         this.userProvider = userProvider;
         this.rbacFetcher = rbacFetcher;
+        this.uriUtils = uriUtils;
     }
 
     @GetMapping("/physical-instance")
@@ -485,6 +489,25 @@ public class DdiResources {
         @PathVariable String id
     ) {
         return DdiResponses.json(ddiService.getCodeList(agency, id, null));
+    }
+
+    @GetMapping(
+        value = "/operation/{id}/studyUnit",
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<String> getOperationStudyUnitJson(
+        @PathVariable(Constants.ID) String id
+    ) throws RmesException {
+        String operationIri = uriUtils.getCompleteUriGestion("operation", id);
+        return ddiService
+            .getStudyUnitXmlByOperationIri(operationIri)
+            .map(xml ->
+                ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(ddiItemConvertService.convert(xml).toString())
+            )
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/validate")

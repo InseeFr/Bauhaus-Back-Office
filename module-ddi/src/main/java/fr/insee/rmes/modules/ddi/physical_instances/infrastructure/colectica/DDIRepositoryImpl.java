@@ -2241,23 +2241,50 @@ public class DDIRepositoryImpl implements DDIRepository {
             "Searching StudyUnit XML by operationIri: {}",
             operationIri
         );
-        List<PartialStudyUnit> studyUnits = getStudyUnits();
-        return studyUnits
+        ColecticaResponse studyUnits = colecticaClient.query(
+            List.of(STUDY_UNIT_ITEM_TYPE)
+        );
+        List<GetDescriptionsRequest.IdentifierRef> identifiers = studyUnits
+            .results()
             .stream()
-            .map(su -> fetchColecticaItem(su.agency(), su.id(), null))
-            .filter(Objects::nonNull)
-            .filter(item ->
-                studyUnitMatchesOperationIri(item.item(), operationIri)
+            .map(item ->
+                new GetDescriptionsRequest.IdentifierRef(
+                    item.agencyId(),
+                    item.identifier(),
+                    item.version()
+                )
             )
-            .map(ColecticaItemResponse::item)
-            .findFirst();
+            .toList();
+        if (identifiers.isEmpty()) {
+            return Optional.empty();
+        }
+        // Single batch fetch of all StudyUnit XMLs (item/_getList) instead of one
+        // HTTP call per StudyUnit, which was the main source of latency here.
+        ColecticaItemResponse[] items = colecticaClient.getDescriptions(
+            identifiers
+        );
+        List<String> candidateUserIds = new ArrayList<>();
+        for (ColecticaItemResponse item : items) {
+            if (item == null) {
+                continue;
+            }
+            List<String> userIds = extractUserIds(item.item());
+            candidateUserIds.addAll(userIds);
+            if (userIds.contains(operationIri)) {
+                return Optional.of(item.item());
+            }
+        }
+        logger.warn(
+            "No StudyUnit matched operationIri '{}' among {} study unit(s). Candidate UserIDs found: {}",
+            operationIri,
+            identifiers.size(),
+            candidateUserIds
+        );
+        return Optional.empty();
     }
 
-    private boolean studyUnitMatchesOperationIri(
-        String xml,
-        String operationIri
-    ) {
-        if (xml == null || xml.isBlank()) return false;
+    private List<String> extractUserIds(String xml) {
+        if (xml == null || xml.isBlank()) return List.of();
         try {
             DocumentBuilderFactory factory =
                 createSecureDocumentBuilderFactory();
@@ -2269,19 +2296,20 @@ public class DDIRepositoryImpl implements DDIRepository {
                 "ddi:reusable:3_3",
                 "UserID"
             );
+            List<String> userIds = new ArrayList<>();
             for (int i = 0; i < userIdNodes.getLength(); i++) {
                 String text = userIdNodes.item(i).getTextContent();
-                if (operationIri.equals(text != null ? text.trim() : null)) {
-                    return true;
+                if (text != null) {
+                    userIds.add(text.trim());
                 }
             }
-            return false;
+            return userIds;
         } catch (Exception e) {
             logger.warn(
                 "Failed to parse StudyUnit XML for operationIri check",
                 e
             );
-            return false;
+            return List.of();
         }
     }
 

@@ -5,7 +5,6 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,16 +34,13 @@ class OperationsResourcesTest {
     private DDIService ddiService;
 
     @Mock
-    private DDIItemConvertService ddiItemConvertService;
-
-    @Mock
     private UriUtils uriUtils;
 
     private OperationsResources operationsResources;
 
     @BeforeEach
     void setUp() {
-        operationsResources = new OperationsResources(operationsService, documentationsService, ddiService, ddiItemConvertService, uriUtils);
+        operationsResources = new OperationsResources(operationsService, documentationsService, ddiService, uriUtils);
     }
 
     @Test

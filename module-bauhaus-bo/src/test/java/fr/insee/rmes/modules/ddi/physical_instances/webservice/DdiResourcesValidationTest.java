@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
@@ -53,6 +54,9 @@ class DdiResourcesValidationTest {
     @Mock
     private RbacFetcher rbacFetcher;
 
+    @Mock
+    private UriUtils uriUtils;
+
     private DdiResources ddiResources;
 
     // Simple test schema
@@ -82,7 +86,7 @@ class DdiResourcesValidationTest {
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher);
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils);
 
         // Setup mock request context
         MockHttpServletRequest request = new MockHttpServletRequest();

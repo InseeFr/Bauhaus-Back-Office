@@ -1,6 +1,8 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -69,11 +71,14 @@ class DdiResourcesTest {
     @Mock
     private RbacFetcher rbacFetcher;
 
+    @Mock
+    private UriUtils uriUtils;
+
     private DdiResources ddiResources;
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher);
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils);
 
         // Setup mock request context for ServletUriComponentsBuilder
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -752,6 +757,39 @@ class DdiResourcesTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(ddi4, response.getBody());
         verify(ddiService).getCodeList(CL_AGENCY, CL_ID, CL_VERSION);
+    }
+
+    // --- GET /ddi/operation/{id}/studyUnit (JSON, public) ---
+
+    @Test
+    void getOperationStudyUnitJson_returns200WithJson_whenStudyUnitExists() throws RmesException {
+        String id = "op1";
+        String operationIri = "http://bauhaus/operations/operation/op1";
+        String xml = "<Fragment><StudyUnit/></Fragment>";
+        ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
+        when(uriUtils.getCompleteUriGestion("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+        when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
+
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        assertEquals(expectedJson.toString(), response.getBody());
+        verify(ddiItemConvertService).convert(xml);
+    }
+
+    @Test
+    void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
+        String id = "unknown";
+        String operationIri = "http://bauhaus/operations/operation/unknown";
+        when(uriUtils.getCompleteUriGestion("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
 }

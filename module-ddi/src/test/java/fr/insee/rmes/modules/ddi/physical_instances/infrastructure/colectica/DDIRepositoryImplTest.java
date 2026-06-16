@@ -1725,7 +1725,8 @@ class DDIRepositoryImplTest {
                 "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
                 studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
         );
-        when(colecticaClient.getItem(anyString(), anyString(), any())).thenReturn(itemResponse);
+        when(colecticaClient.getDescriptions(anyList()))
+                .thenReturn(new ColecticaItemResponse[]{itemResponse});
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
@@ -1759,7 +1760,8 @@ class DDIRepositoryImplTest {
                 "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
                 studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
         );
-        when(colecticaClient.getItem(anyString(), anyString(), any())).thenReturn(itemResponse);
+        when(colecticaClient.getDescriptions(anyList()))
+                .thenReturn(new ColecticaItemResponse[]{itemResponse});
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
