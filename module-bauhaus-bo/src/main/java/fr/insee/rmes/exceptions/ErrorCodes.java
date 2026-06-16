@@ -21,6 +21,9 @@ public class ErrorCodes {
 	// SERIES
 	public static final int SERIES_VALIDATION_UNPUBLISHED_FAMILY = 604;
 
+	// OPERATIONS
+	public static final int OPERATION_VALIDATION_UNPUBLISHED_SERIES = 704;
+
 	// SIMS
 	public static final int OPERATION_VALIDATION_UNPUBLISHED_PARENT = 804;
 

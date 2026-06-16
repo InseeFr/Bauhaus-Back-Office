@@ -80,7 +80,7 @@ public class OperationPublication extends RdfService{
 		String status = ownersUtils.getValidationStatus(seriesId);
 
 		if (PublicationUtils.isUnublished(status)) {
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
 					"This operation cannot be published before its series is published",
 					"Operation: " + operationId + " ; Series: " + seriesId);
 		}

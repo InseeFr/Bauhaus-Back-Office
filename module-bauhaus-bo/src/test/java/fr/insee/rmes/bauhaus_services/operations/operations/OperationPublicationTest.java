@@ -41,4 +41,20 @@ class OperationPublicationTest {
         );
         assertThat(exception.getDetails()).contains("This operation cannot be published before its series is published");
     }
+
+    @Test
+    void shouldReturnOperationErrorCodeWhenParentSeriesIsUnpublished() throws RmesException {
+        JSONObject operation = new JSONObject();
+        operation.put(Constants.ID, "1");
+        JSONObject series = new JSONObject();
+        series.put("id", "2");
+        operation.put("series", series);
+
+        when(ownerUtils.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+        var exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> operationPublication.publishOperation("1", operation)
+        );
+        assertThat(exception.getDetails()).contains("\"code\":704");
+    }
 }
