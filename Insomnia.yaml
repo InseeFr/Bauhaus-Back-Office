@@ -814,14 +814,14 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
+      - url: "{{ _.API_URL }}/ddi/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
         name: "#447 Variables (DataRelationship) — DDI 4 JSON"
         meta:
           id: req_ddi_variables_json_00000000000000000
           created: 1765280600008
           modified: 1765280600008
           isPrivate: false
-          description: "Tous les DataRelationship d'une PhysicalInstance, en DDI 4 JSON."
+          description: "Tous les DataRelationship d'une PhysicalInstance et les Variable référencées, en DDI 4 JSON."
           sortKey: -1765280600008
         method: GET
         headers:
@@ -836,14 +836,14 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
+      - url: "{{ _.API_URL }}/ddi/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
         name: "#447 Variables (DataRelationship) — DDI 3 XML"
         meta:
           id: req_ddi_variables_xml_000000000000000000
           created: 1765280600009
           modified: 1765280600009
           isPrivate: false
-          description: "Mêmes DataRelationship en DDI 3.3 XML (FragmentInstance)."
+          description: "Mêmes DataRelationship + Variable en DDI 3.3 XML (FragmentInstance)."
           sortKey: -1765280600009
         method: GET
         headers:
@@ -858,7 +858,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/{{ _.DDI_VERSION }}/variables"
+      - url: "{{ _.API_URL }}/ddi/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/{{ _.DDI_VERSION }}/variables"
         name: "#447 Variables (version) — DDI 4 JSON"
         meta:
           id: req_ddi_variables_version_json_0000000

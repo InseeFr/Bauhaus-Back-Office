@@ -10,12 +10,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class PhysicalInstanceVariablesResourcesTest {
@@ -102,5 +107,39 @@ class PhysicalInstanceVariablesResourcesTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertSame(ddi4, response.getBody());
         verify(ddiService).getDataRelationships(AGENCY, ID, VERSION);
+    }
+
+    // #447 (dernier commentaire) : le endpoint est exposé sous /ddi/structures pour la
+    // redirection Gravitee (les endpoints Bauhaus repris par /ddi/).
+
+    @Test
+    void endpointMappedUnderDdiStructures() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
+        when(ddiService.getDataRelationships(AGENCY, ID, null)).thenReturn(emptyDdi4());
+
+        mockMvc.perform(get("/ddi/structures/{agency}/{id}/variables", AGENCY, ID)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void endpointMappedUnderDdiStructures_withVersion() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
+        when(ddiService.getDataRelationships(AGENCY, ID, VERSION)).thenReturn(emptyDdi4());
+
+        mockMvc.perform(get("/ddi/structures/{agency}/{id}/{version}/variables", AGENCY, ID, VERSION)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void oldStructuresPathNoLongerMapped() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
+        // Réponse non nulle : si l'ancien path était encore mappé on aurait 200, pas 404.
+        lenient().when(ddiService.getDataRelationships(AGENCY, ID, null)).thenReturn(emptyDdi4());
+
+        mockMvc.perform(get("/structures/{agency}/{id}/variables", AGENCY, ID)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }

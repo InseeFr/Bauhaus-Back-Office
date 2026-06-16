@@ -1704,7 +1704,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     /**
      * Returns every DataRelationship of a PhysicalInstance set as DDI4 (#447), latest version when
-     * {@code version} is null. Only the DataRelationship fragments of the set are converted.
+     * {@code version} is null. The DataRelationship fragments and the Variable fragments they
+     * reference are converted; the referenced CodeList/Category are left out.
      */
     @Override
     public Ddi4Response getDataRelationships(String agencyId, String id, String version) {
@@ -1716,7 +1717,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
-                ColecticaItemResponse[] dataRelationships = filterDataRelationships(itemResponses);
+                ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
                 Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(dataRelationships));
                 return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
             } catch (Exception e) {
@@ -1727,8 +1728,9 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
-     * Returns every DataRelationship of a PhysicalInstance set as a DDI 3.3 multi-fragment
-     * {@code <FragmentInstance>} (#447), latest version when {@code version} is null.
+     * Returns every DataRelationship of a PhysicalInstance set and the Variable fragments they
+     * reference as a single DDI 3.3 multi-fragment {@code <FragmentInstance>} (#447), latest version
+     * when {@code version} is null. The referenced CodeList/Category are left out.
      */
     @Override
     public String getDataRelationshipsXml(String agencyId, String id, String version) {
@@ -1740,7 +1742,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 if (itemResponses == null || itemResponses.length == 0) {
                     return null;
                 }
-                ColecticaItemResponse[] dataRelationships = filterDataRelationships(itemResponses);
+                ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
                 return assembleFragmentInstance(fragmentXmls(Arrays.stream(dataRelationships).toList()));
             } catch (Exception e) {
                 throw new RuntimeException(
@@ -1749,10 +1751,19 @@ public class DDIRepositoryImpl implements DDIRepository {
         
     }
 
-    private ColecticaItemResponse[] filterDataRelationships(ColecticaItemResponse[] itemResponses) {
-        String dataRelationshipType = instanceConfiguration.itemTypes().get("DataRelationship");
+    /**
+     * Keeps the DataRelationship fragments of the set and the Variable fragments referenced by their
+     * {@code VariablesInRecord}/{@code VariableUsedReference} (#447). In a PhysicalInstance set the
+     * Variable items are exactly the ones used by the data relationships, so a type filter is
+     * sufficient. The referenced CodeList/Category are deliberately left out.
+     */
+    private ColecticaItemResponse[] filterDataRelationshipsAndVariables(ColecticaItemResponse[] itemResponses) {
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        String dataRelationshipType = types.get("DataRelationship");
+        String variableType = types.get("Variable");
         return Arrays.stream(itemResponses)
-            .filter(item -> Objects.equals(item.itemType(), dataRelationshipType))
+            .filter(item -> Objects.equals(item.itemType(), dataRelationshipType)
+                         || Objects.equals(item.itemType(), variableType))
             .toArray(ColecticaItemResponse[]::new);
     }
 

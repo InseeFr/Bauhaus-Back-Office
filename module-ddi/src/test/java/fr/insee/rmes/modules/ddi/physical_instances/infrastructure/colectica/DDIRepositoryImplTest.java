@@ -1898,70 +1898,107 @@ class DDIRepositoryImplTest {
     // ---- #447 : getDataRelationships / getDataRelationshipsXml (PhysicalInstance) ----
 
     @Test
-    void getDataRelationships_keepsOnlyDataRelationshipFragments() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
+    void getDataRelationships_keepsDataRelationshipAndReferencedVariables() {
+        // #447 : la réponse /variables porte les DataRelationship ET les Variable référencées
+        // (VariableUsedReference des VariablesInRecord), mais pas les CodeList/Category référencées.
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
         String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("DataRelationship", drType));
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", piType,
+                "DataRelationship", drType,
+                "Variable", variableType,
+                "CodeList", codeListType,
+                "Category", categoryType
+        ));
 
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(piId, 1, agencyId),
-            new ColecticaSetItem("dr-1", 1, agencyId)
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("cl-1", 1, agencyId),
+            new ColecticaSetItem("cat-1", 1, agencyId)
         };
         when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
         ColecticaItemResponse[] itemResponses = {
-            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, piId,
+            new ColecticaItemResponse(piType, agencyId, 1, piId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null),
             new ColecticaItemResponse(drType, agencyId, 1, "dr-1",
                     "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(variableType, agencyId, 1, "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, "cl-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(categoryType, agencyId, 1, "cat-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
                     null, null, false, false, false, null)
         };
         when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
-        Ddi4DataRelationship mockDr = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
-                CogsDate.ofDateTime("2025-01-01T00:00:00"),
-                "urn:ddi:fr.insee:dr-1:1", agencyId, "dr-1", "1",
-                null, LangStrings.of("fr-FR", "Dessin"), null);
         Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, List.of(),
-                List.of(mockDr), List.of(), List.of(), List.of());
+                List.of(), List.of(), List.of(), List.of());
 
         ArgumentCaptor<Ddi3Response> captor = ArgumentCaptor.forClass(Ddi3Response.class);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(captor.capture(), eq("ddi:4.0"))).thenReturn(mockDdi4);
 
-        Ddi4Response result = ddiRepository.getDataRelationships(agencyId, piId, null);
+        ddiRepository.getDataRelationships(agencyId, piId, null);
 
-        assertNotNull(result);
-        assertEquals(1, result.dataRelationship().size());
-        // Only the DataRelationship item is forwarded to the converter.
-        assertEquals(1, captor.getValue().items().size());
-        assertEquals(drType, captor.getValue().items().get(0).itemType());
+        // DataRelationship + Variable sont convertis ; PI, CodeList et Category sont écartés.
+        List<Ddi3Response.Ddi3Item> converted = captor.getValue().items();
+        assertEquals(2, converted.size());
+        assertTrue(converted.stream().anyMatch(i -> drType.equals(i.itemType())));
+        assertTrue(converted.stream().anyMatch(i -> variableType.equals(i.itemType())));
+        assertTrue(converted.stream().noneMatch(i -> piType.equals(i.itemType())));
+        assertTrue(converted.stream().noneMatch(i -> codeListType.equals(i.itemType())));
+        assertTrue(converted.stream().noneMatch(i -> categoryType.equals(i.itemType())));
     }
 
     @Test
-    void getDataRelationshipsXml_returnsFragmentInstanceWithOnlyDataRelationshipFragments() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
+    void getDataRelationshipsXml_includesDataRelationshipAndVariableFragmentsOnly() {
         String agencyId = "fr.insee";
         String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
         String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
 
-        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("DataRelationship", drType));
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", piType,
+                "DataRelationship", drType,
+                "Variable", variableType,
+                "CodeList", codeListType
+        ));
 
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(piId, 1, agencyId),
-            new ColecticaSetItem("dr-1", 1, agencyId)
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("cl-1", 1, agencyId)
         };
         when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
 
         ColecticaItemResponse[] itemResponses = {
-            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, piId,
+            new ColecticaItemResponse(piType, agencyId, 1, piId,
                     "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
                     null, null, false, false, false, null),
             new ColecticaItemResponse(drType, agencyId, 1, "dr-1",
                     "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship xmlns=\"ddi:logicalproduct:3_3\"/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(variableType, agencyId, 1, "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, "cl-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
                     null, null, false, false, false, null)
         };
         when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
@@ -1971,7 +2008,9 @@ class DDIRepositoryImplTest {
         assertNotNull(xml);
         assertTrue(xml.contains("FragmentInstance"));
         assertTrue(xml.contains("<DataRelationship"));
+        assertTrue(xml.contains("<Variable"));
         assertFalse(xml.contains("<PhysicalInstance"));
+        assertFalse(xml.contains("<CodeList"));
     }
 
     @Test
