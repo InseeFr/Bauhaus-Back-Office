@@ -50,3 +50,7 @@ fr.insee.rmes.bauhaus.colectica:
   # Durée de mise en cache in-process des code lists mutualisées (format Spring Duration : 24h, 30m, 90s...).
   # Absent = 24h par défaut.
   mutualized-codes-cache-ttl: 24h
+
+  # Préchargement du cache des code lists mutualisées au démarrage de l'application (ApplicationReadyEvent).
+  # Le chargement est non bloquant et tolérant aux pannes. true par défaut ; mettre à false pour désactiver.
+  cache-warmup-enabled: true
