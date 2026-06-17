@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,9 @@ import java.util.Map;
  * fr.insee.rmes.bauhaus.colectica.mutualized-codes-package.agency-id = fr.insee
  * fr.insee.rmes.bauhaus.colectica.mutualized-codes-package.identifier = e129238f-485f-40b4-b52f-5702c05d5f40
  * fr.insee.rmes.bauhaus.colectica.mutualized-codes-package.version = 1
+ *
+ * # In-process cache TTL for mutualized code lists (defaults to 24h when absent)
+ * fr.insee.rmes.bauhaus.colectica.mutualized-codes-cache-ttl = 24h
  * </pre>
  *
  * @param langs List of supported language codes (e.g., "fr-FR", "en-GB")
@@ -35,6 +39,8 @@ import java.util.Map;
  * @param mutualizedCodesPackage Root package whose tree is recursively traversed to collect
  *                               mutualized code lists. Null means no mutualized code list —
  *                               the application starts normally.
+ * @param mutualizedCacheTtl In-process cache TTL for the mutualized code lists. Defaults to
+ *                           {@link #DEFAULT_MUTUALIZED_CACHE_TTL} (24h) when not configured.
  * @see ColecticaInstanceConfiguration
  * @see PackageRef
  */
@@ -42,11 +48,19 @@ import java.util.Map;
 public record ColecticaConfiguration(
         List<String> langs,
         ColecticaInstanceConfiguration server,
-        PackageRef mutualizedCodesPackage
+        PackageRef mutualizedCodesPackage,
+        Duration mutualizedCacheTtl
 ) {
+    /** Default TTL applied to the mutualized code lists cache when none is configured. */
+    public static final Duration DEFAULT_MUTUALIZED_CACHE_TTL = Duration.ofHours(24);
+
     public ColecticaConfiguration {
         if (langs == null || langs.isEmpty()) {
             throw new InvalidColecticaConfigurationException("langs cannot be null or empty");
+        }
+
+        if (mutualizedCacheTtl == null) {
+            mutualizedCacheTtl = DEFAULT_MUTUALIZED_CACHE_TTL;
         }
 
         langs.forEach(lang -> {

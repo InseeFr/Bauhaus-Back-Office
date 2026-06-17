@@ -3,9 +3,11 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.exceptions.InvalidColecticaConfigurationException;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -30,6 +32,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         null,
                         VALID_SERVER,
+                        null,
                         null
                 )
         )
@@ -43,6 +46,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         null,
                         VALID_SERVER,
+                        null,
                         null
                 )
         )
@@ -56,6 +60,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("invalid-code"),
                         VALID_SERVER,
+                        null,
                         null
                 )
         )
@@ -70,6 +75,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("FR-fr"),
                         VALID_SERVER,
+                        null,
                         null
                 )
         )
@@ -83,6 +89,7 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("fr-FR", "en-GB", "de-DE"),
                         VALID_SERVER,
+                        null,
                         null
                 )
         );
@@ -94,8 +101,33 @@ class ColecticaConfigurationTest {
                 new ColecticaConfiguration(
                         List.of("fr-FR"),
                         VALID_SERVER,
+                        null,
                         null
                 )
         );
+    }
+
+    @Test
+    void should_default_mutualized_cache_ttl_to_24h_when_not_configured() {
+        ColecticaConfiguration config = new ColecticaConfiguration(
+                List.of("fr-FR"),
+                VALID_SERVER,
+                null,
+                null
+        );
+
+        assertThat(config.mutualizedCacheTtl()).isEqualTo(Duration.ofHours(24));
+    }
+
+    @Test
+    void should_keep_configured_mutualized_cache_ttl() {
+        ColecticaConfiguration config = new ColecticaConfiguration(
+                List.of("fr-FR"),
+                VALID_SERVER,
+                null,
+                Duration.ofMinutes(30)
+        );
+
+        assertThat(config.mutualizedCacheTtl()).isEqualTo(Duration.ofMinutes(30));
     }
 }

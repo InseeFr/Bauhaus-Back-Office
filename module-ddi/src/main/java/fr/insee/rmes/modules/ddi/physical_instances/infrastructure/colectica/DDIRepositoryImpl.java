@@ -6,7 +6,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
-import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration.PackageRef;
 import fr.insee.rmes.colectica.client.dto.*;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
@@ -17,14 +16,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.cache.annotation.Cacheable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -46,7 +43,6 @@ public class DDIRepositoryImpl implements DDIRepository {
     );
 
     private static final String BAUHAUS_API = "bauhaus-api";
-    private static final Duration MUTUALIZED_CACHE_TTL = Duration.ofMinutes(10);
 
     private final String defaultLang;
 
@@ -55,34 +51,22 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private final ColecticaClient colecticaClient;
-
-    private volatile CachedCodesList mutualizedCache;
-    private volatile CachedRefs packageCodeListRefsCache;
-
-    private record CachedCodesList(List<PartialCodesList> codes, Instant expiresAt) {
-        boolean isFresh(Clock clock) {
-            return Instant.now(clock).isBefore(expiresAt);
-        }
-    }
-
-    private record CachedRefs(List<ItemReference> refs, Instant expiresAt) {
-        boolean isFresh(Clock clock) {
-            return Instant.now(clock).isBefore(expiresAt);
-        }
-    }
+    private final MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider;
 
     public DDIRepositoryImpl(
         ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
         DDI3toDDI4ConverterService ddi3ToDdi4Converter,
         DDI4toDDI3ConverterService ddi4ToDdi3Converter,
         ColecticaConfiguration colecticaConfiguration,
-        ColecticaClient colecticaClient
+        ColecticaClient colecticaClient,
+        MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider
     ) {
         this.instanceConfiguration = instanceConfiguration;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
         this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.colecticaConfiguration = colecticaConfiguration;
         this.colecticaClient = colecticaClient;
+        this.mutualizedCodeListRefsProvider = mutualizedCodeListRefsProvider;
         this.defaultLang = colecticaConfiguration.langs().getFirst();
     }
 
@@ -1304,7 +1288,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         if (colecticaConfiguration.mutualizedCodesPackage() == null) {
             return codeLists;
         }
-        Set<String> mutualizedKeys = packageCodeListRefs().stream()
+        Set<String> mutualizedKeys = mutualizedCodeListRefsProvider.codeListRefs().stream()
             .map(ref -> ref.agencyId() + "/" + ref.identifier())
             .collect(Collectors.toSet());
         return codeLists.stream()
@@ -1950,28 +1934,14 @@ public class DDIRepositoryImpl implements DDIRepository {
      * <p>Items are kept only when they carry a non-blank label (no fallback to identifier).
      * Duplicates (a CodeList reachable through several groups) are removed by {@code agency/identifier}.
      *
-     * <p>The result is cached in-process for {@link #MUTUALIZED_CACHE_TTL} to avoid hitting
-     * Colectica on every request. Concurrent callers see a single recompute.
+     * <p>The result is cached through Spring's caching abstraction
+     * ({@link ColecticaCacheNames#MUTUALIZED_CODES_LISTS}, TTL configured via
+     * {@code mutualized-codes-cache-ttl}) to avoid hitting Colectica on every request.
      */
     @Override
+    @Cacheable(ColecticaCacheNames.MUTUALIZED_CODES_LISTS)
     public List<PartialCodesList> getMutualizedCodesLists() {
-        CachedCodesList snapshot = mutualizedCache;
-        if (snapshot != null && snapshot.isFresh(Clock.systemUTC())) {
-            return snapshot.codes();
-        }
-        synchronized (this) {
-            snapshot = mutualizedCache;
-            if (snapshot != null && snapshot.isFresh(Clock.systemUTC())) {
-                return snapshot.codes();
-            }
-            List<PartialCodesList> fresh = computeMutualizedCodesLists();
-            mutualizedCache = new CachedCodesList(fresh, Instant.now().plus(MUTUALIZED_CACHE_TTL));
-            return fresh;
-        }
-    }
-
-    private List<PartialCodesList> computeMutualizedCodesLists() {
-        List<ItemReference> codeListRefs = packageCodeListRefs();
+        List<ItemReference> codeListRefs = mutualizedCodeListRefsProvider.codeListRefs();
         if (codeListRefs.isEmpty()) {
             return List.of();
         }
@@ -2003,72 +1973,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         logger.info("{} mutualized CodeList(s) kept", collected.size());
 
         return List.copyOf(collected.values());
-    }
-
-    /**
-     * Returns every CodeList reference (agency/identifier) reachable from the configured mutualized
-     * codes package by walking its tree top-down ({@code package → CodeListScheme → CodeListGroup →
-     * CodeList}), deduplicated and in walk order. Empty when no package is configured.
-     *
-     * <p>This is the single source of truth for "what is mutualized", shared by
-     * {@link #getMutualizedCodesLists()} (read path) and {@link #filterNonMutualizedCodeLists(List)}
-     * (write path). The bounded walk result is cached in-process for {@link #MUTUALIZED_CACHE_TTL};
-     * concurrent callers see a single recompute.
-     */
-    private List<ItemReference> packageCodeListRefs() {
-        CachedRefs snapshot = packageCodeListRefsCache;
-        if (snapshot != null && snapshot.isFresh(Clock.systemUTC())) {
-            return snapshot.refs();
-        }
-        synchronized (this) {
-            snapshot = packageCodeListRefsCache;
-            if (snapshot != null && snapshot.isFresh(Clock.systemUTC())) {
-                return snapshot.refs();
-            }
-            List<ItemReference> fresh = collectPackageCodeListRefs();
-            packageCodeListRefsCache = new CachedRefs(fresh, Instant.now().plus(MUTUALIZED_CACHE_TTL));
-            return fresh;
-        }
-    }
-
-    private List<ItemReference> collectPackageCodeListRefs() {
-        PackageRef rootPackage = colecticaConfiguration.mutualizedCodesPackage();
-        if (rootPackage == null) {
-            return List.of();
-        }
-        String packageKey = rootPackage.agencyId() + "/" + rootPackage.identifier();
-        Map<String, String> itemTypes = instanceConfiguration.itemTypes();
-        String codeListSchemeType = itemTypes.get("CodeListScheme");
-        String codeListGroupType = itemTypes.get("CodeListGroup");
-        String codeListType = itemTypes.get("CodeList");
-
-        long t0 = System.currentTimeMillis();
-        Set<ItemReference> codeListRefs = new LinkedHashSet<>();
-        for (ItemReference scheme : childrenOfType(rootPackage.agencyId(), rootPackage.identifier(), codeListSchemeType)) {
-            for (ItemReference group : childrenOfType(scheme.agencyId(), scheme.identifier(), codeListGroupType)) {
-                codeListRefs.addAll(childrenOfType(group.agencyId(), group.identifier(), codeListType));
-            }
-        }
-        logger.info("Walked package {} tree → {} CodeList reference(s) in {} ms",
-            packageKey, codeListRefs.size(), System.currentTimeMillis() - t0);
-        return List.copyOf(codeListRefs);
-    }
-
-    /**
-     * Returns the children of {@code agencyId/identifier} of the given item type, via a server-side
-     * type-filtered {@code bysubject} relationship query. Returns an empty list (logging a warning)
-     * when the lookup fails, so one broken branch does not abort the whole tree walk.
-     */
-    private List<ItemReference> childrenOfType(String agencyId, String identifier, String childType) {
-        try {
-            return colecticaClient.findRelatedDescriptions(
-                RelationshipDirection.BY_SUBJECT,
-                new ItemReference(agencyId, identifier),
-                List.of(childType));
-        } catch (RuntimeException e) {
-            logger.warn("bysubject lookup failed for {}/{}: {}", agencyId, identifier, e.getMessage());
-            return List.of();
-        }
     }
 
     private static Date parseColecticaDate(String raw) {

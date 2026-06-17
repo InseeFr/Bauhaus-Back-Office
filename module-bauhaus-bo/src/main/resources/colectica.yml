@@ -46,3 +46,7 @@ fr.insee.rmes.bauhaus.colectica:
     agency-id: fr.insee
     identifier: e129238f-485f-40b4-b52f-5702c05d5f40
     version: 1
+
+  # Durée de mise en cache in-process des code lists mutualisées (format Spring Duration : 24h, 30m, 90s...).
+  # Absent = 24h par défaut.
+  mutualized-codes-cache-ttl: 24h

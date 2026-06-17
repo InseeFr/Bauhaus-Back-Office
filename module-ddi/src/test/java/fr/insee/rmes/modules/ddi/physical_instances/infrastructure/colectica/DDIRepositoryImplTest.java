@@ -54,7 +54,12 @@ class DDIRepositoryImplTest {
     void setUp() {
         lenient().when(colecticaConfiguration.langs()).thenReturn(List.of("fr-FR"));
 
-        ddiRepository = new DDIRepositoryImpl(instanceConfiguration, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, colecticaClient);
+        // Plain (non-proxied) provider: exercises the package-tree walk logic. The @Cacheable
+        // interception is a Spring concern, covered by ColecticaCacheIntegrationTest.
+        MutualizedCodeListRefsProvider refsProvider =
+            new MutualizedCodeListRefsProvider(instanceConfiguration, colecticaConfiguration, colecticaClient);
+
+        ddiRepository = new DDIRepositoryImpl(instanceConfiguration, ddi3ToDdi4Converter, ddi4ToDdi3Converter, colecticaConfiguration, colecticaClient, refsProvider);
     }
 
     @Test
@@ -1245,37 +1250,6 @@ class DDIRepositoryImplTest {
         assertEquals(labelledId, result.get(0).id());
     }
 
-    @Test
-    void secondCallWithinTtl_isServedFromCache() {
-        String agencyId = "fr.insee";
-        String packageId = "pkg-1";
-        String schemeId = "scheme-1";
-        String groupId = "group-1";
-        String clId = "cl-1";
-
-        when(colecticaConfiguration.mutualizedCodesPackage())
-            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
-        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
-
-        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
-        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
-        stubChildren(agencyId, groupId, CODE_LIST_TYPE, new ItemReference(agencyId, clId));
-        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(new ColecticaResponse(
-            List.of(codeListItem(clId, "label", "2024-10-31T10:43:38")),
-            1, 1, null, null, null
-        ));
-
-        // First call hits Colectica, second must be served from cache.
-        List<PartialCodesList> first = ddiRepository.getMutualizedCodesLists();
-        List<PartialCodesList> second = ddiRepository.getMutualizedCodesLists();
-
-        assertEquals(1, first.size());
-        assertEquals(first, second);
-
-        // The package tree is walked exactly once across both invocations.
-        verify(colecticaClient, times(1)).findRelatedDescriptions(
-            eq(RelationshipDirection.BY_SUBJECT), eq(new ItemReference(agencyId, packageId)), anyList());
-    }
 
     @Test
     void sameCodeListReachableViaTwoGroups_appearsOnce() {

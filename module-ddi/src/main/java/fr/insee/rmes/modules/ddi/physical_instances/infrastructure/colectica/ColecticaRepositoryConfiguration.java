@@ -35,19 +35,38 @@ public class ColecticaRepositoryConfiguration {
         return new ColecticaClient(RestClient.create(), server.baseApiUrl(), server.baseServerUrl(), credentials);
     }
 
+    /**
+     * Standalone bean so its {@code @Cacheable} walk is honored on every call — both the read path
+     * ({@code getMutualizedCodesLists}) and the write path ({@code filterNonMutualizedCodeLists})
+     * go through this proxy rather than self-invoking inside {@link DDIRepositoryImpl}.
+     */
+    @Bean
+    public MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider(
+            ColecticaConfiguration colecticaConfiguration,
+            ColecticaClient colecticaClient
+    ) {
+        return new MutualizedCodeListRefsProvider(
+                colecticaConfiguration.server(),
+                colecticaConfiguration,
+                colecticaClient
+        );
+    }
+
     @Bean
     public DDIRepository primaryDDIRepository(
             ColecticaConfiguration colecticaConfiguration,
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
-            ColecticaClient colecticaClient
+            ColecticaClient colecticaClient,
+            MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider
     ) {
         return new DDIRepositoryImpl(
                 colecticaConfiguration.server(),
                 ddi3ToDdi4Converter,
                 ddi4ToDdi3Converter,
                 colecticaConfiguration,
-                colecticaClient
+                colecticaClient,
+                mutualizedCodeListRefsProvider
         );
     }
 

@@ -56,7 +56,7 @@ class LocalColecticaGroupInitConfigurationTest {
                 "bauhaus", "DC337820-AF3A-4C0B-82F9-CF02535CDE83",
                 "token", null, null, "fr.insee"
         );
-        return new ColecticaConfiguration(List.of("fr-FR"), instanceConfig, null);
+        return new ColecticaConfiguration(List.of("fr-FR"), instanceConfig, null, null);
     }
 
     @Test
