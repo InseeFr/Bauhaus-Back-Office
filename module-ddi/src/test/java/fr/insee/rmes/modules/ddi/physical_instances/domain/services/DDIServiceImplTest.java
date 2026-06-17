@@ -567,6 +567,13 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void evictMutualizedCodesListsCache_delegatesToRepository() {
+        ddiService.evictMutualizedCodesListsCache();
+
+        verify(ddiRepository).evictMutualizedCodesListsCache();
+    }
+
+    @Test
     void shouldGetMutualizedCodesListDelegatingToRepository() {
         // Given
         String agencyId = "fr.insee";

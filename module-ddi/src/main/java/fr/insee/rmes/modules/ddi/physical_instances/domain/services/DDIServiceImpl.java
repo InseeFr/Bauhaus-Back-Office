@@ -215,6 +215,12 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public void evictMutualizedCodesListsCache() {
+        logger.info("Evicting mutualized codes lists cache");
+        ddiRepository.evictMutualizedCodesListsCache();
+    }
+
+    @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
         logger.info("Getting mutualized codes list {}/{}", agencyId, id);
         return ddiRepository.getMutualizedCodesList(agencyId, id);

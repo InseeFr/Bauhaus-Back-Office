@@ -30,6 +30,7 @@ public interface DDIRepository {
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
     List<PartialCodesList> getMutualizedCodesLists();
+    void evictMutualizedCodesListsCache();
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
     Ddi4Response getCodeList(String agencyId, String id, String version);
     String getCodeListXml(String agencyId, String id, String version);

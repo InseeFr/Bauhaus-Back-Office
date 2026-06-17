@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,6 +51,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -127,7 +129,15 @@ public class DdiResources {
     )
     public ResponseEntity<
         List<CodeListSummaryResponse>
-    > getMutualizedCodesLists() {
+    > getMutualizedCodesLists(
+        @RequestHeader(
+            value = HttpHeaders.CACHE_CONTROL,
+            required = false
+        ) String cacheControl
+    ) {
+        if (requestsCacheBypass(cacheControl)) {
+            ddiService.evictMutualizedCodesListsCache();
+        }
         List<PartialCodesList> codesLists =
             ddiService.getMutualizedCodesLists();
 
@@ -145,6 +155,19 @@ public class DdiResources {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(responses);
+    }
+
+    /**
+     * Le client peut forcer un rafraîchissement du cache mutualisé en envoyant l'en-tête HTTP
+     * standard {@code Cache-Control: no-cache} (ou {@code no-store}) sur le GET : le cache est alors
+     * vidé avant que la liste ne soit recalculée depuis Colectica.
+     */
+    private static boolean requestsCacheBypass(String cacheControl) {
+        if (cacheControl == null) {
+            return false;
+        }
+        String normalized = cacheControl.toLowerCase();
+        return normalized.contains("no-cache") || normalized.contains("no-store");
     }
 
     @GetMapping("/mutualized-codes-list/{agencyId}/{id}")

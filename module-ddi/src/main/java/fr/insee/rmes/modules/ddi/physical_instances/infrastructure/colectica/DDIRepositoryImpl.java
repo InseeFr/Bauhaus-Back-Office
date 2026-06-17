@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -1973,6 +1974,24 @@ public class DDIRepositoryImpl implements DDIRepository {
         logger.info("{} mutualized CodeList(s) kept", collected.size());
 
         return List.copyOf(collected.values());
+    }
+
+    /**
+     * Clears both mutualized caches so the next {@link #getMutualizedCodesLists()} walks Colectica
+     * again: the high-level code lists ({@link ColecticaCacheNames#MUTUALIZED_CODES_LISTS}) and the
+     * underlying package CodeList references ({@link ColecticaCacheNames#MUTUALIZED_PACKAGE_CODE_LIST_REFS},
+     * populated by {@link MutualizedCodeListRefsProvider}). Evicting only the former would still serve
+     * a stale package tree on recompute, so both regions are flushed.
+     */
+    @Override
+    @CacheEvict(
+        cacheNames = {
+            ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
+            ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS
+        },
+        allEntries = true)
+    public void evictMutualizedCodesListsCache() {
+        logger.info("Mutualized codes lists caches evicted");
     }
 
     private static Date parseColecticaDate(String raw) {

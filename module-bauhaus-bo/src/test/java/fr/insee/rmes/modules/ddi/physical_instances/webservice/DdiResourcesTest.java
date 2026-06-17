@@ -20,6 +20,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -206,6 +208,54 @@ class DdiResourcesTest {
         assertEquals(MediaType.APPLICATION_JSON, result.getHeaders().getContentType());
         assertEquals(expectedResponse, result.getBody());
         verify(ddiService).getMutualizedCodesList(agencyId, id);
+    }
+
+    @Test
+    void getMutualizedCodesLists_withoutCacheControl_doesNotEvictCache() {
+        when(ddiService.getMutualizedCodesLists())
+                .thenReturn(List.of(new PartialCodesList("cl-1", "ma cl", new Date(), "fr.insee")));
+
+        ResponseEntity<List<CodeListSummaryResponse>> response =
+                ddiResources.getMutualizedCodesLists(null);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<CodeListSummaryResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals("cl-1", body.get(0).id());
+
+        verify(ddiService, never()).evictMutualizedCodesListsCache();
+        verify(ddiService).getMutualizedCodesLists();
+    }
+
+    @Test
+    void getMutualizedCodesLists_withCacheControlNoCache_evictsCacheThenServesFreshList() {
+        when(ddiService.getMutualizedCodesLists())
+                .thenReturn(List.of(new PartialCodesList("cl-1", "ma cl", new Date(), "fr.insee")));
+
+        ResponseEntity<List<CodeListSummaryResponse>> response =
+                ddiResources.getMutualizedCodesLists("no-cache");
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<CodeListSummaryResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+
+        // The cache must be cleared *before* the list is (re)computed, otherwise the stale entry is served.
+        InOrder inOrder = inOrder(ddiService);
+        inOrder.verify(ddiService).evictMutualizedCodesListsCache();
+        inOrder.verify(ddiService).getMutualizedCodesLists();
+    }
+
+    @Test
+    void getMutualizedCodesLists_withCacheControlNoCacheIgnoringCase_evictsCache() {
+        when(ddiService.getMutualizedCodesLists()).thenReturn(List.of());
+
+        ddiResources.getMutualizedCodesLists("No-Cache, no-store");
+
+        verify(ddiService).evictMutualizedCodesListsCache();
     }
 
     @Test
