@@ -134,7 +134,7 @@ public class DDIServiceImpl implements DDIService {
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
         return ddiRepository.getGroups().stream()
-                .sorted(LabelComparators.byLabelDescending(PartialGroup::label))
+                .sorted(LabelComparators.byLabelAscending(PartialGroup::label))
                 .toList();
     }
 
@@ -155,7 +155,7 @@ public class DDIServiceImpl implements DDIService {
                             List<String> creators = creatorsByIri.getOrDefault(iri, List.of());
                             return creators.stream().anyMatch(userStamps::contains);
                         }))
-                .sorted(LabelComparators.byLabelDescending(PartialGroup::label))
+                .sorted(LabelComparators.byLabelAscending(PartialGroup::label))
                 .toList();
     }
 

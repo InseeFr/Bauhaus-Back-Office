@@ -411,19 +411,19 @@ class DDIServiceImplTest {
         // When
         List<PartialGroup> result = ddiService.getGroups();
 
-        // Then : tri par label en ordre décroissant (Z-A)
+        // Then : tri par label en ordre croissant (A-Z)
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("group-2", result.get(0).id());
-        assertEquals("Recensement de la population", result.get(0).label());
-        assertEquals("group-1", result.get(1).id());
-        assertEquals("Base permanente des équipements", result.get(1).label());
+        assertEquals("group-1", result.get(0).id());
+        assertEquals("Base permanente des équipements", result.get(0).label());
+        assertEquals("group-2", result.get(1).id());
+        assertEquals("Recensement de la population", result.get(1).label());
 
         verify(ddiRepository).getGroups();
     }
 
     @Test
-    void getGroups_shouldBeSortedByLabelDescending() {
+    void getGroups_shouldBeSortedByLabelAscending() {
         when(ddiRepository.getGroups()).thenReturn(List.of(
                 new PartialGroup("g-a", "alpha", new Date(), "fr.insee", List.of()),
                 new PartialGroup("g-c", "Charlie", new Date(), "fr.insee", List.of()),
@@ -432,23 +432,23 @@ class DDIServiceImplTest {
 
         List<PartialGroup> result = ddiService.getGroups();
 
-        assertEquals(List.of("Charlie", "Bravo", "alpha"),
+        assertEquals(List.of("alpha", "Bravo", "Charlie"),
                 result.stream().map(PartialGroup::label).toList());
     }
 
     @Test
-    void getGroupsFilteredByStamp_shouldBeSortedByLabelDescending() {
+    void getGroupsFilteredByStamp_shouldBeSortedByLabelAscending() {
         String iri = "http://id.insee.fr/operations/serie/s1001";
         when(ddiRepository.getGroups()).thenReturn(List.of(
-                new PartialGroup("g-a", "alpha", null, "fr.insee", List.of(iri)),
-                new PartialGroup("g-c", "Charlie", null, "fr.insee", List.of(iri))
+                new PartialGroup("g-c", "Charlie", null, "fr.insee", List.of(iri)),
+                new PartialGroup("g-a", "alpha", null, "fr.insee", List.of(iri))
         ));
         when(seriesCreatorsPort.getCreatorsForSeries(Set.of(iri)))
                 .thenReturn(Map.of(iri, List.of("stamp-A")));
 
         List<PartialGroup> result = ddiService.getGroupsFilteredByStamp(Set.of("stamp-A"));
 
-        assertEquals(List.of("Charlie", "alpha"),
+        assertEquals(List.of("alpha", "Charlie"),
                 result.stream().map(PartialGroup::label).toList());
     }
 
