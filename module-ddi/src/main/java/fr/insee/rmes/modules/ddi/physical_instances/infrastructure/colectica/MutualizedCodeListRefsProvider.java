@@ -26,7 +26,7 @@ import java.util.Set;
  * {@code @Cacheable} interception applies to every call, whereas an internal (self-invocation) call
  * would bypass the cache.
  */
-public class MutualizedCodeListRefsProvider {
+public class MutualizedCodeListRefsProvider implements MutualizedCodeListRefsStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(MutualizedCodeListRefsProvider.class);
 
@@ -49,6 +49,7 @@ public class MutualizedCodeListRefsProvider {
      * deduplicated and in walk order. Empty when no package is configured. Cached for the configured
      * TTL; concurrent callers see a single recompute.
      */
+    @Override
     @Cacheable(ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS)
     public List<ItemReference> codeListRefs() {
         PackageRef rootPackage = colecticaConfiguration.mutualizedCodesPackage();

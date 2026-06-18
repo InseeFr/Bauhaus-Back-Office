@@ -880,6 +880,179 @@ collection:
             send: true
             store: true
           rebuildPath: true
+  - name: Colectica (direct)
+    meta:
+      id: fld_colectica_direct_0000000000000000000000
+      created: 1765280700000
+      modified: 1765280700000
+      description: "Appels directs à l'API Colectica (hors Bauhaus). Nécessite un token Bearer Colectica."
+      sortKey: -1765280700000
+    children:
+      - url: "{{ _.COLECTICA_SERVER_URL }}/token/createtoken"
+        name: Create token
+        meta:
+          id: req_colectica_create_token_0000000000000
+          created: 1765280700020
+          modified: 1765280700020
+          isPrivate: false
+          description: "Obtient un token Bearer (access_token) via username/password. À copier ensuite dans la variable COLECTICA_TOKEN."
+          sortKey: -1765280700020
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "username": "{{ _.COLECTICA_USERNAME }}",
+              "password": "{{ _.COLECTICA_PASSWORD }}"
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.COLECTICA_URL }}_query"
+        name: Get PhysicalInstances (_query)
+        meta:
+          id: req_colectica_query_pi_00000000000000000
+          created: 1765280700010
+          modified: 1765280700010
+          isPrivate: false
+          description: "Recherche les PhysicalInstance (dernière version) par itemType. itemTypes = UUID PhysicalInstance."
+          sortKey: -1765280700010
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+          - name: Authorization
+            value: "Bearer {{ _.COLECTICA_TOKEN }}"
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "itemTypes": ["a51e85bb-6259-4488-8df2-f08cb43485f8"],
+              "searchLatestVersion": true
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.COLECTICA_URL }}item/_getList"
+        name: Get item full (_getList)
+        meta:
+          id: req_colectica_getlist_000000000000000000
+          created: 1765280700008
+          modified: 1765280700008
+          isPrivate: false
+          description: "Récupère l'item COMPLET (XML + VersionDate + ItemFormat réels), contrairement à _query. C'est le bon endpoint pour vérifier ce qui est stocké."
+          sortKey: -1765280700008
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+          - name: Authorization
+            value: "Bearer {{ _.COLECTICA_TOKEN }}"
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "identifiers": [
+                { "agencyId": "{{ _.COLECTICA_AGENCY }}", "identifier": "{{ _.COLECTICA_PI_ID }}", "version": 1 }
+              ]
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.COLECTICA_URL }}item/{{ _.COLECTICA_AGENCY }}/{{ _.COLECTICA_PI_ID }}/1"
+        name: Get item (GET item/{agency}/{id}/{version})
+        meta:
+          id: req_colectica_get_item_00000000000000000
+          created: 1765280700006
+          modified: 1765280700006
+          isPrivate: false
+          description: "Récupère un item unique avec son contenu XML et ses métadonnées réelles."
+          sortKey: -1765280700006
+        method: GET
+        headers:
+          - name: Accept
+            value: application/json
+            disabled: false
+          - name: Authorization
+            value: "Bearer {{ _.COLECTICA_TOKEN }}"
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.COLECTICA_URL }}item"
+        name: Create PhysicalInstance (RegisterOrReplace)
+        meta:
+          id: req_colectica_create_pi_00000000000000000
+          created: 1765280700001
+          modified: 1765280700001
+          isPrivate: false
+          description: "POST item en RegisterOrReplace. Le versionDate du fragment XML et le VersionDate JSON partagent la variable COLECTICA_VERSION_DATE (dateTime ISO-8601 avec fuseau)."
+          sortKey: -1765280700001
+        method: POST
+        headers:
+          - name: Content-Type
+            value: application/json
+            disabled: false
+          - name: Authorization
+            value: "Bearer {{ _.COLECTICA_TOKEN }}"
+            disabled: false
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "Items": [
+                {
+                  "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                  "AgencyId": "{{ _.COLECTICA_AGENCY }}",
+                  "Version": 1,
+                  "Identifier": "{{ _.COLECTICA_PI_ID }}",
+                  "Item": "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">\n  <PhysicalInstance isUniversallyUnique=\"true\" versionDate=\"{{ _.COLECTICA_VERSION_DATE }}\" xmlns=\"ddi:physicalinstance:3_3\">\n    <r:URN>urn:ddi:{{ _.COLECTICA_AGENCY }}:{{ _.COLECTICA_PI_ID }}:1</r:URN>\n    <r:Agency>{{ _.COLECTICA_AGENCY }}</r:Agency>\n    <r:ID>{{ _.COLECTICA_PI_ID }}</r:ID>\n    <r:Version>1</r:Version>\n    <r:Citation>\n      <r:Title>\n        <r:String xml:lang=\"fr-FR\">Ma Physical Instance</r:String>\n      </r:Title>\n    </r:Citation>\n  </PhysicalInstance>\n</Fragment>",
+                  "VersionDate": "{{ _.COLECTICA_VERSION_DATE }}",
+                  "VersionResponsibility": "bauhaus-api",
+                  "IsPublished": false,
+                  "IsDeprecated": false,
+                  "IsProvisional": false,
+                  "ItemFormat": "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+                }
+              ],
+              "options": { "namedOptions": ["RegisterOrReplace"] }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
 cookieJar:
   name: Default Jar
   meta:
@@ -903,3 +1076,11 @@ environments:
     DDI_PI_ID: 9a7f1abd-10ec-48f3-975f-fcfedb7dc4cd
     DDI_CODELIST_ID: 2a22ba00-a977-4a61-a582-99025c6b0582
     DDI_VERSION: "1"
+    COLECTICA_SERVER_URL: https://metadonnees-operations-demo.insee.fr
+    COLECTICA_URL: https://metadonnees-operations-demo.insee.fr/api/v1/
+    COLECTICA_TOKEN: ""
+    COLECTICA_USERNAME: ""
+    COLECTICA_PASSWORD: ""
+    COLECTICA_AGENCY: fr.insee
+    COLECTICA_PI_ID: 11111111-1111-1111-1111-111111111111
+    COLECTICA_VERSION_DATE: "2026-06-18T09:30:00+02:00"

@@ -3,14 +3,20 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
@@ -183,6 +189,13 @@ public class LocalColecticaGroupInitConfiguration {
 
             logger.info("=== Colectica initialization complete: {} groups, {} study units, {} physical instances created ===", groupsCreated, studyUnitsCreated, physicalInstancesCreated);
 
+            // Step 3c: Create an example PhysicalInstance whose Code variable references a code list
+            // that does not exist. Ce cas ne devrait jamais arriver en conditions normales, mais il
+            // permet de reproduire / valider le message d'erreur explicite côté front (la variable X
+            // référence la liste de codes Y qui n'existe pas).
+            logger.info("Step 3c: Creating example PhysicalInstance with a variable referencing a missing code list");
+            createMissingCodeListExample(ddiService, defaultAgencyId, defaultLang);
+
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
             verifyItemsInColectica(colecticaClient);
@@ -240,6 +253,78 @@ public class LocalColecticaGroupInitConfiguration {
             } catch (Exception e) {
                 logger.error("Failed to verify study units", e);
             }
+    }
+
+    /**
+     * Crée une PhysicalInstance d'exemple contenant une unique variable « Code » dont la
+     * {@code CodeListReference} pointe vers une liste de codes inexistante (id bidon). Sert à
+     * reproduire le cas « variable associée à une liste de codes qui n'existe pas » : à l'ouverture
+     * de la variable, le front affiche un message d'erreur explicite avec les agency/id de la
+     * variable et de la liste de codes manquante.
+     *
+     * <p>La variable est rattachée au {@code LogicalRecord} de la PI (via {@code VariablesInRecord})
+     * pour faire partie du set, et aucune {@code CodeList} n'est fournie dans la réponse : la
+     * référence pointe donc volontairement dans le vide.
+     */
+    private void createMissingCodeListExample(DDIService ddiService, String defaultAgencyId, String defaultLang) {
+        try {
+            String label = "EXEMPLE - variable avec liste de codes inexistante";
+            Ddi4Response created = ddiService.createPhysicalInstance(
+                    new CreatePhysicalInstanceRequest(label, label, null, null, null, null, null));
+
+            Ddi4PhysicalInstance pi = created.physicalInstance().getFirst();
+            Ddi4DataRelationship dataRelationship = created.dataRelationship().getFirst();
+            LogicalRecord logicalRecord = dataRelationship.logicalRecord().getFirst();
+
+            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            String variableId = generateDeterministicUuid("example:variable:missing-code-list");
+            // Liste de codes qui n'existe pas : un UUID volontairement absent de Colectica.
+            Reference missingCodeListRef = Reference.of(
+                    defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", "CodeList");
+
+            Ddi4Variable variable = new Ddi4Variable(
+                    Ddi4Variable.TYPE,
+                    CogsDate.ofDateTime(versionDate),
+                    "urn:ddi:%s:%s:1".formatted(defaultAgencyId, variableId),
+                    defaultAgencyId, variableId, "1",
+                    null,
+                    LangStrings.of(defaultLang, "VAR_CL_FANTOME"),
+                    LangStrings.of(defaultLang, "Variable référençant une liste de codes inexistante"),
+                    null,
+                    new VariableRepresentation(
+                            null,
+                            new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE, missingCodeListRef),
+                            null, null, null),
+                    null);
+
+            LogicalRecord updatedLogicalRecord = new LogicalRecord(
+                    LogicalRecord.TYPE,
+                    logicalRecord.urn(), logicalRecord.agency(), logicalRecord.id(),
+                    logicalRecord.version(), logicalRecord.label(),
+                    new VariablesInRecord(List.of(
+                            Reference.of(defaultAgencyId, variableId, "1", "Variable"))));
+
+            Ddi4DataRelationship updatedDataRelationship = new Ddi4DataRelationship(
+                    Ddi4DataRelationship.TYPE,
+                    dataRelationship.versionDate(), dataRelationship.urn(), dataRelationship.agency(),
+                    dataRelationship.id(), dataRelationship.version(), dataRelationship.basedOnObject(),
+                    dataRelationship.label(), List.of(updatedLogicalRecord));
+
+            Ddi4Response full = new Ddi4Response(
+                    Ddi4Response.SCHEMA,
+                    created.topLevelReference(),
+                    List.of(pi),
+                    List.of(updatedDataRelationship),
+                    List.of(variable),
+                    null,  // pas de CodeList : la référence de la variable pointe dans le vide
+                    null);
+
+            ddiService.updateFullPhysicalInstance(pi.agency(), pi.id(), full);
+            logger.info("Example PhysicalInstance with a missing code list created: {}/{} (variable {} -> code list {}/00000000-0000-0000-0000-000000000000)",
+                    pi.agency(), pi.id(), variableId, defaultAgencyId);
+        } catch (Exception e) {
+            logger.error("Failed to create the example PhysicalInstance with a missing code list", e);
+        }
     }
 
     List<SeriesWithOperations> querySeriesAndOperations(RepositoryPublicationReader repositoryPublicationReader, String graphUri) throws RmesException {

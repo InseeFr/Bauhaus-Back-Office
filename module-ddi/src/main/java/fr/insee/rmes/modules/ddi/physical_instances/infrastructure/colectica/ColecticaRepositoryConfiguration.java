@@ -7,12 +7,15 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.ItemReference;
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.keycloak.TokenService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 
 @Configuration
@@ -36,20 +39,43 @@ public class ColecticaRepositoryConfiguration {
     }
 
     /**
-     * Standalone bean so its {@code @Cacheable} walk is honored on every call — both the read path
+     * Standalone bean so its {@code @Cacheable} resolution is honored on every call — both the read path
      * ({@code getMutualizedCodesLists}) and the write path ({@code filterNonMutualizedCodeLists})
      * go through this proxy rather than self-invoking inside {@link DDIRepositoryImpl}.
+     *
+     * <p>L'implémentation concrète est choisie par le flag
+     * {@code fr.insee.rmes.bauhaus.colectica.mutualized-codes-strategy} :
+     * {@link MutualizedCodeListRefsProvider} (walk du package, défaut) ou
+     * {@link ConfiguredGroupsCodeListRefsProvider} (groupes configurés en direct).
      */
     @Bean
-    public MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider(
+    public MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider(
             ColecticaConfiguration colecticaConfiguration,
+            MutualizedCodesProperties mutualizedCodesProperties,
             ColecticaClient colecticaClient
     ) {
-        return new MutualizedCodeListRefsProvider(
-                colecticaConfiguration.server(),
-                colecticaConfiguration,
-                colecticaClient
-        );
+        return switch (mutualizedCodesProperties.mutualizedCodesStrategy()) {
+            case CONFIGURED_GROUPS -> {
+                String defaultAgencyId = colecticaConfiguration.server().defaultAgencyId();
+                List<ItemReference> groupRefs = mutualizedCodesProperties.mutualizedCodesGroups().stream()
+                        .map(group -> new ItemReference(
+                                (group.agencyId() == null || group.agencyId().isBlank())
+                                        ? defaultAgencyId
+                                        : group.agencyId(),
+                                group.identifier()))
+                        .toList();
+                yield new ConfiguredGroupsCodeListRefsProvider(
+                        colecticaConfiguration.server(),
+                        groupRefs,
+                        colecticaClient
+                );
+            }
+            case PACKAGE_WALK -> new MutualizedCodeListRefsProvider(
+                    colecticaConfiguration.server(),
+                    colecticaConfiguration,
+                    colecticaClient
+            );
+        };
     }
 
     @Bean
@@ -58,7 +84,7 @@ public class ColecticaRepositoryConfiguration {
             DDI3toDDI4ConverterService ddi3ToDdi4Converter,
             DDI4toDDI3ConverterService ddi4ToDdi3Converter,
             ColecticaClient colecticaClient,
-            MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider
+            MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider
     ) {
         return new DDIRepositoryImpl(
                 colecticaConfiguration.server(),

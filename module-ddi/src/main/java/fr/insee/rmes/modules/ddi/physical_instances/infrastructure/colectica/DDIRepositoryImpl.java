@@ -52,7 +52,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
     private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private final ColecticaClient colecticaClient;
-    private final MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider;
+    private final MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider;
 
     public DDIRepositoryImpl(
         ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
@@ -60,7 +60,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         DDI4toDDI3ConverterService ddi4ToDdi3Converter,
         ColecticaConfiguration colecticaConfiguration,
         ColecticaClient colecticaClient,
-        MutualizedCodeListRefsProvider mutualizedCodeListRefsProvider
+        MutualizedCodeListRefsStrategy mutualizedCodeListRefsProvider
     ) {
         this.instanceConfiguration = instanceConfiguration;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
