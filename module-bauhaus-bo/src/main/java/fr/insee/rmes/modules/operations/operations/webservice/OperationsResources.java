@@ -136,27 +136,4 @@ public class OperationsResources {
         operationsService.setOperationValidation(id);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
-
-    @HasAccess(
-        module = RBAC.Module.OPERATION_OPERATION,
-        privilege = RBAC.Privilege.READ
-    )
-    @GetMapping(
-        value = "/operation/{id}/studyUnit",
-        produces = MediaType.APPLICATION_XML_VALUE
-    )
-    public ResponseEntity<String> getOperationStudyUnitXml(
-        @PathVariable(Constants.ID) String id
-    ) throws RmesException {
-        String operationIri = uriUtils.getCompleteUriGestion("operation", id);
-        return ddiService
-            .getStudyUnitXmlByOperationIri(operationIri)
-            .map(xml ->
-                ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_XML)
-                    .body(xml)
-            )
-            .orElse(ResponseEntity.notFound().build());
-    }
-
 }

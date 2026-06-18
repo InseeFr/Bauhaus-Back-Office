@@ -814,10 +814,10 @@ class DdiResourcesTest {
     @Test
     void getOperationStudyUnitJson_returns200WithJson_whenStudyUnitExists() throws RmesException {
         String id = "op1";
-        String operationIri = "http://bauhaus/operations/operation/op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
         String xml = "<Fragment><StudyUnit/></Fragment>";
         ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
-        when(uriUtils.getCompleteUriGestion("operation", id)).thenReturn(operationIri);
+        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
         when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
 
@@ -832,8 +832,8 @@ class DdiResourcesTest {
     @Test
     void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
-        String operationIri = "http://bauhaus/operations/operation/unknown";
-        when(uriUtils.getCompleteUriGestion("operation", id)).thenReturn(operationIri);
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
 
         ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);

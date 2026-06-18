@@ -38,6 +38,12 @@ public record UriUtils(  String baseUriPublication, String baseUriGestion, Prope
                 + "/" + id;
     }
 
+    public String getCompleteUriPublication(String labelType, String id) {
+        var enumByLabel=ObjectType.getEnumByLabel(labelType);
+        return enumByLabel.map(this::getBaseUriPublication).orElse(ObjectType.UNDEFINED.baseUriModifier().apply(""))
+                + "/" + id;
+    }
+
     private Optional<String> getBaseUri(ObjectType objectType){
         return propertiesFinder.findByName(objectType.baseUriPropertyName())
                 .map(objectType.baseUriModifier());

@@ -9,7 +9,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDISe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.colectica.client.ColecticaClient;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import org.springframework.boot.CommandLineRunner;
 
 import java.util.List;
 
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -39,7 +39,7 @@ class LocalColecticaGroupInitConfigurationTest {
     private DDIService ddiService;
 
     @Mock
-    private RepositoryGestion repositoryGestion;
+    private RepositoryPublicationReader repositoryPublicationReader;
 
     @Mock
     private ColecticaClient colecticaClient;
@@ -78,14 +78,14 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("operationIri", "http://id.insee.fr/operations/operation/op2")
                 .put("operationLabel", "Enquête innovation 2021"));
 
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
         when(ddiService.createPhysicalInstance(any()))
                 .thenReturn(piResponse("fr.insee", "pi-uuid-1"))
                 .thenReturn(piResponse("fr.insee", "pi-uuid-2"));
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryGestion,
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
                 createColecticaConfig(), colecticaClient,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
@@ -125,11 +125,11 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
                 .put("seriesLabel", "Enquête innovation"));
 
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryGestion,
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
                 createColecticaConfig(), colecticaClient,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
@@ -165,7 +165,7 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("operationIri", "http://id.insee.fr/operations/operation/op2")
                 .put("operationLabel", "Enquête innovation 2021"));
 
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
         when(ddiService.createPhysicalInstance(any()))
                 .thenReturn(piResponse("fr.insee", "pi-uuid-1"));
@@ -177,7 +177,7 @@ class LocalColecticaGroupInitConfigurationTest {
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
         CommandLineRunner runner = config.initColecticaGroups(
-                groupService, studyUnitService, ddiService, repositoryGestion,
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
                 createColecticaConfig(), colecticaClient,
                 "http://rdf.insee.fr/graphes/", "operations"
         );
@@ -204,10 +204,10 @@ class LocalColecticaGroupInitConfigurationTest {
                 .put("seriesId", "s2001").put("seriesIri", "iri:s2001").put("seriesLabel", "Série B")
                 .put("operationId", "op3").put("operationIri", "iri:op3").put("operationLabel", "Opération 3"));
 
-        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
 
         LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
-        var result = config.querySeriesAndOperations(repositoryGestion, "http://rdf.insee.fr/graphes/operations");
+        var result = config.querySeriesAndOperations(repositoryPublicationReader, "http://rdf.insee.fr/graphes/operations");
 
         // 2 series
         var s1001 = result.stream().filter(s -> s.seriesId().equals("s1001")).findFirst().orElseThrow();
@@ -217,5 +217,29 @@ class LocalColecticaGroupInitConfigurationTest {
         assertThat(s1001.seriesLabel()).isEqualTo("Série A");
         assertThat(s2001.operations()).hasSize(1);
         assertThat(s2001.seriesLabel()).isEqualTo("Série B");
+    }
+
+    @Test
+    void buildDdiAssociations_mapsEachSeriesToGroupAndEachOperationToStudyUnit() {
+        var series = new LocalColecticaGroupInitConfiguration.SeriesWithOperations(
+                "s1001", "http://id.insee.fr/operations/serie/s1001", "Série A",
+                List.of(
+                        new LocalColecticaGroupInitConfiguration.OperationInfo("op1", "http://id.insee.fr/operations/operation/op1", "Opération 1"),
+                        new LocalColecticaGroupInitConfiguration.OperationInfo("op2", "http://id.insee.fr/operations/operation/op2", "Opération 2")));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        var associations = config.buildDdiAssociations(List.of(series));
+
+        assertThat(associations).hasSize(1);
+        var association = associations.get(0);
+        assertThat(association.series().seriesId()).isEqualTo("s1001");
+        assertThat(association.groupId())
+                .isEqualTo(generateDeterministicUuid("http://id.insee.fr/operations/serie/s1001"));
+        assertThat(association.operations()).hasSize(2);
+        assertThat(association.operations().get(0).operation().operationId()).isEqualTo("op1");
+        assertThat(association.operations().get(0).studyUnitId())
+                .isEqualTo(generateDeterministicUuid("http://id.insee.fr/operations/operation/op1"));
+        assertThat(association.operations().get(1).studyUnitId())
+                .isEqualTo(generateDeterministicUuid("http://id.insee.fr/operations/operation/op2"));
     }
 }

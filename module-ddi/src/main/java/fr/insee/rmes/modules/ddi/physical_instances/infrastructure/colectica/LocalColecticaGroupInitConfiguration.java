@@ -16,7 +16,6 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
-import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -62,7 +61,7 @@ public class LocalColecticaGroupInitConfiguration {
             GroupService groupService,
             StudyUnitService studyUnitService,
             DDIService ddiService,
-            RepositoryGestion repositoryGestion,
+            RepositoryPublicationReader repositoryPublicationReader,
             ColecticaConfiguration colecticaConfiguration,
             ColecticaClient colecticaClient,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
@@ -79,11 +78,19 @@ public class LocalColecticaGroupInitConfiguration {
             logger.info("Step 1: Deprecating all existing groups from Colectica");
             groupService.deprecateAll();
 
-            // Step 2: Query GraphDB for series and operations
-            logger.info("Step 2: Querying GraphDB for series and operations");
+            // Step 2: Query the publication GraphDB repository for series and operations.
+            // On lit le dépôt de publication (et non gestion) pour que les IRIs récupérées soient
+            // en base de publication (http://id.insee.fr/...), donc cohérentes avec la clé de
+            // recherche de l'endpoint GET /ddi/operation/{id}/studyUnit.
+            logger.info("Step 2: Querying publication GraphDB for series and operations");
             String graphUri = baseGraph + operationsGraph;
-            List<SeriesWithOperations> seriesData = querySeriesAndOperations(repositoryGestion, graphUri);
+            List<SeriesWithOperations> seriesData = querySeriesAndOperations(repositoryPublicationReader, graphUri);
             logger.info("Found {} series", seriesData.size());
+
+            // Listing : pour chaque série et chaque operation, l'objet DDI (Group / StudyUnit) auquel
+            // elle est associée. L'id DDI est déterministe (UUID dérivé de l'IRI), identique à celui
+            // utilisé lors de la création aux étapes 3a/3b.
+            logDdiAssociations(buildDdiAssociations(seriesData), defaultAgencyId);
 
             // Step 3: Create study units and groups
             // Step 3a: Create PhysicalInstances and StudyUnits FIRST so they exist with full content
@@ -235,11 +242,11 @@ public class LocalColecticaGroupInitConfiguration {
             }
     }
 
-    List<SeriesWithOperations> querySeriesAndOperations(RepositoryGestion repositoryGestion, String graphUri) throws RmesException {
+    List<SeriesWithOperations> querySeriesAndOperations(RepositoryPublicationReader repositoryPublicationReader, String graphUri) throws RmesException {
         String sparql = FreeMarkerUtils.buildRequest("operations/", "getSeriesWithOperations.ftlh",
                 Map.of("GRAPH_URI", graphUri));
 
-        JSONArray results = repositoryGestion.getResponseAsArray(sparql);
+        JSONArray results = repositoryPublicationReader.getResponseAsArray(sparql);
 
         if (results == null) {
             return List.of();
@@ -274,6 +281,41 @@ public class LocalColecticaGroupInitConfiguration {
 
     record SeriesWithOperations(String seriesId, String seriesIri, String seriesLabel, List<OperationInfo> operations) {}
     record OperationInfo(String operationId, String operationIri, String operationLabel) {}
+
+    record SeriesDdiAssociation(SeriesWithOperations series, String groupId, List<OperationDdiAssociation> operations) {}
+    record OperationDdiAssociation(OperationInfo operation, String studyUnitId) {}
+
+    /**
+     * Associe chaque série à son Group DDI et chaque operation à sa StudyUnit DDI, via l'id
+     * déterministe {@link AbstractColecticaItemRepository#generateDeterministicUuid(String)}
+     * (le même que celui utilisé à la création). Méthode pure, sans effet de bord.
+     */
+    List<SeriesDdiAssociation> buildDdiAssociations(List<SeriesWithOperations> seriesData) {
+        return seriesData.stream()
+                .map(series -> new SeriesDdiAssociation(
+                        series,
+                        generateDeterministicUuid(series.seriesIri()),
+                        series.operations().stream()
+                                .map(op -> new OperationDdiAssociation(op, generateDeterministicUuid(op.operationIri())))
+                                .toList()))
+                .toList();
+    }
+
+    private void logDdiAssociations(List<SeriesDdiAssociation> associations, String defaultAgencyId) {
+        logger.info("=== Series and operations associated with DDI objects: {} series ===", associations.size());
+        for (SeriesDdiAssociation association : associations) {
+            SeriesWithOperations series = association.series();
+            logger.info("Series '{}' (id={}, iri={}) -> DDI Group {}:{} | {} operation(s)",
+                    series.seriesLabel(), series.seriesId(), series.seriesIri(),
+                    defaultAgencyId, association.groupId(), association.operations().size());
+            for (OperationDdiAssociation op : association.operations()) {
+                OperationInfo operation = op.operation();
+                logger.info("    Operation '{}' (id={}, iri={}) -> DDI StudyUnit {}:{}",
+                        operation.operationLabel(), operation.operationId(), operation.operationIri(),
+                        defaultAgencyId, op.studyUnitId());
+            }
+        }
+    }
 
     private static class SeriesBuilder {
         private final String seriesId;

@@ -522,7 +522,7 @@ public class DdiResources {
     public ResponseEntity<String> getOperationStudyUnitJson(
         @PathVariable(Constants.ID) String id
     ) throws RmesException {
-        String operationIri = uriUtils.getCompleteUriGestion("operation", id);
+        String operationIri = uriUtils.getCompleteUriPublication("operation", id);
         return ddiService
             .getStudyUnitXmlByOperationIri(operationIri)
             .map(xml ->

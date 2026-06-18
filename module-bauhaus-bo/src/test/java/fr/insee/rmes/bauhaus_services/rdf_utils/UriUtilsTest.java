@@ -23,4 +23,10 @@ class UriUtilsTest {
         assertThat(uriUtils.getCompleteUriGestion("operation", "s1250"))
                 .isEqualTo("http://bauhaus/operations/operation/s1250");
     }
+
+    @Test
+    void getCompleteUriPublication_buildsPublicationScopedOperationIri() {
+        assertThat(uriUtils.getCompleteUriPublication("operation", "s1250"))
+                .isEqualTo("http://id.insee.fr/operations/operation/s1250");
+    }
 }
