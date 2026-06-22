@@ -23,7 +23,10 @@ import java.util.Objects;
  * standard Spring Cache abstraction.
  */
 @Configuration
-@EnableCaching
+// proxyTargetClass = true forces CGLIB (concrete-class) proxies for @Cacheable beans, matching Spring
+// Boot's global AOP default. Without it, a standalone context (e.g. @SpringJUnitConfig tests) would
+// JDK-proxy beans that implement an interface, breaking injection by their concrete type.
+@EnableCaching(proxyTargetClass = true)
 public class ColecticaCacheConfiguration {
 
     @Bean
