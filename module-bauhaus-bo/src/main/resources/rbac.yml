@@ -1,5 +1,12 @@
 rbac:
   config:
+    Betatest_OeDDIp_RMESGNCS:
+      ddi_physicalinstance:
+        create: ALL
+        read: ALL
+        update: ALL
+        delete: ALL
+        publish: ALL
     Administrateur_RMESGNCS:
       structure_structure:
         create: ALL
