@@ -1573,7 +1573,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, "CodeList")) {
                     return null;
                 }
                 Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(itemResponses));
@@ -1596,7 +1597,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, "CodeList")) {
                     return null;
                 }
                 return assembleFragmentInstance(fragmentXmls(Arrays.stream(itemResponses).toList()));
@@ -1631,6 +1633,27 @@ public class DDIRepositoryImpl implements DDIRepository {
                 .toList();
 
         return colecticaClient.getDescriptions(identifiers);
+    }
+
+    /**
+     * Vérifie que l'item racine {@code id} du set est bien du type attendu (#493). La racine figure
+     * toujours parmi les {@link ColecticaItemResponse} remontés par {@link #fetchSetItems}, donc la
+     * validation ne coûte aucun appel réseau supplémentaire (Option B).
+     *
+     * <p>Renvoie {@code false} quand la racine est absente <em>ou</em> d'un autre type : les accesseurs
+     * retournent alors {@code null}, converti en {@code 404} côté contrôleur. Le 404 unique (mauvais
+     * type comme inexistant) ne divulgue pas l'existence d'un objet d'un type différent.
+     *
+     * @param expectedTypeKey clé de {@link ColecticaConfiguration.ColecticaInstanceConfiguration#itemTypes()}
+     *                        (p.ex. {@code "CodeList"} ou {@code "PhysicalInstance"})
+     */
+    private boolean rootItemHasType(ColecticaItemResponse[] itemResponses, String id, String expectedTypeKey) {
+        String expectedType = instanceConfiguration.itemTypes().get(expectedTypeKey);
+        return Arrays.stream(itemResponses)
+            .filter(item -> Objects.equals(item.identifier(), id))
+            .findFirst()
+            .map(item -> Objects.equals(item.itemType(), expectedType))
+            .orElse(false);
     }
 
     private List<Ddi3Response.Ddi3Item> toDdi3Items(ColecticaItemResponse[] itemResponses) {
@@ -1699,7 +1722,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, "PhysicalInstance")) {
                     return null;
                 }
                 ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
@@ -1724,7 +1748,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, "PhysicalInstance")) {
                     return null;
                 }
                 ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);

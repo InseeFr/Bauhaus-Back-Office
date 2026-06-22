@@ -1289,6 +1289,7 @@ class DDIRepositoryImplTest {
         String categoryId = "cat-1";
         int version = 1;
 
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(codeListId, version, agencyId),
             new ColecticaSetItem(categoryId, version, agencyId)
@@ -1787,6 +1788,7 @@ class DDIRepositoryImplTest {
         String version = "2";
 
 
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(codeListId, 2, agencyId),
             new ColecticaSetItem(categoryId, 2, agencyId)
@@ -1838,6 +1840,7 @@ class DDIRepositoryImplTest {
         String categoryId = "cat-1";
 
 
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
         ColecticaSetItem[] setItems = {
             new ColecticaSetItem(codeListId, 1, agencyId),
             new ColecticaSetItem(categoryId, 1, agencyId)
@@ -1869,6 +1872,43 @@ class DDIRepositoryImplTest {
         when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[0]);
 
         assertNull(ddiRepository.getCodeListXml("fr.insee", "unknown", null));
+    }
+
+    @Test
+    void getCodeList_returnsNull_whenRootIsNotCodeList() {
+        // #493 : un {id} pointant vers un autre type (ici PhysicalInstance) ne renvoie aucun contenu.
+        String agencyId = "fr.insee";
+        String id = "not-a-codelist";
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+            .thenReturn(new ColecticaSetItem[] { new ColecticaSetItem(id, 1, agencyId) });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(PHYSICAL_INSTANCE_TYPE, agencyId, 1, id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        assertNull(ddiRepository.getCodeList(agencyId, id, null));
+        verify(ddi3ToDdi4Converter, never()).convertDdi3ToDdi4(any(), any());
+    }
+
+    @Test
+    void getCodeListXml_returnsNull_whenRootIsNotCodeList() {
+        // #493 : même garde de type sur la variante XML.
+        String agencyId = "fr.insee";
+        String id = "not-a-codelist";
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+            .thenReturn(new ColecticaSetItem[] { new ColecticaSetItem(id, 1, agencyId) });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(PHYSICAL_INSTANCE_TYPE, agencyId, 1, id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        assertNull(ddiRepository.getCodeListXml(agencyId, id, null));
     }
 
     // ---- #447 : getDataRelationships / getDataRelationshipsXml (PhysicalInstance) ----
@@ -1987,6 +2027,43 @@ class DDIRepositoryImplTest {
         assertTrue(xml.contains("<Variable"));
         assertFalse(xml.contains("<PhysicalInstance"));
         assertFalse(xml.contains("<CodeList"));
+    }
+
+    @Test
+    void getDataRelationships_returnsNull_whenRootIsNotPhysicalInstance() {
+        // #493 : /variables sur un {id} qui n'est pas une PhysicalInstance (ici CodeList) ne renvoie rien.
+        String agencyId = "fr.insee";
+        String id = "not-a-pi";
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+            .thenReturn(new ColecticaSetItem[] { new ColecticaSetItem(id, 1, agencyId) });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(CODE_LIST_TYPE, agencyId, 1, id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        assertNull(ddiRepository.getDataRelationships(agencyId, id, null));
+        verify(ddi3ToDdi4Converter, never()).convertDdi3ToDdi4(any(), any());
+    }
+
+    @Test
+    void getDataRelationshipsXml_returnsNull_whenRootIsNotPhysicalInstance() {
+        // #493 : même garde de type sur la variante XML.
+        String agencyId = "fr.insee";
+        String id = "not-a-pi";
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        when(colecticaClient.getSet(anyString(), anyString(), any()))
+            .thenReturn(new ColecticaSetItem[] { new ColecticaSetItem(id, 1, agencyId) });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(CODE_LIST_TYPE, agencyId, 1, id,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        assertNull(ddiRepository.getDataRelationshipsXml(agencyId, id, null));
     }
 
     @Test
