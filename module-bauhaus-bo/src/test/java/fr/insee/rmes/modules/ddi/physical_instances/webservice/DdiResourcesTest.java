@@ -842,4 +842,35 @@ class DdiResourcesTest {
         assertNull(response.getBody());
     }
 
+    // --- GET /ddi/operation/{id}/studyUnit (XML DDI 3.3, public) ---
+
+    @Test
+    void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() throws RmesException {
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String xml = "<Fragment><StudyUnit/></Fragment>";
+        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
+        assertEquals(xml, response.getBody());
+        verify(ddiItemConvertService, never()).convert(any());
+    }
+
+    @Test
+    void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
+        String id = "unknown";
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
 }
