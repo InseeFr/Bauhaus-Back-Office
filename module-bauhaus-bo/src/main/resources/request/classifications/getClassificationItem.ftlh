@@ -1,4 +1,4 @@
-SELECT ?classificationId ?itemId ?prefLabelLg1 ?prefLabelLg2 ?isValidated
+SELECT ?classificationId ?itemId ?prefLabelLg1 ?prefLabelLg2 ?validationState ?isValidated
 ?broaderLg1 ?broaderLg2 ?idBroader ?conceptVersion ?altLabelLg1 ?altLabelLg2
 ?broaderURI
 WHERE {
@@ -26,7 +26,14 @@ WHERE {
     } .
 
     ?item skos:notation ?itemId .
-    ?item insee:isValidated ?isValidated .
+
+    OPTIONAL {
+        ?item insee:validationState ?validationState .
+    } .
+
+    OPTIONAL {
+        ?item insee:isValidated ?isValidated .
+    } .
 
     OPTIONAL {
         ?item ?versionnedNote ?versionnedNoteURI .
