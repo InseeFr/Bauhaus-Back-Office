@@ -1577,7 +1577,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                     return null;
                 }
                 Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(itemResponses));
-                return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
+                Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
+                return withTopLevelReference(response, findTopLevelReference(itemResponses, "CodeList"));
             } catch (Exception e) {
                 throw new RuntimeException(
                     "Failed to fetch code list " + agencyId + "/" + id + "/" + version, e);
@@ -1688,6 +1689,49 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
+     * Builds the {@code TopLevelReference} of a FragmentInstance from the set item whose type matches
+     * {@code typeKey} (#494). Endpoints like {@code /variables} and {@code /codelist} drop their root
+     * item from the converted output, so the converter alone leaves the reference null; we recover it
+     * from the raw item descriptions (which still carry the root item with its resolved version).
+     * Returns {@code null} when the item type configuration or the matching item is missing.
+     */
+    private Reference findTopLevelReference(ColecticaItemResponse[] itemResponses, String typeKey) {
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        if (types == null) {
+            return null;
+        }
+        String typeUuid = types.get(typeKey);
+        if (typeUuid == null) {
+            return null;
+        }
+        return Arrays.stream(itemResponses)
+            .filter(item -> Objects.equals(item.itemType(), typeUuid))
+            .findFirst()
+            .map(item -> Reference.of(
+                item.agencyId(), item.identifier(), String.valueOf(item.version()), typeKey))
+            .orElse(null);
+    }
+
+    /**
+     * Returns {@code response} with its {@code TopLevelReference} set to {@code topLevelReference},
+     * leaving an already-populated reference untouched. No-op when either argument is null.
+     */
+    private Ddi4Response withTopLevelReference(Ddi4Response response, Reference topLevelReference) {
+        if (response == null || topLevelReference == null
+                || (response.topLevelReference() != null && !response.topLevelReference().isEmpty())) {
+            return response;
+        }
+        return new Ddi4Response(
+            response.schema(),
+            List.of(topLevelReference),
+            response.physicalInstance(),
+            response.dataRelationship(),
+            response.variable(),
+            response.codeList(),
+            response.category());
+    }
+
+    /**
      * Returns every DataRelationship of a PhysicalInstance set as DDI4 (#447), latest version when
      * {@code version} is null. The DataRelationship fragments and the Variable fragments they
      * reference are converted; the referenced CodeList/Category are left out.
@@ -1704,7 +1748,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 }
                 ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
                 Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(dataRelationships));
-                return ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
+                Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(ddi3Response, Ddi4Response.SCHEMA);
+                return withTopLevelReference(response, findTopLevelReference(itemResponses, "PhysicalInstance"));
             } catch (Exception e) {
                 throw new RuntimeException(
                     "Failed to fetch data relationships " + agencyId + "/" + id + "/" + version, e);
