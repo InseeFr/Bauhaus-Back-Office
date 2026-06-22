@@ -44,19 +44,15 @@ import static org.mockito.Mockito.when;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "spring.config.additional-location=classpath:testing-rbac.yml",
-                "fr.insee.rmes.bauhaus.baseGraph=http://rdf.insee.fr/graphes/",
+                // baseGraph, adms.graph, adms.identifiantsAlternatifs.baseURI, lg1, lg2 and
+                // operations.graph are omitted: identical to the main config chain values.
                 "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://bauhaus/",
                 "fr.insee.rmes.bauhaus.sesame.publication.baseURI=http://publication/",
                 "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
                 "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
                 "fr.insee.rmes.bauhaus.datasets.record.baseURI=recordIRI",
                 "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
-                "fr.insee.rmes.bauhaus.adms.graph=adms",
-                "fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI=identifiantsAlternatifs/jeuDeDonnees",
-                "fr.insee.rmes.bauhaus.lg1=fr",
-                "fr.insee.rmes.bauhaus.lg2=en",
                 "fr.insee.rmes.bauhaus.modules[0].identifier=operations",
-                "fr.insee.rmes.bauhaus.operations.graph=operations",
                 "fr.insee.rmes.bauhaus.documentation.geographie.baseUri=http://bauhaus/qualite/territoire/",
                 "fr.insee.rmes.bauhaus.documentation.titlePrefixLg1=Rapport qualité :",
                 "fr.insee.rmes.bauhaus.documentation.titlePrefixLg2=Quality report:",
