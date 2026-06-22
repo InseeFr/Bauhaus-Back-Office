@@ -1,0 +1,8 @@
+# Test-only configuration overrides applied to every Spring context loaded in tests.
+# Standard-location config: takes precedence over files pulled in via spring.config.import
+# (e.g. colectica.yml), without shadowing the main application.properties (different basename).
+fr.insee.rmes.bauhaus.colectica:
+  # Disable the mutualized codes list cache warm-up (MutualizedCodesCacheWarmer): the
+  # ApplicationReadyEvent-triggered Colectica tree walk only slows tests down and never
+  # serves a real request in a test context.
+  cache-warmup-enabled: false
