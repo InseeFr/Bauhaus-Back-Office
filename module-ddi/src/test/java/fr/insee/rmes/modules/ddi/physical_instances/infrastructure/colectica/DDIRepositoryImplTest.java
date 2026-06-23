@@ -2185,46 +2185,58 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void getVariablesUsingCodeList_returnsVariablePhysicalInstancePairs() {
+    void getVariablesUsingCodeList_returnsStudyUnitPhysicalInstanceVariableWithLabels() {
         String agencyId = "fr.insee";
         String codeListId = "cl-1";
         String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
         String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
         String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String studyUnitType = STUDY_UNIT_ITEM_TYPE;
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
                 "Variable", variableType,
                 "DataRelationship", dataRelationshipType,
-                "PhysicalInstance", physicalInstanceType));
+                "PhysicalInstance", physicalInstanceType,
+                "StudyUnit", studyUnitType));
 
-        // CodeList ← Variable
-        when(colecticaClient.findRelatedDescriptions(
+        // CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
+        // Labels come from the /descriptions endpoint directly (findRelatedItems → ColecticaItem),
+        // so no separate label query is made. DataRelationships are only intermediate (bare refs).
+        when(colecticaClient.findRelatedItems(
                 eq(RelationshipDirection.BY_OBJECT),
                 eq(new ItemReference(agencyId, codeListId)),
                 eq(List.of(variableType))))
-            .thenReturn(List.of(new ItemReference(agencyId, "var-1")));
-        // Variable ← DataRelationship
+            .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
         when(colecticaClient.findRelatedDescriptions(
                 eq(RelationshipDirection.BY_OBJECT),
                 eq(new ItemReference(agencyId, "var-1")),
                 eq(List.of(dataRelationshipType))))
             .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
-        // DataRelationship ← PhysicalInstance
-        when(colecticaClient.findRelatedDescriptions(
+        when(colecticaClient.findRelatedItems(
                 eq(RelationshipDirection.BY_OBJECT),
                 eq(new ItemReference(agencyId, "dr-1")),
                 eq(List.of(physicalInstanceType))))
-            .thenReturn(List.of(new ItemReference(agencyId, "pi-1")));
+            .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "pi-1")),
+                eq(List.of(studyUnitType))))
+            .thenReturn(List.of(labelItem(studyUnitType, agencyId, "su-1", "Recensement 2024")));
 
         List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, codeListId);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         CodeListVariableUsage usage = result.get(0);
+        assertEquals(agencyId, usage.studyUnitAgencyId());
+        assertEquals("su-1", usage.studyUnitId());
+        assertEquals("Recensement 2024", usage.studyUnitLabel());
         assertEquals(agencyId, usage.physicalInstanceAgencyId());
         assertEquals("pi-1", usage.physicalInstanceId());
+        assertEquals("Fichier détail", usage.physicalInstanceLabel());
         assertEquals(agencyId, usage.variableAgencyId());
         assertEquals("var-1", usage.variableId());
+        assertEquals("Sexe", usage.variableLabel());
     }
 
     @Test
@@ -2236,8 +2248,9 @@ class DDIRepositoryImplTest {
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
                 "Variable", variableType,
                 "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
-                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8"));
-        when(colecticaClient.findRelatedDescriptions(
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "StudyUnit", STUDY_UNIT_ITEM_TYPE));
+        when(colecticaClient.findRelatedItems(
                 eq(RelationshipDirection.BY_OBJECT),
                 eq(new ItemReference(agencyId, codeListId)),
                 eq(List.of(variableType))))
@@ -2247,6 +2260,34 @@ class DDIRepositoryImplTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    private static ColecticaItem labelItem(String itemType, String agency, String id, String label) {
+        return new ColecticaItem(
+                null,                       // summary
+                Map.of("fr-FR", label),     // itemName
+                null,                       // label
+                null,                       // description
+                null,                       // versionRationale
+                0,                          // metadataRank
+                "test-repo",                // repositoryName
+                true,                       // isAuthoritative
+                List.of(),                  // tags
+                itemType,                   // itemType
+                agency,                     // agencyId
+                1,                          // version
+                id,                         // identifier
+                null,                       // item
+                null,                       // notes
+                null,                       // versionDate
+                null,                       // versionResponsibility
+                true,                       // isPublished
+                false,                      // isDeprecated
+                false,                      // isProvisional
+                "DDI",                      // itemFormat
+                1L,                         // transactionId
+                0                           // versionCreationType
+        );
     }
 
     private static final String STUDY_UNIT_ITEM_TYPE = "30ea0200-7121-4f01-8d21-a931a182b86d";

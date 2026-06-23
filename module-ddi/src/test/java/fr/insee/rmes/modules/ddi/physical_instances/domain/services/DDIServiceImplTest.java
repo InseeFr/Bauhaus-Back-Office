@@ -275,7 +275,8 @@ class DDIServiceImplTest {
     void shouldGetVariablesUsingCodeList() {
         // Given
         List<CodeListVariableUsage> expected = List.of(
-                new CodeListVariableUsage("fr.insee", "pi-1", "fr.insee", "var-1")
+                new CodeListVariableUsage("fr.insee", "su-1", "Recensement 2024",
+                        "fr.insee", "pi-1", "Fichier détail", "fr.insee", "var-1", "Sexe")
         );
         when(ddiRepository.getVariablesUsingCodeList("fr.insee", "cl-1")).thenReturn(expected);
 

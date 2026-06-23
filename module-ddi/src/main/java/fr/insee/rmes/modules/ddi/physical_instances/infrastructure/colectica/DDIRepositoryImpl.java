@@ -1870,27 +1870,49 @@ public class DDIRepositoryImpl implements DDIRepository {
         String variableType = types.get("Variable");
         String dataRelationshipType = types.get("DataRelationship");
         String physicalInstanceType = types.get("PhysicalInstance");
+        String studyUnitType = types.get("StudyUnit");
 
-        List<ItemReference> variables = colecticaClient.findRelatedDescriptions(
+        // Walk the byobject graph: CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
+        // The {@code /descriptions} endpoint already returns each related item's ItemName/Label, so we use
+        // findRelatedItems (which keeps them) for the levels we need labelled — no separate label query
+        // and no extra HTTP call. DataRelationships are only intermediate, so bare references suffice.
+        List<ColecticaItem> variables = colecticaClient.findRelatedItems(
             RelationshipDirection.BY_OBJECT,
             new ItemReference(codeListAgencyId, codeListId),
             List.of(variableType));
+        if (variables.isEmpty()) {
+            return List.of();
+        }
 
         List<CodeListVariableUsage> usages = new ArrayList<>();
-        for (ItemReference variable : variables) {
+        for (ColecticaItem variable : variables) {
             List<ItemReference> dataRelationships = colecticaClient.findRelatedDescriptions(
-                RelationshipDirection.BY_OBJECT, variable, List.of(dataRelationshipType));
+                RelationshipDirection.BY_OBJECT, itemRef(variable), List.of(dataRelationshipType));
             for (ItemReference dataRelationship : dataRelationships) {
-                List<ItemReference> physicalInstances = colecticaClient.findRelatedDescriptions(
+                List<ColecticaItem> physicalInstances = colecticaClient.findRelatedItems(
                     RelationshipDirection.BY_OBJECT, dataRelationship, List.of(physicalInstanceType));
-                for (ItemReference physicalInstance : physicalInstances) {
+                for (ColecticaItem physicalInstance : physicalInstances) {
+                    ColecticaItem studyUnit = colecticaClient.findRelatedItems(
+                            RelationshipDirection.BY_OBJECT, itemRef(physicalInstance), List.of(studyUnitType))
+                        .stream().findFirst().orElse(null);
                     usages.add(new CodeListVariableUsage(
-                        physicalInstance.agencyId(), physicalInstance.identifier(),
-                        variable.agencyId(), variable.identifier()));
+                        studyUnit == null ? null : studyUnit.agencyId(),
+                        studyUnit == null ? null : studyUnit.identifier(),
+                        studyUnit == null ? null : extractLabelFromItem(studyUnit),
+                        physicalInstance.agencyId(),
+                        physicalInstance.identifier(),
+                        extractLabelFromItem(physicalInstance),
+                        variable.agencyId(),
+                        variable.identifier(),
+                        extractLabelFromItem(variable)));
                 }
             }
         }
         return usages.stream().distinct().toList();
+    }
+
+    private static ItemReference itemRef(ColecticaItem item) {
+        return new ItemReference(item.agencyId(), item.identifier());
     }
 
     /**

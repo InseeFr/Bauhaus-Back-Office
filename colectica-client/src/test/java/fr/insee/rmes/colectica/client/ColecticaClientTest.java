@@ -2,6 +2,7 @@ package fr.insee.rmes.colectica.client;
 
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
@@ -194,6 +195,45 @@ class ColecticaClientTest {
 
         f.server.verify();
         assertThat(result).containsExactly(new ItemReference("fr.insee", "lp-1"));
+    }
+
+    @Test
+    void findRelatedItems_postsFilteredQueryAndMapsLabelsFromDescriptions() {
+        Fixture f = newFixture();
+        f.server.expect(requestTo(BASE_API_URL + "_query/relationship/byobject/descriptions"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(header("Authorization", "Bearer " + TOKEN))
+            .andExpect(jsonPath("$.itemTypes[0]").value(LOGICAL_PRODUCT_TYPE))
+            .andExpect(jsonPath("$.targetItem.identifier").value("cl-1"))
+            .andRespond(withSuccess(
+                "[{\"AgencyId\":\"fr.insee\",\"Identifier\":\"var-1\","
+                    + "\"ItemName\":{\"fr-FR\":\"Sexe\"},\"Label\":{\"fr-FR\":\"Sexe label\"}}]",
+                MediaType.APPLICATION_JSON));
+
+        List<ColecticaItem> result = f.client.findRelatedItems(
+            RelationshipDirection.BY_OBJECT,
+            new ItemReference("fr.insee", "cl-1"),
+            List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).agencyId()).isEqualTo("fr.insee");
+        assertThat(result.get(0).identifier()).isEqualTo("var-1");
+        assertThat(result.get(0).itemName()).containsEntry("fr-FR", "Sexe");
+    }
+
+    @Test
+    void findRelatedItems_returnsEmptyListWhenNoRelatedItem() {
+        Fixture f = newFixture();
+        f.server.expect(requestTo(BASE_API_URL + "_query/relationship/byobject/descriptions"))
+            .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
+
+        List<ColecticaItem> result = f.client.findRelatedItems(
+            RelationshipDirection.BY_OBJECT, new ItemReference("fr.insee", "cl-empty"),
+            List.of(LOGICAL_PRODUCT_TYPE));
+
+        f.server.verify();
+        assertThat(result).isEmpty();
     }
 
     @Test
