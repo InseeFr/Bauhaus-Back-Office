@@ -230,6 +230,22 @@ class DdiResourcesTest {
     }
 
     @Test
+    void getMutualizedCodesLists_exposesTechnicalNameAlongsideLabel() {
+        when(ddiService.getMutualizedCodesLists())
+                .thenReturn(List.of(new PartialCodesList(
+                        "cl-1", "Libellé lisible", new Date(), "fr.insee", "CL_NOM_TECHNIQUE")));
+
+        ResponseEntity<List<CodeListSummaryResponse>> response =
+                ddiResources.getMutualizedCodesLists(null);
+
+        List<CodeListSummaryResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals("Libellé lisible", body.get(0).label());
+        assertEquals("CL_NOM_TECHNIQUE", body.get(0).name());
+    }
+
+    @Test
     void getMutualizedCodesLists_withCacheControlNoCache_evictsCacheThenServesFreshList() {
         when(ddiService.getMutualizedCodesLists())
                 .thenReturn(List.of(new PartialCodesList("cl-1", "ma cl", new Date(), "fr.insee")));

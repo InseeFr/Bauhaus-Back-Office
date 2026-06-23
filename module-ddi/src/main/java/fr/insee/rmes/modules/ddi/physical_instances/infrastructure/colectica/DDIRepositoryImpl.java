@@ -292,12 +292,14 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     /**
      * Strict label extraction for mutualized code lists: returns the first non-blank value
-     * across {@code itemName} then {@code label}, trying default lang, then "en", then any
-     * other language. No fallback to identifier — empty Optional if no non-blank value exists.
+     * across {@code label} then {@code itemName}, trying default lang, then "en", then any
+     * other language. Le libellé ({@code label}) est prioritaire sur le nom technique
+     * ({@code itemName}) car c'est lui qu'on affiche dans le sélecteur. No fallback to
+     * identifier — empty Optional if no non-blank value exists.
      */
     private Optional<String> extractStrictLabel(ColecticaItem item) {
-        return firstNonBlank(item.itemName())
-            .or(() -> firstNonBlank(item.label()));
+        return firstNonBlank(item.label())
+            .or(() -> firstNonBlank(item.itemName()));
     }
 
     private Optional<String> firstNonBlank(Map<String, String> languageMap) {
@@ -1989,8 +1991,11 @@ public class DDIRepositoryImpl implements DDIRepository {
             if (item == null) continue;
             Optional<String> label = extractStrictLabel(item);
             if (label.isEmpty()) continue;
+            // Nom technique (itemName) conservé à part du libellé : il sert à la recherche
+            // dans le sélecteur côté front, où seul le libellé est affiché.
+            String name = firstNonBlank(item.itemName()).orElse(null);
             collected.putIfAbsent(key, new PartialCodesList(
-                item.identifier(), label.get(), parseColecticaDate(item.versionDate()), item.agencyId()
+                item.identifier(), label.get(), parseColecticaDate(item.versionDate()), item.agencyId(), name
             ));
         }
         logger.info("{} mutualized CodeList(s) kept", collected.size());

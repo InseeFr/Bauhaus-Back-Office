@@ -147,7 +147,8 @@ public class DdiResources {
                 new CodeListSummaryResponse(
                     codesList.agency(),
                     codesList.id(),
-                    codesList.label()
+                    codesList.label(),
+                    codesList.name()
                 )
             )
             .toList();
