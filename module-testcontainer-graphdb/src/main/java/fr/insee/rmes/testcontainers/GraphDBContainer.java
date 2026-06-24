@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
+public class GraphDBContainer extends GenericContainer<GraphDBContainer> implements SparqlFixtureLoader {
     public static final String DOCKER_ENTRYPOINT_INITDB = "/docker-entrypoint-initdb";
     private String folder;
 
@@ -24,6 +24,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
         withRepository("config.ttl");
     }
 
+    @Override
     public GraphDBContainer withInitFolder(String folder){
         this.folder = folder;
         return this;
@@ -39,6 +40,7 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
         return this;
     }
 
+    @Override
     public GraphDBContainer withTrigFiles(String file) {
         try {
             String path = copyFile(file);

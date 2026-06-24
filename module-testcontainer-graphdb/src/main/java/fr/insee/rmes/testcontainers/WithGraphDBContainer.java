@@ -1,15 +1,8 @@
 package fr.insee.rmes.testcontainers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 @Testcontainers
@@ -32,6 +25,15 @@ public class WithGraphDBContainer {
                 return BAUHAUS_TEST_REPOSITORY;
             }
         };
+    }
+
+    /**
+     * The backend-neutral fixture loader for the running container. Tests that only need to
+     * push {@code .trig} fixtures should depend on this seam rather than on {@link GraphDBContainer}
+     * directly, so they remain unchanged once a {@code FusekiContainer} provides the same contract.
+     */
+    protected static SparqlFixtureLoader fixtureLoader() {
+        return container;
     }
 
 }

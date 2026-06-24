@@ -1,0 +1,44 @@
+# Fixture dédiée au test d'intégration CRUD des nomenclatures (classifications).
+#
+# Reproduit la forme minimale attendue par les templates SPARQL réels :
+#  - getClassifications.ftlh / getClassification.ftlh : ?classification a skos:ConceptScheme,
+#    IRI contenant /codes/<id>/, skos:prefLabel@fr ; validationState lu dans le graphe
+#    « nomenclatures ».
+#  - getClassificationItems.ftlh : ?item skos:inScheme <classification>, skos:prefLabel@fr,
+#    skos:notation, et un niveau (?level skos:member ?item ; ?level xkos:depth ?depth).
+#
+# IRIs uniques (suffixe -it) car le conteneur GraphDB est partagé entre les classes de test.
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix xkos:  <http://rdf-vocabulary.ddialliance.org/xkos#> .
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+<http://rdf.insee.fr/graphes/codes/nafr2-it> {
+  <http://rdf.insee.fr/codes/nafr2-it/>
+      a skos:ConceptScheme ;
+      skos:prefLabel "NAF rév. 2 (test)"@fr ;
+      skos:prefLabel "NAF rev. 2 (test)"@en ;
+      skos:altLabel "NAF (test)"@fr ;
+      dc:creator "Insee" ;
+      insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/Public> .
+
+  <http://rdf.insee.fr/codes/nafr2-it/01/>
+      a skos:Concept ;
+      skos:inScheme <http://rdf.insee.fr/codes/nafr2-it/> ;
+      skos:prefLabel "Agriculture (test)"@fr ;
+      skos:prefLabel "Agriculture (test)"@en ;
+      skos:altLabel "Agri (test)"@fr ;
+      skos:notation "01" .
+
+  <http://rdf.insee.fr/codes/nafr2-it/niveau/1>
+      a xkos:ClassificationLevel ;
+      skos:member <http://rdf.insee.fr/codes/nafr2-it/01/> ;
+      xkos:depth "1"^^xsd:int .
+}
+
+<http://rdf.insee.fr/graphes/codes/nomenclatures> {
+  <http://rdf.insee.fr/codes/nafr2-it/>
+      insee:validationState "Validated" .
+}
