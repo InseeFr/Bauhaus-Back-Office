@@ -138,5 +138,5 @@ WHERE {
     OPTIONAL {?classification insee:disseminationStatus ?disseminationStatus} .
     OPTIONAL {?classification insee:legalMaterial ?legalMaterial} .
     OPTIONAL {?classification foaf:homepage ?homepage} .
-    OPTIONAL {?classification insee:validationState ?validationState} .
+    OPTIONAL { GRAPH <${GRAPH}> { ?classification insee:validationState ?validationState } } .
 }

@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.springframework.stereotype.Component;
@@ -13,9 +14,11 @@ public class ClassificationsQueries {
 	public static final String CLASSIFICATIONS = "classifications/";
 
     private final BauhausLanguagesProperties languages;
+    private final GraphsProperties graphs;
 
-	public ClassificationsQueries(BauhausLanguagesProperties languages) {
+	public ClassificationsQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
         this.languages = languages;
+        this.graphs = graphs;
 	}
 
 	public String classificationsQuery() throws RmesException {
@@ -35,6 +38,7 @@ public class ClassificationsQueries {
 		params.put("ID", id);
 		params.put("LG1", languages.lg1());
 		params.put("LG2", languages.lg2());
+		params.put("GRAPH", graphs.classifFamiliesGraph());
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassification.ftlh", params);
 	}
 

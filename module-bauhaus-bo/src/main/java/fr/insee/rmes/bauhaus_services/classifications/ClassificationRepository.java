@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
+import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -36,16 +37,19 @@ public class ClassificationRepository extends RdfService {
 
     private final ClassificationNoteService classificationNoteService;
     private final ClassificationsQueries classificationsQueries;
+    private final GraphsProperties graphs;
 
     public ClassificationRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
                                     RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                                     PublicationUtils publicationUtils,
                                     ClassificationNoteService classificationNoteService,
-                                    ClassificationsQueries classificationsQueries) {
+                                    ClassificationsQueries classificationsQueries,
+                                    GraphsProperties graphs) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.classificationNoteService = classificationNoteService;
         this.classificationsQueries = classificationsQueries;
+        this.graphs = graphs;
     }
 
     public void updateClassification(Classification classification, String uri) throws RmesException {
@@ -112,13 +116,19 @@ public class ClassificationRepository extends RdfService {
             model.add(classificationIri, FOAF.HOMEPAGE, RdfUtils.createIRI(classification.getHomepage()), graph);
         }
 
+        // Le statut de validation est porté par le graphe des nomenclatures (= classifFamiliesGraph),
+        // là où le schéma est enregistré et où la publication l'écrit. On l'écrit donc dans ce graphe
+        // (et pas dans le graphe par-id) pour que lecture, modification et publication restent cohérentes.
+        Resource validationGraph = RdfUtils.createIRI(graphs.classifFamiliesGraph());
         repoGestion.deleteTripletByPredicate(classificationIri, INSEE.VALIDATION_STATE, graph, null);
+        repoGestion.deleteTripletByPredicate(classificationIri, INSEE.VALIDATION_STATE, validationGraph, null);
 
-        if(ValidationStatus.VALIDATED.getValue().equalsIgnoreCase(classification.getValidationState()) || ValidationStatus.MODIFIED.getValue().equalsIgnoreCase(classification.getValidationState())){
-            model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
-        } else {
-            model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
-        }
+        ValidationStatus newValidationState =
+            ValidationStatus.VALIDATED.getValue().equalsIgnoreCase(classification.getValidationState())
+                || ValidationStatus.MODIFIED.getValue().equalsIgnoreCase(classification.getValidationState())
+                ? ValidationStatus.MODIFIED
+                : ValidationStatus.UNPUBLISHED;
+        model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newValidationState), validationGraph);
 
 
         List<String> ids = new ArrayList<>();
