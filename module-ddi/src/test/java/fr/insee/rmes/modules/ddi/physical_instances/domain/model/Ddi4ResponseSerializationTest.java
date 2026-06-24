@@ -29,13 +29,14 @@ class Ddi4ResponseSerializationTest {
 
         String json = mapper.writeValueAsString(response);
 
-        assertThat(json).contains("\"$schema\"");
-        assertThat(json).contains("\"TopLevelReference\"");
-        assertThat(json).doesNotContain("\"PhysicalInstance\"");
-        assertThat(json).doesNotContain("\"Variable\"");
-        assertThat(json).doesNotContain("\"CodeList\"");
-        assertThat(json).doesNotContain("\"Category\"");
-        assertThat(json).doesNotContain("null");
+        assertThat(json)
+                .contains("\"$schema\"")
+                .contains("\"TopLevelReference\"")
+                .doesNotContain("\"PhysicalInstance\"")
+                .doesNotContain("\"Variable\"")
+                .doesNotContain("\"CodeList\"")
+                .doesNotContain("\"Category\"")
+                .doesNotContain("null");
     }
 
     @Test
@@ -48,8 +49,9 @@ class Ddi4ResponseSerializationTest {
 
         String json = mapper.writeValueAsString(response);
 
-        assertThat(json).contains("\"$schema\"");
-        assertThat(json).doesNotContain("null");
+        assertThat(json)
+                .contains("\"$schema\"")
+                .doesNotContain("null");
     }
 
     @Test
@@ -61,7 +63,8 @@ class Ddi4ResponseSerializationTest {
 
         String json = mapper.writeValueAsString(response);
 
-        assertThat(json).contains("\"$schema\"");
-        assertThat(json).doesNotContain("null");
+        assertThat(json)
+                .contains("\"$schema\"")
+                .doesNotContain("null");
     }
 }
