@@ -46,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController;
     value = "/ddi",
     produces = { "application/hal+json", MediaType.APPLICATION_JSON_VALUE }
 )
-@ConditionalOnModule("ddi")
 public class GroupResources {
 
     private static final Logger logger = LoggerFactory.getLogger(
