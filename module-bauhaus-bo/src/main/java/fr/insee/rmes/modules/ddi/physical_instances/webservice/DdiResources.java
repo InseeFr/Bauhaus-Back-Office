@@ -526,7 +526,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getOperationStudyUnitJson(
         @PathVariable(Constants.ID) String id
-    ) throws RmesException {
+    ) {
         String operationIri = uriUtils.getCompleteUriPublication("operation", id);
         return ddiService
             .getStudyUnitXmlByOperationIri(operationIri)
@@ -545,7 +545,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getOperationStudyUnitXml(
         @PathVariable(Constants.ID) String id
-    ) throws RmesException {
+    ) {
         String operationIri = uriUtils.getCompleteUriPublication("operation", id);
         return DdiResponses.xml(
             ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null)
