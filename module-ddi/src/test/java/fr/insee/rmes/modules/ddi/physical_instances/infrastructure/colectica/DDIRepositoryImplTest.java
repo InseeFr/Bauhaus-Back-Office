@@ -2019,6 +2019,98 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void getDataRelationships_setsPhysicalInstanceTopLevelReference() {
+        // #494 : le TopLevelReference de /variables doit pointer la PhysicalInstance interrogée,
+        // pas rester null (la PI est écartée de la sortie mais reste la racine du FragmentInstance).
+        String agencyId = "fr.insee";
+        String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", piType,
+                "DataRelationship", drType,
+                "Variable", variableType
+        ));
+
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(piId, 3, agencyId),
+            new ColecticaSetItem("dr-1", 3, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
+
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(piType, agencyId, 3, piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(drType, agencyId, 3, "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
+
+        // Le convertisseur renvoie un TopLevelReference null (comportement réel : il ne le dérive
+        // que pour les items PhysicalInstance, absents de la sortie /variables).
+        Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, null, List.of(), List.of(), null, null);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"))).thenReturn(mockDdi4);
+
+        Ddi4Response result = ddiRepository.getDataRelationships(agencyId, piId, null);
+
+        assertNotNull(result.topLevelReference());
+        assertEquals(1, result.topLevelReference().size());
+        Reference tlr = result.topLevelReference().get(0);
+        assertEquals("PhysicalInstance", tlr.type());
+        assertEquals(agencyId, tlr.agency());
+        assertEquals(piId, tlr.id());
+        assertEquals("3", tlr.version());
+    }
+
+    @Test
+    void getCodeList_setsCodeListTopLevelReference() {
+        // #494 : le TopLevelReference de /codelist doit pointer la CodeList interrogée, pas null.
+        String agencyId = "fr.insee";
+        String codeListId = "cl-1";
+        String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "CodeList", codeListType,
+                "Category", categoryType
+        ));
+
+        ColecticaSetItem[] setItems = {
+            new ColecticaSetItem(codeListId, 5, agencyId),
+            new ColecticaSetItem(categoryId, 5, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(setItems);
+
+        ColecticaItemResponse[] itemResponses = {
+            new ColecticaItemResponse(codeListType, agencyId, 5, codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(categoryType, agencyId, 5, categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
+
+        Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, null, null, null, List.of(), List.of());
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"))).thenReturn(mockDdi4);
+
+        Ddi4Response result = ddiRepository.getCodeList(agencyId, codeListId, null);
+
+        assertNotNull(result.topLevelReference());
+        assertEquals(1, result.topLevelReference().size());
+        Reference tlr = result.topLevelReference().get(0);
+        assertEquals("CodeList", tlr.type());
+        assertEquals(agencyId, tlr.agency());
+        assertEquals(codeListId, tlr.id());
+        assertEquals("5", tlr.version());
+    }
+
+    @Test
     void getDataRelationshipsXml_includesDataRelationshipAndVariableFragmentsOnly() {
         String agencyId = "fr.insee";
         String piId = "pi-1";
