@@ -12,6 +12,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
@@ -32,7 +33,6 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
-import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -61,7 +61,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
     value = "/ddi",
     produces = { "application/hal+json", MediaType.APPLICATION_JSON_VALUE }
 )
-@ConditionalOnModule("ddi")
 public class DdiResources {
 
     private final DDIService ddiService;
@@ -168,7 +167,9 @@ public class DdiResources {
             return false;
         }
         String normalized = cacheControl.toLowerCase();
-        return normalized.contains("no-cache") || normalized.contains("no-store");
+        return (
+            normalized.contains("no-cache") || normalized.contains("no-store")
+        );
     }
 
     @GetMapping("/mutualized-codes-list/{agencyId}/{id}")
@@ -255,9 +256,7 @@ public class DdiResources {
         module = RBAC.Module.DDI_PHYSICALINSTANCE,
         privilege = RBAC.Privilege.READ
     )
-    public ResponseEntity<
-        PhysicalInstanceParentsResponse
-    > getPhysicalInstanceParents(
+    public ResponseEntity<PhysicalInstanceParentsResponse> getPhysicalInstanceParents(
         @PathVariable String agencyId,
         @PathVariable(Constants.ID) String id
     ) {
@@ -529,6 +528,7 @@ public class DdiResources {
         @PathVariable(Constants.ID) String id
     ) {
         String operationIri = uriUtils.getCompleteUriPublication("operation", id);
+
         return ddiService
             .getStudyUnitXmlByOperationIri(operationIri)
             .map(xml ->

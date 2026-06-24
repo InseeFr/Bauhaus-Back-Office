@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariabl
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -14,20 +15,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * REST controller for CodeList usage queries.
  */
 @RestController
-@RequestMapping(
-        value = "/ddi",
-        produces = MediaType.APPLICATION_JSON_VALUE
-)
-@ConditionalOnModule("ddi")
+@RequestMapping(value = "/ddi", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CodesListResources {
 
-    private static final Logger logger = LoggerFactory.getLogger(CodesListResources.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+        CodesListResources.class
+    );
 
     private final DDIService ddiService;
 
@@ -39,16 +36,30 @@ public class CodesListResources {
      * Returns every Variable (with its PhysicalInstance) that uses the code list {@code agencyId/id}.
      */
     @GetMapping("/codes-list/{agencyId}/{id}/users")
-    @HasAccess(module = RBAC.Module.DDI_PHYSICALINSTANCE, privilege = RBAC.Privilege.READ)
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
     public ResponseEntity<List<CodeListVariableUsage>> getCodeListUsers(
-            @PathVariable String agencyId,
-            @PathVariable String id) {
-        logger.info("GET /ddi/codes-list/{}/{}/users - Getting variables using code list", agencyId, id);
+        @PathVariable String agencyId,
+        @PathVariable String id
+    ) {
+        logger.info(
+            "GET /ddi/codes-list/{}/{}/users - Getting variables using code list",
+            agencyId,
+            id
+        );
         try {
-            List<CodeListVariableUsage> usages = ddiService.getVariablesUsingCodeList(agencyId, id);
+            List<CodeListVariableUsage> usages =
+                ddiService.getVariablesUsingCodeList(agencyId, id);
             return ResponseEntity.ok(usages);
         } catch (Exception e) {
-            logger.error("Failed to get variables using code list: agencyId={}, id={}", agencyId, id, e);
+            logger.error(
+                "Failed to get variables using code list: agencyId={}, id={}",
+                agencyId,
+                id,
+                e
+            );
             return ResponseEntity.internalServerError().build();
         }
     }
