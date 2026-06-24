@@ -4,6 +4,7 @@ import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.AuthenticationRequest;
 import fr.insee.rmes.colectica.client.dto.AuthenticationResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
@@ -189,6 +190,34 @@ public class ColecticaClient {
             .body(query)
             .retrieve()
             .body(ItemReference[].class));
+        return response == null ? List.of() : List.of(response);
+    }
+
+    /**
+     * Same {@code _query/relationship/.../descriptions} call as {@link #findRelatedDescriptions}, but
+     * keeps the full description objects (with their {@code ItemName}/{@code Label} dictionaries)
+     * instead of collapsing them to bare {@link ItemReference}s. Use this when you need the related
+     * items' labels: it avoids a separate repository-wide label query, since the descriptions endpoint
+     * already returns them.
+     */
+    public List<ColecticaItem> findRelatedItems(
+        RelationshipDirection direction,
+        ItemReference target,
+        List<String> itemTypes
+    ) {
+        String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
+        RelationshipQuery query = new RelationshipQuery(
+            itemTypes,
+            new RelationshipQuery.TargetItem(target.agencyId(), target.identifier())
+        );
+        ColecticaItem[] response = withAuth(token -> restClient
+            .post()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .body(query)
+            .retrieve()
+            .body(ColecticaItem[].class));
         return response == null ? List.of() : List.of(response);
     }
 

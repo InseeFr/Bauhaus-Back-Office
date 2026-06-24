@@ -26,6 +26,7 @@ public class ErrorCodes {
 
 	// SIMS
 	public static final int OPERATION_VALIDATION_UNPUBLISHED_PARENT = 804;
+	public static final int SIMS_PUBLICATION_MISSING_DOCUMENTS = 862;
 
 	// COLLECTIONS
 

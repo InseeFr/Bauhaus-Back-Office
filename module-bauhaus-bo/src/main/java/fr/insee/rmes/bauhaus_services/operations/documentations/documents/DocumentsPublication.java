@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class DocumentsPublication  extends RdfService{
@@ -58,6 +60,29 @@ public class DocumentsPublication  extends RdfService{
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.documentsStorage = documentsStorage;
+    }
+
+    /**
+     * Pre-check executed before any publication write : collects the ids of the documents
+     * referenced by the SIMS whose physical file is absent from the management storage.
+     * Mirrors the existence check already used on the export path
+     * ({@link DocumentsUtils#existsInStorage(String)}) so that a publication can be blocked
+     * upfront instead of failing half-way through copying files.
+     *
+     * @param idSims the SIMS identifier
+     * @return the ids of the missing documents (empty if every document exists)
+     */
+    public Set<String> findMissingDocuments(String idSims) throws RmesException {
+        JSONArray listDoc = docUtils.getListDocumentSims(idSims);
+        Set<String> missingDocuments = new HashSet<>();
+        for (Object doc : listDoc) {
+            JSONObject document = (JSONObject) doc;
+            String filename = DocumentsUtils.getDocumentNameFromUrl(DocumentsUtils.getDocumentUrlFromDocument(document));
+            if (!docUtils.existsInStorage(filename)) {
+                missingDocuments.add(document.getString(Constants.ID));
+            }
+        }
+        return missingDocuments;
     }
 
     public void publishAllDocumentsInSims(String idSims) throws RmesException {

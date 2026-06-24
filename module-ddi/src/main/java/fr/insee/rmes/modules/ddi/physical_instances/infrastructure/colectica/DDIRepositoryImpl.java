@@ -297,12 +297,14 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     /**
      * Strict label extraction for mutualized code lists: returns the first non-blank value
-     * across {@code itemName} then {@code label}, trying default lang, then "en", then any
-     * other language. No fallback to identifier — empty Optional if no non-blank value exists.
+     * across {@code label} then {@code itemName}, trying default lang, then "en", then any
+     * other language. Le libellé ({@code label}) est prioritaire sur le nom technique
+     * ({@code itemName}) car c'est lui qu'on affiche dans le sélecteur. No fallback to
+     * identifier — empty Optional if no non-blank value exists.
      */
     private Optional<String> extractStrictLabel(ColecticaItem item) {
-        return firstNonBlank(item.itemName())
-            .or(() -> firstNonBlank(item.label()));
+        return firstNonBlank(item.label())
+            .or(() -> firstNonBlank(item.itemName()));
     }
 
     private Optional<String> firstNonBlank(Map<String, String> languageMap) {
@@ -1900,27 +1902,49 @@ public class DDIRepositoryImpl implements DDIRepository {
         String variableType = types.get("Variable");
         String dataRelationshipType = types.get("DataRelationship");
         String physicalInstanceType = types.get(PHYSICAL_INSTANCE);
+        String studyUnitType = types.get("StudyUnit");
 
-        List<ItemReference> variables = colecticaClient.findRelatedDescriptions(
+        // Walk the byobject graph: CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
+        // The {@code /descriptions} endpoint already returns each related item's ItemName/Label, so we use
+        // findRelatedItems (which keeps them) for the levels we need labelled — no separate label query
+        // and no extra HTTP call. DataRelationships are only intermediate, so bare references suffice.
+        List<ColecticaItem> variables = colecticaClient.findRelatedItems(
             RelationshipDirection.BY_OBJECT,
             new ItemReference(codeListAgencyId, codeListId),
             List.of(variableType));
+        if (variables.isEmpty()) {
+            return List.of();
+        }
 
         List<CodeListVariableUsage> usages = new ArrayList<>();
-        for (ItemReference variable : variables) {
+        for (ColecticaItem variable : variables) {
             List<ItemReference> dataRelationships = colecticaClient.findRelatedDescriptions(
-                RelationshipDirection.BY_OBJECT, variable, List.of(dataRelationshipType));
+                RelationshipDirection.BY_OBJECT, itemRef(variable), List.of(dataRelationshipType));
             for (ItemReference dataRelationship : dataRelationships) {
-                List<ItemReference> physicalInstances = colecticaClient.findRelatedDescriptions(
+                List<ColecticaItem> physicalInstances = colecticaClient.findRelatedItems(
                     RelationshipDirection.BY_OBJECT, dataRelationship, List.of(physicalInstanceType));
-                for (ItemReference physicalInstance : physicalInstances) {
+                for (ColecticaItem physicalInstance : physicalInstances) {
+                    ColecticaItem studyUnit = colecticaClient.findRelatedItems(
+                            RelationshipDirection.BY_OBJECT, itemRef(physicalInstance), List.of(studyUnitType))
+                        .stream().findFirst().orElse(null);
                     usages.add(new CodeListVariableUsage(
-                        physicalInstance.agencyId(), physicalInstance.identifier(),
-                        variable.agencyId(), variable.identifier()));
+                        studyUnit == null ? null : studyUnit.agencyId(),
+                        studyUnit == null ? null : studyUnit.identifier(),
+                        studyUnit == null ? null : extractLabelFromItem(studyUnit),
+                        physicalInstance.agencyId(),
+                        physicalInstance.identifier(),
+                        extractLabelFromItem(physicalInstance),
+                        variable.agencyId(),
+                        variable.identifier(),
+                        extractLabelFromItem(variable)));
                 }
             }
         }
         return usages.stream().distinct().toList();
+    }
+
+    private static ItemReference itemRef(ColecticaItem item) {
+        return new ItemReference(item.agencyId(), item.identifier());
     }
 
     /**
@@ -1997,8 +2021,11 @@ public class DDIRepositoryImpl implements DDIRepository {
             if (item == null) continue;
             Optional<String> label = extractStrictLabel(item);
             if (label.isEmpty()) continue;
+            // Nom technique (itemName) conservé à part du libellé : il sert à la recherche
+            // dans le sélecteur côté front, où seul le libellé est affiché.
+            String name = firstNonBlank(item.itemName()).orElse(null);
             collected.putIfAbsent(key, new PartialCodesList(
-                item.identifier(), label.get(), parseColecticaDate(item.versionDate()), item.agencyId()
+                item.identifier(), label.get(), parseColecticaDate(item.versionDate()), item.agencyId(), name
             ));
         }
         logger.info("{} mutualized CodeList(s) kept", collected.size());

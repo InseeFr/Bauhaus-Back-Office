@@ -52,7 +52,7 @@ fr.insee.rmes.bauhaus.colectica:
   #    (utilise mutualized-codes-package ci-dessus) ;
   #  - configured-groups : interroge directement les CodeListGroup listés dans mutualized-codes-groups
   #    (un appel par groupe), ce qui réduit le nombre d'aller-retours Colectica.
-  mutualized-codes-strategy: configured-groups
+  mutualized-codes-strategy: package-walk
 
   # Utilisé uniquement par la stratégie configured-groups. Un objet par CodeListGroup, de même forme
   # que mutualized-codes-package (agency-id / identifier / version). Les CodeList enfants de chaque
