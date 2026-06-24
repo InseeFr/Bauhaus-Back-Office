@@ -515,6 +515,11 @@ public class DdiResources {
         return DdiResponses.json(ddiService.getCodeList(agency, id, null));
     }
 
+    /**
+     * Endpoint #496 : {@code GET /ddi/operation/{id}/studyUnit} renvoie le StudyUnit d'une opération
+     * en DDI 3.3 XML ou DDI 4 JSON selon la négociation de contenu (en-tête {@code Accept}), de manière
+     * cohérente avec les autres services DDI ({@code /ddi/item}, {@code /ddi/codelist}).
+     */
     @GetMapping(
         value = "/operation/{id}/studyUnit",
         produces = MediaType.APPLICATION_JSON_VALUE
@@ -522,7 +527,7 @@ public class DdiResources {
     @PublicEndpoint
     public ResponseEntity<String> getOperationStudyUnitJson(
         @PathVariable(Constants.ID) String id
-    ) throws RmesException {
+    ) {
         String operationIri = uriUtils.getCompleteUriPublication("operation", id);
         return ddiService
             .getStudyUnitXmlByOperationIri(operationIri)
@@ -532,6 +537,20 @@ public class DdiResources {
                     .body(ddiItemConvertService.convert(xml).toString())
             )
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(
+        value = "/operation/{id}/studyUnit",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<String> getOperationStudyUnitXml(
+        @PathVariable(Constants.ID) String id
+    ) {
+        String operationIri = uriUtils.getCompleteUriPublication("operation", id);
+        return DdiResponses.xml(
+            ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null)
+        );
     }
 
     @PostMapping("/validate")
