@@ -7,13 +7,14 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Group
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Domain service for DDI Group items.
  * <p>
  * Inherits common {@code createOrUpdate} logic from {@link AbstractDdiItemService}
- * and adds the Group-specific {@code deprecateAll()} and {@code getAll()} operations.
+ * and adds the Group-specific {@code deprecate(...)} and {@code getAll()} operations.
  */
 public class GroupServiceImpl extends AbstractDdiItemService<Ddi4Group> implements GroupService {
 
@@ -35,9 +36,9 @@ public class GroupServiceImpl extends AbstractDdiItemService<Ddi4Group> implemen
     }
 
     @Override
-    public void deprecateAll() {
-        logger.info("Deprecating all groups");
-        groupRepository.deprecateAll();
+    public void deprecate(Collection<String> groupIds) {
+        logger.info("Deprecating {} targeted group(s)", groupIds != null ? groupIds.size() : 0);
+        groupRepository.deprecate(groupIds);
     }
 
     @Override

@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
 
@@ -46,11 +48,17 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
  * <p>
  * At application startup, this bean:
  * <ol>
- *   <li>Deprecates all existing groups from Colectica</li>
  *   <li>Queries GraphDB via SPARQL to fetch series and their operations</li>
+ *   <li>Deprecates ONLY the groups and study units this init manipulates (those derived from the
+ *       series/operations read above, all variants included), leaving every other Colectica item untouched</li>
  *   <li>Creates StudyUnits FIRST (so they exist with full content)</li>
  *   <li>Creates Groups with StudyUnitReferences (pointing to existing StudyUnits)</li>
  * </ol>
+ * <p>
+ * For each operation it creates {@link #VARIANT_LABEL_WORDS}.size() StudyUnit variants (and one
+ * PhysicalInstance each), and for each series the same number of Group variants — every variant
+ * carrying a distinct, intentionally non-alphabetical label. This seeds enough differently-named
+ * items to exercise the alphabetical ordering of the Group / StudyUnit listings.
  * <p>
  * StudyUnits must be created before Groups. If Groups are created first,
  * Colectica auto-creates empty stubs for referenced StudyUnits at Version 1,
@@ -61,6 +69,30 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
 public class LocalColecticaGroupInitConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalColecticaGroupInitConfiguration.class);
+
+    /**
+     * Mots de libellé des variantes créées pour chaque série (Groups) et chaque opération
+     * (StudyUnits). Ils sont volontairement DANS UN ORDRE NON ALPHABÉTIQUE afin que le tri
+     * alphabétique de la feature à tester réordonne effectivement les éléments : à la création
+     * les libellés arrivent dans l'ordre Zoulou, Alpha, Mike, Bravo, Yankee. Leur nombre fixe le
+     * nombre de variantes générées par série et par opération.
+     */
+    static final List<String> VARIANT_LABEL_WORDS = List.of("Zoulou", "Alpha", "Mike", "Bravo", "Yankee");
+
+    private static final String VARIANT_SEED_SEPARATOR = "#variant-";
+
+    /**
+     * Les ids Colectica déterministes des {@link #VARIANT_LABEL_WORDS} variantes dérivées d'une IRI.
+     * La même formule de graine sert à la création (étapes 3a/3b) et à la dépréciation (étape 2),
+     * pour que les deux portent exactement sur les mêmes objets.
+     */
+    static List<String> variantUuids(String iri) {
+        List<String> ids = new ArrayList<>();
+        for (int variant = 0; variant < VARIANT_LABEL_WORDS.size(); variant++) {
+            ids.add(generateDeterministicUuid(iri + VARIANT_SEED_SEPARATOR + variant));
+        }
+        return ids;
+    }
 
     @Bean
     CommandLineRunner initColecticaGroups(
@@ -80,22 +112,34 @@ public class LocalColecticaGroupInitConfiguration {
             String defaultLang = colecticaConfiguration.langs().getFirst();
             String versionResponsibility = colecticaConfiguration.server().versionResponsibility();
 
-            // Step 1: Deprecate all existing groups
-            logger.info("Step 1: Deprecating all existing groups from Colectica");
-            groupService.deprecateAll();
-
-            // Step 2: Query the publication GraphDB repository for series and operations.
+            // Step 1: Query the publication GraphDB repository for series and operations.
             // On lit le dépôt de publication (et non gestion) pour que les IRIs récupérées soient
             // en base de publication (http://id.insee.fr/...), donc cohérentes avec la clé de
             // recherche de l'endpoint GET /ddi/operation/{id}/studyUnit.
-            logger.info("Step 2: Querying publication GraphDB for series and operations");
+            logger.info("Step 1: Querying publication GraphDB for series and operations");
             String graphUri = baseGraph + operationsGraph;
             List<SeriesWithOperations> seriesData = querySeriesAndOperations(repositoryPublicationReader, graphUri);
             logger.info("Found {} series", seriesData.size());
 
-            // Listing : pour chaque série et chaque operation, l'objet DDI (Group / StudyUnit) auquel
-            // elle est associée. L'id DDI est déterministe (UUID dérivé de l'IRI), identique à celui
-            // utilisé lors de la création aux étapes 3a/3b.
+            // Step 2: Deprecate ONLY the groups and study units this init manipulates.
+            // Les ids sont les mêmes ids déterministes (dérivés de l'IRI) que ceux utilisés à la
+            // création (étapes 3a/3b) : on ne touche donc qu'aux objets que l'init va recréer, et
+            // jamais aux Groups/StudyUnits d'autres séries présents dans Colectica.
+            Set<String> manipulatedGroupIds = seriesData.stream()
+                    .flatMap(series -> variantUuids(series.seriesIri()).stream())
+                    .collect(Collectors.toSet());
+            Set<String> manipulatedStudyUnitIds = seriesData.stream()
+                    .flatMap(series -> series.operations().stream())
+                    .flatMap(operation -> variantUuids(operation.operationIri()).stream())
+                    .collect(Collectors.toSet());
+            logger.info("Step 2: Deprecating {} manipulated group(s) and {} manipulated study unit(s)",
+                    manipulatedGroupIds.size(), manipulatedStudyUnitIds.size());
+            groupService.deprecate(manipulatedGroupIds);
+            studyUnitService.deprecate(manipulatedStudyUnitIds);
+
+            // Vue d'ensemble : pour chaque série / operation, le Group / StudyUnit « logique » associé
+            // (1 série → 1 groupe, 1 operation → 1 study unit). Les étapes 3a/3b créent ensuite
+            // VARIANT_LABEL_WORDS.size() variantes de chacun, aux libellés distincts.
             logDdiAssociations(buildDdiAssociations(seriesData), defaultAgencyId);
 
             // Step 3: Create study units and groups
@@ -109,38 +153,42 @@ public class LocalColecticaGroupInitConfiguration {
 
             for (SeriesWithOperations series : seriesData) {
                 for (OperationInfo operation : series.operations()) {
-                    try {
-                        String studyUnitId = generateDeterministicUuid(operation.operationIri());
-                        String studyUnitLabel = operation.operationLabel() + " Study Unit";
-                        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                    // Une StudyUnit (et sa PhysicalInstance) par variante, aux libellés distincts.
+                    for (int variant = 0; variant < VARIANT_LABEL_WORDS.size(); variant++) {
+                        String variantWord = VARIANT_LABEL_WORDS.get(variant);
+                        try {
+                            String studyUnitId = generateDeterministicUuid(operation.operationIri() + VARIANT_SEED_SEPARATOR + variant);
+                            String studyUnitLabel = operation.operationLabel() + " " + variantWord + " Study Unit";
+                            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-                        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
-                                Ddi4StudyUnit.TYPE,
-                                CogsDate.ofDateTime(versionDate),
-                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
-                                defaultAgencyId,
-                                studyUnitId,
-                                "1",
-                                new Citation(LangStrings.of(defaultLang, studyUnitLabel)),
-                                operation.operationIri(),
-                                null
-                        );
+                            Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                                    Ddi4StudyUnit.TYPE,
+                                    CogsDate.ofDateTime(versionDate),
+                                    "urn:ddi:%s:%s:1".formatted(defaultAgencyId, studyUnitId),
+                                    defaultAgencyId,
+                                    studyUnitId,
+                                    "1",
+                                    new Citation(LangStrings.of(defaultLang, studyUnitLabel)),
+                                    operation.operationIri(),
+                                    null
+                            );
 
-                        logger.info("Creating study unit: operationId={}, uri={}, generatedUuid={}, label='{}'",
-                                operation.operationId(), operation.operationIri(), studyUnitId, studyUnitLabel);
-                        studyUnitService.createOrUpdate(studyUnit);
-                        studyUnitsCreated++;
-                        logger.info("Study unit created successfully: operationId={}", operation.operationId());
+                            logger.info("Creating study unit: operationId={}, uri={}, variant={}, generatedUuid={}, label='{}'",
+                                    operation.operationId(), operation.operationIri(), variantWord, studyUnitId, studyUnitLabel);
+                            studyUnitService.createOrUpdate(studyUnit);
+                            studyUnitsCreated++;
+                            logger.info("Study unit created successfully: operationId={}, variant={}", operation.operationId(), variantWord);
 
-                        String physicalInstanceLabel = operation.operationLabel() + " Physical Instance";
-                        logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
-                        Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null));
-                        Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
-                        studyUnitService.addPhysicalInstance(studyUnit, Reference.of(pi.agency(), pi.id(), pi.version(), "PhysicalInstance"));
-                        physicalInstancesCreated++;
-                        logger.info("Physical instance created and linked to study unit: operationId={}, piId={}", operation.operationId(), pi.id());
-                    } catch (Exception e) {
-                        logger.error("Failed to create study unit or physical instance for operation: id={}, uri={}", operation.operationId(), operation.operationIri(), e);
+                            String physicalInstanceLabel = operation.operationLabel() + " " + variantWord + " Physical Instance";
+                            logger.info("Creating physical instance: operationId={}, label='{}'", operation.operationId(), physicalInstanceLabel);
+                            Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(physicalInstanceLabel, physicalInstanceLabel, null, null, null, null, null));
+                            Ddi4PhysicalInstance pi = piResponse.physicalInstance().getFirst();
+                            studyUnitService.addPhysicalInstance(studyUnit, Reference.of(pi.agency(), pi.id(), pi.version(), "PhysicalInstance"));
+                            physicalInstancesCreated++;
+                            logger.info("Physical instance created and linked to study unit: operationId={}, variant={}, piId={}", operation.operationId(), variantWord, pi.id());
+                        } catch (Exception e) {
+                            logger.error("Failed to create study unit or physical instance for operation: id={}, uri={}, variant={}", operation.operationId(), operation.operationIri(), variantWord, e);
+                        }
                     }
                 }
             }
@@ -151,39 +199,45 @@ public class LocalColecticaGroupInitConfiguration {
             logger.info("Step 3b: Creating groups in Colectica AFTER study units");
 
             for (SeriesWithOperations series : seriesData) {
-                try {
-                    String groupId = generateDeterministicUuid(series.seriesIri());
-                    String groupLabel = series.seriesLabel() + " Group";
-                    String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                // Un Group par variante, aux libellés distincts, référençant la StudyUnit de même variante.
+                for (int variant = 0; variant < VARIANT_LABEL_WORDS.size(); variant++) {
+                    String variantWord = VARIANT_LABEL_WORDS.get(variant);
+                    try {
+                        String groupId = generateDeterministicUuid(series.seriesIri() + VARIANT_SEED_SEPARATOR + variant);
+                        String groupLabel = series.seriesLabel() + " " + variantWord + " Group";
+                        String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-                    List<Reference> studyUnitRefs = series.operations().stream()
-                            .map(op -> Reference.of(
-                                    defaultAgencyId,
-                                    generateDeterministicUuid(op.operationIri()),
-                                    "1",
-                                    "StudyUnit"
-                            ))
-                            .toList();
+                        final int currentVariant = variant;
+                        List<Reference> studyUnitRefs = series.operations().stream()
+                                .map(op -> Reference.of(
+                                        defaultAgencyId,
+                                        generateDeterministicUuid(op.operationIri() + VARIANT_SEED_SEPARATOR + currentVariant),
+                                        "1",
+                                        "StudyUnit"
+                                ))
+                                .toList();
 
-                    Ddi4Group group = new Ddi4Group(
-                            Ddi4Group.TYPE,
-                            CogsDate.ofDateTime(versionDate),
-                            "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
-                            defaultAgencyId,
-                            groupId,
-                            "1",
-                            versionResponsibility,
-                            new Citation(LangStrings.of(defaultLang, groupLabel)),
-                            studyUnitRefs,
-                            List.of(series.seriesIri()),
-                            "insee:StatisticalOperationSeries"
-                    );
+                        Ddi4Group group = new Ddi4Group(
+                                Ddi4Group.TYPE,
+                                CogsDate.ofDateTime(versionDate),
+                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
+                                defaultAgencyId,
+                                groupId,
+                                "1",
+                                versionResponsibility,
+                                new Citation(LangStrings.of(defaultLang, groupLabel)),
+                                studyUnitRefs,
+                                List.of(series.seriesIri()),
+                                "insee:StatisticalOperationSeries"
+                        );
 
-                    logger.info("Creating group: id={}, uri={}, operations={}", series.seriesId(), series.seriesIri(), series.operations().size());
-                    groupService.createOrUpdate(group);
-                    groupsCreated++;
-                } catch (Exception e) {
-                    logger.error("Failed to create group for series: id={}", series.seriesId(), e);
+                        logger.info("Creating group: id={}, uri={}, variant={}, label='{}', operations={}",
+                                series.seriesId(), series.seriesIri(), variantWord, groupLabel, series.operations().size());
+                        groupService.createOrUpdate(group);
+                        groupsCreated++;
+                    } catch (Exception e) {
+                        logger.error("Failed to create group for series: id={}, variant={}", series.seriesId(), variantWord, e);
+                    }
                 }
             }
 

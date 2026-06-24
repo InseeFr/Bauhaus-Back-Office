@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -94,13 +95,14 @@ class DDIRepositoryImplGroupTest {
         }
 
         @Test
-        void deprecateAll_shouldDeprecateAllGroups() {
+        void deprecate_shouldDeprecateOnlyTheRequestedExistingGroups() {
             when(ddiRepository.getGroups()).thenReturn(List.of(
                     new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of()),
-                    new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee", List.of())
+                    new PartialGroup("group-id-2", "Groupe 2", null, "fr.insee", List.of()),
+                    new PartialGroup("group-id-3", "Groupe 3", null, "fr.insee", List.of())
             ));
 
-            groupRepository.deprecateAll();
+            groupRepository.deprecate(Set.of("group-id-1", "group-id-3"));
 
             ArgumentCaptor<UpdateItemStateRequest> captor = ArgumentCaptor.forClass(UpdateItemStateRequest.class);
             verify(colecticaClient).updateItemState(captor.capture());
@@ -110,17 +112,25 @@ class DDIRepositoryImplGroupTest {
             assertThat(body.state()).isTrue();
             assertThat(body.applyToAllVersions()).isTrue();
 
-            List<UpdateItemStateRequest.ItemIdentifier> ids = body.ids();
-            assertThat(ids).hasSize(2);
-            assertThat(ids.get(0).identifier()).isEqualTo("group-id-1");
-            assertThat(ids.get(1).identifier()).isEqualTo("group-id-2");
+            assertThat(body.ids()).extracting(UpdateItemStateRequest.ItemIdentifier::identifier)
+                    .containsExactlyInAnyOrder("group-id-1", "group-id-3");
         }
 
         @Test
-        void deprecateAll_shouldDoNothingWhenNoGroups() {
-            when(ddiRepository.getGroups()).thenReturn(List.of());
+        void deprecate_shouldDoNothingWhenRequestedIdsAreEmpty() {
+            groupRepository.deprecate(Set.of());
 
-            groupRepository.deprecateAll();
+            verify(ddiRepository, never()).getGroups();
+            verify(colecticaClient, never()).updateItemState(any());
+        }
+
+        @Test
+        void deprecate_shouldDoNothingWhenNoRequestedGroupExists() {
+            when(ddiRepository.getGroups()).thenReturn(List.of(
+                    new PartialGroup("group-id-1", "Groupe 1", null, "fr.insee", List.of())
+            ));
+
+            groupRepository.deprecate(Set.of("unknown-group"));
 
             verify(colecticaClient, never()).updateItemState(any());
         }
@@ -136,7 +146,7 @@ class DDIRepositoryImplGroupTest {
         @BeforeEach
         void setUp() {
             studyUnitRepository = new ColecticaStudyUnitRepository(
-                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, null
+                    colecticaClient, instanceConfiguration, ddi4ToLifecycle33, ddiRepository
             );
         }
 
@@ -168,6 +178,33 @@ class DDIRepositoryImplGroupTest {
                     .contains(">urn:ddi:fr.insee:su-uuid:1<")
                     .contains(">op1 Study Unit<")
                     .contains(">http://id.insee.fr/operations/operation/op1<");
+        }
+
+        @Test
+        void deprecate_shouldDeprecateOnlyTheRequestedExistingStudyUnits() {
+            when(ddiRepository.getStudyUnits()).thenReturn(List.of(
+                    new PartialStudyUnit("su-id-1", "Study Unit 1", null, "fr.insee"),
+                    new PartialStudyUnit("su-id-2", "Study Unit 2", null, "fr.insee")
+            ));
+
+            studyUnitRepository.deprecate(Set.of("su-id-1"));
+
+            ArgumentCaptor<UpdateItemStateRequest> captor = ArgumentCaptor.forClass(UpdateItemStateRequest.class);
+            verify(colecticaClient).updateItemState(captor.capture());
+
+            UpdateItemStateRequest body = captor.getValue();
+            assertThat(body.state()).isTrue();
+            assertThat(body.applyToAllVersions()).isTrue();
+            assertThat(body.ids()).extracting(UpdateItemStateRequest.ItemIdentifier::identifier)
+                    .containsExactly("su-id-1");
+        }
+
+        @Test
+        void deprecate_shouldDoNothingWhenRequestedIdsAreEmpty() {
+            studyUnitRepository.deprecate(Set.of());
+
+            verify(ddiRepository, never()).getStudyUnits();
+            verify(colecticaClient, never()).updateItemState(any());
         }
     }
 

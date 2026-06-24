@@ -19,7 +19,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.CommandLineRunner;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.AbstractColecticaItemRepository.generateDeterministicUuid;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +62,7 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
-    void shouldDeleteAllGroupsThenCreateStudyUnitsThenGroups() throws Exception {
+    void shouldDeprecateOnlyManipulatedGroupsAndStudyUnitsThenCreate() throws Exception {
         // Given: SPARQL returns 1 series with 2 operations
         JSONArray sparqlResults = new JSONArray();
         sparqlResults.put(new JSONObject()
@@ -93,27 +95,53 @@ class LocalColecticaGroupInitConfigurationTest {
         // When
         runner.run();
 
-        // Then: deprecate first, then study units, then group
+        // Then: deprecation targets EVERY variant id of the manipulated series/operations, before creating
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        Set<String> expectedGroupIds = Set.copyOf(
+                LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/serie/s1001"));
+        Set<String> expectedStudyUnitIds = new HashSet<>();
+        expectedStudyUnitIds.addAll(LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/operation/op1"));
+        expectedStudyUnitIds.addAll(LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/operation/op2"));
+
         InOrder inOrder = inOrder(groupService, studyUnitService);
-        inOrder.verify(groupService).deprecateAll();
+        inOrder.verify(groupService).deprecate(expectedGroupIds);
+        inOrder.verify(studyUnitService).deprecate(expectedStudyUnitIds);
+        inOrder.verify(studyUnitService, times(2 * variants)).createOrUpdate(any());
+        inOrder.verify(groupService, times(variants)).createOrUpdate(any());
 
-        // Verify study units created with Ddi4StudyUnit model
+        // 5 study unit variants per operation, distinct labels, in the (non-alphabetical) creation order
         ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
-        verify(studyUnitService, times(2)).createOrUpdate(suCaptor.capture());
+        verify(studyUnitService, times(2 * variants)).createOrUpdate(suCaptor.capture());
         List<Ddi4StudyUnit> studyUnits = suCaptor.getAllValues();
-        assertThat(studyUnits.get(0).citation().title().get(0).value()).isEqualTo("Enquête innovation 2020 Study Unit");
-        assertThat(studyUnits.get(0).operationIri()).isEqualTo("http://id.insee.fr/operations/operation/op1");
-        assertThat(studyUnits.get(1).citation().title().get(0).value()).isEqualTo("Enquête innovation 2021 Study Unit");
+        assertThat(studyUnits).hasSize(2 * variants);
+        assertThat(studyUnits.subList(0, variants))
+                .allSatisfy(su -> assertThat(su.operationIri()).isEqualTo("http://id.insee.fr/operations/operation/op1"))
+                .extracting(su -> su.citation().title().get(0).value())
+                .containsExactly(
+                        "Enquête innovation 2020 Zoulou Study Unit",
+                        "Enquête innovation 2020 Alpha Study Unit",
+                        "Enquête innovation 2020 Mike Study Unit",
+                        "Enquête innovation 2020 Bravo Study Unit",
+                        "Enquête innovation 2020 Yankee Study Unit");
 
-        // Verify group created with Ddi4Group model
+        // 5 group variants for the series, distinct labels, in the (non-alphabetical) creation order
         ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
-        verify(groupService).createOrUpdate(groupCaptor.capture());
-        Ddi4Group createdGroup = groupCaptor.getValue();
-        assertThat(createdGroup.citation().title().get(0).value()).isEqualTo("Enquête innovation Group");
-        assertThat(createdGroup.seriesIris()).containsExactly("http://id.insee.fr/operations/serie/s1001");
-        assertThat(createdGroup.typeOfGroup()).isEqualTo("insee:StatisticalOperationSeries");
-        assertThat(createdGroup.studyUnitReference()).hasSize(2);
-        assertThat(createdGroup.agency()).isEqualTo("fr.insee");
+        verify(groupService, times(variants)).createOrUpdate(groupCaptor.capture());
+        List<Ddi4Group> groups = groupCaptor.getAllValues();
+        assertThat(groups)
+                .extracting(g -> g.citation().title().get(0).value())
+                .containsExactly(
+                        "Enquête innovation Zoulou Group",
+                        "Enquête innovation Alpha Group",
+                        "Enquête innovation Mike Group",
+                        "Enquête innovation Bravo Group",
+                        "Enquête innovation Yankee Group");
+        assertThat(groups).allSatisfy(group -> {
+            assertThat(group.seriesIris()).containsExactly("http://id.insee.fr/operations/serie/s1001");
+            assertThat(group.typeOfGroup()).isEqualTo("insee:StatisticalOperationSeries");
+            assertThat(group.studyUnitReference()).hasSize(2); // one ref per operation, same variant
+            assertThat(group.agency()).isEqualTo("fr.insee");
+        });
     }
 
     @Test
@@ -137,12 +165,24 @@ class LocalColecticaGroupInitConfigurationTest {
         // When
         runner.run();
 
-        // Then: group created with empty StudyUnitReferences, no study units
-        verify(groupService).deprecateAll();
+        // Then: all group variants of the manipulated series are deprecated (no operations => empty
+        // study unit set), each group variant created with empty StudyUnitReferences, no study units
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        Set<String> expectedGroupIds = Set.copyOf(
+                LocalColecticaGroupInitConfiguration.variantUuids("http://id.insee.fr/operations/serie/s1001"));
+        verify(groupService).deprecate(expectedGroupIds);
+        verify(studyUnitService).deprecate(Set.of());
         ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
-        verify(groupService).createOrUpdate(groupCaptor.capture());
-        assertThat(groupCaptor.getValue().citation().title().get(0).value()).isEqualTo("Enquête innovation Group");
-        assertThat(groupCaptor.getValue().studyUnitReference()).isEmpty();
+        verify(groupService, times(variants)).createOrUpdate(groupCaptor.capture());
+        assertThat(groupCaptor.getAllValues())
+                .extracting(g -> g.citation().title().get(0).value())
+                .containsExactly(
+                        "Enquête innovation Zoulou Group",
+                        "Enquête innovation Alpha Group",
+                        "Enquête innovation Mike Group",
+                        "Enquête innovation Bravo Group",
+                        "Enquête innovation Yankee Group");
+        assertThat(groupCaptor.getAllValues()).allSatisfy(g -> assertThat(g.studyUnitReference()).isEmpty());
         verify(studyUnitService, never()).createOrUpdate(any());
     }
 
@@ -185,9 +225,10 @@ class LocalColecticaGroupInitConfigurationTest {
         // When
         runner.run();
 
-        // Then: second study unit and group are still created
-        verify(studyUnitService, times(2)).createOrUpdate(any());
-        verify(groupService).createOrUpdate(any());
+        // Then: the remaining study unit variants and all group variants are still created
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        verify(studyUnitService, times(2 * variants)).createOrUpdate(any());
+        verify(groupService, times(variants)).createOrUpdate(any());
     }
 
     @Test

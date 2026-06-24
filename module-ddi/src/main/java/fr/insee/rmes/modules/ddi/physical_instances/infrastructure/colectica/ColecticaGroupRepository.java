@@ -10,6 +10,7 @@ import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ColecticaGroupRepository extends AbstractColecticaItemRepository implements GroupRepository {
@@ -51,21 +52,24 @@ public class ColecticaGroupRepository extends AbstractColecticaItemRepository im
     }
 
     @Override
-    public void deprecateAll() {
-        logger.info("Deprecating all groups from Colectica");
-        List<PartialGroup> groups = ddiRepository.getGroups();
-        if (groups.isEmpty()) {
-            logger.info("No groups found to deprecate");
+    public void deprecate(Collection<String> groupIds) {
+        if (groupIds == null || groupIds.isEmpty()) {
+            logger.info("No group id provided to deprecate");
             return;
         }
-        List<UpdateItemStateRequest.ItemIdentifier> ids = groups.stream()
+        List<UpdateItemStateRequest.ItemIdentifier> ids = ddiRepository.getGroups().stream()
+                .filter(group -> groupIds.contains(group.id()))
                 .map(group -> {
                     String agency = group.agency() != null ? group.agency() : instanceConfiguration.defaultAgencyId();
                     return new UpdateItemStateRequest.ItemIdentifier(agency, group.id(), 1);
                 })
                 .toList();
+        if (ids.isEmpty()) {
+            logger.info("None of the {} requested group id(s) exist in Colectica: nothing to deprecate", groupIds.size());
+            return;
+        }
         colecticaClient.updateItemState(
                 new UpdateItemStateRequest(ids, true, true));
-        logger.info("Deprecated {} group(s) from Colectica", groups.size());
+        logger.info("Deprecated {} group(s) from Colectica", ids.size());
     }
 }
