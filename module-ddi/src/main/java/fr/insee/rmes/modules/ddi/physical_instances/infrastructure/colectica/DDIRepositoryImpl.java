@@ -45,6 +45,11 @@ public class DDIRepositoryImpl implements DDIRepository {
 
     private static final String BAUHAUS_API = "bauhaus-api";
 
+    /** DDI type name "PhysicalInstance", used both as {@code itemTypes()} key and as XML element name/value. */
+    private static final String PHYSICAL_INSTANCE = "PhysicalInstance";
+    /** DDI type name "CodeList", used both as {@code itemTypes()} key and as XML element name. */
+    private static final String CODE_LIST = "CodeList";
+
     private final String defaultLang;
 
     private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
@@ -79,7 +84,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
 
             ColecticaResponse response = colecticaClient.query(
-                List.of(instanceConfiguration.itemTypes().get("PhysicalInstance")));
+                List.of(instanceConfiguration.itemTypes().get(PHYSICAL_INSTANCE)));
 
             return response
                 .results()
@@ -409,12 +414,12 @@ public class DDIRepositoryImpl implements DDIRepository {
             fragmentElement
                 .getElementsByTagNameNS(
                     "ddi:physicalinstance:3_3",
-                    "PhysicalInstance"
+                    PHYSICAL_INSTANCE
                 )
                 .getLength() >
             0
         ) {
-            return instanceConfiguration.itemTypes().get("PhysicalInstance");
+            return instanceConfiguration.itemTypes().get(PHYSICAL_INSTANCE);
         }
         // Check for DataRelationship
         if (
@@ -440,11 +445,11 @@ public class DDIRepositoryImpl implements DDIRepository {
         // Check for CodeList
         if (
             fragmentElement
-                .getElementsByTagNameNS("ddi:logicalproduct:3_3", "CodeList")
+                .getElementsByTagNameNS("ddi:logicalproduct:3_3", CODE_LIST)
                 .getLength() >
             0
         ) {
-            return instanceConfiguration.itemTypes().get("CodeList");
+            return instanceConfiguration.itemTypes().get(CODE_LIST);
         }
         // Check for Category
         if (
@@ -575,7 +580,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private Set<String> codeListAndCategoryItemTypes() {
         Map<String, String> types = instanceConfiguration.itemTypes();
         if (types == null) return Set.of();
-        return Stream.of("CodeList", "Category")
+        return Stream.of(CODE_LIST, "Category")
                 .map(types::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -1367,7 +1372,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             // Create Colectica items
             ColecticaItemResponse physicalInstanceItem =
                 new ColecticaItemResponse(
-                    instanceConfiguration.itemTypes().get("PhysicalInstance"),
+                    instanceConfiguration.itemTypes().get(PHYSICAL_INSTANCE),
                     agencyId,
                     version,
                     physicalInstanceId,
@@ -1575,7 +1580,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, CODE_LIST)) {
                     return null;
                 }
                 Ddi3Response ddi3Response = new Ddi3Response(null, toDdi3Items(itemResponses));
@@ -1598,7 +1604,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, CODE_LIST)) {
                     return null;
                 }
                 return assembleFragmentInstance(fragmentXmls(Arrays.stream(itemResponses).toList()));
@@ -1633,6 +1640,27 @@ public class DDIRepositoryImpl implements DDIRepository {
                 .toList();
 
         return colecticaClient.getDescriptions(identifiers);
+    }
+
+    /**
+     * Vérifie que l'item racine {@code id} du set est bien du type attendu (#493). La racine figure
+     * toujours parmi les {@link ColecticaItemResponse} remontés par {@link #fetchSetItems}, donc la
+     * validation ne coûte aucun appel réseau supplémentaire (Option B).
+     *
+     * <p>Renvoie {@code false} quand la racine est absente <em>ou</em> d'un autre type : les accesseurs
+     * retournent alors {@code null}, converti en {@code 404} côté contrôleur. Le 404 unique (mauvais
+     * type comme inexistant) ne divulgue pas l'existence d'un objet d'un type différent.
+     *
+     * @param expectedTypeKey clé de {@link ColecticaConfiguration.ColecticaInstanceConfiguration#itemTypes()}
+     *                        (p.ex. {@code "CodeList"} ou {@code "PhysicalInstance"})
+     */
+    private boolean rootItemHasType(ColecticaItemResponse[] itemResponses, String id, String expectedTypeKey) {
+        String expectedType = instanceConfiguration.itemTypes().get(expectedTypeKey);
+        return Arrays.stream(itemResponses)
+            .filter(item -> Objects.equals(item.identifier(), id))
+            .findFirst()
+            .map(item -> Objects.equals(item.itemType(), expectedType))
+            .orElse(false);
     }
 
     private List<Ddi3Response.Ddi3Item> toDdi3Items(ColecticaItemResponse[] itemResponses) {
@@ -1701,7 +1729,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, PHYSICAL_INSTANCE)) {
                     return null;
                 }
                 ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
@@ -1726,7 +1755,8 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             try {
                 ColecticaItemResponse[] itemResponses = fetchSetItems(agencyId, id, version);
-                if (itemResponses == null || itemResponses.length == 0) {
+                if (itemResponses == null || itemResponses.length == 0
+                    || !rootItemHasType(itemResponses, id, PHYSICAL_INSTANCE)) {
                     return null;
                 }
                 ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
@@ -1822,7 +1852,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId) {
         logger.info("Fetching code lists for code list scheme {}/{}", agencyId, codeListSchemeId);
-        String codeListType = instanceConfiguration.itemTypes().get("CodeList");
+        String codeListType = instanceConfiguration.itemTypes().get(CODE_LIST);
 
         Set<String> codeListIds = colecticaClient.findRelatedDescriptions(
                     RelationshipDirection.BY_SUBJECT,
@@ -1848,7 +1878,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     private List<PartialCodesList> getCodeLists() {
         logger.info("Getting code lists from Colectica API via HTTP (primary instance)");
         ColecticaResponse response = colecticaClient.query(
-            List.of(instanceConfiguration.itemTypes().get("CodeList")));
+            List.of(instanceConfiguration.itemTypes().get(CODE_LIST)));
         return response
             .results()
             .stream()
@@ -1871,7 +1901,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         Map<String, String> types = instanceConfiguration.itemTypes();
         String variableType = types.get("Variable");
         String dataRelationshipType = types.get("DataRelationship");
-        String physicalInstanceType = types.get("PhysicalInstance");
+        String physicalInstanceType = types.get(PHYSICAL_INSTANCE);
         String studyUnitType = types.get("StudyUnit");
 
         // Walk the byobject graph: CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
@@ -1973,7 +2003,7 @@ public class DDIRepositoryImpl implements DDIRepository {
 
         // Resolve labels/dates with a single repository-wide CodeList query (the relationship
         // descriptions carry only agency/identifier).
-        String codeListType = instanceConfiguration.itemTypes().get("CodeList");
+        String codeListType = instanceConfiguration.itemTypes().get(CODE_LIST);
         Map<String, ColecticaItem> itemsByKey = new HashMap<>();
         ColecticaResponse response = colecticaClient.query(List.of(codeListType));
         if (response != null && response.results() != null) {
@@ -2140,7 +2170,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 "ddi:reusable:3_3",
                 "r:TypeOfObject"
             );
-            typeEl.setTextContent("PhysicalInstance");
+            typeEl.setTextContent(PHYSICAL_INSTANCE);
             piRef.appendChild(typeEl);
 
             studyUnitElement.appendChild(piRef);
