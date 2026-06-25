@@ -100,6 +100,41 @@ public class OperationIndicatorsQueries {
 		return buildIndicatorRequest("getPublishersById.ftlh", params);
 	}
 
+	/**
+	 * Requête groupée : tous les créateurs de tous les indicateurs en une seule requête.
+	 * Renvoie {@code ?indicatorId ?creators} pour permettre le dispatch côté Java (anti N+1).
+	 */
+	public String getCreatorsByIndicators() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
+		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
+		return buildIndicatorRequest("getCreatorsByIndicators.ftlh", params);
+	}
+
+	/**
+	 * Requête groupée : tous les éditeurs de tous les indicateurs en une seule requête.
+	 * Renvoie {@code ?indicatorId ?publishers}.
+	 */
+	public String getPublishersByIndicators() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
+		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
+		return buildIndicatorRequest("getPublishersByIndicators.ftlh", params);
+	}
+
+	/**
+	 * Requête groupée : toutes les organisations liées (via {@code linkPredicate}) de tous les
+	 * indicateurs en une seule requête. Renvoie {@code ?indicatorId ?id ?labelLg1 ?labelLg2}.
+	 */
+	public String getOrganizationsByIndicators(IRI linkPredicate) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
+		params.put("LINKPREDICATE", linkPredicate);
+		return buildIndicatorRequest("getOrganizationsByIndicators.ftlh", params);
+	}
+
 	public String getContributorsById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
