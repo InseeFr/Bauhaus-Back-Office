@@ -384,7 +384,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/item/{agency}/{id}/{version}",
+        value = "/public/item/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     @PublicEndpoint
@@ -403,7 +403,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/item/{agency}/{id}/{version}",
+        value = "/public/item/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
@@ -422,7 +422,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/item/{agency}/{id}",
+        value = "/public/item/{agency}/{id}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     @PublicEndpoint
@@ -440,7 +440,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/item/{agency}/{id}",
+        value = "/public/item/{agency}/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
@@ -464,7 +464,7 @@ public class DdiResources {
      * qui ne route vers Bauhaus que les chemins commençant par {@code /ddi/}.
      */
     @GetMapping(
-        value = "/codelist/{agency}/{id}/{version}",
+        value = "/public/codelist/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     @PublicEndpoint
@@ -477,7 +477,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/codelist/{agency}/{id}/{version}",
+        value = "/public/codelist/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
@@ -490,7 +490,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/codelist/{agency}/{id}",
+        value = "/public/codelist/{agency}/{id}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     @PublicEndpoint
@@ -502,7 +502,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/codelist/{agency}/{id}",
+        value = "/public/codelist/{agency}/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
@@ -514,7 +514,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/operation/{id}/studyUnit",
+        value = "/public/operation/{id}/studyUnit",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint

@@ -109,7 +109,7 @@ class PhysicalInstanceVariablesResourcesTest {
         verify(ddiService).getDataRelationships(AGENCY, ID, VERSION);
     }
 
-    // #447 (dernier commentaire) : le endpoint est exposé sous /ddi/structures pour la
+    // #447 (dernier commentaire) : le endpoint est exposé sous /ddi/public/structures pour la
     // redirection Gravitee (les endpoints Bauhaus repris par /ddi/).
 
     @Test
@@ -117,7 +117,7 @@ class PhysicalInstanceVariablesResourcesTest {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
         when(ddiService.getDataRelationships(AGENCY, ID, null)).thenReturn(emptyDdi4());
 
-        mockMvc.perform(get("/ddi/structures/{agency}/{id}/variables", AGENCY, ID)
+        mockMvc.perform(get("/ddi/public/structures/{agency}/{id}/variables", AGENCY, ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -127,7 +127,7 @@ class PhysicalInstanceVariablesResourcesTest {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
         when(ddiService.getDataRelationships(AGENCY, ID, VERSION)).thenReturn(emptyDdi4());
 
-        mockMvc.perform(get("/ddi/structures/{agency}/{id}/{version}/variables", AGENCY, ID, VERSION)
+        mockMvc.perform(get("/ddi/public/structures/{agency}/{id}/{version}/variables", AGENCY, ID, VERSION)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
