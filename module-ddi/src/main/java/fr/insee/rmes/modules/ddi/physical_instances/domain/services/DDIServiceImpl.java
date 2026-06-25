@@ -6,8 +6,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariabl
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -206,6 +208,18 @@ public class DDIServiceImpl implements DDIService {
     public Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request) {
         logger.info("Creating new physical instance with label: {}", request.physicalInstanceLabel());
         return ddiRepository.createPhysicalInstance(request);
+    }
+
+    @Override
+    public void createLogicalProduct(Ddi4LogicalProduct logicalProduct) {
+        logger.info("Creating logical product: {}/{}", logicalProduct.agency(), logicalProduct.id());
+        ddiRepository.createLogicalProduct(logicalProduct);
+    }
+
+    @Override
+    public void createCodeListScheme(Ddi4CodeListScheme codeListScheme) {
+        logger.info("Creating code list scheme: {}/{}", codeListScheme.agency(), codeListScheme.id());
+        ddiRepository.createCodeListScheme(codeListScheme);
     }
 
     @Override

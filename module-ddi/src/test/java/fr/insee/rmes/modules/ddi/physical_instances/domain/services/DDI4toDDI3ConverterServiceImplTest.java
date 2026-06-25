@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -34,6 +35,7 @@ class DDI4toDDI3ConverterServiceImplTest {
         "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
         "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
         "CodeListScheme", "c5084949-3e3a-4b7f-9f5b-1a2b3c4d5e6f",
+        "LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b",
         "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
     );
 
@@ -178,6 +180,26 @@ class DDI4toDDI3ConverterServiceImplTest {
                 .contains("<ddi:CodeListScheme")
                 .contains(">Schéma listes<")
                 .contains(">CL_AGEMEN8<");
+    }
+
+    @Test
+    void shouldConvertLogicalProductToDdi3Item() {
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:LP_1:1", "fr.insee", "LP_1", "1",
+                LangStrings.of("fr-FR", "Produit logique"),
+                List.of(Reference.of("fr.insee", "CLS_1", "1", "CodeListScheme")));
+
+        Ddi3Response.Ddi3Item item = converter.toLogicalProductItem(logicalProduct);
+
+        assertThat(item.itemType()).isEqualTo("965c8d28-7d48-4950-bea7-04b27e52bb9b");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("LP_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<ddi:LogicalProduct")
+                .contains(">Produit logique<")
+                .contains(">CLS_1<");
     }
 
     @Test

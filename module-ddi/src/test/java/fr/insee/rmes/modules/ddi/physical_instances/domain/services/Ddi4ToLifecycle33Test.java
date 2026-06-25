@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -253,6 +254,44 @@ class Ddi4ToLifecycle33Test {
                 .contains("<r:CodeListReference")
                 .contains(">cl-1<")
                 .contains(">cl-2<");
+    }
+
+    @Test
+    void shouldBuildLogicalProductWithCodeListSchemeReferences() {
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:lp-id:1", "fr.insee", "lp-id", "1",
+                LangStrings.of("fr-FR", "LogicalProduct Label"),
+                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")));
+
+        String xml = converter.toLogicalProduct(logicalProduct).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:LogicalProduct")
+                .contains(">urn:ddi:fr.insee:lp-id:1<")
+                .contains("<r:Label")
+                .contains(">LogicalProduct Label<")
+                .contains("<r:CodeListSchemeReference")
+                .contains(">cls-1<");
+    }
+
+    @Test
+    void shouldBuildGroupWithLogicalProductReference() {
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1",
+                "bauhaus",
+                new Citation(LangStrings.of("fr-FR", "Test Group")),
+                List.of(Reference.of("fr.insee", "su-id-1", "1", "StudyUnit")),
+                List.of("http://id.insee.fr/operations/serie/s1001"),
+                "insee:StatisticalOperationSeries",
+                List.of(Reference.of("fr.insee", "lp-id-1", "1", "LogicalProduct")));
+
+        String xml = converter.toGroup(group).xmlText(groupXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:LogicalProductReference")
+                .contains(">lp-id-1<");
     }
 
     @Test

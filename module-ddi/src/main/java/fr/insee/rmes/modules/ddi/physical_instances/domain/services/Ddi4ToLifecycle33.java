@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
@@ -23,6 +24,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -40,6 +42,7 @@ import java.math.BigInteger;
 public class Ddi4ToLifecycle33 {
 
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
+    private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
 
     public FragmentDocument toPhysicalInstance(Ddi4PhysicalInstance pi) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
@@ -297,6 +300,53 @@ public class Ddi4ToLifecycle33 {
         if (group.studyUnitReference() != null) {
             for (Reference suRef : group.studyUnitReference()) {
                 populateReference(groupType.addNewStudyUnitReference(), suRef);
+            }
+        }
+
+        if (group.logicalProductReference() != null) {
+            for (Reference lpRef : group.logicalProductReference()) {
+                populateReference(groupType.addNewLogicalProductReference(), lpRef);
+            }
+        }
+
+        return doc;
+    }
+
+    /**
+     * Serializes a {@link Ddi4LogicalProduct} as a DDI 3.3 {@code <LogicalProduct>} fragment.
+     * <p>
+     * {@code LogicalProduct} is a substitution-group member of the {@code BaseLogicalProduct} head
+     * element, which is the only logical-product element the generated {@code FragmentType} exposes;
+     * we therefore add the base element and re-type it to {@code LogicalProduct} through a cursor —
+     * the same approach used for representation elements elsewhere in this converter.
+     */
+    public FragmentDocument toLogicalProduct(Ddi4LogicalProduct logicalProduct) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var base = doc.addNewFragment().addNewBaseLogicalProduct();
+        LogicalProductType lpType;
+        try (XmlCursor cursor = base.newCursor()) {
+            cursor.setName(new QName(DDI_LOGICAL_PRODUCT_NS, "LogicalProduct"));
+            lpType = (LogicalProductType) cursor.getObject().changeType(LogicalProductType.type);
+        }
+
+        lpType.setIsUniversallyUnique(true);
+        lpType.setVersionDate(logicalProduct.versionDate() != null ? logicalProduct.versionDate().dateTime() : null);
+        lpType.addNewURN().setStringValue(logicalProduct.urn());
+        lpType.addAgency(logicalProduct.agency());
+        lpType.addNewID().setStringValue(logicalProduct.id());
+        lpType.addVersion(logicalProduct.version());
+
+        if (logicalProduct.label() != null && !logicalProduct.label().isEmpty()) {
+            LangString first = logicalProduct.label().get(0);
+            var nameString = lpType.addNewLogicalProductName().addNewString();
+            nameString.setLang(first.language());
+            nameString.setStringValue(first.value());
+            writeLabelContent(lpType.addNewLabel().addNewContent(), first);
+        }
+
+        if (logicalProduct.codeListSchemeReference() != null) {
+            for (Reference ref : logicalProduct.codeListSchemeReference()) {
+                populateReference(lpType.addNewCodeListSchemeReference(), ref);
             }
         }
 

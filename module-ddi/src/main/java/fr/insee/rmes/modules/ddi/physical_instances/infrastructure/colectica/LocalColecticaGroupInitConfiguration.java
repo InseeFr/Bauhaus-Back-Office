@@ -6,8 +6,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -52,7 +54,10 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
  *   <li>Deprecates ONLY the groups and study units this init manipulates (those derived from the
  *       series/operations read above, all variants included), leaving every other Colectica item untouched</li>
  *   <li>Creates StudyUnits FIRST (so they exist with full content)</li>
- *   <li>Creates Groups with StudyUnitReferences (pointing to existing StudyUnits)</li>
+ *   <li>For each Group variant, creates an (initially empty) CodeListScheme and the LogicalProduct
+ *       that files it, then the Group itself — with StudyUnitReferences (pointing to existing
+ *       StudyUnits) and a LogicalProductReference, so each Group exposes the
+ *       Group → LogicalProduct → CodeListScheme chain</li>
  * </ol>
  * <p>
  * For each operation it creates {@link #VARIANT_LABEL_WORDS}.size() StudyUnit variants (and one
@@ -80,6 +85,14 @@ public class LocalColecticaGroupInitConfiguration {
     static final List<String> VARIANT_LABEL_WORDS = List.of("Zoulou", "Alpha", "Mike", "Bravo", "Yankee");
 
     private static final String VARIANT_SEED_SEPARATOR = "#variant-";
+
+    /**
+     * Suffixes appended to a group variant's seed to derive the deterministic ids of its
+     * LogicalProduct and (initially empty) CodeListScheme. Each group variant owns one of each,
+     * exposing the Group → LogicalProduct → CodeListScheme chain.
+     */
+    private static final String LOGICAL_PRODUCT_SEED_SUFFIX = "#logicalproduct";
+    private static final String CODE_LIST_SCHEME_SEED_SUFFIX = "#codelistscheme";
 
     /**
      * Les ids Colectica déterministes des {@link #VARIANT_LABEL_WORDS} variantes dérivées d'une IRI.
@@ -207,6 +220,39 @@ public class LocalColecticaGroupInitConfiguration {
                         String groupLabel = series.seriesLabel() + " " + variantWord + " Group";
                         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
+                        // Create the group's (initially empty) CodeListScheme and the LogicalProduct that
+                        // files it, BEFORE the group, so Colectica does not auto-create empty stubs for the
+                        // items the group references (same ordering constraint as study units above).
+                        String codeListSchemeId = generateDeterministicUuid(
+                                series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + CODE_LIST_SCHEME_SEED_SUFFIX);
+                        Ddi4CodeListScheme codeListScheme = new Ddi4CodeListScheme(
+                                Ddi4CodeListScheme.TYPE,
+                                CogsDate.ofDateTime(versionDate),
+                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListSchemeId),
+                                defaultAgencyId,
+                                codeListSchemeId,
+                                "1",
+                                LangStrings.of(defaultLang, groupLabel + " Code List Scheme"),
+                                List.of()
+                        );
+                        logger.info("Creating code list scheme: id={}, variant={}", codeListSchemeId, variantWord);
+                        ddiService.createCodeListScheme(codeListScheme);
+
+                        String logicalProductId = generateDeterministicUuid(
+                                series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + LOGICAL_PRODUCT_SEED_SUFFIX);
+                        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
+                                Ddi4LogicalProduct.TYPE,
+                                CogsDate.ofDateTime(versionDate),
+                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, logicalProductId),
+                                defaultAgencyId,
+                                logicalProductId,
+                                "1",
+                                LangStrings.of(defaultLang, groupLabel + " Logical Product"),
+                                List.of(Reference.of(defaultAgencyId, codeListSchemeId, "1", "CodeListScheme"))
+                        );
+                        logger.info("Creating logical product: id={}, variant={}, codeListScheme={}", logicalProductId, variantWord, codeListSchemeId);
+                        ddiService.createLogicalProduct(logicalProduct);
+
                         final int currentVariant = variant;
                         List<Reference> studyUnitRefs = series.operations().stream()
                                 .map(op -> Reference.of(
@@ -228,7 +274,8 @@ public class LocalColecticaGroupInitConfiguration {
                                 new Citation(LangStrings.of(defaultLang, groupLabel)),
                                 studyUnitRefs,
                                 List.of(series.seriesIri()),
-                                "insee:StatisticalOperationSeries"
+                                "insee:StatisticalOperationSeries",
+                                List.of(Reference.of(defaultAgencyId, logicalProductId, "1", "LogicalProduct"))
                         );
 
                         logger.info("Creating group: id={}, uri={}, variant={}, label='{}', operations={}",

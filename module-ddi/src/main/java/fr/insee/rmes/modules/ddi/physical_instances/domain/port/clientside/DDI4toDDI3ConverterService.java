@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 
 public interface DDI4toDDI3ConverterService {
@@ -27,4 +28,12 @@ public interface DDI4toDDI3ConverterService {
      * @return the DDI3 item for the scheme
      */
     Ddi3Response.Ddi3Item toCodeListSchemeItem(Ddi4CodeListScheme scheme);
+
+    /**
+     * Serialize a single LogicalProduct to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica.
+     * @param logicalProduct the logical product to serialize
+     * @return the DDI3 item for the logical product
+     */
+    Ddi3Response.Ddi3Item toLogicalProductItem(Ddi4LogicalProduct logicalProduct);
 }

@@ -4,7 +4,9 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -30,6 +32,8 @@ public interface DDIService {
     Ddi4Response updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
     Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);
     Ddi4Response createPhysicalInstance(CreatePhysicalInstanceRequest request);
+    void createLogicalProduct(Ddi4LogicalProduct logicalProduct);
+    void createCodeListScheme(Ddi4CodeListScheme codeListScheme);
     List<PartialCodesList> getMutualizedCodesLists();
     void evictMutualizedCodesListsCache();
     Ddi4Response getMutualizedCodesList(String agencyId, String id);

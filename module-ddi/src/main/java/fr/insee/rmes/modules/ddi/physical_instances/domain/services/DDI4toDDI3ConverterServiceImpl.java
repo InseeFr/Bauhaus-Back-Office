@@ -7,6 +7,7 @@ import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -112,6 +113,14 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
         return createDdi3Item(itemTypes.get("CodeListScheme"), scheme.agency(), scheme.version(),
                 scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+    }
+
+    @Override
+    public Ddi3Response.Ddi3Item toLogicalProductItem(Ddi4LogicalProduct logicalProduct) {
+        String xmlFragment = ddi4ToLifecycle33.toLogicalProduct(logicalProduct)
+                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(itemTypes.get("LogicalProduct"), logicalProduct.agency(), logicalProduct.version(),
+                logicalProduct.id(), xmlFragment, dateTimeOf(logicalProduct.versionDate()));
     }
 
     @Override

@@ -1,7 +1,9 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -142,6 +144,65 @@ class LocalColecticaGroupInitConfigurationTest {
             assertThat(group.studyUnitReference()).hasSize(2); // one ref per operation, same variant
             assertThat(group.agency()).isEqualTo("fr.insee");
         });
+    }
+
+    @Test
+    void shouldCreateOneEmptyCodeListSchemeAndLogicalProductPerGroupVariant() throws Exception {
+        // Given: 1 series, no operations (keeps the test focused on the Group -> LogicalProduct ->
+        // CodeListScheme chain, independent of study units / physical instances)
+        JSONArray sparqlResults = new JSONArray();
+        sparqlResults.put(new JSONObject()
+                .put("seriesId", "s1001")
+                .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
+                .put("seriesLabel", "Enquête innovation"));
+
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
+                createColecticaConfig(), colecticaClient,
+                "http://rdf.insee.fr/graphes/", "operations");
+
+        // When
+        runner.run();
+
+        // Then: one CodeListScheme and one LogicalProduct per group variant
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        ArgumentCaptor<Ddi4CodeListScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(ddiService, times(variants)).createCodeListScheme(schemeCaptor.capture());
+        verify(ddiService, times(variants)).createLogicalProduct(lpCaptor.capture());
+        verify(groupService, times(variants)).createOrUpdate(groupCaptor.capture());
+
+        // Each CodeListScheme is created empty (no code list referenced yet)
+        assertThat(schemeCaptor.getAllValues()).allSatisfy(scheme -> {
+            assertThat(scheme.agency()).isEqualTo("fr.insee");
+            assertThat(scheme.codeListReference()).isNullOrEmpty();
+        });
+
+        // Per variant the chain is wired together: the i-th LogicalProduct references the i-th
+        // CodeListScheme, and the i-th Group references the i-th LogicalProduct.
+        List<Ddi4CodeListScheme> schemes = schemeCaptor.getAllValues();
+        List<Ddi4LogicalProduct> logicalProducts = lpCaptor.getAllValues();
+        List<Ddi4Group> groups = groupCaptor.getAllValues();
+        for (int variant = 0; variant < variants; variant++) {
+            Ddi4LogicalProduct lp = logicalProducts.get(variant);
+            assertThat(lp.codeListSchemeReference()).hasSize(1);
+            assertThat(lp.codeListSchemeReference().get(0).id()).isEqualTo(schemes.get(variant).id());
+            assertThat(lp.codeListSchemeReference().get(0).type()).isEqualTo("CodeListScheme");
+
+            assertThat(groups.get(variant).logicalProductReference()).hasSize(1);
+            assertThat(groups.get(variant).logicalProductReference().get(0).id()).isEqualTo(lp.id());
+            assertThat(groups.get(variant).logicalProductReference().get(0).type()).isEqualTo("LogicalProduct");
+        }
+
+        // Creation order, per variant: CodeListScheme, then LogicalProduct, then the Group referencing it
+        InOrder inOrder = inOrder(ddiService, groupService);
+        inOrder.verify(ddiService).createCodeListScheme(any());
+        inOrder.verify(ddiService).createLogicalProduct(any());
+        inOrder.verify(groupService).createOrUpdate(any());
     }
 
     @Test

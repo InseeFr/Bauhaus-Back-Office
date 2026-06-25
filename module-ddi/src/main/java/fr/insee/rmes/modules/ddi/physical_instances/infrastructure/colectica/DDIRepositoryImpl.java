@@ -1426,7 +1426,21 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             // Return the created instance
             return getPhysicalInstance(agencyId, physicalInstanceId);
-        
+
+    }
+
+    @Override
+    public void createLogicalProduct(Ddi4LogicalProduct logicalProduct) {
+        logger.info("Creating logical product in Colectica: {}/{}", logicalProduct.agency(), logicalProduct.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)))));
+    }
+
+    @Override
+    public void createCodeListScheme(Ddi4CodeListScheme codeListScheme) {
+        logger.info("Creating code list scheme in Colectica: {}/{}", codeListScheme.agency(), codeListScheme.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(codeListScheme)))));
     }
 
     /**
