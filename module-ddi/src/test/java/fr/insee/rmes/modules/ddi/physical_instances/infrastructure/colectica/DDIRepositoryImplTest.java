@@ -601,6 +601,101 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void shouldAttachPhysicalInstanceToStudyUnitWhenUpdateCarriesStudyUnit() {
+        // Given a PATCH that carries a StudyUnit (duplication workflow, cf. #1555):
+        // the PI must be attached to that StudyUnit so that GET .../parents can resolve
+        // its Group & Study afterwards.
+        String instanceId = "duplicated-pi-id";
+        String agencyId = "fr.insee";
+        String studyUnitId = "su-target";
+        String studyUnitAgency = "fr.insee";
+
+        UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
+                "Dup PI (copy)", "Dup DR", "Dup LR",
+                studyUnitId, studyUnitAgency, "group-1", "fr.insee"
+        );
+
+        // Mock getPhysicalInstance (getSet + _getList + converter), mirroring shouldUpdatePhysicalInstance
+        ColecticaSetItem[] existingSetItems = {
+            new ColecticaSetItem(instanceId, 1, agencyId),
+            new ColecticaSetItem("dr-123", 1, agencyId)
+        };
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(existingSetItems);
+
+        ColecticaItemResponse[] existingItemResponses = {
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse("f39ff278-8500-45fe-a850-3906da2d242b", agencyId, 1, "dr-123",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null)
+        };
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(existingItemResponses);
+
+        Ddi4PhysicalInstance mockPhysicalInstance = new Ddi4PhysicalInstance(Ddi4PhysicalInstance.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:" + instanceId + ":1",
+                agencyId, instanceId, "1",
+                null,
+                new Citation(LangStrings.of("fr-FR", "Old Label")),
+                List.of(Reference.of(agencyId, "dr-123", "1", "DataRelationship"))
+        );
+        Ddi4DataRelationship mockDataRelationship = new Ddi4DataRelationship(Ddi4DataRelationship.TYPE,
+                CogsDate.ofDateTime("2025-01-01T00:00:00"),
+                "urn:ddi:fr.insee:dr-123:1",
+                agencyId, "dr-123", "1",
+                null, null,
+                List.of(new LogicalRecord(LogicalRecord.TYPE, "urn:ddi:fr.insee:lr-123:1", agencyId, "lr-123", "1",
+                        null, null))
+        );
+        Ddi4Response mockDdi4Response = new Ddi4Response(
+                "ddi:4.0",
+                List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
+                List.of(mockPhysicalInstance),
+                List.of(mockDataRelationship), List.of(), List.of(), List.of()
+        );
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(mockDdi4Response);
+
+        Ddi3Response.Ddi3Item mockPiDdi3Item = new Ddi3Response.Ddi3Item(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, "1", instanceId,
+                "<PhysicalInstance>Dup PI (copy)</PhysicalInstance>",
+                "2025-01-01T00:00:00", null, false, false, false, "DDI");
+        Ddi3Response.Ddi3Item mockDrDdi3Item = new Ddi3Response.Ddi3Item(
+                "f39ff278-8500-45fe-a850-3906da2d242b", agencyId, "1", "dr-123",
+                "<DataRelationship>Dup DR</DataRelationship>",
+                "2025-01-01T00:00:00", null, false, false, false, "DDI");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+                .thenReturn(new Ddi3Response(null, List.of(mockPiDdi3Item, mockDrDdi3Item)));
+
+        // StudyUnit fetched by addPhysicalInstanceReferenceToStudyUnit
+        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\" isUniversallyUnique=\"true\"></StudyUnit>"
+                + "</Fragment>";
+        ColecticaItemResponse studyUnitResponse = new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d", studyUnitAgency, 2, studyUnitId,
+                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, null);
+        when(colecticaClient.getItem(anyString(), anyString(), any())).thenReturn(studyUnitResponse);
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "StudyUnit", "30ea0200-7121-4f01-8d21-a931a182b86d"));
+
+        when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
+
+        // When
+        ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
+
+        // Then: the saved batch includes the StudyUnit carrying a PhysicalInstanceReference to the PI
+        ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(bodyCaptor.capture());
+        ColecticaItemResponse savedStudyUnit = bodyCaptor.getValue().items().stream()
+                .filter(item -> "30ea0200-7121-4f01-8d21-a931a182b86d".equals(item.itemType()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No StudyUnit item sent to Colectica during PATCH"));
+        assertTrue(savedStudyUnit.item().contains("PhysicalInstanceReference"));
+        assertTrue(savedStudyUnit.item().contains(instanceId));
+    }
+
+    @Test
     void getPhysicalInstance_skipsCodeListAndCategoryItemTypes() {
         // Les CodeList et Category sont volontairement omises de la réponse GET PI
         // (chargées paresseusement au clic d'une variable) pour réduire le payload

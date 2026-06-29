@@ -1143,8 +1143,22 @@ public class DDIRepositoryImpl implements DDIRepository {
             currentInstance.category() // Preserve all categories
         );
 
+        // When a StudyUnit is supplied (duplication workflow, cf. #1555), attach the PhysicalInstance
+        // to it in the same save, so GET .../parents can later resolve its Study & Group.
+        List<ColecticaItemResponse> additionalItems = new ArrayList<>();
+        if (request.studyUnitId() != null && request.studyUnitAgency() != null) {
+            additionalItems.add(
+                addPhysicalInstanceReferenceToStudyUnit(
+                    request.studyUnitAgency(),
+                    request.studyUnitId(),
+                    agencyId,
+                    id
+                )
+            );
+        }
+
         // Use updateFullPhysicalInstance to save everything including variables
-        updateFullPhysicalInstance(agencyId, id, updatedResponse);
+        updateFullPhysicalInstance(agencyId, id, updatedResponse, additionalItems);
     }
 
     @Override
@@ -1152,6 +1166,20 @@ public class DDIRepositoryImpl implements DDIRepository {
         String agencyId,
         String id,
         Ddi4Response ddi4Response
+    ) {
+        updateFullPhysicalInstance(agencyId, id, ddi4Response, List.of());
+    }
+
+    /**
+     * Same as {@link #updateFullPhysicalInstance(String, String, Ddi4Response)} but allows callers to
+     * bundle extra already-built Colectica items in the same atomic save — used by the PATCH flow to
+     * attach the PhysicalInstance to a StudyUnit (cf. #1555).
+     */
+    private void updateFullPhysicalInstance(
+        String agencyId,
+        String id,
+        Ddi4Response ddi4Response,
+        List<ColecticaItemResponse> additionalItems
     ) {
         logger.info(
             "Updating full physical instance {}/{} with all DDI objects in Colectica",
@@ -1182,6 +1210,9 @@ public class DDIRepositoryImpl implements DDIRepository {
 
             // File the non-mutualized code lists under the group's CodeListScheme (#…)
             appendGroupCodeListSchemeUpdate(agencyId, id, ddi4Response, colecticaItems);
+
+            // Bundle any extra items (e.g. the StudyUnit re-registered with a new PI reference)
+            colecticaItems.addAll(additionalItems);
 
             // Create request with all items
             ColecticaCreateItemRequest updateRequest =
