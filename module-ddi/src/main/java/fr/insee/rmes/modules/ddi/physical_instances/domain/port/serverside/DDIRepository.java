@@ -22,6 +22,13 @@ import java.util.Optional;
 
 public interface DDIRepository {
     List<PartialPhysicalInstance> getPhysicalInstances();
+    /**
+     * Same listing as {@link #getPhysicalInstances()} but sourced from Colectica's
+     * {@code _query/advanced} endpoint, which returns the per-item property bags (in particular
+     * {@code DateProperties.versionDate}). Added alongside the legacy listing for an incremental
+     * migration — the two coexist until the advanced query becomes the single source.
+     */
+    List<PartialPhysicalInstance> getPhysicalInstancesViaAdvancedQuery();
     List<PartialLogicalProduct> getLogicalProducts();
     List<PartialGroup> getGroups();
     List<PartialStudyUnit> getStudyUnits();

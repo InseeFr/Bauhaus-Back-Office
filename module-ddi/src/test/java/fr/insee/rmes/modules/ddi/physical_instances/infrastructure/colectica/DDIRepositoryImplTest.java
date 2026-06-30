@@ -153,6 +153,52 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void shouldGetPhysicalInstancesViaAdvancedQuery() {
+        // Given the _query/advanced payload shape: label/date live in typed property bags,
+        // versionDate carries sub-second precision that we truncate to seconds (like the legacy path).
+        Map<String, String> itemTypes = Map.of("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8");
+
+        ColecticaAdvancedItem item1 = new ColecticaAdvancedItem(
+            "agency1", "pi-1", 1, "a51e85bb-6259-4488-8df2-f08cb43485f8", false,
+            Map.of(
+                "dcTitle", List.of(new LocalizedText("Titre 1", "fr-FR")),
+                "label", List.of(new LocalizedText("Instance Physique 1", "fr-FR"))),
+            Map.of("versionDate", List.of("2026-06-29T14:26:32.961778")),
+            Map.of("isPublished", false));
+
+        // No "label" key and no versionDate: label falls back to dcTitle, date stays null.
+        ColecticaAdvancedItem item2 = new ColecticaAdvancedItem(
+            "agency2", "pi-2", 1, "a51e85bb-6259-4488-8df2-f08cb43485f8", false,
+            Map.of("dcTitle", List.of(new LocalizedText("Titre 2", "fr-FR"))),
+            Map.of(),
+            Map.of("isPublished", false));
+
+        ColecticaAdvancedResponse mockResponse =
+            new ColecticaAdvancedResponse(List.of(item1, item2), 2, null);
+
+        when(instanceConfiguration.itemTypes()).thenReturn(itemTypes);
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(mockResponse);
+
+        // When
+        List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstancesViaAdvancedQuery();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("pi-1", result.get(0).id());
+        assertEquals("Instance Physique 1", result.get(0).label());
+        assertEquals("agency1", result.get(0).agency());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
+        assertEquals("pi-2", result.get(1).id());
+        assertEquals("Titre 2", result.get(1).label());
+        assertNull(result.get(1).versionDate());
+
+        verify(colecticaClient).queryAdvanced(eq(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8")));
+    }
+
+    @Test
     void shouldGetLogicalProducts() {
         // Given
         String baseApiUrl = "http://localhost:8082/api/v1/";
@@ -1287,6 +1333,46 @@ class DDIRepositoryImplTest {
         // Never walks up the parent chain anymore.
         verify(colecticaClient, never())
             .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+    }
+
+    @Test
+    void mutualizedCodeList_versionDateComesFromItemXmlNotQueryEnvelope() {
+        // Le versionDate du _query n'est pas fiable (Colectica renvoie 0001-01-01) : on le lit
+        // depuis l'attribut versionDate du XML de l'item, récupéré via un item/_getList.
+        String agencyId = "fr.insee";
+        String packageId = "pkg-1";
+        String schemeId = "scheme-1";
+        String groupId = "group-1";
+        String clId = "cl-1";
+
+        when(colecticaConfiguration.mutualizedCodesPackage())
+            .thenReturn(new ColecticaConfiguration.PackageRef(agencyId, packageId, 1));
+        when(instanceConfiguration.itemTypes()).thenReturn(standardItemTypes());
+
+        stubChildren(agencyId, packageId, CODE_LIST_SCHEME_TYPE, new ItemReference(agencyId, schemeId));
+        stubChildren(agencyId, schemeId, CODE_LIST_GROUP_TYPE, new ItemReference(agencyId, groupId));
+        stubChildren(agencyId, groupId, CODE_LIST_TYPE, new ItemReference(agencyId, clId));
+
+        // _query carries the (unreliable) envelope versionDate — must be ignored.
+        when(colecticaClient.query(List.of(CODE_LIST_TYPE))).thenReturn(new ColecticaResponse(
+            List.of(codeListItem(clId, "Ma code list", "0001-01-01T00:00:00")), 1, 1, null, null, null));
+
+        // The item XML carries the real versionDate attribute.
+        String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+            + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
+            + "<r:URN>urn:ddi:fr.insee:cl-1:1</r:URN></CodeList></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
+            new ColecticaItemResponse(CODE_LIST_TYPE, agencyId, 1, clId, xml,
+                null, null, false, false, false, "DDI")
+        });
+
+        List<PartialCodesList> result = ddiRepository.getMutualizedCodesLists();
+
+        assertEquals(1, result.size());
+        assertEquals(clId, result.get(0).id());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
     }
 
     @Test
@@ -2466,6 +2552,45 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.size());
         assertEquals("code-list-1", result.get(0).id());
         assertEquals("Liste 1", result.get(0).label());
+    }
+
+    @Test
+    void getCodeListsByCodeListScheme_versionDateComesFromItemXml() {
+        // Comme pour les mutualisées : le versionDate fiable est lu depuis le XML de l'item
+        // (item/_getList), pas depuis l'enveloppe _query.
+        String agencyId = "fr.insee";
+        String codeListSchemeId = "cls-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference(agencyId, codeListSchemeId)),
+                eq(List.of(codeListType))))
+            .thenReturn(List.of(new ItemReference(agencyId, "code-list-1")));
+
+        ColecticaItem codeList1 = new ColecticaItem(
+            null, Map.of("fr-FR", "Liste 1"), Map.of("fr-FR", "Liste 1"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList", agencyId, 1, "code-list-1",
+            null, null, "0001-01-01T00:00:00", null, true, false, false, "DDI", 1L, 0);
+        when(colecticaClient.query(anyList()))
+                .thenReturn(new ColecticaResponse(List.of(codeList1), 1, 1, null, null, null));
+
+        String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+            + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
+            + "<r:URN>urn:ddi:fr.insee:code-list-1:1</r:URN></CodeList></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
+            new ColecticaItemResponse(codeListType, agencyId, 1, "code-list-1", xml,
+                null, null, false, false, false, "DDI")
+        });
+
+        List<PartialCodesList> result = ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
+
+        assertEquals(1, result.size());
+        assertEquals("code-list-1", result.get(0).id());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(result.get(0).versionDate()));
     }
 
     @Test

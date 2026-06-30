@@ -110,6 +110,88 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public List<PartialPhysicalInstance> getPhysicalInstancesViaAdvancedQuery() {
+        logger.info(
+            "Getting physical instances from Colectica API via HTTP (_query/advanced)"
+        );
+
+        ColecticaAdvancedResponse response = colecticaClient.queryAdvanced(
+            List.of(instanceConfiguration.itemTypes().get(PHYSICAL_INSTANCE)));
+
+        if (response == null || response.results() == null) {
+            return List.of();
+        }
+
+        return response
+            .results()
+            .stream()
+            .map(item -> {
+                String id = item.identifier();
+                String label = extractLabelFromAdvancedItem(item);
+                Date date = parseAdvancedVersionDate(item);
+                String agency = item.agencyId();
+                return new PartialPhysicalInstance(id, label, date, agency);
+            })
+            .toList();
+    }
+
+    /**
+     * Label of an advanced-query item: prefers the {@code label} property, then {@code dcTitle},
+     * picking the default language first (then any non-blank value), and finally falling back to the
+     * identifier — mirroring {@link #extractLabelFromItem(ColecticaItem)} for the legacy shape.
+     */
+    private String extractLabelFromAdvancedItem(ColecticaAdvancedItem item) {
+        return firstNonBlankLocalized(item, "label")
+            .or(() -> firstNonBlankLocalized(item, "dcTitle"))
+            .orElseGet(item::identifier);
+    }
+
+    private Optional<String> firstNonBlankLocalized(
+        ColecticaAdvancedItem item,
+        String propertyKey
+    ) {
+        if (item.textProperties() == null) {
+            return Optional.empty();
+        }
+        List<LocalizedText> values = item.textProperties().get(propertyKey);
+        if (values == null || values.isEmpty()) {
+            return Optional.empty();
+        }
+        Optional<String> preferred = values.stream()
+            .filter(v -> defaultLang.equals(v.languageTag()))
+            .map(LocalizedText::value)
+            .filter(v -> v != null && !v.isBlank())
+            .findFirst();
+        return preferred.or(() -> values.stream()
+            .map(LocalizedText::value)
+            .filter(v -> v != null && !v.isBlank())
+            .findFirst());
+    }
+
+    /**
+     * First {@code DateProperties.versionDate} value parsed as a UTC instant truncated to the second.
+     * The advanced endpoint emits sub-second precision (e.g. {@code 2026-06-29T14:26:32.961778}); the
+     * trailing fraction is intentionally dropped to keep parity with the legacy listing.
+     */
+    private Date parseAdvancedVersionDate(ColecticaAdvancedItem item) {
+        if (item.dateProperties() == null) {
+            return null;
+        }
+        List<String> versionDates = item.dateProperties().get("versionDate");
+        if (versionDates == null || versionDates.isEmpty()) {
+            return null;
+        }
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            return formatter.parse(versionDates.getFirst());
+        } catch (ParseException | NullPointerException _) {
+            logger.debug("Impossible to parse {}", versionDates.getFirst());
+            return null;
+        }
+    }
+
+    @Override
     public List<PartialLogicalProduct> getLogicalProducts() {
         logger.info(
             "Getting logical products from Colectica API via HTTP (primary instance)"
@@ -1956,26 +2038,33 @@ public class DDIRepositoryImpl implements DDIRepository {
             return List.of();
         }
 
-        return getCodeLists().stream()
-            .filter(codeList -> codeListIds.contains(codeList.id()))
-            .toList();
-    }
+        // Libellés via un _query global (les descriptions de relation ne les portent pas), restreint
+        // aux CodeLists référencées par le scheme.
+        ColecticaResponse response = colecticaClient.query(List.of(codeListType));
+        List<ColecticaItem> keptItems = (response == null || response.results() == null)
+            ? List.of()
+            : response.results().stream()
+                .filter(item -> item != null && codeListIds.contains(item.identifier()))
+                .toList();
+        if (keptItems.isEmpty()) {
+            return List.of();
+        }
 
-    /**
-     * Repository-wide {@code _query} of every CodeList, carrying labels (which the relationship
-     * descriptions do not). Used to resolve the labels of the code lists referenced by a code list scheme.
-     */
-    private List<PartialCodesList> getCodeLists() {
-        logger.info("Getting code lists from Colectica API via HTTP (primary instance)");
-        ColecticaResponse response = colecticaClient.query(
-            List.of(instanceConfiguration.itemTypes().get(CODE_LIST)));
-        return response
-            .results()
-            .stream()
+        // versionDate lu depuis le XML de l'item (l'enveloppe _query n'est pas fiable), comme pour
+        // les code lists mutualisées.
+        Map<String, ColecticaItem> itemsByKey = new LinkedHashMap<>();
+        List<ItemReference> refs = new ArrayList<>();
+        for (ColecticaItem item : keptItems) {
+            itemsByKey.put(item.agencyId() + "/" + item.identifier(), item);
+            refs.add(new ItemReference(item.agencyId(), item.identifier()));
+        }
+        Map<String, Date> versionDateByKey = fetchVersionDatesFromItemXml(refs, itemsByKey);
+
+        return keptItems.stream()
             .map(item -> new PartialCodesList(
                 item.identifier(),
                 extractLabelFromItem(item),
-                parseColecticaDate(item.versionDate()),
+                versionDateByKey.get(item.agencyId() + "/" + item.identifier()),
                 item.agencyId()))
             .toList();
     }
@@ -2104,6 +2193,11 @@ public class DDIRepositoryImpl implements DDIRepository {
             }
         }
 
+        // Le versionDate du _query n'est pas fiable (Colectica renvoie 0001-01-01) : on le lit depuis
+        // l'attribut versionDate du XML de l'item, récupéré en un seul item/_getList sur les CodeLists
+        // retenues. Résultat amorti par le cache @Cacheable de la méthode.
+        Map<String, Date> versionDateByKey = fetchVersionDatesFromItemXml(codeListRefs, itemsByKey);
+
         Map<String, PartialCodesList> collected = new LinkedHashMap<>();
         for (ItemReference ref : codeListRefs) {
             String key = ref.agencyId() + "/" + ref.identifier();
@@ -2115,7 +2209,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             // dans le sélecteur côté front, où seul le libellé est affiché.
             String name = firstNonBlank(item.itemName()).orElse(null);
             collected.putIfAbsent(key, new PartialCodesList(
-                item.identifier(), label.get(), parseColecticaDate(item.versionDate()), item.agencyId(), name
+                item.identifier(), label.get(), versionDateByKey.get(key), item.agencyId(), name
             ));
         }
         logger.info("{} mutualized CodeList(s) kept", collected.size());
@@ -2139,6 +2233,68 @@ public class DDIRepositoryImpl implements DDIRepository {
         allEntries = true)
     public void evictMutualizedCodesListsCache() {
         logger.info("Mutualized codes lists caches evicted");
+    }
+
+    /**
+     * Batch-fetches the XML of the given code list references (item/_getList) and maps each
+     * {@code agency/identifier} to the {@code versionDate} read from its XML. Refs absent from
+     * {@code itemsByKey} are skipped (no label resolved). Returns an empty map when nothing is to fetch
+     * or the call yields nothing; a ref whose XML has no parsable versionDate maps to a {@code null} date.
+     */
+    private Map<String, Date> fetchVersionDatesFromItemXml(
+        List<ItemReference> codeListRefs,
+        Map<String, ColecticaItem> itemsByKey
+    ) {
+        List<GetDescriptionsRequest.IdentifierRef> identifiers = codeListRefs.stream()
+            .map(ref -> itemsByKey.get(ref.agencyId() + "/" + ref.identifier()))
+            .filter(Objects::nonNull)
+            .map(item -> new GetDescriptionsRequest.IdentifierRef(
+                item.agencyId(), item.identifier(), item.version()))
+            .distinct()
+            .toList();
+        if (identifiers.isEmpty()) {
+            return Map.of();
+        }
+
+        ColecticaItemResponse[] responses = colecticaClient.getDescriptions(identifiers);
+        if (responses == null) {
+            return Map.of();
+        }
+
+        Map<String, Date> versionDateByKey = new HashMap<>();
+        for (ColecticaItemResponse response : responses) {
+            if (response == null) continue;
+            versionDateByKey.put(
+                response.agencyId() + "/" + response.identifier(),
+                extractVersionDateFromItemXml(response.item()));
+        }
+        return versionDateByKey;
+    }
+
+    /**
+     * Reads the {@code versionDate} attribute carried by the (first) DDI element of an item's XML
+     * fragment. Returns {@code null} when the XML is blank, unparsable, or carries no such attribute.
+     */
+    private Date extractVersionDateFromItemXml(String xml) {
+        if (xml == null || xml.isBlank()) {
+            return null;
+        }
+        try {
+            DocumentBuilderFactory factory = createSecureDocumentBuilderFactory();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new InputSource(new StringReader(xml)));
+            NodeList elements = doc.getElementsByTagName("*");
+            for (int i = 0; i < elements.getLength(); i++) {
+                String versionDate = ((Element) elements.item(i)).getAttribute("versionDate");
+                if (versionDate != null && !versionDate.isBlank()) {
+                    return parseColecticaDate(versionDate);
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            logger.warn("Failed to parse versionDate from item XML", e);
+            return null;
+        }
     }
 
     private static Date parseColecticaDate(String raw) {

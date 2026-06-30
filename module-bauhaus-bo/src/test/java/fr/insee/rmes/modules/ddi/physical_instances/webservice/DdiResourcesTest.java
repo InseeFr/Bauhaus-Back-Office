@@ -246,6 +246,22 @@ class DdiResourcesTest {
     }
 
     @Test
+    void getMutualizedCodesLists_exposesVersionDate() {
+        Date versionDate = new Date(1_750_000_000_000L);
+        when(ddiService.getMutualizedCodesLists())
+                .thenReturn(List.of(new PartialCodesList(
+                        "cl-1", "ma cl", versionDate, "fr.insee", "CL_NOM")));
+
+        ResponseEntity<List<CodeListSummaryResponse>> response =
+                ddiResources.getMutualizedCodesLists(null);
+
+        List<CodeListSummaryResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals(versionDate, body.get(0).versionDate());
+    }
+
+    @Test
     void getMutualizedCodesLists_withCacheControlNoCache_evictsCacheThenServesFreshList() {
         when(ddiService.getMutualizedCodesLists())
                 .thenReturn(List.of(new PartialCodesList("cl-1", "ma cl", new Date(), "fr.insee")));

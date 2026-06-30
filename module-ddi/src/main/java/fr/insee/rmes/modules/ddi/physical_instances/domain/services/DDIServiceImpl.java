@@ -47,7 +47,7 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstances() {
         logger.info("Starting to get physical instances list");
-        return ddiRepository.getPhysicalInstances().stream()
+        return ddiRepository.getPhysicalInstancesViaAdvancedQuery().stream()
                 .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
                 .toList();
     }
@@ -55,7 +55,7 @@ public class DDIServiceImpl implements DDIService {
     @Override
     public List<PartialPhysicalInstance> getPhysicalInstancesFilteredByStamp(Set<String> userStamps) {
         logger.info("Starting to get physical instances filtered by stamp");
-        List<PartialPhysicalInstance> allInstances = ddiRepository.getPhysicalInstances();
+        List<PartialPhysicalInstance> allInstances = ddiRepository.getPhysicalInstancesViaAdvancedQuery();
 
         // PI -> clé "agency|id" du groupe parent (résolution Colectica, par PI)
         Map<PartialPhysicalInstance, String> groupKeyByInstance = new LinkedHashMap<>();

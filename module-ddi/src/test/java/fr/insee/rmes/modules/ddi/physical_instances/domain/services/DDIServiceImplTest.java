@@ -68,7 +68,7 @@ class DDIServiceImplTest {
                 new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date(), "fr.insee"),
                 new PartialPhysicalInstance("pi-3", "Physical Instance 3", new Date(), "fr.insee")
         );
-        when(ddiRepository.getPhysicalInstances()).thenReturn(expectedInstances);
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(expectedInstances);
 
         // When
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
@@ -83,12 +83,12 @@ class DDIServiceImplTest {
         assertEquals("pi-3", result.get(2).id());
         assertEquals("Physical Instance 3", result.get(2).label());
 
-        verify(ddiRepository).getPhysicalInstances();
+        verify(ddiRepository).getPhysicalInstancesViaAdvancedQuery();
     }
 
     @Test
     void getPhysicalInstances_shouldBeSortedByLabelAscending() {
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(
                 new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee"),
                 new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee"),
                 new PartialPhysicalInstance("pi-b", "Bravo", new Date(), "fr.insee")
@@ -104,7 +104,7 @@ class DDIServiceImplTest {
     void getPhysicalInstancesFilteredByStamp_shouldBeSortedByLabelAscending() {
         PartialPhysicalInstance piC = new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee");
         PartialPhysicalInstance piA = new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(piC, piA));
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(piC, piA));
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-c"))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su", "fr.insee", "g1"));
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-a"))
@@ -691,7 +691,7 @@ class DDIServiceImplTest {
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
         PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
         PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(pi1, pi2));
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
 
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
@@ -719,7 +719,7 @@ class DDIServiceImplTest {
     void shouldGetPhysicalInstancesFilteredByStamp_resolvesGroupStampsOncePerGroup() {
         PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
         PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(pi1, pi2));
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
 
         // les deux PI partagent le même groupe parent g1
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))

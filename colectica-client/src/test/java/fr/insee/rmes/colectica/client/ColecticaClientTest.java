@@ -1,6 +1,8 @@
 package fr.insee.rmes.colectica.client;
 
 import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedItem;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
@@ -34,6 +36,7 @@ class ColecticaClientTest {
     private static final String BASE_SERVER_URL = "http://colectica.example.com";
     private static final String TOKEN = "test-token-123";
     private static final String LOGICAL_PRODUCT_TYPE = "965c8d28-7d48-4950-bea7-04b27e52bb9b";
+    private static final String PHYSICAL_INSTANCE_TYPE = "a51e85bb-6259-4488-8df2-f08cb43485f8";
 
     private record Fixture(ColecticaClient client, MockRestServiceServer server) {}
 
@@ -67,6 +70,52 @@ class ColecticaClientTest {
         f.server.verify();
         assertThat(response.totalResults()).isEqualTo(1);
         assertThat(response.results().get(0).identifier()).isEqualTo("lp-1");
+    }
+
+    @Test
+    void queryAdvanced_postsAdvancedQueryWithResultsIncludeAllAndMapsPropertyBags() {
+        Fixture f = newFixture();
+        f.server.expect(requestTo(BASE_API_URL + "_query/advanced"))
+            .andExpect(method(HttpMethod.POST))
+            .andExpect(header("Authorization", "Bearer " + TOKEN))
+            .andExpect(jsonPath("$.itemTypes[0]").value(PHYSICAL_INSTANCE_TYPE))
+            .andExpect(jsonPath("$.searchLatestVersion").value(true))
+            .andExpect(jsonPath("$.resultsIncludeAll").value(true))
+            .andRespond(withSuccess(
+                """
+                {
+                  "Results": [
+                    {
+                      "AgencyId": "fr.insee",
+                      "Identifier": "2ded665b-f513-489a-8c7a-8778f5ffc7de",
+                      "Version": 1,
+                      "IsDeprecated": false,
+                      "ItemType": "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                      "TextProperties": {
+                        "dcTitle": [{"Value": "20260625 EDE", "LanguageTag": "fr-FR"}],
+                        "label": [{"Value": "20260625 EDE", "LanguageTag": "fr-FR"}]
+                      },
+                      "DateProperties": {"versionDate": ["2026-06-29T14:26:32.961778"]},
+                      "BooleanProperties": {"isPublished": false}
+                    }
+                  ],
+                  "ReturnedResults": 1,
+                  "NextResult": null
+                }
+                """,
+                MediaType.APPLICATION_JSON));
+
+        ColecticaAdvancedResponse response = f.client.queryAdvanced(List.of(PHYSICAL_INSTANCE_TYPE));
+
+        f.server.verify();
+        assertThat(response.returnedResults()).isEqualTo(1);
+        ColecticaAdvancedItem item = response.results().get(0);
+        assertThat(item.identifier()).isEqualTo("2ded665b-f513-489a-8c7a-8778f5ffc7de");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.dateProperties().get("versionDate"))
+            .containsExactly("2026-06-29T14:26:32.961778");
+        assertThat(item.textProperties().get("label").get(0).value()).isEqualTo("20260625 EDE");
+        assertThat(item.booleanProperties().get("isPublished")).isFalse();
     }
 
     @Test

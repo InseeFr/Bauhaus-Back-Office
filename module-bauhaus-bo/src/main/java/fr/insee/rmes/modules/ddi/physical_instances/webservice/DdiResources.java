@@ -147,7 +147,8 @@ public class DdiResources {
                     codesList.agency(),
                     codesList.id(),
                     codesList.label(),
-                    codesList.name()
+                    codesList.name(),
+                    codesList.versionDate()
                 )
             )
             .toList();

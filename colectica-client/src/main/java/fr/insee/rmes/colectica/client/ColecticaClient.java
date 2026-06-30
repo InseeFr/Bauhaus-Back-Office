@@ -4,9 +4,11 @@ import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.AuthenticationRequest;
 import fr.insee.rmes.colectica.client.dto.AuthenticationResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.client.dto.QueryAdvancedRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
 import fr.insee.rmes.colectica.client.dto.QueryRequest;
@@ -68,6 +70,22 @@ public class ColecticaClient {
             .body(new QueryRequest(itemTypes))
             .retrieve()
             .body(ColecticaResponse.class));
+    }
+
+    /**
+     * Searches items by type via {@code POST _query/advanced} (latest version), asking Colectica to
+     * include all per-item properties. Unlike {@link #query(List)}, the response carries the rich
+     * property bags — notably {@code DateProperties.versionDate} — see {@link ColecticaAdvancedItem}.
+     */
+    public ColecticaAdvancedResponse queryAdvanced(List<String> itemTypes) {
+        return withAuth(token -> restClient
+            .post()
+            .uri(baseApiUrl + "_query/advanced")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .body(new QueryAdvancedRequest(itemTypes))
+            .retrieve()
+            .body(ColecticaAdvancedResponse.class));
     }
 
     /**
