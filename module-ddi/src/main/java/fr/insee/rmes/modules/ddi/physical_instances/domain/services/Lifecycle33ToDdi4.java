@@ -2,8 +2,10 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.group.GroupType;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.CategorySchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategoryType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListSchemeType;
+import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.DataRelationshipType;
@@ -38,6 +40,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
@@ -172,6 +176,48 @@ public class Lifecycle33ToDdi4 {
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
                 codeListReferences.isEmpty() ? null : codeListReferences
+        );
+    }
+
+    public Ddi4CategoryScheme toCategoryScheme(FragmentDocument doc) {
+        CategorySchemeType scheme = doc.getFragment().getCategoryScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a CategoryScheme");
+        }
+        List<Reference> categoryReferences = new ArrayList<>();
+        for (ReferenceType ref : scheme.getCategoryReferenceArray()) {
+            categoryReferences.add(readReference(ref));
+        }
+        return new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                categoryReferences.isEmpty() ? null : categoryReferences
+        );
+    }
+
+    public Ddi4VariableScheme toVariableScheme(FragmentDocument doc) {
+        VariableSchemeType scheme = doc.getFragment().getVariableScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a VariableScheme");
+        }
+        List<Reference> variableReferences = new ArrayList<>();
+        for (ReferenceType ref : scheme.getVariableReferenceArray()) {
+            variableReferences.add(readReference(ref));
+        }
+        return new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                variableReferences.isEmpty() ? null : variableReferences
         );
     }
 

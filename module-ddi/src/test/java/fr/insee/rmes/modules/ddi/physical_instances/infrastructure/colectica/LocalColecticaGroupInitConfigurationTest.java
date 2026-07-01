@@ -1,12 +1,14 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
@@ -203,6 +205,120 @@ class LocalColecticaGroupInitConfigurationTest {
         inOrder.verify(ddiService).createCodeListScheme(any());
         inOrder.verify(ddiService).createLogicalProduct(any());
         inOrder.verify(groupService).createOrUpdate(any());
+    }
+
+    @Test
+    void shouldCreateOneEmptyCategorySchemePerGroupVariantFiledInTheGroupLogicalProduct() throws Exception {
+        // Given: 1 series, no operations (keeps the test focused on the Group -> LogicalProduct ->
+        // CategoryScheme chain; without operations no study-unit LogicalProduct is created, so every
+        // captured LogicalProduct is a group LogicalProduct)
+        JSONArray sparqlResults = new JSONArray();
+        sparqlResults.put(new JSONObject()
+                .put("seriesId", "s1001")
+                .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
+                .put("seriesLabel", "Enquête innovation"));
+
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
+                createColecticaConfig(), colecticaClient,
+                "http://rdf.insee.fr/graphes/", "operations");
+
+        // When
+        runner.run();
+
+        // Then: one CategoryScheme per group variant, each created empty and filed in the group LogicalProduct
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        ArgumentCaptor<Ddi4CategoryScheme> categoryCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService, times(variants)).createCategoryScheme(categoryCaptor.capture());
+        verify(ddiService, times(variants)).createLogicalProduct(lpCaptor.capture());
+
+        assertThat(categoryCaptor.getAllValues()).allSatisfy(scheme -> {
+            assertThat(scheme.agency()).isEqualTo("fr.insee");
+            assertThat(scheme.categoryReference()).isNullOrEmpty();
+        });
+
+        // The i-th group LogicalProduct references the i-th CategoryScheme, alongside its CodeListScheme
+        List<Ddi4CategoryScheme> categorySchemes = categoryCaptor.getAllValues();
+        List<Ddi4LogicalProduct> logicalProducts = lpCaptor.getAllValues();
+        for (int variant = 0; variant < variants; variant++) {
+            Ddi4LogicalProduct lp = logicalProducts.get(variant);
+            assertThat(lp.codeListSchemeReference()).hasSize(1);
+            assertThat(lp.categorySchemeReference()).hasSize(1);
+            assertThat(lp.categorySchemeReference().get(0).id()).isEqualTo(categorySchemes.get(variant).id());
+            assertThat(lp.categorySchemeReference().get(0).type()).isEqualTo("CategoryScheme");
+        }
+
+        // Per variant, the CategoryScheme is created before the group LogicalProduct that files it
+        InOrder inOrder = inOrder(ddiService);
+        inOrder.verify(ddiService).createCategoryScheme(any());
+        inOrder.verify(ddiService).createLogicalProduct(any());
+    }
+
+    @Test
+    void shouldCreateOneVariableSchemeAndStudyUnitLogicalProductPerSeriesReferencedByEachStudyUnit() throws Exception {
+        // Given: 1 series with 1 operation
+        JSONArray sparqlResults = new JSONArray();
+        sparqlResults.put(new JSONObject()
+                .put("seriesId", "s1001")
+                .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
+                .put("seriesLabel", "Enquête innovation")
+                .put("operationId", "op1")
+                .put("operationIri", "http://id.insee.fr/operations/operation/op1")
+                .put("operationLabel", "Enquête innovation 2020"));
+
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+        when(ddiService.createPhysicalInstance(any()))
+                .thenReturn(piResponse("fr.insee", "pi-uuid-1"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
+                createColecticaConfig(), colecticaClient,
+                "http://rdf.insee.fr/graphes/", "operations");
+
+        // When
+        runner.run();
+
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+
+        // Exactly ONE VariableScheme for the series (not per variant), created empty
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        verify(ddiService, times(1)).createVariableScheme(vsCaptor.capture());
+        Ddi4VariableScheme variableScheme = vsCaptor.getValue();
+        assertThat(variableScheme.agency()).isEqualTo("fr.insee");
+        assertThat(variableScheme.variableReference()).isNullOrEmpty();
+
+        // Exactly ONE study-unit LogicalProduct for the series, filing that VariableScheme
+        // (distinguishable from the group LogicalProducts by its variableSchemeReference)
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService, atLeastOnce()).createLogicalProduct(lpCaptor.capture());
+        List<Ddi4LogicalProduct> studyUnitLps = lpCaptor.getAllValues().stream()
+                .filter(lp -> lp.variableSchemeReference() != null && !lp.variableSchemeReference().isEmpty())
+                .toList();
+        assertThat(studyUnitLps).hasSize(1);
+        Ddi4LogicalProduct studyUnitLp = studyUnitLps.get(0);
+        assertThat(studyUnitLp.variableSchemeReference().get(0).id()).isEqualTo(variableScheme.id());
+        assertThat(studyUnitLp.variableSchemeReference().get(0).type()).isEqualTo("VariableScheme");
+        assertThat(studyUnitLp.codeListSchemeReference()).isNullOrEmpty();
+
+        // Every study unit (all variants of the operation) files that per-series study-unit LogicalProduct
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService, times(variants)).createOrUpdate(suCaptor.capture());
+        assertThat(suCaptor.getAllValues()).allSatisfy(su -> {
+            assertThat(su.logicalProductReferences()).hasSize(1);
+            assertThat(su.logicalProductReferences().get(0).id()).isEqualTo(studyUnitLp.id());
+            assertThat(su.logicalProductReferences().get(0).type()).isEqualTo("LogicalProduct");
+        });
+
+        // Ordering: the VariableScheme and its LogicalProduct exist before the study units that reference them
+        InOrder inOrder = inOrder(ddiService, studyUnitService);
+        inOrder.verify(ddiService).createVariableScheme(any());
+        inOrder.verify(ddiService).createLogicalProduct(any());
+        inOrder.verify(studyUnitService, atLeastOnce()).createOrUpdate(any());
     }
 
     @Test

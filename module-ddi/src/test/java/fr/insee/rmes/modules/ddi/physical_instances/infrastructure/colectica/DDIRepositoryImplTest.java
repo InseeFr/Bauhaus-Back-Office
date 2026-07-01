@@ -2797,6 +2797,88 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void updateFullPhysicalInstance_autoProvisionsGroupCodeListSchemeWhenGroupHasNone() {
+        // The converted PhysicalInstance produces at least one item so the save proceeds.
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+            "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00",
+            "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+            .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+            "LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE));
+
+        // No mutualized package configured: every code list is non-mutualized.
+        when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
+
+        // Parents: PI -> StudyUnit -> Group
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+
+        // The group has NO LogicalProduct at all -> no CodeListScheme reachable
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+            .thenReturn(List.of());
+
+        // The existing group can be fetched and parsed (to re-register it with a LogicalProductReference)
+        ColecticaItemResponse groupResponse = new ColecticaItemResponse(
+            "group-type", "fr.insee", 1, "group-1", "<group/>", "2026-01-01T00:00:00",
+            "resp", false, false, false, "fmt");
+        when(colecticaClient.getItem("fr.insee", "group-1", null)).thenReturn(groupResponse);
+        Ddi4Group parsedGroup = new Ddi4Group(Ddi4Group.TYPE,
+            CogsDate.ofDateTime("2026-01-01T00:00:00"), "urn:ddi:fr.insee:group-1:1",
+            "fr.insee", "group-1", "1", "resp",
+            new Citation(LangStrings.of("fr-FR", "Group")),
+            List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
+            List.of("http://id.insee.fr/operations/serie/s1001"),
+            "insee:StatisticalOperationSeries");
+        when(ddi3ToDdi4Converter.toGroup("<group/>")).thenReturn(parsedGroup);
+
+        // Capture the provisioned scheme / LP / re-registered group
+        ArgumentCaptor<Ddi4CodeListScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture())).thenReturn(
+            new Ddi3Response.Ddi3Item("cls-type", "fr.insee", "1", "CLS_AUTO", "<cls/>",
+                "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture())).thenReturn(
+            new Ddi3Response.Ddi3Item("lp-type", "fr.insee", "1", "LP_AUTO", "<lp/>",
+                "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        when(ddi4ToDdi3Converter.toGroupItem(groupCaptor.capture(), anyString())).thenReturn(
+            new Ddi3Response.Ddi3Item("group-type", "fr.insee", "1", "group-1", "<group-updated/>",
+                "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+
+        Ddi4CodeList clNew = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "new"), null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clNew), null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        // A fresh CodeListScheme is created holding the new code list...
+        Ddi4CodeListScheme scheme = schemeCaptor.getValue();
+        assertThat(scheme.codeListReference()).extracting(Reference::id).containsExactly("CL_NEW");
+        // ...filed under a fresh LogicalProduct that references it...
+        Ddi4LogicalProduct lp = lpCaptor.getValue();
+        assertThat(lp.codeListSchemeReference()).extracting(Reference::id).containsExactly(scheme.id());
+        // ...and the group is re-registered pointing at that LogicalProduct.
+        Ddi4Group group = groupCaptor.getValue();
+        assertThat(group.logicalProductReference()).extracting(Reference::id).containsExactly(lp.id());
+        assertThat(group.studyUnitReference()).extracting(Reference::id).containsExactly("su-1");
+
+        // All three provisioned items ship in the same batch as the PhysicalInstance.
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor =
+            ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items())
+            .extracting(ColecticaItemResponse::identifier)
+            .contains("pi-1", "CLS_AUTO", "LP_AUTO", "group-1");
+    }
+
+    @Test
     void updateFullPhysicalInstance_doesNotTouchSchemeWhenAllCodeListsAreMutualized() {
         Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
             "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00",
@@ -2830,6 +2912,173 @@ class DDIRepositoryImplTest {
         assertThat(reqCaptor.getValue().items())
             .extracting(ColecticaItemResponse::identifier)
             .containsExactly("pi-1");
+    }
+
+    @Test
+    void updateFullPhysicalInstance_filesCategoriesUnderExistingGroupCategoryScheme() {
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+            "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+            .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type"));
+
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+        // Group -> LogicalProduct -> CategoryScheme
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of("cats-type"))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "CATS_1")));
+
+        when(colecticaClient.getItem("fr.insee", "CATS_1", null)).thenReturn(new ColecticaItemResponse(
+            "cats-type", "fr.insee", 1, "CATS_1", "<cats/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        Ddi4CategoryScheme parsed = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+            CogsDate.ofDateTime("2026-01-01T00:00:00"), "urn:ddi:fr.insee:CATS_1:1", "fr.insee", "CATS_1", "1",
+            LangStrings.of("fr-FR", "Cats"),
+            new java.util.ArrayList<>(List.of(Reference.of("fr.insee", "CAT_OLD", "1", "Category"))));
+        when(ddi3ToDdi4Converter.toCategoryScheme("<cats/>")).thenReturn(parsed);
+
+        ArgumentCaptor<Ddi4CategoryScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        when(ddi4ToDdi3Converter.toCategorySchemeItem(schemeCaptor.capture())).thenReturn(new Ddi3Response.Ddi3Item(
+            "cats-type", "fr.insee", "1", "CATS_1", "<cats-updated/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+
+        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CAT_NEW:1", "fr.insee", "CAT_NEW", "1", LangStrings.of("fr-FR", "cat"));
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, null, List.of(cat));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        assertThat(schemeCaptor.getValue().categoryReference())
+            .extracting(Reference::id).containsExactlyInAnyOrder("CAT_OLD", "CAT_NEW");
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items()).extracting(ColecticaItemResponse::identifier).contains("CATS_1");
+    }
+
+    @Test
+    void updateFullPhysicalInstance_autoProvisionsStudyUnitVariableSchemeWhenMissing() {
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+            "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+            .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
+
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+        // StudyUnit has no LogicalProduct -> no VariableScheme
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "su-1")), eq(List.of("lp-type"))))
+            .thenReturn(List.of());
+
+        when(colecticaClient.getItem("fr.insee", "su-1", null)).thenReturn(new ColecticaItemResponse(
+            "su-type", "fr.insee", 1, "su-1", "<su/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        Ddi4StudyUnit parsedSu = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:su-1:1", "fr.insee", "su-1", "1", new Citation(LangStrings.of("fr-FR", "SU")),
+            "http://id.insee.fr/operations/operation/op1", List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")));
+        when(ddi3ToDdi4Converter.toStudyUnit("<su/>")).thenReturn(parsedSu);
+
+        ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        when(ddi4ToDdi3Converter.toVariableSchemeItem(vsCaptor.capture())).thenReturn(new Ddi3Response.Ddi3Item(
+            "vs-type", "fr.insee", "1", "VS_AUTO", "<vs/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture())).thenReturn(new Ddi3Response.Ddi3Item(
+            "lp-type", "fr.insee", "1", "LP_AUTO", "<lp/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        when(ddi4ToDdi3Converter.toStudyUnitItem(suCaptor.capture(), anyString())).thenReturn(new Ddi3Response.Ddi3Item(
+            "su-type", "fr.insee", "1", "su-1", "<su-updated/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+
+        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:VAR_1:1", "fr.insee", "VAR_1", "1", null, null, null, null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(var), null, null);
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        assertThat(vsCaptor.getValue().variableReference()).extracting(Reference::id).containsExactly("VAR_1");
+        Ddi4LogicalProduct lp = lpCaptor.getValue();
+        assertThat(lp.variableSchemeReference()).extracting(Reference::id).containsExactly(vsCaptor.getValue().id());
+        assertThat(lp.codeListSchemeReference()).isNullOrEmpty();
+        Ddi4StudyUnit su = suCaptor.getValue();
+        assertThat(su.logicalProductReferences()).extracting(Reference::id).containsExactly(lp.id());
+        // the PhysicalInstanceReference already on the study unit is preserved
+        assertThat(su.physicalInstanceReferences()).extracting(Reference::id).containsExactly("pi-1");
+
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items()).extracting(ColecticaItemResponse::identifier)
+            .contains("pi-1", "VS_AUTO", "LP_AUTO", "su-1");
+    }
+
+    @Test
+    void updateFullPhysicalInstance_reRegistersGroupOnceWhenBothCodeListAndCategorySchemesAreProvisioned() {
+        Ddi3Response.Ddi3Item piItem = new Ddi3Response.Ddi3Item(
+            "pi-type", "fr.insee", "1", "pi-1", "<pi/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt");
+        when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
+            .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+            "LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE, "CategoryScheme", "cats-type"));
+        when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
+
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+            .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
+        // Group has no LogicalProduct -> neither CodeListScheme nor CategoryScheme
+        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+            .thenReturn(List.of());
+
+        when(colecticaClient.getItem("fr.insee", "group-1", null)).thenReturn(new ColecticaItemResponse(
+            "group-type", "fr.insee", 1, "group-1", "<group/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        Ddi4Group parsedGroup = new Ddi4Group(Ddi4Group.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:group-1:1", "fr.insee", "group-1", "1", "resp",
+            new Citation(LangStrings.of("fr-FR", "Group")),
+            List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
+            List.of("http://id.insee.fr/operations/serie/s1001"), "insee:StatisticalOperationSeries");
+        when(ddi3ToDdi4Converter.toGroup("<group/>")).thenReturn(parsedGroup);
+
+        when(ddi4ToDdi3Converter.toCodeListSchemeItem(any())).thenReturn(new Ddi3Response.Ddi3Item(
+            "cls-type", "fr.insee", "1", "CLS_AUTO", "<cls/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        when(ddi4ToDdi3Converter.toCategorySchemeItem(any())).thenReturn(new Ddi3Response.Ddi3Item(
+            "cats-type", "fr.insee", "1", "CATS_AUTO", "<cats/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        when(ddi4ToDdi3Converter.toLogicalProductItem(lpCaptor.capture()))
+            .thenReturn(new Ddi3Response.Ddi3Item("lp-type", "fr.insee", "1", "LP_CL", "<lp1/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"))
+            .thenReturn(new Ddi3Response.Ddi3Item("lp-type", "fr.insee", "1", "LP_CAT", "<lp2/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        when(ddi4ToDdi3Converter.toGroupItem(groupCaptor.capture(), anyString())).thenReturn(new Ddi3Response.Ddi3Item(
+            "group-type", "fr.insee", "1", "group-1", "<group-updated/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
+
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "cl"), null);
+        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+            "urn:ddi:fr.insee:CAT_NEW:1", "fr.insee", "CAT_NEW", "1", LangStrings.of("fr-FR", "cat"));
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(cl), List.of(cat));
+
+        ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
+
+        // The group is re-registered exactly once, carrying BOTH provisioned logical products.
+        verify(ddi4ToDdi3Converter, times(1)).toGroupItem(any(), anyString());
+        List<String> lpIds = lpCaptor.getAllValues().stream().map(Ddi4LogicalProduct::id).toList();
+        assertThat(groupCaptor.getValue().logicalProductReference())
+            .extracting(Reference::id).containsExactlyInAnyOrderElementsOf(lpIds);
+        assertThat(lpIds).hasSize(2);
+
+        ArgumentCaptor<ColecticaCreateItemRequest> reqCaptor = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
+        verify(colecticaClient).createOrUpdateItems(reqCaptor.capture());
+        assertThat(reqCaptor.getValue().items()).extracting(ColecticaItemResponse::identifier)
+            .contains("pi-1", "CLS_AUTO", "CATS_AUTO", "LP_CL", "LP_CAT", "group-1");
     }
 
 }

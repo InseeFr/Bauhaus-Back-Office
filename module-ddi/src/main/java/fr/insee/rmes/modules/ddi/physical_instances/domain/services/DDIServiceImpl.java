@@ -6,7 +6,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariabl
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
@@ -220,6 +222,18 @@ public class DDIServiceImpl implements DDIService {
     public void createCodeListScheme(Ddi4CodeListScheme codeListScheme) {
         logger.info("Creating code list scheme: {}/{}", codeListScheme.agency(), codeListScheme.id());
         ddiRepository.createCodeListScheme(codeListScheme);
+    }
+
+    @Override
+    public void createCategoryScheme(Ddi4CategoryScheme categoryScheme) {
+        logger.info("Creating category scheme: {}/{}", categoryScheme.agency(), categoryScheme.id());
+        ddiRepository.createCategoryScheme(categoryScheme);
+    }
+
+    @Override
+    public void createVariableScheme(Ddi4VariableScheme variableScheme) {
+        logger.info("Creating variable scheme: {}/{}", variableScheme.agency(), variableScheme.id());
+        ddiRepository.createVariableScheme(variableScheme);
     }
 
     @Override

@@ -6,13 +6,17 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
@@ -35,6 +39,8 @@ class DDI4toDDI3ConverterServiceImplTest {
         "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
         "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
         "CodeListScheme", "c5084949-3e3a-4b7f-9f5b-1a2b3c4d5e6f",
+        "CategoryScheme", "1c11de94-a36d-4d80-95dc-950c6f37f624",
+        "VariableScheme", "50907716-b67a-4dcd-8f9f-8a283cb5fee0",
         "LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b",
         "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
     );
@@ -183,6 +189,46 @@ class DDI4toDDI3ConverterServiceImplTest {
     }
 
     @Test
+    void shouldConvertCategorySchemeToDdi3Item() {
+        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:CATS_1:1", "fr.insee", "CATS_1", "1",
+                LangStrings.of("fr-FR", "Schéma catégories"),
+                List.of(Reference.of("fr.insee", "CAT_1", "1", "Category")));
+
+        Ddi3Response.Ddi3Item item = converter.toCategorySchemeItem(scheme);
+
+        assertThat(item.itemType()).isEqualTo("1c11de94-a36d-4d80-95dc-950c6f37f624");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("CATS_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<ddi:CategoryScheme")
+                .contains(">Schéma catégories<")
+                .contains(">CAT_1<");
+    }
+
+    @Test
+    void shouldConvertVariableSchemeToDdi3Item() {
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:VARS_1:1", "fr.insee", "VARS_1", "1",
+                LangStrings.of("fr-FR", "Schéma variables"),
+                List.of(Reference.of("fr.insee", "VAR_1", "1", "Variable")));
+
+        Ddi3Response.Ddi3Item item = converter.toVariableSchemeItem(scheme);
+
+        assertThat(item.itemType()).isEqualTo("50907716-b67a-4dcd-8f9f-8a283cb5fee0");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("VARS_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<ddi:VariableScheme")
+                .contains(">Schéma variables<")
+                .contains(">VAR_1<");
+    }
+
+    @Test
     void shouldConvertLogicalProductToDdi3Item() {
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
                 CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
@@ -200,6 +246,54 @@ class DDI4toDDI3ConverterServiceImplTest {
                 .contains("<ddi:LogicalProduct")
                 .contains(">Produit logique<")
                 .contains(">CLS_1<");
+    }
+
+    @Test
+    void shouldConvertGroupToDdi3ItemWithLogicalProductReference() {
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:GROUP_1:1", "fr.insee", "GROUP_1", "1", "resp",
+                new Citation(LangStrings.of("fr-FR", "Groupe")),
+                List.of(Reference.of("fr.insee", "SU_1", "1", "StudyUnit")),
+                List.of("http://id.insee.fr/operations/serie/s1001"),
+                "insee:StatisticalOperationSeries",
+                List.of(Reference.of("fr.insee", "LP_1", "1", "LogicalProduct")));
+
+        Ddi3Response.Ddi3Item item = converter.toGroupItem(group, "group-type-uuid");
+
+        assertThat(item.itemType()).isEqualTo("group-type-uuid");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("GROUP_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<ddi:Group")
+                .contains(">Groupe<")
+                .contains("<r:LogicalProductReference")
+                .contains(">LP_1<")
+                .contains(">SU_1<");
+    }
+
+    @Test
+    void shouldConvertStudyUnitToDdi3ItemWithLogicalProductReference() {
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:SU_1:1", "fr.insee", "SU_1", "1",
+                new Citation(LangStrings.of("fr-FR", "Study Unit")),
+                "http://id.insee.fr/operations/operation/op1",
+                List.of(Reference.of("fr.insee", "PI_1", "1", "PhysicalInstance")),
+                List.of(Reference.of("fr.insee", "LP_1", "1", "LogicalProduct")));
+
+        Ddi3Response.Ddi3Item item = converter.toStudyUnitItem(studyUnit, "study-unit-type-uuid");
+
+        assertThat(item.itemType()).isEqualTo("study-unit-type-uuid");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("SU_1");
+        assertThat(item.item())
+                .contains("<ddi:StudyUnit")
+                .contains("<r:LogicalProductReference")
+                .contains(">LP_1<")
+                .contains("<r:PhysicalInstanceReference")
+                .contains(">PI_1<");
     }
 
     @Test

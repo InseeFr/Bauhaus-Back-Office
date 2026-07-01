@@ -81,6 +81,104 @@ class DDI3toDDI4ConverterServiceImplTest {
     }
 
     @Test
+    void shouldParseGroupFromFragmentXml() {
+        // Build a schema-valid Group fragment with the real serializer, then parse it back:
+        // this is the exact round-trip the auto-provision of a group's CodeListScheme relies on.
+        Ddi4Group original = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1", "resp",
+                new Citation(LangStrings.of("fr-FR", "Enquête innovation")),
+                List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
+                List.of("http://id.insee.fr/operations/serie/s1001"),
+                "insee:StatisticalOperationSeries");
+        java.util.HashMap<String, String> prefixes = new java.util.HashMap<>();
+        prefixes.put("ddi:instance:3_3", "");
+        prefixes.put("ddi:group:3_3", "");
+        prefixes.put("ddi:reusable:3_3", "r");
+        org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
+        opts.setSaveSuggestedPrefixes(prefixes);
+        String groupXml = new Ddi4ToLifecycle33().toGroup(original).xmlText(opts);
+
+        Ddi4Group group = converter.toGroup(groupXml);
+
+        assertEquals("group-id", group.id());
+        assertEquals("fr.insee", group.agency());
+        assertEquals("1", group.version());
+        assertEquals("insee:StatisticalOperationSeries", group.typeOfGroup());
+        assertEquals(List.of("http://id.insee.fr/operations/serie/s1001"), group.seriesIris());
+        assertEquals(1, group.studyUnitReference().size());
+        assertEquals("su-1", group.studyUnitReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseCategorySchemeFromFragmentXml() {
+        Ddi4CategoryScheme original = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:cats-id:1",
+                "fr.insee", "cats-id", "1", LangStrings.of("fr-FR", "Schéma catégories"),
+                List.of(Reference.of("fr.insee", "cat-1", "1", "Category")));
+        String xml = new Ddi4ToLifecycle33().toCategoryScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4CategoryScheme scheme = converter.toCategoryScheme(xml);
+
+        assertEquals("cats-id", scheme.id());
+        assertEquals("fr.insee", scheme.agency());
+        assertEquals(1, scheme.categoryReference().size());
+        assertEquals("cat-1", scheme.categoryReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseVariableSchemeFromFragmentXml() {
+        Ddi4VariableScheme original = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee", "vars-id", "1", LangStrings.of("fr-FR", "Schéma variables"),
+                List.of(Reference.of("fr.insee", "var-1", "1", "Variable")));
+        String xml = new Ddi4ToLifecycle33().toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
+
+        assertEquals("vars-id", scheme.id());
+        assertEquals("fr.insee", scheme.agency());
+        assertEquals(1, scheme.variableReference().size());
+        assertEquals("var-1", scheme.variableReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseStudyUnitFromFragmentXml() {
+        Ddi4StudyUnit original = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:su-id:1",
+                "fr.insee", "su-id", "1", new Citation(LangStrings.of("fr-FR", "Study Unit")),
+                "http://id.insee.fr/operations/operation/op1",
+                List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")),
+                List.of(Reference.of("fr.insee", "lp-1", "1", "LogicalProduct")));
+        String xml = new Ddi4ToLifecycle33().toStudyUnit(original).xmlText(studyUnitFragmentOptions());
+
+        Ddi4StudyUnit studyUnit = converter.toStudyUnit(xml);
+
+        assertEquals("su-id", studyUnit.id());
+        assertEquals("http://id.insee.fr/operations/operation/op1", studyUnit.operationIri());
+        assertEquals(1, studyUnit.physicalInstanceReferences().size());
+        assertEquals("pi-1", studyUnit.physicalInstanceReferences().get(0).id());
+    }
+
+    private static org.apache.xmlbeans.XmlOptions logicalProductFragmentOptions() {
+        return fragmentOptions("ddi:logicalproduct:3_3");
+    }
+
+    private static org.apache.xmlbeans.XmlOptions studyUnitFragmentOptions() {
+        return fragmentOptions("ddi:studyunit:3_3");
+    }
+
+    private static org.apache.xmlbeans.XmlOptions fragmentOptions(String contentNs) {
+        java.util.HashMap<String, String> prefixes = new java.util.HashMap<>();
+        prefixes.put("ddi:instance:3_3", "");
+        prefixes.put(contentNs, "");
+        prefixes.put("ddi:reusable:3_3", "r");
+        org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
+        opts.setSaveSuggestedPrefixes(prefixes);
+        return opts;
+    }
+
+    @Test
     void shouldConvertPhysicalInstanceFromDdi3() {
         // Given
         String physicalInstanceXml = """

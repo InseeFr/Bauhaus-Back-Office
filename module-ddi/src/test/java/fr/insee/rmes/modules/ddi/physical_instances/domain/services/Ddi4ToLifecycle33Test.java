@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
@@ -17,6 +18,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProd
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
@@ -276,6 +278,93 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
+    void shouldBuildCategorySchemeWithCategoryReferences() {
+        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:cats-id:1", "fr.insee", "cats-id", "1",
+                LangStrings.of("fr-FR", "CategoryScheme Label"),
+                List.of(
+                        Reference.of("fr.insee", "cat-1", "1", "Category"),
+                        Reference.of("fr.insee", "cat-2", "1", "Category")));
+
+        String xml = converter.toCategoryScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:CategoryScheme")
+                .contains(">urn:ddi:fr.insee:cats-id:1<")
+                .contains("<r:Label")
+                .contains(">CategoryScheme Label<")
+                .contains("<r:CategoryReference")
+                .contains(">cat-1<")
+                .contains(">cat-2<");
+    }
+
+    @Test
+    void shouldBuildVariableSchemeWithVariableReferences() {
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1", "fr.insee", "vars-id", "1",
+                LangStrings.of("fr-FR", "VariableScheme Label"),
+                List.of(
+                        Reference.of("fr.insee", "var-1", "1", "Variable"),
+                        Reference.of("fr.insee", "var-2", "1", "Variable")));
+
+        String xml = converter.toVariableScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:VariableScheme")
+                .contains(">urn:ddi:fr.insee:vars-id:1<")
+                .contains("<r:Label")
+                .contains(">VariableScheme Label<")
+                .contains("<r:VariableReference")
+                .contains(">var-1<")
+                .contains(">var-2<");
+    }
+
+    @Test
+    void shouldBuildEmptyCategoryAndVariableSchemes() {
+        Ddi4CategoryScheme categoryScheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:cats-id:1", "fr.insee", "cats-id", "1",
+                LangStrings.of("fr-FR", "Empty CategoryScheme"), List.of());
+        Ddi4VariableScheme variableScheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:vars-id:1", "fr.insee", "vars-id", "1",
+                LangStrings.of("fr-FR", "Empty VariableScheme"), List.of());
+
+        String categoryXml = converter.toCategoryScheme(categoryScheme).xmlText(logicalProductXmlOptions());
+        String variableXml = converter.toVariableScheme(variableScheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(categoryXml)
+                .contains("<ddi:CategoryScheme")
+                .doesNotContain("CategoryReference");
+        Assertions.assertThat(variableXml)
+                .contains("<ddi:VariableScheme")
+                .doesNotContain("VariableReference");
+    }
+
+    @Test
+    void shouldBuildLogicalProductWithCategoryAndVariableSchemeReferences() {
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:lp-id:1", "fr.insee", "lp-id", "1",
+                LangStrings.of("fr-FR", "LogicalProduct Label"),
+                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
+                List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
+                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")));
+
+        String xml = converter.toLogicalProduct(logicalProduct).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:CodeListSchemeReference")
+                .contains(">cls-1<")
+                .contains("<r:CategorySchemeReference")
+                .contains(">cats-1<")
+                .contains("<r:VariableSchemeReference")
+                .contains(">vars-1<");
+    }
+
+    @Test
     void shouldBuildGroupWithLogicalProductReference() {
         Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
@@ -367,6 +456,23 @@ class Ddi4ToLifecycle33Test {
                 .contains(">Test SU<")
                 .contains("<r:PhysicalInstanceReference")
                 .contains(">pi-id<");
+    }
+
+    @Test
+    void shouldBuildStudyUnitWithLogicalProductReference() {
+        Ddi4StudyUnit su = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:su-id:1", "fr.insee", "su-id", "1",
+                new Citation(LangStrings.of("fr-FR", "Test SU")),
+                "http://id.insee.fr/operations/operation/op1",
+                List.of(Reference.of("fr.insee", "pi-id", "1", "PhysicalInstance")),
+                List.of(Reference.of("fr.insee", "lp-id", "1", "LogicalProduct")));
+
+        String xml = converter.toStudyUnit(su).xmlText(studyUnitXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:LogicalProductReference")
+                .contains(">lp-id<");
     }
 
     @Test

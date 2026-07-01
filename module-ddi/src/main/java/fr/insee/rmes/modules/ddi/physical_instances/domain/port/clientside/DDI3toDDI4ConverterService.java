@@ -2,8 +2,12 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 
 public interface DDI3toDDI4ConverterService {
     /**
@@ -22,4 +26,37 @@ public interface DDI3toDDI4ConverterService {
      * @return the parsed code list scheme
      */
     Ddi4CodeListScheme toCodeListScheme(String fragmentXml);
+
+    /**
+     * Parse a single Group from its DDI 3.3 fragment XML (as returned by Colectica
+     * {@code GET item}). Used to re-register a group with an added LogicalProductReference when its
+     * CodeListScheme is auto-provisioned on save.
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a Group
+     * @return the parsed group
+     */
+    Ddi4Group toGroup(String fragmentXml);
+
+    /**
+     * Parse a single CategoryScheme from its DDI 3.3 fragment XML. Used to read a group's existing
+     * category scheme before merging new category references into it.
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a CategoryScheme
+     * @return the parsed category scheme
+     */
+    Ddi4CategoryScheme toCategoryScheme(String fragmentXml);
+
+    /**
+     * Parse a single VariableScheme from its DDI 3.3 fragment XML. Used to read a study unit's
+     * existing variable scheme before merging new variable references into it.
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a VariableScheme
+     * @return the parsed variable scheme
+     */
+    Ddi4VariableScheme toVariableScheme(String fragmentXml);
+
+    /**
+     * Parse a single StudyUnit from its DDI 3.3 fragment XML. Used to re-register a study unit with
+     * an added LogicalProductReference when its VariableScheme is auto-provisioned on save.
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a StudyUnit
+     * @return the parsed study unit
+     */
+    Ddi4StudyUnit toStudyUnit(String fragmentXml);
 }

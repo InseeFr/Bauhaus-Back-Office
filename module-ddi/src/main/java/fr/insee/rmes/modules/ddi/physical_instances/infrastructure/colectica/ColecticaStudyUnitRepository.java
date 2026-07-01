@@ -76,7 +76,8 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
                 studyUnit.version(),
                 studyUnit.citation(),
                 studyUnit.operationIri(),
-                refs
+                refs,
+                studyUnit.logicalProductReferences()
         );
         createOrUpdate(updated);
     }

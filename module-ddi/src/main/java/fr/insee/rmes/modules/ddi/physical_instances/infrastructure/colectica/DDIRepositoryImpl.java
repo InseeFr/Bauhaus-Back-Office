@@ -1290,8 +1290,10 @@ public class DDIRepositoryImpl implements DDIRepository {
                 .map(this::toColecticaItem)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-            // File the non-mutualized code lists under the group's CodeListScheme (#…)
-            appendGroupCodeListSchemeUpdate(agencyId, id, ddi4Response, colecticaItems);
+            // File the physical instance's non-mutualized code lists and categories under the group's
+            // schemes, and its variables under the study unit's VariableScheme (auto-provisioning the
+            // schemes when they do not exist yet). Parents are resolved once and shared.
+            appendSchemeUpdates(agencyId, id, ddi4Response, colecticaItems, additionalItems);
 
             // Bundle any extra items (e.g. the StudyUnit re-registered with a new PI reference)
             colecticaItems.addAll(additionalItems);
@@ -1332,68 +1334,138 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
-     * Files the non-mutualized code lists of the physical instance being saved under the
-     * CodeListScheme of its group, by appending a (merged) CodeListScheme item to the batch
-     * that will be sent to Colectica.
+     * Files the physical instance's non-mutualized code lists and categories under the schemes of its
+     * group, and its variables under the VariableScheme of its study unit — auto-provisioning any
+     * scheme (and its LogicalProduct) that does not exist yet. Every produced item is appended to
+     * {@code colecticaItems} so it is saved in the same atomic batch as the physical instance.
      *
-     * <p>Flow: keep only the code lists that are <em>not</em> descendants of the configured
-     * mutualized codes package, resolve the group (PhysicalInstance → StudyUnit → Group) and
-     * its CodeListScheme (Group → LogicalProduct → CodeListScheme), then add a
-     * {@code CodeListReference} for each new code list to the existing scheme — preserving the
-     * references it already holds. Re-saved at the same version (RegisterOrReplace).
+     * <p>The parents (PhysicalInstance → StudyUnit → Group) are resolved once and only when there is
+     * something to file, preserving the previous behaviour for physical instances whose code lists are
+     * all mutualized (no parent resolution, nothing appended).
      */
-    private void appendGroupCodeListSchemeUpdate(
+    private void appendSchemeUpdates(
         String agencyId,
         String id,
         Ddi4Response ddi4Response,
-        List<ColecticaItemResponse> colecticaItems
+        List<ColecticaItemResponse> colecticaItems,
+        List<ColecticaItemResponse> additionalItems
     ) {
         List<Ddi4CodeList> codeLists = ddi4Response.codeList();
-        if (codeLists == null || codeLists.isEmpty()) {
-            return;
-        }
+        List<Ddi4CodeList> nonMutualized = (codeLists == null || codeLists.isEmpty())
+            ? List.of() : filterNonMutualizedCodeLists(codeLists);
+        List<Ddi4Category> categories = ddi4Response.category() != null ? ddi4Response.category() : List.of();
+        List<Ddi4Variable> variables = ddi4Response.variable() != null ? ddi4Response.variable() : List.of();
 
-        List<Ddi4CodeList> nonMutualized = filterNonMutualizedCodeLists(codeLists);
-        if (nonMutualized.isEmpty()) {
+        boolean groupWork = !nonMutualized.isEmpty() || !categories.isEmpty();
+        boolean studyUnitWork = !variables.isEmpty();
+        if (!groupWork && !studyUnitWork) {
             return;
         }
 
         PhysicalInstanceParents parents = getPhysicalInstanceParents(agencyId, id);
-        ItemReference schemeRef = resolveGroupCodeListScheme(parents.groupAgency(), parents.groupId());
-
-        ColecticaItemResponse existing = colecticaClient.getItem(
-            schemeRef.agencyId(), schemeRef.identifier(), null);
-        Ddi4CodeListScheme current = ddi3ToDdi4Converter.toCodeListScheme(existing.item());
-
-        List<Reference> mergedRefs = new ArrayList<>(
-            current.codeListReference() != null ? current.codeListReference() : List.of());
-        Set<String> existingKeys = mergedRefs.stream()
-            .map(ref -> ref.agency() + "/" + ref.id())
-            .collect(Collectors.toSet());
-
-        boolean changed = false;
-        for (Ddi4CodeList codeList : nonMutualized) {
-            String key = codeList.agency() + "/" + codeList.id();
-            if (existingKeys.add(key)) {
-                mergedRefs.add(Reference.of(
-                    codeList.agency(), codeList.id(), codeList.version(), Ddi4CodeList.TYPE));
-                changed = true;
-            }
+        if (groupWork) {
+            appendGroupSchemesUpdate(parents, nonMutualized, categories, colecticaItems);
         }
-        if (!changed) {
+        if (studyUnitWork) {
+            appendStudyUnitVariableSchemeUpdate(parents, variables, colecticaItems, additionalItems);
+        }
+    }
+
+    /**
+     * Files the group's non-mutualized code lists (under its CodeListScheme) and categories (under its
+     * CategoryScheme): for each scheme reachable via {@code Group → LogicalProduct → scheme}, the new
+     * references are merged into it; when a scheme does not exist yet, a fresh scheme + LogicalProduct
+     * are created. The group is re-registered <em>exactly once</em>, carrying every new LogicalProduct.
+     */
+    private void appendGroupSchemesUpdate(
+        PhysicalInstanceParents parents,
+        List<Ddi4CodeList> nonMutualized,
+        List<Ddi4Category> categories,
+        List<ColecticaItemResponse> colecticaItems
+    ) {
+        String groupAgency = parents.groupAgency();
+        String groupId = parents.groupId();
+        List<Reference> newLogicalProductRefs = new ArrayList<>();
+
+        if (!nonMutualized.isEmpty()) {
+            fileGroupCodeLists(groupAgency, groupId, nonMutualized, colecticaItems, newLogicalProductRefs);
+        }
+        if (!categories.isEmpty()) {
+            fileGroupCategories(groupAgency, groupId, categories, colecticaItems, newLogicalProductRefs);
+        }
+        if (!newLogicalProductRefs.isEmpty()) {
+            reRegisterGroupWithLogicalProducts(groupAgency, groupId, newLogicalProductRefs, colecticaItems);
+        }
+    }
+
+    private void fileGroupCodeLists(
+        String groupAgency, String groupId, List<Ddi4CodeList> nonMutualized,
+        List<ColecticaItemResponse> colecticaItems, List<Reference> newLogicalProductRefs
+    ) {
+        List<Reference> newRefs = nonMutualized.stream()
+            .map(cl -> Reference.of(cl.agency(), cl.id(), cl.version(), Ddi4CodeList.TYPE))
+            .toList();
+        Optional<ItemReference> schemeRefOpt = findContainerScheme(groupAgency, groupId, "CodeListScheme");
+        if (schemeRefOpt.isPresent()) {
+            ItemReference schemeRef = schemeRefOpt.get();
+            Ddi4CodeListScheme current = ddi3ToDdi4Converter.toCodeListScheme(
+                colecticaClient.getItem(schemeRef.agencyId(), schemeRef.identifier(), null).item());
+            List<Reference> merged = mergeReferences(current.codeListReference(), newRefs);
+            if (merged == null) {
+                return;
+            }
+            Ddi4CodeListScheme updated = new Ddi4CodeListScheme(current.type(), current.versionDate(),
+                current.urn(), current.agency(), current.id(), current.version(), current.label(), merged);
+            colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
+            logger.info("Filed {} code list(s) under code list scheme {}/{} of group {}/{}",
+                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), groupAgency, groupId);
             return;
         }
+        String schemeId = AbstractColecticaItemRepository.generateDeterministicUuid(
+            groupAgency + "/" + groupId + "#codelistscheme");
+        Ddi4CodeListScheme scheme = new Ddi4CodeListScheme(Ddi4CodeListScheme.TYPE,
+            CogsDate.ofDateTime(nowIso()), "urn:ddi:%s:%s:1".formatted(groupAgency, schemeId),
+            groupAgency, schemeId, "1", LangStrings.of(defaultLang, "Code List Scheme"), newRefs);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(scheme)));
+        newLogicalProductRefs.add(appendSchemeLogicalProduct(
+            groupAgency, groupId, "#codelist-logicalproduct", schemeId, "CodeListScheme", colecticaItems));
+        logger.info("Auto-provisioned code list scheme {}/{} for group {}/{} and filed {} code list(s)",
+            groupAgency, schemeId, groupAgency, groupId, newRefs.size());
+    }
 
-        Ddi4CodeListScheme updated = new Ddi4CodeListScheme(
-            current.type(), current.versionDate(), current.urn(),
-            current.agency(), current.id(), current.version(),
-            current.label(), mergedRefs);
-
-        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
-        logger.info(
-            "Filed {} non-mutualized code list(s) under code list scheme {}/{} of group {}/{}",
-            nonMutualized.size(), schemeRef.agencyId(), schemeRef.identifier(),
-            parents.groupAgency(), parents.groupId());
+    private void fileGroupCategories(
+        String groupAgency, String groupId, List<Ddi4Category> categories,
+        List<ColecticaItemResponse> colecticaItems, List<Reference> newLogicalProductRefs
+    ) {
+        List<Reference> newRefs = categories.stream()
+            .map(cat -> Reference.of(cat.agency(), cat.id(), cat.version(), Ddi4Category.TYPE))
+            .toList();
+        Optional<ItemReference> schemeRefOpt = findContainerScheme(groupAgency, groupId, "CategoryScheme");
+        if (schemeRefOpt.isPresent()) {
+            ItemReference schemeRef = schemeRefOpt.get();
+            Ddi4CategoryScheme current = ddi3ToDdi4Converter.toCategoryScheme(
+                colecticaClient.getItem(schemeRef.agencyId(), schemeRef.identifier(), null).item());
+            List<Reference> merged = mergeReferences(current.categoryReference(), newRefs);
+            if (merged == null) {
+                return;
+            }
+            Ddi4CategoryScheme updated = new Ddi4CategoryScheme(current.type(), current.versionDate(),
+                current.urn(), current.agency(), current.id(), current.version(), current.label(), merged);
+            colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toCategorySchemeItem(updated)));
+            logger.info("Filed {} category(ies) under category scheme {}/{} of group {}/{}",
+                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), groupAgency, groupId);
+            return;
+        }
+        String schemeId = AbstractColecticaItemRepository.generateDeterministicUuid(
+            groupAgency + "/" + groupId + "#categoryscheme");
+        Ddi4CategoryScheme scheme = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+            CogsDate.ofDateTime(nowIso()), "urn:ddi:%s:%s:1".formatted(groupAgency, schemeId),
+            groupAgency, schemeId, "1", LangStrings.of(defaultLang, "Category Scheme"), newRefs);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toCategorySchemeItem(scheme)));
+        newLogicalProductRefs.add(appendSchemeLogicalProduct(
+            groupAgency, groupId, "#category-logicalproduct", schemeId, "CategoryScheme", colecticaItems));
+        logger.info("Auto-provisioned category scheme {}/{} for group {}/{} and filed {} category(ies)",
+            groupAgency, schemeId, groupAgency, groupId, newRefs.size());
     }
 
     /**
@@ -1418,29 +1490,174 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
-     * Resolves the CodeListScheme of a group by walking Group → LogicalProduct → CodeListScheme
-     * via {@code bysubject} relationships. Throws when none exists (the scheme is expected to
-     * already be in place for the group).
+     * Files the physical instance's variables under the VariableScheme of its study unit. If the study
+     * unit already exposes a VariableScheme (via {@code StudyUnit → LogicalProduct → VariableScheme}),
+     * the new variable references are merged into it; otherwise a fresh VariableScheme + LogicalProduct
+     * are created and the study unit is re-registered pointing at it.
+     *
+     * <p>The re-registration is skipped (and logged) when the study unit is already being re-registered
+     * in the same batch — e.g. the duplication flow attaching the physical instance to it — to avoid
+     * emitting two conflicting StudyUnit items.
      */
-    private ItemReference resolveGroupCodeListScheme(String groupAgency, String groupId) {
+    private void appendStudyUnitVariableSchemeUpdate(
+        PhysicalInstanceParents parents,
+        List<Ddi4Variable> variables,
+        List<ColecticaItemResponse> colecticaItems,
+        List<ColecticaItemResponse> additionalItems
+    ) {
+        String suAgency = parents.studyUnitAgency();
+        String suId = parents.studyUnitId();
+        List<Reference> newRefs = variables.stream()
+            .map(v -> Reference.of(v.agency(), v.id(), v.version(), Ddi4Variable.TYPE))
+            .toList();
+
+        Optional<ItemReference> schemeRefOpt = findContainerScheme(suAgency, suId, "VariableScheme");
+        if (schemeRefOpt.isPresent()) {
+            ItemReference schemeRef = schemeRefOpt.get();
+            Ddi4VariableScheme current = ddi3ToDdi4Converter.toVariableScheme(
+                colecticaClient.getItem(schemeRef.agencyId(), schemeRef.identifier(), null).item());
+            List<Reference> merged = mergeReferences(current.variableReference(), newRefs);
+            if (merged == null) {
+                return;
+            }
+            Ddi4VariableScheme updated = new Ddi4VariableScheme(current.type(), current.versionDate(),
+                current.urn(), current.agency(), current.id(), current.version(), current.label(), merged);
+            colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(updated)));
+            logger.info("Filed {} variable(s) under variable scheme {}/{} of study unit {}/{}",
+                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), suAgency, suId);
+            return;
+        }
+
+        if (isStudyUnitAlreadyInBatch(additionalItems, suAgency, suId)) {
+            logger.warn("Skipping variable scheme auto-provision for study unit {}/{}: it is already "
+                + "re-registered in the same batch; its variables will not be filed this time", suAgency, suId);
+            return;
+        }
+
+        String schemeId = AbstractColecticaItemRepository.generateDeterministicUuid(
+            suAgency + "/" + suId + "#variablescheme");
+        Ddi4VariableScheme scheme = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+            CogsDate.ofDateTime(nowIso()), "urn:ddi:%s:%s:1".formatted(suAgency, schemeId),
+            suAgency, schemeId, "1", LangStrings.of(defaultLang, "Variable Scheme"), newRefs);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(scheme)));
+
+        Reference logicalProductRef = appendSchemeLogicalProduct(
+            suAgency, suId, "#studyunit-logicalproduct", schemeId, "VariableScheme", colecticaItems);
+
+        ColecticaItemResponse suResponse = colecticaClient.getItem(suAgency, suId, null);
+        Ddi4StudyUnit studyUnit = ddi3ToDdi4Converter.toStudyUnit(suResponse.item());
+        List<Reference> logicalProductRefs = new ArrayList<>(
+            studyUnit.logicalProductReferences() != null ? studyUnit.logicalProductReferences() : List.of());
+        logicalProductRefs.add(logicalProductRef);
+        Ddi4StudyUnit updatedStudyUnit = new Ddi4StudyUnit(studyUnit.type(), studyUnit.versionDate(),
+            studyUnit.urn(), studyUnit.agency(), studyUnit.id(), studyUnit.version(), studyUnit.citation(),
+            studyUnit.operationIri(), studyUnit.physicalInstanceReferences(), logicalProductRefs);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toStudyUnitItem(updatedStudyUnit, STUDY_UNIT_ITEM_TYPE)));
+
+        logger.info("Auto-provisioned variable scheme {}/{} for study unit {}/{} and filed {} variable(s)",
+            suAgency, schemeId, suAgency, suId, newRefs.size());
+    }
+
+    /**
+     * Finds a scheme of a container (Group or StudyUnit) by walking
+     * {@code container → LogicalProduct → scheme} via {@code bysubject} relationships. Returns empty
+     * when none exists yet (the caller then auto-provisions one).
+     * @param schemeTypeKey the {@code itemTypes} key of the wanted scheme
+     *                      (e.g. {@code "CodeListScheme"}, {@code "CategoryScheme"}, {@code "VariableScheme"})
+     */
+    private Optional<ItemReference> findContainerScheme(String containerAgency, String containerId, String schemeTypeKey) {
         String logicalProductType = instanceConfiguration.itemTypes().get("LogicalProduct");
-        String codeListSchemeType = instanceConfiguration.itemTypes().get("CodeListScheme");
+        String schemeType = instanceConfiguration.itemTypes().get(schemeTypeKey);
         for (ItemReference logicalProduct : colecticaClient.findRelatedDescriptions(
                 RelationshipDirection.BY_SUBJECT,
-                new ItemReference(groupAgency, groupId),
+                new ItemReference(containerAgency, containerId),
                 List.of(logicalProductType))) {
             Optional<ItemReference> scheme = colecticaClient.findRelatedDescriptions(
                     RelationshipDirection.BY_SUBJECT,
                     logicalProduct,
-                    List.of(codeListSchemeType))
+                    List.of(schemeType))
                 .stream()
                 .findFirst();
             if (scheme.isPresent()) {
-                return scheme.get();
+                return scheme;
             }
         }
-        throw new IllegalStateException(
-            "No CodeListScheme found for group " + groupAgency + "/" + groupId);
+        return Optional.empty();
+    }
+
+    /**
+     * Merges {@code toAdd} references into {@code existing} (deduplicated by {@code agency/id}),
+     * preserving the ones already present. Returns the merged list, or {@code null} when nothing new
+     * was added (so the caller can skip re-saving an unchanged scheme).
+     */
+    private List<Reference> mergeReferences(List<Reference> existing, List<Reference> toAdd) {
+        List<Reference> merged = new ArrayList<>(existing != null ? existing : List.of());
+        Set<String> keys = merged.stream().map(r -> r.agency() + "/" + r.id()).collect(Collectors.toSet());
+        boolean changed = false;
+        for (Reference ref : toAdd) {
+            if (keys.add(ref.agency() + "/" + ref.id())) {
+                merged.add(ref);
+                changed = true;
+            }
+        }
+        return changed ? merged : null;
+    }
+
+    /**
+     * Creates and appends a LogicalProduct (deterministic id from the container + {@code lpSeedSuffix})
+     * that files the just-created scheme {@code schemeId} of type {@code schemeTypeKey}, and returns a
+     * reference to it (to be added to the container by its re-registration).
+     */
+    private Reference appendSchemeLogicalProduct(
+        String containerAgency, String containerId, String lpSeedSuffix,
+        String schemeId, String schemeTypeKey, List<ColecticaItemResponse> colecticaItems
+    ) {
+        String logicalProductId = AbstractColecticaItemRepository.generateDeterministicUuid(
+            containerAgency + "/" + containerId + lpSeedSuffix);
+        Reference schemeReference = Reference.of(containerAgency, schemeId, "1", schemeTypeKey);
+        Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
+            Ddi4LogicalProduct.TYPE, CogsDate.ofDateTime(nowIso()),
+            "urn:ddi:%s:%s:1".formatted(containerAgency, logicalProductId), containerAgency, logicalProductId, "1",
+            LangStrings.of(defaultLang, "Logical Product"),
+            "CodeListScheme".equals(schemeTypeKey) ? List.of(schemeReference) : null,
+            "CategoryScheme".equals(schemeTypeKey) ? List.of(schemeReference) : null,
+            "VariableScheme".equals(schemeTypeKey) ? List.of(schemeReference) : null);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)));
+        return Reference.of(containerAgency, logicalProductId, "1", "LogicalProduct");
+    }
+
+    /**
+     * Re-registers the group (RegisterOrReplace, same version) with {@code newLogicalProductRefs}
+     * appended to its existing LogicalProductReferences, establishing the
+     * {@code Group → LogicalProduct → scheme} chain the read paths walk.
+     */
+    private void reRegisterGroupWithLogicalProducts(
+        String groupAgency, String groupId,
+        List<Reference> newLogicalProductRefs, List<ColecticaItemResponse> colecticaItems
+    ) {
+        Ddi4Group group = ddi3ToDdi4Converter.toGroup(
+            colecticaClient.getItem(groupAgency, groupId, null).item());
+        List<Reference> logicalProductRefs = new ArrayList<>(
+            group.logicalProductReference() != null ? group.logicalProductReference() : List.of());
+        logicalProductRefs.addAll(newLogicalProductRefs);
+        Ddi4Group updatedGroup = new Ddi4Group(
+            group.type(), group.versionDate(), group.urn(), group.agency(), group.id(), group.version(),
+            group.versionResponsibility(), group.citation(), group.studyUnitReference(),
+            group.seriesIris(), group.typeOfGroup(), logicalProductRefs);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toGroupItem(updatedGroup, GROUP_ITEM_TYPE)));
+    }
+
+    private boolean isStudyUnitAlreadyInBatch(
+        List<ColecticaItemResponse> additionalItems, String suAgency, String suId
+    ) {
+        return additionalItems.stream().anyMatch(item ->
+            STUDY_UNIT_ITEM_TYPE.equals(item.itemType())
+                && suAgency.equals(item.agencyId())
+                && suId.equals(item.identifier()));
+    }
+
+    private static String nowIso() {
+        return ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     @Override
@@ -1554,6 +1771,20 @@ public class DDIRepositoryImpl implements DDIRepository {
         logger.info("Creating code list scheme in Colectica: {}/{}", codeListScheme.agency(), codeListScheme.id());
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
             List.of(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(codeListScheme)))));
+    }
+
+    @Override
+    public void createCategoryScheme(Ddi4CategoryScheme categoryScheme) {
+        logger.info("Creating category scheme in Colectica: {}/{}", categoryScheme.agency(), categoryScheme.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toCategorySchemeItem(categoryScheme)))));
+    }
+
+    @Override
+    public void createVariableScheme(Ddi4VariableScheme variableScheme) {
+        logger.info("Creating variable scheme in Colectica: {}/{}", variableScheme.agency(), variableScheme.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(variableScheme)))));
     }
 
     /**

@@ -20,6 +20,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
@@ -28,6 +29,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProd
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
@@ -248,6 +250,54 @@ public class Ddi4ToLifecycle33 {
         return doc;
     }
 
+    public FragmentDocument toCategoryScheme(Ddi4CategoryScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewCategoryScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.categoryReference() != null) {
+            for (Reference ref : scheme.categoryReference()) {
+                populateReference(schemeType.addNewCategoryReference(), ref);
+            }
+        }
+
+        return doc;
+    }
+
+    public FragmentDocument toVariableScheme(Ddi4VariableScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewVariableScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.variableReference() != null) {
+            for (Reference ref : scheme.variableReference()) {
+                populateReference(schemeType.addNewVariableReference(), ref);
+            }
+        }
+
+        return doc;
+    }
+
     public FragmentDocument toCategory(Ddi4Category cat) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var catType = doc.addNewFragment().addNewCategory();
@@ -350,6 +400,18 @@ public class Ddi4ToLifecycle33 {
             }
         }
 
+        if (logicalProduct.categorySchemeReference() != null) {
+            for (Reference ref : logicalProduct.categorySchemeReference()) {
+                populateReference(lpType.addNewCategorySchemeReference(), ref);
+            }
+        }
+
+        if (logicalProduct.variableSchemeReference() != null) {
+            for (Reference ref : logicalProduct.variableSchemeReference()) {
+                populateReference(lpType.addNewVariableSchemeReference(), ref);
+            }
+        }
+
         return doc;
     }
 
@@ -375,6 +437,12 @@ public class Ddi4ToLifecycle33 {
             var titleString = suType.addNewCitation().addNewTitle().addNewString();
             titleString.setLang(first.language());
             titleString.setStringValue(first.value());
+        }
+
+        if (studyUnit.logicalProductReferences() != null) {
+            for (Reference lpRef : studyUnit.logicalProductReferences()) {
+                populateReference(suType.addNewLogicalProductReference(), lpRef);
+            }
         }
 
         if (studyUnit.physicalInstanceReferences() != null) {

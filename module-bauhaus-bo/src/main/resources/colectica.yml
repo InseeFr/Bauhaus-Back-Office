@@ -16,6 +16,8 @@ fr.insee.rmes.bauhaus.colectica:
       CodeListScheme: 4193d389-b5ae-4368-b399-cd5a7ee3653c
       CodeListGroup: 394b9ff3-7248-4ede-b945-9bebdbf56bed
       Category: 7e47c269-bcab-40f7-a778-af7bbc4e3d00
+      CategoryScheme: 1c11de94-a36d-4d80-95dc-950c6f37f624
+      VariableScheme: 50907716-b67a-4dcd-8f9f-8a283cb5fee0
       StudyUnit: 30ea0200-7121-4f01-8d21-a931a182b86d
     versionResponsibility: abcde
     itemFormat: DC337820-AF3A-4C0B-82F9-CF02535CDE83

@@ -2,9 +2,13 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 
 public interface DDI4toDDI3ConverterService {
     /**
@@ -30,10 +34,46 @@ public interface DDI4toDDI3ConverterService {
     Ddi3Response.Ddi3Item toCodeListSchemeItem(Ddi4CodeListScheme scheme);
 
     /**
+     * Serialize a single CategoryScheme to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica.
+     * @param scheme the category scheme to serialize
+     * @return the DDI3 item for the scheme
+     */
+    Ddi3Response.Ddi3Item toCategorySchemeItem(Ddi4CategoryScheme scheme);
+
+    /**
+     * Serialize a single VariableScheme to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica.
+     * @param scheme the variable scheme to serialize
+     * @return the DDI3 item for the scheme
+     */
+    Ddi3Response.Ddi3Item toVariableSchemeItem(Ddi4VariableScheme scheme);
+
+    /**
      * Serialize a single LogicalProduct to a DDI3 item (DDI 3.3 fragment XML + metadata),
      * ready to be sent to Colectica.
      * @param logicalProduct the logical product to serialize
      * @return the DDI3 item for the logical product
      */
     Ddi3Response.Ddi3Item toLogicalProductItem(Ddi4LogicalProduct logicalProduct);
+
+    /**
+     * Serialize a single Group to a DDI3 item (DDI 3.3 fragment XML + metadata), ready to be sent
+     * to Colectica. Used to re-register a group with an added LogicalProductReference when its
+     * CodeListScheme is auto-provisioned on save.
+     * @param group the group to serialize
+     * @param groupItemType the Colectica item type UUID for a Group
+     * @return the DDI3 item for the group
+     */
+    Ddi3Response.Ddi3Item toGroupItem(Ddi4Group group, String groupItemType);
+
+    /**
+     * Serialize a single StudyUnit to a DDI3 item (DDI 3.3 fragment XML + metadata), ready to be
+     * sent to Colectica. Used to re-register a study unit with an added LogicalProductReference when
+     * its VariableScheme is auto-provisioned on save.
+     * @param studyUnit the study unit to serialize
+     * @param studyUnitItemType the Colectica item type UUID for a StudyUnit
+     * @return the DDI3 item for the study unit
+     */
+    Ddi3Response.Ddi3Item toStudyUnitItem(Ddi4StudyUnit studyUnit, String studyUnitItemType);
 }
