@@ -1,9 +1,9 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
+import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
-import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Endpoint #447 : {@code GET /ddi/structures/{agency}/{uuid}[/{version}]/variables} renvoie tous les
+ * Endpoint #447 : {@code GET /ddi/public/structures/{agency}/{uuid}[/{version}]/variables} renvoie tous les
  * DataRelationship (et donc les variables) d'une PhysicalInstance, en DDI 3.3 XML (multi-fragments
  * {@code <FragmentInstance>}) ou DDI 4 JSON.
  *
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * patterns se terminent par le segment littéral {@code variables}.
  */
 @RestController
-@RequestMapping("/ddi/structures")
+@RequestMapping("/ddi/public/structures")
 @ConditionalOnModule("ddi")
 @PublicEndpoint
 public class PhysicalInstanceVariablesResources {
