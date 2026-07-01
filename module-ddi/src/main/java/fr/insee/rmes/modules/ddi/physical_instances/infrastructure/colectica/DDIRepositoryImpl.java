@@ -136,6 +136,72 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
+     * Descente {@code bysubject} Group → StudyUnit → PhysicalInstance. Bien moins d'appels que la
+     * remontée par PI (qui coûtait 2 requêtes relationnelles par instance) : un appel par groupe
+     * ramène toutes ses StudyUnits (avec leurs libellés via {@link ColecticaClient#findRelatedItems}),
+     * puis un appel par StudyUnit ramène les références de ses PhysicalInstances. Les libellés et la
+     * {@code versionDate} des PI proviennent de la requête avancée globale (un seul appel), qui sert
+     * aussi à inclure les PI orphelines (rattachées à aucune StudyUnit) avec des parents {@code null}.
+     *
+     * <p>Résultat mémoïsé par le cache {@link ColecticaCacheNames#PHYSICAL_INSTANCE_SEARCH_ROWS},
+     * invalidé à chaque écriture de PhysicalInstance.
+     */
+    @Override
+    @Cacheable(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS)
+    public List<PhysicalInstanceSearchRow> getPhysicalInstanceSearchRows() {
+        logger.info("Building physical instance advanced-search rows (bysubject descent Group -> StudyUnit -> PhysicalInstance)");
+        String physicalInstanceType = instanceConfiguration.itemTypes().get(PHYSICAL_INSTANCE);
+
+        Map<String, PartialPhysicalInstance> piByKey = new LinkedHashMap<>();
+        for (PartialPhysicalInstance pi : getPhysicalInstancesViaAdvancedQuery()) {
+            piByKey.put(relationshipKey(pi.agency(), pi.id()), pi);
+        }
+
+        List<PhysicalInstanceSearchRow> rows = new ArrayList<>();
+        Set<String> attachedKeys = new HashSet<>();
+
+        for (PartialGroup group : getGroups()) {
+            List<ColecticaItem> studyUnits = colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(group.agency(), group.id()),
+                List.of(STUDY_UNIT_ITEM_TYPE));
+            for (ColecticaItem studyUnit : studyUnits) {
+                String studyUnitLabel = extractLabelFromItem(studyUnit);
+                List<ItemReference> piRefs = colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT,
+                    itemRef(studyUnit),
+                    List.of(physicalInstanceType));
+                for (ItemReference piRef : piRefs) {
+                    String piKey = relationshipKey(piRef.agencyId(), piRef.identifier());
+                    PartialPhysicalInstance pi = piByKey.get(piKey);
+                    attachedKeys.add(piKey);
+                    rows.add(new PhysicalInstanceSearchRow(
+                        piRef.agencyId(), piRef.identifier(),
+                        pi != null ? pi.label() : piRef.identifier(),
+                        pi != null ? pi.versionDate() : null,
+                        studyUnit.agencyId(), studyUnit.identifier(), studyUnitLabel,
+                        group.agency(), group.id(), group.label()));
+                }
+            }
+        }
+
+        // PI orphelines (rattachées à aucune StudyUnit résolvable) : parents null.
+        for (Map.Entry<String, PartialPhysicalInstance> entry : piByKey.entrySet()) {
+            if (!attachedKeys.contains(entry.getKey())) {
+                PartialPhysicalInstance pi = entry.getValue();
+                rows.add(new PhysicalInstanceSearchRow(
+                    pi.agency(), pi.id(), pi.label(), pi.versionDate(),
+                    null, null, null, null, null, null));
+            }
+        }
+        return rows;
+    }
+
+    private static String relationshipKey(String agency, String id) {
+        return agency + "|" + id;
+    }
+
+    /**
      * Label of an advanced-query item: prefers the {@code label} property, then {@code dcTitle},
      * picking the default language first (then any non-blank value), and finally falling back to the
      * identifier — mirroring {@link #extractLabelFromItem(ColecticaItem)} for the legacy shape.
@@ -1120,6 +1186,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public void updatePhysicalInstance(
         String agencyId,
         String id,
@@ -1244,6 +1311,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public void updateFullPhysicalInstance(
         String agencyId,
         String id,
@@ -1661,6 +1729,7 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
     public Ddi4Response createPhysicalInstance(
         CreatePhysicalInstanceRequest request
     ) {

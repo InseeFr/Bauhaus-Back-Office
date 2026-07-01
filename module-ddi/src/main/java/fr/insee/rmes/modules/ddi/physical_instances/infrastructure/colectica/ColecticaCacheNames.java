@@ -18,4 +18,11 @@ public final class ColecticaCacheNames {
 
     /** Cache of the CodeList references reachable from the mutualized codes package (read + write paths). */
     public static final String MUTUALIZED_PACKAGE_CODE_LIST_REFS = "mutualizedPackageCodeListRefs";
+
+    /**
+     * Cache des lignes de recherche avancée d'instances physiques exposées par
+     * {@code GET /ddi/physical-instance/search} (jointure PhysicalInstance / StudyUnit / Group).
+     * Invalidé à chaque écriture de PhysicalInstance.
+     */
+    public static final String PHYSICAL_INSTANCE_SEARCH_ROWS = "physicalInstanceSearchRows";
 }

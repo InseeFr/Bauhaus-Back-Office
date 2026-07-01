@@ -8,7 +8,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
@@ -19,6 +21,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -79,6 +82,32 @@ public class DDIServiceImpl implements DDIService {
                         .getOrDefault(groupKeyByInstance.get(instance), List.of())
                         .stream().anyMatch(userStamps::contains))
                 .sorted(LabelComparators.byLabelAscending(PartialPhysicalInstance::label))
+                .toList();
+    }
+
+    @Override
+    public List<PhysicalInstanceSearchRow> searchPhysicalInstances() {
+        logger.info("Starting advanced search of physical instances (joining study unit and group labels)");
+        return ddiRepository.getPhysicalInstanceSearchRows().stream()
+                .sorted(LabelComparators.byLabelAscending(PhysicalInstanceSearchRow::label))
+                .toList();
+    }
+
+    @Override
+    public List<PhysicalInstanceSearchRow> searchPhysicalInstancesFilteredByStamp(Set<String> userStamps) {
+        logger.info("Starting advanced search of physical instances filtered by stamp");
+        // stamps créateurs résolus une seule fois par groupe distinct (et non par PI)
+        Map<String, List<String>> stampsByGroupKey = new HashMap<>();
+        return searchPhysicalInstances().stream()
+                .filter(row -> {
+                    if (row.groupId() == null) {
+                        return false;
+                    }
+                    String groupKey = row.groupAgency() + "|" + row.groupId();
+                    List<String> stamps = stampsByGroupKey.computeIfAbsent(groupKey,
+                            _ -> resolveGroupCreatorStamps(row.groupAgency(), row.groupId()));
+                    return stamps.stream().anyMatch(userStamps::contains);
+                })
                 .toList();
     }
 
@@ -186,7 +215,25 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public Ddi4Response getDdi4PhysicalInstance(String agencyId, String id) {
-        return this.ddiRepository.getPhysicalInstance(agencyId, id);
+        Ddi4Response response = this.ddiRepository.getPhysicalInstance(agencyId, id);
+        if (response == null || response.variable() == null) {
+            return response;
+        }
+        // Tri par défaut des variables sur le nom (VariableName), ascendant.
+        List<Ddi4Variable> sortedVariables = response.variable().stream()
+                .sorted(LabelComparators.byLabelAscending(DDIServiceImpl::variableName))
+                .toList();
+        return new Ddi4Response(response.schema(), response.topLevelReference(),
+                response.physicalInstance(), response.dataRelationship(), sortedVariables,
+                response.codeList(), response.category());
+    }
+
+    private static String variableName(Ddi4Variable variable) {
+        List<LangString> names = variable.variableName();
+        if (names == null || names.isEmpty()) {
+            return "";
+        }
+        return names.getFirst().value();
     }
 
     @Override
@@ -299,7 +346,25 @@ public class DDIServiceImpl implements DDIService {
         Ddi4GroupResponse groupResponse = ddiRepository.getGroup(parents.groupAgency(), parents.groupId());
         return parents
                 .withGroupLabel(extractGroupLabel(groupResponse))
+                .withStudyUnitLabel(extractStudyUnitLabel(groupResponse, parents.studyUnitId()))
                 .withStamps(resolveGroupCreatorStamps(groupResponse));
+    }
+
+    /**
+     * Libellé de l'étude (StudyUnit) rattachée à la PI : le groupe parent files ses study units,
+     * on retrouve celle de la PI par son ID dans cette même réponse (aucun appel Colectica en plus),
+     * ou {@code null} si elle n'y figure pas ou n'a pas de titre.
+     */
+    private String extractStudyUnitLabel(Ddi4GroupResponse groupResponse, String studyUnitId) {
+        if (groupResponse == null || groupResponse.studyUnit() == null || studyUnitId == null) {
+            return null;
+        }
+        return groupResponse.studyUnit().stream()
+                .filter(studyUnit -> studyUnitId.equals(studyUnit.id()))
+                .map(DDIServiceImpl::studyUnitLabel)
+                .filter(label -> label != null && !label.isBlank())
+                .findFirst()
+                .orElse(null);
     }
 
     /**

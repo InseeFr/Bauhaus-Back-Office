@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -17,6 +18,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -119,6 +121,44 @@ class DDIServiceImplTest {
 
         assertEquals(List.of("alpha", "Charlie"),
                 result.stream().map(PartialPhysicalInstance::label).toList());
+    }
+
+    @Test
+    void searchPhysicalInstances_returnsRepositoryRowsSortedByLabelWithResolvedParentLabels() {
+        PhysicalInstanceSearchRow charlie = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-c", "Charlie", new Date(),
+                "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        PhysicalInstanceSearchRow alpha = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-a", "alpha", new Date(),
+                "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        when(ddiRepository.getPhysicalInstanceSearchRows()).thenReturn(List.of(charlie, alpha));
+
+        List<PhysicalInstanceSearchRow> rows = ddiService.searchPhysicalInstances();
+
+        assertEquals(List.of("alpha", "Charlie"),
+                rows.stream().map(PhysicalInstanceSearchRow::label).toList());
+        assertEquals("Study One", rows.get(0).studyUnitLabel());
+        assertEquals("Group One", rows.get(0).groupLabel());
+    }
+
+    @Test
+    void searchPhysicalInstancesFilteredByStamp_keepsRowsWhoseGroupCreatorMatchesAndDropsOrphans() {
+        String iri = "http://id.insee.fr/operations/serie/s1";
+        PhysicalInstanceSearchRow kept = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Kept", new Date(),
+                "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        PhysicalInstanceSearchRow orphan = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-3", "Orphan", new Date(),
+                null, null, null, null, null, null);
+        when(ddiRepository.getPhysicalInstanceSearchRows()).thenReturn(List.of(kept, orphan));
+        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri)))
+                .thenReturn(Map.of(iri, List.of("stamp-A")));
+
+        List<PhysicalInstanceSearchRow> rows =
+                ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+
+        assertEquals(List.of("Kept"), rows.stream().map(PhysicalInstanceSearchRow::label).toList());
     }
 
     @Test
@@ -316,6 +356,29 @@ class DDIServiceImplTest {
         assertEquals("test-schema", result.schema());
 
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
+    }
+
+    @Test
+    void getDdi4PhysicalInstance_sortsVariablesByNameAscending() {
+        String agencyId = "fr.insee";
+        String instanceId = "pi-1";
+        Ddi4Response repoResponse = new Ddi4Response(
+                Ddi4Response.SCHEMA, List.of(), List.of(), List.of(),
+                List.of(variableWithName("v-c", "charlie"),
+                        variableWithName("v-a", "alpha"),
+                        variableWithName("v-b", "bravo")),
+                List.of(), List.of());
+        when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(repoResponse);
+
+        Ddi4Response result = ddiService.getDdi4PhysicalInstance(agencyId, instanceId);
+
+        assertEquals(List.of("alpha", "bravo", "charlie"),
+                result.variable().stream().map(v -> v.variableName().getFirst().value()).toList());
+    }
+
+    private Ddi4Variable variableWithName(String id, String name) {
+        return new Ddi4Variable(Ddi4Variable.TYPE, null, "urn:ddi:fr.insee:" + id + ":1",
+                "fr.insee", id, "1", null, LangStrings.of("fr-FR", name), null, null, null, null);
     }
 
     @Test
@@ -685,6 +748,33 @@ class DDIServiceImplTest {
         PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
 
         assertEquals("Base permanente des équipements", result.groupLabel());
+    }
+
+    @Test
+    void shouldGetPhysicalInstanceParents_resolvesStudyUnitLabel() {
+        String agencyId = "fr.insee";
+        String id = "pi-123";
+
+        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
+                "urn:ddi:fr.insee:grp-789:1",
+                "fr.insee", "grp-789", "1",
+                "bauhaus", null, null, List.of(),
+                "insee:StatisticalOperationSeries"
+        );
+        // Le groupe parent files ses study units ; on retrouve le label de l'étude rattachée
+        // à la PI (su-456) dans cette même liste, sans appel Colectica supplémentaire.
+        when(ddiRepository.getGroup("fr.insee", "grp-789")).thenReturn(
+                new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group),
+                        List.of(studyUnitWithTitle("su-000", "Autre enquête"),
+                                studyUnitWithTitle("su-456", "Enquête emploi 2024"))));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
+
+        assertEquals("Enquête emploi 2024", result.studyUnitLabel());
     }
 
     @Test

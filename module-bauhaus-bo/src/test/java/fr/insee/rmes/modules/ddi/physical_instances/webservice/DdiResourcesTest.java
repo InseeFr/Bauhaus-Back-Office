@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDISe
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
@@ -659,10 +660,55 @@ class DdiResourcesTest {
     }
 
     @Test
+    void searchPhysicalInstances_mapsRowsWithResolvedParentLabels() {
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Instance A", new Date(),
+                "fr.insee", "su-1", "Study One",
+                "fr.insee", "g1", "Group One");
+        when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
+
+        ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
+                ddiResources.searchPhysicalInstances();
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        List<PhysicalInstanceSearchResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals("pi-1", body.getFirst().id());
+        assertEquals("Instance A", body.getFirst().label());
+        assertEquals("Study One", body.getFirst().studyUnitLabel());
+        assertEquals("Group One", body.getFirst().groupLabel());
+        verify(ddiService).searchPhysicalInstances();
+    }
+
+    @Test
+    void searchPhysicalInstances_appliesStampStrategy() throws MissingUserInformationException, RmesException {
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Instance A", new Date(),
+                "fr.insee", "su-1", "Study One",
+                "fr.insee", "g1", "Group One");
+        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
+        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(RBAC.Strategy.STAMP);
+        when(ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"))).thenReturn(List.of(row));
+
+        ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
+                ddiResources.searchPhysicalInstances();
+
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        verify(ddiService).searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+        verify(ddiService, never()).searchPhysicalInstances();
+    }
+
+    @Test
     void getPhysicalInstanceParents_serializesStampsField() {
         when(ddiService.getPhysicalInstanceParents("fr.insee", "pi-1"))
                 .thenReturn(new PhysicalInstanceParents(
-                        "fr.insee", "su-1", "fr.insee", "grp-1", "Mon groupe", List.of("stamp-A", "stamp-B")));
+                        "fr.insee", "su-1", "Mon étude", "fr.insee", "grp-1", "Mon groupe", List.of("stamp-A", "stamp-B")));
 
         ResponseEntity<PhysicalInstanceParentsResponse> response =
                 ddiResources.getPhysicalInstanceParents("fr.insee", "pi-1");

@@ -26,6 +26,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDISe
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
@@ -118,6 +119,27 @@ public class DdiResources {
 
         return ResponseEntity.ok()
             .contentType(org.springframework.hateoas.MediaTypes.HAL_JSON)
+            .body(responses);
+    }
+
+    @GetMapping("/physical-instance/search")
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
+    public ResponseEntity<
+        List<PhysicalInstanceSearchResponse>
+    > searchPhysicalInstances() {
+        List<PhysicalInstanceSearchResponse> responses = resolveByReadStampStrategy(
+            ddiService::searchPhysicalInstancesFilteredByStamp,
+            ddiService::searchPhysicalInstances
+        )
+            .stream()
+            .map(PhysicalInstanceSearchResponse::fromDomain)
+            .toList();
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
             .body(responses);
     }
 

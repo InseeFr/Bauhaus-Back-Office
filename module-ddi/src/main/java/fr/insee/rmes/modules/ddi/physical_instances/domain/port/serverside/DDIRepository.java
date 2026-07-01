@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialStudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 
@@ -31,6 +32,12 @@ public interface DDIRepository {
      * migration — the two coexist until the advanced query becomes the single source.
      */
     List<PartialPhysicalInstance> getPhysicalInstancesViaAdvancedQuery();
+    /**
+     * Lignes de recherche avancée : chaque PhysicalInstance jointe à sa StudyUnit et à son Group
+     * parents (libellés résolus), via la marche relationnelle {@code byobject}
+     * PhysicalInstance ← StudyUnit ← Group. Les parents sont {@code null} quand la relation n'existe pas.
+     */
+    List<PhysicalInstanceSearchRow> getPhysicalInstanceSearchRows();
     List<PartialLogicalProduct> getLogicalProducts();
     List<PartialGroup> getGroups();
     List<PartialStudyUnit> getStudyUnits();

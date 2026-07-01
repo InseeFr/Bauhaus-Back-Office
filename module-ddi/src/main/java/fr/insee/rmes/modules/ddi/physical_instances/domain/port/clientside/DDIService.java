@@ -16,6 +16,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 
 import java.util.List;
@@ -25,6 +26,8 @@ import java.util.Set;
 public interface DDIService {
     List<PartialPhysicalInstance> getPhysicalInstances();
     List<PartialPhysicalInstance> getPhysicalInstancesFilteredByStamp(Set<String> userStamps);
+    List<PhysicalInstanceSearchRow> searchPhysicalInstances();
+    List<PhysicalInstanceSearchRow> searchPhysicalInstancesFilteredByStamp(Set<String> userStamps);
     List<PartialLogicalProduct> getLogicalProducts();
     List<PartialGroup> getGroups();
     List<PartialGroup> getGroupsFilteredByStamp(Set<String> userStamps);

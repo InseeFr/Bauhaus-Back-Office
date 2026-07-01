@@ -2690,6 +2690,69 @@ class DDIRepositoryImplTest {
         assertTrue(result.isEmpty());
     }
 
+    @Test
+    void getPhysicalInstanceSearchRows_joinsPiWithStudyUnitAndGroupLabels() {
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency, "pi-1", 1, piType, false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(), Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        // Descente : Groups (query) -> StudyUnits (bysubject) -> PhysicalInstances (bysubject).
+        when(colecticaClient.query(eq(List.of(GROUP_ITEM_TYPE))))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference(agency, "g1")),
+                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference(agency, "su-1")),
+                eq(List.of(piType))))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(1, rows.size());
+        PhysicalInstanceSearchRow row = rows.get(0);
+        assertEquals("pi-1", row.id());
+        assertEquals("Fichier détail", row.label());
+        assertEquals("su-1", row.studyUnitId());
+        assertEquals("Recensement 2024", row.studyUnitLabel());
+        assertEquals("g1", row.groupId());
+        assertEquals("Groupe BPE", row.groupLabel());
+    }
+
+    @Test
+    void getPhysicalInstanceSearchRows_leavesParentsNullForPiAttachedToNoGroup() {
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency, "pi-9", 1, piType, false,
+                Map.of("label", List.of(new LocalizedText("Orpheline", "fr-FR"))),
+                Map.of(), Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        // Aucun groupe : la PI ne peut être rattachée -> orpheline (parents null), mais présente.
+        when(colecticaClient.query(eq(List.of(GROUP_ITEM_TYPE))))
+                .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(1, rows.size());
+        assertEquals("pi-9", rows.get(0).id());
+        assertEquals("Orpheline", rows.get(0).label());
+        assertNull(rows.get(0).studyUnitId());
+        assertNull(rows.get(0).groupLabel());
+    }
+
     private static ColecticaItem labelItem(String itemType, String agency, String id, String label) {
         return new ColecticaItem(
                 null,                       // summary
