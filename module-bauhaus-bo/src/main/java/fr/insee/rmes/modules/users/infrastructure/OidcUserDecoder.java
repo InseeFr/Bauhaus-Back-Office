@@ -186,6 +186,7 @@ public class OidcUserDecoder implements UserDecoder {
                 .stream()
                 .map(this::jsonElementOrElseToString)
                 .filter(group -> group.endsWith(suffix))
+                .map(group -> group.substring(0, group.length() - suffix.length()))
                 .findFirst();
             default -> empty();
         };

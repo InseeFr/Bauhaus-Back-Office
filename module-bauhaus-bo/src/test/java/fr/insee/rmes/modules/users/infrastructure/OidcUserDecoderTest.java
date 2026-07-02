@@ -130,7 +130,7 @@ class OidcUserDecoderTest {
         Optional<User> result = userDecoder.fromPrincipal(jwt);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactly("STAMP-02_APP");
+        assertThat(result.get().getStamps()).containsExactly("STAMP-02");
     }
 
     @Test
@@ -216,8 +216,8 @@ class OidcUserDecoderTest {
         Optional<User> result = userDecoder.fromPrincipal(jwt);
 
         assertThat(result).isPresent();
-        // Should extract the first matching group
-        assertThat(result.get().getStamps()).containsAnyOf("STAMP-FIRST_APP", "STAMP-SECOND_APP");
+        // Should extract the first matching group, with the application suffix stripped
+        assertThat(result.get().getStamps()).containsAnyOf("STAMP-FIRST", "STAMP-SECOND");
     }
 
     @Test
@@ -242,7 +242,9 @@ class OidcUserDecoderTest {
     void should_add_dcterms_identifier_when_insee_group_present() throws MissingUserInformationException, OrganisationFetchException {
         when(jwtProperties.getInseeGroupClaim()).thenReturn("groups");
         when(jwtProperties.getHieApplicationPrefix()).thenReturn("APP");
-        when(organisationsService.getDctermsIdentifier("HIE3000165_APP")).thenReturn(Optional.of("DG75-F601"));
+        // The application suffix must be stripped before looking up the organisation:
+        // GraphDB stores the HIE code (adms:identifier) without the "_APP" suffix.
+        when(organisationsService.getDctermsIdentifier("HIE3000165")).thenReturn(Optional.of("DG75-F601"));
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", "user123");
@@ -255,7 +257,7 @@ class OidcUserDecoderTest {
         Optional<User> result = userDecoder.fromPrincipal(jwt);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("HIE3000165_APP", "DG75-F601");
+        assertThat(result.get().getStamps()).containsExactlyInAnyOrder("HIE3000165", "DG75-F601");
     }
 
     @Test
