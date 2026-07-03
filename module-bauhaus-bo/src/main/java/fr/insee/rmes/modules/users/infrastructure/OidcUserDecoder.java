@@ -124,7 +124,8 @@ public class OidcUserDecoder implements UserDecoder {
             return empty();
         }
 
-        String suffix = "_" + jwtProperties.getHieApplicationPrefix();
+        String suffix = "_" + jwtProperties.
+                getHieApplicationPrefix();
 
         return switch (inseeGroups) {
             case List<?> list -> list.stream()
