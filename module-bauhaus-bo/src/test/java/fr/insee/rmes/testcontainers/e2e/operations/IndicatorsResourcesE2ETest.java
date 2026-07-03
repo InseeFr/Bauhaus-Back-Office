@@ -25,6 +25,11 @@ class IndicatorsResourcesE2ETest extends BaseE2ETest {
     static void configurePublicationProperties(DynamicPropertyRegistry registry) {
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.sesameServer", () -> getRdfGestionConnectionDetails().getUrlServer());
         registry.add("fr.insee.rmes.bauhaus.sesame.publication.repository", () -> getRdfGestionConnectionDetails().repositoryId());
+        // AppSpringBootTest force "http://" (sans "bauhaus/"), qui ne correspond pas aux URI du jeu de
+        // données e2e (ex. http://bauhaus/operations/serie/s1032). Les lectures s'en sortent grâce à des
+        // filtres SPARQL par suffixe, mais la résolution d'un lien nouvellement créé (wasGeneratedBy) fait
+        // une jointure exacte sur l'URI et a besoin du bon préfixe.
+        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.baseURI", () -> "http://bauhaus/");
     }
 
     private HttpEntity<String> jsonEntity(String body) {
@@ -211,17 +216,18 @@ class IndicatorsResourcesE2ETest extends BaseE2ETest {
                 "http://localhost:" + port + "/api/operations/indicator",
                 HttpMethod.POST, jsonEntity(createBody), String.class);
 
-        Assertions.assertEquals(HttpStatus.OK, createResponse.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, createResponse.getStatusCode(), "body=" + createResponse.getBody());
         String newId = createResponse.getBody().replace("\"", "").trim();
         Assertions.assertFalse(newId.isBlank());
 
         var afterCreate = restTemplate.exchange(
                 "http://localhost:" + port + "/api/operations/indicator/" + newId,
                 HttpMethod.GET, jsonEntity(null), String.class);
-        Assertions.assertEquals(HttpStatus.OK, afterCreate.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, afterCreate.getStatusCode(), "body=" + afterCreate.getBody());
         JsonNode createdIndicator = objectMapper.readTree(afterCreate.getBody());
         Assertions.assertEquals(prefLabelLg1, createdIndicator.get("prefLabelLg1").asText());
         Assertions.assertEquals("Unpublished", createdIndicator.get("validationState").asText());
+        Assertions.assertTrue(createdIndicator.has("wasGeneratedBy"), "afterCreate body=" + afterCreate.getBody());
 
         String updatedPrefLabelLg1 = prefLabelLg1 + " (updated)";
         String updateBody = """
@@ -234,19 +240,20 @@ class IndicatorsResourcesE2ETest extends BaseE2ETest {
 
         var updateResponse = restTemplate.exchange(
                 "http://localhost:" + port + "/api/operations/indicator/" + newId,
-                HttpMethod.PUT, jsonEntity(updateBody), Object.class);
-        Assertions.assertEquals(HttpStatus.OK, updateResponse.getStatusCode());
+                HttpMethod.PUT, jsonEntity(updateBody), String.class);
+        Assertions.assertEquals(HttpStatus.OK, updateResponse.getStatusCode(), "body=" + updateResponse.getBody());
 
         var afterUpdate = restTemplate.exchange(
                 "http://localhost:" + port + "/api/operations/indicator/" + newId,
                 HttpMethod.GET, jsonEntity(null), String.class);
         JsonNode updatedIndicator = objectMapper.readTree(afterUpdate.getBody());
         Assertions.assertEquals(updatedPrefLabelLg1, updatedIndicator.get("prefLabelLg1").asText());
+        Assertions.assertTrue(updatedIndicator.has("wasGeneratedBy"), "afterUpdate body=" + afterUpdate.getBody());
 
         var validateResponse = restTemplate.exchange(
                 "http://localhost:" + port + "/api/operations/indicator/" + newId + "/validate",
                 HttpMethod.PUT, jsonEntity(""), String.class);
-        Assertions.assertEquals(HttpStatus.OK, validateResponse.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, validateResponse.getStatusCode(), "body=" + validateResponse.getBody());
 
         var afterValidate = restTemplate.exchange(
                 "http://localhost:" + port + "/api/operations/indicator/" + newId,
