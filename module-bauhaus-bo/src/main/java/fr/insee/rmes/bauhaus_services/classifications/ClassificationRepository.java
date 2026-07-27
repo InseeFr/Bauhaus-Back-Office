@@ -25,6 +25,8 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -32,6 +34,9 @@ import java.util.List;
 
 @Repository()
 public class ClassificationRepository extends RdfService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClassificationRepository.class);
+
     private final BauhausLanguagesProperties languages;
 
 
@@ -55,10 +60,17 @@ public class ClassificationRepository extends RdfService {
     public void updateClassification(Classification classification, String uri) throws RmesException {
         Model model = new LinkedHashModel();
 
+        logger.debug("updateClassification - id={}, uri={}", classification.getId(), uri);
+        logger.debug("updateClassification - values converted to IRI: creator={}, contributor={}, idSeries={}, additionalMaterial={}, legalMaterial={}, homepage={}, idBefore={}, idAfter={}, idVariant={}",
+                classification.getCreator(), classification.getContributor(), classification.getIdSeries(),
+                classification.getAdditionalMaterial(), classification.getLegalMaterial(), classification.getHomepage(),
+                classification.getIdBefore(), classification.getIdAfter(), classification.getIdVariant());
+
         this.validate(classification);
-        
+
         Resource graph = RdfUtils.codesListGraph(classification.getId());
         IRI classificationIri = RdfUtils.createIRI(uri);
+        logger.debug("updateClassification - graph={}, classificationIri={}", graph, classificationIri);
 
         repoGestion.deleteTripletByPredicate(classificationIri, SKOS.PREF_LABEL, graph, null);
 
@@ -87,22 +99,27 @@ public class ClassificationRepository extends RdfService {
 
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.BELONGS_TO, graph, null);
         if(classification.getIdSeries() != null){
+            logger.debug("updateClassification - xkos:belongsTo, idSeries={}", classification.getIdSeries());
             model.add(classificationIri, XKOS.BELONGS_TO, RdfUtils.classificationSerieIRI(classification.getIdSeries()), graph);
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.CREATOR, graph, null);
+        logger.debug("updateClassification - dc:creator, raw value expected to be an absolute IRI = [{}]", classification.getCreator());
         RdfUtils.addTripleUri(classificationIri, DC.CREATOR, classification.getCreator(), model, graph);
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.CONTRIBUTOR, graph, null);
+        logger.debug("updateClassification - dc:contributor, raw value expected to be an absolute IRI = [{}]", classification.getContributor());
         RdfUtils.addTripleUri(classificationIri, DC.CONTRIBUTOR, classification.getContributor(), model, graph);
 
         repoGestion.deleteTripletByPredicate(classificationIri, INSEE.ADDITIONALMATERIAL, graph, null);
         if(StringUtils.isNotEmpty(classification.getAdditionalMaterial())){
+            logger.debug("updateClassification - insee:additionalMaterial = [{}]", classification.getAdditionalMaterial());
             model.add(classificationIri, INSEE.ADDITIONALMATERIAL, RdfUtils.createIRI(classification.getAdditionalMaterial()), graph);
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, INSEE.LEGALMATERIAL, graph, null);
         if(StringUtils.isNotEmpty(classification.getLegalMaterial())){
+            logger.debug("updateClassification - insee:legalMaterial = [{}]", classification.getLegalMaterial());
             model.add(classificationIri, INSEE.LEGALMATERIAL, RdfUtils.createIRI(classification.getLegalMaterial()), graph);
         }
 
@@ -113,12 +130,14 @@ public class ClassificationRepository extends RdfService {
 
         repoGestion.deleteTripletByPredicate(classificationIri, FOAF.HOMEPAGE, graph, null);
         if(StringUtils.isNotEmpty(classification.getHomepage())){
+            logger.debug("updateClassification - foaf:homepage = [{}]", classification.getHomepage());
             model.add(classificationIri, FOAF.HOMEPAGE, RdfUtils.createIRI(classification.getHomepage()), graph);
         }
 
         // Le statut de validation est porté par le graphe des nomenclatures (= classifFamiliesGraph),
         // là où le schéma est enregistré et où la publication l'écrit. On l'écrit donc dans ce graphe
         // (et pas dans le graphe par-id) pour que lecture, modification et publication restent cohérentes.
+        logger.debug("updateClassification - validationGraph (classifFamiliesGraph) = [{}]", graphs.classifFamiliesGraph());
         Resource validationGraph = RdfUtils.createIRI(graphs.classifFamiliesGraph());
         repoGestion.deleteTripletByPredicate(classificationIri, INSEE.VALIDATION_STATE, graph, null);
         repoGestion.deleteTripletByPredicate(classificationIri, INSEE.VALIDATION_STATE, validationGraph, null);
@@ -147,6 +166,7 @@ public class ClassificationRepository extends RdfService {
             idsArray[i] = ids.get(i);
         }
         JSONArray codes = repoGestion.getResponseAsArray(classificationsQueries.classificationsUriById(idsArray));
+        logger.debug("updateClassification - before/after/variant ids={}, resolved uris={}", ids, codes);
 
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.BEFORE, graph, null);
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.AFTER, graph, null);
@@ -156,6 +176,7 @@ public class ClassificationRepository extends RdfService {
             JSONObject code = codes.getJSONObject(i);
             String codeUri = code.getString("uri");
             String codeId = code.getString("id");
+            logger.debug("updateClassification - xkos link, codeId={}, codeUri=[{}]", codeId, codeUri);
 
             if(codeId.equalsIgnoreCase(classification.getIdBefore())){
                 model.add(classificationIri, XKOS.BEFORE, RdfUtils.createIRI(codeUri), graph);
@@ -172,6 +193,7 @@ public class ClassificationRepository extends RdfService {
         this.classificationNoteService.addNotes(graph, classification.getChangeNoteUriLg2(), classification.getChangeNoteUriLg2(), model);
         this.classificationNoteService.addNotes(graph, classification.getScopeNoteUriLg1(), classification.getScopeNoteLg1(), model);
         this.classificationNoteService.addNotes(graph, classification.getScopeNoteUriLg2(), classification.getScopeNoteLg2(), model);
+        logger.debug("updateClassification - model ready ({} triples) for {}", model.size(), classificationIri);
         repoGestion.loadSimpleObjectWithoutDeletion(classificationIri, model, null);
     }
 

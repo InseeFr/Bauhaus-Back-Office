@@ -178,6 +178,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 
 	@Override
 	public void setClassificationValidation(String classificationId) throws RmesException {
+		logger.debug("setClassificationValidation - starting publication of classification {}", classificationId);
 		//GET graph
 		JSONObject listGraph = repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
@@ -185,10 +186,12 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 		String graph = listGraph.getString("graph");
 		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
+		logger.debug("setClassificationValidation - graphIri=[{}], classifUri=[{}]", graphIri, classifUriString);
 
 
 		//PUBLISH
 		classificationPublication.publishClassification(graphIri);
+		logger.debug("setClassificationValidation - publication completed for graph {}", graphIri);
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
 		Model model = new LinkedHashModel();
@@ -198,6 +201,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
 		logger.info("Validate classification : {}", classifUriString);
 		repoGestion.objectValidation(classificationURI, model);
+		logger.debug("setClassificationValidation - validation state updated in the management repository for {}", classifUriString);
 
 	}
 }

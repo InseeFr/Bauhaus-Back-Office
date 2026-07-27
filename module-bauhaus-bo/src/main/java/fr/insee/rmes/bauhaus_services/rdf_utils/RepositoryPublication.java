@@ -151,15 +151,21 @@ public class RepositoryPublication{
 	}
 	
 	public void publishContext(Resource graph, Model model, String type) throws RmesException {
+		logger.debug("publishContext - type={}, graph={}, {} triples, publication server={}, repository={}",
+				type, graph, model.size(), rdfServerPublicationExt, idRepositoryPublicationExt);
 		publishContext(graph, model, type, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
-		if (repo == null) {return ;}
+		if (repo == null) {
+			logger.warn("Publication of Graph {} : {} skipped, the publication repository could not be initialized", type, context);
+			return ;
+		}
 
 		try (RepositoryConnection conn = repo.getConnection()) {
 			conn.clear(context);
+			logger.debug("publishContext - graph {} cleared in the publication repository, adding {} triples", context, model.size());
 			conn.add(model);
 			logger.info("Publication of Graph {} : {}" ,type, context);
 		} catch (RepositoryException e) {
