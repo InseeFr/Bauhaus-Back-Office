@@ -8,6 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategorySch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -130,6 +131,17 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         } catch (XmlException e) {
             logger.error("Error parsing VariableScheme fragment", e);
             throw new RuntimeException("Error parsing VariableScheme fragment", e);
+        }
+    }
+
+    @Override
+    public Ddi4LogicalProduct toLogicalProduct(String fragmentXml) {
+        try {
+            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            return lifecycle33ToDdi4.toLogicalProduct(fragment);
+        } catch (XmlException e) {
+            logger.error("Error parsing LogicalProduct fragment", e);
+            throw new RuntimeException("Error parsing LogicalProduct fragment", e);
         }
     }
 

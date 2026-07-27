@@ -143,6 +143,31 @@ class DDI3toDDI4ConverterServiceImplTest {
     }
 
     @Test
+    void shouldParseLogicalProductFromFragmentXml() {
+        // Round-trip through the real serializer: this is what reading a group's existing
+        // LogicalProduct relies on, to add a scheme reference to it instead of creating a second one.
+        Ddi4LogicalProduct original = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:lp-id:1",
+                "fr.insee", "lp-id", "1", LangStrings.of("fr-FR", "Produit logique"),
+                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
+                List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
+                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")));
+        String xml = new Ddi4ToLifecycle33().toLogicalProduct(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4LogicalProduct logicalProduct = converter.toLogicalProduct(xml);
+
+        assertEquals("lp-id", logicalProduct.id());
+        assertEquals("fr.insee", logicalProduct.agency());
+        assertEquals("1", logicalProduct.version());
+        assertEquals(1, logicalProduct.codeListSchemeReference().size());
+        assertEquals("cls-1", logicalProduct.codeListSchemeReference().get(0).id());
+        assertEquals(1, logicalProduct.categorySchemeReference().size());
+        assertEquals("cats-1", logicalProduct.categorySchemeReference().get(0).id());
+        assertEquals(1, logicalProduct.variableSchemeReference().size());
+        assertEquals("vars-1", logicalProduct.variableSchemeReference().get(0).id());
+    }
+
+    @Test
     void shouldParseStudyUnitFromFragmentXml() {
         Ddi4StudyUnit original = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:su-id:1",

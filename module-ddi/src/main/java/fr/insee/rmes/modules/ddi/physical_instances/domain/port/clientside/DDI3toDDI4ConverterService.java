@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
@@ -51,6 +52,15 @@ public interface DDI3toDDI4ConverterService {
      * @return the parsed variable scheme
      */
     Ddi4VariableScheme toVariableScheme(String fragmentXml);
+
+    /**
+     * Parse a single LogicalProduct from its DDI 3.3 fragment XML. Used to read the LogicalProduct a
+     * container already exposes, so an auto-provisioned scheme is filed under it rather than under a
+     * second LogicalProduct.
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a LogicalProduct
+     * @return the parsed logical product
+     */
+    Ddi4LogicalProduct toLogicalProduct(String fragmentXml);
 
     /**
      * Parse a single StudyUnit from its DDI 3.3 fragment XML. Used to re-register a study unit with

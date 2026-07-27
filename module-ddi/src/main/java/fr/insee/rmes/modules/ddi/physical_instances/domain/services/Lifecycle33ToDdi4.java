@@ -2,7 +2,9 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.group.GroupType;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.BaseLogicalProductType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategorySchemeType;
+import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategoryType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
@@ -46,6 +48,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -219,6 +222,40 @@ public class Lifecycle33ToDdi4 {
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
                 variableReferences.isEmpty() ? null : variableReferences
         );
+    }
+
+    /**
+     * Parses a DDI 3.3 {@code <LogicalProduct>} fragment. The element is a substitution-group member
+     * of {@code BaseLogicalProduct} — the only logical-product element the generated
+     * {@code FragmentType} exposes — so it is read through the head element and re-typed, the mirror
+     * image of what {@link Ddi4ToLifecycle33#toLogicalProduct} does when serializing.
+     */
+    public Ddi4LogicalProduct toLogicalProduct(FragmentDocument doc) {
+        BaseLogicalProductType base = doc.getFragment().getBaseLogicalProduct();
+        if (base == null) {
+            throw new IllegalArgumentException("Fragment does not contain a LogicalProduct");
+        }
+        LogicalProductType lp = (LogicalProductType) base.changeType(LogicalProductType.type);
+        return new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime(lp.xgetVersionDate().getStringValue()),
+                lp.getURNArray(0).getStringValue(),
+                lp.getAgencyArray(0),
+                lp.getIDArray(0).getStringValue(),
+                lp.getVersionArray(0),
+                lp.sizeOfLabelArray() > 0 ? readLabel(lp.getLabelArray(0)) : null,
+                readSchemeReferences(lp.getCodeListSchemeReferenceArray()),
+                readSchemeReferences(lp.getCategorySchemeReferenceArray()),
+                readSchemeReferences(lp.getVariableSchemeReferenceArray())
+        );
+    }
+
+    private static List<Reference> readSchemeReferences(ReferenceType[] refs) {
+        List<Reference> references = new ArrayList<>();
+        for (ReferenceType ref : refs) {
+            references.add(readReference(ref));
+        }
+        return references.isEmpty() ? null : references;
     }
 
     public Ddi4Category toCategory(FragmentDocument doc) {
