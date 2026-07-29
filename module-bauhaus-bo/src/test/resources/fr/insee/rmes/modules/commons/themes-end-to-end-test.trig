@@ -1,23 +1,26 @@
-<http://rdf.insee.fr/graphes/concepts/definitions> {
-    <http://id.insee.fr/concepts/theme/t001>
-        <http://www.w3.org/2004/02/skos/core#prefLabel> "Agriculture"@fr ;
-        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/inseeTheme> .
+<http://rdf.insee.fr/graphes/concepts> {
+    <http://bauhaus/concepts/themes/Theme>
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> ;
+        <http://www.w3.org/2000/01/rdf-schema#label> "Thème statistique"@fr .
 
-    <http://id.insee.fr/concepts/theme/t002>
-        <http://www.w3.org/2004/02/skos/core#prefLabel> "Économie"@fr ;
-        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/inseeTheme> .
+    <http://bauhaus/concepts/theme/t001>
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>, <http://bauhaus/concepts/themes/Theme> ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Agriculture"@fr .
 
-    <http://id.insee.fr/concepts/scheme/inseeTheme>
-        <http://www.w3.org/2004/02/skos/core#notation> "inseeTheme" .
+    <http://bauhaus/concepts/theme/t002>
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>, <http://bauhaus/concepts/themes/Theme> ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Économie"@fr .
 
-    <http://id.insee.fr/concepts/theme/t003>
-        <http://www.w3.org/2004/02/skos/core#prefLabel> "Démographie"@fr ;
-        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/classificationOfStatisticalDomain> .
+    <http://bauhaus/concepts/theme/t003>
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>, <http://bauhaus/concepts/themes/Theme> ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Démographie"@fr .
 
-    <http://id.insee.fr/concepts/theme/t004>
-        <http://www.w3.org/2004/02/skos/core#prefLabel> "Emploi"@fr ;
-        <http://www.w3.org/2004/02/skos/core#inScheme> <http://id.insee.fr/concepts/scheme/classificationOfStatisticalDomain> .
+    <http://bauhaus/concepts/theme/t004>
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept>, <http://bauhaus/concepts/themes/Theme> ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Emploi"@fr .
 
-    <http://id.insee.fr/concepts/scheme/classificationOfStatisticalDomain>
-        <http://www.w3.org/2004/02/skos/core#notation> "classificationOfStatisticalDomain" .
+    # Concept du graphe des concepts qui n'est pas un thème : ne doit jamais être renvoyé
+    <http://bauhaus/concepts/definition/c001>
+        <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> ;
+        <http://www.w3.org/2004/02/skos/core#prefLabel> "Chômage au sens du BIT"@fr .
 }

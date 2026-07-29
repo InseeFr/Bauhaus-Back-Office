@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.modules.commons.configuration.ThemeProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -15,17 +16,19 @@ public class ThemeQueries {
 
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
+    private final ThemeProperties themes;
 
-    public ThemeQueries(BauhausLanguagesProperties languages, GraphsProperties graphs) {
+    public ThemeQueries(BauhausLanguagesProperties languages, GraphsProperties graphs, ThemeProperties themes) {
         this.languages = languages;
         this.graphs = graphs;
+        this.themes = themes;
     }
 
-    public String getThemesQuery(String conceptSchemeFilter) throws RmesException {
+    public String getThemesQuery() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("CONCEPTS_GRAPH", graphs.conceptsGraph());
+        params.put("THEMES_GRAPH", graphs.baseGraph() + themes.graph());
+        params.put("THEME_TYPE", themes.type());
         params.put("LG1", languages.lg1());
-        params.put("CONCEPT_SCHEME_FILTER", conceptSchemeFilter);
         return FreeMarkerUtils.buildRequest(THEMES_FOLDER, "getTheme.ftlh", params);
     }
 }

@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.commons;
 
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -27,8 +28,8 @@ class ThemesEndToEndTest extends WithGraphDBContainer {
     }
 
     @Test
-    @DisplayName("Fetch themes returns all themes")
-    void ok_when_fetching_themes() {
+    @DisplayName("Fetch themes returns only the themes, not the other concepts of the graph")
+    void ok_when_fetching_themes() throws JSONException {
         RestClient restClient = RestClient.create("http://localhost:" + serverPort + "/api");
 
         var response = restClient.get().uri("/themes")
@@ -38,11 +39,11 @@ class ThemesEndToEndTest extends WithGraphDBContainer {
 
         JSONAssert.assertEquals("""
                 [
-                  { "uri": "http://id.insee.fr/concepts/theme/t001" },
-                  { "uri": "http://id.insee.fr/concepts/theme/t002" },
-                  { "uri": "http://id.insee.fr/concepts/theme/t003" },
-                  { "uri": "http://id.insee.fr/concepts/theme/t004" }
+                  { "uri": "http://bauhaus/concepts/theme/t001", "label": { "value": "Agriculture", "lang": "FR" } },
+                  { "uri": "http://bauhaus/concepts/theme/t003", "label": { "value": "Démographie", "lang": "FR" } },
+                  { "uri": "http://bauhaus/concepts/theme/t004", "label": { "value": "Emploi", "lang": "FR" } },
+                  { "uri": "http://bauhaus/concepts/theme/t002", "label": { "value": "Économie", "lang": "FR" } }
                 ]
-                """, response, false);
+                """, response, true);
     }
 }

@@ -7,7 +7,6 @@ import fr.insee.rmes.modules.commons.domain.port.clientside.ThemeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,9 +24,9 @@ public class ThemeResources {
 
 
     @GetMapping(produces = "application/json")
-    public List<Theme> getThemes(@RequestParam(required = false) String schemeFilter) throws RmesException {
+    public List<Theme> getThemes() throws RmesException {
         try {
-            return this.themeService.getThemes(schemeFilter);
+            return this.themeService.getThemes();
         } catch (ThemeFetchException e){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
