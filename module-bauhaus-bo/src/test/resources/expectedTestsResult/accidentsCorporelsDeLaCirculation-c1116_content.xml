@@ -412,10 +412,10 @@
                                 <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Statut de diffusion : Public générique</text:p>
                             </text:list-item>
                             <text:list-item>
-                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre propriétaire : SSM-SDES</text:p>
+                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre propriétaire : Service des données et études statistiques (SDES)</text:p>
                             </text:list-item>
                             <text:list-item>
-                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre gestionnaire : DG75-L201</text:p>
+                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre gestionnaire : Division Concepts, harmonisation et nomenclatures</text:p>
                             </text:list-item>
                             <text:list-item>
                                 <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">État du concept : Provisoire</text:p>

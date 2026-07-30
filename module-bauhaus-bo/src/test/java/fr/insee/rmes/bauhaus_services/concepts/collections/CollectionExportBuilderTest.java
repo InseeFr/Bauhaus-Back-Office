@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.domain.model.OrganisationOption;
+import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
@@ -45,6 +47,9 @@ class CollectionExportBuilderTest {
     @Mock
     private ConceptCollectionsQueries conceptCollectionsQueries;
 
+    @Mock
+    private OrganisationService organisationService;
+
     private CollectionExportBuilder collectionExportBuilder;
 
     String keyName = "prefLabelLg1";
@@ -55,7 +60,7 @@ class CollectionExportBuilderTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        collectionExportBuilder = new CollectionExportBuilder(repoGestion, null, null, null, exportUtils, conceptCollectionsQueries);
+        collectionExportBuilder = new CollectionExportBuilder(repoGestion, null, null, null, organisationService, exportUtils, conceptCollectionsQueries);
         lenient().when(conceptCollectionsQueries.collectionQuery(anyString())).thenReturn("mock-query");
         lenient().when(conceptCollectionsQueries.collectionConceptsQuery(anyString())).thenReturn("mock-query");
         lenient().when(conceptCollectionsQueries.collectionMembersQuery(anyString())).thenReturn("mock-query");
@@ -343,5 +348,100 @@ class CollectionExportBuilderTest {
         assertNotNull(result);
         // Members should be sorted alphabetically by prefLabelLg1
         // Verification would require accessing the sorted members
+    }
+
+    private JSONObject collectionJsonWith(String creator, String contributor) {
+        JSONObject collectionJson = new JSONObject()
+                .put("id", "c1")
+                .put("prefLabelLg1", "Collection FR")
+                .put("created", "2025-01-01T00:00:00")
+                .put("isValidated", "Validated")
+                .put("creator", creator);
+        if (contributor != null) {
+            collectionJson.put("contributor", contributor);
+        }
+        return collectionJson;
+    }
+
+    @Test
+    void shouldResolveCollectionAndMembersCreatorsIntoOrganisationLabelsWithASingleBatchLookup() throws RmesException {
+        // Given un creator stocké en littéral HIE, un contributor stocké en IRI et des membres avec leur propre creator
+        String creator = "HIE2000069";
+        String contributor = "http://bauhaus/organisations/insee/HIE2003216";
+        JSONArray members = new JSONArray()
+                .put(new JSONObject().put("id", "m1").put(keyName, "Apple").put("creator", creator))
+                .put(new JSONObject().put("id", "m2").put(keyName, "Banana").put("creator", "HIE0000042"))
+                .put(new JSONObject().put("id", "m3").put(keyName, "Cherry"));
+
+        when(repoGestion.getResponseAsObject(anyString())).thenReturn(collectionJsonWith(creator, contributor));
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(members);
+        when(organisationService.getOrganisationsMap(anyList())).thenReturn(Map.of(
+                creator, new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures"),
+                contributor, new OrganisationOption("DG75-C901", "Département des Ressources humaines (DRH)"),
+                "HIE0000042", new OrganisationOption("DG75-F001", "Division Emploi")));
+
+        // When
+        CollectionForExport result = collectionExportBuilder.getCollectionData("c1");
+
+        // Then
+        assertEquals("Division Concepts, harmonisation et nomenclatures", result.getCreator());
+        assertEquals("Département des Ressources humaines (DRH)", result.getContributor());
+        assertEquals("Division Concepts, harmonisation et nomenclatures", result.getMembersLg().get(0).getCreator());
+        assertEquals("Division Emploi", result.getMembersLg().get(1).getCreator());
+        assertNull(result.getMembersLg().get(2).getCreator());
+        // Un seul appel batch, identifiants dédupliqués (le creator du membre m1 est aussi celui de la collection)
+        verify(organisationService, times(1)).getOrganisationsMap(
+                argThat(identifiers -> identifiers.size() == 3
+                        && identifiers.containsAll(List.of(creator, contributor, "HIE0000042"))));
+    }
+
+    @Test
+    void shouldFallBackToAReadableIdentifierWhenCollectionOrganisationIsUnknown() throws RmesException {
+        // Given des organisations introuvables dans le référentiel
+        when(repoGestion.getResponseAsObject(anyString()))
+                .thenReturn(collectionJsonWith("http://bauhaus/organisations/insee/HIE000000", "DG75-L201"));
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+        when(organisationService.getOrganisationsMap(anyList())).thenReturn(Map.of());
+
+        // When
+        CollectionForExport result = collectionExportBuilder.getCollectionData("c1");
+
+        // Then : l'IRI est raccourci à son dernier segment, le littéral est conservé tel quel
+        assertEquals("HIE000000", result.getCreator());
+        assertEquals("DG75-L201", result.getContributor());
+    }
+
+    @Test
+    void shouldKeepRawStampsWhenOrganisationLookupFails() throws RmesException {
+        // Given une résolution des organisations qui échoue
+        when(repoGestion.getResponseAsObject(anyString())).thenReturn(collectionJsonWith("HIE2000069", "DG75-L201"));
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+        when(organisationService.getOrganisationsMap(anyList()))
+                .thenThrow(new RmesException(500, "SPARQL failure", "organisations"));
+
+        // When : l'export ne doit pas échouer pour autant
+        CollectionForExport result = collectionExportBuilder.getCollectionData("c1");
+
+        // Then
+        assertEquals("HIE2000069", result.getCreator());
+        assertEquals("DG75-L201", result.getContributor());
+    }
+
+    @Test
+    void shouldResolveOrganisationLabelsForOldCollectionExport() throws RmesException {
+        // Given
+        when(repoGestion.getResponseAsObject(anyString())).thenReturn(collectionJsonWith("HIE2000069", "DG75-L201"));
+        when(repoGestion.getResponseAsArray(anyString()))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "m1").put(keyName, "Member 1")));
+        when(organisationService.getOrganisationsMap(List.of("HIE2000069", "DG75-L201"))).thenReturn(Map.of(
+                "HIE2000069", new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures"),
+                "DG75-L201", new OrganisationOption("DG75-L201", "Division Emploi")));
+
+        // When
+        CollectionForExportOld result = collectionExportBuilder.getCollectionDataOld("c1");
+
+        // Then
+        assertEquals("Division Concepts, harmonisation et nomenclatures", result.getCreator());
+        assertEquals("Division Emploi", result.getContributor());
     }
 }

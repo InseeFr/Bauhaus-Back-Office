@@ -2,17 +2,12 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.domain.model.OrganisationOption;
+import fr.insee.rmes.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
-import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +43,7 @@ class ConceptsExportBuilderTest {
     private RepositoryGestion repoGestion;
 
     @Mock
-    private OrganisationsService organisationsService;
+    private OrganisationService organisationService;
 
     @Mock
     private ConceptConceptsQueries conceptConceptsQueries;
@@ -56,11 +52,11 @@ class ConceptsExportBuilderTest {
 
     @BeforeEach
     void setUp() {
-        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationsService, exportUtils, conceptConceptsQueries);
+        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationService, exportUtils, conceptConceptsQueries);
     }
 
     @Test
-    void shouldGetConceptData() throws RmesException, OrganisationFetchException {
+    void shouldGetConceptData() throws RmesException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -86,15 +82,7 @@ class ConceptsExportBuilderTest {
                 .put("definitionLg1", "Definition FR")
                 .put("definitionLg2", "Definition EN");
 
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI creatorIri = factory.createIRI("http://example.org/organisation/Creator");
-        IRI contributorIri = factory.createIRI("http://example.org/organisation/Contributor");
-        CompactOrganisation creator = new CompactOrganisation(creatorIri, "Creator", new LocalisedLabel("Creator", Lang.FR));
-        CompactOrganisation contributor = new CompactOrganisation(contributorIri, "Contributor", new LocalisedLabel("Contributor", Lang.FR));
-
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
-        when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
-        when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
         when(repoGestion.getResponseAsArray(any())).thenReturn(links);
         when(repoGestion.getResponseAsObject(any())).thenReturn(notes);
 
@@ -112,7 +100,7 @@ class ConceptsExportBuilderTest {
     }
 
     @Test
-    void shouldGetConceptDataWithAltLabels() throws RmesException, OrganisationFetchException {
+    void shouldGetConceptDataWithAltLabels() throws RmesException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -127,15 +115,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI creatorIri = factory.createIRI("http://example.org/organisation/Creator");
-        IRI contributorIri = factory.createIRI("http://example.org/organisation/Contributor");
-        CompactOrganisation creator = new CompactOrganisation(creatorIri, "Creator", new LocalisedLabel("Creator", Lang.FR));
-        CompactOrganisation contributor = new CompactOrganisation(contributorIri, "Contributor", new LocalisedLabel("Contributor", Lang.FR));
-
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
-        when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
-        when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -238,7 +218,7 @@ class ConceptsExportBuilderTest {
     }
 
     @Test
-    void shouldTransformAltLabelListToString() throws RmesException, OrganisationFetchException {
+    void shouldTransformAltLabelListToString() throws RmesException {
         // Given
         String id = "c1";
         JSONArray altLabels = new JSONArray().put("Label 1").put("Label 2").put("Label 3");
@@ -254,15 +234,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI creatorIri = factory.createIRI("http://example.org/organisation/Creator");
-        IRI contributorIri = factory.createIRI("http://example.org/organisation/Contributor");
-        CompactOrganisation creator = new CompactOrganisation(creatorIri, "Creator", new LocalisedLabel("Creator", Lang.FR));
-        CompactOrganisation contributor = new CompactOrganisation(contributorIri, "Contributor", new LocalisedLabel("Contributor", Lang.FR));
-
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
-        when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
-        when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -275,7 +247,7 @@ class ConceptsExportBuilderTest {
     }
 
     @Test
-    void shouldHandleConceptWithNoNotes() throws RmesException, OrganisationFetchException {
+    void shouldHandleConceptWithNoNotes() throws RmesException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -288,15 +260,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI creatorIri = factory.createIRI("http://example.org/organisation/Creator");
-        IRI contributorIri = factory.createIRI("http://example.org/organisation/Contributor");
-        CompactOrganisation creator = new CompactOrganisation(creatorIri, "Creator", new LocalisedLabel("Creator", Lang.FR));
-        CompactOrganisation contributor = new CompactOrganisation(contributorIri, "Contributor", new LocalisedLabel("Contributor", Lang.FR));
-
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
-        when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
-        when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -309,7 +273,7 @@ class ConceptsExportBuilderTest {
     }
 
     @Test
-    void shouldHandleConceptWithNoLinks() throws RmesException, OrganisationFetchException {
+    void shouldHandleConceptWithNoLinks() throws RmesException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -322,15 +286,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI creatorIri = factory.createIRI("http://example.org/organisation/Creator");
-        IRI contributorIri = factory.createIRI("http://example.org/organisation/Contributor");
-        CompactOrganisation creator = new CompactOrganisation(creatorIri, "Creator", new LocalisedLabel("Creator", Lang.FR));
-        CompactOrganisation contributor = new CompactOrganisation(contributorIri, "Contributor", new LocalisedLabel("Contributor", Lang.FR));
-
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
-        when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
-        when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -343,7 +299,7 @@ class ConceptsExportBuilderTest {
     }
 
     @Test
-    void shouldFormatDatesCorrectly() throws RmesException, OrganisationFetchException {
+    void shouldFormatDatesCorrectly() throws RmesException {
         // Given
         String id = "c1";
         JSONObject conceptJson = new JSONObject()
@@ -358,15 +314,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI creatorIri = factory.createIRI("http://example.org/organisation/Creator");
-        IRI contributorIri = factory.createIRI("http://example.org/organisation/Contributor");
-        CompactOrganisation creator = new CompactOrganisation(creatorIri, "Creator", new LocalisedLabel("Creator", Lang.FR));
-        CompactOrganisation contributor = new CompactOrganisation(contributorIri, "Contributor", new LocalisedLabel("Contributor", Lang.FR));
-
         when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
-        when(organisationsService.getCompactOrganisation("Creator")).thenReturn(creator);
-        when(organisationsService.getCompactOrganisation("Contributor")).thenReturn(contributor);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -377,5 +325,76 @@ class ConceptsExportBuilderTest {
         assertNotNull(result);
         assertNotNull(result.getCreated());
         // Dates should be formatted
+    }
+
+    private JSONObject conceptJsonWith(String creator, String contributor) {
+        return new JSONObject()
+                .put("id", "c1")
+                .put("prefLabelLg1", "Concept FR")
+                .put("created", "2025-01-01T00:00:00")
+                .put("isValidated", "Validated")
+                .put("disseminationStatus", "http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique")
+                .put("creator", creator)
+                .put("contributor", contributor)
+                .put("conceptVersion", "1");
+    }
+
+    @Test
+    void shouldResolveCreatorAndContributorIntoOrganisationLabelsWithASingleBatchLookup() throws RmesException {
+        // Given un creator stocké en littéral HIE et un contributor stocké en IRI d'organisation
+        String creator = "HIE2000069";
+        String contributor = "http://bauhaus/organisations/insee/HIE2003216";
+
+        when(conceptsUtils.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        when(organisationService.getOrganisationsMap(List.of(creator, contributor)))
+                .thenReturn(Map.of(
+                        creator, new OrganisationOption(creator, "Division Enquêtes thématiques et études régionales"),
+                        contributor, new OrganisationOption("DG75-C901", "Département des Ressources humaines (DRH)")));
+
+        // When
+        ConceptForExport result = conceptsExportBuilder.getConceptData("c1");
+
+        // Then
+        assertEquals("Division Enquêtes thématiques et études régionales", result.getCreator());
+        assertEquals("Département des Ressources humaines (DRH)", result.getContributor());
+        verify(organisationService, times(1)).getOrganisationsMap(anyList());
+    }
+
+    @Test
+    void shouldFallBackToAReadableIdentifierWhenOrganisationIsUnknown() throws RmesException {
+        // Given des organisations introuvables dans le référentiel
+        String creator = "http://bauhaus/organisations/insee/HIE000000";
+        String contributor = "DG75-L201";
+
+        when(conceptsUtils.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        when(organisationService.getOrganisationsMap(anyList())).thenReturn(Map.of());
+
+        // When
+        ConceptForExport result = conceptsExportBuilder.getConceptData("c1");
+
+        // Then : l'IRI est raccourci à son dernier segment, le littéral est conservé tel quel
+        assertEquals("HIE000000", result.getCreator());
+        assertEquals("DG75-L201", result.getContributor());
+    }
+
+    @Test
+    void shouldKeepRawStampsWhenOrganisationLookupFails() throws RmesException {
+        // Given une résolution des organisations qui échoue
+        when(conceptsUtils.getConceptById("c1")).thenReturn(conceptJsonWith("HIE2000069", "DG75-L201"));
+        when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
+        when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
+        when(organisationService.getOrganisationsMap(anyList()))
+                .thenThrow(new RmesException(500, "SPARQL failure", "organisations"));
+
+        // When : l'export ne doit pas échouer pour autant
+        ConceptForExport result = conceptsExportBuilder.getConceptData("c1");
+
+        // Then
+        assertEquals("HIE2000069", result.getCreator());
+        assertEquals("DG75-L201", result.getContributor());
     }
 }
