@@ -8,8 +8,8 @@ WHERE
         FILTER (lang(?label) = '${LG1}') .
 
         OPTIONAL {
-            ?concept skos:altLabel ?altLabelLg .
-            FILTER (lang(?altLabelLg) = '${LG1}')
+            ?concept skos:altLabel ?altLabel .
+            FILTER (lang(?altLabel) = '${LG1}')
         }
         ?concept dcterms:created ?created .
         BIND (exists{?concept skos:broader ?broa} AS ?broader) .
