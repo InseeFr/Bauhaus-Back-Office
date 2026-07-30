@@ -811,7 +811,11 @@
         <xd:desc>unordonned list</xd:desc>
     </xd:doc>
     <xsl:template match="xhtml:ul" mode="rich-content">
-        <text:list text:style-name="L1">
+        <text:list>
+            <!-- a nested list must inherit the list style of its root list, otherwise numbering restarts -->
+            <xsl:if test="not(ancestor::xhtml:li)">
+                <xsl:attribute name="text:style-name" select="'L1'"/>
+            </xsl:if>
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:list>
     </xsl:template>
@@ -820,21 +824,26 @@
         <xd:desc>ordonned list</xd:desc>
     </xd:doc>
     <xsl:template match="xhtml:ol" mode="rich-content">
-        <text:list text:style-name="L2">
+        <text:list>
+            <!-- a nested list must inherit the list style of its root list, otherwise numbering restarts -->
+            <xsl:if test="not(ancestor::xhtml:li)">
+                <xsl:attribute name="text:style-name" select="'L2'"/>
+            </xsl:if>
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:list>
     </xsl:template>
 
     <xd:doc>
-        <xd:desc>list item</xd:desc>
+        <xd:desc>list item: nested lists are not allowed inside text:p, they must be siblings of it</xd:desc>
         <xd:param name="style"/>
     </xd:doc>
     <xsl:template match="xhtml:li" mode="rich-content">
         <xsl:param name="style" tunnel="yes"/>
         <text:list-item>
             <text:p text:style-name="{$style}">
-                <xsl:apply-templates select="node()" mode="rich-content"/>
+                <xsl:apply-templates select="node()[not(self::xhtml:ul or self::xhtml:ol)]" mode="rich-content"/>
             </text:p>
+            <xsl:apply-templates select="xhtml:ul | xhtml:ol" mode="rich-content"/>
         </text:list-item>
     </xsl:template>
 
