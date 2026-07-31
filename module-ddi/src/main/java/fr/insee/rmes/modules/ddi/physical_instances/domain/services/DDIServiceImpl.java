@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -281,6 +282,13 @@ public class DDIServiceImpl implements DDIService {
     public void createVariableScheme(Ddi4VariableScheme variableScheme) {
         logger.info("Creating variable scheme: {}/{}", variableScheme.agency(), variableScheme.id());
         ddiRepository.createVariableScheme(variableScheme);
+    }
+
+    @Override
+    public void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme) {
+        logger.info("Creating managed representation scheme: {}/{}",
+                managedRepresentationScheme.agency(), managedRepresentationScheme.id());
+        ddiRepository.createManagedRepresentationScheme(managedRepresentationScheme);
     }
 
     @Override

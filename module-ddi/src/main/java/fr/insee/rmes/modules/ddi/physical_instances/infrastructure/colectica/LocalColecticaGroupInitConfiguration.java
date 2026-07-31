@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -56,10 +57,10 @@ import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colect
  *   <li>Deprecates ONLY the groups and study units this init manipulates (those derived from the
  *       series/operations read above, all variants included), leaving every other Colectica item untouched</li>
  *   <li>Creates StudyUnits FIRST (so they exist with full content)</li>
- *   <li>For each Group variant, creates an (initially empty) CodeListScheme and the LogicalProduct
- *       that files it, then the Group itself — with StudyUnitReferences (pointing to existing
- *       StudyUnits) and a LogicalProductReference, so each Group exposes the
- *       Group → LogicalProduct → CodeListScheme chain</li>
+ *   <li>For each Group variant, creates (initially empty) CodeListScheme, CategoryScheme and
+ *       ManagedRepresentationScheme and the LogicalProduct that files them, then the Group itself —
+ *       with StudyUnitReferences (pointing to existing StudyUnits) and a LogicalProductReference,
+ *       so each Group exposes the Group → LogicalProduct → schemes chain</li>
  * </ol>
  * <p>
  * For each operation it creates {@link #VARIANT_LABEL_WORDS}.size() StudyUnit variants (and one
@@ -101,6 +102,13 @@ public class LocalColecticaGroupInitConfiguration {
      * empty) CategoryScheme. Filed, like the CodeListScheme, in the group's LogicalProduct.
      */
     private static final String CATEGORY_SCHEME_SEED_SUFFIX = "#categoryscheme";
+
+    /**
+     * Suffix appended to a group variant's seed to derive the deterministic id of its (initially
+     * empty) ManagedRepresentationScheme. Filed, like the CodeListScheme, in the group's
+     * LogicalProduct.
+     */
+    private static final String MANAGED_REPRESENTATION_SCHEME_SEED_SUFFIX = "#managedrepresentationscheme";
 
     /**
      * Suffixes appended to a <em>series</em> seed (variant-independent) to derive the deterministic
@@ -285,6 +293,21 @@ public class LocalColecticaGroupInitConfiguration {
                         logger.info("Creating category scheme: id={}, variant={}", categorySchemeId, variantWord);
                         ddiService.createCategoryScheme(categoryScheme);
 
+                        String managedRepresentationSchemeId = generateDeterministicUuid(
+                                series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + MANAGED_REPRESENTATION_SCHEME_SEED_SUFFIX);
+                        Ddi4ManagedRepresentationScheme managedRepresentationScheme = new Ddi4ManagedRepresentationScheme(
+                                Ddi4ManagedRepresentationScheme.TYPE,
+                                CogsDate.ofDateTime(versionDate),
+                                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, managedRepresentationSchemeId),
+                                defaultAgencyId,
+                                managedRepresentationSchemeId,
+                                "1",
+                                LangStrings.of(defaultLang, groupLabel + " Managed Representation Scheme"),
+                                List.of()
+                        );
+                        logger.info("Creating managed representation scheme: id={}, variant={}", managedRepresentationSchemeId, variantWord);
+                        ddiService.createManagedRepresentationScheme(managedRepresentationScheme);
+
                         String logicalProductId = generateDeterministicUuid(
                                 series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + LOGICAL_PRODUCT_SEED_SUFFIX);
                         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(
@@ -297,10 +320,11 @@ public class LocalColecticaGroupInitConfiguration {
                                 LangStrings.of(defaultLang, groupLabel + " Logical Product"),
                                 List.of(Reference.of(defaultAgencyId, codeListSchemeId, "1", "CodeListScheme")),
                                 List.of(Reference.of(defaultAgencyId, categorySchemeId, "1", "CategoryScheme")),
-                                null
+                                null,
+                                List.of(Reference.of(defaultAgencyId, managedRepresentationSchemeId, "1", "ManagedRepresentationScheme"))
                         );
-                        logger.info("Creating logical product: id={}, variant={}, codeListScheme={}, categoryScheme={}",
-                                logicalProductId, variantWord, codeListSchemeId, categorySchemeId);
+                        logger.info("Creating logical product: id={}, variant={}, codeListScheme={}, categoryScheme={}, managedRepresentationScheme={}",
+                                logicalProductId, variantWord, codeListSchemeId, categorySchemeId, managedRepresentationSchemeId);
                         ddiService.createLogicalProduct(logicalProduct);
 
                         final int currentVariant = variant;

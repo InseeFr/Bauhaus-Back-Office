@@ -15,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -344,14 +345,51 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
-    void shouldBuildLogicalProductWithCategoryAndVariableSchemeReferences() {
+    void shouldBuildManagedRepresentationSchemeWithManagedRepresentationReferences() {
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(Ddi4ManagedRepresentationScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:mrs-id:1", "fr.insee", "mrs-id", "1",
+                LangStrings.of("fr-FR", "ManagedRepresentationScheme Label"),
+                List.of(
+                        Reference.of("fr.insee", "mr-1", "1", "ManagedTextRepresentation"),
+                        Reference.of("fr.insee", "mr-2", "1", "ManagedNumericRepresentation")));
+
+        String xml = converter.toManagedRepresentationScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:ManagedRepresentationScheme")
+                .contains(">urn:ddi:fr.insee:mrs-id:1<")
+                .contains("<r:Label")
+                .contains(">ManagedRepresentationScheme Label<")
+                .contains("<r:ManagedRepresentationReference")
+                .contains(">mr-1<")
+                .contains(">mr-2<");
+    }
+
+    @Test
+    void shouldBuildEmptyManagedRepresentationScheme() {
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(Ddi4ManagedRepresentationScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:mrs-id:1", "fr.insee", "mrs-id", "1",
+                LangStrings.of("fr-FR", "Empty ManagedRepresentationScheme"), List.of());
+
+        String xml = converter.toManagedRepresentationScheme(scheme).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:ManagedRepresentationScheme")
+                .doesNotContain("ManagedRepresentationReference");
+    }
+
+    @Test
+    void shouldBuildLogicalProductWithCategoryVariableAndManagedRepresentationSchemeReferences() {
         Ddi4LogicalProduct logicalProduct = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:lp-id:1", "fr.insee", "lp-id", "1",
                 LangStrings.of("fr-FR", "LogicalProduct Label"),
                 List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
                 List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
-                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")));
+                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
+                List.of(Reference.of("fr.insee", "mrs-1", "1", "ManagedRepresentationScheme")));
 
         String xml = converter.toLogicalProduct(logicalProduct).xmlText(logicalProductXmlOptions());
 
@@ -361,7 +399,9 @@ class Ddi4ToLifecycle33Test {
                 .contains("<r:CategorySchemeReference")
                 .contains(">cats-1<")
                 .contains("<r:VariableSchemeReference")
-                .contains(">vars-1<");
+                .contains(">vars-1<")
+                .contains("<r:ManagedRepresentationSchemeReference")
+                .contains(">mrs-1<");
     }
 
     @Test

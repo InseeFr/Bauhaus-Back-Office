@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategorySch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
@@ -48,6 +49,14 @@ public interface DDI4toDDI3ConverterService {
      * @return the DDI3 item for the scheme
      */
     Ddi3Response.Ddi3Item toVariableSchemeItem(Ddi4VariableScheme scheme);
+
+    /**
+     * Serialize a single ManagedRepresentationScheme to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica.
+     * @param scheme the managed representation scheme to serialize
+     * @return the DDI3 item for the scheme
+     */
+    Ddi3Response.Ddi3Item toManagedRepresentationSchemeItem(Ddi4ManagedRepresentationScheme scheme);
 
     /**
      * Serialize a single LogicalProduct to a DDI3 item (DDI 3.3 fragment XML + metadata),

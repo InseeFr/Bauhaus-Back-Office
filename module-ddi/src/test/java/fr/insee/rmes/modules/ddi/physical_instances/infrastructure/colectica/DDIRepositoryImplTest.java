@@ -3108,7 +3108,8 @@ class DDIRepositoryImplTest {
         Ddi4LogicalProduct existingLp = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
             CogsDate.ofDateTime("2026-01-01T00:00:00"), "urn:ddi:fr.insee:lp-1:1", "fr.insee", "lp-1", "1",
             LangStrings.of("fr-FR", "Logical Product"),
-            List.of(Reference.of("fr.insee", "CLS_1", "1", "CodeListScheme")), null, null);
+            List.of(Reference.of("fr.insee", "CLS_1", "1", "CodeListScheme")), null, null,
+            List.of(Reference.of("fr.insee", "MRS_1", "1", "ManagedRepresentationScheme")));
         when(ddi3ToDdi4Converter.toLogicalProduct("<lp/>")).thenReturn(existingLp);
 
         ArgumentCaptor<Ddi4CategoryScheme> schemeCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
@@ -3124,13 +3125,15 @@ class DDIRepositoryImplTest {
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
 
-        // The existing LogicalProduct is completed with the fresh CategoryScheme, keeping its CodeListScheme:
-        // both schemes stay under the SAME Group > LogicalProduct.
+        // The existing LogicalProduct is completed with the fresh CategoryScheme, keeping its
+        // CodeListScheme and ManagedRepresentationScheme: all schemes stay under the SAME
+        // Group > LogicalProduct.
         Ddi4LogicalProduct lp = lpCaptor.getValue();
         assertThat(lp.id()).isEqualTo("lp-1");
         assertThat(lp.codeListSchemeReference()).extracting(Reference::id).containsExactly("CLS_1");
         assertThat(lp.categorySchemeReference()).extracting(Reference::id)
             .containsExactly(schemeCaptor.getValue().id());
+        assertThat(lp.managedRepresentationSchemeReference()).extracting(Reference::id).containsExactly("MRS_1");
         // The group already references that LogicalProduct: no re-registration needed.
         verify(ddi4ToDdi3Converter, never()).toGroupItem(any(), anyString());
 

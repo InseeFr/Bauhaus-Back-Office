@@ -26,6 +26,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -298,6 +299,30 @@ public class Ddi4ToLifecycle33 {
         return doc;
     }
 
+    public FragmentDocument toManagedRepresentationScheme(Ddi4ManagedRepresentationScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewManagedRepresentationScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.managedRepresentationReference() != null) {
+            for (Reference ref : scheme.managedRepresentationReference()) {
+                populateReference(schemeType.addNewManagedRepresentationReference(), ref);
+            }
+        }
+
+        return doc;
+    }
+
     public FragmentDocument toCategory(Ddi4Category cat) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var catType = doc.addNewFragment().addNewCategory();
@@ -409,6 +434,12 @@ public class Ddi4ToLifecycle33 {
         if (logicalProduct.variableSchemeReference() != null) {
             for (Reference ref : logicalProduct.variableSchemeReference()) {
                 populateReference(lpType.addNewVariableSchemeReference(), ref);
+            }
+        }
+
+        if (logicalProduct.managedRepresentationSchemeReference() != null) {
+            for (Reference ref : logicalProduct.managedRepresentationSchemeReference()) {
+                populateReference(lpType.addNewManagedRepresentationSchemeReference(), ref);
             }
         }
 

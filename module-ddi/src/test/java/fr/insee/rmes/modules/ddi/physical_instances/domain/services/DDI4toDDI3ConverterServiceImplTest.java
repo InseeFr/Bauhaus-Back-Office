@@ -12,6 +12,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -42,7 +43,8 @@ class DDI4toDDI3ConverterServiceImplTest {
         "CategoryScheme", "1c11de94-a36d-4d80-95dc-950c6f37f624",
         "VariableScheme", "50907716-b67a-4dcd-8f9f-8a283cb5fee0",
         "LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b",
-        "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
+        "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+        "ManagedRepresentationScheme", "16d4d829-41e1-4677-aa17-81190b6a0e66"
     );
 
     @BeforeEach
@@ -206,6 +208,25 @@ class DDI4toDDI3ConverterServiceImplTest {
                 .contains("<ddi:CategoryScheme")
                 .contains(">Schéma catégories<")
                 .contains(">CAT_1<");
+    }
+
+    @Test
+    void shouldConvertManagedRepresentationSchemeToDdi3Item() {
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(Ddi4ManagedRepresentationScheme.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:MRS_1:1", "fr.insee", "MRS_1", "1",
+                LangStrings.of("fr-FR", "Schéma représentations gérées"),
+                List.of());
+
+        Ddi3Response.Ddi3Item item = converter.toManagedRepresentationSchemeItem(scheme);
+
+        assertThat(item.itemType()).isEqualTo("16d4d829-41e1-4677-aa17-81190b6a0e66");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("MRS_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<r:ManagedRepresentationScheme")
+                .contains(">Schéma représentations gérées<");
     }
 
     @Test

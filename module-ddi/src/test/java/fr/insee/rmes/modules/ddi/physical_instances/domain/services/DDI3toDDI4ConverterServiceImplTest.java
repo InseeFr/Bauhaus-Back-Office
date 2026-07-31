@@ -151,7 +151,8 @@ class DDI3toDDI4ConverterServiceImplTest {
                 "fr.insee", "lp-id", "1", LangStrings.of("fr-FR", "Produit logique"),
                 List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
                 List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
-                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")));
+                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
+                List.of(Reference.of("fr.insee", "mrs-1", "1", "ManagedRepresentationScheme")));
         String xml = new Ddi4ToLifecycle33().toLogicalProduct(original).xmlText(logicalProductFragmentOptions());
 
         Ddi4LogicalProduct logicalProduct = converter.toLogicalProduct(xml);
@@ -165,6 +166,8 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("cats-1", logicalProduct.categorySchemeReference().get(0).id());
         assertEquals(1, logicalProduct.variableSchemeReference().size());
         assertEquals("vars-1", logicalProduct.variableSchemeReference().get(0).id());
+        assertEquals(1, logicalProduct.managedRepresentationSchemeReference().size());
+        assertEquals("mrs-1", logicalProduct.managedRepresentationSchemeReference().get(0).id());
     }
 
     @Test

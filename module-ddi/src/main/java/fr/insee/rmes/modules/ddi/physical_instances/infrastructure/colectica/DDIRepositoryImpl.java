@@ -1569,7 +1569,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 current.version(), current.label(),
                 addSchemeReferences(current.codeListSchemeReference(), newSchemeRefs, "CodeListScheme"),
                 addSchemeReferences(current.categorySchemeReference(), newSchemeRefs, "CategoryScheme"),
-                current.variableSchemeReference());
+                current.variableSchemeReference(),
+                current.managedRepresentationSchemeReference());
             colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(updated)));
             logger.info("Filed {} scheme(s) under the existing logical product {}/{} of group {}/{}",
                 newSchemeRefs.size(), logicalProductRef.agencyId(), logicalProductRef.identifier(),
@@ -1941,6 +1942,14 @@ public class DDIRepositoryImpl implements DDIRepository {
         logger.info("Creating variable scheme in Colectica: {}/{}", variableScheme.agency(), variableScheme.id());
         colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
             List.of(toColecticaItem(ddi4ToDdi3Converter.toVariableSchemeItem(variableScheme)))));
+    }
+
+    @Override
+    public void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme) {
+        logger.info("Creating managed representation scheme in Colectica: {}/{}",
+            managedRepresentationScheme.agency(), managedRepresentationScheme.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(managedRepresentationScheme)))));
     }
 
     /**

@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategorySch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
@@ -134,6 +135,14 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
         String xmlFragment = ddi4ToLifecycle33.toVariableScheme(scheme)
                 .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
         return createDdi3Item(itemTypes.get("VariableScheme"), scheme.agency(), scheme.version(),
+                scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+    }
+
+    @Override
+    public Ddi3Response.Ddi3Item toManagedRepresentationSchemeItem(Ddi4ManagedRepresentationScheme scheme) {
+        String xmlFragment = ddi4ToLifecycle33.toManagedRepresentationScheme(scheme)
+                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(itemTypes.get("ManagedRepresentationScheme"), scheme.agency(), scheme.version(),
                 scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
     }
 

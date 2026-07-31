@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -41,6 +42,7 @@ public interface DDIService {
     void createCodeListScheme(Ddi4CodeListScheme codeListScheme);
     void createCategoryScheme(Ddi4CategoryScheme categoryScheme);
     void createVariableScheme(Ddi4VariableScheme variableScheme);
+    void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme);
     List<PartialCodesList> getMutualizedCodesLists();
     void evictMutualizedCodesListsCache();
     Ddi4Response getMutualizedCodesList(String agencyId, String id);

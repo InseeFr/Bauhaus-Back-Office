@@ -246,7 +246,8 @@ public class Lifecycle33ToDdi4 {
                 lp.sizeOfLabelArray() > 0 ? readLabel(lp.getLabelArray(0)) : null,
                 readSchemeReferences(lp.getCodeListSchemeReferenceArray()),
                 readSchemeReferences(lp.getCategorySchemeReferenceArray()),
-                readSchemeReferences(lp.getVariableSchemeReferenceArray())
+                readSchemeReferences(lp.getVariableSchemeReferenceArray()),
+                readSchemeReferences(lp.getManagedRepresentationSchemeReferenceArray())
         );
     }
 

@@ -5,6 +5,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategorySch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -255,6 +256,63 @@ class LocalColecticaGroupInitConfigurationTest {
         // Per variant, the CategoryScheme is created before the group LogicalProduct that files it
         InOrder inOrder = inOrder(ddiService);
         inOrder.verify(ddiService).createCategoryScheme(any());
+        inOrder.verify(ddiService).createLogicalProduct(any());
+    }
+
+    @Test
+    void shouldCreateOneEmptyManagedRepresentationSchemePerGroupVariantFiledInTheGroupLogicalProduct() throws Exception {
+        // Given: 1 series, no operations (keeps the test focused on the Group -> LogicalProduct ->
+        // ManagedRepresentationScheme chain; without operations no study-unit LogicalProduct is
+        // created, so every captured LogicalProduct is a group LogicalProduct)
+        JSONArray sparqlResults = new JSONArray();
+        sparqlResults.put(new JSONObject()
+                .put("seriesId", "s1001")
+                .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
+                .put("seriesLabel", "Enquête innovation"));
+
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
+                createColecticaConfig(), colecticaClient,
+                "http://rdf.insee.fr/graphes/", "operations");
+
+        // When
+        runner.run();
+
+        // Then: one ManagedRepresentationScheme per group variant, each created empty and filed in
+        // the group LogicalProduct
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> mrsCaptor = ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
+        verify(ddiService, times(variants)).createManagedRepresentationScheme(mrsCaptor.capture());
+        verify(ddiService, times(variants)).createLogicalProduct(lpCaptor.capture());
+
+        assertThat(mrsCaptor.getAllValues()).allSatisfy(scheme -> {
+            assertThat(scheme.agency()).isEqualTo("fr.insee");
+            assertThat(scheme.managedRepresentationReference()).isNullOrEmpty();
+        });
+
+        // The i-th group LogicalProduct references the i-th ManagedRepresentationScheme, alongside
+        // its CodeListScheme and CategoryScheme
+        List<Ddi4ManagedRepresentationScheme> managedRepresentationSchemes = mrsCaptor.getAllValues();
+        List<Ddi4LogicalProduct> logicalProducts = lpCaptor.getAllValues();
+        for (int variant = 0; variant < variants; variant++) {
+            Ddi4LogicalProduct lp = logicalProducts.get(variant);
+            assertThat(lp.codeListSchemeReference()).hasSize(1);
+            assertThat(lp.categorySchemeReference()).hasSize(1);
+            assertThat(lp.managedRepresentationSchemeReference()).hasSize(1);
+            assertThat(lp.managedRepresentationSchemeReference().get(0).id())
+                    .isEqualTo(managedRepresentationSchemes.get(variant).id());
+            assertThat(lp.managedRepresentationSchemeReference().get(0).type())
+                    .isEqualTo("ManagedRepresentationScheme");
+        }
+
+        // Per variant, the ManagedRepresentationScheme is created before the group LogicalProduct
+        // that files it
+        InOrder inOrder = inOrder(ddiService);
+        inOrder.verify(ddiService).createManagedRepresentationScheme(any());
         inOrder.verify(ddiService).createLogicalProduct(any());
     }
 
