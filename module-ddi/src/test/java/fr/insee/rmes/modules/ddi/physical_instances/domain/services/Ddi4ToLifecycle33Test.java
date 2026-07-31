@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
@@ -32,6 +33,7 @@ import org.apache.xmlbeans.XmlOptions;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 
@@ -219,10 +221,11 @@ class Ddi4ToLifecycle33Test {
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
                 LangStrings.of("fr-FR", "CodeList Label"),
+                null,
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:code-id:1", "fr.insee", "code-id", "1",
                         Reference.of("fr.insee", "cat-id", "1", "Category"),
-                        ValueType.of("01"))));
+                        ValueType.of("01"), null)));
 
         String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
 
@@ -235,6 +238,59 @@ class Ddi4ToLifecycle33Test {
                 .contains("<r:CategoryReference")
                 .contains(">cat-id<")
                 .contains(">01</r:Value>");
+    }
+
+    @Test
+    void shouldBuildCodeListWithLevels() {
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
+                "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
+                LangStrings.of("fr-FR", "NUTS"),
+                List.of(
+                        new Level(Level.TYPE, 0, LangStrings.of("fr-FR", "NUTS 0"), "Nominal"),
+                        new Level(Level.TYPE, 1, LangStrings.of("fr-FR", "NUTS 1"), "Ordinal")),
+                null);
+
+        var codeList = converter.toCodeList(cl).getFragment().getCodeList();
+
+        Assertions.assertThat(codeList.getLevelArray()).hasSize(2);
+        var level0 = codeList.getLevelArray(0);
+        Assertions.assertThat(level0.getLevelNumber()).isEqualTo(BigInteger.ZERO);
+        Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getStringValue()).isEqualTo("NUTS 0");
+        Assertions.assertThat(level0.getLevelNameArray(0).getStringArray(0).getLang()).isEqualTo("fr-FR");
+        Assertions.assertThat(level0.getCategoryRelationship().toString()).isEqualTo("Nominal");
+        var level1 = codeList.getLevelArray(1);
+        Assertions.assertThat(level1.getLevelNumber()).isEqualTo(BigInteger.ONE);
+        Assertions.assertThat(level1.getCategoryRelationship().toString()).isEqualTo("Ordinal");
+    }
+
+    @Test
+    void shouldBuildHierarchicalCodeListWithNestedCodes() {
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
+                "urn:ddi:fr.insee:cl-id:1", "fr.insee", "cl-id", "1",
+                LangStrings.of("fr-FR", "NUTS"),
+                null,
+                List.of(new Code(Code.TYPE,
+                        "urn:ddi:fr.insee:code-at:1", "fr.insee", "code-at", "1",
+                        Reference.of("fr.insee", "cat-at", "1", "Category"),
+                        ValueType.of("AT"),
+                        List.of(new Code(Code.TYPE,
+                                "urn:ddi:fr.insee:code-at2:1", "fr.insee", "code-at2", "1",
+                                Reference.of("fr.insee", "cat-at2", "1", "Category"),
+                                ValueType.of("AT2"), null)))));
+
+        var codeList = converter.toCodeList(cl).getFragment().getCodeList();
+
+        Assertions.assertThat(codeList.getCodeArray()).hasSize(1);
+        var at = codeList.getCodeArray(0);
+        Assertions.assertThat(at.getIDArray(0).getStringValue()).isEqualTo("code-at");
+        Assertions.assertThat(at.getCodeArray()).hasSize(1);
+        var at2 = at.getCodeArray(0);
+        Assertions.assertThat(at2.getIDArray(0).getStringValue()).isEqualTo("code-at2");
+        Assertions.assertThat(at2.getValue().getStringValue()).isEqualTo("AT2");
+        Assertions.assertThat(at2.getCategoryReference().getIDArray(0).getStringValue()).isEqualTo("cat-at2");
+        Assertions.assertThat(at2.getCodeArray()).isEmpty();
     }
 
     @Test

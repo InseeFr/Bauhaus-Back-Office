@@ -921,11 +921,12 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:" + codeListId + ":1",
                 agencyId, codeListId, "1",
                 LangStrings.of("fr-FR", "ma code list"),
+                null,
                 List.of(new Code(Code.TYPE,
                         "urn:ddi:fr.insee:6a290143-b9f6-43d3-92ac-70c3b2f516c1:1",
                         agencyId, "6a290143-b9f6-43d3-92ac-70c3b2f516c1", "1",
                         Reference.of(agencyId, categoryId, "1", "Category"),
-                        ValueType.of("a")))
+                        ValueType.of("a"), null))
         );
         Ddi4Category mockCategory = new Ddi4Category(Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2025-12-10T11:55:28.140Z"),
@@ -1535,6 +1536,7 @@ class DDIRepositoryImplTest {
                 "urn:ddi:fr.insee:" + codeListId + ":1",
                 agencyId, codeListId, "1",
                 LangStrings.of("fr-FR", "NAF rév. 2"),
+                null,
                 List.of()
         );
         Ddi4Category mockCategory = new Ddi4Category(Ddi4Category.TYPE,
@@ -2029,7 +2031,7 @@ class DDIRepositoryImplTest {
                 CogsDate.ofDateTime("2024-10-31T10:43:38"),
                 "urn:ddi:fr.insee:" + codeListId + ":2",
                 agencyId, codeListId, "2",
-                LangStrings.of("fr-FR", "NAF rév. 2"), List.of());
+                LangStrings.of("fr-FR", "NAF rév. 2"), null, List.of());
         Ddi4Category mockCategory = new Ddi4Category(Ddi4Category.TYPE,
                 CogsDate.ofDateTime("2024-10-31T10:43:38"),
                 "urn:ddi:fr.insee:" + categoryId + ":2",
@@ -2839,9 +2841,9 @@ class DDIRepositoryImplTest {
         when(ddi4ToDdi3Converter.toCodeListSchemeItem(schemeCaptor.capture())).thenReturn(schemeItem);
 
         Ddi4CodeList clMut = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
-            "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null);
+            "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null, null);
         Ddi4CodeList clNew = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
-            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "new"), null);
+            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "new"), null, null);
         Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clMut, clNew), null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
@@ -2916,7 +2918,7 @@ class DDIRepositoryImplTest {
                 "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
 
         Ddi4CodeList clNew = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
-            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "new"), null);
+            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "new"), null, null);
         Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clNew), null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
@@ -2961,7 +2963,7 @@ class DDIRepositoryImplTest {
         stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         Ddi4CodeList clMut = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
-            "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null);
+            "urn:ddi:fr.insee:CL_MUT:1", "fr.insee", "CL_MUT", "1", LangStrings.of("fr-FR", "mut"), null, null);
         Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(clMut), null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
@@ -3185,7 +3187,7 @@ class DDIRepositoryImplTest {
             "group-type", "fr.insee", "1", "group-1", "<group-updated/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
 
         Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
-            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "cl"), null);
+            "urn:ddi:fr.insee:CL_NEW:1", "fr.insee", "CL_NEW", "1", LangStrings.of("fr-FR", "cl"), null, null);
         Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
             "urn:ddi:fr.insee:CAT_NEW:1", "fr.insee", "CAT_NEW", "1", LangStrings.of("fr-FR", "cat"));
         Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, null, List.of(cl), List.of(cat));

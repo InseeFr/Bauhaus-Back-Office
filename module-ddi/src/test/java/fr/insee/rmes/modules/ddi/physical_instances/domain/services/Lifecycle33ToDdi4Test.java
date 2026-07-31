@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
@@ -10,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalIns
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
 
@@ -332,6 +334,104 @@ class Lifecycle33ToDdi4Test {
         assertThat(cl.code()).hasSize(1);
         assertThat(cl.code().get(0).categoryReference().id()).isEqualTo("cat-id");
         assertThat(cl.code().get(0).value().stringValue()).isEqualTo("01");
+    }
+
+    @Test
+    void shouldParseCodeListLevels() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+                    <Level levelNumber="0">
+                        <LevelName><r:String xml:lang="fr-FR">NUTS 0</r:String></LevelName>
+                        <CategoryRelationship>Nominal</CategoryRelationship>
+                    </Level>
+                    <Level levelNumber="1">
+                        <LevelName><r:String xml:lang="fr-FR">NUTS 1</r:String></LevelName>
+                        <CategoryRelationship>Ordinal</CategoryRelationship>
+                    </Level>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.level()).hasSize(2);
+        Level level0 = cl.level().get(0);
+        assertThat(level0.levelNumber()).isEqualTo(0);
+        assertThat(level0.levelName()).extracting(LangString::value).containsExactly("NUTS 0");
+        assertThat(level0.levelName()).extracting(LangString::language).containsExactly("fr-FR");
+        assertThat(level0.categoryRelationship()).isEqualTo("Nominal");
+        Level level1 = cl.level().get(1);
+        assertThat(level1.levelNumber()).isEqualTo(1);
+        assertThat(level1.levelName()).extracting(LangString::value).containsExactly("NUTS 1");
+        assertThat(level1.categoryRelationship()).isEqualTo("Ordinal");
+    }
+
+    @Test
+    void shouldParseHierarchicalCodeListWithNestedCodes() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+                    <Code isUniversallyUnique="true">
+                        <r:URN>urn:ddi:fr.insee:code-at:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>code-at</r:ID><r:Version>1</r:Version>
+                        <r:CategoryReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cat-at</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>Category</r:TypeOfObject>
+                        </r:CategoryReference>
+                        <r:Value>AT</r:Value>
+                        <Code isUniversallyUnique="true">
+                            <r:URN>urn:ddi:fr.insee:code-at2:1</r:URN>
+                            <r:Agency>fr.insee</r:Agency><r:ID>code-at2</r:ID><r:Version>1</r:Version>
+                            <r:CategoryReference>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cat-at2</r:ID><r:Version>1</r:Version>
+                                <r:TypeOfObject>Category</r:TypeOfObject>
+                            </r:CategoryReference>
+                            <r:Value>AT2</r:Value>
+                            <Code isUniversallyUnique="true">
+                                <r:URN>urn:ddi:fr.insee:code-at21:1</r:URN>
+                                <r:Agency>fr.insee</r:Agency><r:ID>code-at21</r:ID><r:Version>1</r:Version>
+                                <r:CategoryReference>
+                                    <r:Agency>fr.insee</r:Agency><r:ID>cat-at21</r:ID><r:Version>1</r:Version>
+                                    <r:TypeOfObject>Category</r:TypeOfObject>
+                                </r:CategoryReference>
+                                <r:Value>AT21</r:Value>
+                            </Code>
+                        </Code>
+                    </Code>
+                    <Code isUniversallyUnique="true">
+                        <r:URN>urn:ddi:fr.insee:code-be:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>code-be</r:ID><r:Version>1</r:Version>
+                        <r:CategoryReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cat-be</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>Category</r:TypeOfObject>
+                        </r:CategoryReference>
+                        <r:Value>BE</r:Value>
+                    </Code>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.code()).extracting(c -> c.value().stringValue()).containsExactly("AT", "BE");
+        Code at = cl.code().get(0);
+        assertThat(at.code()).hasSize(1);
+        Code at2 = at.code().get(0);
+        assertThat(at2.value().stringValue()).isEqualTo("AT2");
+        assertThat(at2.categoryReference().id()).isEqualTo("cat-at2");
+        assertThat(at2.code()).hasSize(1);
+        Code at21 = at2.code().get(0);
+        assertThat(at21.value().stringValue()).isEqualTo("AT21");
+        assertThat(at21.urn()).isEqualTo("urn:ddi:fr.insee:code-at21:1");
+        assertThat(at21.code()).isNull();
+        assertThat(cl.code().get(1).code()).isNull();
     }
 
     @Test

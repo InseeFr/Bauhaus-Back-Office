@@ -55,6 +55,27 @@ class Ddi4ResponseSerializationTest {
     }
 
     @Test
+    void ddi4CodeList_omitsNullFields() throws Exception {
+        Ddi4CodeList flatCodeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                null,                       // VersionDate
+                "urn:ddi:fr.insee:cl-1:1",
+                "fr.insee", "cl-1", "1",
+                LangStrings.of("fr-FR", "liste plate"),
+                null,                       // Level
+                null);                      // Code
+
+        String json = mapper.writeValueAsString(flatCodeList);
+
+        assertThat(json)
+                .contains("\"$type\"")
+                .contains("\"Label\"")
+                .doesNotContain("\"Level\"")
+                .doesNotContain("\"Code\"")
+                .doesNotContain("null");
+    }
+
+    @Test
     void ddi4CodeListResponse_omitsNullFields() throws Exception {
         Ddi4CodeListResponse response = new Ddi4CodeListResponse(
                 Ddi4Response.SCHEMA,

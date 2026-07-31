@@ -136,6 +136,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "urn:ddi:fr.insee:CodeList.CL_AGEMEN8:1",
                 "fr.insee", "CL_AGEMEN8", "1",
                 LangStrings.of("fr-FR", "Liste codes"),
+                null,
                 List.of()
         );
         Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, List.of(cl), null);

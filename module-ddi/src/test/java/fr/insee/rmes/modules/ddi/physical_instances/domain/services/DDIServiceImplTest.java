@@ -393,6 +393,7 @@ class DDIServiceImplTest {
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId, "cl-1", "1",
                 LangStrings.of("fr-FR", "ma cl"),
+                null,
                 List.<Code>of()
         ));
         when(ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId)).thenReturn(expected);

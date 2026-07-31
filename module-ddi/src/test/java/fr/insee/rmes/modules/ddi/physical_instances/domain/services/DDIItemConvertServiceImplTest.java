@@ -101,7 +101,7 @@ class DDIItemConvertServiceImplTest {
         DDI3toDDI4ConverterService schemaConverter = mock(DDI3toDDI4ConverterService.class);
         Ddi4CodeList codeList = new Ddi4CodeList(
                 Ddi4CodeList.TYPE, null, "urn:ddi:fr.insee:cl-1:1",
-                "fr.insee", "cl-1", "1", null, List.of());
+                "fr.insee", "cl-1", "1", null, null, List.of());
         Ddi4Response ddi4 = new Ddi4Response(
                 "ddi:4.0", null, null, null, null, List.of(codeList), List.<Ddi4Category>of());
         when(schemaConverter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"))).thenReturn(ddi4);

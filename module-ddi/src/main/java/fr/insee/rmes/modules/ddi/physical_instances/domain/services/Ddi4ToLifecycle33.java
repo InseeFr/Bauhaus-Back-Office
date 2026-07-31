@@ -1,8 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
+import fr.insee.ddi.lifecycle33.reusable.CategoryRelationCodeType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
@@ -32,6 +34,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
@@ -204,27 +207,55 @@ public class Ddi4ToLifecycle33 {
             writeLabelContent(clType.addNewLabel().addNewContent(), cl.label().get(0));
         }
 
-        if (cl.code() != null) {
-            for (Code code : cl.code()) {
-                var codeType = clType.addNewCode();
-                codeType.setIsUniversallyUnique(true);
-                codeType.addNewURN().setStringValue(code.urn());
-                codeType.addAgency(code.agency());
-                codeType.addNewID().setStringValue(code.id());
-                codeType.addVersion(code.version());
-
-                if (code.categoryReference() != null) {
-                    populateReference(codeType.addNewCategoryReference(), code.categoryReference());
+        if (cl.level() != null) {
+            for (Level level : cl.level()) {
+                var levelType = clType.addNewLevel();
+                if (level.levelNumber() != null) {
+                    levelType.setLevelNumber(BigInteger.valueOf(level.levelNumber()));
                 }
-
-                if (code.value() != null && code.value().stringValue() != null
-                        && !code.value().stringValue().isEmpty()) {
-                    codeType.addNewValue().setStringValue(code.value().stringValue());
+                if (level.levelName() != null && !level.levelName().isEmpty()) {
+                    LangString first = level.levelName().get(0);
+                    var nameString = levelType.addNewLevelName().addNewString();
+                    nameString.setLang(first.language());
+                    nameString.setStringValue(first.value());
+                }
+                if (level.categoryRelationship() != null) {
+                    levelType.setCategoryRelationship(
+                            CategoryRelationCodeType.Enum.forString(level.categoryRelationship()));
                 }
             }
         }
 
+        if (cl.code() != null) {
+            for (Code code : cl.code()) {
+                populateCode(clType.addNewCode(), code);
+            }
+        }
+
         return doc;
+    }
+
+    private void populateCode(CodeType codeType, Code code) {
+        codeType.setIsUniversallyUnique(true);
+        codeType.addNewURN().setStringValue(code.urn());
+        codeType.addAgency(code.agency());
+        codeType.addNewID().setStringValue(code.id());
+        codeType.addVersion(code.version());
+
+        if (code.categoryReference() != null) {
+            populateReference(codeType.addNewCategoryReference(), code.categoryReference());
+        }
+
+        if (code.value() != null && code.value().stringValue() != null
+                && !code.value().stringValue().isEmpty()) {
+            codeType.addNewValue().setStringValue(code.value().stringValue());
+        }
+
+        if (code.code() != null) {
+            for (Code child : code.code()) {
+                populateCode(codeType.addNewCode(), child);
+            }
+        }
     }
 
     public FragmentDocument toCodeListScheme(Ddi4CodeListScheme scheme) {

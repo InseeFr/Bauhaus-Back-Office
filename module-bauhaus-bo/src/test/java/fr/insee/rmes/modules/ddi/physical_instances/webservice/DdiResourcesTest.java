@@ -170,6 +170,7 @@ class DdiResourcesTest {
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId, "cl-1", "1",
                 LangStrings.of("fr-FR", "ma cl"),
+                null,
                 List.of()
         );
         when(ddiService.getPhysicalInstanceCodeLists(agencyId, id))

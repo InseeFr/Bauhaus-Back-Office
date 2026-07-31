@@ -11,6 +11,7 @@ import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.DataRelationshipType;
+import fr.insee.ddi.lifecycle33.logicalproduct.LevelType;
 import fr.insee.ddi.lifecycle33.logicalproduct.LogicalRecordType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableRepresentationType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableType;
@@ -54,6 +55,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
@@ -137,17 +139,17 @@ public class Lifecycle33ToDdi4 {
         if (cl == null) {
             throw new IllegalArgumentException("Fragment does not contain a CodeList");
         }
+        List<Level> levels = new ArrayList<>();
+        for (LevelType l : cl.getLevelArray()) {
+            levels.add(new Level(
+                    Level.TYPE,
+                    l.getLevelNumber() != null ? l.getLevelNumber().intValue() : null,
+                    l.sizeOfLevelNameArray() > 0 ? readName(l.getLevelNameArray(0)) : null,
+                    l.isSetCategoryRelationship() ? l.getCategoryRelationship().toString() : null));
+        }
         List<Code> codes = new ArrayList<>();
         for (CodeType c : cl.getCodeArray()) {
-            Reference catRef = readReference(c.getCategoryReference());
-            codes.add(new Code(
-                    Code.TYPE,
-                    c.getURNArray(0).getStringValue(),
-                    c.getAgencyArray(0),
-                    c.getIDArray(0).getStringValue(),
-                    c.getVersionArray(0),
-                    catRef,
-                    c.getValue() != null ? ValueType.of(c.getValue().getStringValue()) : null));
+            codes.add(toCode(c));
         }
         return new Ddi4CodeList(
                 Ddi4CodeList.TYPE,
@@ -157,8 +159,25 @@ public class Lifecycle33ToDdi4 {
                 cl.getIDArray(0).getStringValue(),
                 cl.getVersionArray(0),
                 cl.sizeOfLabelArray() > 0 ? readLabel(cl.getLabelArray(0)) : null,
+                levels.isEmpty() ? null : levels,
                 codes.isEmpty() ? null : codes
         );
+    }
+
+    private Code toCode(CodeType c) {
+        List<Code> children = new ArrayList<>();
+        for (CodeType child : c.getCodeArray()) {
+            children.add(toCode(child));
+        }
+        return new Code(
+                Code.TYPE,
+                c.getURNArray(0).getStringValue(),
+                c.getAgencyArray(0),
+                c.getIDArray(0).getStringValue(),
+                c.getVersionArray(0),
+                readReference(c.getCategoryReference()),
+                c.getValue() != null ? ValueType.of(c.getValue().getStringValue()) : null,
+                children.isEmpty() ? null : children);
     }
 
     public Ddi4CodeListScheme toCodeListScheme(FragmentDocument doc) {
