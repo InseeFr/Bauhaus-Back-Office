@@ -1296,6 +1296,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         // When a StudyUnit is supplied (duplication workflow, cf. #1555), attach the PhysicalInstance
         // to it in the same save, so GET .../parents can later resolve its Study & Group.
         List<ColecticaItemResponse> additionalItems = new ArrayList<>();
+        PhysicalInstanceParents requestParents = null;
         if (request.studyUnitId() != null && request.studyUnitAgency() != null) {
             additionalItems.add(
                 addPhysicalInstanceReferenceToStudyUnit(
@@ -1305,10 +1306,20 @@ public class DDIRepositoryImpl implements DDIRepository {
                     id
                 )
             );
+            // The attachment ships in this same batch, so the StudyUnit relationship is not
+            // queryable in Colectica yet: the request is the only source of truth for the parents.
+            if (request.groupId() != null && request.groupAgency() != null) {
+                requestParents = new PhysicalInstanceParents(
+                    request.studyUnitAgency(),
+                    request.studyUnitId(),
+                    request.groupAgency(),
+                    request.groupId()
+                );
+            }
         }
 
         // Use updateFullPhysicalInstance to save everything including variables
-        updateFullPhysicalInstance(agencyId, id, updatedResponse, additionalItems);
+        updateFullPhysicalInstance(agencyId, id, updatedResponse, additionalItems, requestParents);
     }
 
     @Override
@@ -1318,19 +1329,24 @@ public class DDIRepositoryImpl implements DDIRepository {
         String id,
         Ddi4Response ddi4Response
     ) {
-        updateFullPhysicalInstance(agencyId, id, ddi4Response, List.of());
+        updateFullPhysicalInstance(agencyId, id, ddi4Response, List.of(), null);
     }
 
     /**
      * Same as {@link #updateFullPhysicalInstance(String, String, Ddi4Response)} but allows callers to
      * bundle extra already-built Colectica items in the same atomic save — used by the PATCH flow to
      * attach the PhysicalInstance to a StudyUnit (cf. #1555).
+     *
+     * @param knownParents the instance's parents when the caller already knows them (the PATCH
+     *                     attaching the instance to a StudyUnit carries them in its request);
+     *                     {@code null} to resolve them through Colectica relationships
      */
     private void updateFullPhysicalInstance(
         String agencyId,
         String id,
         Ddi4Response ddi4Response,
-        List<ColecticaItemResponse> additionalItems
+        List<ColecticaItemResponse> additionalItems,
+        PhysicalInstanceParents knownParents
     ) {
         logger.info(
             "Updating full physical instance {}/{} with all DDI objects in Colectica",
@@ -1362,7 +1378,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             // File the physical instance's non-mutualized code lists and categories under the group's
             // schemes, and its variables under the study unit's VariableScheme (auto-provisioning the
             // schemes when they do not exist yet). Parents are resolved once and shared.
-            appendSchemeUpdates(agencyId, id, ddi4Response, colecticaItems, additionalItems);
+            appendSchemeUpdates(agencyId, id, ddi4Response, colecticaItems, additionalItems, knownParents);
 
             // Bundle any extra items (e.g. the StudyUnit re-registered with a new PI reference)
             colecticaItems.addAll(additionalItems);
@@ -1417,7 +1433,8 @@ public class DDIRepositoryImpl implements DDIRepository {
         String id,
         Ddi4Response ddi4Response,
         List<ColecticaItemResponse> colecticaItems,
-        List<ColecticaItemResponse> additionalItems
+        List<ColecticaItemResponse> additionalItems,
+        PhysicalInstanceParents knownParents
     ) {
         List<Ddi4CodeList> codeLists = ddi4Response.codeList();
         List<Ddi4CodeList> nonMutualized = (codeLists == null || codeLists.isEmpty())
@@ -1431,7 +1448,22 @@ public class DDIRepositoryImpl implements DDIRepository {
             return;
         }
 
-        PhysicalInstanceParents parents = getPhysicalInstanceParents(agencyId, id);
+        PhysicalInstanceParents parents = knownParents;
+        if (parents == null) {
+            try {
+                parents = getPhysicalInstanceParents(agencyId, id);
+            } catch (StudyUnitNotFoundException e) {
+                // Duplication step 1: the raw PUT ships before the instance is attached to a
+                // StudyUnit. Skip the filing — the PATCH attaching the instance re-saves the same
+                // content with the parents carried in its request, and files everything then.
+                logger.warn(
+                    "Skipping scheme filing for physical instance {}/{}: no study unit attached yet",
+                    agencyId,
+                    id
+                );
+                return;
+            }
+        }
         if (groupWork) {
             appendGroupSchemesUpdate(parents, nonMutualized, categories, colecticaItems);
         }
