@@ -12,7 +12,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -34,17 +37,18 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     private DDI4toDDI3ConverterServiceImpl converter;
 
-    private static final Map<String, String> ITEM_TYPES = Map.of(
-        "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
-        "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
-        "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
-        "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-        "CodeListScheme", "c5084949-3e3a-4b7f-9f5b-1a2b3c4d5e6f",
-        "CategoryScheme", "1c11de94-a36d-4d80-95dc-950c6f37f624",
-        "VariableScheme", "50907716-b67a-4dcd-8f9f-8a283cb5fee0",
-        "LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b",
-        "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
-        "ManagedRepresentationScheme", "16d4d829-41e1-4677-aa17-81190b6a0e66"
+    private static final Map<String, String> ITEM_TYPES = Map.ofEntries(
+        Map.entry("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8"),
+        Map.entry("DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b"),
+        Map.entry("Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d"),
+        Map.entry("CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d"),
+        Map.entry("CodeListScheme", "c5084949-3e3a-4b7f-9f5b-1a2b3c4d5e6f"),
+        Map.entry("CategoryScheme", "1c11de94-a36d-4d80-95dc-950c6f37f624"),
+        Map.entry("VariableScheme", "50907716-b67a-4dcd-8f9f-8a283cb5fee0"),
+        Map.entry("LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b"),
+        Map.entry("Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"),
+        Map.entry("ManagedRepresentationScheme", "16d4d829-41e1-4677-aa17-81190b6a0e66"),
+        Map.entry("ManagedMissingValuesRepresentation", "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed")
     );
 
     @BeforeEach
@@ -228,6 +232,70 @@ class DDI4toDDI3ConverterServiceImplTest {
         assertThat(item.item())
                 .contains("<r:ManagedRepresentationScheme")
                 .contains(">Schéma représentations gérées<");
+    }
+
+    @Test
+    void shouldConvertManagedMissingValuesRepresentationToDdi3Item() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:MMVR_1:1", "fr.insee", "MMVR_1", "1",
+                LangStrings.of("fr-FR", "Valeurs manquantes standard"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE,
+                        Reference.of("fr.insee", "CL_SENTINEL", "1", "CodeList"))));
+
+        Ddi3Response.Ddi3Item item = converter.toManagedMissingValuesRepresentationItem(mmvr);
+
+        assertThat(item.itemType()).isEqualTo("c29c3125-2a53-4179-8fa6-aa3beb2bb5ed");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("MMVR_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("<r:ManagedMissingValuesRepresentation")
+                .contains(">Valeurs manquantes standard<")
+                .contains(">CL_SENTINEL<");
+    }
+
+    @Test
+    void shouldConvertCodeListToDdi3Item() {
+        Ddi4CodeList codeList = new Ddi4CodeList(Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:CL_1:1", "fr.insee", "CL_1", "1",
+                LangStrings.of("fr-FR", "Liste sentinelle"),
+                null,
+                List.of(new Code(Code.TYPE, "urn:ddi:fr.insee:CODE_1:1", "fr.insee", "CODE_1", "1",
+                        Reference.of("fr.insee", "CAT_1", "1", "Category"),
+                        ValueType.of("NSP"), null)));
+
+        Ddi3Response.Ddi3Item item = converter.toCodeListItem(codeList);
+
+        assertThat(item.itemType()).isEqualTo("8b108ef8-b642-4484-9c49-f88e4bf7cf1d");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("CL_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("CodeList")
+                .contains(">Liste sentinelle<")
+                .contains(">NSP<")
+                .contains(">CAT_1<");
+    }
+
+    @Test
+    void shouldConvertCategoryToDdi3Item() {
+        Ddi4Category category = new Ddi4Category(Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:CAT_1:1", "fr.insee", "CAT_1", "1",
+                LangStrings.of("fr-FR", "Ne sait pas"));
+
+        Ddi3Response.Ddi3Item item = converter.toCategoryItem(category);
+
+        assertThat(item.itemType()).isEqualTo("7e47c269-bcab-40f7-a778-af7bbc4e3d00");
+        assertThat(item.agencyId()).isEqualTo("fr.insee");
+        assertThat(item.identifier()).isEqualTo("CAT_1");
+        assertThat(item.version()).isEqualTo("1");
+        assertThat(item.item())
+                .contains("Category")
+                .contains(">Ne sait pas<");
     }
 
     @Test

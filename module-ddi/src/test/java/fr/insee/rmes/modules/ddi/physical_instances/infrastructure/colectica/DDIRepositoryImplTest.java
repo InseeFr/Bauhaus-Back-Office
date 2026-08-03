@@ -16,10 +16,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -619,6 +622,7 @@ class DDIRepositoryImplTest {
         when(colecticaClient.createOrUpdateItems(any())).thenReturn("{}");
 
         // When
+        OffsetDateTime beforeUpdate = OffsetDateTime.now();
         ddiRepository.updatePhysicalInstance(agencyId, instanceId, updateRequest);
 
         // Then
@@ -626,6 +630,12 @@ class DDIRepositoryImplTest {
         Ddi4Response capturedDdi4 = ddi4Captor.getValue();
         assertEquals("1", capturedDdi4.physicalInstance().get(0).version()); // version preserved, not incremented
         assertEquals("1", capturedDdi4.dataRelationship().get(0).version()); // version preserved, not incremented
+
+        // versionDate must be restamped to now() on both the PI and the DR (Colectica never fills it)
+        OffsetDateTime piVersionDate = OffsetDateTime.parse(capturedDdi4.physicalInstance().get(0).versionDate().dateTime());
+        OffsetDateTime drVersionDate = OffsetDateTime.parse(capturedDdi4.dataRelationship().get(0).versionDate().dateTime());
+        assertThat(piVersionDate).isBetween(beforeUpdate, OffsetDateTime.now());
+        assertThat(drVersionDate).isBetween(beforeUpdate, OffsetDateTime.now());
 
         ArgumentCaptor<ColecticaCreateItemRequest> bodyCaptor2 = ArgumentCaptor.forClass(ColecticaCreateItemRequest.class);
         verify(colecticaClient).createOrUpdateItems(bodyCaptor2.capture());
@@ -2612,6 +2622,101 @@ class DDIRepositoryImplTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+
+    // --- getMissingCodesListsByGroup (valeurs sentinelles, cf. #1566) ---
+
+    private static final String LOGICAL_PRODUCT_TYPE = "965c8d28-7d48-4950-bea7-04b27e52bb9b";
+    private static final String MANAGED_REPRESENTATION_SCHEME_TYPE = "16d4d829-41e1-4677-aa17-81190b6a0e66";
+    private static final String MANAGED_MISSING_VALUES_REPRESENTATION_TYPE = "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed";
+    private static final String CODE_LIST_ITEM_TYPE = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+
+    private void mockMissingCodesItemTypes() {
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "LogicalProduct", LOGICAL_PRODUCT_TYPE,
+                "ManagedRepresentationScheme", MANAGED_REPRESENTATION_SCHEME_TYPE,
+                "ManagedMissingValuesRepresentation", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE,
+                "CodeList", CODE_LIST_ITEM_TYPE));
+    }
+
+    private void mockBySubjectChildren(String agencyId, String parentId, String childType, ItemReference... children) {
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_SUBJECT),
+                eq(new ItemReference(agencyId, parentId)),
+                eq(List.of(childType))))
+            .thenReturn(List.of(children));
+    }
+
+    @Test
+    void getMissingCodesListsByGroup_walksManagedRepresentationChainAndDeduplicates() {
+        // Group → LogicalProduct → ManagedRepresentationScheme → ManagedMissingValuesRepresentation
+        // → CodeList, chaque étape en bysubject filtré par type côté serveur. code-list-1 est
+        // référencée par les deux MMVR : elle ne doit sortir qu'une fois.
+        String agencyId = "fr.insee";
+        String groupId = "group-1";
+        mockMissingCodesItemTypes();
+
+        mockBySubjectChildren(agencyId, groupId, LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        mockBySubjectChildren(agencyId, "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference(agencyId, "mrs-1"));
+        mockBySubjectChildren(agencyId, "mrs-1", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE,
+                new ItemReference(agencyId, "mmvr-1"), new ItemReference(agencyId, "mmvr-2"));
+        mockBySubjectChildren(agencyId, "mmvr-1", CODE_LIST_ITEM_TYPE, new ItemReference(agencyId, "code-list-1"));
+        mockBySubjectChildren(agencyId, "mmvr-2", CODE_LIST_ITEM_TYPE,
+                new ItemReference(agencyId, "code-list-2"), new ItemReference(agencyId, "code-list-1"));
+
+        ColecticaItem codeList1 = new ColecticaItem(
+            null, Map.of("fr-FR", "Sentinelles âge"), Map.of("fr-FR", "Sentinelles âge"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList", agencyId, 1, "code-list-1",
+            null, null, "0001-01-01T00:00:00", null, true, false, false, "DDI", 1L, 0);
+        ColecticaItem codeList2 = new ColecticaItem(
+            null, Map.of("fr-FR", "Sentinelles revenu"), Map.of("fr-FR", "Sentinelles revenu"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList", agencyId, 1, "code-list-2",
+            null, null, "0001-01-01T00:00:00", null, true, false, false, "DDI", 1L, 0);
+        // Une CodeList du référentiel non référencée par un MMVR : écartée.
+        ColecticaItem unrelated = new ColecticaItem(
+            null, Map.of("fr-FR", "Liste ordinaire"), Map.of("fr-FR", "Liste ordinaire"),
+            null, null, 0, "test-repo", true, List.of(), "CodeList", agencyId, 1, "code-list-other",
+            null, null, "0001-01-01T00:00:00", null, true, false, false, "DDI", 1L, 0);
+        when(colecticaClient.query(eq(List.of(CODE_LIST_ITEM_TYPE))))
+                .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2, unrelated), 3, 3, null, null, null));
+
+        // versionDate fiable lu depuis le XML de l'item (comme les autres listings de CodeLists).
+        String xml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+            + "<CodeList xmlns=\"ddi:logicalproduct:3_3\" versionDate=\"2026-06-29T14:26:32.961778\">"
+            + "<r:URN>urn:ddi:fr.insee:code-list-1:1</r:URN></CodeList></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
+            new ColecticaItemResponse(CODE_LIST_ITEM_TYPE, agencyId, 1, "code-list-1", xml,
+                null, null, false, false, false, "DDI")
+        });
+
+        List<PartialCodesList> result = ddiRepository.getMissingCodesListsByGroup(agencyId, groupId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(Set.of("code-list-1", "code-list-2"),
+                result.stream().map(PartialCodesList::id).collect(Collectors.toSet()));
+        PartialCodesList first = result.stream().filter(cl -> "code-list-1".equals(cl.id())).findFirst().orElseThrow();
+        assertEquals("Sentinelles âge", first.label());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals("2026-06-29 14:26:32", sdf.format(first.versionDate()));
+    }
+
+    @Test
+    void getMissingCodesListsByGroup_returnsEmptyWithoutCodeListQueryWhenSchemeHasNoMissingRepresentation() {
+        String agencyId = "fr.insee";
+        String groupId = "group-1";
+        mockMissingCodesItemTypes();
+
+        mockBySubjectChildren(agencyId, groupId, LOGICAL_PRODUCT_TYPE, new ItemReference(agencyId, "lp-1"));
+        mockBySubjectChildren(agencyId, "lp-1", MANAGED_REPRESENTATION_SCHEME_TYPE, new ItemReference(agencyId, "mrs-1"));
+        mockBySubjectChildren(agencyId, "mrs-1", MANAGED_MISSING_VALUES_REPRESENTATION_TYPE);
+
+        List<PartialCodesList> result = ddiRepository.getMissingCodesListsByGroup(agencyId, groupId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(colecticaClient, never()).query(anyList());
     }
 
     @Test

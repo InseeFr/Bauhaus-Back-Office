@@ -1952,6 +1952,28 @@ public class DDIRepositoryImpl implements DDIRepository {
             List.of(toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(managedRepresentationScheme)))));
     }
 
+    @Override
+    public void createManagedMissingValuesRepresentation(Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
+        logger.info("Creating managed missing values representation in Colectica: {}/{}",
+            managedMissingValuesRepresentation.agency(), managedMissingValuesRepresentation.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toManagedMissingValuesRepresentationItem(managedMissingValuesRepresentation)))));
+    }
+
+    @Override
+    public void createCodeList(Ddi4CodeList codeList) {
+        logger.info("Creating code list in Colectica: {}/{}", codeList.agency(), codeList.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toCodeListItem(codeList)))));
+    }
+
+    @Override
+    public void createCategory(Ddi4Category category) {
+        logger.info("Creating category in Colectica: {}/{}", category.agency(), category.id());
+        colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(
+            List.of(toColecticaItem(ddi4ToDdi3Converter.toCategoryItem(category)))));
+    }
+
     /**
      * Build DDI3 XML fragment for PhysicalInstance
      */
@@ -2434,8 +2456,17 @@ public class DDIRepositoryImpl implements DDIRepository {
             return List.of();
         }
 
-        // Libellés via un _query global (les descriptions de relation ne les portent pas), restreint
-        // aux CodeLists référencées par le scheme.
+        return resolveCodeListsMetadata(codeListIds);
+    }
+
+    /**
+     * Résout les métadonnées (libellé, versionDate) des CodeLists dont les identifiants sont donnés.
+     * Libellés via un _query global de type CodeList (les descriptions de relation ne les portent
+     * pas) ; versionDate lu depuis le XML de l'item (l'enveloppe _query n'est pas fiable), comme
+     * pour les code lists mutualisées.
+     */
+    private List<PartialCodesList> resolveCodeListsMetadata(Set<String> codeListIds) {
+        String codeListType = instanceConfiguration.itemTypes().get(CODE_LIST);
         ColecticaResponse response = colecticaClient.query(List.of(codeListType));
         List<ColecticaItem> keptItems = (response == null || response.results() == null)
             ? List.of()
@@ -2446,8 +2477,6 @@ public class DDIRepositoryImpl implements DDIRepository {
             return List.of();
         }
 
-        // versionDate lu depuis le XML de l'item (l'enveloppe _query n'est pas fiable), comme pour
-        // les code lists mutualisées.
         Map<String, ColecticaItem> itemsByKey = new LinkedHashMap<>();
         List<ItemReference> refs = new ArrayList<>();
         for (ColecticaItem item : keptItems) {
@@ -2463,6 +2492,44 @@ public class DDIRepositoryImpl implements DDIRepository {
                 versionDateByKey.get(item.agencyId() + "/" + item.identifier()),
                 item.agencyId()))
             .toList();
+    }
+
+    /**
+     * Returns every CodeList used as sentinel values in the group {@code agencyId/groupId} (#1566):
+     * the CodeLists referenced by the ManagedMissingValuesRepresentations filed under the
+     * ManagedRepresentationSchemes of the group's LogicalProducts. Walks Group → LogicalProduct →
+     * ManagedRepresentationScheme → ManagedMissingValuesRepresentation → CodeList, each step a
+     * server-side type-filtered {@code bysubject} relationship query (same lightweight strategy as
+     * {@link #getLogicalProductsByGroup}); labels and version dates are then resolved like
+     * {@link #getCodeListsByCodeListScheme}.
+     */
+    @Override
+    public List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId) {
+        logger.info("Fetching missing (sentinel) code lists for group {}/{}", agencyId, groupId);
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        List<String> descentTypes = List.of(
+            types.get("LogicalProduct"),
+            types.get("ManagedRepresentationScheme"),
+            types.get("ManagedMissingValuesRepresentation"),
+            types.get(CODE_LIST));
+
+        List<ItemReference> refs = List.of(new ItemReference(agencyId, groupId));
+        for (String childType : descentTypes) {
+            refs = refs.stream()
+                .flatMap(ref -> colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT, ref, List.of(childType)).stream())
+                .distinct()
+                .toList();
+            if (refs.isEmpty()) {
+                return List.of();
+            }
+        }
+
+        Set<String> codeListIds = refs.stream()
+            .map(ItemReference::identifier)
+            .collect(Collectors.toSet());
+
+        return resolveCodeListsMetadata(codeListIds);
     }
 
     /**

@@ -2,8 +2,11 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
@@ -57,6 +60,31 @@ public interface DDI4toDDI3ConverterService {
      * @return the DDI3 item for the scheme
      */
     Ddi3Response.Ddi3Item toManagedRepresentationSchemeItem(Ddi4ManagedRepresentationScheme scheme);
+
+    /**
+     * Serialize a single ManagedMissingValuesRepresentation (valeurs sentinelles, cf. #1566) to a
+     * DDI3 item (DDI 3.3 fragment XML + metadata), ready to be sent to Colectica.
+     * @param managedMissingValuesRepresentation the managed missing values representation to serialize
+     * @return the DDI3 item for the representation
+     */
+    Ddi3Response.Ddi3Item toManagedMissingValuesRepresentationItem(
+            Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation);
+
+    /**
+     * Serialize a single CodeList to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica.
+     * @param codeList the code list to serialize
+     * @return the DDI3 item for the code list
+     */
+    Ddi3Response.Ddi3Item toCodeListItem(Ddi4CodeList codeList);
+
+    /**
+     * Serialize a single Category to a DDI3 item (DDI 3.3 fragment XML + metadata),
+     * ready to be sent to Colectica.
+     * @param category the category to serialize
+     * @return the DDI3 item for the category
+     */
+    Ddi3Response.Ddi3Item toCategoryItem(Ddi4Category category);
 
     /**
      * Serialize a single LogicalProduct to a DDI3 item (DDI 3.3 fragment XML + metadata),

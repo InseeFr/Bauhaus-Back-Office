@@ -334,6 +334,34 @@ class GroupResourcesTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // --- /ddi/groups/{agencyId}/{id}/missing-codes-list (valeurs sentinelles, cf. #1566) ---
+
+    @Test
+    void getGroupMissingCodesLists_shouldReturn200WithList() {
+        List<PartialCodesList> codeLists = List.of(
+                new PartialCodesList("cl-1", "Sentinelles âge", new Date(), "fr.insee"));
+        when(ddiService.getMissingCodesListsByGroup("fr.insee", "group-1")).thenReturn(codeLists);
+
+        ResponseEntity<List<PartialCodesList>> response =
+                groupResources.getGroupMissingCodesLists("fr.insee", "group-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0).id()).isEqualTo("cl-1");
+        verify(ddiService).getMissingCodesListsByGroup("fr.insee", "group-1");
+    }
+
+    @Test
+    void getGroupMissingCodesLists_shouldReturn500OnError() {
+        when(ddiService.getMissingCodesListsByGroup("fr.insee", "group-1"))
+                .thenThrow(new RuntimeException("Colectica error"));
+
+        ResponseEntity<List<PartialCodesList>> response =
+                groupResources.getGroupMissingCodesLists("fr.insee", "group-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private Ddi4GroupResponse createMockDdi4GroupResponse() {
         Citation citation = new Citation(LangStrings.of("fr-FR", "Base permanente des équipements"));
 

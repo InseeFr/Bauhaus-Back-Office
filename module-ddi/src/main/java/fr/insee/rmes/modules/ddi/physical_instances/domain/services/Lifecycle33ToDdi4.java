@@ -50,6 +50,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -64,12 +65,17 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
+import org.apache.xmlbeans.QNameSet;
 import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlObject;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Lifecycle33ToDdi4 {
+
+    private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
 
     public Ddi4PhysicalInstance toPhysicalInstance(FragmentDocument doc) {
         PhysicalInstanceType pi = doc.getFragment().getPhysicalInstance();
@@ -198,6 +204,43 @@ public class Lifecycle33ToDdi4 {
                 scheme.getVersionArray(0),
                 scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
                 codeListReferences.isEmpty() ? null : codeListReferences
+        );
+    }
+
+    /**
+     * QNames sous lesquels un membre d'un ManagedRepresentationScheme peut être référencé : la tête
+     * du groupe de substitution {@code ManagedRepresentationReference} (données historiques) et ses
+     * éléments concrets par type ({@code ManagedMissingValuesRepresentationReference}…). L'accesseur
+     * généré {@code getManagedRepresentationReferenceArray} est inutilisable : son QNameSet est
+     * erroné (partagé avec la propriété in-line {@code ManagedRepresentation}) et ne matche aucun de
+     * ces éléments — d'où la sélection manuelle par QName.
+     */
+    private static final QNameSet MANAGED_REPRESENTATION_REFERENCE_QNAMES = QNameSet.forArray(new QName[]{
+            new QName(DDI_REUSABLE_NS, "ManagedRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedTextRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedNumericRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedDateTimeRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedScaleRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedMissingValuesRepresentationReference")});
+
+    public Ddi4ManagedRepresentationScheme toManagedRepresentationScheme(FragmentDocument doc) {
+        var scheme = doc.getFragment().getManagedRepresentationScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a ManagedRepresentationScheme");
+        }
+        List<Reference> managedRepresentationReferences = new ArrayList<>();
+        for (XmlObject child : scheme.selectChildren(MANAGED_REPRESENTATION_REFERENCE_QNAMES)) {
+            managedRepresentationReferences.add(readReference((ReferenceType) child));
+        }
+        return new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                managedRepresentationReferences.isEmpty() ? null : managedRepresentationReferences
         );
     }
 

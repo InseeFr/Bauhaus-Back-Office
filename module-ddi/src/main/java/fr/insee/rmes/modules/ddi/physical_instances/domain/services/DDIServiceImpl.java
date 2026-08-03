@@ -5,7 +5,9 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -155,7 +157,18 @@ public class DDIServiceImpl implements DDIService {
                 }
             }
         }
+        // Les listes de valeurs sentinelles (cf. #1566) sont classées dans les mêmes CodeListSchemes
+        // mais exposées par getMissingCodesListsByGroup : on les exclut des listes « classiques ».
+        for (PartialCodesList sentinelCodeList : ddiRepository.getMissingCodesListsByGroup(agencyId, groupId)) {
+            codeListsByKey.remove(sentinelCodeList.agency() + "|" + sentinelCodeList.id());
+        }
         return List.copyOf(codeListsByKey.values());
+    }
+
+    @Override
+    public List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId) {
+        logger.info("Starting to get missing (sentinel) code lists for group {}/{}", agencyId, groupId);
+        return ddiRepository.getMissingCodesListsByGroup(agencyId, groupId);
     }
 
     @Override
@@ -289,6 +302,25 @@ public class DDIServiceImpl implements DDIService {
         logger.info("Creating managed representation scheme: {}/{}",
                 managedRepresentationScheme.agency(), managedRepresentationScheme.id());
         ddiRepository.createManagedRepresentationScheme(managedRepresentationScheme);
+    }
+
+    @Override
+    public void createManagedMissingValuesRepresentation(Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
+        logger.info("Creating managed missing values representation: {}/{}",
+                managedMissingValuesRepresentation.agency(), managedMissingValuesRepresentation.id());
+        ddiRepository.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
+    }
+
+    @Override
+    public void createCodeList(Ddi4CodeList codeList) {
+        logger.info("Creating code list: {}/{}", codeList.agency(), codeList.id());
+        ddiRepository.createCodeList(codeList);
+    }
+
+    @Override
+    public void createCategory(Ddi4Category category) {
+        logger.info("Creating category: {}/{}", category.agency(), category.id());
+        ddiRepository.createCategory(category);
     }
 
     @Override

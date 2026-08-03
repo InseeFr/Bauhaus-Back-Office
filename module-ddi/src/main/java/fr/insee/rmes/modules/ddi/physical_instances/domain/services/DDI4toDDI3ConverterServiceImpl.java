@@ -6,8 +6,11 @@ import fr.insee.ddi.lifecycle33.reusable.ReferenceType;
 import fr.insee.ddi.lifecycle33.reusable.TypeOfObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
@@ -144,6 +147,33 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                 .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
         return createDdi3Item(itemTypes.get("ManagedRepresentationScheme"), scheme.agency(), scheme.version(),
                 scheme.id(), xmlFragment, dateTimeOf(scheme.versionDate()));
+    }
+
+    @Override
+    public Ddi3Response.Ddi3Item toManagedMissingValuesRepresentationItem(
+            Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation) {
+        String xmlFragment = ddi4ToLifecycle33.toManagedMissingValuesRepresentation(managedMissingValuesRepresentation)
+                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(itemTypes.get("ManagedMissingValuesRepresentation"),
+                managedMissingValuesRepresentation.agency(), managedMissingValuesRepresentation.version(),
+                managedMissingValuesRepresentation.id(), xmlFragment,
+                dateTimeOf(managedMissingValuesRepresentation.versionDate()));
+    }
+
+    @Override
+    public Ddi3Response.Ddi3Item toCodeListItem(Ddi4CodeList codeList) {
+        String xmlFragment = ddi4ToLifecycle33.toCodeList(codeList)
+                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(itemTypes.get("CodeList"), codeList.agency(), codeList.version(),
+                codeList.id(), xmlFragment, dateTimeOf(codeList.versionDate()));
+    }
+
+    @Override
+    public Ddi3Response.Ddi3Item toCategoryItem(Ddi4Category category) {
+        String xmlFragment = ddi4ToLifecycle33.toCategory(category)
+                .xmlText(fragmentXmlOptions(DDI_LOGICAL_PRODUCT_NS));
+        return createDdi3Item(itemTypes.get("Category"), category.agency(), category.version(),
+                category.id(), xmlFragment, dateTimeOf(category.versionDate()));
     }
 
     @Override

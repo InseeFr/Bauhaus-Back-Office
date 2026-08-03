@@ -28,6 +28,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -44,6 +45,7 @@ import org.apache.xmlbeans.XmlCursor;
 
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
+import java.util.List;
 
 public class Ddi4ToLifecycle33 {
 
@@ -347,7 +349,69 @@ public class Ddi4ToLifecycle33 {
 
         if (scheme.managedRepresentationReference() != null) {
             for (Reference ref : scheme.managedRepresentationReference()) {
-                populateReference(schemeType.addNewManagedRepresentationReference(), ref);
+                ReferenceType refType = schemeType.addNewManagedRepresentationReference();
+                populateReference(refType, ref);
+                renameToConcreteMemberReference(refType, ref.type());
+            }
+        }
+
+        return doc;
+    }
+
+    /**
+     * Éléments concrets du groupe de substitution dont {@code ManagedRepresentationReference} est la
+     * tête abstraite : un membre d'un ManagedRepresentationScheme doit être référencé par l'élément
+     * correspondant à son type, sinon Colectica ignore la référence (membre absent du scheme dans le
+     * portail et relation bysubject non indexée).
+     */
+    private static final List<String> MANAGED_REPRESENTATION_REFERENCE_MEMBERS = List.of(
+            "ManagedTextRepresentationReference",
+            "ManagedNumericRepresentationReference",
+            "ManagedDateTimeRepresentationReference",
+            "ManagedScaleRepresentationReference",
+            "ManagedMissingValuesRepresentationReference");
+
+    /**
+     * Renomme une référence membre écrite sous la tête abstraite {@code ManagedRepresentationReference}
+     * (seul élément que l'API générée sait créer) en l'élément concret dérivé du {@code TypeOfObject}
+     * de la référence (ex. {@code ManagedMissingValuesRepresentationReference}). Type absent ou hors
+     * du groupe de substitution → l'élément générique est conservé.
+     */
+    private static void renameToConcreteMemberReference(ReferenceType refType, String typeOfObject) {
+        if (typeOfObject == null) {
+            return;
+        }
+        String memberElement = typeOfObject + "Reference";
+        if (!MANAGED_REPRESENTATION_REFERENCE_MEMBERS.contains(memberElement)) {
+            return;
+        }
+        try (XmlCursor cursor = refType.newCursor()) {
+            cursor.setName(new QName(DDI_REUSABLE_NS, memberElement));
+        }
+    }
+
+    public FragmentDocument toManagedMissingValuesRepresentation(Ddi4ManagedMissingValuesRepresentation mmvr) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var mmvrType = doc.addNewFragment().addNewManagedMissingValuesRepresentation();
+
+        mmvrType.setIsUniversallyUnique(true);
+        mmvrType.setVersionDate(mmvr.versionDate() != null ? mmvr.versionDate().dateTime() : null);
+        mmvrType.addNewURN().setStringValue(mmvr.urn());
+        mmvrType.addAgency(mmvr.agency());
+        mmvrType.addNewID().setStringValue(mmvr.id());
+        mmvrType.addVersion(mmvr.version());
+
+        if (mmvr.label() != null && !mmvr.label().isEmpty()) {
+            writeLabelContent(mmvrType.addNewLabel().addNewContent(), mmvr.label().get(0));
+        }
+
+        if (mmvr.missingCodeRepresentation() != null) {
+            for (CodeRepresentation rep : mmvr.missingCodeRepresentation()) {
+                CodeRepresentationBaseType missingRep = mmvrType.addNewMissingCodeRepresentation();
+                missingRep.setBlankIsMissingValue(Boolean.TRUE.equals(rep.blankIsMissingValue()));
+                if (rep.codeListReference() != null) {
+                    populateReference(missingRep.addNewCodeListReference(), rep.codeListReference());
+                }
             }
         }
 

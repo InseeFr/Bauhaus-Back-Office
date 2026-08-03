@@ -15,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -401,14 +402,18 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
-    void shouldBuildManagedRepresentationSchemeWithManagedRepresentationReferences() {
+    void shouldBuildManagedRepresentationSchemeWithTypeSpecificMemberReferences() {
+        // L'élément générique ManagedRepresentationReference est une tête de groupe de substitution
+        // abstraite : Colectica ignore la référence (ni indexée, ni affichée) si elle n'est pas
+        // écrite avec l'élément concret correspondant au type visé.
         Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(Ddi4ManagedRepresentationScheme.TYPE,
                 CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
                 "urn:ddi:fr.insee:mrs-id:1", "fr.insee", "mrs-id", "1",
                 LangStrings.of("fr-FR", "ManagedRepresentationScheme Label"),
                 List.of(
                         Reference.of("fr.insee", "mr-1", "1", "ManagedTextRepresentation"),
-                        Reference.of("fr.insee", "mr-2", "1", "ManagedNumericRepresentation")));
+                        Reference.of("fr.insee", "mr-2", "1", "ManagedNumericRepresentation"),
+                        Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation")));
 
         String xml = converter.toManagedRepresentationScheme(scheme).xmlText(logicalProductXmlOptions());
 
@@ -417,9 +422,35 @@ class Ddi4ToLifecycle33Test {
                 .contains(">urn:ddi:fr.insee:mrs-id:1<")
                 .contains("<r:Label")
                 .contains(">ManagedRepresentationScheme Label<")
-                .contains("<r:ManagedRepresentationReference")
+                .contains("<r:ManagedTextRepresentationReference")
+                .contains("<r:ManagedNumericRepresentationReference")
+                .contains("<r:ManagedMissingValuesRepresentationReference")
+                .doesNotContain("<r:ManagedRepresentationReference>")
                 .contains(">mr-1<")
-                .contains(">mr-2<");
+                .contains(">mr-2<")
+                .contains(">mmvr-1<");
+    }
+
+    @Test
+    void shouldBuildManagedMissingValuesRepresentationWithMissingCodeRepresentation() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:mmvr-id:1", "fr.insee", "mmvr-id", "1",
+                LangStrings.of("fr-FR", "Valeurs manquantes standard"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE,
+                        Reference.of("fr.insee", "cl-sentinel", "1", "CodeList"))));
+
+        String xml = converter.toManagedMissingValuesRepresentation(mmvr).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:ManagedMissingValuesRepresentation")
+                .contains(">urn:ddi:fr.insee:mmvr-id:1<")
+                .contains("<r:Label")
+                .contains(">Valeurs manquantes standard<")
+                .contains("<r:MissingCodeRepresentation")
+                .contains("<r:CodeListReference")
+                .contains(">cl-sentinel<");
     }
 
     @Test

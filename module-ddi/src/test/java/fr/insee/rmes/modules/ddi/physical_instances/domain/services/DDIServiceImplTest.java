@@ -301,6 +301,32 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldExcludeSentinelCodeListsFromGroupCodeLists() {
+        // Given : le CLS du groupe contient une liste « classique » et la liste de valeurs
+        // sentinelles (cf. #1566), cette dernière étant aussi référencée par une MMVR du groupe.
+        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-1")).thenReturn(List.of(
+                new PartialLogicalProduct("lp-1", "Produit Logique 1", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1")).thenReturn(List.of(
+                new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-1")).thenReturn(List.of(
+                new PartialCodesList("cl-1", "Liste 1", new Date(), "fr.insee"),
+                new PartialCodesList("cl-sentinel", "Valeurs sentinelles", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getMissingCodesListsByGroup("fr.insee", "group-1")).thenReturn(List.of(
+                new PartialCodesList("cl-sentinel", "Valeurs sentinelles", new Date(), "fr.insee")
+        ));
+
+        // When
+        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-1");
+
+        // Then : la liste sentinelle est exclue des listes de codes du groupe.
+        assertEquals(1, result.size());
+        assertEquals("cl-1", result.get(0).id());
+    }
+
+    @Test
     void shouldReturnEmptyListWhenGroupHasNoLogicalProduct() {
         when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-empty")).thenReturn(List.of());
 
@@ -309,6 +335,19 @@ class DDIServiceImplTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(ddiRepository).getLogicalProductsByGroup("fr.insee", "group-empty");
+    }
+
+    @Test
+    void shouldGetMissingCodesListsByGroup() {
+        // Délégation pure au repository (la marche Group → LP → MRS → MMVR → CodeList y est faite).
+        List<PartialCodesList> expected = List.of(
+                new PartialCodesList("cl-1", "Sentinelles âge", new Date(), "fr.insee"));
+        when(ddiRepository.getMissingCodesListsByGroup("fr.insee", "group-1")).thenReturn(expected);
+
+        List<PartialCodesList> result = ddiService.getMissingCodesListsByGroup("fr.insee", "group-1");
+
+        assertEquals(expected, result);
+        verify(ddiRepository).getMissingCodesListsByGroup("fr.insee", "group-1");
     }
 
     @Test

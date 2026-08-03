@@ -7,11 +7,13 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
 
@@ -463,6 +465,43 @@ class Lifecycle33ToDdi4Test {
         assertThat(scheme.codeListReference())
                 .extracting(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference::id)
                 .containsExactly("cl-1", "cl-2");
+    }
+
+    @Test
+    void shouldParseManagedRepresentationSchemeWithMemberReferences() throws XmlException {
+        // XML tel que renvoyé par Colectica GET item (le MRS est dans le namespace reusable).
+        // Les membres peuvent être référencés par l'élément concret du type
+        // (ManagedMissingValuesRepresentationReference…) ou, dans des données historiques, par la
+        // tête générique ManagedRepresentationReference : les deux doivent être lus.
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <r:ManagedRepresentationScheme isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:mrs-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>mrs-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">ManagedRepresentationScheme Label</r:Content></r:Label>
+                    <r:ManagedMissingValuesRepresentationReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
+                    </r:ManagedMissingValuesRepresentationReference>
+                    <r:ManagedRepresentationReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>mr-legacy</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>ManagedTextRepresentation</r:TypeOfObject>
+                    </r:ManagedRepresentationReference>
+                </r:ManagedRepresentationScheme>
+            </Fragment>
+            """);
+
+        Ddi4ManagedRepresentationScheme scheme = converter.toManagedRepresentationScheme(doc);
+
+        assertThat(scheme.id()).isEqualTo("mrs-id");
+        assertThat(scheme.agency()).isEqualTo("fr.insee");
+        assertThat(scheme.version()).isEqualTo("1");
+        assertThat(scheme.label().get(0).value()).isEqualTo("ManagedRepresentationScheme Label");
+        assertThat(scheme.managedRepresentationReference())
+                .extracting(Reference::id)
+                .containsExactly("mmvr-1", "mr-legacy");
+        assertThat(scheme.managedRepresentationReference().get(0).type())
+                .isEqualTo("ManagedMissingValuesRepresentation");
     }
 
     @Test

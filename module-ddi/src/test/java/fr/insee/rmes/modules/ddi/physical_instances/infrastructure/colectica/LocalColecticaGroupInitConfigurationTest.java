@@ -1,8 +1,12 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
@@ -150,7 +154,7 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
-    void shouldCreateOneEmptyCodeListSchemeAndLogicalProductPerGroupVariant() throws Exception {
+    void shouldCreateOneCodeListSchemeAndLogicalProductPerGroupVariant() throws Exception {
         // Given: 1 series, no operations (keeps the test focused on the Group -> LogicalProduct ->
         // CodeListScheme chain, independent of study units / physical instances)
         JSONArray sparqlResults = new JSONArray();
@@ -179,10 +183,10 @@ class LocalColecticaGroupInitConfigurationTest {
         verify(ddiService, times(variants)).createLogicalProduct(lpCaptor.capture());
         verify(groupService, times(variants)).createOrUpdate(groupCaptor.capture());
 
-        // Each CodeListScheme is created empty (no code list referenced yet)
+        // Each CodeListScheme files the variant's sentinel-values code list (example data, cf. #1566)
         assertThat(schemeCaptor.getAllValues()).allSatisfy(scheme -> {
             assertThat(scheme.agency()).isEqualTo("fr.insee");
-            assertThat(scheme.codeListReference()).isNullOrEmpty();
+            assertThat(scheme.codeListReference()).hasSize(1);
         });
 
         // Per variant the chain is wired together: the i-th LogicalProduct references the i-th
@@ -209,7 +213,7 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
-    void shouldCreateOneEmptyCategorySchemePerGroupVariantFiledInTheGroupLogicalProduct() throws Exception {
+    void shouldCreateOneCategorySchemePerGroupVariantFiledInTheGroupLogicalProduct() throws Exception {
         // Given: 1 series, no operations (keeps the test focused on the Group -> LogicalProduct ->
         // CategoryScheme chain; without operations no study-unit LogicalProduct is created, so every
         // captured LogicalProduct is a group LogicalProduct)
@@ -237,9 +241,10 @@ class LocalColecticaGroupInitConfigurationTest {
         verify(ddiService, times(variants)).createCategoryScheme(categoryCaptor.capture());
         verify(ddiService, times(variants)).createLogicalProduct(lpCaptor.capture());
 
+        // Each CategoryScheme files the two sentinel categories (example data, cf. #1566)
         assertThat(categoryCaptor.getAllValues()).allSatisfy(scheme -> {
             assertThat(scheme.agency()).isEqualTo("fr.insee");
-            assertThat(scheme.categoryReference()).isNullOrEmpty();
+            assertThat(scheme.categoryReference()).hasSize(2);
         });
 
         // The i-th group LogicalProduct references the i-th CategoryScheme, alongside its CodeListScheme
@@ -260,7 +265,7 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
-    void shouldCreateOneEmptyManagedRepresentationSchemePerGroupVariantFiledInTheGroupLogicalProduct() throws Exception {
+    void shouldCreateOneManagedRepresentationSchemePerGroupVariantFiledInTheGroupLogicalProduct() throws Exception {
         // Given: 1 series, no operations (keeps the test focused on the Group -> LogicalProduct ->
         // ManagedRepresentationScheme chain; without operations no study-unit LogicalProduct is
         // created, so every captured LogicalProduct is a group LogicalProduct)
@@ -281,8 +286,8 @@ class LocalColecticaGroupInitConfigurationTest {
         // When
         runner.run();
 
-        // Then: one ManagedRepresentationScheme per group variant, each created empty and filed in
-        // the group LogicalProduct
+        // Then: one ManagedRepresentationScheme per group variant, each filing the variant's example
+        // ManagedMissingValuesRepresentation (cf. #1566) and filed in the group LogicalProduct
         int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
         ArgumentCaptor<Ddi4ManagedRepresentationScheme> mrsCaptor = ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
         ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
@@ -291,7 +296,7 @@ class LocalColecticaGroupInitConfigurationTest {
 
         assertThat(mrsCaptor.getAllValues()).allSatisfy(scheme -> {
             assertThat(scheme.agency()).isEqualTo("fr.insee");
-            assertThat(scheme.managedRepresentationReference()).isNullOrEmpty();
+            assertThat(scheme.managedRepresentationReference()).hasSize(1);
         });
 
         // The i-th group LogicalProduct references the i-th ManagedRepresentationScheme, alongside
@@ -314,6 +319,90 @@ class LocalColecticaGroupInitConfigurationTest {
         InOrder inOrder = inOrder(ddiService);
         inOrder.verify(ddiService).createManagedRepresentationScheme(any());
         inOrder.verify(ddiService).createLogicalProduct(any());
+    }
+
+    @Test
+    void shouldCreateSentinelValuesExamplePerGroupVariantFiledInTheGroupSchemes() throws Exception {
+        // Given: 1 series, no operations. Chaque variante de groupe doit recevoir un exemple de
+        // valeurs sentinelles (cf. #1566) : 2 catégories, la CodeList qui porte les codes NSP/REF,
+        // et la ManagedMissingValuesRepresentation qui référence la CodeList — chacun classé dans
+        // le scheme du groupe correspondant (CategoryScheme / CodeListScheme / MRS).
+        JSONArray sparqlResults = new JSONArray();
+        sparqlResults.put(new JSONObject()
+                .put("seriesId", "s1001")
+                .put("seriesIri", "http://id.insee.fr/operations/serie/s1001")
+                .put("seriesLabel", "Enquête innovation"));
+
+        when(repositoryPublicationReader.getResponseAsArray(anyString())).thenReturn(sparqlResults);
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaGroups(
+                groupService, studyUnitService, ddiService, repositoryPublicationReader,
+                createColecticaConfig(), colecticaClient,
+                "http://rdf.insee.fr/graphes/", "operations");
+
+        // When
+        runner.run();
+
+        // Then
+        int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
+        ArgumentCaptor<Ddi4Category> categoryCaptor = ArgumentCaptor.forClass(Ddi4Category.class);
+        ArgumentCaptor<Ddi4CodeList> codeListCaptor = ArgumentCaptor.forClass(Ddi4CodeList.class);
+        ArgumentCaptor<Ddi4ManagedMissingValuesRepresentation> mmvrCaptor =
+                ArgumentCaptor.forClass(Ddi4ManagedMissingValuesRepresentation.class);
+        ArgumentCaptor<Ddi4CodeListScheme> clsCaptor = ArgumentCaptor.forClass(Ddi4CodeListScheme.class);
+        ArgumentCaptor<Ddi4CategoryScheme> catsCaptor = ArgumentCaptor.forClass(Ddi4CategoryScheme.class);
+        ArgumentCaptor<Ddi4ManagedRepresentationScheme> mrsCaptor =
+                ArgumentCaptor.forClass(Ddi4ManagedRepresentationScheme.class);
+        verify(ddiService, times(2 * variants)).createCategory(categoryCaptor.capture());
+        verify(ddiService, times(variants)).createCodeList(codeListCaptor.capture());
+        verify(ddiService, times(variants)).createManagedMissingValuesRepresentation(mmvrCaptor.capture());
+        verify(ddiService, times(variants)).createCodeListScheme(clsCaptor.capture());
+        verify(ddiService, times(variants)).createCategoryScheme(catsCaptor.capture());
+        verify(ddiService, times(variants)).createManagedRepresentationScheme(mrsCaptor.capture());
+
+        for (int variant = 0; variant < variants; variant++) {
+            List<Ddi4Category> categories = categoryCaptor.getAllValues().subList(2 * variant, 2 * variant + 2);
+            Ddi4CodeList codeList = codeListCaptor.getAllValues().get(variant);
+            Ddi4ManagedMissingValuesRepresentation mmvr = mmvrCaptor.getAllValues().get(variant);
+
+            // La CodeList sentinelle porte 2 codes (NSP, REF) pointant vers les 2 catégories
+            assertThat(codeList.code()).hasSize(2);
+            assertThat(codeList.code())
+                    .extracting(code -> code.value().stringValue())
+                    .containsExactly("NSP", "REF");
+            assertThat(codeList.code())
+                    .extracting(code -> code.categoryReference().id())
+                    .containsExactly(categories.get(0).id(), categories.get(1).id());
+
+            // La MMVR référence la CodeList sentinelle via son MissingCodeRepresentation, avec un label
+            assertThat(mmvr.label()).isNotEmpty();
+            assertThat(mmvr.missingCodeRepresentation()).hasSize(1);
+            assertThat(mmvr.missingCodeRepresentation().get(0).codeListReference().id())
+                    .isEqualTo(codeList.id());
+
+            // Classements : CodeList dans le CodeListScheme, catégories dans le CategoryScheme,
+            // MMVR dans le ManagedRepresentationScheme
+            assertThat(clsCaptor.getAllValues().get(variant).codeListReference())
+                    .extracting(Reference::id).containsExactly(codeList.id());
+            assertThat(catsCaptor.getAllValues().get(variant).categoryReference())
+                    .extracting(Reference::id)
+                    .containsExactly(categories.get(0).id(), categories.get(1).id());
+            assertThat(mrsCaptor.getAllValues().get(variant).managedRepresentationReference())
+                    .extracting(Reference::id).containsExactly(mmvr.id());
+            assertThat(mrsCaptor.getAllValues().get(variant).managedRepresentationReference().get(0).type())
+                    .isEqualTo("ManagedMissingValuesRepresentation");
+        }
+
+        // Les enfants sont créés avant les schemes qui les référencent (pas de stubs Colectica).
+        // Les deux catégories d'une variante sont créées consécutivement, d'où le times(2)
+        // (la vérification InOrder de Mockito consomme le bloc consécutif entier).
+        InOrder inOrder = inOrder(ddiService);
+        inOrder.verify(ddiService, times(2)).createCategory(any());
+        inOrder.verify(ddiService).createCodeList(any());
+        inOrder.verify(ddiService).createManagedMissingValuesRepresentation(any());
+        inOrder.verify(ddiService).createCodeListScheme(any());
+        inOrder.verify(ddiService).createManagedRepresentationScheme(any());
     }
 
     @Test

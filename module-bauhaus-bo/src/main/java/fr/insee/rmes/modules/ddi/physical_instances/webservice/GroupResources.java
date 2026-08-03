@@ -284,6 +284,40 @@ public class GroupResources {
         }
     }
 
+    /**
+     * Les CodeLists de valeurs sentinelles du groupe (cf. #1566) : celles référencées par une
+     * {@code ManagedMissingValuesRepresentation} rangée dans un {@code ManagedRepresentationScheme}
+     * des LogicalProducts du groupe.
+     */
+    @GetMapping("/groups/{agencyId}/{id}/missing-codes-list")
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
+    public ResponseEntity<List<PartialCodesList>> getGroupMissingCodesLists(
+        @PathVariable String agencyId,
+        @PathVariable(Constants.ID) String id
+    ) {
+        logger.info(
+            "GET /ddi/groups/{}/{}/missing-codes-list - Getting sentinel-value code lists of group",
+            agencyId,
+            id
+        );
+        try {
+            List<PartialCodesList> codeLists =
+                ddiService.getMissingCodesListsByGroup(agencyId, id);
+            return ResponseEntity.ok(codeLists);
+        } catch (Exception e) {
+            logger.error(
+                "Failed to get sentinel-value code lists for group: agencyId={}, id={}",
+                agencyId,
+                id,
+                e
+            );
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     private List<PartialGroup> resolveGroups() {
         return resolveByReadStampStrategy(
             ddiService::getGroupsFilteredByStamp,

@@ -3,7 +3,9 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
@@ -43,6 +45,9 @@ public interface DDIService {
     void createCategoryScheme(Ddi4CategoryScheme categoryScheme);
     void createVariableScheme(Ddi4VariableScheme variableScheme);
     void createManagedRepresentationScheme(Ddi4ManagedRepresentationScheme managedRepresentationScheme);
+    void createManagedMissingValuesRepresentation(Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation);
+    void createCodeList(Ddi4CodeList codeList);
+    void createCategory(Ddi4Category category);
     List<PartialCodesList> getMutualizedCodesLists();
     void evictMutualizedCodesListsCache();
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
@@ -55,6 +60,11 @@ public interface DDIService {
     List<PartialCodeListScheme> getCodeListSchemesByLogicalProduct(String agencyId, String logicalProductId);
     List<PartialCodesList> getCodeListsByCodeListScheme(String agencyId, String codeListSchemeId);
     List<PartialCodesList> getCodeListsByGroup(String agencyId, String groupId);
+    /**
+     * Les CodeLists de valeurs sentinelles du groupe (cf. #1566) : celles référencées par une
+     * {@code ManagedMissingValuesRepresentation} d'un {@code ManagedRepresentationScheme} du groupe.
+     */
+    List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId);
     List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);

@@ -3,11 +3,15 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
@@ -19,6 +23,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
@@ -104,11 +109,20 @@ public class LocalColecticaGroupInitConfiguration {
     private static final String CATEGORY_SCHEME_SEED_SUFFIX = "#categoryscheme";
 
     /**
-     * Suffix appended to a group variant's seed to derive the deterministic id of its (initially
-     * empty) ManagedRepresentationScheme. Filed, like the CodeListScheme, in the group's
-     * LogicalProduct.
+     * Suffix appended to a group variant's seed to derive the deterministic id of its
+     * ManagedRepresentationScheme. Filed, like the CodeListScheme, in the group's LogicalProduct.
      */
     private static final String MANAGED_REPRESENTATION_SCHEME_SEED_SUFFIX = "#managedrepresentationscheme";
+
+    /**
+     * Suffixes appended to a group variant's seed to derive the deterministic ids of its example of
+     * sentinel values (cf. #1566) : the two categories (NSP/REF), their codes, the CodeList that
+     * carries them, and the ManagedMissingValuesRepresentation that references the CodeList.
+     */
+    private static final String SENTINEL_CATEGORY_SEED_SUFFIX = "#sentinelcategory-";
+    private static final String SENTINEL_CODE_SEED_SUFFIX = "#sentinelcode-";
+    private static final String SENTINEL_CODE_LIST_SEED_SUFFIX = "#sentinelcodelist";
+    private static final String SENTINEL_MMVR_SEED_SUFFIX = "#managedmissingvaluesrepresentation";
 
     /**
      * Suffixes appended to a <em>series</em> seed (variant-independent) to derive the deterministic
@@ -263,6 +277,12 @@ public class LocalColecticaGroupInitConfiguration {
                         // LogicalProduct that files them, BEFORE the group, so Colectica does not auto-create
                         // empty stubs for the items the group references (same ordering constraint as study
                         // units above).
+                        // Exemple de valeurs sentinelles (cf. #1566) : créé AVANT les schemes qui le
+                        // classent, pour que Colectica ne fabrique pas de stubs des items référencés.
+                        String variantSeed = series.seriesIri() + VARIANT_SEED_SEPARATOR + variant;
+                        SentinelValuesExample sentinelExample = createSentinelValuesExample(
+                                ddiService, variantSeed, groupLabel, defaultAgencyId, defaultLang, versionDate);
+
                         String codeListSchemeId = generateDeterministicUuid(
                                 series.seriesIri() + VARIANT_SEED_SEPARATOR + variant + CODE_LIST_SCHEME_SEED_SUFFIX);
                         Ddi4CodeListScheme codeListScheme = new Ddi4CodeListScheme(
@@ -273,7 +293,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 codeListSchemeId,
                                 "1",
                                 LangStrings.of(defaultLang, groupLabel + " Code List Scheme"),
-                                List.of()
+                                List.of(sentinelExample.codeListReference())
                         );
                         logger.info("Creating code list scheme: id={}, variant={}", codeListSchemeId, variantWord);
                         ddiService.createCodeListScheme(codeListScheme);
@@ -288,7 +308,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 categorySchemeId,
                                 "1",
                                 LangStrings.of(defaultLang, groupLabel + " Category Scheme"),
-                                List.of()
+                                sentinelExample.categoryReferences()
                         );
                         logger.info("Creating category scheme: id={}, variant={}", categorySchemeId, variantWord);
                         ddiService.createCategoryScheme(categoryScheme);
@@ -303,7 +323,7 @@ public class LocalColecticaGroupInitConfiguration {
                                 managedRepresentationSchemeId,
                                 "1",
                                 LangStrings.of(defaultLang, groupLabel + " Managed Representation Scheme"),
-                                List.of()
+                                List.of(sentinelExample.managedMissingValuesRepresentationReference())
                         );
                         logger.info("Creating managed representation scheme: id={}, variant={}", managedRepresentationSchemeId, variantWord);
                         ddiService.createManagedRepresentationScheme(managedRepresentationScheme);
@@ -473,6 +493,99 @@ public class LocalColecticaGroupInitConfiguration {
         ddiService.createLogicalProduct(studyUnitLogicalProduct);
 
         return Reference.of(defaultAgencyId, studyUnitLogicalProductId, "1", "LogicalProduct");
+    }
+
+    /**
+     * Références vers les items de l'exemple de valeurs sentinelles d'une variante de groupe, à
+     * classer dans les schemes correspondants : la CodeList dans le CodeListScheme, les catégories
+     * dans le CategoryScheme, la ManagedMissingValuesRepresentation dans le
+     * ManagedRepresentationScheme.
+     */
+    private record SentinelValuesExample(
+            Reference codeListReference,
+            List<Reference> categoryReferences,
+            Reference managedMissingValuesRepresentationReference) {
+    }
+
+    /**
+     * Crée dans Colectica l'exemple de valeurs sentinelles d'une variante de groupe (cf. #1566) :
+     * deux catégories (« Ne sait pas », « Refus »), la CodeList qui porte les codes NSP/REF, et la
+     * ManagedMissingValuesRepresentation (type MissingCodeRepresentation) qui référence la CodeList.
+     * Les ids sont déterministes (dérivés de la graine de la variante) pour que l'init soit rejouable.
+     */
+    private SentinelValuesExample createSentinelValuesExample(DDIService ddiService, String variantSeed,
+            String groupLabel, String defaultAgencyId, String defaultLang, String versionDate) {
+        record SentinelCode(String value, String categoryLabel) {}
+        List<SentinelCode> sentinelCodes = List.of(
+                new SentinelCode("NSP", "Ne sait pas"),
+                new SentinelCode("REF", "Refus"));
+
+        List<Reference> categoryReferences = new ArrayList<>();
+        List<Code> codes = new ArrayList<>();
+        for (SentinelCode sentinelCode : sentinelCodes) {
+            String categoryId = generateDeterministicUuid(
+                    variantSeed + SENTINEL_CATEGORY_SEED_SUFFIX + sentinelCode.value());
+            Ddi4Category category = new Ddi4Category(
+                    Ddi4Category.TYPE,
+                    CogsDate.ofDateTime(versionDate),
+                    "urn:ddi:%s:%s:1".formatted(defaultAgencyId, categoryId),
+                    defaultAgencyId,
+                    categoryId,
+                    "1",
+                    LangStrings.of(defaultLang, sentinelCode.categoryLabel()));
+            logger.info("Creating sentinel category: id={}, label='{}'", categoryId, sentinelCode.categoryLabel());
+            ddiService.createCategory(category);
+            categoryReferences.add(Reference.of(defaultAgencyId, categoryId, "1", "Category"));
+
+            String codeId = generateDeterministicUuid(
+                    variantSeed + SENTINEL_CODE_SEED_SUFFIX + sentinelCode.value());
+            codes.add(new Code(
+                    Code.TYPE,
+                    "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeId),
+                    defaultAgencyId,
+                    codeId,
+                    "1",
+                    Reference.of(defaultAgencyId, categoryId, "1", "Category"),
+                    ValueType.of(sentinelCode.value()),
+                    null));
+        }
+
+        String codeListId = generateDeterministicUuid(variantSeed + SENTINEL_CODE_LIST_SEED_SUFFIX);
+        Ddi4CodeList codeList = new Ddi4CodeList(
+                Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime(versionDate),
+                "urn:ddi:%s:%s:1".formatted(defaultAgencyId, codeListId),
+                defaultAgencyId,
+                codeListId,
+                "1",
+                LangStrings.of(defaultLang, groupLabel + " Sentinel Values Code List"),
+                null,
+                codes);
+        logger.info("Creating sentinel code list: id={}", codeListId);
+        ddiService.createCodeList(codeList);
+
+        String managedMissingValuesRepresentationId = generateDeterministicUuid(
+                variantSeed + SENTINEL_MMVR_SEED_SUFFIX);
+        Ddi4ManagedMissingValuesRepresentation managedMissingValuesRepresentation =
+                new Ddi4ManagedMissingValuesRepresentation(
+                        Ddi4ManagedMissingValuesRepresentation.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, managedMissingValuesRepresentationId),
+                        defaultAgencyId,
+                        managedMissingValuesRepresentationId,
+                        "1",
+                        LangStrings.of(defaultLang, groupLabel + " Sentinel Values"),
+                        List.of(new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE,
+                                Reference.of(defaultAgencyId, codeListId, "1", "CodeList"))));
+        logger.info("Creating sentinel managed missing values representation: id={}",
+                managedMissingValuesRepresentationId);
+        ddiService.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
+
+        return new SentinelValuesExample(
+                Reference.of(defaultAgencyId, codeListId, "1", "CodeList"),
+                categoryReferences,
+                Reference.of(defaultAgencyId, managedMissingValuesRepresentationId, "1",
+                        "ManagedMissingValuesRepresentation"));
     }
 
     /**
