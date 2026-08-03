@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static javax.xml.XMLConstants.*;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -3020,7 +3021,7 @@ public class DDIRepositoryImpl implements DDIRepository {
                 .stream()
                 .findFirst()
                 .orElseThrow(() ->
-                    new RuntimeException(
+                    new StudyUnitNotFoundException(
                         "No study unit found for physical instance " + agencyId + "/" + id
                     )
                 );

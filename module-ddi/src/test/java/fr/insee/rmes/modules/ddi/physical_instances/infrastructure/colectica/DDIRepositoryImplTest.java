@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -2007,6 +2008,28 @@ class DDIRepositoryImplTest {
         assertEquals("fr.insee", result.groupAgency());
         verify(colecticaClient, times(2))
             .findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT), any(), anyList());
+    }
+
+    @Test
+    void shouldThrowStudyUnitNotFoundWhenPhysicalInstanceHasNoStudyUnit() {
+        // Given
+        String studyUnitType = "30ea0200-7121-4f01-8d21-a931a182b86d";
+        String agencyId = "fr.insee";
+        String piId = "pi-111";
+
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, piId)),
+                eq(List.of(studyUnitType))))
+            .thenReturn(List.of());
+
+        // When / Then
+        StudyUnitNotFoundException exception = assertThrows(
+            StudyUnitNotFoundException.class,
+            () -> ddiRepository.getPhysicalInstanceParents(agencyId, piId)
+        );
+        assertThat(exception.getMessage())
+            .isEqualTo("No study unit found for physical instance fr.insee/pi-111");
     }
 
     // ---- #485 : getCodeList / getCodeListXml (CodeList + Categories, versioned) ----
