@@ -14,7 +14,13 @@ public record Ddi4DataRelationship(
         @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("LogicalRecord") List<LogicalRecord> logicalRecord
-) {
+) implements Ddi4VersionedItem {
 
     public static final String TYPE = "DataRelationship";
+
+    @Override
+    public Ddi4DataRelationship withVersionDate(CogsDate versionDate) {
+        return new Ddi4DataRelationship(type, versionDate, urn, agency, id, version,
+                basedOnObject, label, logicalRecord);
+    }
 }

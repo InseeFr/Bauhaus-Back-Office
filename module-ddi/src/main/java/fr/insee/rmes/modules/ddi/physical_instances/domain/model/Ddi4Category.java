@@ -12,7 +12,12 @@ public record Ddi4Category(
         @JsonProperty("ID") String id,
         @JsonProperty("Version") String version,
         @JsonProperty("Label") List<LangString> label
-) {
+) implements Ddi4VersionedItem {
 
     public static final String TYPE = "Category";
+
+    @Override
+    public Ddi4Category withVersionDate(CogsDate versionDate) {
+        return new Ddi4Category(type, versionDate, urn, agency, id, version, label);
+    }
 }

@@ -17,7 +17,13 @@ public record Ddi4Variable(
         @JsonProperty("Description") List<LangString> description,
         @JsonProperty("VariableRepresentation") VariableRepresentation variableRepresentation,
         @JsonProperty("IsGeographic") Boolean isGeographic
-) {
+) implements Ddi4VersionedItem {
 
     public static final String TYPE = "Variable";
+
+    @Override
+    public Ddi4Variable withVersionDate(CogsDate versionDate) {
+        return new Ddi4Variable(type, versionDate, urn, agency, id, version, basedOnObject,
+                variableName, label, description, variableRepresentation, isGeographic);
+    }
 }

@@ -15,7 +15,12 @@ public record Ddi4CodeList(
         @JsonProperty("Label") List<LangString> label,
         @JsonProperty("Level") List<Level> level,
         @JsonProperty("Code") List<Code> code
-) {
+) implements Ddi4VersionedItem {
 
     public static final String TYPE = "CodeList";
+
+    @Override
+    public Ddi4CodeList withVersionDate(CogsDate versionDate) {
+        return new Ddi4CodeList(type, versionDate, urn, agency, id, version, label, level, code);
+    }
 }

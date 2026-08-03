@@ -19,6 +19,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalP
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -27,9 +29,14 @@ import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreat
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +49,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DDIServiceImplTest {
+
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-08-03T08:00:00Z"), ZoneOffset.ofHours(2));
 
     @Mock
     private DDIRepository ddiRepository;
@@ -59,7 +71,7 @@ class DDIServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort);
+        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, FIXED_CLOCK);
     }
 
     @Test
@@ -472,6 +484,54 @@ class DDIServiceImplTest {
         assertEquals("updated-schema", result.schema());
         verify(ddiRepository).updatePhysicalInstance(agencyId, instanceId, request);
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
+    }
+
+    @Test
+    void shouldKeepStoredVersionDateForUnchangedItemsOnFullUpdate() {
+        // Given : l'état stocké et un payload au même contenu mais avec une autre date
+        CogsDate storedDate = CogsDate.ofDateTime("2020-01-01T00:00:00Z");
+        Ddi4Response stored = physicalInstanceOnlyResponse(storedDate, "Ma PI");
+        Ddi4Response incoming = physicalInstanceOnlyResponse(
+                CogsDate.ofDateTime("2026-01-01T00:00:00Z"), "Ma PI");
+        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+
+        // When
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        // Then : GET préalable, puis update avec le payload réconcilié (date stockée)
+        InOrder inOrder = inOrder(ddiRepository);
+        inOrder.verify(ddiRepository).getPhysicalInstance("fr.insee", "pi-1");
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        inOrder.verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        assertEquals(storedDate, saved.getValue().physicalInstance().getFirst().versionDate());
+    }
+
+    @Test
+    void shouldStampModifiedItemsWithClockNowOnFullUpdate() {
+        // Given : le contenu de la PI change (titre)
+        Ddi4Response stored = physicalInstanceOnlyResponse(
+                CogsDate.ofDateTime("2020-01-01T00:00:00Z"), "Ma PI");
+        Ddi4Response incoming = physicalInstanceOnlyResponse(
+                CogsDate.ofDateTime("2020-01-01T00:00:00Z"), "Ma PI modifiée");
+        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+
+        // When
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        // Then : date à « maintenant » selon l'horloge injectée
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        assertEquals(CogsDate.ofDateTime("2026-08-03T10:00:00+02:00"),
+                saved.getValue().physicalInstance().getFirst().versionDate());
+    }
+
+    private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title) {
+        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE, date,
+                Reference.synthesizeUrn("fr.insee", "pi-1", "1"), "fr.insee", "pi-1", "1", null,
+                new Citation(List.of(new LangString("fr", title))), null);
+        return new Ddi4Response(Ddi4Response.SCHEMA, null,
+                List.of(physicalInstance), null, null, null, null);
     }
 
     @Test

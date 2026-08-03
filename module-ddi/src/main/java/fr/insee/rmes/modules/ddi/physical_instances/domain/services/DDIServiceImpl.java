@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -32,6 +33,9 @@ import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,10 +50,12 @@ public class DDIServiceImpl implements DDIService {
 
     private final DDIRepository ddiRepository;
     private final SeriesCreatorsPort seriesCreatorsPort;
+    private final Clock clock;
 
-    public DDIServiceImpl(DDIRepository ddiRepository, SeriesCreatorsPort seriesCreatorsPort) {
+    public DDIServiceImpl(DDIRepository ddiRepository, SeriesCreatorsPort seriesCreatorsPort, Clock clock) {
         this.ddiRepository = ddiRepository;
         this.seriesCreatorsPort = seriesCreatorsPort;
+        this.clock = clock;
     }
 
     @Override
@@ -263,7 +269,12 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
-        ddiRepository.updateFullPhysicalInstance(agencyId, id, ddi4Response);
+        // GET préalable : les items non modifiés gardent leur date stockée, les items
+        // modifiés ou nouveaux passent à « maintenant », avec propagation enfant → parent.
+        Ddi4Response current = ddiRepository.getPhysicalInstance(agencyId, id);
+        Ddi4Response reconciled = VersionDateReconciler.reconcile(current, ddi4Response,
+                CogsDate.ofDateTime(ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        ddiRepository.updateFullPhysicalInstance(agencyId, id, reconciled);
         return ddiRepository.getPhysicalInstance(agencyId, id);
     }
 

@@ -26,6 +26,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.Col
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
 import java.util.List;
 
 @Configuration
@@ -33,7 +34,7 @@ public class PhysicalInstanceConfiguration {
 
     @Bean
     DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort) {
-        return new DDIServiceImpl(repository, seriesCreatorsPort);
+        return new DDIServiceImpl(repository, seriesCreatorsPort, Clock.systemDefaultZone());
     }
 
     @Bean
