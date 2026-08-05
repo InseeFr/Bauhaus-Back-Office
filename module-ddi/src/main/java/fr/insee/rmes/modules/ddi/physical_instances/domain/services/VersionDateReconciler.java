@@ -43,7 +43,8 @@ public final class VersionDateReconciler {
                 rewrite(incoming.dataRelationship(), dirty, storedByKey, now),
                 rewrite(incoming.variable(), dirty, storedByKey, now),
                 rewrite(incoming.codeList(), dirty, storedByKey, now),
-                rewrite(incoming.category(), dirty, storedByKey, now));
+                rewrite(incoming.category(), dirty, storedByKey, now),
+                rewrite(incoming.managedMissingValuesRepresentation(), dirty, storedByKey, now));
     }
 
     /** Items modifiés ou nouveaux : comparaison à l'état stocké en neutralisant la {@code VersionDate}. */
@@ -144,7 +145,8 @@ public final class VersionDateReconciler {
             return Stream.empty();
         }
         return Stream.of(response.physicalInstance(), response.dataRelationship(),
-                        response.variable(), response.codeList(), response.category())
+                        response.variable(), response.codeList(), response.category(),
+                        response.managedMissingValuesRepresentation())
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)
                 .map(Ddi4VersionedItem.class::cast);

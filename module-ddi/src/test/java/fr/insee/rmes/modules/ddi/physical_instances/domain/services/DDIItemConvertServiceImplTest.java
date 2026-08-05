@@ -103,7 +103,7 @@ class DDIItemConvertServiceImplTest {
                 Ddi4CodeList.TYPE, null, "urn:ddi:fr.insee:cl-1:1",
                 "fr.insee", "cl-1", "1", null, null, List.of());
         Ddi4Response ddi4 = new Ddi4Response(
-                "ddi:4.0", null, null, null, null, List.of(codeList), List.<Ddi4Category>of());
+                "ddi:4.0", null, null, null, null, List.of(codeList), List.<Ddi4Category>of(), null);
         when(schemaConverter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"))).thenReturn(ddi4);
 
         var service = new DDIItemConvertServiceImpl(List.of(unsupported), schemaConverter, ITEM_TYPES, OBJECT_MAPPER);

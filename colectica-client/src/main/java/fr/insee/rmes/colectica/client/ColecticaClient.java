@@ -122,6 +122,21 @@ public class ColecticaClient {
     }
 
     /**
+     * Deletes every version of an item via {@code DELETE item/{agency}/{id}} (URL-encoded segments).
+     */
+    public void deleteItem(String agency, String id) {
+        String url = baseApiUrl + "item/"
+            + URLEncoder.encode(agency, StandardCharsets.UTF_8) + "/"
+            + URLEncoder.encode(id, StandardCharsets.UTF_8);
+        withAuth(token -> restClient
+            .delete()
+            .uri(url)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .retrieve()
+            .toBodilessEntity());
+    }
+
+    /**
      * Fetches the references of a set via {@code GET set/{agency}/{id}[/{version}]} (latest when version
      * is {@code null}/blank).
      */

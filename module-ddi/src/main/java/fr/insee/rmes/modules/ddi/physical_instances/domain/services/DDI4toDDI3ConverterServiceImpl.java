@@ -112,6 +112,10 @@ public class DDI4toDDI3ConverterServiceImpl implements DDI4toDDI3ConverterServic
                         cat.id(), xmlFragment, dateTimeOf(cat.versionDate())));
             });
         }
+        if (ddi4.managedMissingValuesRepresentation() != null) {
+            ddi4.managedMissingValuesRepresentation()
+                    .forEach(mmvr -> items.add(toManagedMissingValuesRepresentationItem(mmvr)));
+        }
 
         Ddi3Response.Ddi3Options options = new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace"));
         return new Ddi3Response(options, items);

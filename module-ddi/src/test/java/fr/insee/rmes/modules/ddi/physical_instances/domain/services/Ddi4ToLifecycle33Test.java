@@ -156,7 +156,7 @@ class Ddi4ToLifecycle33Test {
                 null,
                 new CodeRepresentation(CodeRepresentation.TYPE,true,
                         Reference.of("fr.insee", "cl-id", "1", "CodeList")),
-                null, null, null));
+                null, null, null, null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
 
@@ -167,13 +167,36 @@ class Ddi4ToLifecycle33Test {
                 .contains(">cl-id<");
     }
 
+    /**
+     * Valeurs sentinelles (#1566) : la référence MMVR est portée par le wrapper
+     * {@code VariableRepresentation} — élément {@code MissingValuesReference} du namespace
+     * <b>logicalproduct</b> (élément local du XSD, pas {@code r:}) — quel que soit le type de
+     * représentation.
+     */
+    @Test
+    void shouldWriteMissingValuesReferenceOnVariableRepresentation() {
+        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
+                null,
+                new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-id", "1", "CodeList")),
+                null, null, null,
+                Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation")));
+
+        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:MissingValuesReference")
+                .contains(">mmvr-1<")
+                .contains(">ManagedMissingValuesRepresentation<");
+    }
+
     @Test
     void shouldBuildVariableWithNumericRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null,
                 new NumericRepresentation(NumericRepresentation.TYPE,"Integer",
                         new NumberRange(new RangeValue(false, 0.0), new RangeValue(true, 100.0))),
-                null, null));
+                null, null, null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
 
@@ -190,7 +213,7 @@ class Ddi4ToLifecycle33Test {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null, null,
                 new DateTimeRepresentation(DateTimeRepresentation.TYPE,"Date", "yyyy-MM-dd"),
-                null));
+                null, null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
 
@@ -204,7 +227,7 @@ class Ddi4ToLifecycle33Test {
     void shouldBuildVariableWithTextRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null, null, null,
-                new TextRepresentation(TextRepresentation.TYPE,255, 1, "[A-Z]+", true)));
+                new TextRepresentation(TextRepresentation.TYPE,255, 1, "[A-Z]+", true), null));
 
         String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
 

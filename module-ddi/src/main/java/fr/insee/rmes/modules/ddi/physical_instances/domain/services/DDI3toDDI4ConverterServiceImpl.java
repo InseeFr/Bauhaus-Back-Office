@@ -9,6 +9,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
@@ -48,6 +50,7 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         List<Ddi4Variable> variables = new ArrayList<>();
         List<Ddi4CodeList> codeLists = new ArrayList<>();
         List<Ddi4Category> categories = new ArrayList<>();
+        List<Ddi4ManagedMissingValuesRepresentation> managedMissingValuesRepresentations = new ArrayList<>();
         List<Reference> topLevelReferences = new ArrayList<>();
 
         if (ddi3.items() != null) {
@@ -71,6 +74,9 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
                         codeLists.add(lifecycle33ToDdi4.toCodeList(fragment));
                     } else if (itemTypes.get("Category").equals(itemType)) {
                         categories.add(lifecycle33ToDdi4.toCategory(fragment));
+                    } else if (itemType.equals(itemTypes.get("ManagedMissingValuesRepresentation"))) {
+                        managedMissingValuesRepresentations
+                                .add(lifecycle33ToDdi4.toManagedMissingValuesRepresentation(fragment));
                     }
                 } catch (XmlException e) {
                     logger.error("Error parsing DDI3 item of type {}", item.itemType(), e);
@@ -86,7 +92,8 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
             dataRelationships.isEmpty() ? null : dataRelationships,
             variables.isEmpty() ? null : variables,
             codeLists.isEmpty() ? null : codeLists,
-            categories.isEmpty() ? null : categories
+            categories.isEmpty() ? null : categories,
+            managedMissingValuesRepresentations.isEmpty() ? null : managedMissingValuesRepresentations
         );
     }
 
@@ -153,6 +160,39 @@ public class DDI3toDDI4ConverterServiceImpl implements DDI3toDDI4ConverterServic
         } catch (XmlException e) {
             logger.error("Error parsing StudyUnit fragment", e);
             throw new RuntimeException("Error parsing StudyUnit fragment", e);
+        }
+    }
+
+    @Override
+    public Ddi4ManagedRepresentationScheme toManagedRepresentationScheme(String fragmentXml) {
+        try {
+            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            return lifecycle33ToDdi4.toManagedRepresentationScheme(fragment);
+        } catch (XmlException e) {
+            logger.error("Error parsing ManagedRepresentationScheme fragment", e);
+            throw new RuntimeException("Error parsing ManagedRepresentationScheme fragment", e);
+        }
+    }
+
+    @Override
+    public Ddi4ManagedMissingValuesRepresentation toManagedMissingValuesRepresentation(String fragmentXml) {
+        try {
+            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            return lifecycle33ToDdi4.toManagedMissingValuesRepresentation(fragment);
+        } catch (XmlException e) {
+            logger.error("Error parsing ManagedMissingValuesRepresentation fragment", e);
+            throw new RuntimeException("Error parsing ManagedMissingValuesRepresentation fragment", e);
+        }
+    }
+
+    @Override
+    public Ddi4CodeList toCodeList(String fragmentXml) {
+        try {
+            FragmentDocument fragment = FragmentDocument.Factory.parse(fragmentXml);
+            return lifecycle33ToDdi4.toCodeList(fragment);
+        } catch (XmlException e) {
+            logger.error("Error parsing CodeList fragment", e);
+            throw new RuntimeException("Error parsing CodeList fragment", e);
         }
     }
 }

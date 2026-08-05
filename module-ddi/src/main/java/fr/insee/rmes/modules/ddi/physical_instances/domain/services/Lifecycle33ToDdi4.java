@@ -24,6 +24,7 @@ import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.LabelType;
+import fr.insee.ddi.lifecycle33.reusable.ManagedMissingValuesRepresentationType;
 import fr.insee.ddi.lifecycle33.reusable.NameType;
 import fr.insee.ddi.lifecycle33.reusable.NumberRangeType;
 import fr.insee.ddi.lifecycle33.reusable.NumberRangeValueType;
@@ -50,6 +51,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListSch
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -244,6 +246,33 @@ public class Lifecycle33ToDdi4 {
         );
     }
 
+    public Ddi4ManagedMissingValuesRepresentation toManagedMissingValuesRepresentation(FragmentDocument doc) {
+        ManagedMissingValuesRepresentationType mmvr =
+                doc.getFragment().getManagedMissingValuesRepresentation();
+        if (mmvr == null) {
+            throw new IllegalArgumentException(
+                    "Fragment does not contain a ManagedMissingValuesRepresentation");
+        }
+        List<CodeRepresentation> missingCodeRepresentations = new ArrayList<>();
+        for (CodeRepresentationBaseType rep : mmvr.getMissingCodeRepresentationArray()) {
+            Reference clRef = rep.isSetCodeListReference()
+                    ? readReference(rep.getCodeListReference())
+                    : null;
+            missingCodeRepresentations.add(
+                    new CodeRepresentation(CodeRepresentation.TYPE, rep.getBlankIsMissingValue(), clRef));
+        }
+        return new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue()),
+                mmvr.getURNArray(0).getStringValue(),
+                mmvr.getAgencyArray(0),
+                mmvr.getIDArray(0).getStringValue(),
+                mmvr.getVersionArray(0),
+                mmvr.sizeOfLabelArray() > 0 ? readLabel(mmvr.getLabelArray(0)) : null,
+                missingCodeRepresentations.isEmpty() ? null : missingCodeRepresentations
+        );
+    }
+
     public Ddi4CategoryScheme toCategoryScheme(FragmentDocument doc) {
         CategorySchemeType scheme = doc.getFragment().getCategoryScheme();
         if (scheme == null) {
@@ -422,7 +451,8 @@ public class Lifecycle33ToDdi4 {
                 "CodeRepresentation".equals(repName) ? readCodeRepresentation(rep) : null,
                 "NumericRepresentation".equals(repName) ? readNumericRepresentation(rep) : null,
                 "DateTimeRepresentation".equals(repName) ? readDateTimeRepresentation(rep) : null,
-                "TextRepresentation".equals(repName) ? readTextRepresentation(rep) : null
+                "TextRepresentation".equals(repName) ? readTextRepresentation(rep) : null,
+                vr.isSetMissingValuesReference() ? readReference(vr.getMissingValuesReference()) : null
         );
     }
 

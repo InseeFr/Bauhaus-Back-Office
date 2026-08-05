@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -310,6 +311,40 @@ public class GroupResources {
         } catch (Exception e) {
             logger.error(
                 "Failed to get sentinel-value code lists for group: agencyId={}, id={}",
+                agencyId,
+                id,
+                e
+            );
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Les ManagedMissingValuesRepresentations réutilisables du groupe (valeurs sentinelles,
+     * cf. #1566) : identité + libellé + aperçu des codes de la CodeList de sentinelles référencée,
+     * pour alimenter le sélecteur de réutilisation.
+     */
+    @GetMapping("/groups/{agencyId}/{id}/missing-values-representations")
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
+    public ResponseEntity<List<PartialMissingValuesRepresentation>> getGroupMissingValuesRepresentations(
+        @PathVariable String agencyId,
+        @PathVariable(Constants.ID) String id
+    ) {
+        logger.info(
+            "GET /ddi/groups/{}/{}/missing-values-representations - Getting reusable missing values representations of group",
+            agencyId,
+            id
+        );
+        try {
+            List<PartialMissingValuesRepresentation> representations =
+                ddiService.getMissingValuesRepresentationsByGroup(agencyId, id);
+            return ResponseEntity.ok(representations);
+        } catch (Exception e) {
+            logger.error(
+                "Failed to get missing values representations for group: agencyId={}, id={}",
                 agencyId,
                 id,
                 e

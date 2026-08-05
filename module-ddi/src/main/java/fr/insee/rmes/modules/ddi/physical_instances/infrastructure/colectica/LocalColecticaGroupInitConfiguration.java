@@ -627,7 +627,7 @@ public class LocalColecticaGroupInitConfiguration {
                     new VariableRepresentation(
                             null,
                             new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE, missingCodeListRef),
-                            null, null, null),
+                            null, null, null, null),
                     null);
 
             LogicalRecord updatedLogicalRecord = new LogicalRecord(
@@ -650,6 +650,7 @@ public class LocalColecticaGroupInitConfiguration {
                     List.of(updatedDataRelationship),
                     List.of(variable),
                     null,  // pas de CodeList : la référence de la variable pointe dans le vide
+                    null,
                     null);
 
             ddiService.updateFullPhysicalInstance(pi.agency(), pi.id(), full);

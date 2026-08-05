@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,8 @@ class Ddi4ResponseSerializationTest {
                 List.of(),                  // DataRelationship (présent mais vide)
                 null,                       // Variable
                 null,                       // CodeList
-                null);                      // Category
+                null,                       // Category
+                null);                      // ManagedMissingValuesRepresentation
 
         String json = mapper.writeValueAsString(response);
 
@@ -73,6 +75,38 @@ class Ddi4ResponseSerializationTest {
                 .doesNotContain("\"Level\"")
                 .doesNotContain("\"Code\"")
                 .doesNotContain("null");
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : la réponse DDI 4 transporte les
+     * {@code ManagedMissingValuesRepresentation} référencées par les variables.
+     */
+    @Test
+    void ddi4Response_carriesManagedMissingValuesRepresentations() throws Exception {
+        String json = """
+                {
+                    "$schema": "ddi:4.0",
+                    "ManagedMissingValuesRepresentation": [
+                        {
+                            "$type": "ManagedMissingValuesRepresentation",
+                            "URN": "urn:ddi:fr.insee:mmvr-1:1",
+                            "Agency": "fr.insee",
+                            "ID": "mmvr-1",
+                            "Version": "1",
+                            "Label": [{"@language": "fr-FR", "@value": "Valeurs sentinelles NSP/REF"}]
+                        }
+                    ]
+                }
+                """;
+        ObjectMapper tolerantMapper = new ObjectMapper()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        Ddi4Response response = tolerantMapper.readValue(json, Ddi4Response.class);
+        String out = tolerantMapper.writeValueAsString(response);
+
+        assertThat(out)
+                .contains("\"ManagedMissingValuesRepresentation\"")
+                .contains("\"urn:ddi:fr.insee:mmvr-1:1\"");
     }
 
     @Test

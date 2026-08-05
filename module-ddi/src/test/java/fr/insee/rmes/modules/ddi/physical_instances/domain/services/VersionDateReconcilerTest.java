@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
@@ -124,7 +125,7 @@ class VersionDateReconcilerTest {
                 sameContent.physicalInstance(), sameContent.dataRelationship(),
                 List.of(sameContent.variable().get(0), sameContent.variable().get(1),
                         variable("var-3", FRONT_DATE, "cl-2")),
-                sameContent.codeList(), sameContent.category());
+                sameContent.codeList(), sameContent.category(), null);
 
         Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
 
@@ -149,6 +150,43 @@ class VersionDateReconcilerTest {
         assertEquals(NOW, codeListDate(reconciled, "cl-2"));
         assertEquals(NOW, categoryDate(reconciled, "cat-1"));
         assertEquals(NOW, categoryDate(reconciled, "cat-2"));
+    }
+
+    /** Valeurs sentinelles (#1566) : une MMVR nouvelle (absente de l'état stocké) est datée à now. */
+    @Test
+    void newManagedMissingValuesRepresentationGetsNow() {
+        Ddi4Response stored = mmvrOnlyResponse(null);
+        Ddi4Response incoming = mmvrOnlyResponse(mmvr(FRONT_DATE));
+
+        Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
+
+        assertEquals(NOW, reconciled.managedMissingValuesRepresentation().getFirst().versionDate());
+    }
+
+    /** Valeurs sentinelles (#1566) : une MMVR réutilisée telle quelle garde sa date stockée. */
+    @Test
+    void unchangedManagedMissingValuesRepresentationKeepsStoredDate() {
+        CogsDate mmvrDate = date("2020-10-01T00:00:00Z");
+        Ddi4Response stored = mmvrOnlyResponse(mmvr(mmvrDate));
+        Ddi4Response incoming = mmvrOnlyResponse(mmvr(FRONT_DATE));
+
+        Ddi4Response reconciled = VersionDateReconciler.reconcile(stored, incoming, NOW);
+
+        assertEquals(mmvrDate, reconciled.managedMissingValuesRepresentation().getFirst().versionDate());
+    }
+
+    private static Ddi4Response mmvrOnlyResponse(Ddi4ManagedMissingValuesRepresentation mmvr) {
+        return new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null, null, null,
+                mmvr == null ? null : List.of(mmvr));
+    }
+
+    private static Ddi4ManagedMissingValuesRepresentation mmvr(CogsDate date) {
+        return new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, date,
+                "urn:ddi:fr.insee:mmvr-1:1", AGENCY, "mmvr-1", "1",
+                List.of(new LangString("fr", "Valeurs sentinelles NSP/REF")),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        ref("cl-sentinelles", Ddi4CodeList.TYPE))));
     }
 
     // --- fixtures : PI -> DR -> {var-1 -> cl-1 -> cat-1, var-2 -> cl-2 -> cat-2} ---
@@ -178,7 +216,7 @@ class VersionDateReconcilerTest {
                 List.of(codeList("cl-1", cl1Date, "cat-1", cl1CodeValue),
                         codeList("cl-2", cl2Date, "cat-2", "code-value-2")),
                 List.of(category("cat-1", cat1Date, cat1Label),
-                        category("cat-2", cat2Date, "Catégorie 2")));
+                        category("cat-2", cat2Date, "Catégorie 2")), null);
     }
 
     /**
@@ -201,7 +239,7 @@ class VersionDateReconcilerTest {
                 List.of(dataRelationship(drDate)),
                 List.of(variable("var-1", var1Date, "cl-1")),
                 List.of(hierarchicalCodeList),
-                List.of(category("cat-3", cat3Date, cat3Label)));
+                List.of(category("cat-3", cat3Date, cat3Label)), null);
     }
 
     private static Ddi4PhysicalInstance physicalInstance(CogsDate date) {
@@ -228,7 +266,7 @@ class VersionDateReconcilerTest {
                 new VariableRepresentation(null,
                         new CodeRepresentation(CodeRepresentation.TYPE, null,
                                 ref(codeListId, Ddi4CodeList.TYPE)),
-                        null, null, null),
+                        null, null, null, null),
                 null);
     }
 

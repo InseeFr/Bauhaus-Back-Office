@@ -13,7 +13,9 @@ public record Ddi4Response(
         @JsonProperty("DataRelationship") List<Ddi4DataRelationship> dataRelationship,
         @JsonProperty("Variable") List<Ddi4Variable> variable,
         @JsonProperty("CodeList") List<Ddi4CodeList> codeList,
-        @JsonProperty("Category") List<Ddi4Category> category
+        @JsonProperty("Category") List<Ddi4Category> category,
+        @JsonProperty("ManagedMissingValuesRepresentation")
+        List<Ddi4ManagedMissingValuesRepresentation> managedMissingValuesRepresentation
 ) {
     /** Identifiant du schéma DDI 4 porté par le champ {@code $schema} des réponses. */
     public static final String SCHEMA = "ddi:4.0";

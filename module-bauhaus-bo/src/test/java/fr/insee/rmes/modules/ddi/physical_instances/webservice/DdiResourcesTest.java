@@ -484,7 +484,7 @@ class DdiResourcesTest {
         Ddi4Response emptyDdi4 = new Ddi4Response(
             "file:/jsonSchema.json",
             null, null, null, null, null, null
-        );
+        , null);
         String emptyXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\"/>";
         when(ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(emptyDdi4)).thenReturn(emptyXml);
 
@@ -513,7 +513,7 @@ class DdiResourcesTest {
         Ddi4Response emptyDdi4 = new Ddi4Response(
             "file:/jsonSchema.json",
             null, null, null, null, null, null
-        );
+        , null);
         when(ddi3toDdi4ConverterService.convertDdi3ToDdi4(eq(emptyDdi3), anyString())).thenReturn(emptyDdi4);
 
         // When
@@ -764,7 +764,7 @@ class DdiResourcesTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
     }
 
     private Ddi3Response createMockDdi3Response() {
@@ -814,7 +814,7 @@ class DdiResourcesTest {
     private static final String CL_VERSION = "2";
 
     private static Ddi4Response emptyDdi4() {
-        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null);
+        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null);
     }
 
     @Test

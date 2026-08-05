@@ -21,12 +21,16 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepr
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
@@ -178,9 +182,31 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(
+            String agencyId, String groupId) {
+        logger.info("Starting to get reusable missing values representations for group {}/{}",
+            agencyId, groupId);
+        return ddiRepository.getMissingValuesRepresentationsByGroup(agencyId, groupId);
+    }
+
+    @Override
     public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
         logger.info("Starting to get variables using code list {}/{}", codeListAgencyId, codeListId);
         return ddiRepository.getVariablesUsingCodeList(codeListAgencyId, codeListId);
+    }
+
+    @Override
+    public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(
+            String agencyId, String mmvrId) {
+        logger.info("Starting to get variables using missing values representation {}/{}",
+            agencyId, mmvrId);
+        return ddiRepository.getVariablesUsingMissingValuesRepresentation(agencyId, mmvrId);
+    }
+
+    @Override
+    public void deleteMissingValuesRepresentation(String agencyId, String mmvrId) {
+        logger.info("Starting to delete missing values representation {}/{}", agencyId, mmvrId);
+        ddiRepository.deleteMissingValuesRepresentation(agencyId, mmvrId);
     }
 
     @Override
@@ -245,7 +271,8 @@ public class DDIServiceImpl implements DDIService {
                 .toList();
         return new Ddi4Response(response.schema(), response.topLevelReference(),
                 response.physicalInstance(), response.dataRelationship(), sortedVariables,
-                response.codeList(), response.category());
+                response.codeList(), response.category(),
+                response.managedMissingValuesRepresentation());
     }
 
     private static String variableName(Ddi4Variable variable) {
@@ -269,6 +296,7 @@ public class DDIServiceImpl implements DDIService {
 
     @Override
     public Ddi4Response updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response) {
+        validateSentinelValues(ddi4Response);
         // GET préalable : les items non modifiés gardent leur date stockée, les items
         // modifiés ou nouveaux passent à « maintenant », avec propagation enfant → parent.
         Ddi4Response current = ddiRepository.getPhysicalInstance(agencyId, id);
@@ -276,6 +304,48 @@ public class DDIServiceImpl implements DDIService {
                 CogsDate.ofDateTime(ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         ddiRepository.updateFullPhysicalInstance(agencyId, id, reconciled);
         return ddiRepository.getPhysicalInstance(agencyId, id);
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : la carte rend les labels obligatoires sur la MMVR et sur sa
+     * CodeList de sentinelles — un payload qui les omet est rejeté avant toute écriture.
+     */
+    private static void validateSentinelValues(Ddi4Response ddi4Response) {
+        List<Ddi4ManagedMissingValuesRepresentation> mmvrs =
+                ddi4Response.managedMissingValuesRepresentation();
+        if (mmvrs == null) {
+            return;
+        }
+        Map<String, Ddi4CodeList> codeListsByKey = new HashMap<>();
+        for (Ddi4CodeList codeList : ddi4Response.codeList() != null ? ddi4Response.codeList() : List.<Ddi4CodeList>of()) {
+            codeListsByKey.put(codeList.agency() + "/" + codeList.id(), codeList);
+        }
+        for (Ddi4ManagedMissingValuesRepresentation mmvr : mmvrs) {
+            if (hasNoLabel(mmvr.label())) {
+                throw new InvalidSentinelValuesException(
+                        "Le label de la liste de valeurs sentinelles %s/%s est obligatoire"
+                                .formatted(mmvr.agency(), mmvr.id()));
+            }
+            for (CodeRepresentation rep : mmvr.missingCodeRepresentation() != null
+                    ? mmvr.missingCodeRepresentation() : List.<CodeRepresentation>of()) {
+                Reference codeListRef = rep.codeListReference();
+                if (codeListRef == null) {
+                    continue;
+                }
+                Ddi4CodeList sentinelCodeList =
+                        codeListsByKey.get(codeListRef.agency() + "/" + codeListRef.id());
+                if (sentinelCodeList != null && hasNoLabel(sentinelCodeList.label())) {
+                    throw new InvalidSentinelValuesException(
+                            "Le label de la liste de codes de valeurs sentinelles %s/%s est obligatoire"
+                                    .formatted(sentinelCodeList.agency(), sentinelCodeList.id()));
+                }
+            }
+        }
+    }
+
+    private static boolean hasNoLabel(List<LangString> label) {
+        return label == null || label.stream()
+                .noneMatch(entry -> entry.value() != null && !entry.value().isBlank());
     }
 
     @Override

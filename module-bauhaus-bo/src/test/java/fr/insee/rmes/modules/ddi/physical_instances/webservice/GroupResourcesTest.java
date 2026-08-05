@@ -362,6 +362,37 @@ class GroupResourcesTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // --- /ddi/groups/{agencyId}/{id}/missing-values-representations (valeurs sentinelles, cf. #1566) ---
+
+    @Test
+    void getGroupMissingValuesRepresentations_shouldReturn200WithList() {
+        List<PartialMissingValuesRepresentation> representations = List.of(
+                new PartialMissingValuesRepresentation("mmvr-1", "fr.insee", "1",
+                        "Valeurs sentinelles NSP/REF", "cl-sentinelles", List.of("NSP", "REF")));
+        when(ddiService.getMissingValuesRepresentationsByGroup("fr.insee", "group-1"))
+                .thenReturn(representations);
+
+        ResponseEntity<List<PartialMissingValuesRepresentation>> response =
+                groupResources.getGroupMissingValuesRepresentations("fr.insee", "group-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0).id()).isEqualTo("mmvr-1");
+        assertThat(response.getBody().get(0).codeValues()).containsExactly("NSP", "REF");
+        verify(ddiService).getMissingValuesRepresentationsByGroup("fr.insee", "group-1");
+    }
+
+    @Test
+    void getGroupMissingValuesRepresentations_shouldReturn500OnError() {
+        when(ddiService.getMissingValuesRepresentationsByGroup("fr.insee", "group-1"))
+                .thenThrow(new RuntimeException("Colectica error"));
+
+        ResponseEntity<List<PartialMissingValuesRepresentation>> response =
+                groupResources.getGroupMissingValuesRepresentations("fr.insee", "group-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private Ddi4GroupResponse createMockDdi4GroupResponse() {
         Citation citation = new Citation(LangStrings.of("fr-FR", "Base permanente des équipements"));
 

@@ -21,8 +21,55 @@ class DDI3toDDI4ConverterServiceImplTest {
             "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
             "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
             "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
+            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+            "ManagedMissingValuesRepresentation", "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed"
         ));
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : les items {@code ManagedMissingValuesRepresentation} du set
+     * DDI 3 sont agrégés dans la {@code Ddi4Response}.
+     */
+    @Test
+    void shouldConvertManagedMissingValuesRepresentationItems() {
+        String mmvrXml = """
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                    <r:ManagedMissingValuesRepresentation isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                        <r:URN>urn:ddi:fr.insee:mmvr-1:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                        <r:Label><r:Content xml:lang="fr-FR">Valeurs sentinelles NSP/REF</r:Content></r:Label>
+                        <r:MissingCodeRepresentation blankIsMissingValue="false">
+                            <r:CodeListReference>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cl-sentinelles</r:ID><r:Version>1</r:Version>
+                                <r:TypeOfObject>CodeList</r:TypeOfObject>
+                            </r:CodeListReference>
+                        </r:MissingCodeRepresentation>
+                    </r:ManagedMissingValuesRepresentation>
+                </Fragment>
+                """;
+        Ddi3Response ddi3 = new Ddi3Response(
+                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                List.of(new Ddi3Response.Ddi3Item(
+                        "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed",
+                        "fr.insee",
+                        "1",
+                        "mmvr-1",
+                        mmvrXml,
+                        "2026-04-03T12:00:00Z",
+                        "abcde",
+                        false,
+                        false,
+                        false,
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+                )));
+
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+
+        assertNotNull(result.managedMissingValuesRepresentation());
+        assertEquals(1, result.managedMissingValuesRepresentation().size());
+        Ddi4ManagedMissingValuesRepresentation mmvr = result.managedMissingValuesRepresentation().get(0);
+        assertEquals("mmvr-1", mmvr.id());
+        assertEquals("cl-sentinelles", mmvr.missingCodeRepresentation().get(0).codeListReference().id());
     }
 
     @Test

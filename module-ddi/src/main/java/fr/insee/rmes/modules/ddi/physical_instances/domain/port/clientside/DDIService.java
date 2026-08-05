@@ -15,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepr
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
@@ -65,7 +66,22 @@ public interface DDIService {
      * {@code ManagedMissingValuesRepresentation} d'un {@code ManagedRepresentationScheme} du groupe.
      */
     List<PartialCodesList> getMissingCodesListsByGroup(String agencyId, String groupId);
+    /**
+     * Les ManagedMissingValuesRepresentations réutilisables du groupe (cf. #1566), avec libellé et
+     * aperçu des codes de leur CodeList de sentinelles — alimente le sélecteur de réutilisation.
+     */
+    List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(String agencyId, String groupId);
     List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId);
+    /**
+     * Les variables qui référencent la ManagedMissingValuesRepresentation donnée (cf. #1566) —
+     * alimente la règle lecture seule/écriture des valeurs sentinelles côté front.
+     */
+    List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
+    /**
+     * Supprime une ManagedMissingValuesRepresentation sans usage (cf. #1566) — refuse si au moins
+     * une variable la référence encore.
+     */
+    void deleteMissingValuesRepresentation(String agencyId, String mmvrId);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);

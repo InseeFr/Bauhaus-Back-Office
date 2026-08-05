@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -14,6 +15,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
@@ -24,6 +26,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,9 +52,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -312,6 +320,21 @@ class DDIServiceImplTest {
         verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-2");
     }
 
+    /** Valeurs sentinelles (#1566) : le service délègue la liste des MMVR réutilisables au repository. */
+    @Test
+    void shouldGetMissingValuesRepresentationsByGroup() {
+        List<PartialMissingValuesRepresentation> expected = List.of(
+                new PartialMissingValuesRepresentation("mmvr-1", "fr.insee", "1",
+                        "Valeurs sentinelles NSP/REF", "cl-sentinelles", List.of("NSP", "REF")));
+        when(ddiRepository.getMissingValuesRepresentationsByGroup("fr.insee", "group-1"))
+                .thenReturn(expected);
+
+        List<PartialMissingValuesRepresentation> result =
+                ddiService.getMissingValuesRepresentationsByGroup("fr.insee", "group-1");
+
+        assertEquals(expected, result);
+    }
+
     @Test
     void shouldExcludeSentinelCodeListsFromGroupCodeLists() {
         // Given : le CLS du groupe contient une liste « classique » et la liste de valeurs
@@ -396,7 +419,7 @@ class DDIServiceImplTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
         when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(expectedResponse);
 
         // When
@@ -418,7 +441,7 @@ class DDIServiceImplTest {
                 List.of(variableWithName("v-c", "charlie"),
                         variableWithName("v-a", "alpha"),
                         variableWithName("v-b", "bravo")),
-                List.of(), List.of());
+                List.of(), List.of(), null);
         when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(repoResponse);
 
         Ddi4Response result = ddiService.getDdi4PhysicalInstance(agencyId, instanceId);
@@ -473,7 +496,7 @@ class DDIServiceImplTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
         when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(expectedResponse);
 
         // When
@@ -525,13 +548,76 @@ class DDIServiceImplTest {
                 saved.getValue().physicalInstance().getFirst().versionDate());
     }
 
+    /**
+     * Valeurs sentinelles (#1566) : les labels de la MMVR et de sa CodeList de sentinelles sont
+     * obligatoires — un payload qui les omet est rejeté avant toute écriture.
+     */
+    @Test
+    void shouldRejectFullUpdateWhenMmvrHasNoLabel() {
+        Ddi4ManagedMissingValuesRepresentation mmvrSansLabel = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, null,
+                "urn:ddi:fr.insee:mmvr-1:1", "fr.insee", "mmvr-1", "1",
+                null,
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
+                null, null, List.of(mmvrSansLabel));
+
+        InvalidSentinelValuesException exception = assertThrows(InvalidSentinelValuesException.class,
+                () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
+
+        assertTrue(exception.getMessage().contains("mmvr-1"));
+        verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
+    }
+
+    @Test
+    void shouldRejectFullUpdateWhenSentinelCodeListHasNoLabel() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, null,
+                "urn:ddi:fr.insee:mmvr-1:1", "fr.insee", "mmvr-1", "1",
+                LangStrings.of("fr-FR", "Sentinelles"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        // La CodeList de sentinelles référencée par la MMVR est dans le payload, sans label.
+        Ddi4CodeList sentinelCodeListSansLabel = new Ddi4CodeList(Ddi4CodeList.TYPE, null,
+                "urn:ddi:fr.insee:cl-sent:1", "fr.insee", "cl-sent", "1", null, null, List.of());
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
+                List.of(sentinelCodeListSansLabel), null, List.of(mmvr));
+
+        InvalidSentinelValuesException exception = assertThrows(InvalidSentinelValuesException.class,
+                () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
+
+        assertTrue(exception.getMessage().contains("cl-sent"));
+        verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
+    }
+
+    @Test
+    void shouldAcceptFullUpdateWhenSentinelLabelsArePresent() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, null,
+                "urn:ddi:fr.insee:mmvr-1:1", "fr.insee", "mmvr-1", "1",
+                LangStrings.of("fr-FR", "Sentinelles"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        Ddi4CodeList sentinelCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE, null,
+                "urn:ddi:fr.insee:cl-sent:1", "fr.insee", "cl-sent", "1",
+                LangStrings.of("fr-FR", "Sentinelles"), null, List.of());
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
+                List.of(sentinelCodeList), null, List.of(mmvr));
+        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-1")).thenReturn(null);
+
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), any());
+    }
+
     private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title) {
         Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
                 Ddi4PhysicalInstance.TYPE, date,
                 Reference.synthesizeUrn("fr.insee", "pi-1", "1"), "fr.insee", "pi-1", "1", null,
                 new Citation(List.of(new LangString("fr", title))), null);
         return new Ddi4Response(Ddi4Response.SCHEMA, null,
-                List.of(physicalInstance), null, null, null, null);
+                List.of(physicalInstance), null, null, null, null, null);
     }
 
     @Test
@@ -551,7 +637,7 @@ class DDIServiceImplTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
         when(ddiRepository.createPhysicalInstance(request)).thenReturn(expectedResponse);
 
         // When
@@ -743,7 +829,7 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String id = "fc65a527-a04b-4505-85de-0a181e54dbad";
         Ddi4Response expectedResponse = new Ddi4Response(
-                "ddi:4.0", List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+                "ddi:4.0", List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), null);
         when(ddiRepository.getMutualizedCodesList(agencyId, id)).thenReturn(expectedResponse);
 
         // When

@@ -66,7 +66,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 new Citation(LangStrings.of("fr-FR", "SAPHIR")),
                 List.of(Reference.of("fr.insee", "saphir-rp99-sas", "1", "DataRelationship"))
         );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, List.of(pi), null, null, null, null, null);
 
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
@@ -92,7 +92,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                         LangStrings.of("fr-FR", "SAPHIR - RP99"),
                         new VariablesInRecord(List.of())))
         );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, List.of(dr), null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, List.of(dr), null, null, null, null);
 
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
@@ -116,10 +116,10 @@ class DDI4toDDI3ConverterServiceImplTest {
                 null,
                 new VariableRepresentation(null,
                         new CodeRepresentation(CodeRepresentation.TYPE,false, Reference.of("fr.insee", "CL_AGEMEN8", "1", "CodeList")),
-                        null, null, null),
+                        null, null, null, null),
                 null
         );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, List.of(var), null, null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, List.of(var), null, null, null);
 
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
@@ -143,7 +143,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 null,
                 List.of()
         );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, List.of(cl), null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, List.of(cl), null, null);
 
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
@@ -163,7 +163,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 "fr.insee", "CAT_0", "1",
                 LangStrings.of("fr-FR", "0 an")
         );
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, List.of(cat));
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, List.of(cat), null);
 
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
 
@@ -173,6 +173,34 @@ class DDI4toDDI3ConverterServiceImplTest {
         assertThat(item.item())
                 .contains("<ddi:Category")
                 .contains(">0 an<");
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : les MMVR du payload sont converties en items DDI 3 au save,
+     * comme les autres types.
+     */
+    @Test
+    void shouldConvertManagedMissingValuesRepresentations() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                CogsDate.ofDateTime("2025-01-21T13:48:46.363"),
+                "urn:ddi:fr.insee:mmvr-1:1",
+                "fr.insee", "mmvr-1", "1",
+                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json",
+                null, null, null, null, null, null, List.of(mmvr));
+
+        Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
+
+        assertThat(result.items()).hasSize(1);
+        Ddi3Response.Ddi3Item item = result.items().get(0);
+        assertThat(item.itemType()).isEqualTo("c29c3125-2a53-4179-8fa6-aa3beb2bb5ed");
+        assertThat(item.item())
+                .contains("<r:ManagedMissingValuesRepresentation")
+                .contains(">Valeurs sentinelles NSP/REF<")
+                .contains(">cl-sentinelles<");
     }
 
     @Test
@@ -388,7 +416,7 @@ class DDI4toDDI3ConverterServiceImplTest {
 
     @Test
     void shouldHandleEmptyDdi4Response() {
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", null, null, null, null, null, null, null);
         Ddi3Response result = converter.convertDdi4ToDdi3(ddi4);
         assertThat(result).isNotNull();
         assertThat(result.items()).isEmpty();
@@ -406,7 +434,7 @@ class DDI4toDDI3ConverterServiceImplTest {
                 List.of(Reference.of("fr.insee", "test", "1", "DataRelationship"))
         );
         Reference topLevelRef = Reference.of("fr.insee", "test-id", "1", "PhysicalInstance");
-        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(topLevelRef), List.of(pi), null, null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("file:/jsonSchema.json", List.of(topLevelRef), List.of(pi), null, null, null, null, null);
 
         String result = converter.convertDdi4ToDdi3Xml(ddi4);
 

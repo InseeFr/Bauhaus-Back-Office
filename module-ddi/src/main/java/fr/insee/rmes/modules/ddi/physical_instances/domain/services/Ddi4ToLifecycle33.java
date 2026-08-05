@@ -189,6 +189,10 @@ public class Ddi4ToLifecycle33 {
                 populateTextRepresentation(varRepType.addNewValueRepresentation(),
                         rep.textRepresentation());
             }
+            if (rep.missingValuesReference() != null) {
+                populateReference(varRepType.addNewMissingValuesReference(),
+                        rep.missingValuesReference());
+            }
         }
 
         return doc;

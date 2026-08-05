@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import static javax.xml.XMLConstants.*;
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -1290,7 +1291,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 : currentInstance.dataRelationship(),
             currentInstance.variable(), // Preserve all variables
             currentInstance.codeList(), // Preserve all codeLists
-            currentInstance.category() // Preserve all categories
+            currentInstance.category(), // Preserve all categories
+            currentInstance.managedMissingValuesRepresentation()
         );
 
         // When a StudyUnit is supplied (duplication workflow, cf. #1555), attach the PhysicalInstance
@@ -1441,8 +1443,12 @@ public class DDIRepositoryImpl implements DDIRepository {
             ? List.of() : filterNonMutualizedCodeLists(codeLists);
         List<Ddi4Category> categories = ddi4Response.category() != null ? ddi4Response.category() : List.of();
         List<Ddi4Variable> variables = ddi4Response.variable() != null ? ddi4Response.variable() : List.of();
+        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations =
+            ddi4Response.managedMissingValuesRepresentation() != null
+                ? ddi4Response.managedMissingValuesRepresentation() : List.of();
 
-        boolean groupWork = !nonMutualized.isEmpty() || !categories.isEmpty();
+        boolean groupWork = !nonMutualized.isEmpty() || !categories.isEmpty()
+            || !missingValuesRepresentations.isEmpty();
         boolean studyUnitWork = !variables.isEmpty();
         if (!groupWork && !studyUnitWork) {
             return;
@@ -1465,7 +1471,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             }
         }
         if (groupWork) {
-            appendGroupSchemesUpdate(parents, nonMutualized, categories, colecticaItems);
+            appendGroupSchemesUpdate(parents, nonMutualized, categories, missingValuesRepresentations,
+                colecticaItems);
         }
         if (studyUnitWork) {
             appendStudyUnitVariableSchemeUpdate(parents, variables, colecticaItems, additionalItems);
@@ -1486,6 +1493,7 @@ public class DDIRepositoryImpl implements DDIRepository {
         PhysicalInstanceParents parents,
         List<Ddi4CodeList> nonMutualized,
         List<Ddi4Category> categories,
+        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
         List<ColecticaItemResponse> colecticaItems
     ) {
         String groupAgency = parents.groupAgency();
@@ -1499,6 +1507,11 @@ public class DDIRepositoryImpl implements DDIRepository {
         }
         if (!categories.isEmpty()) {
             fileGroupCategories(groupAgency, groupId, logicalProducts, categories, colecticaItems)
+                .ifPresent(newSchemeRefs::add);
+        }
+        if (!missingValuesRepresentations.isEmpty()) {
+            fileGroupManagedMissingValues(groupAgency, groupId, logicalProducts,
+                missingValuesRepresentations, colecticaItems)
                 .ifPresent(newSchemeRefs::add);
         }
         if (!newSchemeRefs.isEmpty()) {
@@ -1584,6 +1597,55 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
+     * Files the group's ManagedMissingValuesRepresentations (valeurs sentinelles, #1566) under its
+     * ManagedRepresentationScheme, mirroring {@link #fileGroupCodeLists}.
+     *
+     * @return a reference to the ManagedRepresentationScheme that had to be created (to be filed
+     *         under the group's LogicalProduct), or empty when the MMVR references were merged into
+     *         an existing scheme
+     */
+    private Optional<Reference> fileGroupManagedMissingValues(
+        String groupAgency, String groupId, List<ItemReference> logicalProducts,
+        List<Ddi4ManagedMissingValuesRepresentation> missingValuesRepresentations,
+        List<ColecticaItemResponse> colecticaItems
+    ) {
+        List<Reference> newRefs = missingValuesRepresentations.stream()
+            .map(mmvr -> Reference.of(mmvr.agency(), mmvr.id(), mmvr.version(),
+                Ddi4ManagedMissingValuesRepresentation.TYPE))
+            .toList();
+        Optional<ItemReference> schemeRefOpt = findScheme(logicalProducts, "ManagedRepresentationScheme");
+        if (schemeRefOpt.isPresent()) {
+            ItemReference schemeRef = schemeRefOpt.get();
+            Ddi4ManagedRepresentationScheme current = ddi3ToDdi4Converter.toManagedRepresentationScheme(
+                colecticaClient.getItem(schemeRef.agencyId(), schemeRef.identifier(), null).item());
+            List<Reference> merged = mergeReferences(current.managedRepresentationReference(), newRefs);
+            if (merged == null) {
+                return Optional.empty();
+            }
+            Ddi4ManagedRepresentationScheme updated = new Ddi4ManagedRepresentationScheme(
+                current.type(), current.versionDate(), current.urn(), current.agency(), current.id(),
+                current.version(), current.label(), merged);
+            colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(updated)));
+            logger.info("Filed {} missing values representation(s) under managed representation scheme "
+                + "{}/{} of group {}/{}",
+                newRefs.size(), schemeRef.agencyId(), schemeRef.identifier(), groupAgency, groupId);
+            return Optional.empty();
+        }
+        String schemeId = AbstractColecticaItemRepository.generateDeterministicUuid(
+            groupAgency + "/" + groupId + "#managedrepresentationscheme");
+        Ddi4ManagedRepresentationScheme scheme = new Ddi4ManagedRepresentationScheme(
+            Ddi4ManagedRepresentationScheme.TYPE,
+            CogsDate.ofDateTime(nowIso()), "urn:ddi:%s:%s:1".formatted(groupAgency, schemeId),
+            groupAgency, schemeId, "1", LangStrings.of(defaultLang, "Managed Representation Scheme"),
+            newRefs);
+        colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(scheme)));
+        logger.info("Auto-provisioned managed representation scheme {}/{} for group {}/{} and filed "
+            + "{} missing values representation(s)",
+            groupAgency, schemeId, groupAgency, groupId, newRefs.size());
+        return Optional.of(Reference.of(groupAgency, schemeId, "1", "ManagedRepresentationScheme"));
+    }
+
+    /**
      * Files the just-created schemes under the group's LogicalProduct: the one the group already
      * exposes is completed with the new scheme references (the group already points at it, so it is
      * not re-registered); otherwise a single fresh LogicalProduct carrying every new scheme is created
@@ -1603,7 +1665,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 addSchemeReferences(current.codeListSchemeReference(), newSchemeRefs, "CodeListScheme"),
                 addSchemeReferences(current.categorySchemeReference(), newSchemeRefs, "CategoryScheme"),
                 current.variableSchemeReference(),
-                current.managedRepresentationSchemeReference());
+                addSchemeReferences(current.managedRepresentationSchemeReference(), newSchemeRefs,
+                    "ManagedRepresentationScheme"));
             colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(updated)));
             logger.info("Filed {} scheme(s) under the existing logical product {}/{} of group {}/{}",
                 newSchemeRefs.size(), logicalProductRef.agencyId(), logicalProductRef.identifier(),
@@ -1618,7 +1681,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             LangStrings.of(defaultLang, "Logical Product"),
             schemeReferencesOfType(newSchemeRefs, "CodeListScheme"),
             schemeReferencesOfType(newSchemeRefs, "CategoryScheme"),
-            null);
+            null,
+            schemeReferencesOfType(newSchemeRefs, "ManagedRepresentationScheme"));
         colecticaItems.add(toColecticaItem(ddi4ToDdi3Converter.toLogicalProductItem(logicalProduct)));
         logger.info("Auto-provisioned logical product {}/{} for group {}/{} filing {} scheme(s)",
             groupAgency, logicalProductId, groupAgency, groupId, newSchemeRefs.size());
@@ -2336,7 +2400,8 @@ public class DDIRepositoryImpl implements DDIRepository {
             response.dataRelationship(),
             response.variable(),
             response.codeList(),
-            response.category());
+            response.category(),
+            response.managedMissingValuesRepresentation());
     }
 
     /**
@@ -2566,6 +2631,85 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
+     * Returns every reusable ManagedMissingValuesRepresentation of the group {@code agencyId/groupId}
+     * (#1566): the ones filed under the ManagedRepresentationSchemes of the group's LogicalProducts.
+     * Same descent as {@link #getMissingCodesListsByGroup} but stopping at the MMVR level; each MMVR
+     * fragment is then fetched and parsed for its label, and the sentinel CodeList it references is
+     * fetched once to build the code-values preview shown by the reuse selector.
+     */
+    @Override
+    public List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(
+            String agencyId, String groupId) {
+        logger.info("Fetching reusable missing values representations for group {}/{}", agencyId, groupId);
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        List<String> descentTypes = List.of(
+            types.get("LogicalProduct"),
+            types.get("ManagedRepresentationScheme"),
+            types.get("ManagedMissingValuesRepresentation"));
+
+        List<ItemReference> refs = List.of(new ItemReference(agencyId, groupId));
+        for (String childType : descentTypes) {
+            refs = refs.stream()
+                .flatMap(ref -> colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_SUBJECT, ref, List.of(childType)).stream())
+                .distinct()
+                .toList();
+            if (refs.isEmpty()) {
+                return List.of();
+            }
+        }
+
+        Map<String, List<String>> codeValuesByCodeListKey = new HashMap<>();
+        List<PartialMissingValuesRepresentation> result = new ArrayList<>();
+        for (ItemReference ref : refs) {
+            Ddi4ManagedMissingValuesRepresentation mmvr = ddi3ToDdi4Converter
+                .toManagedMissingValuesRepresentation(
+                    colecticaClient.getItem(ref.agencyId(), ref.identifier(), null).item());
+            Reference codeListRef = firstSentinelCodeListReference(mmvr);
+            result.add(new PartialMissingValuesRepresentation(
+                mmvr.id(),
+                mmvr.agency(),
+                mmvr.version(),
+                firstLabelValue(mmvr.label()),
+                codeListRef != null ? codeListRef.id() : null,
+                codeListRef != null
+                    ? codeValuesByCodeListKey.computeIfAbsent(
+                        codeListRef.agency() + "/" + codeListRef.id(),
+                        key -> sentinelCodeValues(codeListRef))
+                    : List.of()));
+        }
+        return result;
+    }
+
+    private Reference firstSentinelCodeListReference(Ddi4ManagedMissingValuesRepresentation mmvr) {
+        if (mmvr.missingCodeRepresentation() == null) {
+            return null;
+        }
+        return mmvr.missingCodeRepresentation().stream()
+            .map(CodeRepresentation::codeListReference)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+    }
+
+    private static String firstLabelValue(List<LangString> label) {
+        return label != null && !label.isEmpty() ? label.get(0).value() : null;
+    }
+
+    private List<String> sentinelCodeValues(Reference codeListRef) {
+        Ddi4CodeList codeList = ddi3ToDdi4Converter.toCodeList(
+            colecticaClient.getItem(codeListRef.agency(), codeListRef.id(), null).item());
+        if (codeList.code() == null) {
+            return List.of();
+        }
+        return codeList.code().stream()
+            .map(Code::value)
+            .filter(Objects::nonNull)
+            .map(ValueType::stringValue)
+            .toList();
+    }
+
+    /**
      * Returns every Variable that uses the code list {@code codeListAgencyId/codeListId}, paired with the
      * PhysicalInstance it belongs to. Walks the {@code byobject} relationship graph (« who references X »):
      * CodeList ← Variable, Variable ← DataRelationship, DataRelationship ← PhysicalInstance.
@@ -2573,19 +2717,123 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
         logger.info("Fetching variables using code list {}/{}", codeListAgencyId, codeListId);
+        return variableUsagesOf(new ItemReference(codeListAgencyId, codeListId));
+    }
+
+    /**
+     * Returns every Variable that references the ManagedMissingValuesRepresentation
+     * {@code agencyId/mmvrId} (#1566), paired with its PhysicalInstance and StudyUnit — same
+     * {@code byobject} walk as {@link #getVariablesUsingCodeList}. Feeds the front's sentinel
+     * read-only/read-write rule.
+     */
+    @Override
+    public List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(
+            String agencyId, String mmvrId) {
+        logger.info("Fetching variables using missing values representation {}/{}", agencyId, mmvrId);
+        return variableUsagesOf(new ItemReference(agencyId, mmvrId));
+    }
+
+    /**
+     * Deletes an orphan ManagedMissingValuesRepresentation (#1566): refuses when any variable still
+     * references it, otherwise unfiles it from the group's ManagedRepresentationScheme (and its
+     * sentinel CodeList from the CodeListScheme), then deletes the MMVR, the CodeList and the
+     * CodeList's categories from Colectica.
+     */
+    @Override
+    public void deleteMissingValuesRepresentation(String agencyId, String mmvrId) {
+        logger.info("Deleting missing values representation {}/{}", agencyId, mmvrId);
+        Map<String, String> types = instanceConfiguration.itemTypes();
+        // Refus au premier niveau : toute Variable référençant la MMVR bloque la suppression,
+        // même si sa chaîne DataRelationship/PhysicalInstance n'est pas résoluble.
+        List<ColecticaItem> referencingVariables = colecticaClient.findRelatedItems(
+            RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, mmvrId),
+            List.of(types.get("Variable")));
+        if (!referencingVariables.isEmpty()) {
+            throw new MissingValuesRepresentationInUseException(
+                "La liste de valeurs sentinelles %s/%s est encore utilisée par %d variable(s)"
+                    .formatted(agencyId, mmvrId, referencingVariables.size()));
+        }
+        Ddi4ManagedMissingValuesRepresentation mmvr = ddi3ToDdi4Converter
+            .toManagedMissingValuesRepresentation(
+                colecticaClient.getItem(agencyId, mmvrId, null).item());
+        Reference sentinelCodeListRef = firstSentinelCodeListReference(mmvr);
+
+        // Défilage : re-registre les schemes du groupe sans les références supprimées.
+        List<ColecticaItemResponse> updatedSchemes = new ArrayList<>();
+        for (ItemReference schemeRef : colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_OBJECT, new ItemReference(agencyId, mmvrId),
+                List.of(types.get("ManagedRepresentationScheme")))) {
+            Ddi4ManagedRepresentationScheme scheme = ddi3ToDdi4Converter.toManagedRepresentationScheme(
+                colecticaClient.getItem(schemeRef.agencyId(), schemeRef.identifier(), null).item());
+            List<Reference> kept = withoutReference(scheme.managedRepresentationReference(), agencyId, mmvrId);
+            Ddi4ManagedRepresentationScheme updated = new Ddi4ManagedRepresentationScheme(
+                scheme.type(), scheme.versionDate(), scheme.urn(), scheme.agency(), scheme.id(),
+                scheme.version(), scheme.label(), kept);
+            updatedSchemes.add(toColecticaItem(ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(updated)));
+        }
+
+        List<Reference> categoryRefs = List.of();
+        if (sentinelCodeListRef != null) {
+            for (ItemReference schemeRef : colecticaClient.findRelatedDescriptions(
+                    RelationshipDirection.BY_OBJECT,
+                    new ItemReference(sentinelCodeListRef.agency(), sentinelCodeListRef.id()),
+                    List.of(types.get("CodeListScheme")))) {
+                Ddi4CodeListScheme scheme = ddi3ToDdi4Converter.toCodeListScheme(
+                    colecticaClient.getItem(schemeRef.agencyId(), schemeRef.identifier(), null).item());
+                List<Reference> kept = withoutReference(scheme.codeListReference(),
+                    sentinelCodeListRef.agency(), sentinelCodeListRef.id());
+                Ddi4CodeListScheme updated = new Ddi4CodeListScheme(scheme.type(), scheme.versionDate(),
+                    scheme.urn(), scheme.agency(), scheme.id(), scheme.version(), scheme.label(), kept);
+                updatedSchemes.add(toColecticaItem(ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
+            }
+            Ddi4CodeList sentinelCodeList = ddi3ToDdi4Converter.toCodeList(
+                colecticaClient.getItem(sentinelCodeListRef.agency(), sentinelCodeListRef.id(), null).item());
+            categoryRefs = (sentinelCodeList.code() != null ? sentinelCodeList.code() : List.<Code>of())
+                .stream()
+                .map(Code::categoryReference)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        }
+
+        if (!updatedSchemes.isEmpty()) {
+            colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(updatedSchemes));
+        }
+        colecticaClient.deleteItem(agencyId, mmvrId);
+        if (sentinelCodeListRef != null) {
+            colecticaClient.deleteItem(sentinelCodeListRef.agency(), sentinelCodeListRef.id());
+            for (Reference categoryRef : categoryRefs) {
+                colecticaClient.deleteItem(categoryRef.agency(), categoryRef.id());
+            }
+        }
+        logger.info("Deleted missing values representation {}/{} (code list: {})",
+            agencyId, mmvrId, sentinelCodeListRef != null ? sentinelCodeListRef.id() : "none");
+    }
+
+    private static List<Reference> withoutReference(List<Reference> references, String agency, String id) {
+        List<Reference> kept = (references != null ? references : List.<Reference>of()).stream()
+            .filter(ref -> !(agency.equals(ref.agency()) && id.equals(ref.id())))
+            .toList();
+        return kept.isEmpty() ? null : kept;
+    }
+
+    /**
+     * Walks the {@code byobject} relationship graph (« who references X »):
+     * start ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
+     */
+    private List<CodeListVariableUsage> variableUsagesOf(ItemReference start) {
         Map<String, String> types = instanceConfiguration.itemTypes();
         String variableType = types.get("Variable");
         String dataRelationshipType = types.get("DataRelationship");
         String physicalInstanceType = types.get(PHYSICAL_INSTANCE);
         String studyUnitType = types.get("StudyUnit");
 
-        // Walk the byobject graph: CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
         // The {@code /descriptions} endpoint already returns each related item's ItemName/Label, so we use
         // findRelatedItems (which keeps them) for the levels we need labelled — no separate label query
         // and no extra HTTP call. DataRelationships are only intermediate, so bare references suffice.
         List<ColecticaItem> variables = colecticaClient.findRelatedItems(
             RelationshipDirection.BY_OBJECT,
-            new ItemReference(codeListAgencyId, codeListId),
+            start,
             List.of(variableType));
         if (variables.isEmpty()) {
             return List.of();

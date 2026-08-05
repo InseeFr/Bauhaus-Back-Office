@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
@@ -232,6 +233,40 @@ class Lifecycle33ToDdi4Test {
         assertThat(var.variableRepresentation().codeRepresentation().blankIsMissingValue()).isEqualTo(true);
         assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
         assertThat(var.variableRepresentation().numericRepresentation()).isNull();
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : {@code MissingValuesReference} (élément local du namespace
+     * logicalproduct, frère de la représentation) est lu sur le wrapper {@code VariableRepresentation}.
+     */
+    @Test
+    void shouldParseVariableWithMissingValuesReference() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
+                    <VariableRepresentation>
+                        <r:CodeRepresentation blankIsMissingValue="false">
+                            <r:CodeListReference>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                                <r:TypeOfObject>CodeList</r:TypeOfObject>
+                            </r:CodeListReference>
+                        </r:CodeRepresentation>
+                        <MissingValuesReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
+                        </MissingValuesReference>
+                    </VariableRepresentation>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable var = converter.toVariable(doc);
+
+        assertThat(var.variableRepresentation().missingValuesReference())
+                .isEqualTo(Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation"));
+        assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
     }
 
     @Test
@@ -502,6 +537,42 @@ class Lifecycle33ToDdi4Test {
                 .containsExactly("mmvr-1", "mr-legacy");
         assertThat(scheme.managedRepresentationReference().get(0).type())
                 .isEqualTo("ManagedMissingValuesRepresentation");
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : lecture d'un fragment MMVR (miroir de
+     * {@link Ddi4ToLifecycle33#toManagedMissingValuesRepresentation}) — Label et
+     * MissingCodeRepresentation in-line avec sa CodeListReference.
+     */
+    @Test
+    void shouldParseManagedMissingValuesRepresentation() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <r:ManagedMissingValuesRepresentation isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:mmvr-1:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">Valeurs sentinelles NSP/REF</r:Content></r:Label>
+                    <r:MissingCodeRepresentation blankIsMissingValue="false">
+                        <r:CodeListReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cl-sentinelles</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>CodeList</r:TypeOfObject>
+                        </r:CodeListReference>
+                    </r:MissingCodeRepresentation>
+                </r:ManagedMissingValuesRepresentation>
+            </Fragment>
+            """);
+
+        Ddi4ManagedMissingValuesRepresentation mmvr = converter.toManagedMissingValuesRepresentation(doc);
+
+        assertThat(mmvr).isNotNull();
+        assertThat(mmvr.id()).isEqualTo("mmvr-1");
+        assertThat(mmvr.agency()).isEqualTo("fr.insee");
+        assertThat(mmvr.version()).isEqualTo("1");
+        assertThat(mmvr.urn()).isEqualTo("urn:ddi:fr.insee:mmvr-1:1");
+        assertThat(mmvr.label().get(0).value()).isEqualTo("Valeurs sentinelles NSP/REF");
+        assertThat(mmvr.missingCodeRepresentation()).hasSize(1);
+        assertThat(mmvr.missingCodeRepresentation().get(0).codeListReference())
+                .isEqualTo(Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"));
     }
 
     @Test

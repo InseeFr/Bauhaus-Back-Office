@@ -3,9 +3,12 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
@@ -69,4 +72,30 @@ public interface DDI3toDDI4ConverterService {
      * @return the parsed study unit
      */
     Ddi4StudyUnit toStudyUnit(String fragmentXml);
+
+    /**
+     * Parse a single ManagedRepresentationScheme from its DDI 3.3 fragment XML. Used to read a
+     * group's existing managed representation scheme before merging new
+     * ManagedMissingValuesRepresentation references into it (#1566).
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a ManagedRepresentationScheme
+     * @return the parsed managed representation scheme
+     */
+    Ddi4ManagedRepresentationScheme toManagedRepresentationScheme(String fragmentXml);
+
+    /**
+     * Parse a single ManagedMissingValuesRepresentation from its DDI 3.3 fragment XML. Used to list
+     * the reusable sentinel-value representations of a group (#1566).
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a
+     *                    ManagedMissingValuesRepresentation
+     * @return the parsed managed missing values representation
+     */
+    Ddi4ManagedMissingValuesRepresentation toManagedMissingValuesRepresentation(String fragmentXml);
+
+    /**
+     * Parse a single CodeList from its DDI 3.3 fragment XML. Used to build the code preview of the
+     * sentinel CodeList referenced by a ManagedMissingValuesRepresentation (#1566).
+     * @param fragmentXml the DDI 3.3 {@code <Fragment>} XML containing a CodeList
+     * @return the parsed code list
+     */
+    Ddi4CodeList toCodeList(String fragmentXml);
 }

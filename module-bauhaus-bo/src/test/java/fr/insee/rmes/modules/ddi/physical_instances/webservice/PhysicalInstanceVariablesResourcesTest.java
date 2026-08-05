@@ -36,7 +36,7 @@ class PhysicalInstanceVariablesResourcesTest {
     private static final String VERSION = "3";
 
     private static Ddi4Response emptyDdi4() {
-        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null);
+        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null);
     }
 
     @Test
