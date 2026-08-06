@@ -1,7 +1,9 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +56,47 @@ class CodesListResourcesTest {
 
         ResponseEntity<List<CodeListVariableUsage>> response =
                 codesListResources.getCodeListUsers("fr.insee", "cl-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // --- /ddi/category/{agencyId}/{id}/users (catégorie partagée) ---
+
+    @Test
+    void getCategoryUsers_shouldReturn200WithList() {
+        UsageItem group = new UsageItem("fr.insee", "grp-1", "Groupe démographie");
+        UsageItem studyUnit = new UsageItem("fr.insee", "su-1", "Recensement 2024");
+        List<CategoryCodeListUsage> usages = List.of(
+                new CategoryCodeListUsage(
+                        group, studyUnit,
+                        new UsageItem("fr.insee", "pi-1", "Fichier détail"),
+                        new UsageItem("fr.insee", "var-1", "Sexe"),
+                        new UsageItem("fr.insee", "cl-1", "Pays")),
+                new CategoryCodeListUsage(
+                        group, studyUnit,
+                        new UsageItem("fr.insee", "pi-2", "Fichier ménage"),
+                        new UsageItem("fr.insee", "var-2", "Âge"),
+                        new UsageItem("fr.insee", "cl-2", "Pays de naissance"))
+        );
+        when(ddiService.getCodeListsUsingCategory("fr.insee", "cat-1")).thenReturn(usages);
+
+        ResponseEntity<List<CategoryCodeListUsage>> response =
+                codesListResources.getCategoryUsers("fr.insee", "cat-1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody().get(0).codeList().id()).isEqualTo("cl-1");
+        assertThat(response.getBody().get(0).codeList().label()).isEqualTo("Pays");
+        verify(ddiService).getCodeListsUsingCategory("fr.insee", "cat-1");
+    }
+
+    @Test
+    void getCategoryUsers_shouldReturn500OnError() {
+        when(ddiService.getCodeListsUsingCategory("fr.insee", "cat-1"))
+                .thenThrow(new RuntimeException("Colectica error"));
+
+        ResponseEntity<List<CategoryCodeListUsage>> response =
+                codesListResources.getCategoryUsers("fr.insee", "cat-1");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }

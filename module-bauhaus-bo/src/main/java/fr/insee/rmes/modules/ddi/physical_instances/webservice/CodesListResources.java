@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
@@ -59,6 +60,39 @@ public class CodesListResources {
         } catch (Exception e) {
             logger.error(
                 "Failed to get variables using code list: agencyId={}, id={}",
+                agencyId,
+                id,
+                e
+            );
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Les listes de codes dont au moins un code référence la catégorie {@code agencyId/id}.
+     * Alimente la popup de confirmation « catégorie partagée » côté front.
+     */
+    @GetMapping("/category/{agencyId}/{id}/users")
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
+    public ResponseEntity<List<CategoryCodeListUsage>> getCategoryUsers(
+        @PathVariable String agencyId,
+        @PathVariable String id
+    ) {
+        logger.info(
+            "GET /ddi/category/{}/{}/users - Getting code lists using category",
+            agencyId,
+            id
+        );
+        try {
+            List<CategoryCodeListUsage> usages =
+                ddiService.getCodeListsUsingCategory(agencyId, id);
+            return ResponseEntity.ok(usages);
+        } catch (Exception e) {
+            logger.error(
+                "Failed to get code lists using category: agencyId={}, id={}",
                 agencyId,
                 id,
                 e
