@@ -204,10 +204,15 @@ public class Ddi4ToLifecycle33 {
 
         clType.setIsUniversallyUnique(true);
         clType.setVersionDate(cl.versionDate() != null ? cl.versionDate().dateTime() : null);
-        clType.addNewURN().setStringValue(cl.urn());
+        clType.addNewURN().setStringValue(urnOf(cl.urn(), cl.agency(), cl.id(), cl.version()));
         clType.addAgency(cl.agency());
         clType.addNewID().setStringValue(cl.id());
         clType.addVersion(cl.version());
+
+        // Variante d'une liste partagée : référence DDI vers la liste d'origine.
+        if (cl.basedOnObject() != null) {
+            populateBasedOnObject(clType.addNewBasedOnObject(), cl.basedOnObject());
+        }
 
         if (cl.label() != null && !cl.label().isEmpty()) {
             writeLabelContent(clType.addNewLabel().addNewContent(), cl.label().get(0));
@@ -243,7 +248,8 @@ public class Ddi4ToLifecycle33 {
 
     private void populateCode(CodeType codeType, Code code) {
         codeType.setIsUniversallyUnique(true);
-        codeType.addNewURN().setStringValue(code.urn());
+        codeType.addNewURN().setStringValue(
+                urnOf(code.urn(), code.agency(), code.id(), code.version()));
         codeType.addAgency(code.agency());
         codeType.addNewID().setStringValue(code.id());
         codeType.addVersion(code.version());
@@ -429,10 +435,15 @@ public class Ddi4ToLifecycle33 {
         catType.setIsUniversallyUnique(true);
         catType.setVersionDate(cat.versionDate() != null ? cat.versionDate().dateTime() : null);
         catType.setIsMissing(false);
-        catType.addNewURN().setStringValue(cat.urn());
+        catType.addNewURN().setStringValue(urnOf(cat.urn(), cat.agency(), cat.id(), cat.version()));
         catType.addAgency(cat.agency());
         catType.addNewID().setStringValue(cat.id());
         catType.addVersion(cat.version());
+
+        // Variante d'une catégorie partagée : référence DDI vers la catégorie d'origine.
+        if (cat.basedOnObject() != null) {
+            populateBasedOnObject(catType.addNewBasedOnObject(), cat.basedOnObject());
+        }
 
         if (cat.label() != null && !cat.label().isEmpty()) {
             writeLabelContent(catType.addNewLabel().addNewContent(), cat.label().get(0));
@@ -611,6 +622,15 @@ public class Ddi4ToLifecycle33 {
         if (source.codeListReference() != null) {
             populateReference(codeRep.addNewCodeListReference(), source.codeListReference());
         }
+    }
+
+    /**
+     * URN de l'item, dérivée de son identité quand elle n'est pas fournie — l'URN DDI étant une
+     * pure fonction de {@code agence/id/version}, elle n'a pas à être fabriquée par l'appelant.
+     * Pendant de {@code AbstractDDIItemConverter#buildReference} sur le chemin de lecture.
+     */
+    private static String urnOf(String urn, String agency, String id, String version) {
+        return urn != null && !urn.isBlank() ? urn : Reference.synthesizeUrn(agency, id, version);
     }
 
     private static void populateReference(ReferenceType target, Reference source) {

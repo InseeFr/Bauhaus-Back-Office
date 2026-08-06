@@ -2721,6 +2721,84 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     /**
+     * Returns every CodeList that references the category {@code categoryAgencyId/categoryId}
+     * through one of its codes ({@code byobject}, type-filtered on CodeList), each joined to the
+     * Variables that use the code list (same walk as {@link #getVariablesUsingCodeList}) and to
+     * the StudyUnit's owning Group — one flat row per (CodeList, Variable), grouped by the front
+     * into a Group / StudyUnit / Variable / CodeList tree. A code list without any using variable
+     * still yields one row (parents null). Feeds the shared-category confirmation dialog.
+     *
+     * <p>Une catégorie très partagée (« Oui/Non ») traverse beaucoup de listes qui retombent sur
+     * les mêmes PhysicalInstance / StudyUnit / Group : les deux mémos sont donc portés par l'appel
+     * entier, {@link #variableUsagesOf} compris, et non par liste de codes.
+     */
+    @Override
+    public List<CategoryCodeListUsage> getCodeListsUsingCategory(String categoryAgencyId, String categoryId) {
+        logger.info("Fetching code lists using category {}/{}", categoryAgencyId, categoryId);
+        String codeListType = instanceConfiguration.itemTypes().get(CODE_LIST);
+
+        List<ColecticaItem> codeLists = colecticaClient.findRelatedItems(
+            RelationshipDirection.BY_OBJECT,
+            new ItemReference(categoryAgencyId, categoryId),
+            List.of(codeListType));
+
+        Map<String, ColecticaItem> studyUnitByPiKey = new HashMap<>();
+        Map<String, ColecticaItem> groupBySuKey = new HashMap<>();
+        List<CategoryCodeListUsage> result = new ArrayList<>();
+        for (ColecticaItem codeList : codeLists) {
+            UsageItem codeListItem = usageItem(codeList);
+            List<CodeListVariableUsage> variableUsages = variableUsagesOf(itemRef(codeList), studyUnitByPiKey);
+            if (variableUsages.isEmpty()) {
+                result.add(CategoryCodeListUsage.ofCodeListAlone(codeListItem));
+                continue;
+            }
+            for (CodeListVariableUsage usage : variableUsages) {
+                // Le type Group n'est pas déclaré dans la map itemTypes de la configuration :
+                // comme getGroups(), on utilise la constante.
+                ColecticaItem group = usage.studyUnitId() == null ? null : resolveOnce(
+                    groupBySuKey,
+                    new ItemReference(usage.studyUnitAgencyId(), usage.studyUnitId()),
+                    GROUP_ITEM_TYPE);
+                result.add(new CategoryCodeListUsage(
+                    usageItem(group),
+                    usageItem(usage.studyUnitAgencyId(), usage.studyUnitId(), usage.studyUnitLabel()),
+                    usageItem(usage.physicalInstanceAgencyId(), usage.physicalInstanceId(),
+                        usage.physicalInstanceLabel()),
+                    usageItem(usage.variableAgencyId(), usage.variableId(), usage.variableLabel()),
+                    codeListItem));
+            }
+        }
+        return result;
+    }
+
+    private UsageItem usageItem(ColecticaItem item) {
+        return item == null ? null
+            : new UsageItem(item.agencyId(), item.identifier(), extractLabelFromItem(item));
+    }
+
+    /** Un niveau non résolu (pas de StudyUnit trouvée, par exemple) est absent, pas vide. */
+    private static UsageItem usageItem(String agencyId, String id, String label) {
+        return id == null ? null : new UsageItem(agencyId, id, label);
+    }
+
+    /**
+     * Premier item de {@code itemType} référençant {@code from}, mémoïsé pour la durée de l'appel.
+     * L'absence de résultat est mémoïsée elle aussi : un item sans parent résolvable n'est
+     * interrogé qu'une fois, là où {@code computeIfAbsent} le rejouerait à chaque passage.
+     */
+    private ColecticaItem resolveOnce(Map<String, ColecticaItem> memo, ItemReference from, String itemType) {
+        String key = relationshipKey(from.agencyId(), from.identifier());
+        if (memo.containsKey(key)) {
+            return memo.get(key);
+        }
+        ColecticaItem resolved = colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_OBJECT, from, List.of(itemType))
+            .stream().findFirst().orElse(null);
+        memo.put(key, resolved);
+        return resolved;
+    }
+
+    /**
      * Returns every Variable that references the ManagedMissingValuesRepresentation
      * {@code agencyId/mmvrId} (#1566), paired with its PhysicalInstance and StudyUnit — same
      * {@code byobject} walk as {@link #getVariablesUsingCodeList}. Feeds the front's sentinel
@@ -2817,11 +2895,22 @@ public class DDIRepositoryImpl implements DDIRepository {
         return kept.isEmpty() ? null : kept;
     }
 
+    private List<CodeListVariableUsage> variableUsagesOf(ItemReference start) {
+        return variableUsagesOf(start, new HashMap<>());
+    }
+
     /**
      * Walks the {@code byobject} relationship graph (« who references X »):
      * start ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit.
+     *
+     * @param studyUnitByPiKey mémo PhysicalInstance → StudyUnit. Toutes les variables d'un même
+     *                         fichier partagent sa StudyUnit : sans mémo, une liste utilisée par
+     *                         cinquante variables la redemanderait cinquante fois. Le mémo est un
+     *                         paramètre pour qu'un appelant qui enchaîne plusieurs marches
+     *                         ({@link #getCodeListsUsingCategory}) le partage entre elles.
      */
-    private List<CodeListVariableUsage> variableUsagesOf(ItemReference start) {
+    private List<CodeListVariableUsage> variableUsagesOf(ItemReference start,
+                                                         Map<String, ColecticaItem> studyUnitByPiKey) {
         Map<String, String> types = instanceConfiguration.itemTypes();
         String variableType = types.get("Variable");
         String dataRelationshipType = types.get("DataRelationship");
@@ -2847,9 +2936,8 @@ public class DDIRepositoryImpl implements DDIRepository {
                 List<ColecticaItem> physicalInstances = colecticaClient.findRelatedItems(
                     RelationshipDirection.BY_OBJECT, dataRelationship, List.of(physicalInstanceType));
                 for (ColecticaItem physicalInstance : physicalInstances) {
-                    ColecticaItem studyUnit = colecticaClient.findRelatedItems(
-                            RelationshipDirection.BY_OBJECT, itemRef(physicalInstance), List.of(studyUnitType))
-                        .stream().findFirst().orElse(null);
+                    ColecticaItem studyUnit =
+                        resolveOnce(studyUnitByPiKey, itemRef(physicalInstance), studyUnitType);
                     usages.add(new CodeListVariableUsage(
                         studyUnit == null ? null : studyUnit.agencyId(),
                         studyUnit == null ? null : studyUnit.identifier(),

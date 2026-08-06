@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
@@ -26,6 +27,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
@@ -404,6 +406,30 @@ class DDIServiceImplTest {
         assertEquals("pi-1", result.get(0).physicalInstanceId());
 
         verify(ddiRepository).getVariablesUsingCodeList("fr.insee", "cl-1");
+    }
+
+    @Test
+    void shouldGetCodeListsUsingCategory() {
+        // Given
+        List<CategoryCodeListUsage> expected = List.of(
+                new CategoryCodeListUsage(
+                        new UsageItem("fr.insee", "grp-1", "Groupe démographie"),
+                        new UsageItem("fr.insee", "su-1", "Recensement 2024"),
+                        new UsageItem("fr.insee", "pi-1", "Fichier détail"),
+                        new UsageItem("fr.insee", "var-1", "Sexe"),
+                        new UsageItem("fr.insee", "cl-1", "Pays")));
+        when(ddiRepository.getCodeListsUsingCategory("fr.insee", "cat-1")).thenReturn(expected);
+
+        // When
+        List<CategoryCodeListUsage> result = ddiService.getCodeListsUsingCategory("fr.insee", "cat-1");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("cl-1", result.get(0).codeList().id());
+        assertEquals("Pays", result.get(0).codeList().label());
+
+        verify(ddiRepository).getCodeListsUsingCategory("fr.insee", "cat-1");
     }
 
     @Test

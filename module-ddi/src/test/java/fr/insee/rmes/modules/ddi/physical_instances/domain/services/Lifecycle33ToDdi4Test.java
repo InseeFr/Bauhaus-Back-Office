@@ -374,6 +374,55 @@ class Lifecycle33ToDdi4Test {
     }
 
     @Test
+    void shouldParseCategoryBasedOnObject() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:variant-cat:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>variant-cat</r:ID><r:Version>1</r:Version>
+                    <r:BasedOnObject>
+                        <r:BasedOnReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>original-cat</r:ID><r:Version>3</r:Version>
+                            <r:TypeOfObject>Category</r:TypeOfObject>
+                        </r:BasedOnReference>
+                    </r:BasedOnObject>
+                </Category>
+            </Fragment>
+            """);
+
+        Ddi4Category cat = converter.toCategory(doc);
+
+        assertThat(cat.basedOnObject()).isNotNull();
+        assertThat(cat.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-cat");
+        assertThat(cat.basedOnObject().basedOnReferences().get(0).version()).isEqualTo("3");
+    }
+
+    @Test
+    void shouldParseCodeListBasedOnObject() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:variant-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>variant-id</r:ID><r:Version>1</r:Version>
+                    <r:BasedOnObject>
+                        <r:BasedOnReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>original-cl-id</r:ID><r:Version>2</r:Version>
+                            <r:TypeOfObject>CodeList</r:TypeOfObject>
+                        </r:BasedOnReference>
+                    </r:BasedOnObject>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.basedOnObject()).isNotNull();
+        assertThat(cl.basedOnObject().basedOnReferences()).hasSize(1);
+        assertThat(cl.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-cl-id");
+        assertThat(cl.basedOnObject().basedOnReferences().get(0).version()).isEqualTo("2");
+    }
+
+    @Test
     void shouldParseCodeListLevels() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""
             <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">

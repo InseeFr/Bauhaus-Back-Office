@@ -2923,6 +2923,213 @@ class DDIRepositoryImplTest {
         assertTrue(result.isEmpty());
     }
 
+    @Test
+    void getCodeListsUsingCategory_returnsCodeListsJoinedToVariablesWithParents() {
+        String agencyId = "fr.insee";
+        String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        // Le type Group n'est PAS dans la map itemTypes de la configuration réelle : l'impl doit
+        // utiliser sa constante GROUP_ITEM_TYPE, pas types.get("Group").
+        String groupType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "CodeList", codeListType,
+                "Variable", variableType,
+                "DataRelationship", dataRelationshipType,
+                "PhysicalInstance", physicalInstanceType,
+                "StudyUnit", STUDY_UNIT_ITEM_TYPE));
+
+        // Category ← CodeList (via les codes de la liste) : marche byobject, type-filtrée.
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, categoryId)),
+                eq(List.of(codeListType))))
+            .thenReturn(List.of(labelItem(codeListType, agencyId, "cl-1", "Pays")));
+
+        // CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit (même marche que
+        // getVariablesUsingCodeList)…
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "cl-1")),
+                eq(List.of(variableType))))
+            .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "var-1")),
+                eq(List.of(dataRelationshipType))))
+            .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "dr-1")),
+                eq(List.of(physicalInstanceType))))
+            .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "pi-1")),
+                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
+
+        // …puis StudyUnit ← Group pour le niveau racine de l'arbre du front.
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "su-1")),
+                eq(List.of(groupType))))
+            .thenReturn(List.of(labelItem(groupType, agencyId, "grp-1", "Groupe démographie")));
+
+        List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        CategoryCodeListUsage usage = result.get(0);
+        assertEquals(new UsageItem(agencyId, "grp-1", "Groupe démographie"), usage.group());
+        assertEquals(new UsageItem(agencyId, "su-1", "Recensement 2024"), usage.studyUnit());
+        assertEquals(new UsageItem(agencyId, "pi-1", "Fichier détail"), usage.physicalInstance());
+        assertEquals(new UsageItem(agencyId, "var-1", "Sexe"), usage.variable());
+        assertEquals(new UsageItem(agencyId, "cl-1", "Pays"), usage.codeList());
+    }
+
+    @Test
+    void getCodeListsUsingCategory_returnsListOnlyRowWhenNoVariableUsesTheList() {
+        String agencyId = "fr.insee";
+        String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "CodeList", codeListType,
+                "Variable", variableType,
+                "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
+                "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
+                "StudyUnit", STUDY_UNIT_ITEM_TYPE));
+
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, categoryId)),
+                eq(List.of(codeListType))))
+            .thenReturn(List.of(labelItem(codeListType, agencyId, "cl-orpheline", "Pays")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "cl-orpheline")),
+                eq(List.of(variableType))))
+            .thenReturn(List.of());
+
+        List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
+
+        // La liste sans variable utilisatrice apparaît quand même (parents null).
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        CategoryCodeListUsage usage = result.get(0);
+        assertEquals(new UsageItem(agencyId, "cl-orpheline", "Pays"), usage.codeList());
+        assertNull(usage.group());
+        assertNull(usage.studyUnit());
+        assertNull(usage.physicalInstance());
+        assertNull(usage.variable());
+    }
+
+    /**
+     * Une catégorie très partagée (« Oui/Non ») traverse des dizaines de listes qui retombent sur
+     * les mêmes fichiers : la StudyUnit d'une PhysicalInstance et le Group d'une StudyUnit ne
+     * doivent être demandés qu'une fois pour tout l'appel, sans quoi la popup de confirmation
+     * enchaîne autant d'allers-retours Colectica que de couples (liste, variable).
+     */
+    @Test
+    void getCodeListsUsingCategory_resolvesEachStudyUnitAndGroupOnlyOnce() {
+        String agencyId = "fr.insee";
+        String categoryId = "cat-1";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String groupType = "4bd6eef6-99df-40e6-9b11-5b8f64e5cb23";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "CodeList", codeListType,
+                "Variable", variableType,
+                "DataRelationship", dataRelationshipType,
+                "PhysicalInstance", physicalInstanceType,
+                "StudyUnit", STUDY_UNIT_ITEM_TYPE));
+
+        // Deux listes de codes utilisent la catégorie…
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, categoryId)),
+                eq(List.of(codeListType))))
+            .thenReturn(List.of(
+                labelItem(codeListType, agencyId, "cl-1", "Pays"),
+                labelItem(codeListType, agencyId, "cl-2", "Pays de naissance")));
+
+        // …chacune par une variable différente, mais du MÊME fichier, donc de la même StudyUnit
+        // et du même Group.
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "cl-1")),
+                eq(List.of(variableType))))
+            .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "cl-2")),
+                eq(List.of(variableType))))
+            .thenReturn(List.of(labelItem(variableType, agencyId, "var-2", "Âge")));
+        when(colecticaClient.findRelatedDescriptions(
+                eq(RelationshipDirection.BY_OBJECT),
+                any(ItemReference.class),
+                eq(List.of(dataRelationshipType))))
+            .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "dr-1")),
+                eq(List.of(physicalInstanceType))))
+            .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "pi-1")),
+                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+            .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "su-1")),
+                eq(List.of(groupType))))
+            .thenReturn(List.of(labelItem(groupType, agencyId, "grp-1", "Groupe démographie")));
+
+        List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
+
+        // Les deux lignes sont bien renseignées jusqu'au Group…
+        assertEquals(2, result.size());
+        assertTrue(result.stream().allMatch(
+                usage -> new UsageItem(agencyId, "grp-1", "Groupe démographie").equals(usage.group())));
+        // …mais la PhysicalInstance et la StudyUnit partagées n'ont été résolues qu'une fois.
+        verify(colecticaClient, times(1)).findRelatedItems(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "pi-1"),
+                List.of(STUDY_UNIT_ITEM_TYPE));
+        verify(colecticaClient, times(1)).findRelatedItems(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "su-1"),
+                List.of(groupType));
+    }
+
+    @Test
+    void getCodeListsUsingCategory_returnsEmptyWhenNoCodeListUsesIt() {
+        String agencyId = "fr.insee";
+        String categoryId = "cat-unused";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, categoryId)),
+                eq(List.of(codeListType))))
+            .thenReturn(List.of());
+
+        List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
     /**
      * Valeurs sentinelles (#1566) : les usages d'une MMVR (variables qui la référencent) suivent la
      * même marche {@code byobject} que ceux d'une CodeList — MMVR ← Variable ← DataRelationship ←

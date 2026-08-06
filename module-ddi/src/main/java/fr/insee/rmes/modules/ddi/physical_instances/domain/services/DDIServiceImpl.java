@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
@@ -193,6 +194,12 @@ public class DDIServiceImpl implements DDIService {
     public List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId) {
         logger.info("Starting to get variables using code list {}/{}", codeListAgencyId, codeListId);
         return ddiRepository.getVariablesUsingCodeList(codeListAgencyId, codeListId);
+    }
+
+    @Override
+    public List<CategoryCodeListUsage> getCodeListsUsingCategory(String categoryAgencyId, String categoryId) {
+        logger.info("Starting to get code lists using category {}/{}", categoryAgencyId, categoryId);
+        return ddiRepository.getCodeListsUsingCategory(categoryAgencyId, categoryId);
     }
 
     @Override

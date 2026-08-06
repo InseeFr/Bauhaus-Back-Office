@@ -265,6 +265,79 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
+    void shouldBuildCategoryWithBasedOnObject() {
+        // Variante d'une categorie partagee : l'attribut DDI BasedOn reference la categorie source.
+        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
+                "urn:ddi:fr.insee:variant-cat:1", "fr.insee", "variant-cat", "1",
+                BasedOnObject.of(List.of(Reference.of("fr.insee", "original-cat", "3", "Category"))),
+                LangStrings.of("fr-FR", "Europe variante"));
+
+        String xml = converter.toCategory(cat).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:Category")
+                .contains("<r:BasedOnObject")
+                .contains(">original-cat<")
+                .contains(">Category</r:TypeOfObject>");
+    }
+
+    @Test
+    void shouldBuildCodeListWithBasedOnObject() {
+        // Variante d'une liste partagée : l'attribut DDI BasedOn référence la liste d'origine.
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
+                "urn:ddi:fr.insee:variant-id:1", "fr.insee", "variant-id", "1",
+                BasedOnObject.of(List.of(Reference.of("fr.insee", "original-cl-id", "2", "CodeList"))),
+                LangStrings.of("fr-FR", "Variante"),
+                null, null);
+
+        String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<ddi:CodeList")
+                .contains("<r:BasedOnObject")
+                .contains(">original-cl-id<")
+                .contains(">CodeList</r:TypeOfObject>");
+    }
+
+    /**
+     * L'URN est une fonction de l'identité DDI ({@code urn:ddi:agence:id:version}) : c'est au back
+     * de la produire. Le front qui crée une liste (variante d'une liste partagée, par exemple)
+     * envoie donc l'identité seule, sans réimplémenter la règle de nommage de son côté.
+     */
+    @Test
+    void shouldSynthesizeCodeListUrnWhenAbsent() {
+        Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
+                CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
+                null, "fr.insee", "variant-id", "1",
+                LangStrings.of("fr-FR", "Variante"),
+                null,
+                List.of(new Code(Code.TYPE,
+                        null, "fr.insee", "code-id", "1",
+                        Reference.of("fr.insee", "cat-id", "1", "Category"),
+                        ValueType.of("01"), null)));
+
+        String xml = converter.toCodeList(cl).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains(">urn:ddi:fr.insee:variant-id:1<")
+                .contains(">urn:ddi:fr.insee:code-id:1<");
+    }
+
+    @Test
+    void shouldSynthesizeCategoryUrnWhenAbsent() {
+        Ddi4Category cat = new Ddi4Category(Ddi4Category.TYPE,
+                CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
+                null, "fr.insee", "variant-cat", "1",
+                LangStrings.of("fr-FR", "Europe variante"));
+
+        String xml = converter.toCategory(cat).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml).contains(">urn:ddi:fr.insee:variant-cat:1<");
+    }
+
+    @Test
     void shouldBuildCodeListWithLevels() {
         Ddi4CodeList cl = new Ddi4CodeList(Ddi4CodeList.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),

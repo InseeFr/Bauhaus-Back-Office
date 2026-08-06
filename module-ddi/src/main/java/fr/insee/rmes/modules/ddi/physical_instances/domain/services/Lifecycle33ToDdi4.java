@@ -166,6 +166,7 @@ public class Lifecycle33ToDdi4 {
                 cl.getAgencyArray(0),
                 cl.getIDArray(0).getStringValue(),
                 cl.getVersionArray(0),
+                readBasedOnObject(cl.getBasedOnObject()),
                 cl.sizeOfLabelArray() > 0 ? readLabel(cl.getLabelArray(0)) : null,
                 levels.isEmpty() ? null : levels,
                 codes.isEmpty() ? null : codes
@@ -362,6 +363,7 @@ public class Lifecycle33ToDdi4 {
                 cat.getAgencyArray(0),
                 cat.getIDArray(0).getStringValue(),
                 cat.getVersionArray(0),
+                readBasedOnObject(cat.getBasedOnObject()),
                 cat.sizeOfLabelArray() > 0 ? readLabel(cat.getLabelArray(0)) : null
         );
     }

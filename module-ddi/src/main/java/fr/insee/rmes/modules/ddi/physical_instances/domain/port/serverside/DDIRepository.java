@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside;
 
 
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
@@ -83,6 +84,11 @@ public interface DDIRepository {
      */
     List<PartialMissingValuesRepresentation> getMissingValuesRepresentationsByGroup(String agencyId, String groupId);
     List<CodeListVariableUsage> getVariablesUsingCodeList(String codeListAgencyId, String codeListId);
+    /**
+     * Les CodeLists dont au moins un code référence la catégorie donnée. Alimente la popup de
+     * confirmation « catégorie partagée » côté front.
+     */
+    List<CategoryCodeListUsage> getCodeListsUsingCategory(String categoryAgencyId, String categoryId);
     /**
      * Les variables qui référencent la ManagedMissingValuesRepresentation donnée (cf. #1566), avec
      * leur PhysicalInstance et StudyUnit — même marche {@code byobject} que
