@@ -70,12 +70,10 @@ public class IndicatorsUtils {
 	private final UriUtils uriUtils;
 	private final String lg1;
 	private final String lg2;
-	private final boolean indicatorsRichTextNexStructure;
 	private final OperationIndicatorsQueries operationIndicatorsQueries;
 	private final OrganisationLookup organisationLookup;
 
 	public IndicatorsUtils(
-			@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.indicators-rich-text-new-structure}") boolean indicatorsRichTextNexStructure,
 			RepositoryGestion repositoryGestion,
 			CodeListService codeListService,
 			OrganizationsService organizationsService,
@@ -88,7 +86,6 @@ public class IndicatorsUtils {
 			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
 			OperationIndicatorsQueries operationIndicatorsQueries,
 			OrganisationLookup organisationLookup) {
-		this.indicatorsRichTextNexStructure = indicatorsRichTextNexStructure;
 		this.repositoryGestion = repositoryGestion;
 		this.codeListService = codeListService;
 		this.organizationsService = organizationsService;
@@ -201,7 +198,7 @@ public class IndicatorsUtils {
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
 		}
-		JSONObject indicator = repositoryGestion.getResponseAsObject(operationIndicatorsQueries.indicatorQuery(id, this.indicatorsRichTextNexStructure));
+		JSONObject indicator = repositoryGestion.getResponseAsObject(operationIndicatorsQueries.indicatorQuery(id));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
@@ -387,21 +384,9 @@ public class IndicatorsUtils {
 		return grouped;
 	}
 
-	private void addNewSyntaxToMultiLangValues(IRI indicatorIRI, String value, String lang, Model model, Resource graph, IRI predicate) throws RmesException {
-		IRI iri = RdfUtils.addTripleStringMdToXhtml2(indicatorIRI, predicate, value, lang, "resume", model, graph);
-		if (iri != null) {
-			repositoryGestion.deleteObject(iri, null);
-		}
-	}
-
-	public void addMulltiLangValues(Model model, IRI indicatorIRI, Resource graph, String valueLg1, String valueLg2, IRI predicate) throws RmesException {
+	public void addMulltiLangValues(Model model, IRI indicatorIRI, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
 		RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg1, lg1, model, graph);
 		RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg2, lg2, model, graph);
-
-		if(indicatorsRichTextNexStructure){
-			addNewSyntaxToMultiLangValues(indicatorIRI, valueLg1, lg1, model, graph, predicate);
-			addNewSyntaxToMultiLangValues(indicatorIRI, valueLg2, lg2, model, graph, predicate);
-		}
 	}
 
 	void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {

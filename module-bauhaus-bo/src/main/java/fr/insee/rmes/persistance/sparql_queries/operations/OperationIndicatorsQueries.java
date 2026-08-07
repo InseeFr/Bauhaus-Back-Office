@@ -70,17 +70,16 @@ public class OperationIndicatorsQueries {
 		return buildIndicatorRequest("getIndicatorsQueryForSearch.ftlh", params);
 	}
 
-	public String indicatorQuery(String id, boolean indicatorsRichTextNexStructure) throws RmesException {
-		return indicatorFullObjectQuery(id, true, indicatorsRichTextNexStructure);
+	public String indicatorQuery(String id) throws RmesException {
+		return indicatorFullObjectQuery(id, true);
 	}
 
-	private String indicatorFullObjectQuery(String id, boolean withLimit, boolean indicatorsRichTextNexStructure) throws RmesException {
+	private String indicatorFullObjectQuery(String id, boolean withLimit) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", languages.lg1());
 		params.put("LG2", languages.lg2());
 		params.put("ID", id);
 		params.put("WITH_LIMIT", withLimit);
-		params.put("INDICATORS_RICH_TEXT_NEXT_STRUCTURE", indicatorsRichTextNexStructure);
 		return buildIndicatorRequest("getIndicator.ftlh", params);
 	}
 

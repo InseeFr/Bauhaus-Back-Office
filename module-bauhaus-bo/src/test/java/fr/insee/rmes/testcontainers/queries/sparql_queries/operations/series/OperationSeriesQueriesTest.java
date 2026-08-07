@@ -56,7 +56,7 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_series() throws Exception {
-        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("s1226", false));
+        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("s1226"));
         assertThat(result.getString("validationState")).hasToString("Validated");
         assertThat(result.getString("altLabelLg1")).hasToString("EVA");
         assertThat(result.getString("altLabelLg2")).hasToString("EVA");

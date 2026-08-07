@@ -67,14 +67,13 @@ class OperationFamilyQueriesTest {
     @Test
     void familyQuery_ShouldReturnQueryString() throws RmesException {
         String familyId = "123";
-        boolean familiesRichTextNexStructure = true;
         String expectedQuery = "SPARQL QUERY RESULT";
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
             mockedFreeMarkerUtils.when(() -> FreeMarkerUtils.buildRequest(anyString(), anyString(), any(Map.class)))
                     .thenReturn(expectedQuery);
 
-            String result = operationFamilyQueries.familyQuery(familyId, familiesRichTextNexStructure);
+            String result = operationFamilyQueries.familyQuery(familyId);
 
             assertEquals(expectedQuery, result);
             mockedFreeMarkerUtils.verify(() -> FreeMarkerUtils.buildRequest(
@@ -88,7 +87,6 @@ class OperationFamilyQueriesTest {
     @Test
     void familyQuery_ShouldThrowRmesExceptionWhenFreeMarkerFails() {
         String familyId = "123";
-        boolean familiesRichTextNexStructure = false;
         RmesException expectedException = new RmesException(500, "FreeMarker error", "Details");
 
         try (MockedStatic<FreeMarkerUtils> mockedFreeMarkerUtils = mockStatic(FreeMarkerUtils.class)) {
@@ -96,7 +94,7 @@ class OperationFamilyQueriesTest {
                     .thenThrow(expectedException);
 
             RmesException thrownException = assertThrows(RmesException.class, () -> 
-                    operationFamilyQueries.familyQuery(familyId, familiesRichTextNexStructure));
+                    operationFamilyQueries.familyQuery(familyId));
 
             assertEquals(expectedException, thrownException);
         }

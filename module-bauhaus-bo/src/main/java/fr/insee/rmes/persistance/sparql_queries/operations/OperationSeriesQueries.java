@@ -45,12 +45,11 @@ public class OperationSeriesQueries {
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
-	public String oneSeriesQuery(String id, boolean seriesRichTextNexStructure) throws RmesException {
+	public String oneSeriesQuery(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("LG1", languages.lg1());
 		params.put("LG2", languages.lg2());
 		params.put("ID", id);
-		params.put("SERIES_RICH_TEXT_NEXT_STRUCTURE", seriesRichTextNexStructure);
 
 		return FreeMarkerUtils.buildRequest("operations/series/", "getSeriesById.ftlh", params);
 	}

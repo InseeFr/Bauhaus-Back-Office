@@ -12,7 +12,6 @@ import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -23,16 +22,13 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
 
     private final RepositoryGestion repositoryGestion;
     private final OperationFamilyQueries operationFamilyQueries;
-    private final boolean familiesRichTextNexStructure;
 
     public GraphDBOperationFamilyRepository(
             RepositoryGestion repositoryGestion,
-            OperationFamilyQueries operationFamilyQueries,
-            @Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.families-rich-text-new-structure}") boolean familiesRichTextNexStructure
+            OperationFamilyQueries operationFamilyQueries
     ) {
         this.repositoryGestion = repositoryGestion;
         this.operationFamilyQueries = operationFamilyQueries;
-        this.familiesRichTextNexStructure = familiesRichTextNexStructure;
     }
 
     @Override
@@ -63,7 +59,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
 
     @Override
     public OperationFamily getFamily(String id) throws RmesException {
-        var family = this.repositoryGestion.getResponseAsObject(operationFamilyQueries.familyQuery(id, this.familiesRichTextNexStructure));
+        var family = this.repositoryGestion.getResponseAsObject(operationFamilyQueries.familyQuery(id));
 
         if (family.isEmpty()) {
             throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family " + id + " not found", "Maybe id is wrong");

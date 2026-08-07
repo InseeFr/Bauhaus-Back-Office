@@ -143,7 +143,7 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_single_indicator_by_id() throws Exception {
-        String query = operationIndicatorsQueries.indicatorQuery("p1651", true);
+        String query = operationIndicatorsQueries.indicatorQuery("p1651");
 
         JSONArray results = repositoryGestion.getResponseAsArray(query);
 
@@ -159,19 +159,6 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
 
         assertTrue(result.has("prefLabelLg1") || result.has("prefLabelLg2") || result.length() > 0,
                    "Result should have indicator properties");
-    }
-
-    @Test
-    void should_return_indicator_with_rich_text_structure_flag_false() throws Exception {
-        String query = operationIndicatorsQueries.indicatorQuery("p1651", false);
-
-        JSONArray results = repositoryGestion.getResponseAsArray(query);
-
-        assertNotNull(results);
-        assertTrue(results.length() > 0, "Should return at least one result");
-
-        JSONObject result = results.getJSONObject(0);
-        assertTrue(result.length() > 0, "Result should have at least one property");
     }
 
     @Test

@@ -15,7 +15,6 @@ WHERE {
     OPTIONAL{?indic skos:altLabel ?altLabelLg2
     FILTER (lang(?altLabelLg2) = '${LG2}') }
 
-<#if !INDICATORS_RICH_TEXT_NEXT_STRUCTURE>
     OPTIONAL {
         ?indic dcterms:abstract ?abstractLg1Uri .
         ?abstractLg1Uri evoc:noteLiteral ?abstractLg1 .
@@ -39,8 +38,6 @@ WHERE {
         ?historyNoteLg2Uri evoc:noteLiteral ?historyNoteLg2 .
         ?historyNoteLg2Uri xsd:language '${LG2}'^^xsd:language
     }
-</#if>
-
 
     OPTIONAL{?indic dcterms:abstract ?abstractLg1
     FILTER (lang(?abstractLg1) = '${LG1}') }

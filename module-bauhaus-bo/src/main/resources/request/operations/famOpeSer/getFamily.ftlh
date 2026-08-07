@@ -13,7 +13,6 @@ WHERE {
         OPTIONAL { ?family dcterms:created ?created } .
         OPTIONAL { ?family dcterms:modified ?modified } .
 
-<#if !FAMILIES_RICH_TEXT_NEXT_STRUCTURE>
     OPTIONAL {
         ?family dcterms:abstract ?abstractLg1Uri .
         ?abstractLg1Uri evoc:noteLiteral ?abstractLg1 .
@@ -24,7 +23,6 @@ WHERE {
         ?abstractLg2Uri evoc:noteLiteral ?abstractLg2 .
         ?abstractLg2Uri xsd:language '${LG2}'^^xsd:language
     }
-</#if>
         OPTIONAL {?family dcterms:abstract ?abstractLg1 .
         FILTER (lang(?abstractLg1) = '${LG1}') } .
         OPTIONAL {?family dcterms:abstract ?abstractLg2 .

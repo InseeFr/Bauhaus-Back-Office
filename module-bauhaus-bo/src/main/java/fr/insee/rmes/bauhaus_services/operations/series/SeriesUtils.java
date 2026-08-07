@@ -70,14 +70,12 @@ public class SeriesUtils {
     private final UriUtils uriUtils;
     private final String lg2;
     private final String lg1;
-    private final boolean seriesRichTextNexStructure;
 
     private final SeriesValidator validator;
 
     private final OperationSeriesQueries operationSeriesQueries;
 
     public SeriesUtils(
-            @Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.series-rich-text-new-structure}") boolean seriesRichTextNexStructure,
             @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
             @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
             RepositoryGestion repositoryGestion,
@@ -91,7 +89,6 @@ public class SeriesUtils {
             SeriesValidator validator,
             OperationSeriesQueries operationSeriesQueries,
             OrganisationLookup organisationLookup) {
-        this.seriesRichTextNexStructure = seriesRichTextNexStructure;
         this.lg1 = lg1;
         this.lg2 = lg2;
         this.repositoryGestion = repositoryGestion;
@@ -144,7 +141,7 @@ public class SeriesUtils {
 
 
     public JSONObject getSeriesJsonById(String id, EncodingType encode) throws RmesException {
-        JSONObject series = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery(id, seriesRichTextNexStructure));
+        JSONObject series = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery(id));
         // check that the series exist
         if (JSONUtils.isEmpty(series)) {
             throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found",
@@ -298,21 +295,9 @@ public class SeriesUtils {
     }
 
 
-    private void addNewSyntaxToMultiLangValues(IRI indicatorIRI, String value, String lang, Model model, Resource graph, IRI predicate) throws RmesException {
-        IRI iri = RdfUtils.addTripleStringMdToXhtml2(indicatorIRI, predicate, value, lang, "resume", model, graph);
-        if (iri != null) {
-            repositoryGestion.deleteObject(iri, null);
-        }
-    }
-
-    public void addMulltiLangValues(Model model, IRI seriesIri, Resource graph, String valueLg1, String valueLg2, IRI predicate) throws RmesException {
+    public void addMulltiLangValues(Model model, IRI seriesIri, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
         RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg1, lg1, model, graph);
         RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg2, lg2, model, graph);
-
-        if (seriesRichTextNexStructure) {
-            addNewSyntaxToMultiLangValues(seriesIri, valueLg1, lg1, model, graph, predicate);
-            addNewSyntaxToMultiLangValues(seriesIri, valueLg2, lg2, model, graph, predicate);
-        }
     }
 
     void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {

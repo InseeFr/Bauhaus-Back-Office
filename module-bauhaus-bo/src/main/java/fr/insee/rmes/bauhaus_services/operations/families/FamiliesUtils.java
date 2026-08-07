@@ -42,7 +42,6 @@ public class FamiliesUtils {
 	static final Logger logger = LoggerFactory.getLogger(FamiliesUtils.class);
 
 
-	boolean familiesRichTextNexStructure;
 	final FamOpeSerIndUtils famOpeSerUtils;
 	final FamilyPublication familyPublication;
 	final ParentUtils ownersUtils;
@@ -51,8 +50,7 @@ public class FamiliesUtils {
 	final String lg2;
 	final OperationFamilyQueries operationFamilyQueries;
 
-	public FamiliesUtils(@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.families-rich-text-new-structure}") boolean familiesRichTextNexStructure,
-						 FamOpeSerIndUtils famOpeSerUtils,
+	public FamiliesUtils(FamOpeSerIndUtils famOpeSerUtils,
 						 FamilyPublication familyPublication,
 						 ParentUtils ownersUtils,
 						 RepositoryGestion repositoryGestion,
@@ -60,7 +58,6 @@ public class FamiliesUtils {
 						 @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
 						 OperationFamilyQueries operationFamilyQueries) {
 
-		this.familiesRichTextNexStructure = familiesRichTextNexStructure;
 		this.famOpeSerUtils = famOpeSerUtils;
 		this.familyPublication = familyPublication;
 		this.ownersUtils = ownersUtils;
@@ -148,21 +145,9 @@ public class FamiliesUtils {
 	}
 
 
-	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) throws RmesException {
+	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) {
 		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), lg1, model, graph);
 		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), lg2, model, graph);
-
-		if(familiesRichTextNexStructure){
-			addRichTextToModel(familyURI, family.getAbstractLg1(), lg1, model, graph);
-			addRichTextToModel(familyURI, family.getAbstractLg2(), lg2, model, graph);
-		}
-	}
-
-	private void addRichTextToModel(IRI familyURI, String family, String lang, Model model, Resource graph) throws RmesException {
-		IRI iri = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family, lang, "resume", model, graph);
-		if (iri != null) {
-			repositoryGestion.deleteObject(iri, null);
-		}
 	}
 
 

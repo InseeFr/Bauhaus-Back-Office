@@ -46,30 +46,8 @@ class SeriesUtilsTest {
     private FamOpeSerIndUtils famOpeSerIndUtils;
 
     @Test
-    void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
-        doNothing().when(repositoryGestion).deleteObject(any(), any());
-        SeriesUtils indicatorsUtils = new SeriesUtils(true, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
-
-        var series = new Series();
-        series.setId("1");
-        series.setAbstractLg1("AbstractLg1");
-        series.setAbstractLg2("setAbstractLg2");
-        IRI seriesIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + series.getId());
-        Model model = new LinkedHashModel();
-
-        SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
-
-        indicatorsUtils.addMulltiLangValues(model, seriesIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"), "fr", "en", DCTERMS.ABSTRACT);
-        verify(repositoryGestion, times(2)).deleteObject(any(), any());
-
-        Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
-        Assertions.assertEquals(model.subjects().toArray()[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/fr"));
-        Assertions.assertEquals(model.subjects().toArray()[2], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/en"));
-    }
-
-    @Test
-    void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        SeriesUtils indicatorsUtils = new SeriesUtils(true, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+    void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
+        SeriesUtils indicatorsUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
 
         var series = new Series();
         series.setId("1");
@@ -97,7 +75,7 @@ class SeriesUtilsTest {
     @Test
     void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
         SeriesValidator validator = mock(SeriesValidator.class);
-        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, validator, null, null);
+        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, validator, null, null);
         Series series = new Series();
         series.setId("s2000");
         series.setPrefLabelLg1("Série de test");
@@ -116,7 +94,7 @@ class SeriesUtilsTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
+        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -139,7 +117,7 @@ class SeriesUtilsTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
+        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -159,7 +137,7 @@ class SeriesUtilsTest {
 
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
-        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
         String body = "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
 
         try {
@@ -175,7 +153,7 @@ class SeriesUtilsTest {
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        SeriesUtils seriesUtils = new SeriesUtils(false, "fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();

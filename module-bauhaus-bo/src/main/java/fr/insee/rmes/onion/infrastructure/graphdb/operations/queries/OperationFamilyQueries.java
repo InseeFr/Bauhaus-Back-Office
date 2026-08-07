@@ -41,13 +41,12 @@ public class OperationFamilyQueries {
         return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
     }
 
-    public String familyQuery(String id, boolean familiesRichTextNexStructure) throws RmesException {
+    public String familyQuery(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(OPERATIONS_GRAPH, baseGraph + operationsGraph);
         params.put("LG1", lg1);
         params.put("LG2", lg2);
         params.put("ID", id);
-        params.put("FAMILIES_RICH_TEXT_NEXT_STRUCTURE", familiesRichTextNexStructure);
         return  buildRequest("getFamily.ftlh", params);
     }
 

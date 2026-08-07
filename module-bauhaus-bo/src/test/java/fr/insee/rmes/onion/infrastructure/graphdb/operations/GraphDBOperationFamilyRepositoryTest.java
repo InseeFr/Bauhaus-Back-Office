@@ -36,14 +36,12 @@ class GraphDBOperationFamilyRepositoryTest {
 
     private GraphDBOperationFamilyRepository repository;
 
-    private final boolean familiesRichTextNexStructure = true;
 
     @BeforeEach
     void setUp() {
         repository = new GraphDBOperationFamilyRepository(
                 repositoryGestion,
-                operationFamilyQueries,
-                familiesRichTextNexStructure
+                operationFamilyQueries
         );
     }
 
@@ -103,7 +101,7 @@ class GraphDBOperationFamilyRepositoryTest {
                 .put("prefLabelLg1", "Family Label")
                 .put("validationState", "VALIDATED");
 
-        when(operationFamilyQueries.familyQuery(familyId, familiesRichTextNexStructure)).thenReturn("query");
+        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("query");
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(familyJson);
 
         try (MockedStatic<XhtmlToMarkdownUtils> mockedUtils = mockStatic(XhtmlToMarkdownUtils.class)) {
@@ -126,7 +124,7 @@ class GraphDBOperationFamilyRepositoryTest {
         String familyId = "nonexistent";
         JSONObject emptyJson = new JSONObject();
 
-        when(operationFamilyQueries.familyQuery(familyId, familiesRichTextNexStructure)).thenReturn("query");
+        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("query");
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(emptyJson);
 
         RmesException exception = assertThrows(RmesException.class, () -> repository.getFamily(familyId));
@@ -218,7 +216,7 @@ class GraphDBOperationFamilyRepositoryTest {
         JSONArray subjectsArray = new JSONArray()
                 .put(new JSONObject().put("id", "sub1").put("labelLg1", "Subject 1"));
 
-        when(operationFamilyQueries.familyQuery(familyId, familiesRichTextNexStructure)).thenReturn("familyQuery");
+        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
         when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
         when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
         
@@ -251,7 +249,7 @@ class GraphDBOperationFamilyRepositoryTest {
         
         JSONArray emptyArray = new JSONArray();
 
-        when(operationFamilyQueries.familyQuery(familyId, familiesRichTextNexStructure)).thenReturn("familyQuery");
+        when(operationFamilyQueries.familyQuery(familyId)).thenReturn("familyQuery");
         when(operationFamilyQueries.getSeries(familyId)).thenReturn("seriesQuery");
         when(operationFamilyQueries.getSubjects(familyId)).thenReturn("subjectsQuery");
         
@@ -271,14 +269,4 @@ class GraphDBOperationFamilyRepositoryTest {
         }
     }
 
-    @Test
-    void constructor_setsAllFields() {
-        GraphDBOperationFamilyRepository repo = new GraphDBOperationFamilyRepository(
-                repositoryGestion,
-                operationFamilyQueries,
-                false
-        );
-
-        assertNotNull(repo);
-    }
 }

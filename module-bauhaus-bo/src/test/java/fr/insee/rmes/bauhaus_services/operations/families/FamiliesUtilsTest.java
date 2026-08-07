@@ -43,7 +43,7 @@ class FamiliesUtilsTest {
 
     @Test
     void createRdfFamily_addsAdmsIdentifierTriple() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(false, null, null, null, repositoryGestion, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, repositoryGestion, "fr", "en", null);
         Family family = new Family();
         family.setId("s1");
         family.prefLabelLg1 = "Famille de test";
@@ -59,30 +59,8 @@ class FamiliesUtilsTest {
 
 
     @Test
-    void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
-        doNothing().when(repositoryGestion).deleteObject(any(), any());
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en", null);
-
-        var family = new Family();
-        family.setId("1");
-        family.setAbstractLg1("AbstractLg1");
-        family.setAbstractLg2("setAbstractLg2");
-        IRI familyIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + family.getId());
-        Model model = new LinkedHashModel();
-
-        SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
-
-        familiesUtils.addAbstractToFamily(family, model, familyIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"));
-        verify(repositoryGestion, times(2)).deleteObject(any(), any());
-
-        Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
-        Assertions.assertEquals(model.subjects().toArray()[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/fr"));
-        Assertions.assertEquals(model.subjects().toArray()[2], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/en"));
-    }
-
-    @Test
-    void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, "fr", "en", null);
+    void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, repositoryGestion, "fr", "en", null);
 
         var family = new Family();
         family.setId("1");
@@ -106,14 +84,14 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenFamilyIsNull()  {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, "fr", "en", null);
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
         assertThat(exception.getDetails()).contains("{\"details\":\"Can't read request body\",\"message\":\"541 : No id found\"}");
     }
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenIdIsAbsent(){
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, "fr", "en", null);
         Family familyCreate = new Family();
         familyCreate.setCreated("today");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
@@ -122,7 +100,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenPrefLabelLg1IsAbsent() {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, null, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, "fr", "en", null);
         Family familyCreate = new Family();
         familyCreate.setId("idExample");
         familyCreate.setAbstractLg1("");
