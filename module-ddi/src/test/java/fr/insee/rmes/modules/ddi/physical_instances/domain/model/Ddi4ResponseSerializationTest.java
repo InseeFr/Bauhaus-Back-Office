@@ -31,9 +31,12 @@ class Ddi4ResponseSerializationTest {
 
         String json = mapper.writeValueAsString(response);
 
+        // Enveloppe du schéma : les sections absentes ne laissent aucune trace, et les clés
+        // groupées par type n'existent plus — tout passe par `items`.
         assertThat(json)
-                .contains("\"$schema\"")
-                .contains("\"TopLevelReference\"")
+                .contains("\"topLevelReferences\"")
+                .contains("\"items\"")
+                .doesNotContain("\"$schema\"")
                 .doesNotContain("\"PhysicalInstance\"")
                 .doesNotContain("\"Variable\"")
                 .doesNotContain("\"CodeList\"")
@@ -51,8 +54,12 @@ class Ddi4ResponseSerializationTest {
 
         String json = mapper.writeValueAsString(response);
 
+        // Même enveloppe que la PhysicalInstance : `items`, sans marqueur `$schema`.
         assertThat(json)
-                .contains("\"$schema\"")
+                .contains("\"items\"")
+                .doesNotContain("\"$schema\"")
+                .doesNotContain("\"Group\"")
+                .doesNotContain("\"StudyUnit\"")
                 .doesNotContain("null");
     }
 
@@ -85,8 +92,7 @@ class Ddi4ResponseSerializationTest {
     void ddi4Response_carriesManagedMissingValuesRepresentations() throws Exception {
         String json = """
                 {
-                    "$schema": "ddi:4.0",
-                    "ManagedMissingValuesRepresentation": [
+                    "items": [
                         {
                             "$type": "ManagedMissingValuesRepresentation",
                             "URN": "urn:ddi:fr.insee:mmvr-1:1",
@@ -102,9 +108,11 @@ class Ddi4ResponseSerializationTest {
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         Ddi4Response response = tolerantMapper.readValue(json, Ddi4Response.class);
-        String out = tolerantMapper.writeValueAsString(response);
 
-        assertThat(out)
+        assertThat(response.managedMissingValuesRepresentation())
+                .singleElement()
+                .satisfies(mmvr -> assertThat(mmvr.urn()).isEqualTo("urn:ddi:fr.insee:mmvr-1:1"));
+        assertThat(tolerantMapper.writeValueAsString(response))
                 .contains("\"ManagedMissingValuesRepresentation\"")
                 .contains("\"urn:ddi:fr.insee:mmvr-1:1\"");
     }

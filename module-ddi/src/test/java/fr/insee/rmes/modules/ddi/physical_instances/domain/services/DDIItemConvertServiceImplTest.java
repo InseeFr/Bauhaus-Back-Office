@@ -117,18 +117,18 @@ class DDIItemConvertServiceImplTest {
         assertEquals(ITEM_TYPES.get("CodeList"), forwarded.items().get(0).itemType());
         assertEquals(CODELIST_FRAGMENT, forwarded.items().get(0).item());
 
-        // The resulting DDI4 response is serialized as JSON.
+        // The resulting DDI4 response is serialized as JSON, under the schema envelope.
         assertNotNull(result);
-        assertTrue(result.has("CodeList"));
-        assertEquals("cl-1", result.get("CodeList").get(0).get("ID").asText());
+        assertTrue(result.has("items"));
+        assertEquals("cl-1", result.get("items").get(0).get("ID").asText());
     }
 
     @Test
     void convert_physicalInstance_producesDdi4ResponseEnvelope() {
         // With the production dedicated converters (Group, StudyUnit), a PhysicalInstance
         // fragment must go through the schema fallback and come out as a Ddi4Response
-        // envelope ($schema + PhysicalInstance[]), the same DDI4 shape as GET /physical-instance,
-        // not a flat single object.
+        // envelope (items[] discriminés par $type), the same DDI4 shape as
+        // GET /physical-instance, not a flat single object.
         var schemaConverter = new DDI3toDDI4ConverterServiceImpl(FULL_ITEM_TYPES);
         var service = new DDIItemConvertServiceImpl(
                 List.of(new GroupDDIItemConverter(), new StudyUnitDDIItemConverter()),
@@ -136,18 +136,17 @@ class DDIItemConvertServiceImplTest {
 
         JsonNode result = service.convert(PHYSICAL_INSTANCE_FRAGMENT);
 
-        assertEquals("ddi:4.0", result.get("$schema").asText());
-        JsonNode physicalInstances = result.get("PhysicalInstance");
-        assertNotNull(physicalInstances, "expected a PhysicalInstance envelope array");
-        assertEquals(1, physicalInstances.size());
-        assertEquals("PhysicalInstance", physicalInstances.get(0).get("$type").asText());
-        assertEquals("c05c0443-fc56-4069-9bea-a9c7300ae0a0", physicalInstances.get(0).get("ID").asText());
+        JsonNode items = result.get("items");
+        assertNotNull(items, "expected an items envelope array");
+        assertEquals(1, items.size());
+        assertEquals("PhysicalInstance", items.get(0).get("$type").asText());
+        assertEquals("c05c0443-fc56-4069-9bea-a9c7300ae0a0", items.get(0).get("ID").asText());
     }
 
     @Test
     void convert_codeList_producesDdi4ResponseEnvelope() {
         // A CodeList has no dedicated converter: it must go through the schema fallback
-        // and come out as a Ddi4Response envelope ($schema + CodeList[]), not a flat object.
+        // and come out as a Ddi4Response envelope (items[]), not a flat object.
         String codeListFragment = """
                 <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
                     <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-01-21T13:48:46.363">
@@ -165,10 +164,10 @@ class DDIItemConvertServiceImplTest {
 
         JsonNode result = service.convert(codeListFragment);
 
-        assertEquals("ddi:4.0", result.get("$schema").asText());
-        JsonNode codeLists = result.get("CodeList");
-        assertNotNull(codeLists, "expected a CodeList envelope array");
+        JsonNode codeLists = result.get("items");
+        assertNotNull(codeLists, "expected an items envelope array");
         assertEquals(1, codeLists.size());
+        assertEquals("CodeList", codeLists.get(0).get("$type").asText());
         assertEquals("CL_AGEMEN8", codeLists.get(0).get("ID").asText());
     }
 

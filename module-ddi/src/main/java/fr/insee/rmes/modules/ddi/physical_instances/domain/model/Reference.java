@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * the {@code urn:ddi:<agency>:<id>:<version>} pattern; use {@link #of} to
  * synthesise it from the identity fields.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record Reference(
         @JsonProperty("$type") String type,
         @JsonProperty("URN") String urn,

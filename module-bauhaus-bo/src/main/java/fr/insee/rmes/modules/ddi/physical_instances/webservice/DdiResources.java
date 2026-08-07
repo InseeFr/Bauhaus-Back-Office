@@ -615,7 +615,8 @@ public class DdiResources {
             JsonNode schemaNode = mapper.readTree(schemaContent);
             JsonSchema schema = factory.getSchema(schemaNode);
 
-            // Parse and validate JSON data
+            // Parse and validate JSON data. Le DDI 4 circule déjà sous l'enveloppe du schéma
+            // ({topLevelReferences, items}) : rien à traduire ici.
             JsonNode jsonNode = mapper.readTree(jsonData);
             Set<ValidationMessage> validationMessages = schema.validate(
                 jsonNode
