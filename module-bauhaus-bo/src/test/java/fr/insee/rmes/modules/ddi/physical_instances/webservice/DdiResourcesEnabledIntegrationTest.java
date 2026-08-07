@@ -24,7 +24,9 @@ class DdiResourcesEnabledIntegrationTest {
 
     @Configuration
     @EnableAutoConfiguration
-    @Import(DdiResources.class)
+    // Ddi4SchemaValidator est un vrai bean : il ne compile le schéma qu'à la première validation,
+    // le charger ici ne coûte rien.
+    @Import({ DdiResources.class, Ddi4SchemaValidator.class })
     static class TestConfiguration {
     }
 

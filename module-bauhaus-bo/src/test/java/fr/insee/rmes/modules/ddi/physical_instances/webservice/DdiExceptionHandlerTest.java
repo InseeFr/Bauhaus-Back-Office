@@ -52,7 +52,7 @@ class DdiExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        DdiResources ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils);
+        DdiResources ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils, new Ddi4SchemaValidator());
         mockMvc = MockMvcBuilders.standaloneSetup(ddiResources)
                 .setControllerAdvice(new DdiExceptionHandler())
                 .build();

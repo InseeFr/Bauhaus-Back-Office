@@ -163,7 +163,7 @@ class DdiResourcesSchemaValidationTest {
     void setUp() {
         ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService,
                 ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher,
-                uriUtils);
+                uriUtils, new Ddi4SchemaValidator());
     }
 
     @Test

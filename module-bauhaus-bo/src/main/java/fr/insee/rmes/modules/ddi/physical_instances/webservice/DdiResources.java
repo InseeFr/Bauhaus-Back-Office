@@ -2,12 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -71,6 +65,7 @@ public class DdiResources {
     private final UserProvider userProvider;
     private final RbacFetcher rbacFetcher;
     private final UriUtils uriUtils;
+    private final Ddi4SchemaValidator ddi4SchemaValidator;
 
     public DdiResources(
         DDIService ddiService,
@@ -79,7 +74,8 @@ public class DdiResources {
         DDIItemConvertService ddiItemConvertService,
         UserProvider userProvider,
         RbacFetcher rbacFetcher,
-        UriUtils uriUtils
+        UriUtils uriUtils,
+        Ddi4SchemaValidator ddi4SchemaValidator
     ) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
@@ -88,6 +84,7 @@ public class DdiResources {
         this.userProvider = userProvider;
         this.rbacFetcher = rbacFetcher;
         this.uriUtils = uriUtils;
+        this.ddi4SchemaValidator = ddi4SchemaValidator;
     }
 
     @GetMapping("/physical-instance")
@@ -591,46 +588,15 @@ public class DdiResources {
         @RequestBody String jsonData
     ) {
         try {
-            // Load schema
-            ClassPathResource resource = new ClassPathResource(
-                "ddi-schema.json"
-            );
-            String schemaContent;
-            try (InputStream is = resource.getInputStream()) {
-                schemaContent = new String(
-                    is.readAllBytes(),
-                    StandardCharsets.UTF_8
-                );
-            }
-            // Remove BOM if present
-            if (schemaContent.startsWith("\uFEFF")) {
-                schemaContent = schemaContent.substring(1);
-            }
+            // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
+            // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
+            List<String> errors = ddi4SchemaValidator.validate(jsonData);
 
-            // Create schema factory and parse schema
-            JsonSchemaFactory factory = JsonSchemaFactory.getInstance(
-                SpecVersion.VersionFlag.V202012
-            );
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode schemaNode = mapper.readTree(schemaContent);
-            JsonSchema schema = factory.getSchema(schemaNode);
-
-            // Parse and validate JSON data. Le DDI 4 circule déjà sous l'enveloppe du schéma
-            // ({topLevelReferences, items}) : rien à traduire ici.
-            JsonNode jsonNode = mapper.readTree(jsonData);
-            Set<ValidationMessage> validationMessages = schema.validate(
-                jsonNode
-            );
-
-            if (validationMessages.isEmpty()) {
+            if (errors.isEmpty()) {
                 return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(ValidationResponse.success());
             } else {
-                List<String> errors = validationMessages
-                    .stream()
-                    .map(ValidationMessage::getMessage)
-                    .toList();
                 return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(ValidationResponse.failure(errors));
