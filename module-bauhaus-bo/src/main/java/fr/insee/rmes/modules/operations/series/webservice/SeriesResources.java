@@ -39,10 +39,10 @@ public class SeriesResources  {
 
 	@HasAccess(module = RBAC.Module.OPERATION_SERIES, privilege = RBAC.Privilege.READ)
 	@GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<PartialSeriesReponse>> getSeries() throws RmesException {
-        List<PartialSeriesReponse> responses = operationsService.getSeries().stream()
+	public ResponseEntity<List<PartialSeriesResponse>> getSeries() throws RmesException {
+        List<PartialSeriesResponse> responses = operationsService.getSeries().stream()
                 .map(series -> {
-                    var response = PartialSeriesReponse.fromDomain(series);
+                    var response = PartialSeriesResponse.fromDomain(series);
                     response.add(linkTo(FamilyResources.class).slash("series").slash(series.id()).withSelfRel());
                     return response;
                 })

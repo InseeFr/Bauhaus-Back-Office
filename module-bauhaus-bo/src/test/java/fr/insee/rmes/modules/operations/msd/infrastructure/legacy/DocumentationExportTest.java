@@ -67,7 +67,7 @@ class DocumentationExportTest {
     private OrganizationsService organizationsService;
 
     @Mock
-    private fr.insee.rmes.domain.port.clientside.OrganisationService organisationService;
+    private fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService organisationService;
 
     @Mock
     private DocumentsUtils documentsUtils;
@@ -202,9 +202,9 @@ class DocumentationExportTest {
         // Mock batch organization lookups for creators using OrganisationService from module-domain
         when(organisationService.getOrganisationsMap(List.of("HIE2004993", "DG75-G401", "DG75-G450")))
                 .thenReturn(Map.of(
-                        "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993"),
-                        "DG75-G401", new fr.insee.rmes.domain.model.OrganisationOption("DG75-G401", "Organisation DG75-G401"),
-                        "DG75-G450", new fr.insee.rmes.domain.model.OrganisationOption("DG75-G450", "Organisation DG75-G450")
+                        "HIE2004993", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993"),
+                        "DG75-G401", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-G401", "Organisation DG75-G401"),
+                        "DG75-G450", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-G450", "Organisation DG75-G450")
                 ));
 
         // Mock documentation
@@ -380,12 +380,12 @@ class DocumentationExportTest {
         // Mock batch organization lookups for creators using OrganisationService from module-domain
         when(organisationService.getOrganisationsMap(List.of("HIE2004993")))
                 .thenReturn(Map.of(
-                        "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
+                        "HIE2004993", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
                 ));
         // Mock batch organization lookup for contributors (now resolved to labels like creators)
         when(organisationService.getOrganisationsMap(List.of("DG75-L002")))
                 .thenReturn(Map.of(
-                        "DG75-L002", new fr.insee.rmes.domain.model.OrganisationOption("DG75-L002", "Administration du comité du Label")
+                        "DG75-L002", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-L002", "Administration du comité du Label")
                 ));
 
         // Mock documentation

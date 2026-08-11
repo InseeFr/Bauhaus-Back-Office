@@ -8,8 +8,8 @@ import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesChecke
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
-import fr.insee.rmes.domain.model.operations.families.OperationFamily;
-import fr.insee.rmes.domain.port.clientside.FamilyService;
+import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
+import fr.insee.rmes.modules.operations.families.domain.port.clientside.FamilyService;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

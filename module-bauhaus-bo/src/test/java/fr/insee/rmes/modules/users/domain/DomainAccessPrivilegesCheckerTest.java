@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.users.domain;
 
-import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;

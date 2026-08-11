@@ -11,7 +11,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -20,7 +20,7 @@ import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
-import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 

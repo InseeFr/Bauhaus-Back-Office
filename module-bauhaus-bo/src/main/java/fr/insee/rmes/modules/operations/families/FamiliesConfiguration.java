@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.operations.families;
 
-import fr.insee.rmes.domain.port.clientside.FamilyService;
-import fr.insee.rmes.domain.port.serverside.OperationFamilyRepository;
-import fr.insee.rmes.domain.services.operations.FamilyServiceImpl;
+import fr.insee.rmes.modules.operations.families.domain.port.clientside.FamilyService;
+import fr.insee.rmes.modules.operations.families.domain.port.serverside.OperationFamilyRepository;
+import fr.insee.rmes.modules.operations.families.domain.DomainFamilyService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +10,6 @@ import org.springframework.context.annotation.Configuration;
 public class FamiliesConfiguration {
     @Bean
     FamilyService familyService(OperationFamilyRepository operationFamilyRepository){
-        return new FamilyServiceImpl(operationFamilyRepository);
+        return new DomainFamilyService(operationFamilyRepository);
     }
 }

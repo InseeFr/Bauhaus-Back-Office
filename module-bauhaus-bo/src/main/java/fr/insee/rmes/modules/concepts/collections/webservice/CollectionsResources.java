@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.*;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;

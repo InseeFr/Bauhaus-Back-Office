@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;

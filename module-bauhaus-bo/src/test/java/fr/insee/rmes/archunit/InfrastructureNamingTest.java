@@ -3,7 +3,7 @@ package fr.insee.rmes.archunit;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
-import fr.insee.rmes.webservice.response.BaseResponse;
+import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,7 +12,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 class InfrastructureNamingTest {
     @Test
     void responseNaming() {
-        JavaClasses classes = new ClassFileImporter().importPackages("fr.insee.rmes.webservice.response");
+        JavaClasses classes = new ClassFileImporter().importPackages("fr.insee.rmes.modules");
         classes().that().areAssignableTo(BaseResponse.class)
                 .should().haveSimpleNameEndingWith("Response").check(classes);
     }

@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
-import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownApplicationException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnknownRoleException;
 import fr.insee.rmes.modules.users.domain.model.AllModuleAccessPrivileges;

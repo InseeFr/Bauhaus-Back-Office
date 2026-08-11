@@ -1,0 +1,8 @@
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService> is not annotated with @ClientSidePort in (DDI3toDDI4ConverterService.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService> is not annotated with @ClientSidePort in (DDI4toDDI3ConverterService.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService> is not annotated with @ClientSidePort in (DDIItemConvertService.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConverter> is not annotated with @ClientSidePort in (DDIItemConverter.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService> is not annotated with @ClientSidePort in (DDIService.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DdiItemService> is not annotated with @ClientSidePort in (DdiItemService.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService> is not annotated with @ClientSidePort in (GroupService.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService> is not annotated with @ClientSidePort in (StudyUnitService.java:0)

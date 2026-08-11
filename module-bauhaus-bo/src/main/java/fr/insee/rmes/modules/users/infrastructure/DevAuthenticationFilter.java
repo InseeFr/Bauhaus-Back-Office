@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.users.infrastructure;
 
-import fr.insee.rmes.domain.Roles;
-import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
+import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.modules.users.domain.model.User;
 import jakarta.servlet.FilterChain;

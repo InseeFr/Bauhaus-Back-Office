@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuild
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;

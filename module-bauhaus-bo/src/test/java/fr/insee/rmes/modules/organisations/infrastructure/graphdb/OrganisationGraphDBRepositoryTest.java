@@ -1,0 +1,214 @@
+package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
+
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class OrganisationGraphDBRepositoryTest {
+
+    @Mock
+    private RepositoryGestion repositoryGestion;
+
+    private OrganisationGraphDBRepository repository;
+
+    private static final String BASE_GRAPH = "http://rdf.insee.fr/graphes/";
+    private static final String ORGANISATIONS_GRAPH = "organisations";
+    private static final String INSEE_GRAPH = "organisations/insee";
+    private static final String LANGUAGE = "fr";
+
+    @BeforeEach
+    void setUp() {
+        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, ORGANISATIONS_GRAPH, INSEE_GRAPH, LANGUAGE);
+    }
+
+    @Test
+    void shouldReturnOrganisationsFromGraphDB() throws RmesException {
+        // Given
+        JSONArray mockResponse = new JSONArray();
+        JSONObject org1 = new JSONObject();
+        org1.put("stamp", "DG75-A001");
+        org1.put("label", "Direction Générale 75 - Service A001");
+
+        JSONObject org2 = new JSONObject();
+        org2.put("stamp", "DR13-DIR");
+        org2.put("label", "Direction Régionale 13 - Direction");
+
+        mockResponse.put(org1);
+        mockResponse.put(org2);
+
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        // When
+        List<OrganisationOption> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).stamp()).isEqualTo("DG75-A001");
+        assertThat(result.get(0).label()).isEqualTo("Direction Générale 75 - Service A001");
+        assertThat(result.get(1).stamp()).isEqualTo("DR13-DIR");
+        assertThat(result.get(1).label()).isEqualTo("Direction Régionale 13 - Direction");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoOrganisations() throws RmesException {
+        // Given
+        JSONArray emptyResponse = new JSONArray();
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(emptyResponse);
+
+        // When
+        List<OrganisationOption> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldBuildQueryWithCorrectParameters() throws RmesException {
+        // Given
+        JSONArray mockResponse = new JSONArray();
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+
+        // When
+        repository.getOrganisations();
+
+        // Then
+        verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
+        String query = queryCaptor.getValue();
+
+        assertThat(query)
+                .contains("http://rdf.insee.fr/graphes/organisations/insee")
+                .contains("'fr'")
+                .contains("adms:identifier")
+                .contains("skos:prefLabel");
+        assertThat(query).contains("http://rdf.insee.fr/graphes/organisations/insee");
+        assertThat(query).contains("'fr'");
+        assertThat(query).contains("adms:identifier");
+        assertThat(query).contains("skos:prefLabel");
+    }
+
+    @Test
+    void shouldReturnOrganisationByIdentifier() throws RmesException {
+        // Given
+        String identifier = "DG75-A001";
+        JSONArray mockResponse = new JSONArray();
+        JSONObject org = new JSONObject();
+        org.put("stamp", "DG75-A001");
+        org.put("label", "Direction Générale 75 - Service A001");
+        mockResponse.put(org);
+
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        // When
+        OrganisationOption result = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.stamp()).isEqualTo("DG75-A001");
+        assertThat(result.label()).isEqualTo("Direction Générale 75 - Service A001");
+    }
+
+    @Test
+    void shouldReturnNullWhenOrganisationNotFound() throws RmesException {
+        // Given
+        String identifier = "UNKNOWN";
+        JSONArray emptyResponse = new JSONArray();
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(emptyResponse);
+
+        // When
+        OrganisationOption result = repository.getOrganisation(identifier);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void getOrganisationsMap_keyedByInputValue_supportingIriAndLegacyStamp() throws RmesException {
+        // Given: input contains one IRI and one legacy stamp; the SPARQL UNION returns both
+        JSONArray mockResponse = new JSONArray();
+        JSONObject row1 = new JSONObject();
+        row1.put("key", "http://bauhaus/organisations/DG75-A001");
+        row1.put("stamp", "DG75-A001");
+        row1.put("label", "Direction Générale 75 - Service A001");
+        JSONObject row2 = new JSONObject();
+        row2.put("key", "DR13-DIR");
+        row2.put("stamp", "DR13-DIR");
+        row2.put("label", "Direction Régionale 13 - Direction");
+        mockResponse.put(row1);
+        mockResponse.put(row2);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        // When
+        Map<String, OrganisationOption> result = repository.getOrganisationsMap(
+                List.of("http://bauhaus/organisations/DG75-A001", "DR13-DIR"));
+
+        // Then: the map is keyed by the input value (IRI or stamp)
+        assertThat(result).containsOnlyKeys("http://bauhaus/organisations/DG75-A001", "DR13-DIR");
+        assertThat(result.get("http://bauhaus/organisations/DG75-A001").label())
+                .isEqualTo("Direction Générale 75 - Service A001");
+        assertThat(result.get("DR13-DIR").label())
+                .isEqualTo("Direction Régionale 13 - Direction");
+    }
+
+    @Test
+    void getOrganisationsMap_handlesIriRowsWithoutStamp_keepsLabelAvailable() throws RmesException {
+        // Sub-units have skos:prefLabel but no adms:identifier; the SPARQL OPTIONAL leaves stamp absent.
+        JSONArray mockResponse = new JSONArray();
+        JSONObject row = new JSONObject();
+        row.put("key", "http://bauhaus/organisations/insee/HIE2001204");
+        row.put("label", "Sous-direction sans stamp");
+        // No "stamp" field in this row
+        mockResponse.put(row);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        Map<String, OrganisationOption> result = repository.getOrganisationsMap(
+                List.of("http://bauhaus/organisations/insee/HIE2001204"));
+
+        assertThat(result)
+                .containsKey("http://bauhaus/organisations/insee/HIE2001204");
+        assertThat(result.get("http://bauhaus/organisations/insee/HIE2001204").label())
+                .isEqualTo("Sous-direction sans stamp");
+    }
+
+    @Test
+    void shouldBuildQueryWithIdentifierParameter() throws RmesException {
+        // Given
+        String identifier = "DG75-A001";
+        JSONArray mockResponse = new JSONArray();
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockResponse);
+
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+
+        // When
+        repository.getOrganisation(identifier);
+
+        // Then
+        verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
+        String query = queryCaptor.getValue();
+
+        assertThat(query)
+                .contains("http://rdf.insee.fr/graphes/organisations/insee")
+                .contains("'fr'")
+                .contains("adms:identifier")
+                .contains("skos:prefLabel")
+                .contains("\"DG75-A001\"");
+    }
+}

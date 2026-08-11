@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
-import fr.insee.rmes.domain.Roles;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

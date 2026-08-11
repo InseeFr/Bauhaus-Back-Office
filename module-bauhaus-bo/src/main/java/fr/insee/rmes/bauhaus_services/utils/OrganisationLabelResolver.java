@@ -1,8 +1,8 @@
 package fr.insee.rmes.bauhaus_services.utils;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.OrganisationOption;
-import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

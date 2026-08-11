@@ -2,8 +2,8 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.OrganisationOption;
-import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;

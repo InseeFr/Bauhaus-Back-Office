@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
-import fr.insee.rmes.domain.Roles;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.operations.*;

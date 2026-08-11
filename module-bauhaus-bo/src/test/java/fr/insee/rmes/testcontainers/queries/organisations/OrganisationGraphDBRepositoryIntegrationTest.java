@@ -1,10 +1,10 @@
 package fr.insee.rmes.testcontainers.queries.organisations;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
-import fr.insee.rmes.organisation.OrganisationGraphDBRepository;
+import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganisationGraphDBRepository;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.BeforeAll;

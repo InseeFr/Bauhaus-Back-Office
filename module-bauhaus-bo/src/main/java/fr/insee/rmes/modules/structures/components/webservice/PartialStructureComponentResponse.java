@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.structures.components.webservice;
 
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
-import fr.insee.rmes.webservice.response.BaseResponse;
+import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 
 public class PartialStructureComponentResponse extends BaseResponse<PartialStructureComponentResponse, PartialStructureComponent> {
 

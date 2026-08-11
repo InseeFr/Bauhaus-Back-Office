@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.checks;
 
-import fr.insee.rmes.domain.port.clientside.CheckerService;
-import fr.insee.rmes.domain.port.serverside.RuleChecker;
-import fr.insee.rmes.domain.services.CheckerServiceImpl;
+import fr.insee.rmes.modules.checks.domain.port.clientside.CheckerService;
+import fr.insee.rmes.modules.checks.domain.port.serverside.RuleChecker;
+import fr.insee.rmes.modules.checks.domain.DomainCheckerService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +12,6 @@ import java.util.List;
 public class ChecksConfiguration {
     @Bean
     CheckerService checkService(List<RuleChecker> checkers){
-        return new CheckerServiceImpl(checkers);
+        return new DomainCheckerService(checkers);
     }
 }

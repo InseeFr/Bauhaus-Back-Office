@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.operations.msd.webservice.response;
 
-import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
-import fr.insee.rmes.webservice.response.BaseResponse;
+import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
+import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 
 public class DocumentationAttributeResponse extends BaseResponse<DocumentationAttributeResponse, DocumentationAttribute> {
 

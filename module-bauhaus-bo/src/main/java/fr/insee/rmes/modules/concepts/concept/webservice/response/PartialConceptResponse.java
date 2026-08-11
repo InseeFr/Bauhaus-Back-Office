@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept.webservice.response;
 
 import fr.insee.rmes.model.concepts.PartialConcept;
-import fr.insee.rmes.webservice.response.BaseResponse;
+import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 
 public class PartialConceptResponse extends BaseResponse<PartialConceptResponse, PartialConcept> {
 

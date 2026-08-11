@@ -4,7 +4,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
+import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;

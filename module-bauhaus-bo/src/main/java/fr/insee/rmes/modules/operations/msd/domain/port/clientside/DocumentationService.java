@@ -1,6 +1,8 @@
 package fr.insee.rmes.modules.operations.msd.domain.port.clientside;
 
-import fr.insee.rmes.domain.model.operations.DocumentationAttribute;
+import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
+
+import fr.insee.rmes.modules.operations.msd.domain.model.DocumentationAttribute;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
@@ -8,6 +10,7 @@ import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricW
 
 import java.util.List;
 
+@ClientSidePort
 public interface DocumentationService {
     DocumentationAttribute getMetadataAttribute(String id) throws RmesException, NotFoundAttributeException, GenericInternalServerException, OperationDocumentationRubricWithoutRangeException;
 

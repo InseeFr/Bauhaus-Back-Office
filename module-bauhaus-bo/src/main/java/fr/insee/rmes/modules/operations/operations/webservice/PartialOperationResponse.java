@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.operations.operations.webservice;
 
 import fr.insee.rmes.model.operations.PartialOperation;
-import fr.insee.rmes.webservice.response.BaseResponse;
+import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 
 public class PartialOperationResponse extends BaseResponse<PartialOperationResponse, PartialOperation> {
 

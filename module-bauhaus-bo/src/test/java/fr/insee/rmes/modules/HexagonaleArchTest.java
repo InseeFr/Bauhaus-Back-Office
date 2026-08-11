@@ -18,12 +18,15 @@ import org.springframework.web.bind.annotation.*;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-@AnalyzeClasses(packages = {
-        "fr.insee.rmes.modules.concepts.collections",
-        "fr.insee.rmes.modules.commons",
-        "fr.insee.rmes.modules.users",
-        "fr.insee.rmes.modules.clientconfig"
-}, importOptions = ImportOption.DoNotIncludeTests.class)
+/**
+ * Règles d'architecture hexagonale appliquées à l'ensemble de {@code fr.insee.rmes.modules}.
+ * <p>
+ * Toutes les règles sont gelées ({@link FreezingArchRule}) : les violations héritées des modules
+ * pas encore migrés sont enregistrées dans {@code archunit_store} et tolérées, mais toute nouvelle
+ * violation fait échouer le build. Le store ne doit que décroître.
+ */
+@AnalyzeClasses(packages = "fr.insee.rmes.modules",
+        importOptions = ImportOption.DoNotIncludeTests.class)
 public class HexagonaleArchTest {
 
     private static ArchCondition<JavaClass> beImplementedIn(String targetPackage, String prefix) {
@@ -77,12 +80,12 @@ public class HexagonaleArchTest {
             .because("The domain should only depends of the domain"));
 
     @ArchTest
-    public static final ArchRule webServiceNaming = classes().that().areAnnotatedWith(RestController.class)
+    public static final ArchRule webServiceNaming = FreezingArchRule.freeze(classes().that().areAnnotatedWith(RestController.class)
                 .should().haveSimpleNameEndingWith("Resources")
-                .andShould().resideInAPackage("..webservice..");
+                .andShould().resideInAPackage("..webservice.."));
 
     @ArchTest
-    public static final ArchRule serverSideAdaptorShouldImplementServerSidePort = classes()
+    public static final ArchRule serverSideAdaptorShouldImplementServerSidePort = FreezingArchRule.freeze(classes()
             .that().areAnnotatedWith(ServerSideAdaptor.class)
             .should().resideInAPackage("..infrastructure..")
             .andShould().implement(new DescribedPredicate<JavaClass>("Check if the interface is annotated with ServerSidePort") {
@@ -90,51 +93,51 @@ public class HexagonaleArchTest {
                 public boolean test(JavaClass javaClass) {
                     return javaClass.isAnnotatedWith(ServerSidePort.class);
                 }
-            });
+            }));
 
 
     @ArchTest
-    public static final ArchRule webServicePackageDependendencies = noClasses()
+    public static final ArchRule webServicePackageDependendencies = FreezingArchRule.freeze(noClasses()
             .that().resideInAPackage("..webservice..")
             .should().dependOnClassesThat().resideInAnyPackage("..infrastructure..")
             .orShould().dependOnClassesThat().areAnnotatedWith(ServerSidePort.class)
-            .because("The webservices should not depends of the serverside ports or the infrastructure ");
+            .because("The webservices should not depends of the serverside ports or the infrastructure "));
 
     @ArchTest
-    public static final ArchRule infrastructurePackageDependendencies = noClasses()
+    public static final ArchRule infrastructurePackageDependendencies = FreezingArchRule.freeze(noClasses()
             .that().resideInAPackage("..infrastructure..")
             .should().dependOnClassesThat().resideInAnyPackage("..webservice..")
             .orShould().dependOnClassesThat().areAnnotatedWith(ClientSidePort.class)
-            .because("The infrastructure should not depends of the clientside ports or the webservice ");
+            .because("The infrastructure should not depends of the clientside ports or the webservice "));
 
     @ArchTest
-    public static final ArchRule clientsidePortsImplementedInDomain = classes()
+    public static final ArchRule clientsidePortsImplementedInDomain = FreezingArchRule.freeze(classes()
             .that().areAnnotatedWith(ClientSidePort.class)
             .should().resideInAPackage("..clientside..")
             .andShould().beInterfaces()
             .andShould().haveSimpleNameEndingWith("Service")
             .andShould(beImplementedIn(".domain.", "Domain"))
-            .because("All clientside ports defined in domain should be implemented in domain package with 'Domain' prefix");
+            .because("All clientside ports defined in domain should be implemented in domain package with 'Domain' prefix"));
 
     @ArchTest
-    public static final ArchRule onlyClientSideInterfaceInsideClientSidePackage = classes()
+    public static final ArchRule onlyClientSideInterfaceInsideClientSidePackage = FreezingArchRule.freeze(classes()
             .that().resideInAPackage("..clientside..")
             .should().beAnnotatedWith(ClientSidePort.class)
-            .because("The package clientside should only contain Client Side port");
+            .because("The package clientside should only contain Client Side port"));
 
     @ArchTest
-    public static final ArchRule serversidePortsImplementedInInfrastructure = classes()
+    public static final ArchRule serversidePortsImplementedInInfrastructure = FreezingArchRule.freeze(classes()
             .that().areAnnotatedWith(ServerSidePort.class)
             .should().resideInAPackage("..serverside..")
             .andShould().beInterfaces()
             .andShould(beImplementedIn(".infrastructure.", ""))
-            .because("All serverside ports defined in domain should be implemented in infrastructure package");
+            .because("All serverside ports defined in domain should be implemented in infrastructure package"));
 
     @ArchTest
-    public static final ArchRule onlyServerSidePortInsideServerSidePackage = classes()
+    public static final ArchRule onlyServerSidePortInsideServerSidePackage = FreezingArchRule.freeze(classes()
             .that().resideInAPackage("..serverside..")
             .should().beAnnotatedWith(ServerSidePort.class)
-            .because("The package serverside should only contain Server Side port");
+            .because("The package serverside should only contain Server Side port"));
 
 
 
