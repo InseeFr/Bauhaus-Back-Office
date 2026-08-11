@@ -15,7 +15,7 @@ public class ForbiddenApiArchTest {
 
     @ArchTest
     public static final ArchRule noControllerAdvice = FreezingArchRule.freeze(noClasses()
-            .should().beAnnotatedWith(ControllerAdvice.class)
+            .should().beMetaAnnotatedWith(ControllerAdvice.class)
             .because("The exception handler should be managed by the controller with a ResponseStatusException exception"));
 
 
