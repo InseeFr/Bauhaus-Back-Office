@@ -24,6 +24,10 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * Toutes les règles sont gelées ({@link FreezingArchRule}) : les violations héritées des modules
  * pas encore migrés sont enregistrées dans {@code archunit_store} et tolérées, mais toute nouvelle
  * violation fait échouer le build. Le store ne doit que décroître.
+ * <p>
+ * Attention : modifier la description d'une règle (packages autorisés, {@code because}...) crée une
+ * nouvelle entrée dans le store sans supprimer l'ancienne. {@link ArchUnitStoreTest} détecte ces
+ * entrées obsolètes ; il faut alors purger la ligne de {@code stored.rules} et son fichier de violations.
  */
 @AnalyzeClasses(packages = "fr.insee.rmes.modules",
         importOptions = ImportOption.DoNotIncludeTests.class)
