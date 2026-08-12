@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.ddi.physical_instances.webservice;
+package fr.insee.rmes.modules.ddi.physical_instances.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,18 +8,10 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.ClassPathResource;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -40,13 +32,7 @@ class Ddi4SentinelValuesSchemaConformanceTest {
 
     @BeforeAll
     static void loadSchema() throws Exception {
-        try (InputStream is = new ClassPathResource("ddi-schema.json").getInputStream()) {
-            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            if (content.startsWith("\uFEFF")) {
-                content = content.substring(1);
-            }
-            schemaRoot = MAPPER.readTree(content);
-        }
+        schemaRoot = MAPPER.readTree(new ClasspathDdi4SchemaRepository().schemaDocument());
     }
 
     /** Valide {@code value} sérialisé par Jackson contre {@code #/$defs/<defName>} du schéma DDI 4. */

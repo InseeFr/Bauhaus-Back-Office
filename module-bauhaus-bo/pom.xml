@@ -17,12 +17,6 @@
       <artifactId>module-utility</artifactId>
       <version>1.0.0</version>
     </dependency>
-    <!-- JSON Schema Validator (used by DdiResources) -->
-    <dependency>
-      <groupId>com.networknt</groupId>
-      <artifactId>json-schema-validator</artifactId>
-      <version>1.5.1</version>
-    </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>
       <artifactId>jspecify</artifactId>

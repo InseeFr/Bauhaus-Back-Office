@@ -4,6 +4,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
@@ -13,21 +17,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -88,7 +87,9 @@ class DdiResourcesValidationTest {
     void setUp() {
         // Le vrai schéma DDI 4 est joué par DdiResourcesSchemaValidationTest : ici on injecte un
         // schéma bouchon, ce qui garde ces tests sur le comportement du endpoint.
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils, new Ddi4SchemaValidator(() -> TEST_SCHEMA));
+        Ddi4SchemaRepository schemaRepository = () -> TEST_SCHEMA;
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils,
+                new DomainDdi4SchemaService(schemaRepository, new NetworkntDdi4SchemaValidator(schemaRepository)));
 
         // Setup mock request context
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -244,23 +245,25 @@ class DdiResourcesValidationTest {
     }
 
     @Test
-    void shouldGetDdiSchema() throws IOException {
-        // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+    void shouldServeTheSchemaDocument() {
+        ResponseEntity<String> result = ddiResources.getDdiSchema();
 
-            ResponseEntity<String> result = ddiResources.getDdiSchema();
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(TEST_SCHEMA, result.getBody());
+    }
 
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.OK, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().isEmpty());
-            assertTrue(result.getBody().length() > 0);
-            assertTrue(result.getBody().contains("$schema"));
-        }
+    /**
+     * Un schéma illisible est une panne, pas une saisie fautive : le endpoint ne doit plus la
+     * maquiller en 400 comme le faisait son {@code catch (Exception)}.
+     */
+    @Test
+    void shouldNotDisguiseASchemaFailureAsAValidationError() {
+        Ddi4SchemaService failing = mock(Ddi4SchemaService.class);
+        when(failing.validate(any())).thenThrow(new IllegalStateException("Schéma DDI 4 illisible"));
+        DdiResources resources = new DdiResources(ddiService, ddi4toDdi3ConverterService,
+                ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher,
+                uriUtils, failing);
+
+        assertThrows(IllegalStateException.class, () -> resources.validateDdi4("{}"));
     }
 }

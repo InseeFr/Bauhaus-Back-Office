@@ -13,10 +13,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
@@ -28,14 +30,10 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +63,7 @@ public class DdiResources {
     private final UserProvider userProvider;
     private final RbacFetcher rbacFetcher;
     private final UriUtils uriUtils;
-    private final Ddi4SchemaValidator ddi4SchemaValidator;
+    private final Ddi4SchemaService ddi4SchemaService;
 
     public DdiResources(
         DDIService ddiService,
@@ -75,7 +73,7 @@ public class DdiResources {
         UserProvider userProvider,
         RbacFetcher rbacFetcher,
         UriUtils uriUtils,
-        Ddi4SchemaValidator ddi4SchemaValidator
+        Ddi4SchemaService ddi4SchemaService
     ) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
@@ -84,7 +82,7 @@ public class DdiResources {
         this.userProvider = userProvider;
         this.rbacFetcher = rbacFetcher;
         this.uriUtils = uriUtils;
-        this.ddi4SchemaValidator = ddi4SchemaValidator;
+        this.ddi4SchemaService = ddi4SchemaService;
     }
 
     @GetMapping("/physical-instance")
@@ -389,19 +387,10 @@ public class DdiResources {
         module = RBAC.Module.DDI_PHYSICALINSTANCE,
         privilege = RBAC.Privilege.READ
     )
-    public ResponseEntity<String> getDdiSchema() throws IOException {
-        ClassPathResource resource = new ClassPathResource("ddi-schema.json");
-        String schema;
-        try (InputStream is = resource.getInputStream()) {
-            schema = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        // Remove BOM if present
-        if (schema.startsWith("\uFEFF")) {
-            schema = schema.substring(1);
-        }
+    public ResponseEntity<String> getDdiSchema() {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(schema);
+            .body(ddi4SchemaService.schemaDocument());
     }
 
     @GetMapping(
@@ -590,7 +579,7 @@ public class DdiResources {
         try {
             // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
             // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
-            List<String> errors = ddi4SchemaValidator.validate(jsonData);
+            List<String> errors = ddi4SchemaService.validate(jsonData);
 
             if (errors.isEmpty()) {
                 return ResponseEntity.ok()
@@ -601,7 +590,9 @@ public class DdiResources {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(ValidationResponse.failure(errors));
             }
-        } catch (Exception e) {
+        } catch (InvalidDdi4JsonException e) {
+            // Seul un document mal formé vaut un 400 : une panne de chargement du schéma doit
+            // remonter en 500 plutôt que de se déguiser en erreur de saisie.
             return ResponseEntity.badRequest()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(

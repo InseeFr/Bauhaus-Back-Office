@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
@@ -24,9 +25,7 @@ class DdiResourcesEnabledIntegrationTest {
 
     @Configuration
     @EnableAutoConfiguration
-    // Ddi4SchemaValidator est un vrai bean : il ne compile le schéma qu'à la première validation,
-    // le charger ici ne coûte rien.
-    @Import({ DdiResources.class, Ddi4SchemaValidator.class })
+    @Import(DdiResources.class)
     static class TestConfiguration {
     }
 
@@ -50,6 +49,9 @@ class DdiResourcesEnabledIntegrationTest {
 
     @MockitoBean
     private UriUtils uriUtils;
+
+    @MockitoBean
+    private Ddi4SchemaService ddi4SchemaService;
 
     @Autowired
     private DdiResources ddiResources;

@@ -27,6 +27,10 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
@@ -161,9 +165,12 @@ class DdiResourcesSchemaValidationTest {
 
     @BeforeEach
     void setUp() {
+        // Le vrai schéma livré, confronté au vrai validateur : c'est tout l'objet de ces tests.
+        Ddi4SchemaRepository schemaRepository = new ClasspathDdi4SchemaRepository();
         ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService,
                 ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher,
-                uriUtils, new Ddi4SchemaValidator());
+                uriUtils, new DomainDdi4SchemaService(schemaRepository,
+                        new NetworkntDdi4SchemaValidator(schemaRepository)));
     }
 
     @Test

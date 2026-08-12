@@ -1,4 +1,4 @@
-package fr.insee.rmes.modules.ddi.physical_instances.webservice;
+package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,17 +8,15 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
+import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaValidator;
+
 import java.util.List;
-import java.util.function.Supplier;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 /**
- * Valide un document DDI 4 contre {@code ddi-schema.json}.
+ * Valide un document DDI 4 contre le JSON Schema, via la bibliothèque networknt.
  * <p>
  * Le schéma pèse 1,1 Mo et déclare 161 types : le lire, le parser et le compiler coûte cher, il
  * n'est donc payé qu'une fois puis réutilisé. Deux réglages font l'essentiel du gain :
@@ -37,36 +35,35 @@ import org.springframework.stereotype.Component;
  * thread-safe tant que sa configuration n'est pas modifiée, et la résolution paresseuse des
  * {@code $ref} se synchronise sur la fabrique.
  */
-@Component
-public class Ddi4SchemaValidator {
+@ServerSideAdaptor
+public class NetworkntDdi4SchemaValidator implements Ddi4SchemaValidator {
 
-    private static final String SCHEMA_RESOURCE = "ddi-schema.json";
-
-    private final Supplier<String> schemaSource;
+    private final Ddi4SchemaRepository schemaRepository;
     private final ObjectMapper mapper = new ObjectMapper();
 
     /** Compilé à la première validation, puis réutilisé. */
     private volatile JsonSchema schema;
 
-    public Ddi4SchemaValidator() {
-        this(Ddi4SchemaValidator::readSchemaFromClasspath);
+    public NetworkntDdi4SchemaValidator(Ddi4SchemaRepository schemaRepository) {
+        this.schemaRepository = schemaRepository;
     }
 
-    Ddi4SchemaValidator(Supplier<String> schemaSource) {
-        this.schemaSource = schemaSource;
-    }
-
-    /**
-     * @return les messages d'erreur du schéma, vide si le document est conforme
-     * @throws JsonProcessingException si {@code json} n'est pas du JSON bien formé
-     */
-    public List<String> validate(String json) throws JsonProcessingException {
-        JsonNode document = mapper.readTree(json);
+    @Override
+    public List<String> validate(String json) {
+        JsonNode document = readDocument(json);
         return compiledSchema()
-            .validate(document)
-            .stream()
-            .map(ValidationMessage::getMessage)
-            .toList();
+                .validate(document)
+                .stream()
+                .map(ValidationMessage::getMessage)
+                .toList();
+    }
+
+    private JsonNode readDocument(String json) {
+        try {
+            return mapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new InvalidDdi4JsonException(e.getOriginalMessage(), e);
+        }
     }
 
     private JsonSchema compiledSchema() {
@@ -84,39 +81,15 @@ public class Ddi4SchemaValidator {
     }
 
     private JsonSchema compile() {
-        String content = schemaSource.get();
-        // Le fichier livré porte un BOM UTF-8, que Jackson refuse.
-        if (content.startsWith("﻿")) {
-            content = content.substring(1);
-        }
         SchemaValidatorsConfig config = SchemaValidatorsConfig.builder()
-            .preloadJsonSchema(false)
-            .build();
+                .preloadJsonSchema(false)
+                .build();
         try {
-            JsonNode schemaNode = mapper.readTree(content);
-            return JsonSchemaFactory.getInstance(
-                SpecVersion.VersionFlag.V202012
-            ).getSchema(schemaNode, config);
+            JsonNode schemaNode = mapper.readTree(schemaRepository.schemaDocument());
+            return JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012)
+                    .getSchema(schemaNode, config);
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException(
-                "Schéma DDI 4 illisible : " + SCHEMA_RESOURCE,
-                e
-            );
-        }
-    }
-
-    private static String readSchemaFromClasspath() {
-        try (
-            InputStream is = new ClassPathResource(
-                SCHEMA_RESOURCE
-            ).getInputStream()
-        ) {
-            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException(
-                "Schéma DDI 4 introuvable : " + SCHEMA_RESOURCE,
-                e
-            );
+            throw new IllegalStateException("Schéma DDI 4 illisible", e);
         }
     }
 }
