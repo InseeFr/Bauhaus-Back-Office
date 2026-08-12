@@ -24,29 +24,26 @@ public class ClassificationFamiliesQueries {
 		Map<String, Object> params = new HashMap<>();
 		params.put("GRAPH", graphs.classifFamiliesGraph());
 		params.put("LG1", languages.lg1());
-		return FreeMarkerUtils.buildRequest("classifications/families/", "getFamilies.ftlh", params);
+		return buildRequest("getFamilies.ftlh", params);
 	}
 
-	public String familyQuery(String id) {
-		return "SELECT ?prefLabelLg1 \n"
-			+ "WHERE { GRAPH<"+ graphs.classifFamiliesGraph() + "> { \n"
-			+ "?family skos:prefLabel ?prefLabelLg1 . \n"
-			+ "FILTER (lang(?prefLabelLg1) = '" + languages.lg1() + "') \n"
-			+ "FILTER(REGEX(STR(?family),'/familleDeNomenclatures/" + id + "')) } \n"
-			+ "} \n";
+	public String familyQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("GRAPH", graphs.classifFamiliesGraph());
+		params.put("LG1", languages.lg1());
+		params.put("ID", id);
+		return buildRequest("getFamily.ftlh", params);
 	}
 
-	public String familyMembersQuery(String id) {
-		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 \n"
-			+ "WHERE { \n"
-			+ "?series xkos:belongsTo ?family . \n"
-			+ "?series skos:prefLabel ?labelLg1 . \n"
-			+ "FILTER (lang(?labelLg1) = '" + languages.lg1() + "') \n"
-			+ "OPTIONAL {?series skos:prefLabel ?labelLg2 . \n"
-			+ "FILTER (lang(?labelLg2) = '" + languages.lg2() + "') } \n"
-			+ "FILTER(REGEX(STR(?family),'/familleDeNomenclatures/" + id + "')) . \n"
-			+ "BIND(STRAFTER(STR(?series),'/codes/serieDeNomenclatures/') AS ?id) \n"
-			+ "} \n"
-			+ "ORDER BY ?labelLg1 ";
+	public String familyMembersQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", languages.lg1());
+		params.put("LG2", languages.lg2());
+		params.put("ID", id);
+		return buildRequest("getFamilyMembers.ftlh", params);
+	}
+
+	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
+		return FreeMarkerUtils.buildRequest("classifications/families/", fileName, params);
 	}
 }

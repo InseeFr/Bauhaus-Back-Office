@@ -136,11 +136,10 @@ public class ConceptConceptsQueries {
 		return buildConceptRequest("getConceptValidationStatus.ftlh", params);
 	}
 
-	public String checkIfExists(String id) {
-		return "ASK \n"
-				+ "WHERE  \n"
-				+ "{ ?uri ?b ?c .\n "
-				+ "FILTER(STRENDS(STR(?uri),'/concepts/definition/" + id + "')) . }";
+	public String checkIfExists(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		return buildConceptRequest("checkIfConceptExists.ftlh", params);
 	}
 
 	public String findExistingConceptIds(List<String> ids) throws RmesException {

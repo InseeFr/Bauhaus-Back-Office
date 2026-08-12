@@ -8,12 +8,18 @@ import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -101,5 +107,42 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
         assertThat(result.getJSONObject(0).getString("document"))
                 .as("Le document retourne devrait etre le document 3")
                 .contains("document/3");
+    }
+
+    @Test
+    @DisplayName("getDocumentPredicatesAndObjects retourne les triplets du document demande")
+    void should_return_predicates_and_objects_of_the_requested_document() throws Exception {
+        IRI document = SimpleValueFactory.getInstance().createIRI("http://bauhaus/documents/document/1");
+
+        JSONArray result = repositoryGestion.getResponseAsArray(
+                operationDocumentsQueries.getDocumentPredicatesAndObjects(document));
+
+        assertThat(predicateObjectPairs(result))
+                .as("tous les triplets du document 1, et eux seuls")
+                .containsExactlyInAnyOrder(
+                        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type=http://xmlns.com/foaf/0.1/Document",
+                        "http://www.w3.org/2000/01/rdf-schema#label=Document de base",
+                        "http://purl.org/dc/elements/1.1/language=fr",
+                        "http://schema.org/url=http://example.org/document.pdf");
+    }
+
+    @Test
+    @DisplayName("getDocumentPredicatesAndObjects ne retourne rien pour un document inexistant")
+    void should_return_nothing_for_an_unknown_document() throws Exception {
+        IRI document = SimpleValueFactory.getInstance().createIRI("http://bauhaus/documents/document/999");
+
+        JSONArray result = repositoryGestion.getResponseAsArray(
+                operationDocumentsQueries.getDocumentPredicatesAndObjects(document));
+
+        assertThat(result.length()).isZero();
+    }
+
+    private static List<String> predicateObjectPairs(JSONArray tuples) {
+        List<String> pairs = new ArrayList<>();
+        for (int i = 0; i < tuples.length(); i++) {
+            JSONObject tuple = tuples.getJSONObject(i);
+            pairs.add(tuple.getString("predicat") + "=" + tuple.getString("obj"));
+        }
+        return pairs;
     }
 }

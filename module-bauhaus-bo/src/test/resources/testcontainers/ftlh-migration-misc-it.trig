@@ -1,0 +1,46 @@
+# Fixture des requêtes hors nomenclatures migrées de la concaténation Java vers FreeMarker :
+#   - concepts/checkIfConceptExists.ftlh                 (ConceptConceptsQueries.checkIfExists)
+#   - codes-list/getCodeUriByNotation.ftlh               (CodeListsQueries.getCodeUriByNotation)
+#   - operations/famOpeSer/getSubjects.ftlh              (OperationFamilyQueries.getSubjects)
+#
+# Chaque bloc respecte le graphe interrogé par sa requête :
+#   - le ASK concept balaie le graphe par défaut (union) et filtre sur STRENDS '/concepts/definition/<id>' ;
+#   - getCodeUriByNotation ouvre explicitement GRAPH <.../graphes/codes> ;
+#   - getSubjects utilise FROM <.../graphes/operations> : la famille ET son sujet doivent y être.
+#
+# IRIs suffixées « Mig » et uniques : le conteneur GraphDB est partagé entre classes de test.
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<http://rdf.insee.fr/graphes/concepts/> {
+
+  <http://bauhaus/concepts/definition/cMigExistant>
+      a skos:Concept ;
+      skos:prefLabel "Concept migration (test)"@fr .
+}
+
+<http://rdf.insee.fr/graphes/codes> {
+
+  <http://codelist/CL_MIG_TEST>
+      a skos:ConceptScheme ;
+      skos:notation "CL_MIG_TEST" ;
+      skos:prefLabel "Liste de codes migration (test)"@fr .
+
+  <http://codelist/CL_MIG_TEST/CODE_MIG_1>
+      a skos:Concept ;
+      skos:inScheme <http://codelist/CL_MIG_TEST> ;
+      skos:notation "CODE_MIG_1" ;
+      skos:prefLabel "Code 1 migration (test)"@fr .
+}
+
+<http://rdf.insee.fr/graphes/operations> {
+
+  <http://bauhaus/operations/famille/famOpMig>
+      dcterms:subject <http://bauhaus/concepts/definition/cSujetMig> .
+
+  <http://bauhaus/concepts/definition/cSujetMig>
+      skos:prefLabel "Sujet operation migration (test)"@fr ;
+      skos:prefLabel "Migration operation subject (test)"@en ;
+      skos:notation  "SUJMIG" .
+}

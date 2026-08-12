@@ -137,14 +137,12 @@ public class CodeListsQueries {
 		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
 	}
 
-	public String getCodeUriByNotation(String notationCodeList, String notationCode) {
-		return "SELECT  ?uri  \n"
-				+ "WHERE { GRAPH <" + graphs.codeListGraph() + "> { \n"
-				+ "?codeList rdf:type skos:ConceptScheme . \n"
-				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
-				+ "?uri skos:inScheme ?codeList . \n"
-				+ "?uri skos:notation '" + notationCode + "' . \n"
-				+ " }}";
+	public String getCodeUriByNotation(String notationCodeList, String notationCode) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
+		params.put(NOTATION, notationCodeList);
+		params.put(CODE, notationCode);
+		return buildCodesListRequest("getCodeUriByNotation.ftlh", params);
 	}
 
 	public String geCodesListByIRI(String id) throws RmesException {

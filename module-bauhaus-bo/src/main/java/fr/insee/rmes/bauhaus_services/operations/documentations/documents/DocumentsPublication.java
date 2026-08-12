@@ -15,6 +15,7 @@ import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -45,6 +46,8 @@ public class DocumentsPublication  extends RdfService{
 
     private final DocumentsStorageProperties documentsStorage;
 
+    private final OperationDocumentsQueries operationDocumentsQueries;
+
     public DocumentsPublication(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -53,13 +56,15 @@ public class DocumentsPublication  extends RdfService{
             DocumentsUtils docUtils,
             FilesOperations filesOperations,
             StorageProperties storageProperties,
-            DocumentsStorageProperties documentsStorage
+            DocumentsStorageProperties documentsStorage,
+            OperationDocumentsQueries operationDocumentsQueries
     ) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.docUtils = docUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.documentsStorage = documentsStorage;
+        this.operationDocumentsQueries = operationDocumentsQueries;
     }
 
     /**
@@ -165,11 +170,7 @@ public class DocumentsPublication  extends RdfService{
 		
 		try {
 			JSONArray tuples = repoGestion.getResponseAsArray(
-                    "select ?predicat ?obj FROM <"+RdfUtils.documentsGraph()+"> "
-					+ "WHERE {"
-					+ "?document ?predicat ?obj . "
-					+ "FILTER (?document = <"+document+">) "
-					+ "}");
+					operationDocumentsQueries.getDocumentPredicatesAndObjects(document));
 
 			if (tuples.isEmpty()) {
 				throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);

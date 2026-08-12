@@ -173,4 +173,25 @@ class CodeListsQueriesTest {
             Assertions.assertEquals("request", query);
         }
     }
+
+    @Test
+    void getCodeUriByNotation_returnsExpectedSparql() throws RmesException {
+        when(graphs.codeListGraph()).thenReturn("codelist-graph");
+
+        String query = normalize(codeListsQueries.getCodeUriByNotation("CL_TEST", "CODE_1"));
+
+        Assertions.assertEquals(normalize("""
+                SELECT  ?uri
+                WHERE { GRAPH <codelist-graph> {
+                ?codeList rdf:type skos:ConceptScheme .
+                ?codeList skos:notation 'CL_TEST' .
+                ?uri skos:inScheme ?codeList .
+                ?uri skos:notation 'CODE_1' .
+                 }}
+                """), query);
+    }
+
+    private static String normalize(String sparql) {
+        return sparql.replaceAll("\\s+", " ").trim();
+    }
 }

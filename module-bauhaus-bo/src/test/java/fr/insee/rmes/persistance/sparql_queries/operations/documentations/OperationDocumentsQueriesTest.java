@@ -315,4 +315,22 @@ class OperationDocumentsQueriesTest {
             assertEquals(testException, exception);
         }
     }
+
+    @Test
+    void getDocumentPredicatesAndObjects_returnsExpectedSparql() throws RmesException {
+        IRI document = SimpleValueFactory.getInstance().createIRI("http://bauhaus/documents/document/1000");
+
+        String sparql = normalize(operationDocumentsQueries.getDocumentPredicatesAndObjects(document));
+
+        assertEquals(normalize("""
+                select ?predicat ?obj FROM <http://rdf.insee.fr/graphes/qualite/documents>
+                WHERE {?document ?predicat ?obj .
+                FILTER (?document = <http://bauhaus/documents/document/1000>)
+                }
+                """), sparql);
+    }
+
+    private static String normalize(String sparql) {
+        return sparql.replaceAll("\\s+", " ").trim();
+    }
 }

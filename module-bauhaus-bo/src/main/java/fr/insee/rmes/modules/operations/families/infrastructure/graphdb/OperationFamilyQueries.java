@@ -59,22 +59,12 @@ public class OperationFamilyQueries {
         return  buildRequest("getSeries.ftlh", params);
     }
 
-    public String getSubjects(String idFamily) {
-        return "SELECT  ?id ?labelLg1 ?labelLg2 \n"
-                + " FROM <"+baseGraph + operationsGraph+"> \n"
-                + "WHERE { \n"
-
-                + "?family dcterms:subject ?subjectUri . \n"
-                + "?subjectUri skos:prefLabel ?labelLg1 . \n"
-                + "FILTER (lang(?labelLg1) = '" + lg1 + "') . \n"
-                + "?subjectUri skos:prefLabel ?labelLg2 . \n"
-                + "FILTER (lang(?labelLg2) = '" + lg2 + "') . \n"
-
-                + "?subjectUri skos:notation ?id . \n"
-
-                + "FILTER(STRENDS(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
-                + "}"
-                + " ORDER BY ?subjectUri"
-                ;
+    public String getSubjects(String idFamily) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(OPERATIONS_GRAPH, baseGraph + operationsGraph);
+        params.put("LG1", lg1);
+        params.put("LG2", lg2);
+        params.put("ID", idFamily);
+        return  buildRequest("getSubjects.ftlh", params);
     }
 }

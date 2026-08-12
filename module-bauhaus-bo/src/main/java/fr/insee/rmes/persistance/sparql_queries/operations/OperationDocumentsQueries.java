@@ -8,6 +8,7 @@ import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -125,6 +126,12 @@ public class OperationDocumentsQueries {
 
 	private String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("operations/documentations/documents/", fileName, params);
+	}
+
+	public String getDocumentPredicatesAndObjects(Resource documentUri) throws RmesException {
+		Map<String, Object> params = initParams();
+		params.put(Constants.URI, documentUri);
+		return buildRequest("getDocumentPredicatesAndObjects.ftlh", params);
 	}
 
 	public String getDocumentsUriAndUrlForSims(String id) throws RmesException {

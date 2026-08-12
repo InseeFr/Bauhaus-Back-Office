@@ -137,31 +137,37 @@ class OperationFamilyQueriesTest {
     }
 
     @Test
-    void getSubjects_ShouldReturnSparqlQuery() {
+    void getSubjects_ShouldReturnSparqlQuery() throws RmesException {
         String familyId = "789";
-        
-        String result = operationFamilyQueries.getSubjects(familyId);
 
-        assertNotNull(result);
-        assertTrue(result.contains("SELECT  ?id ?labelLg1 ?labelLg2"));
-        assertTrue(result.contains("FROM <" + baseGraph + operationsGraph + ">"));
-        assertTrue(result.contains("FILTER (lang(?labelLg1) = '" + lg1 + "')"));
-        assertTrue(result.contains("FILTER (lang(?labelLg2) = '" + lg2 + "')"));
-        assertTrue(result.contains("FILTER(STRENDS(STR(?family),'/operations/famille/" + familyId + "'))"));
-        assertTrue(result.contains("ORDER BY ?subjectUri"));
+        String result = normalize(operationFamilyQueries.getSubjects(familyId));
+
+        assertEquals(normalize("""
+                SELECT  ?id ?labelLg1 ?labelLg2
+                 FROM <http://rdf.insee.fr/graphes/operations/>
+                WHERE {
+                ?family dcterms:subject ?subjectUri .
+                ?subjectUri skos:prefLabel ?labelLg1 .
+                FILTER (lang(?labelLg1) = 'fr') .
+                ?subjectUri skos:prefLabel ?labelLg2 .
+                FILTER (lang(?labelLg2) = 'en') .
+                ?subjectUri skos:notation ?id .
+                FILTER(STRENDS(STR(?family),'/operations/famille/789')) .
+                } ORDER BY ?subjectUri
+                """), result);
     }
 
     @Test
-    void getSubjects_ShouldContainCorrectFamilyIdInFilter() {
+    void getSubjects_ShouldContainCorrectFamilyIdInFilter() throws RmesException {
         String familyId = "test-family-123";
-        
+
         String result = operationFamilyQueries.getSubjects(familyId);
 
         assertTrue(result.contains("/operations/famille/" + familyId));
     }
 
     @Test
-    void constructor_ShouldInitializeAllFields() {
+    void constructor_ShouldInitializeAllFields() throws RmesException {
         String testLg1 = "test-lg1";
         String testLg2 = "test-lg2";
         String testBaseGraph = "test-base/";
@@ -173,5 +179,9 @@ class OperationFamilyQueriesTest {
         assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg1) = '" + testLg1 + "')"));
         assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg2) = '" + testLg2 + "')"));
         assertTrue(subjectsQuery.contains("FROM <" + testBaseGraph + testOperationsGraph + ">"));
+    }
+
+    private static String normalize(String sparql) {
+        return sparql.replaceAll("\\s+", " ").trim();
     }
 }
