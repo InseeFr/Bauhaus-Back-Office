@@ -55,6 +55,10 @@
     <ddi-lifecycle.version>2.0.0</ddi-lifecycle.version>
     <testcontainers-keycloak.version>4.2.1</testcontainers-keycloak.version>
     <testcontainers.version>1.20.4</testcontainers.version>
+    <!-- Overrides Spring Boot 4.0.7 (5.3.6), vulnerable to CVE-2026-54399 (httpcore5, HTTP/1.1 parser)
+         and CVE-2026-54428 (httpcore5-h2, HPACK decoder). Both fixed in 5.4.3.
+         À supprimer dès qu'une version de Spring Boot managera >= 5.4.3. -->
+    <httpcore5.version>5.4.3</httpcore5.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
   </properties>
