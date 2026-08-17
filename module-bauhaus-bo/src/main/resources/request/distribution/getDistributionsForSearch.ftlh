@@ -63,6 +63,6 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uriDataset ^foaf:primaryTopic/dcterms:modified ?modified .
+        ?uriDataset ^foaf:primaryTopic/dcterms:modified ?updated .
     }
 }
