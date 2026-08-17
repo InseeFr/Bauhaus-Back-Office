@@ -62,14 +62,6 @@ public class OperationIndicatorsQueries {
 		return buildIndicatorRequest("getIndicators.ftlh", params);
 	}
 
-	public String indicatorsQueryForSearch() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		return buildIndicatorRequest("getIndicatorsQueryForSearch.ftlh", params);
-	}
-
 	public String indicatorQuery(String id) throws RmesException {
 		return indicatorFullObjectQuery(id, true);
 	}
@@ -99,41 +91,6 @@ public class OperationIndicatorsQueries {
 		return buildIndicatorRequest("getPublishersById.ftlh", params);
 	}
 
-	/**
-	 * Requête groupée : tous les créateurs de tous les indicateurs en une seule requête.
-	 * Renvoie {@code ?indicatorId ?creators} pour permettre le dispatch côté Java (anti N+1).
-	 */
-	public String getCreatorsByIndicators() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
-		return buildIndicatorRequest("getCreatorsByIndicators.ftlh", params);
-	}
-
-	/**
-	 * Requête groupée : tous les éditeurs de tous les indicateurs en une seule requête.
-	 * Renvoie {@code ?indicatorId ?publishers}.
-	 */
-	public String getPublishersByIndicators() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
-		return buildIndicatorRequest("getPublishersByIndicators.ftlh", params);
-	}
-
-	/**
-	 * Requête groupée : toutes les organisations liées (via {@code linkPredicate}) de tous les
-	 * indicateurs en une seule requête. Renvoie {@code ?indicatorId ?id ?labelLg1 ?labelLg2}.
-	 */
-	public String getOrganizationsByIndicators(IRI linkPredicate) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("LINKPREDICATE", linkPredicate);
-		return buildIndicatorRequest("getOrganizationsByIndicators.ftlh", params);
-	}
-
 	public String getContributorsById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
@@ -154,16 +111,6 @@ public class OperationIndicatorsQueries {
 		return buildIndicatorRequest("getIndicatorLinks.ftlh", params);
 	}
 
-	public String getMultipleOrganizations(String idIndicator, IRI linkPredicate) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", idIndicator);
-		params.put("LINKPREDICATE", linkPredicate);
-		return buildIndicatorRequest("getMultipleOrganizations.ftlh", params);
-	}
-
 	public String lastID() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
@@ -177,12 +124,6 @@ public class OperationIndicatorsQueries {
 		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
 		params.put("ID", id);
 		return buildIndicatorRequest("checkIfIndicatorExists.ftlh", params);
-	}
-
-	public String getCreatorsByIndicatorUri(String uris) throws RmesException {
-		Map<String, Object> params = new HashMap<>();
-		params.put("URIS", uris);
-		return buildIndicatorRequest("getCreatorsByIndicatorUri.ftlh", params);
 	}
 
 	public String indicatorsWithSimsQuery() throws RmesException {

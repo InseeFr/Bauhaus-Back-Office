@@ -9,7 +9,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
-import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -37,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -285,113 +283,6 @@ class IndicatorsUtilsTest {
         assertThat(contributors).hasSize(1);
         assertThat(contributors.get(0)).isInstanceOf(IRI.class);
         assertThat(contributors.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
-    }
-
-    @Test
-    void getIndicatorsForSearch_dispatchesCreatorsPublishersAndCollectorsToEachIndicator() throws RmesException {
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(repositoryGestion, null, null, null,
-                famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
-
-        when(operationIndicatorsQueries.indicatorsQueryForSearch()).thenReturn("searchQuery");
-        when(operationIndicatorsQueries.getOrganizationsByIndicators(INSEE.DATA_COLLECTOR)).thenReturn("collectorsQuery");
-        when(operationIndicatorsQueries.getCreatorsByIndicators()).thenReturn("creatorsQuery");
-        when(operationIndicatorsQueries.getPublishersByIndicators()).thenReturn("publishersQuery");
-
-        when(repositoryGestion.getResponseAsArray("searchQuery")).thenReturn(new JSONArray()
-                .put(new JSONObject().put("id", "p1").put("prefLabelLg1", "Indic 1"))
-                .put(new JSONObject().put("id", "p2").put("prefLabelLg1", "Indic 2")));
-        when(repositoryGestion.getResponseAsArray("collectorsQuery")).thenReturn(new JSONArray()
-                .put(new JSONObject().put("indicatorId", "p1").put("id", "DG75")
-                        .put("labelLg1", "Insee").put("labelLg2", "Insee EN")));
-        when(repositoryGestion.getResponseAsArray("creatorsQuery")).thenReturn(new JSONArray()
-                .put(new JSONObject().put("indicatorId", "p1").put("creators", "http://org/A"))
-                .put(new JSONObject().put("indicatorId", "p2").put("creators", "http://org/B")));
-        when(repositoryGestion.getResponseAsArray("publishersQuery")).thenReturn(new JSONArray()
-                .put(new JSONObject().put("indicatorId", "p1").put("publishers", "http://org/P")));
-
-        JSONArray result = new JSONArray(indicatorsUtils.getIndicatorsForSearch());
-
-        JSONObject p1 = result.getJSONObject(0);
-        JSONObject p2 = result.getJSONObject(1);
-        assertThat(p1.getString("id")).isEqualTo("p1");
-        assertThat(p1.getJSONArray(Constants.CREATORS).toList()).containsExactly("http://org/A");
-        assertThat(p1.getJSONArray(Constants.PUBLISHERS).toList()).containsExactly("http://org/P");
-        assertThat(p1.getJSONArray("dataCollector").getJSONObject(0).getString("id")).isEqualTo("DG75");
-        assertThat(p1.getJSONArray("dataCollector").getJSONObject(0).getString("type"))
-                .isEqualTo(ObjectType.ORGANIZATION.labelType());
-
-        assertThat(p2.getString("id")).isEqualTo("p2");
-        assertThat(p2.getJSONArray(Constants.CREATORS).toList()).containsExactly("http://org/B");
-        assertThat(p2.getJSONArray(Constants.PUBLISHERS).toList()).isEmpty();
-        assertThat(p2.getJSONArray("dataCollector").toList()).isEmpty();
-    }
-
-    @Test
-    void getIndicatorsForSearch_issuesAConstantNumberOfQueries_regardlessOfIndicatorCount() throws RmesException {
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(repositoryGestion, null, null, null,
-                famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
-
-        JSONArray manyIndicators = new JSONArray();
-        for (int i = 0; i < 50; i++) {
-            manyIndicators.put(new JSONObject().put("id", "p" + i).put("prefLabelLg1", "Indic " + i));
-        }
-        when(operationIndicatorsQueries.indicatorsQueryForSearch()).thenReturn("searchQuery");
-        when(operationIndicatorsQueries.getOrganizationsByIndicators(INSEE.DATA_COLLECTOR)).thenReturn("collectorsQuery");
-        when(operationIndicatorsQueries.getCreatorsByIndicators()).thenReturn("creatorsQuery");
-        when(operationIndicatorsQueries.getPublishersByIndicators()).thenReturn("publishersQuery");
-        when(repositoryGestion.getResponseAsArray("searchQuery")).thenReturn(manyIndicators);
-        when(repositoryGestion.getResponseAsArray("collectorsQuery")).thenReturn(new JSONArray());
-        when(repositoryGestion.getResponseAsArray("creatorsQuery")).thenReturn(new JSONArray());
-        when(repositoryGestion.getResponseAsArray("publishersQuery")).thenReturn(new JSONArray());
-
-        indicatorsUtils.getIndicatorsForSearch();
-
-        // Une requête par type d'information, peu importe le nombre d'indicateurs : pas de N+1.
-        verify(operationIndicatorsQueries, times(1)).getCreatorsByIndicators();
-        verify(operationIndicatorsQueries, times(1)).getPublishersByIndicators();
-        verify(operationIndicatorsQueries, times(1)).getOrganizationsByIndicators(INSEE.DATA_COLLECTOR);
-        // L'ancien chemin par-id ne doit plus être emprunté.
-        verify(operationIndicatorsQueries, never()).getCreatorsById(anyString());
-        verify(operationIndicatorsQueries, never()).getPublishersById(anyString());
-        verify(operationIndicatorsQueries, never()).getMultipleOrganizations(anyString(), any());
-    }
-
-    @Test
-    void groupValuesByIndicatorId_groupsMultipleValuesUnderSameIndicator() {
-        JSONArray rows = new JSONArray()
-                .put(new JSONObject().put("indicatorId", "p1").put("creators", "http://org/A"))
-                .put(new JSONObject().put("indicatorId", "p1").put("creators", "http://org/B"))
-                .put(new JSONObject().put("indicatorId", "p2").put("creators", "http://org/C"));
-
-        Map<String, JSONArray> grouped = IndicatorsUtils.groupValuesByIndicatorId(rows, "creators");
-
-        assertThat(grouped.get("p1").toList()).containsExactly("http://org/A", "http://org/B");
-        assertThat(grouped.get("p2").toList()).containsExactly("http://org/C");
-    }
-
-    @Test
-    void groupValuesByIndicatorId_returnsEmptyMap_whenRowsAreNullOrEmpty() {
-        assertThat(IndicatorsUtils.groupValuesByIndicatorId(null, "creators")).isEmpty();
-        assertThat(IndicatorsUtils.groupValuesByIndicatorId(new JSONArray(), "creators")).isEmpty();
-    }
-
-    @Test
-    void groupOrganizationsByIndicatorId_buildsTypedOrganizationObjectsPerIndicator() {
-        JSONArray rows = new JSONArray()
-                .put(new JSONObject().put("indicatorId", "p1").put("id", "DG75")
-                        .put("labelLg1", "Insee").put("labelLg2", "Insee EN"))
-                .put(new JSONObject().put("indicatorId", "p1").put("id", "DG75-C001")
-                        .put("labelLg1", "Dept"));
-
-        Map<String, JSONArray> grouped = IndicatorsUtils.groupOrganizationsByIndicatorId(rows);
-
-        JSONArray p1 = grouped.get("p1");
-        assertThat(p1.length()).isEqualTo(2);
-        assertThat(p1.getJSONObject(0).getString("id")).isEqualTo("DG75");
-        assertThat(p1.getJSONObject(0).getString("labelLg1")).isEqualTo("Insee");
-        assertThat(p1.getJSONObject(0).getString("labelLg2")).isEqualTo("Insee EN");
-        assertThat(p1.getJSONObject(0).getString("type")).isEqualTo(ObjectType.ORGANIZATION.labelType());
-        assertThat(p1.getJSONObject(1).getString("id")).isEqualTo("DG75-C001");
     }
 
 }

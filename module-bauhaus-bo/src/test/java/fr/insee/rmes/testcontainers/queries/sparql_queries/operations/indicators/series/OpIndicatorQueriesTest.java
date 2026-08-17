@@ -133,15 +133,6 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
-    void should_return_indicators_for_search() throws Exception {
-        String query = operationIndicatorsQueries.indicatorsQueryForSearch();
-        JSONArray results = repositoryGestion.getResponseAsArray(query);
-
-        assertNotNull(results);
-        assertTrue(results.length() > 0, "Should return at least one indicator");
-    }
-
-    @Test
     void should_return_single_indicator_by_id() throws Exception {
         String query = operationIndicatorsQueries.indicatorQuery("p1651");
 
@@ -172,16 +163,6 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_publishers_for_indicator() throws Exception {
         String query = operationIndicatorsQueries.getPublishersById("p1651");
-        JSONArray results = repositoryGestion.getResponseAsArray(query);
-
-        assertNotNull(results);
-    }
-
-    @Test
-    void should_return_multiple_organizations_for_indicator() throws Exception {
-        IRI creator = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/terms/creator");
-
-        String query = operationIndicatorsQueries.getMultipleOrganizations("p1651", creator);
         JSONArray results = repositoryGestion.getResponseAsArray(query);
 
         assertNotNull(results);

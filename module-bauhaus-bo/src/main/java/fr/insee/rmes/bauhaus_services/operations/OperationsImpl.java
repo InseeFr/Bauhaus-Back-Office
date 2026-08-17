@@ -276,11 +276,6 @@ public class OperationsImpl  implements OperationsService {
 	}
 
 	@Override
-	public String getIndicatorsForSearch() throws RmesException {
-		return indicatorsUtils.getIndicatorsForSearch();
-	}
-
-	@Override
 	public String getIndicatorJsonByID(String id) throws RmesException {
 		JSONObject indicator = indicatorsUtils.getIndicatorJsonById(id);
 		return indicator.toString();

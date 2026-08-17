@@ -43,9 +43,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 
@@ -310,78 +308,6 @@ public class IndicatorsUtils {
 
 		logger.info("Update indicator : {} - {}" , indicator.getId() , indicator.getPrefLabelLg1());
 
-	}
-
-	public String getIndicatorsForSearch() throws RmesException {
-		logger.info("Starting to get indicators list");
-
-		JSONArray resQuery = repositoryGestion.getResponseAsArray(operationIndicatorsQueries.indicatorsQueryForSearch());
-
-		// Anti N+1 : créateurs / éditeurs / collecteurs sont chargés en 3 requêtes groupées,
-		// puis dispatchés par identifiant d'indicateur, au lieu de 3 requêtes par indicateur.
-		Map<String, JSONArray> dataCollectorsByIndicator = groupOrganizationsByIndicatorId(
-				repositoryGestion.getResponseAsArray(operationIndicatorsQueries.getOrganizationsByIndicators(INSEE.DATA_COLLECTOR)));
-		Map<String, JSONArray> creatorsByIndicator = groupValuesByIndicatorId(
-				repositoryGestion.getResponseAsArray(operationIndicatorsQueries.getCreatorsByIndicators()), Constants.CREATORS);
-		Map<String, JSONArray> publishersByIndicator = groupValuesByIndicatorId(
-				repositoryGestion.getResponseAsArray(operationIndicatorsQueries.getPublishersByIndicators()), Constants.PUBLISHERS);
-
-		JSONArray result = new JSONArray();
-		for (int i = 0; i < resQuery.length(); i++) {
-			JSONObject indicator = resQuery.getJSONObject(i);
-			String id = indicator.get(Constants.ID).toString();
-			indicator.put(INSEE.DATA_COLLECTOR.getLocalName(), dataCollectorsByIndicator.getOrDefault(id, new JSONArray()));
-			indicator.put(Constants.CREATORS, creatorsByIndicator.getOrDefault(id, new JSONArray()));
-			indicator.put(Constants.PUBLISHERS, publishersByIndicator.getOrDefault(id, new JSONArray()));
-			result.put(indicator);
-		}
-		return QueryUtils.correctEmptyGroupConcat(result.toString());
-	}
-
-	static final String INDICATOR_ID = "indicatorId";
-
-	/**
-	 * Regroupe les valeurs simples (URI de créateurs, d'éditeurs…) par identifiant d'indicateur.
-	 * Les lignes proviennent d'une requête groupée {@code SELECT ?indicatorId ?<valueKey>}.
-	 */
-	static Map<String, JSONArray> groupValuesByIndicatorId(JSONArray rows, String valueKey) {
-		Map<String, JSONArray> grouped = new HashMap<>();
-		if (rows == null) {
-			return grouped;
-		}
-		for (int i = 0; i < rows.length(); i++) {
-			JSONObject row = rows.getJSONObject(i);
-			if (!row.has(INDICATOR_ID) || !row.has(valueKey)) {
-				continue;
-			}
-			grouped.computeIfAbsent(row.getString(INDICATOR_ID), k -> new JSONArray())
-					.put(row.get(valueKey));
-		}
-		return grouped;
-	}
-
-	/**
-	 * Regroupe les organisations (id + libellés) par identifiant d'indicateur, en typant chaque
-	 * objet comme une organisation. Lignes issues d'une requête groupée
-	 * {@code SELECT ?indicatorId ?id ?labelLg1 ?labelLg2}.
-	 */
-	static Map<String, JSONArray> groupOrganizationsByIndicatorId(JSONArray rows) {
-		Map<String, JSONArray> grouped = new HashMap<>();
-		if (rows == null) {
-			return grouped;
-		}
-		for (int i = 0; i < rows.length(); i++) {
-			JSONObject row = rows.getJSONObject(i);
-			if (!row.has(INDICATOR_ID)) {
-				continue;
-			}
-			JSONObject organization = new JSONObject(row.toString());
-			organization.remove(INDICATOR_ID);
-			organization.put("type", ObjectType.ORGANIZATION.labelType());
-			grouped.computeIfAbsent(row.getString(INDICATOR_ID), k -> new JSONArray())
-					.put(organization);
-		}
-		return grouped;
 	}
 
 	public void addMulltiLangValues(Model model, IRI indicatorIRI, Resource graph, String valueLg1, String valueLg2, IRI predicate) {

@@ -73,8 +73,6 @@ public interface OperationsService {
 
 	String getIndicatorsWithSims() throws RmesException;
 
-	String getIndicatorsForSearch() throws RmesException;
-
 	String getIndicatorJsonByID(String id) throws RmesException;
 
 	Indicator getIndicatorById(String id) throws RmesException;
