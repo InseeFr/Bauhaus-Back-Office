@@ -1,0 +1,27 @@
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# Un même jeu de données présent sous deux IRI : c'est ce que produit la mise à
+# jour d'un jeu hérité (IRI `catalogues/jeuDeDonnees/…`), le service écrivant
+# systématiquement sous l'IRI dérivée de la configuration (`datasets/…`).
+# La liste des jeux de données ne doit pas pour autant le présenter deux fois.
+#
+# Graphe dédié : ce jeu de données ne doit pas polluer les autres tests, qui
+# comptent les jeux du graphe `catalogue`.
+<http://rdf.insee.fr/graphes/catalogue-identifiant-duplique> {
+	<http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesDedouble> rdf:type dcat:Dataset;
+		dct:identifier "jeuDeDonneesDedouble";
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		dct:title "Jeu de données présent sous deux IRI"@fr, "Dataset stored under two IRIs"@en;
+	.
+
+	<http://bauhaus/datasets/jeuDeDonneesDedouble> rdf:type dcat:Dataset;
+		dct:identifier "jeuDeDonneesDedouble";
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		dct:title "Jeu de données présent sous deux IRI"@fr, "Dataset stored under two IRIs"@en;
+	.
+}

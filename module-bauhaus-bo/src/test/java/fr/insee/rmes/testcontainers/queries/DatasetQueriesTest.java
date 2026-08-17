@@ -22,15 +22,26 @@ class DatasetQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
     DatasetQueries datasetQueries = new DatasetQueries(new BauhausLanguagesProperties("fr", "en"));
 
+    private static final String DUPLICATE_IDENTIFIER_GRAPH = "http://rdf.insee.fr/graphes/catalogue-identifiant-duplique";
+
     @BeforeAll
     static void initData(){
         container.withTrigFiles("jeuxDeDonnees-pour-tests.trig");
+        container.withTrigFiles("jeuxDeDonnees-identifiant-duplique.trig");
     }
 
     @Test
     void should_return_all_datasets() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasets("http://rdf.insee.fr/graphes/catalogue", Set.of()));
         assertEquals(3, result.length());
+    }
+
+    @Test
+    void should_return_one_row_per_dataset_even_when_two_iris_share_the_same_identifier() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasets(DUPLICATE_IDENTIFIER_GRAPH, Set.of()));
+
+        assertEquals(1, result.length(), "The list must expose one row per dataset identifier");
+        assertEquals("jeuDeDonneesDedouble", result.getJSONObject(0).getString("id"));
     }
 
     @Test
