@@ -25,7 +25,7 @@ import java.io.IOException;
 public class ClassificationItemServiceImpl extends RdfService implements ClassificationItemService {
     private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-    private final ClassificationItemRepository classificationItemUtils;
+    private final ClassificationItemRepository classificationItemRepository;
 
     private final ClassificationsQueries classificationsQueries;
 
@@ -36,11 +36,11 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     public ClassificationItemServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
                                          RepositoryPublication repositoryPublication,
                                          PublicationUtils publicationUtils,
-                                         ClassificationItemRepository classificationItemUtils,
+                                         ClassificationItemRepository classificationItemRepository,
                                          ClassificationsQueries classificationsQueries,
                                          ClassificationItemsQueries classificationItemsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-        this.classificationItemUtils = classificationItemUtils;
+        this.classificationItemRepository = classificationItemRepository;
         this.classificationsQueries = classificationsQueries;
         this.classificationItemsQueries = classificationItemsQueries;
     }
@@ -91,6 +91,6 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
 
 
         String itemUri = repoGestion.getResponseAsObject(classificationsQueries.classificationItemQueryUri(classificationId, itemId)).getString("item");
-        classificationItemUtils.updateClassificationItem(item, itemUri, classificationId);
+        classificationItemRepository.updateClassificationItem(item, itemUri, classificationId);
     }
 }

@@ -8,9 +8,18 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-class FreeMarkerUtilsTest {
+/**
+ * Vérifie que les templates FreeMarker de <b>ce module</b> sont chargeables.
+ * <p>
+ * Ce n'est pas un doublon de {@code fr.insee.rmes.freemarker.FreeMarkerUtilsTest} (module-utility) :
+ * {@code FreemarkerConfig} charge les templates via un {@code ClassTemplateLoader} sur {@code /request},
+ * or seul module-bauhaus-bo embarque ces ressources. Les tests de module-utility ne peuvent donc couvrir
+ * que les cas d'erreur ; le cas passant se teste ici.
+ */
+class FreeMarkerTemplateLoadingTest {
 
     @Test
     void buildRequestTest() throws RmesException {
@@ -27,8 +36,8 @@ class FreeMarkerUtilsTest {
     @Test
     void buildRequestTest_xdocreport() {
         //if not null, you should define a TemplateLoader for freemarker templates in xdocreport in FreemarkerConfig
-        assertNull(FreeMarkerUtilsTest.class.getClassLoader().getResource("xdocreport"));
-        assertNotNull(FreeMarkerUtilsTest.class.getClassLoader().getResource("request"));
+        assertNull(FreeMarkerTemplateLoadingTest.class.getClassLoader().getResource("xdocreport"));
+        assertNotNull(FreeMarkerTemplateLoadingTest.class.getClassLoader().getResource("request"));
     }
 
 }

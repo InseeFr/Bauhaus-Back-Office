@@ -25,14 +25,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ClassificationItemUtilsTest {
+class ClassificationItemRepositoryTest {
 
 
     @Mock
     RepositoryGestion repositoryGestion;
 
     @InjectMocks
-    ClassificationItemRepository classificationItemUtils;
+    ClassificationItemRepository classificationItemRepository;
 
     @Spy
     BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
@@ -51,7 +51,7 @@ class ClassificationItemUtilsTest {
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemUtils.updateClassificationItem(item, "http://uri", "1"));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
         assertThat(exception.getDetails()).contains("The property prefLabelLg1 is required");
 
     }
@@ -65,7 +65,7 @@ class ClassificationItemUtilsTest {
         item.setDefinitionLg1("<p>Definition Lg1</p>");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemUtils.updateClassificationItem(item, "http://uri", "1"));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> classificationItemRepository.updateClassificationItem(item, "http://uri", "1"));
         assertThat(exception.getDetails()).contains("The property prefLabelLg2 is required");
 
     }
@@ -80,7 +80,7 @@ class ClassificationItemUtilsTest {
         item.setDefinitionLg1("Definition Lg1");
         item.setDefinitionLg1Uri("http://definition-lg1");
 
-        classificationItemUtils.updateClassificationItem(item, "http://uri", "1");
+        classificationItemRepository.updateClassificationItem(item, "http://uri", "1");
         verify(classificationNoteService).addNotes(any(), eq("http://definition-lg1"), eq("Definition Lg1"), any());
     }
 
@@ -93,7 +93,7 @@ class ClassificationItemUtilsTest {
         when(repositoryGestion.getResponseAsObject(any()))
                 .thenReturn(new JSONObject().put("validationState", ValidationStatus.VALIDATED.getValue()));
 
-        classificationItemUtils.updateClassificationItem(item, "http://uri", "1");
+        classificationItemRepository.updateClassificationItem(item, "http://uri", "1");
 
         assertThat(validationStateOfCapturedModel()).isEqualTo(ValidationStatus.MODIFIED.getValue());
     }
@@ -107,7 +107,7 @@ class ClassificationItemUtilsTest {
         when(repositoryGestion.getResponseAsObject(any()))
                 .thenReturn(new JSONObject().put("validationState", ValidationStatus.UNPUBLISHED.getValue()));
 
-        classificationItemUtils.updateClassificationItem(item, "http://uri", "1");
+        classificationItemRepository.updateClassificationItem(item, "http://uri", "1");
 
         assertThat(validationStateOfCapturedModel()).isEqualTo(ValidationStatus.UNPUBLISHED.getValue());
     }
