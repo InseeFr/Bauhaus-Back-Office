@@ -57,8 +57,8 @@
     <testcontainers.version>1.21.4</testcontainers.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
-    <!-- on force l'usage de la version 1.81.1, cette dépendance est utilisée par minio /à supprimer quand on passera à minio 8.6.0 -->
-    <bouncycastle.version>1.81.1</bouncycastle.version>
+    <!-- on force l'usage de la version 1.85.2, cette dépendance est utilisée par minio /à supprimer quand on passera à minio 8.6.0 -->
+    <bouncycastle.version>1.85.2</bouncycastle.version>
   </properties>
 
   <dependencyManagement>
@@ -82,7 +82,7 @@
   </dependencyManagement>
 
   <dependencies>
-    <!--      on force l'usage de la version 1.81.1 utilisée par minio-->
+    <!--      on force l'usage de la version 1.85.2 utilisée par minio-->
     <!--      à supprimer quand on passera à minio 8.6.0-->
     <dependency>
       <groupId>org.bouncycastle</groupId>
