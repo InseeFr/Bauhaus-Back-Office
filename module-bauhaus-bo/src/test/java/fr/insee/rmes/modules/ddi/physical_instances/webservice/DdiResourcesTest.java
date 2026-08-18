@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -77,13 +77,13 @@ class DdiResourcesTest {
     private RbacFetcher rbacFetcher;
 
     @Mock
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
 
     private DdiResources ddiResources;
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils, mock(Ddi4SchemaService.class));
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, bauhausUriBuilder, mock(Ddi4SchemaService.class));
 
         // Setup mock request context for ServletUriComponentsBuilder
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -898,7 +898,7 @@ class DdiResourcesTest {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         String xml = "<Fragment><StudyUnit/></Fragment>";
         ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
-        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
         when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
 
@@ -914,7 +914,7 @@ class DdiResourcesTest {
     void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
 
         ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
@@ -930,7 +930,7 @@ class DdiResourcesTest {
         String id = "op1";
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         String xml = "<Fragment><StudyUnit/></Fragment>";
-        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
 
         ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
@@ -945,7 +945,7 @@ class DdiResourcesTest {
     void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
         when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
 
         ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);

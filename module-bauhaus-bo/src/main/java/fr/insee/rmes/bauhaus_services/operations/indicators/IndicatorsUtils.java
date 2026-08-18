@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -65,7 +65,7 @@ public class IndicatorsUtils {
 	final ParentUtils ownersUtils;
 
 	private final DocumentationsUtils documentationsUtils;
-	private final UriUtils uriUtils;
+	private final BauhausUriBuilder bauhausUriBuilder;
 	private final String lg1;
 	private final String lg2;
 	private final OperationIndicatorsQueries operationIndicatorsQueries;
@@ -79,7 +79,7 @@ public class IndicatorsUtils {
 			FamOpeSerIndUtils famOpeSerIndUtils,
 			ParentUtils ownersUtils,
 			DocumentationsUtils documentationsUtils,
-			UriUtils uriUtils,
+			BauhausUriBuilder bauhausUriBuilder,
 			@Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
 			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
 			OperationIndicatorsQueries operationIndicatorsQueries,
@@ -91,7 +91,7 @@ public class IndicatorsUtils {
 		this.famOpeSerIndUtils = famOpeSerIndUtils;
 		this.ownersUtils = ownersUtils;
 		this.documentationsUtils = documentationsUtils;
-		this.uriUtils = uriUtils;
+		this.bauhausUriBuilder = bauhausUriBuilder;
 		this.lg1 = lg1;
 		this.lg2 = lg2;
 		this.operationIndicatorsQueries = operationIndicatorsQueries;
@@ -349,7 +349,7 @@ public class IndicatorsUtils {
 		List<OperationsLink> replaces = indicator.getReplaces();
 		if (replaces != null) {
 			for (OperationsLink replace : replaces) {
-				String replaceUri = this.uriUtils.getCompleteUriGestion(replace.getType(), replace.getId());
+				String replaceUri = this.bauhausUriBuilder.getCompleteUriGestion(replace.getType(), replace.getId());
 				addReplacesAndReplacedBy(model, RdfUtils.toURI(replaceUri), indicURI);
 			}
 		}		
@@ -357,7 +357,7 @@ public class IndicatorsUtils {
 		List<OperationsLink> isReplacedBys = indicator.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
-				String isReplUri = this.uriUtils.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
+				String isReplUri = this.bauhausUriBuilder.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
 				addReplacesAndReplacedBy(model, indicURI, RdfUtils.toURI(isReplUri));
 			}
 		}
@@ -386,7 +386,7 @@ public class IndicatorsUtils {
 	private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
 		if (links != null) {
 			for (OperationsLink oneLink : links) {
-				String linkedObjectUri = this.uriUtils.getCompleteUriGestion(oneLink.getType(), oneLink.getId());
+				String linkedObjectUri = this.bauhausUriBuilder.getCompleteUriGestion(oneLink.getType(), oneLink.getId());
 				RdfUtils.addTripleUri(indicURI, linkPredicate ,linkedObjectUri, model, RdfUtils.productsGraph());
 			}
 		}

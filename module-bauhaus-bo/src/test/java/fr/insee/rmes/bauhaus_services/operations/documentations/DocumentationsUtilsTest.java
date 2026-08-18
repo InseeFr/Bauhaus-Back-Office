@@ -5,7 +5,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -80,7 +80,7 @@ class DocumentationsUtilsTest {
 	@BeforeEach
 	void initStaticGraphs() {
 		RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-		RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
+		RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
 	}
 
 	@Test

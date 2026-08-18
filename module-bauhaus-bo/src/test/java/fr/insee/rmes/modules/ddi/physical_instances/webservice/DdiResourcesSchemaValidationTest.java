@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
@@ -74,7 +74,7 @@ class DdiResourcesSchemaValidationTest {
     private RbacFetcher rbacFetcher;
 
     @Mock
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
 
     private DdiResources ddiResources;
 
@@ -169,7 +169,7 @@ class DdiResourcesSchemaValidationTest {
         Ddi4SchemaRepository schemaRepository = new ClasspathDdi4SchemaRepository();
         ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService,
                 ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher,
-                uriUtils, new DomainDdi4SchemaService(schemaRepository,
+                bauhausUriBuilder, new DomainDdi4SchemaService(schemaRepository,
                         new NetworkntDdi4SchemaValidator(schemaRepository)));
     }
 

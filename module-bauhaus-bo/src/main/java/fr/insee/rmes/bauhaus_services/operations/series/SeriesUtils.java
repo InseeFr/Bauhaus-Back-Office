@@ -10,7 +10,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUt
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -67,7 +67,7 @@ public class SeriesUtils {
     private final DocumentationsUtils documentationsUtils;
 
     private static final Logger logger = LoggerFactory.getLogger(SeriesUtils.class);
-    private final UriUtils uriUtils;
+    private final BauhausUriBuilder bauhausUriBuilder;
     private final String lg2;
     private final String lg1;
 
@@ -85,7 +85,7 @@ public class SeriesUtils {
             ParentUtils ownersUtils,
             SeriesPublication seriesPublication,
             DocumentationsUtils documentationsUtils,
-            UriUtils uriUtils,
+            BauhausUriBuilder bauhausUriBuilder,
             SeriesValidator validator,
             OperationSeriesQueries operationSeriesQueries,
             OrganisationLookup organisationLookup) {
@@ -98,7 +98,7 @@ public class SeriesUtils {
         this.ownersUtils = ownersUtils;
         this.seriesPublication = seriesPublication;
         this.documentationsUtils = documentationsUtils;
-        this.uriUtils = uriUtils;
+        this.bauhausUriBuilder = bauhausUriBuilder;
         this.validator = validator;
         this.operationSeriesQueries = operationSeriesQueries;
         this.organisationLookup = organisationLookup;
@@ -343,7 +343,7 @@ public class SeriesUtils {
         List<OperationsLink> replaces = series.getReplaces();
         Optional.ofNullable(replaces)
                 .orElseGet(Collections::emptyList).stream().filter(repl -> !repl.isEmpty()).forEach(replace -> {
-                    String replUri = this.uriUtils.getCompleteUriGestion(replace.getType(), replace.getId());
+                    String replUri = this.bauhausUriBuilder.getCompleteUriGestion(replace.getType(), replace.getId());
                     addReplacesAndReplacedBy(model, RdfUtils.toURI(replUri), seriesURI);
                 });
 
@@ -351,7 +351,7 @@ public class SeriesUtils {
         List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
         Optional.ofNullable(isReplacedBys)
                 .orElseGet(Collections::emptyList).stream().filter(isRepl -> !isRepl.isEmpty()).forEach(isRepl -> {
-                    String isReplUri = this.uriUtils.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
+                    String isReplUri = this.bauhausUriBuilder.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
                     addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
                 });
 
@@ -388,7 +388,7 @@ public class SeriesUtils {
         if (links != null) {
             for (OperationsLink link : links) {
                 if (!link.isEmpty()) {
-                    String linkUri = this.uriUtils.getCompleteUriGestion(link.getType(), link.getId());
+                    String linkUri = this.bauhausUriBuilder.getCompleteUriGestion(link.getType(), link.getId());
                     RdfUtils.addTripleUri(seriesURI, predicate, linkUri, model, RdfUtils.operationsGraph());
                 }
             }

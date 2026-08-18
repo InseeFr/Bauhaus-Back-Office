@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -58,7 +58,7 @@ class OperationsUtilsTest {
     @BeforeAll
     static void initRdfUtils() {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
     }
 
     @Test

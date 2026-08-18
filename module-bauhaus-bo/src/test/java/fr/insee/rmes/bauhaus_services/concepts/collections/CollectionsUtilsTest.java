@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb.GraphDBCollectionProperties;
@@ -41,7 +41,7 @@ class CollectionsUtilsTest {
     @BeforeAll
     static void initConfig() {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/collection")));
     }
 
     @BeforeEach

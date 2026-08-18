@@ -5,7 +5,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.ontologies.ADMS;
@@ -228,8 +228,8 @@ class IndicatorsUtilsTest {
         CodeListService codeListService = mock(CodeListService.class);
         when(codeListService.getCodeUri(any(), any())).thenReturn("http://bauhaus/codes/freq/A");
         when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
-        UriUtils uriUtils = new UriUtils("http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
-        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(repositoryGestion, codeListService, null, null, famOpeSerIndUtils, null, null, uriUtils, "fr", "en", operationIndicatorsQueries, null);
+        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(repositoryGestion, codeListService, null, null, famOpeSerIndUtils, null, null, bauhausUriBuilder, "fr", "en", operationIndicatorsQueries, null);
 
         Indicator indicator = Indicator.of("p2000");
         indicator.setPrefLabelLg1("Indicateur de test");

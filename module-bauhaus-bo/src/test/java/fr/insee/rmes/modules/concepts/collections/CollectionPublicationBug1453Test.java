@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * « Quand je publie une collection, l'état de la collecte n'est pas modifié ».
  *
  * Cause racine : `RdfUtils.collectionIRI` produit une IRI doublée
- * (`http://bauhaus/http://bauhaus/...`) car `UriUtils.getBaseUriGestion(COLLECTION)`
+ * (`http://bauhaus/http://bauhaus/...`) car `BauhausUriBuilder.getBaseUriGestion(COLLECTION)`
  * concatène `baseUriGestion` avec une `baseURI` qui le contient déjà. Côté legacy,
  * `CollectionsUtils.collectionsValidation` et `ConceptsPublication.publishCollection`
  * écrivaient donc à la mauvaise IRI ; les triplets `isValidated true` n'étaient

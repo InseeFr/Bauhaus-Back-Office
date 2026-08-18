@@ -5,7 +5,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
@@ -29,18 +29,18 @@ public class OperationsResources {
     protected final OperationsService operationsService;
     protected final OperationsDocumentationsService documentationsService;
     protected final DDIService ddiService;
-    protected final UriUtils uriUtils;
+    protected final BauhausUriBuilder bauhausUriBuilder;
 
     public OperationsResources(
         OperationsService operationsService,
         OperationsDocumentationsService documentationsService,
         DDIService ddiService,
-        UriUtils uriUtils
+        BauhausUriBuilder bauhausUriBuilder
     ) {
         this.operationsService = operationsService;
         this.documentationsService = documentationsService;
         this.ddiService = ddiService;
-        this.uriUtils = uriUtils;
+        this.bauhausUriBuilder = bauhausUriBuilder;
     }
 
     @HasAccess(

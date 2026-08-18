@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
@@ -62,7 +62,7 @@ public class DdiResources {
     private final DDIItemConvertService ddiItemConvertService;
     private final UserProvider userProvider;
     private final RbacFetcher rbacFetcher;
-    private final UriUtils uriUtils;
+    private final BauhausUriBuilder bauhausUriBuilder;
     private final Ddi4SchemaService ddi4SchemaService;
 
     public DdiResources(
@@ -72,7 +72,7 @@ public class DdiResources {
         DDIItemConvertService ddiItemConvertService,
         UserProvider userProvider,
         RbacFetcher rbacFetcher,
-        UriUtils uriUtils,
+        BauhausUriBuilder bauhausUriBuilder,
         Ddi4SchemaService ddi4SchemaService
     ) {
         this.ddiService = ddiService;
@@ -81,7 +81,7 @@ public class DdiResources {
         this.ddiItemConvertService = ddiItemConvertService;
         this.userProvider = userProvider;
         this.rbacFetcher = rbacFetcher;
-        this.uriUtils = uriUtils;
+        this.bauhausUriBuilder = bauhausUriBuilder;
         this.ddi4SchemaService = ddi4SchemaService;
     }
 
@@ -536,7 +536,7 @@ public class DdiResources {
     public ResponseEntity<String> getOperationStudyUnitJson(
         @PathVariable(Constants.ID) String id
     ) {
-        String operationIri = uriUtils.getCompleteUriPublication(
+        String operationIri = bauhausUriBuilder.getCompleteUriPublication(
             "operation",
             id
         );
@@ -559,7 +559,7 @@ public class DdiResources {
     public ResponseEntity<String> getOperationStudyUnitXml(
         @PathVariable(Constants.ID) String id
     ) {
-        String operationIri = uriUtils.getCompleteUriPublication(
+        String operationIri = bauhausUriBuilder.getCompleteUriPublication(
             "operation",
             id
         );

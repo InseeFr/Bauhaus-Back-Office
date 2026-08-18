@@ -29,7 +29,7 @@ public class RdfUtils {
 
 	private static DocumentationsProperties documentations;
 
-	private static UriUtils uriUtils;
+	private static BauhausUriBuilder bauhausUriBuilder;
 
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
@@ -88,12 +88,12 @@ public class RdfUtils {
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
 		if (isAbsoluteUri(id)) return factory.createIRI(id);
-		return factory.createIRI(uriUtils.getBaseUriGestion(objType) + "/" + id);
+		return factory.createIRI(bauhausUriBuilder.getBaseUriGestion(objType) + "/" + id);
 	}
 
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
 		if (isAbsoluteUri(id)) return factory.createIRI(id);
-		return factory.createIRI(uriUtils.getBaseUriPublication(objType) + "/" + id);
+		return factory.createIRI(bauhausUriBuilder.getBaseUriPublication(objType) + "/" + id);
 	}
 
 	private static boolean isAbsoluteUri(String value) {
@@ -119,7 +119,7 @@ public class RdfUtils {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
 	public static IRI conceptIRI() {
-		return factory.createIRI(uriUtils.getBaseUriGestion(ObjectType.CONCEPT));
+		return factory.createIRI(bauhausUriBuilder.getBaseUriGestion(ObjectType.CONCEPT));
 	}
 
 	public static IRI collectionIRI(String id) {
@@ -161,7 +161,7 @@ public class RdfUtils {
 
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
-				uriUtils.getBaseUriGestion(ObjectType.CONCEPT)
+				bauhausUriBuilder.getBaseUriGestion(ObjectType.CONCEPT)
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
@@ -171,7 +171,7 @@ public class RdfUtils {
 	public static IRI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
 		return RdfUtils.factory.createIRI(
-				uriUtils.getBaseUriGestion(ObjectType.CONCEPT)
+				bauhausUriBuilder.getBaseUriGestion(ObjectType.CONCEPT)
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
@@ -180,7 +180,7 @@ public class RdfUtils {
 	
 	public static IRI datableNoteIRI(String conceptId, DatableNote datableNote) {
 		String parsedDate = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now());
-		return RdfUtils.factory.createIRI(uriUtils.getBaseUriGestion(ObjectType.CONCEPT) + "/" + conceptId + "/" + datableNote.getPath()
+		return RdfUtils.factory.createIRI(bauhausUriBuilder.getBaseUriGestion(ObjectType.CONCEPT) + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
 	}
 	
@@ -311,8 +311,8 @@ public class RdfUtils {
 		RdfUtils.documentations = documentations;
 	}
 
-	public static void setUriUtils(UriUtils uriUtils){
-		RdfUtils.uriUtils=uriUtils;
+	public static void setBauhausUriBuilder(BauhausUriBuilder bauhausUriBuilder){
+		RdfUtils.bauhausUriBuilder=bauhausUriBuilder;
 	}
 	
 

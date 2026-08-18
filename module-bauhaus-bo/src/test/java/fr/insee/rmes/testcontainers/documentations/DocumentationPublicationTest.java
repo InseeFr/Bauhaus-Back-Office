@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesMissingDocumentsException;
@@ -47,15 +47,15 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
     @BeforeEach
     void setUp() throws Exception {
 
-        // Create a simple PropertiesFinder for UriUtils
-        UriUtils.PropertiesFinder propertiesFinder = Optional::of;
+        // Create a simple PropertiesFinder for BauhausUriBuilder
+        BauhausUriBuilder.PropertiesFinder propertiesFinder = Optional::of;
 
-        UriUtils uriUtils = new UriUtils(
+        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
                 "http://publication/",
                 "http://bauhaus/",
                 propertiesFinder
         );
-        RdfUtils.setUriUtils(uriUtils);
+        RdfUtils.setBauhausUriBuilder(bauhausUriBuilder);
 
         RepositoryUtils repositoryUtils = new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED);
 

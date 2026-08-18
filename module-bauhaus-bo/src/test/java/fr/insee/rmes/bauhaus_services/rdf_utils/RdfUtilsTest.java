@@ -219,7 +219,7 @@ class RdfUtilsTest {
 
     @Test
     void objectIRIPrefixesPlainIdsWithTheGestionBaseUri(){
-        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
 
         IRI iri = RdfUtils.objectIRI(ObjectType.CONCEPT, "c123");
 
@@ -228,7 +228,7 @@ class RdfUtilsTest {
 
     @Test
     void objectIRIIsIdempotentWhenGivenAnAbsoluteConceptUri(){
-        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
 
         // Defensive: callers occasionally pass a fully-qualified concept URI instead of the
         // bare notation (#1494). Re-prefixing produces malformed URIs like

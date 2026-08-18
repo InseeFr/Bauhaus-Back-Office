@@ -10,7 +10,7 @@ import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -93,7 +93,7 @@ class DocumentationsRubricsUtilsTest {
 		// Initialize RdfUtils static dependencies
 		RdfUtils.setGraphs(GraphsPropertiesStub.stub());
 		RdfUtils.setUris(BauhausUriPropertiesStub.stub());
-		RdfUtils.setUriUtils(new UriUtils(
+		RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder(
 			"http://id.insee.fr/",
 			"http://rdf.insee.fr/graphes/",
 			p -> Optional.of("/rapport")

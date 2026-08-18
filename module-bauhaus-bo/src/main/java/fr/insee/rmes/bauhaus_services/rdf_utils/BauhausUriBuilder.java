@@ -10,15 +10,15 @@ import static fr.insee.rmes.PropertiesKeys.BASE_URI_GESTION;
 import static fr.insee.rmes.PropertiesKeys.BASE_URI_PUBLICATION;
 
 @Component
-public record UriUtils(  String baseUriPublication, String baseUriGestion, PropertiesFinder propertiesFinder) {
+public record BauhausUriBuilder(  String baseUriPublication, String baseUriGestion, PropertiesFinder propertiesFinder) {
 
-    public UriUtils(@Value("${"+BASE_URI_PUBLICATION+"}") String baseUriPublication,
+    public BauhausUriBuilder(@Value("${"+BASE_URI_PUBLICATION+"}") String baseUriPublication,
                     @Value("${"+BASE_URI_GESTION+"}") String baseUriGestion,
                     PropertiesFinder propertiesFinder){
         this.baseUriPublication=baseUriPublication;
         this.baseUriGestion=baseUriGestion;
         this.propertiesFinder=propertiesFinder;
-        RdfUtils.setUriUtils(this);
+        RdfUtils.setBauhausUriBuilder(this);
     }
 
     public String getBaseUriPublication(ObjectType objectType){

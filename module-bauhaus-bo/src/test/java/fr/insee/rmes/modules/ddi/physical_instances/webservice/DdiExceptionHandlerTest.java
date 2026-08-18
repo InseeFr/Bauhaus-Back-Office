@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
@@ -48,13 +48,13 @@ class DdiExceptionHandlerTest {
     private RbacFetcher rbacFetcher;
 
     @Mock
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        DdiResources ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils, mock(Ddi4SchemaService.class));
+        DdiResources ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, bauhausUriBuilder, mock(Ddi4SchemaService.class));
         mockMvc = MockMvcBuilders.standaloneSetup(ddiResources)
                 .setControllerAdvice(new DdiExceptionHandler())
                 .build();
