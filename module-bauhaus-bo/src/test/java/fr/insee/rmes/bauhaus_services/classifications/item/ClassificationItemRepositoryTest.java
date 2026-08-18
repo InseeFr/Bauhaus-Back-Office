@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 import fr.insee.rmes.bauhaus_services.classifications.ClassificationNoteService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.BauhausLanguagesProperties;
@@ -12,6 +13,7 @@ import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationIt
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -42,6 +44,13 @@ class ClassificationItemRepositoryTest {
 
     @Mock
     ClassificationItemsQueries classificationItemsQueries;
+
+    @BeforeEach
+    void setUp() {
+        // RdfUtils porte sa configuration dans un champ statique alimenté au démarrage Spring :
+        // sans ce stub, la classe ne passe que si un autre test de la suite l'a initialisée avant.
+        RdfUtils.setGraphs(GraphsPropertiesStub.stub());
+    }
 
     @Test
     void shouldThrowExceptionIfPrefLabelLg1Null() {
