@@ -44,9 +44,13 @@
     <jaxb.version>4.0.5</jaxb.version>
     <zt.version>1.17</zt.version>
     <saxon.version>12.5</saxon.version>
-    <minio.version>8.5.17</minio.version>
+    <minio.version>9.0.3</minio.version>
+    <!-- okhttp 5.x est publié en Kotlin Multiplatform : l'artefact `okhttp` est un stub vide côté Maven,
+         seul `okhttp-jvm` contient les classes. minio ne déclare que `okhttp`, d'où l'ajout explicite.
+         Garder cette version alignée sur celle que minio déclare. -->
+    <okhttp.version>5.3.2</okhttp.version>
+    <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
     <record.builder.version>44</record.builder.version>
-    <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
     <!-- SONAR -->
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -80,6 +84,14 @@
         <artifactId>testcontainers-keycloak</artifactId>
         <version>${testcontainers-keycloak.version}</version>
       </dependency>
+      <!-- kotlin-stdlib (via okhttp-jvm, déclaré directement) tire annotations 13.0, dont @NotNull n'a pas
+           de target TYPE_USE : sans ce pin il gagnerait la médiation face au 24.0.1 de flexmark (plus profond)
+           et casserait la compilation des `@NotNull Path` de XsltUtilsTest. -->
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -104,6 +116,11 @@
       <groupId>io.minio</groupId>
       <artifactId>minio</artifactId>
       <version>${minio.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp-jvm</artifactId>
+      <version>${okhttp.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
