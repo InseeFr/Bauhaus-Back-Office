@@ -16,7 +16,7 @@ WHERE {
     OPTIONAL {
         ?family dcterms:abstract ?abstractLg1Uri .
         ?abstractLg1Uri evoc:noteLiteral ?abstractLg1 .
-        ?abstractLg2Uri xsd:language '${LG1}'^^xsd:language
+        ?abstractLg1Uri xsd:language '${LG1}'^^xsd:language
     }
     OPTIONAL {
         ?family dcterms:abstract ?abstractLg2Uri .

@@ -15,13 +15,15 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Non-régression de {@code OperationFamilyQueries.getSubjects} après sa migration vers
- * {@code operations/famOpeSer/getSubjects.ftlh}.
+ * Non-régression des requêtes de {@code OperationFamilyQueries} qui ne se vérifient que
+ * contre un vrai triplestore.
  *
- * <p>C'est la seule requête migrée qui utilise une clause {@code FROM} plutôt qu'un
- * {@code GRAPH} : le graphe passé en paramètre devient le graphe par défaut de la requête,
- * ce qui contraint aussi les triplets du sujet à s'y trouver. Ce comportement ne se vérifie
- * que contre un vrai triplestore.
+ * <p>{@code getSubjects} est la seule requête migrée qui utilise une clause {@code FROM}
+ * plutôt qu'un {@code GRAPH} : le graphe passé en paramètre devient le graphe par défaut de
+ * la requête, ce qui contraint aussi les triplets du sujet à s'y trouver.
+ *
+ * <p>{@code familyQuery} reconstitue la famille en empilant des {@code OPTIONAL} : une
+ * variable mal appariée y transforme silencieusement une jointure en produit cartésien.
  */
 @Tag("integration")
 class OperationFamilyQueriesIntegrationTest extends WithGraphDBContainer {
@@ -36,6 +38,17 @@ class OperationFamilyQueriesIntegrationTest extends WithGraphDBContainer {
     @BeforeAll
     static void initData() {
         container.withTrigFiles("ftlh-migration-misc-it.trig");
+        container.withTrigFiles("a6-appariement-variables-it.trig");
+    }
+
+    @Test
+    void familyQuery_returns_both_abstracts_when_they_are_carried_by_versioned_notes() throws RmesException {
+        JSONObject family = repositoryGestion.getResponseAsObject(queries.familyQuery("famA6"));
+
+        assertThat(family.getString("abstractLg1")).isEqualTo("Résumé A6 (fr)");
+        assertThat(family.getString("abstractLg2"))
+                .as("le bloc du résumé Lg1 ne doit pas contraindre l'URI de la note Lg2")
+                .isEqualTo("Résumé A6 (en)");
     }
 
     @Test

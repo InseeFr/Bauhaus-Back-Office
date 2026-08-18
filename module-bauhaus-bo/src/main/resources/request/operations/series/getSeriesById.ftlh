@@ -48,12 +48,12 @@ WHERE {
     FILTER (lang(?historyNoteLg2) = '${LG2}') }
 
     OPTIONAL {
-        ?family dcterms:abstract ?abstractLg1Uri .
+        ?series dcterms:abstract ?abstractLg1Uri .
         ?abstractLg1Uri xkos:ExplanatoryNote ?abstractLg1
         FILTER (lang(?abstractLg1) = '${LG1}')
     }
     OPTIONAL {
-        ?family dcterms:abstract ?abstractLg2Uri .
+        ?series dcterms:abstract ?abstractLg2Uri .
         ?abstractLg2Uri xkos:ExplanatoryNote ?abstractLg2
         FILTER (lang(?abstractLg2) = '${LG2}')
     }

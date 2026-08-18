@@ -35,6 +35,17 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
     static void initData(){
         container.withTrigFiles("all-operations-and-indicators.trig");
         container.withTrigFiles("sims-all.trig");
+        container.withTrigFiles("a6-appariement-variables-it.trig");
+    }
+
+    @Test
+    void should_not_return_the_abstract_of_another_series() throws Exception {
+        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("sA6"));
+
+        assertThat(result.getString("prefLabelLg1")).hasToString("Série A6 (test)");
+        assertThat(result.has("abstractLg1"))
+                .as("le résumé doit être joint à la série interrogée, pas à une variable libre")
+                .isFalse();
     }
 
     @BeforeEach
