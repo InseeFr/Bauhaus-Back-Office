@@ -28,6 +28,12 @@ public final class SparqlLiterals {
      */
     private static final Pattern FORBIDDEN_IN_IRI_REF = Pattern.compile("[\\x00-\\x20<>\"{}|^`\\\\]");
 
+    /**
+     * SPARQL 1.1 grammar, rule [166] VARNAME, narrowed to ASCII : every variable our queries project
+     * is ASCII camelCase, and a character set tighter than the grammar can only close doors.
+     */
+    private static final Pattern VARIABLE_NAME = Pattern.compile("\\w+");
+
     private SparqlLiterals() {
         // utility class
     }
@@ -67,6 +73,22 @@ public final class SparqlLiterals {
         }
         IRI parsed = SimpleValueFactory.getInstance().createIRI(value);
         return NTriplesUtil.toNTriplesString(parsed);
+    }
+
+    /**
+     * A variable cannot be escaped : its name is part of the query structure, not of its data. It is
+     * therefore validated, not encoded — anything that is not a VARNAME is rejected.
+     *
+     * @param name the variable name, without its leading {@code ?}
+     * @return the variable as a complete SPARQL token, e.g. {@code ?labelLg1}
+     * @throws IllegalArgumentException if the name is not a valid SPARQL variable name
+     */
+    public static String variable(String name) {
+        rejectNull(name, "variable name");
+        if (!VARIABLE_NAME.matcher(name).matches()) {
+            throw new IllegalArgumentException("Not a valid SPARQL variable name: " + name);
+        }
+        return "?" + name;
     }
 
     private static void rejectNull(String value, String name) {

@@ -45,7 +45,7 @@ class SparqlTemplateRenderingTest {
     /** Interpolations attendues en position numérique (LIMIT, OFFSET, comparaison de compte). */
     private static final Set<String> NUMERIC = Set.of("PER_PAGE", "OFFSET", "NB_COMPONENT");
 
-    /** Interpolations attendues en position de nom de variable SPARQL ({@code ?${SORT}}). */
+    /** Interpolations dont le jeton est une variable SPARQL complète ({@code ?code}). */
     private static final Set<String> VARIABLE_NAME = Set.of("SORT");
 
     /** Un littéral simple, pour les positions où seul un littéral est licite (avant {@code ^^}). */
@@ -200,7 +200,7 @@ class SparqlTemplateRenderingTest {
             return "10";
         }
         if (VARIABLE_NAME.contains(root)) {
-            return "x";
+            return "?x";
         }
         return TOKEN;
     }

@@ -7,6 +7,7 @@ import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.BauhausUriProperties;
 import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -108,7 +110,7 @@ class CodeListsQueriesTest {
                 put("OFFSET", 5);
                 put("PER_PAGE", 5);
                 put("SEARCH_CODE", "\"search\"");
-                put("SORT", "labelLg1");
+                put("SORT", "?labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
             String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.FULL, List.of("code:search"), 2, null, "labelLg1");
@@ -129,7 +131,7 @@ class CodeListsQueriesTest {
                 put("PARTIAL", true);
                 put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
                 put("SEARCH_CODE", "\"search\"");
-                put("SORT", "labelLg1");
+                put("SORT", "?labelLg1");
 
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
@@ -166,7 +168,7 @@ class CodeListsQueriesTest {
                 put("NOTATION", "\"NOTATION\"");
                 put("PARTIAL", true);
                 put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
-                put("SORT", "labelLg1");
+                put("SORT", "?labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
             String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, "labelLg1");
@@ -193,5 +195,38 @@ class CodeListsQueriesTest {
 
     private static String normalize(String sparql) {
         return sparql.replaceAll("\\s+", " ").trim();
+    }
+
+    @Test
+    void getDetailedCodesShouldSortOnTheCodeWhenNoSortIsRequested() throws RmesException {
+        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
+        when(uris.codeListBaseUri()).thenReturn("codelist-base-uri");
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("CODES_LISTS_GRAPH", "<http://rdf.insee.fr/graphes/codes/nomenclatures>");
+                put("LG1", "\"fr\"");
+                put("LG2", "\"en\"");
+                put("NOTATION", "\"NOTATION\"");
+                put("PARTIAL", true);
+                put("CODE_LIST_BASE_URI_PREFIX", "\"codelist-base-uri/\"");
+                put("SORT", "?code");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
+            String query = codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.PARTIAL, null, 0, 0, null);
+            Assertions.assertEquals("request", query);
+        }
+    }
+
+    @Test
+    void getDetailedCodesShouldRejectASortOnAColumnTheQueryDoesNotSelect() {
+        assertThrows(RmesRuntimeBadRequestException.class,
+                () -> codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.FULL, null, 1, 10, "unknownColumn"));
+    }
+
+    @Test
+    void getDetailedCodesShouldRejectASortCarryingAnInjectionPayload() {
+        assertThrows(RmesRuntimeBadRequestException.class,
+                () -> codeListsQueries.getDetailedCodes("NOTATION", CodeListKind.FULL, null, 1, 10,
+                        "code } ORDER BY ?x #"));
     }
 }

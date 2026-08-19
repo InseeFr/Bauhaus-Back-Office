@@ -8,12 +8,14 @@ import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class CodeListsQueries {
@@ -23,6 +25,14 @@ public class CodeListsQueries {
 	private static final String NOTATION = "NOTATION";
 	private static final String CODE = "CODE";
 	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
+	private static final String DEFAULT_SORT = "code";
+	/**
+	 * Un nom de variable ne peut pas être échappé : il est validé contre les colonnes que
+	 * getDetailedCodes.ftlh projette, sans quoi le tri ouvrirait une injection dans le ORDER BY.
+	 */
+	private static final Set<String> SORTABLE_COLUMNS = Set.of(
+			"code", "labelLg1", "labelLg2", "descriptionLg1", "descriptionLg2", "parents", "codeUri",
+			"lastCodeUriSegment");
 
     private final BauhausUriProperties uris;
     private final BauhausLanguagesProperties languages;
@@ -78,6 +88,7 @@ public class CodeListsQueries {
 	}
 
 	public String getDetailedCodes(String notation, CodeListKind kind, List<String> search, int page, Integer perPage, String sort) throws RmesException {
+		String sortVariable = SparqlLiterals.variable(sortColumn(sort));
 		Map<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
 		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
@@ -86,7 +97,7 @@ public class CodeListsQueries {
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(PARTIAL, kind.isPartial());
 		params.put("CODE_LIST_BASE_URI_PREFIX", SparqlLiterals.literal(uris.codeListBaseUri() + "/"));
-		params.put("SORT", sort == null ? "code" : sort);
+		params.put("SORT", sortVariable);
 
 		addSearchPredicates(params, search);
 
@@ -95,6 +106,16 @@ public class CodeListsQueries {
 			params.put("PER_PAGE", perPageValue);
 		}
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
+	}
+
+	private static String sortColumn(String sort) {
+		if (sort == null) {
+			return DEFAULT_SORT;
+		}
+		if (!SORTABLE_COLUMNS.contains(sort)) {
+			throw new RmesRuntimeBadRequestException("Unknown sort column: " + sort + ". Expected one of " + SORTABLE_COLUMNS);
+		}
+		return sort;
 	}
 
 	public String countCodesForCodeList(String notation, List<String> search) throws RmesException {

@@ -144,4 +144,35 @@ class SparqlLiteralsTest {
 
         assertDoesNotThrow(() -> QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null));
     }
+
+    @Test
+    void shouldPrefixAVariableNameWithAQuestionMark() {
+        assertEquals("?labelLg1", SparqlLiterals.variable("labelLg1"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "o } ORDER BY ?x #",
+            "o ?x",
+            "o.x",
+            "o-x",
+            "",
+            "?o",
+            "s ?p ?o"
+    })
+    void shouldRejectAVariableNameThatIsNotAValidVarname(String name) {
+        assertThrows(IllegalArgumentException.class, () -> SparqlLiterals.variable(name));
+    }
+
+    @Test
+    void shouldRejectANullVariableName() {
+        assertThrows(IllegalArgumentException.class, () -> SparqlLiterals.variable(null));
+    }
+
+    @Test
+    void shouldKeepTheQueryParsableWhenTheVariableIsInjectedInAnOrderByClause() {
+        String query = "SELECT * WHERE { ?s ?p ?o } ORDER BY " + SparqlLiterals.variable("o");
+
+        assertDoesNotThrow(() -> QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null));
+    }
 }
