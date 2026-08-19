@@ -1,0 +1,81 @@
+# Fixture du ticket A9 « réparer le calcul du dernier identifiant (REPLACE qui perd l'id) ».
+#
+# Les deux templates concernés déduisaient l'identifiant d'une expression régulière appliquée
+# à l'IRI du sujet :
+#   - operations/famOpeSer/getLastIdQuery.ftlh : ?s a ?o (tout le graphe) puis
+#     REPLACE(str(?s), "^http://(.*)/operations/(.*)/(.)", "")
+#   - structures/getLastIdByType.ftlh          : REPLACE(str(?s), "^.*dimension/(.)", "")
+# Toute ressource du graphe qui ne suit pas exactement cette forme d'IRI fait donc remonter
+# un nombre arbitraire — ou aucun nombre du tout quand xsd:integer() échoue.
+#
+# Chaque graphe contient donc, à côté des objets légitimes, une ressource « parasite »
+# du même graphe (et du même rdf:type côté composants) dont la queue d'IRI est numérique et
+# plus grande que le vrai dernier identifiant : c'est elle qui rend le défaut observable.
+#
+# Graphes et IRIs suffixés « A9 » : le conteneur GraphDB est partagé entre les classes de test.
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:     <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix adms:     <http://www.w3.org/ns/adms#> .
+@prefix insee:    <http://rdf.insee.fr/def/base#> .
+@prefix qb:       <http://purl.org/linked-data/cube#> .
+@prefix sdmx-mm:  <http://www.w3.org/ns/sdmx-mm#> .
+
+<http://rdf.insee.fr/graphes/a9-operations> {
+
+  # Famille créée par le code actuel : elle porte adms:identifier.
+  <http://bauhaus/operations/famille/s1009>
+      a insee:StatisticalOperationFamily ;
+      adms:identifier "s1009" ;
+      skos:prefLabel "Famille A9"@fr .
+
+  # Série héritée : les exports de production n'ont pas d'adms:identifier, seul l'IRI porte l'id.
+  <http://bauhaus/operations/serie/s1042>
+      a insee:StatisticalOperationSeries ;
+      skos:prefLabel "Série A9"@fr .
+
+  # Plus grand identifiant réel du graphe.
+  <http://bauhaus/operations/operation/s1207>
+      a insee:StatisticalOperation ;
+      adms:identifier "s1207" ;
+      skos:prefLabel "Opération A9"@fr .
+
+  # Parasite : ressource typée du graphe des opérations qui n'est ni famille, ni série,
+  # ni opération. L'ancienne expression régulière en tirait « 9999 ».
+  <http://bauhaus/operations/serie/s1042/documentation/99999>
+      a sdmx-mm:MetadataReport ;
+      rdfs:label "Rapport rattaché à la série A9"@fr .
+
+  # Parasite : identifiant non numérique. xsd:integer() échouait dessus.
+  <http://bauhaus/operations/serie/sBrouillonA9>
+      a insee:StatisticalOperationSeries ;
+      skos:prefLabel "Série sans identifiant numérique"@fr .
+}
+
+<http://rdf.insee.fr/graphes/a9-composants> {
+
+  <http://bauhaus/structuresDeDonnees/composants/dimension/d1055>
+      a qb:DimensionProperty ;
+      dcterms:identifier "d1055" ;
+      rdfs:label "Dimension A9 la plus ancienne"@fr .
+
+  # Plus grand identifiant réel pour qb:DimensionProperty.
+  <http://bauhaus/structuresDeDonnees/composants/dimension/d1102>
+      a qb:DimensionProperty ;
+      dcterms:identifier "d1102" ;
+      rdfs:label "Dimension A9 la plus récente"@fr .
+
+  # Une mesure porte un identifiant bien plus grand : elle ne doit pas fuiter
+  # dans le dernier identifiant des dimensions.
+  <http://bauhaus/structuresDeDonnees/composants/mesure/m1300>
+      a qb:MeasureProperty ;
+      dcterms:identifier "m1300" ;
+      rdfs:label "Mesure A9"@fr .
+
+  # Parasite : nœud qb:DimensionProperty imbriqué dans une structure, sans dcterms:identifier.
+  # Ce n'est pas un composant mutualisé ; l'ancienne expression régulière en tirait « 9999 ».
+  <http://bauhaus/structuresDeDonnees/structure/dsdA9/cs1/dimension/99999>
+      a qb:DimensionProperty ;
+      rdfs:label "Dimension imbriquée A9"@fr .
+}

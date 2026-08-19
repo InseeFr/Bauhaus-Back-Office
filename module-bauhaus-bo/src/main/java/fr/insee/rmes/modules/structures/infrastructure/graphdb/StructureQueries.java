@@ -111,9 +111,9 @@ public class StructureQueries {
 		return buildStructureRequest("getComponentType.ftlh", params);
 	}
 
-	public String lastId(String namespaceSuffix, String type) throws RmesException {
+	public String lastId(String idPrefix, String type) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("NAMESPACE", namespaceSuffix);
+		params.put("ID_PREFIX", idPrefix);
 		params.put("TYPE", type);
 		return buildStructureRequest("getLastIdByType.ftlh", params);
 	}

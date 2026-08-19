@@ -269,19 +269,19 @@ public class StructureComponentUtils extends RdfService {
 
     private String generateNextId(String type) throws RmesException {
         if (type.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
-            return generateNextId("a", "attribut", QB.ATTRIBUTE_PROPERTY);
+            return generateNextId("a", QB.ATTRIBUTE_PROPERTY);
         }
         if (type.equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
-            return generateNextId("m", "mesure", QB.MEASURE_PROPERTY);
+            return generateNextId("m", QB.MEASURE_PROPERTY);
         }
-        return generateNextId("d", "dimension", QB.DIMENSION_PROPERTY);
+        return generateNextId("d", QB.DIMENSION_PROPERTY);
 
     }
 
 
-    private String generateNextId(String prefix, String namespaceSuffix, IRI type) throws RmesException {
+    private String generateNextId(String prefix, IRI type) throws RmesException {
         logger.info("Generate id for component");
-        JSONObject json = repoGestion.getResponseAsObject(structureQueries.lastId(namespaceSuffix, RdfUtils.toString(type)));
+        JSONObject json = repoGestion.getResponseAsObject(structureQueries.lastId(prefix, RdfUtils.toString(type)));
         logger.debug("JSON when generating the id of a component : {}", json);
         if (json.isEmpty()) {
             return prefix + "1000";

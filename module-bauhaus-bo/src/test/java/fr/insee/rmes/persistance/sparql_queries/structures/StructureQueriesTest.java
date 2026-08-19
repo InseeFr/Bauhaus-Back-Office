@@ -233,14 +233,14 @@ class StructureQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s ?p ?lastId }");
 
-            String result = structureQueries.lastId("namespace", "DIMENSION");
+            String result = structureQueries.lastId("d", "DIMENSION");
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?s ?p ?lastId }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "namespace".equals(map.get("NAMESPACE")) && "DIMENSION".equals(map.get("TYPE"));
+                        return "d".equals(map.get("ID_PREFIX")) && "DIMENSION".equals(map.get("TYPE"));
                     })));
         }
     }
