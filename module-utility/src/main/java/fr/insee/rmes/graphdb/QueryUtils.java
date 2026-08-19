@@ -28,6 +28,7 @@ public class QueryUtils {
                     PREFIX sdmx-mm:<http://www.w3.org/ns/sdmx-mm#>\s
                     PREFIX qb:<http://purl.org/linked-data/cube#>\s
                     PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>\s
+                    PREFIX owl:<http://www.w3.org/2002/07/owl#>\s
                     PREFIX dcat:<http://www.w3.org/ns/dcat#>\s
                     PREFIX adms: <http://www.w3.org/ns/adms#>\s
                     PREFIX vaem:<http://www.linkedmodel.org/schema/vaem#>\s

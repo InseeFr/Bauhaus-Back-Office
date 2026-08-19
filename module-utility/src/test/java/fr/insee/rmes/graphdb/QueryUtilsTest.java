@@ -24,6 +24,13 @@ class QueryUtilsTest {
     }
 
     @Test
+    void shouldDeclareTheOwlPrefixUsedByTheTemplates() {
+        assertTrue(
+                QueryUtils.PREFIXES.contains("PREFIX owl:<http://www.w3.org/2002/07/owl#>"),
+                "owl: est utilisé par les requêtes, il doit être déclaré et non hérité des namespaces du triplestore");
+    }
+
+    @Test
     void shouldCorrectEmptyGroupConcatForAltLabel() {
         String input = "[{\"altLabel\":\"\"}]";
         String result = QueryUtils.correctEmptyGroupConcat(input);
