@@ -1,6 +1,6 @@
 SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs ?minOccurs
- FROM <${MSD_GRAPH}> 
- FROM <${MSD_CONCEPTS_GRAPH}>
+ FROM ${MSD_GRAPH} 
+ FROM ${MSD_CONCEPTS_GRAPH}
  WHERE { 
 	 	?reportStructure sdmx-mm:metadataAttributeSpecification ?mas . 
 
@@ -18,7 +18,7 @@ SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs ?
 	  	?map sdmx-mm:concept ?concept .
 	  	?concept skos:prefLabel ?masLabelLg1 ; 
 	  		    skos:prefLabel ?masLabelLg2 ; 
-	  	FILTER(lang(?masLabelLg1) = '${LG1}') 
-	  	FILTER(lang(?masLabelLg2) = '${LG2}') 
+	  	FILTER(lang(?masLabelLg1) = ${LG1}) 
+	  	FILTER(lang(?masLabelLg2) = ${LG2}) 
   } 
  ORDER BY ?mas

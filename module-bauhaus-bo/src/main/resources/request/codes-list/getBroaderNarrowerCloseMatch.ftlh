@@ -1,7 +1,7 @@
 SELECT ?code ?linkCode ?linkType
-FROM <${CODES_LISTS_GRAPH}>
+FROM ${CODES_LISTS_GRAPH}
 WHERE {
-    ?uri skos:notation "${NOTATION}" .
+    ?uri skos:notation ${NOTATION} .
     ?codeUri skos:inScheme ?uri .
     ?codeUri skos:notation ?code .
 

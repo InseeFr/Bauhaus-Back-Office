@@ -1,3 +1,3 @@
 ASK {
-<${NOTE}> ?b ?c
+${NOTE} ?b ?c
 }

@@ -1,8 +1,8 @@
 SELECT DISTINCT ?iri ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor ?validationState ?disseminationStatus
 ?descriptionLg1 ?descriptionLg2 ?lastListUriSegment ?lastClassUriSegment ?iriParent ?lastCodeUriSegment
-FROM <${CODES_LISTS_GRAPH}>
+FROM ${CODES_LISTS_GRAPH}
 WHERE {
-    ?iri skos:notation '${NOTATION}' ;
+    ?iri skos:notation ${NOTATION} ;
     skos:notation ?id .
 
     OPTIONAL {
@@ -35,15 +35,15 @@ WHERE {
     OPTIONAL {
         ?iri prov:wasDerivedFrom ?iriParent .
     } .
-    BIND(STRAFTER(STR(?iri),'${CODE_LIST_BASE_URI}/') AS ?lastListUriSegment) .
+    BIND(STRAFTER(STR(?iri),${CODE_LIST_BASE_URI_PREFIX}) AS ?lastListUriSegment) .
 
     ?iri skos:prefLabel ?labelLg1 .
-    FILTER(lang(?labelLg1) = '${LG1}') .
+    FILTER(lang(?labelLg1) = ${LG1}) .
     OPTIONAL {?iri skos:prefLabel ?labelLg2 .
-    FILTER (lang(?labelLg2) = '${LG2}') } .
+    FILTER (lang(?labelLg2) = ${LG2}) } .
     OPTIONAL {?iri skos:definition ?descriptionLg1 .
-    FILTER(lang(?descriptionLg1) = '${LG1}') } .
+    FILTER(lang(?descriptionLg1) = ${LG1}) } .
     OPTIONAL {?iri skos:definition ?descriptionLg2 .
-    FILTER (lang(?descriptionLg2) = '${LG2}') } .
+    FILTER (lang(?descriptionLg2) = ${LG2}) } .
 }
 ORDER BY ?labelLg1

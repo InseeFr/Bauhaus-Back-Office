@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -22,8 +23,8 @@ public class ClassificationSeriesQueries {
 
 	public String seriesQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("GRAPH", graphs.classifFamiliesGraph());
-		params.put("LG1", languages.lg1());
+		params.put("GRAPH", SparqlLiterals.iri(graphs.classifFamiliesGraph()));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		return buildRequest("getSeries.ftlh", params);
 	}
 
@@ -37,10 +38,11 @@ public class ClassificationSeriesQueries {
 
 	private Map<String, Object> seriesParams(String id) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("GRAPH", graphs.classifFamiliesGraph());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", id);
+		params.put("GRAPH", SparqlLiterals.iri(graphs.classifFamiliesGraph()));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("SERIES_URI_PATTERN", SparqlLiterals.literal("/serieDeNomenclatures/" + id));
+		params.put("SERIES_CODES_URI_PATTERN", SparqlLiterals.literal("/codes/serieDeNomenclatures/" + id));
 		return params;
 	}
 

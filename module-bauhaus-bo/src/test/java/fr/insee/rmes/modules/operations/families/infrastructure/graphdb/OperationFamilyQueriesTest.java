@@ -148,11 +148,11 @@ class OperationFamilyQueriesTest {
                 WHERE {
                 ?family dcterms:subject ?subjectUri .
                 ?subjectUri skos:prefLabel ?labelLg1 .
-                FILTER (lang(?labelLg1) = 'fr') .
+                FILTER (lang(?labelLg1) = "fr") .
                 ?subjectUri skos:prefLabel ?labelLg2 .
-                FILTER (lang(?labelLg2) = 'en') .
+                FILTER (lang(?labelLg2) = "en") .
                 ?subjectUri skos:notation ?id .
-                FILTER(STRENDS(STR(?family),'/operations/famille/789')) .
+                FILTER(STRENDS(STR(?family),\"/operations/famille/789\")) .
                 } ORDER BY ?subjectUri
                 """), result);
     }
@@ -170,14 +170,14 @@ class OperationFamilyQueriesTest {
     void constructor_ShouldInitializeAllFields() throws RmesException {
         String testLg1 = "test-lg1";
         String testLg2 = "test-lg2";
-        String testBaseGraph = "test-base/";
+        String testBaseGraph = "http://test-base/";
         String testOperationsGraph = "test-operations/";
 
         OperationFamilyQueries queries = new OperationFamilyQueries(testLg1, testLg2, testBaseGraph, testOperationsGraph);
 
         String subjectsQuery = queries.getSubjects("test-id");
-        assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg1) = '" + testLg1 + "')"));
-        assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg2) = '" + testLg2 + "')"));
+        assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg1) = \"" + testLg1 + "\")"));
+        assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg2) = \"" + testLg2 + "\")"));
         assertTrue(subjectsQuery.contains("FROM <" + testBaseGraph + testOperationsGraph + ">"));
     }
 

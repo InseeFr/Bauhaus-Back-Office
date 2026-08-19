@@ -19,6 +19,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,13 +78,23 @@ class GraphDbSeriesCreatorsAdapterTest {
         ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
         verify(repositoryGestion).getResponseAsArray(queryCaptor.capture());
         String query = queryCaptor.getValue();
-        assertThat(query).contains(gestionIri1).contains(gestionIri2);
+        assertThat(query).contains("<" + gestionIri1 + ">").contains("<" + gestionIri2 + ">");
         assertThat(query).doesNotContain(publicationIri1).doesNotContain(publicationIri2);
 
         // The result must be keyed by the publication IRIs the caller passed in.
         assertThat(result).hasSize(2);
         assertThat(result.get(publicationIri1)).containsExactlyInAnyOrder("stamp-A", "stamp-B");
         assertThat(result.get(publicationIri2)).containsExactly("stamp-C");
+    }
+
+    @Test
+    void getCreatorsForSeries_doesNotQuery_whenAnIriWouldCloseTheIriRef() throws RmesException {
+        // Une IRI qui contient un '>' refermerait le jeton <…> et le reste passerait pour du SPARQL.
+        Map<String, List<String>> result = adapter.getCreatorsForSeries(
+                List.of("http://id.insee.fr/operations/serie/s1> . } DELETE { ?s ?p ?o } # "));
+
+        assertThat(result).isEmpty();
+        verify(repositoryGestion, never()).getResponseAsArray(anyString());
     }
 
     @Test

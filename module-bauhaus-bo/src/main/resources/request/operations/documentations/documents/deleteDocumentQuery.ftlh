@@ -1,4 +1,4 @@
-WITH <${DOCUMENTS_GRAPH}>
+WITH ${DOCUMENTS_GRAPH}
 
 DELETE  {
 
@@ -17,7 +17,7 @@ DELETE  {
 	OPTIONAL {  ?uri rdfs:comment ?description }
 	OPTIONAL {  ?uri pav:lastRefreshedOn ?updatedDate }
 	OPTIONAL {  ?uri dc:language ?lang }
-	 FILTER(?uri = <${uri}>)
+	 FILTER(?uri = ${uri})
 	  }
 	;
 
@@ -30,7 +30,7 @@ DELETE { GRAPH ?g { ?prev rdf:rest ?cell . } }
 INSERT { GRAPH ?g { ?prev rdf:rest ?cellRest . } }
 WHERE {
 	GRAPH ?g {
-		?cell rdf:first <${uri}> .
+		?cell rdf:first ${uri} .
 		?cell rdf:rest ?cellRest .
 		?prev rdf:rest ?cell .
 	}
@@ -41,7 +41,7 @@ DELETE { GRAPH ?g { ?text insee:additionalMaterial ?cell . } }
 INSERT { GRAPH ?g { ?text insee:additionalMaterial ?cellRest . } }
 WHERE {
 	GRAPH ?g {
-		?cell rdf:first <${uri}> .
+		?cell rdf:first ${uri} .
 		?cell rdf:rest ?cellRest .
 		?text insee:additionalMaterial ?cell .
 		FILTER(?cellRest != rdf:nil)
@@ -52,7 +52,7 @@ WHERE {
 DELETE { GRAPH ?g { ?text insee:additionalMaterial ?cell . } }
 WHERE {
 	GRAPH ?g {
-		?cell rdf:first <${uri}> .
+		?cell rdf:first ${uri} .
 		?cell rdf:rest rdf:nil .
 		?text insee:additionalMaterial ?cell .
 	}
@@ -62,7 +62,7 @@ WHERE {
 DELETE { GRAPH ?g { ?cell rdf:first ?docFirst . ?cell rdf:rest ?cellRest . } }
 WHERE {
 	GRAPH ?g {
-		?cell rdf:first <${uri}> .
+		?cell rdf:first ${uri} .
 		?cell rdf:first ?docFirst .
 		OPTIONAL { ?cell rdf:rest ?cellRest . }
 	}

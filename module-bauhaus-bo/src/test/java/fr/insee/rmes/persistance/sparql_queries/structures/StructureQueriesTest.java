@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,7 +60,7 @@ class StructureQueriesTest {
             assertNotNull(result);
             assertEquals("SELECT ?status WHERE { ?s ?p ?status }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getValidationStatus.ftlh"),
-                    argThat(params -> "123".equals(((Map<String, Object>) params).get("id")))));
+                    argThat(params -> "\"123\"".equals(((Map<String, Object>) params).get("id")))));
         }
     }
 
@@ -76,7 +77,7 @@ class StructureQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getAttachment.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "struct123".equals(map.get("STRUCTURE_ID")) && "comp456".equals(map.get("COMPONENT_SPECIFICATION_ID"));
+                        return "\"struct123\"".equals(map.get("STRUCTURE_ID")) && "\"comp456\"".equals(map.get("COMPONENT_SPECIFICATION_ID"));
                     })));
         }
     }
@@ -113,17 +114,18 @@ class StructureQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("checkUnicityMutualizedComponent.ftlh"), any(Map.class)))
                     .thenReturn("ASK { ?s ?p ?o }");
 
-            String result = structureQueries.checkUnicityMutualizedComponent("comp123", "concept456", "codeList789", "DIMENSION");
+            String result = structureQueries.checkUnicityMutualizedComponent("comp123", "concept456",
+                    "http://bauhaus/codes/nomenclature", "http://purl.org/linked-data/cube#DimensionProperty");
 
             assertNotNull(result);
             assertEquals("ASK { ?s ?p ?o }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("checkUnicityMutualizedComponent.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "comp123".equals(map.get("COMPONENT_ID")) &&
-                               (INSEE.STRUCTURE_CONCEPT + "concept456").equals(map.get("CONCEPT_URI")) &&
-                               "codeList789".equals(map.get("CODE_LIST_URI")) &&
-                               "DIMENSION".equals(map.get("TYPE"));
+                        return "\"comp123\"".equals(map.get("COMPONENT_ID")) &&
+                               ("<" + INSEE.STRUCTURE_CONCEPT + "concept456>").equals(map.get("CONCEPT_URI")) &&
+                               "<http://bauhaus/codes/nomenclature>".equals(map.get("CODE_LIST_URI")) &&
+                               "<http://purl.org/linked-data/cube#DimensionProperty>".equals(map.get("TYPE"));
                     })));
         }
     }
@@ -143,8 +145,8 @@ class StructureQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         return Integer.valueOf(3).equals(map.get("NB_COMPONENT")) &&
-                               "struct123".equals(map.get("STRUCTURE_ID")) &&
-                               ids == map.get("IDS");
+                               "\"struct123\"".equals(map.get("STRUCTURE_ID")) &&
+                               List.of("\"comp1\"", "\"comp2\"", "\"comp3\"").equals(map.get("IDS"));
                     })));
         }
     }
@@ -233,14 +235,15 @@ class StructureQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?lastId WHERE { ?s ?p ?lastId }");
 
-            String result = structureQueries.lastId("d", "DIMENSION");
+            String result = structureQueries.lastId("d", "http://purl.org/linked-data/cube#DimensionProperty");
 
             assertNotNull(result);
             assertEquals("SELECT ?lastId WHERE { ?s ?p ?lastId }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getLastIdByType.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "d".equals(map.get("ID_PREFIX")) && "DIMENSION".equals(map.get("TYPE"));
+                        return "\"^d\"".equals(map.get("ID_PREFIX_PATTERN"))
+                                && "<http://purl.org/linked-data/cube#DimensionProperty>".equals(map.get("TYPE"));
                     })));
         }
     }
@@ -277,14 +280,14 @@ class StructureQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUriClasseOwl.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?uri WHERE { ?uri rdf:type owl:Class }");
 
-            String result = structureQueries.getUriClasseOwl("codeList123");
+            String result = structureQueries.getUriClasseOwl("http://bauhaus/codes/nomenclature");
 
             assertNotNull(result);
             assertEquals("SELECT ?uri WHERE { ?uri rdf:type owl:Class }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getUriClasseOwl.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "codeList123".equals(map.get("CODES_LIST"));
+                        return "<http://bauhaus/codes/nomenclature>".equals(map.get("CODES_LIST"));
                     })));
         }
     }
@@ -302,7 +305,7 @@ class StructureQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getStructureContributorsByUriQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "http://example.org/structure/123".equals(map.get("URI_STRUCTURE"));
+                        return "<http://example.org/structure/123>".equals(map.get("URI_STRUCTURE"));
                     })));
         }
     }
@@ -320,7 +323,7 @@ class StructureQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("structures/"), eq("getComponentContributorsByUriQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "http://example.org/component/123".equals(map.get("URI_COMPONENT"));
+                        return "<http://example.org/component/123>".equals(map.get("URI_COMPONENT"));
                     })));
         }
     }
@@ -339,7 +342,7 @@ class StructureQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return iri.equals(map.get("IRI")) && "dc:contributor".equals(map.get("PREDICATE"));
+                        return ("<" + iri + ">").equals(map.get("IRI")) && "dc:contributor".equals(map.get("PREDICATE"));
                     })));
         }
     }
@@ -357,7 +360,7 @@ class StructureQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("common/"), eq("getContributors.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "http://example.org/component/123".equals(map.get("IRI")) && "dc:contributor".equals(map.get("PREDICATE"));
+                        return "<http://example.org/component/123>".equals(map.get("IRI")) && "dc:contributor".equals(map.get("PREDICATE"));
                     })));
         }
     }

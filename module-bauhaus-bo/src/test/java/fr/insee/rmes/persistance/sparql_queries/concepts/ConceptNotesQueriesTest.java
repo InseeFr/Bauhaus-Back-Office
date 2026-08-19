@@ -43,8 +43,8 @@ class ConceptNotesQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("concepts/notes/"), eq("getLastVersionnableNoteVersion.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "concept123".equals(map.get("CONCEPT_ID")) &&
-                               predicat.equals(map.get("PREDICAT"));
+                        return "\"/concepts/definition/concept123\"".equals(map.get("CONCEPT_URI_PATTERN")) &&
+                               ("<" + predicat + ">").equals(map.get("PREDICAT"));
                     })));
         }
     }
@@ -60,7 +60,8 @@ class ConceptNotesQueriesTest {
             assertNotNull(result);
             assertEquals("select ?conceptVersion where { ... }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("concepts/notes/"), eq("getConceptVersion.ftlh"),
-                    argThat(params -> "concept456".equals(((Map<String, Object>) params).get("CONCEPT_ID")))));
+                    argThat(params -> "\"/concepts/definition/concept456\"".equals(
+                            ((Map<String, Object>) params).get("CONCEPT_URI_PATTERN")))));
         }
     }
 
@@ -81,9 +82,9 @@ class ConceptNotesQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("concepts/notes/"), eq("getChangeNoteToDelete.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "concept789".equals(map.get("CONCEPT_ID")) &&
-                               "fr".equals(map.get("LANG")) &&
-                               "3".equals(map.get("CONCEPT_VERSION"));
+                        return "\"/concepts/definition/concept789\"".equals(map.get("CONCEPT_URI_PATTERN")) &&
+                               "\"fr\"".equals(map.get("LANG")) &&
+                               "\"3\"".equals(map.get("CONCEPT_VERSION"));
                     })));
         }
     }
@@ -101,9 +102,9 @@ class ConceptNotesQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("concepts/notes/"), eq("getHistoricalNotes.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "conceptABC".equals(map.get("CONCEPT_ID")) &&
+                        return "\"/concepts/definition/conceptABC\"".equals(map.get("CONCEPT_URI_PATTERN")) &&
                                "5".equals(map.get("MAX_VERSION")) &&
-                               GraphsPropertiesStub.stub().conceptsGraph().equals(map.get("CONCEPTS_GRAPH"));
+                               ("<" + GraphsPropertiesStub.stub().conceptsGraph() + ">").equals(map.get("CONCEPTS_GRAPH"));
                     })));
         }
     }
@@ -120,7 +121,7 @@ class ConceptNotesQueriesTest {
             assertNotNull(result);
             assertEquals("ASK { <http://rdf.insee.fr/concepts/note/123> ?b ?c }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("concepts/notes/"), eq("isNoteExist.ftlh"),
-                    argThat(params -> note.equals(((Map<String, Object>) params).get("NOTE")))));
+                    argThat(params -> ("<" + note + ">").equals(((Map<String, Object>) params).get("NOTE")))));
         }
     }
 
@@ -136,7 +137,7 @@ class ConceptNotesQueriesTest {
             assertNotNull(result);
             assertEquals("ASK { <http://rdf.insee.fr/concepts/note/456> insee:validUntil ?c }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("concepts/notes/"), eq("isNoteClosed.ftlh"),
-                    argThat(params -> note.equals(((Map<String, Object>) params).get("NOTE")))));
+                    argThat(params -> ("<" + note + ">").equals(((Map<String, Object>) params).get("NOTE")))));
         }
     }
 }

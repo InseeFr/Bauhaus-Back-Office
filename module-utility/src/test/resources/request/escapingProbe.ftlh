@@ -1,0 +1,1 @@
+VALUES ?x { ${VALUE} }

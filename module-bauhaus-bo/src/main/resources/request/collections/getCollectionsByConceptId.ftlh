@@ -4,6 +4,6 @@ WHERE {
     BIND(STRAFTER(STR(?collection), '/concepts/definitions/') AS ?id) .
     ?collection skos:member ?member .
     ?member skos:notation ?notation .
-    FILTER(STR(?notation) = "${CONCEPT_ID}") .
+    FILTER(STR(?notation) = ${CONCEPT_ID}) .
     FILTER(?id != "") .
 }

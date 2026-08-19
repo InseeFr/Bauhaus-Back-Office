@@ -1,5 +1,5 @@
 SELECT DISTINCT ?seriesId ?seriesIri ?seriesLabel ?operationId ?operationIri ?operationLabel
-FROM <${GRAPH_URI}>
+FROM ${GRAPH_URI}
 WHERE {
     ?seriesIri a insee:StatisticalOperationSeries .
     BIND(STRAFTER(STR(?seriesIri), '/operations/serie/') AS ?seriesId) .

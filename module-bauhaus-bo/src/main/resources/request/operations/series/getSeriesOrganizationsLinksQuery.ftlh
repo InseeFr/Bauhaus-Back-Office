@@ -1,26 +1,26 @@
 SELECT DISTINCT ?id ?labelLg1 ?labelLg2 
-<#if ID_SERIES = ""> 
+<#if !SERIES_URI_SUFFIX??> 
 	?idSerie
 </#if>
-		FROM <${OPERATIONS_GRAPH}> 
-		FROM <${ORGANIZATIONS_GRAPH}> 
-		FROM <${ORG_INSEE_GRAPH}> 
+		FROM ${OPERATIONS_GRAPH} 
+		FROM ${ORGANIZATIONS_GRAPH} 
+		FROM ${ORG_INSEE_GRAPH} 
 	WHERE {   
 				?series a insee:StatisticalOperationSeries . 
-				?series <${LINK_PREDICATE}> ?uriLinked .   
+				?series ${LINK_PREDICATE} ?uriLinked .   
 
 				?uriLinked skos:prefLabel ?labelLg1 .  
-				FILTER (lang(?labelLg1) = '${LG1}') .  
+				FILTER (lang(?labelLg1) = ${LG1}) .  
 				
 				OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . 
-				FILTER (lang(?labelLg2) = '${LG2}')} . 
+				FILTER (lang(?labelLg2) = ${LG2})} . 
 
 				BIND(STR(?uriLinked) AS ?id)
 
-				<#if ID_SERIES != ""> 
-					 	FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) . 
+				<#if SERIES_URI_SUFFIX??> 
+					 	FILTER(STRENDS(STR(?series),${SERIES_URI_SUFFIX})) . 
 				</#if> 
-				<#if ID_SERIES = ""> 
+				<#if !SERIES_URI_SUFFIX??> 
 					BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?idSerie) .
 				</#if>
 			}   

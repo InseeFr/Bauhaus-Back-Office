@@ -1,9 +1,9 @@
 SELECT ?id ?typeOfLink ?prefLabelLg1 ?prefLabelLg2 ?urn 
 WHERE { 
-	GRAPH <${CONCEPTS_GRAPH}> {
+	GRAPH ${CONCEPTS_GRAPH} {
 				
 		?concept rdf:type skos:Concept . 
-		FILTER(REGEX(STR(?concept),'/concepts/definition/${ID_CONCEPT}')) .
+		FILTER(REGEX(STR(?concept),${CONCEPT_URI_PATTERN})) .
 		{
 			{
 				?concept skos:narrower ?conceptlinked .
@@ -36,11 +36,11 @@ WHERE {
 			}
 			OPTIONAL{
 				?conceptlinked skos:prefLabel ?prefLabelLg1 .
-				FILTER (lang(?prefLabelLg1) = '${LG1}')
+				FILTER (lang(?prefLabelLg1) = ${LG1})
 			} .
 			OPTIONAL {
 				?conceptlinked skos:prefLabel ?prefLabelLg2 .
-				FILTER (lang(?prefLabelLg2) = '${LG2}')
+				FILTER (lang(?prefLabelLg2) = ${LG2})
 			} .
 
 }

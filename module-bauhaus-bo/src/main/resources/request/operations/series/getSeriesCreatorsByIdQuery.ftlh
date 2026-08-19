@@ -1,16 +1,16 @@
 SELECT distinct  ?creators 
-<#if ID_SERIES = ""> 
+<#if !SERIES_URI_SUFFIX??> 
 	?idSerie
 </#if>
 	WHERE { 
-		GRAPH <${OPERATIONS_GRAPH}> {
+		GRAPH ${OPERATIONS_GRAPH} {
 				?series a insee:StatisticalOperationSeries . 
-				<#if ID_SERIES != ""> 
-					 	FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) . 
+				<#if SERIES_URI_SUFFIX??> 
+					 	FILTER(STRENDS(STR(?series),${SERIES_URI_SUFFIX})) . 
 				</#if>
 				
 				?series dc:creator ?creators . 
-			<#if ID_SERIES = ""> 
+			<#if !SERIES_URI_SUFFIX??> 
 				BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?idSerie) .
 			</#if>
 				} 

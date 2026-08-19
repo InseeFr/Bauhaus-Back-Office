@@ -4,11 +4,13 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,45 +37,47 @@ public class StructureQueries {
 
 	public String getValidationStatus(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("id", id);
+		params.put("id", SparqlLiterals.literal(id));
 		return buildStructureRequest("getValidationStatus.ftlh", params);
 	}
 
 	public String getStructuresAttachments(String structureId, String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("STRUCTURE_ID", structureId);
-		params.put("COMPONENT_SPECIFICATION_ID", id);
+		params.put("STRUCTURE_ID", SparqlLiterals.literal(structureId));
+		params.put("COMPONENT_SPECIFICATION_ID", SparqlLiterals.literal(id));
 		return buildStructureRequest("getAttachment.ftlh", params);
 	}
 
 	public String getComponentsForStructure(Object id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID", id);
+		params.put("ID", SparqlLiterals.literal(String.valueOf(id)));
 		return buildStructureRequest("getComponentsForAStructure.ftlh", params);
 	}
 
 	public String getStructureById(String structureId) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID", structureId);
+		params.put("ID", SparqlLiterals.literal(structureId));
 		return buildStructureRequest("getStructure.ftlh", params);
 	}
 
 	public String checkUnicityMutualizedComponent(String componentId, String conceptUri, String codeListUri, String type) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("COMPONENT_ID", componentId);
-		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
-		params.put("CODE_LIST_URI", codeListUri);
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("CONCEPT_GRAPH", graphs.conceptsGraph());
-		params.put("TYPE", type);
+		params.put("COMPONENT_ID", SparqlLiterals.literal(componentId));
+		params.put("CONCEPT_URI", SparqlLiterals.iri(INSEE.STRUCTURE_CONCEPT + conceptUri));
+		params.put("CODE_LIST_URI", SparqlLiterals.iri(codeListUri));
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put("CONCEPT_GRAPH", SparqlLiterals.iri(graphs.conceptsGraph()));
+		params.put("TYPE", SparqlLiterals.iri(type));
 		return buildStructureRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
 
 	public String checkUnicityStructure(String structureId, String[] ids) throws RmesException {
 		Map<String, Object> params = initParams();
 		params.put("NB_COMPONENT", ids.length);
-		params.put("IDS", ids);
-		params.put("STRUCTURE_ID", structureId);
+		params.put("IDS", Arrays.stream(ids).map(SparqlLiterals::literal).toList());
+		if (structureId != null) {
+			params.put("STRUCTURE_ID", SparqlLiterals.literal(structureId));
+		}
 		return buildStructureRequest("checkUnicityStructure.ftlh", params);
 	}
 
@@ -95,26 +99,26 @@ public class StructureQueries {
 
 	public String getComponent(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID", id);
+		params.put("ID", SparqlLiterals.literal(id));
 		return buildStructureRequest("getMutualizedComponent.ftlh", params);
 	}
 
 	public String getStructuresForComponent(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID", id);
+		params.put("ID", SparqlLiterals.literal(id));
 		return buildStructureRequest("getStructuresForMutualizedComponent.ftlh", params);
 	}
 
 	public String getComponentType(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID", id);
+		params.put("ID", SparqlLiterals.literal(id));
 		return buildStructureRequest("getComponentType.ftlh", params);
 	}
 
 	public String lastId(String idPrefix, String type) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID_PREFIX", idPrefix);
-		params.put("TYPE", type);
+		params.put("ID_PREFIX_PATTERN", SparqlLiterals.literal("^" + idPrefix));
+		params.put("TYPE", SparqlLiterals.iri(type));
 		return buildStructureRequest("getLastIdByType.ftlh", params);
 	}
 
@@ -125,36 +129,35 @@ public class StructureQueries {
 
 	public String getUnValidatedComponent(String structureById) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID", structureById);
+		params.put("ID", SparqlLiterals.literal(structureById));
 		return buildStructureRequest("getUnValidatedComponent.ftlh", params);
 	}
 
 	public String getUriClasseOwl(String codeList) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("CODES_LIST", codeList);
+		params.put("CODES_LIST", SparqlLiterals.iri(codeList));
 		return buildStructureRequest("getUriClasseOwl.ftlh", params);
 	}
 
 	public String getContributorsByStructureUri(String uriStructure) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(URI_STRUCTURE, uriStructure);
+		params.put(URI_STRUCTURE, SparqlLiterals.iri(uriStructure));
 		return buildStructureRequest("getStructureContributorsByUriQuery.ftlh", params);
 	}
 
 	public String getContributorsByComponentUri(String uriComponent) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(URI_COMPONENT, uriComponent);
+		params.put(URI_COMPONENT, SparqlLiterals.iri(uriComponent));
 		return buildStructureRequest("getComponentContributorsByUriQuery.ftlh", params);
 	}
 
 	public String getStructureContributors(IRI iri) throws RmesException {
-		Map<String, Object> params = Map.of("GRAPH", graphs.structuresGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
+		Map<String, Object> params = Map.of("GRAPH", SparqlLiterals.iri(graphs.structuresGraph()), "IRI", SparqlLiterals.iri(iri.stringValue()), "PREDICATE", "dc:contributor");
 		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
 	}
 
 	public String getComponentContributors(String iri) throws RmesException {
-		Map<String, Object> params = Map.of("GRAPH", graphs.structuresComponentsGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
+		Map<String, Object> params = Map.of("GRAPH", SparqlLiterals.iri(graphs.structuresComponentsGraph()), "IRI", SparqlLiterals.iri(iri), "PREDICATE", "dc:contributor");
 		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
 	}
 
@@ -164,11 +167,11 @@ public class StructureQueries {
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("STRUCTURES_COMPONENTS_GRAPH", graphs.structuresComponentsGraph());
-		params.put("STRUCTURES_GRAPH", graphs.structuresGraph());
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put("STRUCTURES_COMPONENTS_GRAPH", SparqlLiterals.iri(graphs.structuresComponentsGraph()));
+		params.put("STRUCTURES_GRAPH", SparqlLiterals.iri(graphs.structuresGraph()));
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		return params;
 	}
 }

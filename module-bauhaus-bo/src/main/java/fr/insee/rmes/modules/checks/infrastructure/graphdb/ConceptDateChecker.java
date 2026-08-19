@@ -5,6 +5,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.checks.domain.model.CheckResult;
 import fr.insee.rmes.modules.checks.domain.port.serverside.RuleChecker;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -91,7 +92,7 @@ public class ConceptDateChecker implements RuleChecker  {
     
     public String getSparqlQuery() throws RmesException {
         Map<String, Object> params = new HashMap<>();
-        params.put("CONCEPTS_GRAPH", this.graphs.conceptsGraph());
+        params.put("CONCEPTS_GRAPH", SparqlLiterals.iri(this.graphs.conceptsGraph()));
         return FreeMarkerUtils.buildRequest("checks/", "checkConceptsDateFormat.ftlh", params);
 
     }

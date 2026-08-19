@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +33,8 @@ public class OperationFamilyQueries {
 
     public String familiesQuery() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put(OPERATIONS_GRAPH, baseGraph + operationsGraph);
-        params.put("LG1", this.lg1);
+        params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
+        params.put("LG1", SparqlLiterals.literal(this.lg1));
         return  buildRequest("getFamilies.ftlh", params);
     }
 
@@ -43,28 +44,29 @@ public class OperationFamilyQueries {
 
     public String familyQuery(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put(OPERATIONS_GRAPH, baseGraph + operationsGraph);
-        params.put("LG1", lg1);
-        params.put("LG2", lg2);
-        params.put("ID", id);
+        params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
+        params.put("LG1", SparqlLiterals.literal(lg1));
+        params.put("LG2", SparqlLiterals.literal(lg2));
+        params.put("ID", SparqlLiterals.literal(id));
+        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + id));
         return  buildRequest("getFamily.ftlh", params);
     }
 
     public String getSeries(String idFamily) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put(OPERATIONS_GRAPH, baseGraph + operationsGraph);
-        params.put("LG1", lg1);
-        params.put("LG2", lg2);
-        params.put("ID", idFamily);
+        params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
+        params.put("LG1", SparqlLiterals.literal(lg1));
+        params.put("LG2", SparqlLiterals.literal(lg2));
+        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + idFamily));
         return  buildRequest("getSeries.ftlh", params);
     }
 
     public String getSubjects(String idFamily) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put(OPERATIONS_GRAPH, baseGraph + operationsGraph);
-        params.put("LG1", lg1);
-        params.put("LG2", lg2);
-        params.put("ID", idFamily);
+        params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
+        params.put("LG1", SparqlLiterals.literal(lg1));
+        params.put("LG2", SparqlLiterals.literal(lg2));
+        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + idFamily));
         return  buildRequest("getSubjects.ftlh", params);
     }
 }

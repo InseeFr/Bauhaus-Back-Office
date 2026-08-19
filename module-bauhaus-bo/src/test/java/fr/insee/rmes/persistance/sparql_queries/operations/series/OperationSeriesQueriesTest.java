@@ -34,12 +34,12 @@ class OperationSeriesQueriesTest {
         var id="s2132";
         prepareRdfUtils();
         String expectedGeneratedQuery= """
-                SELECT ?creators\s
+                SELECT ?creators
                 FROM <http://rdf.insee.fr/graphes/operations>
                 	WHERE	{
                 		{
                 			?series dc:creator ?creators .
-                			VALUES ?series { <http://bauhaus/operations/serie/s2132>}
+                			VALUES ?series { <http://bauhaus/operations/serie/s2132> }
                 		}
                 		UNION
                 		{

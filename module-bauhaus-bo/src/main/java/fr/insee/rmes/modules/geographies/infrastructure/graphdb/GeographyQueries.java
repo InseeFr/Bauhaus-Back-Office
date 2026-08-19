@@ -5,6 +5,7 @@ import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -23,13 +24,12 @@ public class GeographyQueries {
 
 	public String getGeoUriIfExists(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(Constants.ID, id);
+		params.put(Constants.ID, SparqlLiterals.literal(id));
 		return buildRequest("getGeoUriIfExists.ftlh", params);
 	}
 
 	public String getFeaturesQuery() throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("uriFeature", "");
 		return buildRequest("getGeoFeatures.ftlh", params);
 	}
 
@@ -43,29 +43,29 @@ public class GeographyQueries {
 
 	public String getFeatureQuery(String uri) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("uriFeature", uri);
+		params.put("uriFeature", SparqlLiterals.iri(uri));
 		return buildRequest("getGeoFeatures.ftlh", params);
 	}
 
 	private String getUnionOrDifferenceForFeature(String uriFeature, boolean getUnion) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(Constants.URI, uriFeature);
+		params.put(Constants.URI, SparqlLiterals.iri(uriFeature));
 		params.put("union", getUnion);
 		return buildRequest("getUnionOrDifferenceForUri.ftlh", params);
 	}
 
 	public String checkUnicityTerritory(String labelLg1) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("LABEL", labelLg1);
+		params.put("LABEL", SparqlLiterals.literal(labelLg1, languages.lg1()));
 		return buildRequest("checkUnicityTerritory.ftlh", params);
 	}
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("COG_GRAPH", graphs.geographyGraph());
-		params.put("GEO_SIMS_GRAPH", graphs.documentationsGeoGraph());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("COG_GRAPH", SparqlLiterals.iri(graphs.geographyGraph()));
+		params.put("GEO_SIMS_GRAPH", SparqlLiterals.iri(graphs.documentationsGeoGraph()));
 		return params;
 	}
 

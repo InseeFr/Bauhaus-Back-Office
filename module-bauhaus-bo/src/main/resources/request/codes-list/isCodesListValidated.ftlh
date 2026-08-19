@@ -1,5 +1,5 @@
 ASK
-FROM <${CODES_LISTS_GRAPH}>
+FROM ${CODES_LISTS_GRAPH}
 {
-    <${IRI}> insee:validationState 'Validated' .
+    ${IRI} insee:validationState 'Validated' .
 }

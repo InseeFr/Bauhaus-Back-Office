@@ -32,6 +32,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Group
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -663,7 +664,7 @@ public class LocalColecticaGroupInitConfiguration {
 
     List<SeriesWithOperations> querySeriesAndOperations(RepositoryPublicationReader repositoryPublicationReader, String graphUri) throws RmesException {
         String sparql = FreeMarkerUtils.buildRequest("operations/", "getSeriesWithOperations.ftlh",
-                Map.of("GRAPH_URI", graphUri));
+                Map.of("GRAPH_URI", SparqlLiterals.iri(graphUri)));
 
         JSONArray results = repositoryPublicationReader.getResponseAsArray(sparql);
 

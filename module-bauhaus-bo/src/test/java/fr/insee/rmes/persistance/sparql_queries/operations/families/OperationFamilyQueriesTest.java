@@ -36,12 +36,10 @@ class OperationFamilyQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "fam123".equals(map.get("ID")) &&
-                               "Test Family".equals(map.get("LABEL")) &&
-                               "en".equals(map.get("LANG")) &&
-                               "/operations/famille/".equals(map.get("URI_PREFIX")) &&
+                        return "\"Test Family\"@en".equals(map.get("LABEL")) &&
+                               "\"/operations/famille/fam123\"".equals(map.get("URI_SUFFIX")) &&
                                "insee:StatisticalOperationFamily".equals(map.get("TYPE")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -49,43 +47,15 @@ class OperationFamilyQueriesTest {
 
 
     @Test
-    void shouldHandleNullValuesInCheckPrefLabelUnicity() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
-                    .thenReturn("ASK { ?s skos:prefLabel ?label }");
-
-            String result = operationFamilyQueries.checkPrefLabelUnicity(null, null, null);
-
-            assertNotNull(result);
-            assertEquals("ASK { ?s skos:prefLabel ?label }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
-                    argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return map.get("ID") == null &&
-                               map.get("LABEL") == null &&
-                               map.get("LANG") == null;
-                    })));
-        }
+    void shouldRejectNullValuesInCheckPrefLabelUnicity() {
+        assertThrows(IllegalArgumentException.class,
+                () -> operationFamilyQueries.checkPrefLabelUnicity(null, null, null));
     }
 
     @Test
-    void shouldHandleEmptyStringsInCheckPrefLabelUnicity() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
-                    .thenReturn("ASK { ?s skos:prefLabel ''@'' }");
-
-            String result = operationFamilyQueries.checkPrefLabelUnicity("", "", "");
-
-            assertNotNull(result);
-            assertEquals("ASK { ?s skos:prefLabel ''@'' }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
-                    argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return "".equals(map.get("ID")) &&
-                               "".equals(map.get("LABEL")) &&
-                               "".equals(map.get("LANG"));
-                    })));
-        }
+    void shouldRejectAnEmptyLanguageInCheckPrefLabelUnicity() {
+        assertThrows(IllegalArgumentException.class,
+                () -> operationFamilyQueries.checkPrefLabelUnicity("", "", ""));
     }
 
 
@@ -118,7 +88,7 @@ class OperationFamilyQueriesTest {
                         Map<String, Object> map = (Map<String, Object>) params;
                         // Verify that the OPERATIONS_GRAPH constant is used correctly
                         return "OPERATIONS_GRAPH".equals("OPERATIONS_GRAPH") && // This verifies the constant exists
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }

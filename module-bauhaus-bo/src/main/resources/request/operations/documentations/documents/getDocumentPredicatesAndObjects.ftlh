@@ -1,4 +1,4 @@
-select ?predicat ?obj FROM <${DOCUMENTS_GRAPH}>
+select ?predicat ?obj FROM ${DOCUMENTS_GRAPH}
 WHERE {?document ?predicat ?obj .
-FILTER (?document = <${uri}>)
+FILTER (?document = ${uri})
 }

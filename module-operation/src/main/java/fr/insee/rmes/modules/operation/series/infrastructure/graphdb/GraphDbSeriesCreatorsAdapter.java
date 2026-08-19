@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.operation.series.infrastructure.graphdb;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.operation.series.infrastructure.PublicationToGestionIriRewriter;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -48,8 +49,8 @@ public class GraphDbSeriesCreatorsAdapter implements SeriesCreatorsPort {
             }
 
             Map<String, Object> params = new HashMap<>();
-            params.put("OPERATIONS_GRAPH", graphs.operationsGraph());
-            params.put("SERIES_IRIS", publicationByGestionIri.keySet());
+            params.put("OPERATIONS_GRAPH", SparqlLiterals.iri(graphs.operationsGraph()));
+            params.put("SERIES_IRIS", publicationByGestionIri.keySet().stream().map(SparqlLiterals::iri).toList());
             String query = FreeMarkerUtils.buildRequest("operations/series/", "getSeriesCreatorsForIris.ftlh", params);
 
             JSONArray results = repositoryGestion.getResponseAsArray(query);
@@ -64,7 +65,8 @@ public class GraphDbSeriesCreatorsAdapter implements SeriesCreatorsPort {
                 }
             }
             return creatorsByIri;
-        } catch (RmesException e) {
+        } catch (RmesException | IllegalArgumentException e) {
+            // IllegalArgumentException : une des IRI venant du Group n'est pas injectable telle quelle.
             logger.error("Error fetching creators for series batch", e);
             return Map.of();
         }

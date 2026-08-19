@@ -65,6 +65,15 @@
       <artifactId>spring-boot-restclient</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Enregistre SPARQLParserFactory dans le QueryParserRegistry : permet aux tests de rendre une
+         requête et de la faire analyser par le parseur, sans dépôt. Le runtime n'en a pas besoin,
+         c'est GraphDB qui analyse les requêtes envoyées par rdf4j-repository-http. -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-queryparser-sparql</artifactId>
+      <version>${rdf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>

@@ -142,32 +142,32 @@ class ConceptsUtilsTest {
 
     @Test
     void shouldCheckIfConceptExists() throws RmesException {
-        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists("mocked id"))).thenReturn(true);
-        Assertions.assertTrue(conceptsUtils.checkIfConceptExists("mocked id"));
+        when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists("c1000"))).thenReturn(true);
+        Assertions.assertTrue(conceptsUtils.checkIfConceptExists("c1000"));
     }
 
     @Test
     void shouldDeleteConcept() throws RmesException {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-        when(repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
-        when(repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"mocked id")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
-        HttpStatus actual = conceptsUtils.deleteConcept("mocked id");
+        when(repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"c1000")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
+        when(repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"c1000")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
+        HttpStatus actual = conceptsUtils.deleteConcept("c1000");
         assertEquals(HttpStatus.BAD_REQUEST,actual);
     }
 
     @Test
     void shouldGetRelatedConcepts() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
-        when(repoGestion.getResponseAsArray(conceptConceptsQueries.getRelatedConceptsQuery("mocked id"))).thenReturn(jsonArray);
-        JSONArray actual = conceptsUtils.getRelatedConcepts("mocked id");
+        when(repoGestion.getResponseAsArray(conceptConceptsQueries.getRelatedConceptsQuery("http://bauhaus/concepts/definition/c1000"))).thenReturn(jsonArray);
+        JSONArray actual = conceptsUtils.getRelatedConcepts("http://bauhaus/concepts/definition/c1000");
         assertEquals(jsonArray,actual);
     }
 
     @Test
     void shouldGetGraphsWithConcept() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
-        when(repoGestion.getResponseAsArray(conceptConceptsQueries.getGraphWithConceptQuery("mocked id"))).thenReturn(jsonArray);
-        JSONArray actual = conceptsUtils.getGraphsWithConcept("mocked id");
+        when(repoGestion.getResponseAsArray(conceptConceptsQueries.getGraphWithConceptQuery("http://bauhaus/concepts/definition/c1000"))).thenReturn(jsonArray);
+        JSONArray actual = conceptsUtils.getGraphsWithConcept("http://bauhaus/concepts/definition/c1000");
         assertEquals(jsonArray,actual);
     }
 

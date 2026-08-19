@@ -6,6 +6,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.eclipse.rdf4j.model.Resource;
 import org.springframework.stereotype.Component;
 
@@ -27,18 +28,18 @@ public class DocumentationQueries {
 
     private Map<String, Object> initParams() {
         Map<String, Object> params = new HashMap<>();
-        params.put("LG1", languages.lg1());
-        params.put("LG2", languages.lg2());
-        params.put("DOCUMENTATIONS_GRAPH", graphs.documentationsGraph());
-        params.put("MSD_GRAPH", graphs.msdGraph());
-        params.put("CODELIST_GRAPH", graphs.codeListGraph());
-        params.put("MSD_CONCEPTS_GRAPH", graphs.msdConceptsGraph());
+        params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+        params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+        
+        params.put("MSD_GRAPH", SparqlLiterals.iri(graphs.msdGraph()));
+        params.put("CODELIST_GRAPH", SparqlLiterals.iri(graphs.codeListGraph()));
+        params.put("MSD_CONCEPTS_GRAPH", SparqlLiterals.iri(graphs.msdConceptsGraph()));
         return params;
     }
 
     public String deleteGraph(Resource graph) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put("DOCUMENTATION_GRAPH", graph);
+        params.put("DOCUMENTATION_GRAPH", SparqlLiterals.iri(graph.stringValue()));
         return buildRequest("deleteGraph.ftlh", params);
     }
 
@@ -58,39 +59,42 @@ public class DocumentationQueries {
 
     public String getDocumentationTitleQuery(String idSims) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put(ID_SIMS, idSims);
+        params.put(ID_SIMS, SparqlLiterals.literal(idSims));
+        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         return buildRequest("getDocumentationTitleQuery.ftlh", params);
     }
 
     public String getTargetByIdSims(String idSims) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put(ID_SIMS, idSims);
+        params.put(ID_SIMS, SparqlLiterals.literal(idSims));
+        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         return buildRequest("getTargetByIdSimsQuery.ftlh", params);
     }
 
     public String getSimsByTarget(String idTarget) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put("idTarget", idTarget);
+        params.put("idTarget", SparqlLiterals.literal(idTarget));
         return buildRequest("getSimsByIdTargetQuery.ftlh", params);
     }
 
     public String getDocumentationRubricsQuery(String idSims, String clLg1, String clLg2) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put(ID_SIMS, idSims);
-        params.put("DATE", RangeType.DATE);
-        params.put("STRING", RangeType.STRING);
-        params.put("RICHTEXT", RangeType.RICHTEXT);
-        params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
-        params.put("CODELIST", RangeType.CODELIST);
-        params.put("ORGANIZATION", RangeType.ORGANIZATION);
-        params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
+        params.put(ID_SIMS, SparqlLiterals.literal(idSims));
+        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put("DATE_JSON_TYPE", SparqlLiterals.literal(RangeType.DATE.getJsonType()));
+        params.put("DATE_RDF_TYPE", SparqlLiterals.iri(RangeType.DATE.getRdfType().stringValue()));
+        params.put("STRING_JSON_TYPE", SparqlLiterals.literal(RangeType.STRING.getJsonType()));
+        params.put("RICHTEXT_JSON_TYPE", SparqlLiterals.literal(RangeType.RICHTEXT.getJsonType()));
+        params.put("CODELIST_JSON_TYPE", SparqlLiterals.literal(RangeType.CODELIST.getJsonType()));
+        params.put("ORGANIZATION_JSON_TYPE", SparqlLiterals.literal(RangeType.ORGANIZATION.getJsonType()));
+        params.put("GEOGRAPHY_JSON_TYPE", SparqlLiterals.literal(RangeType.GEOGRAPHY.getJsonType()));
 
-        params.put("ORGANIZATIONS_GRAPH", graphs.organizationsGraph());
-        params.put("ORG_INSEE_GRAPH", graphs.orgInseeGraph());
-        params.put("COG_GRAPH", graphs.geographyGraph());
-        params.put("DOCUMENTATIONS_GEO_GRAPH", graphs.documentationsGeoGraph());
-        params.put("LG1_CL", clLg1);
-        params.put("LG2_CL", clLg2);
+        params.put("ORGANIZATIONS_GRAPH", SparqlLiterals.iri(graphs.organizationsGraph()));
+        params.put("ORG_INSEE_GRAPH", SparqlLiterals.iri(graphs.orgInseeGraph()));
+        params.put("COG_GRAPH", SparqlLiterals.iri(graphs.geographyGraph()));
+        params.put("DOCUMENTATIONS_GEO_GRAPH", SparqlLiterals.iri(graphs.documentationsGeoGraph()));
+        params.put("LG1_CL", SparqlLiterals.iri(clLg1));
+        params.put("LG2_CL", SparqlLiterals.iri(clLg2));
         return buildRequest("getDocumentationRubricsQuery.ftlh", params);
     }
 
@@ -100,18 +104,19 @@ public class DocumentationQueries {
 
     public String getPublicationState(String id) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put(Constants.ID_SIMS, id);
-        params.put("DOCUMENTATIONS_GRAPH", graphs.documentationsGraph());
+        params.put(Constants.ID_SIMS, SparqlLiterals.literal(id));
+        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + id));
+        
         return buildRequest("getPublicationStatusQuery.ftlh", params);
     }
 
     public String getAttributeSpecificationQuery(String idMas) throws RmesException {
         Map<String, Object> params = initParams();
-        params.put("idMas", idMas);
-        params.put("uniqueAttr", "true");
-        params.put("MSD_GRAPH", graphs.msdGraph());
-        params.put("CODELIST_GRAPH", graphs.codeListGraph());
-        params.put("MSD_CONCEPTS_GRAPH", graphs.msdConceptsGraph());
+        params.put("idMas", SparqlLiterals.literal(idMas));
+        params.put("uniqueAttr", true);
+        params.put("MSD_GRAPH", SparqlLiterals.iri(graphs.msdGraph()));
+        params.put("CODELIST_GRAPH", SparqlLiterals.iri(graphs.codeListGraph()));
+        params.put("MSD_CONCEPTS_GRAPH", SparqlLiterals.iri(graphs.msdConceptsGraph()));
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
     }
 
@@ -121,7 +126,7 @@ public class DocumentationQueries {
      */
     public String getAttributesQuery() throws RmesException {
         Map<String, Object> params = initParams();
-        params.put("uniqueAttr", "false");
+        params.put("uniqueAttr", false);
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
     }
 }

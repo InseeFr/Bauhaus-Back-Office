@@ -20,7 +20,7 @@ class ConceptConceptsQueriesTest {
                 ASK
                 WHERE
                 { ?uri ?b ?c .
-                FILTER(STRENDS(STR(?uri),'/concepts/definition/c1000')) . }
+                FILTER(STRENDS(STR(?uri),\"/concepts/definition/c1000\")) . }
                 """));
     }
 

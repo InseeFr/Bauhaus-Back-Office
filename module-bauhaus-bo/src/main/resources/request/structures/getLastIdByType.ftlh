@@ -4,11 +4,11 @@
 # pas des composants mutualisés. Le FILTER écarte les identifiants non numériques, sans quoi
 # xsd:integer échoue et ?id reste non lié.
 SELECT ?id
-FROM <${STRUCTURES_COMPONENTS_GRAPH}>
+FROM ${STRUCTURES_COMPONENTS_GRAPH}
 WHERE {
-	?s a <${TYPE}> ;
+	?s a ${TYPE} ;
 	   dcterms:identifier ?identifier .
-	BIND (REPLACE(STR(?identifier), "^${ID_PREFIX}", "") AS ?numericPart)
+	BIND (REPLACE(STR(?identifier), ${ID_PREFIX_PATTERN}, "") AS ?numericPart)
 	FILTER (REGEX(?numericPart, "^[0-9]+$"))
 	BIND (xsd:integer(?numericPart) AS ?id)
 }

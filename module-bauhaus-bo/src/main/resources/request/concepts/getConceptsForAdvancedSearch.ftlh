@@ -1,15 +1,15 @@
 SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus ?validationState ?definition ?creator ?isTopConceptOf ?valid ?altLabel
 WHERE
 {
-    GRAPH <${CONCEPTS_GRAPH}> {
+    GRAPH ${CONCEPTS_GRAPH} {
         ?concept skos:notation ?notation .
         BIND (STR(?notation) AS ?id)
         ?concept skos:prefLabel ?label .
-        FILTER (lang(?label) = '${LG1}') .
+        FILTER (lang(?label) = ${LG1}) .
 
         OPTIONAL {
             ?concept skos:altLabel ?altLabel .
-            FILTER (lang(?altLabel) = '${LG1}')
+            FILTER (lang(?altLabel) = ${LG1})
         }
         ?concept dcterms:created ?created .
         BIND (exists{?concept skos:broader ?broa} AS ?broader) .
@@ -26,11 +26,11 @@ WHERE
             ?concept skos:definition ?noteUri .
             ?noteUri pav:version ?version .
             ?noteUri evoc:noteLiteral ?definition .
-            ?noteUri dcterms:language '${LG1}'^^xsd:language .
+            ?noteUri dcterms:language ${LG1}^^xsd:language .
             OPTIONAL {
                 ?concept skos:definition ?latest .
                 ?latest pav:version ?latestVersion .
-                ?latest dcterms:language '${LG1}'^^xsd:language .
+                ?latest dcterms:language ${LG1}^^xsd:language .
                 FILTER (?version < ?latestVersion)
             } .
             FILTER (!bound (?latest))

@@ -4,6 +4,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,8 +48,8 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
     @Override
     public List<OrganisationOption> getOrganisations() throws RmesException {
         Map<String, Object> params = new HashMap<>();
-        params.put(ORGANIZATIONS_GRAPH_PARAM, organizationsGraph);
-        params.put("LANG", language);
+        params.put(ORGANIZATIONS_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
+        params.put("LANG", SparqlLiterals.literal(language));
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisations.ftlh", params);
         JSONArray results = repositoryGestion.getResponseAsArray(query);
@@ -67,9 +68,9 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
     @Override
     public OrganisationOption getOrganisation(String identifier) throws RmesException {
         Map<String, Object> params = new HashMap<>();
-        params.put(ORGANIZATIONS_GRAPH_PARAM, organizationsGraph);
-        params.put("LANG", language);
-        params.put("IDENTIFIER", identifier);
+        params.put(ORGANIZATIONS_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
+        params.put("LANG", SparqlLiterals.literal(language));
+        params.put("IDENTIFIER", SparqlLiterals.literal(identifier));
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisation.ftlh", params);
         JSONArray results = repositoryGestion.getResponseAsArray(query);
@@ -107,11 +108,11 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         }
 
         Map<String, Object> params = new HashMap<>();
-        params.put(ORGANIZATIONS_GRAPH_PARAM, organizationsRootGraph);
-        params.put(ORGANIZATIONS_INSEE_GRAPH_PARAM, organizationsGraph);
-        params.put("LANG", language);
-        params.put("IRI_IDENTIFIERS", iris);
-        params.put("LITERAL_IDENTIFIERS", literals);
+        params.put(ORGANIZATIONS_GRAPH_PARAM, SparqlLiterals.iri(organizationsRootGraph));
+        params.put(ORGANIZATIONS_INSEE_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
+        params.put("LANG", SparqlLiterals.literal(language));
+        params.put("IRI_IDENTIFIERS", iris.stream().map(SparqlLiterals::iri).toList());
+        params.put("LITERAL_IDENTIFIERS", literals.stream().map(SparqlLiterals::literal).toList());
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisationsMap.ftlh", params);
         JSONArray results = repositoryGestion.getResponseAsArray(query);

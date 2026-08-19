@@ -40,9 +40,9 @@ class OperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getLastIdQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                        return "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -61,10 +61,10 @@ class OperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return testUri.equals(map.get(Constants.URI)) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                        return ("<" + testUri + ">").equals(map.get(Constants.URI)) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -82,34 +82,19 @@ class OperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "op123".equals(map.get(Constants.ID)) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                        return "\"op123\"".equals(map.get(Constants.ID)) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
 
     @Test
-    void shouldHandleNullUriInCheckIfFamOpeSerExists() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"), any(Map.class)))
-                    .thenReturn("ASK { ?s ?p ?o }");
-
-            String result = operationQueries.checkIfFamOpeSerExists(null);
-
-            assertNotNull(result);
-            assertEquals("ASK { ?s ?p ?o }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("checkIfFamSerOpeExistsQuery.ftlh"),
-                    argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return map.get(Constants.URI) == null &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
-                    })));
-        }
+    void shouldRejectANullUriInCheckIfFamOpeSerExists() {
+        assertThrows(IllegalArgumentException.class, () -> operationQueries.checkIfFamOpeSerExists(null));
     }
+
 
     @Test
     void shouldHandleEmptyIdInGetPublicationState() throws RmesException {
@@ -124,7 +109,7 @@ class OperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/famOpeSer/"), eq("getPublicationStatusQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "".equals(map.get(Constants.ID));
+                        return "\"\"".equals(map.get(Constants.ID));
                     })));
         }
     }
@@ -144,9 +129,9 @@ class OperationQueriesTest {
                         return map.containsKey("LG1") &&
                                map.containsKey("LG2") &&
                                map.containsKey("OPERATIONS_GRAPH") &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -158,8 +143,8 @@ class OperationQueriesTest {
                     .thenReturn("QUERY_RESULT");
 
             String lastIdResult = operationQueries.lastId();
-            String existsResult = operationQueries.checkIfFamOpeSerExists("test");
-            String stateResult = operationQueries.getPublicationState("test");
+            String existsResult = operationQueries.checkIfFamOpeSerExists("http://bauhaus/operations/serie/s1");
+            String stateResult = operationQueries.getPublicationState("s1");
 
             assertEquals("QUERY_RESULT", lastIdResult);
             assertEquals("QUERY_RESULT", existsResult);

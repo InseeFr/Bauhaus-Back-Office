@@ -1,7 +1,7 @@
 SELECT ?note ?predicat
-WHERE { GRAPH <${CONCEPTS_GRAPH}> {
+WHERE { GRAPH ${CONCEPTS_GRAPH} {
 ?concept ?predicat ?note .
 ?note insee:conceptVersion ?conceptVersion
 FILTER(?conceptVersion < ${MAX_VERSION})
-FILTER(REGEX(STR(?concept),'/concepts/definition/${CONCEPT_ID}')) .
+FILTER(REGEX(STR(?concept),${CONCEPT_URI_PATTERN})) .
 }}

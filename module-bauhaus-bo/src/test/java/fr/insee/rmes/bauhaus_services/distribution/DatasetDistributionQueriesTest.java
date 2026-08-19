@@ -22,13 +22,12 @@ class DatasetDistributionQueriesTest {
     void shouldCallGetDistributionQuery() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("DATASET_GRAPH", "distribution-graph");
-                put("DATASET_ID", "");
-                put("LG1", "fr");
-                put("LG2", "en");
+                put("DATASET_GRAPH", "<http://rdf.insee.fr/graphes/catalogue/distribution>");
+                put("LG1", "\"fr\"");
+                put("LG2", "\"en\"");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributions.ftlh"), eq(map))).thenReturn("request");
-            String query = datasetDistributionQueries.getDistributions("distribution-graph");
+            String query = datasetDistributionQueries.getDistributions("http://rdf.insee.fr/graphes/catalogue/distribution");
             Assertions.assertEquals("request", query);
         }
     }
@@ -37,13 +36,13 @@ class DatasetDistributionQueriesTest {
     void shouldCallGetDistributionByIdQuery() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("DATASET_GRAPH", "distribution-graph");
-                put("LG1", "fr");
-                put("LG2", "en");
-                put("ID", "1");
+                put("DATASET_GRAPH", "<http://rdf.insee.fr/graphes/catalogue/distribution>");
+                put("LG1", "\"fr\"");
+                put("LG2", "\"en\"");
+                put("ID", "\"1\"");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistribution.ftlh"), eq(map))).thenReturn("request");
-            String query = datasetDistributionQueries.getDistribution("1", "distribution-graph");
+            String query = datasetDistributionQueries.getDistribution("1", "http://rdf.insee.fr/graphes/catalogue/distribution");
             Assertions.assertEquals("request", query);
         }
     }
@@ -52,13 +51,13 @@ class DatasetDistributionQueriesTest {
     void shouldCallGetDistributionByDistributionIdQuery() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("DATASET_GRAPH", "distribution-graph");
-                put("LG1", "fr");
-                put("LG2", "en");
-                put("DATASET_ID", "1");
+                put("DATASET_GRAPH", "<http://rdf.insee.fr/graphes/catalogue/distribution>");
+                put("LG1", "\"fr\"");
+                put("LG2", "\"en\"");
+                put("DATASET_ID", "\"1\"");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributions.ftlh"), eq(map))).thenReturn("request");
-            String query = datasetDistributionQueries.getDatasetDistributions("1", "distribution-graph");
+            String query = datasetDistributionQueries.getDatasetDistributions("1", "http://rdf.insee.fr/graphes/catalogue/distribution");
             Assertions.assertEquals("request", query);
         }
     }
@@ -67,10 +66,10 @@ class DatasetDistributionQueriesTest {
     void shouldCallGetLastIdQuery() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("DATASET_GRAPH", "distribution-graph");
+                put("DATASET_GRAPH", "<http://rdf.insee.fr/graphes/catalogue/distribution>");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getLastDistributionId.ftlh"), eq(map))).thenReturn("request");
-            String query = datasetDistributionQueries.lastDistributionId("distribution-graph");
+            String query = datasetDistributionQueries.lastDistributionId("http://rdf.insee.fr/graphes/catalogue/distribution");
             Assertions.assertEquals("request", query);
         }
     }
@@ -79,10 +78,10 @@ class DatasetDistributionQueriesTest {
     void shouldCallGetContributorsByDistributionUri() throws RmesException {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
-                put("DISTRIBUTION_GRAPH_URI", "distribution-graph-uri");
+                put("DISTRIBUTION_URI", "<http://bauhaus/catalogue/distribution/d1000>");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributionContributorsByUriQuery.ftlh"), eq(map))).thenReturn("request");
-            String query = datasetDistributionQueries.getContributorsByDistributionUri("distribution-graph-uri");
+            String query = datasetDistributionQueries.getContributorsByDistributionUri("http://bauhaus/catalogue/distribution/d1000");
             Assertions.assertEquals("request", query);
         }
     }

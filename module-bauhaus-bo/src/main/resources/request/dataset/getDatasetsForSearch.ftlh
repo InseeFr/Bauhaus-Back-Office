@@ -8,8 +8,8 @@ SELECT ?id
        (SAMPLE(?updated) AS ?updated)
        (SAMPLE(?altIdentifier) AS ?altIdentifier)
 
-FROM <${DATASET_GRAPH}>
-FROM <${ADMS_GRAPH}>
+FROM ${DATASET_GRAPH}
+FROM ${ADMS_GRAPH}
 
 WHERE {
     ?uri rdf:type dcat:Dataset .
@@ -18,7 +18,7 @@ WHERE {
 
     OPTIONAL {
         ?uri dcterms:title ?labelLg1
-        FILTER (lang(?labelLg1) = '${LG1}') .
+        FILTER (lang(?labelLg1) = ${LG1}) .
     }
 
     OPTIONAL {

@@ -1,6 +1,6 @@
 select ?conceptVersion where {
 ?concept ?predicat ?note .
-FILTER(REGEX(STR(?concept),'/concepts/definition/${CONCEPT_ID}')) .
+FILTER(REGEX(STR(?concept),${CONCEPT_URI_PATTERN})) .
 ?note insee:conceptVersion ?conceptVersion }
 ORDER BY DESC(?conceptVersion)
 LIMIT 1

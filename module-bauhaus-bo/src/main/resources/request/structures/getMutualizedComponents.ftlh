@@ -1,5 +1,5 @@
 SELECT DISTINCT ?iri ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationState ?creator ?range
-FROM <${STRUCTURES_COMPONENTS_GRAPH}>
+FROM ${STRUCTURES_COMPONENTS_GRAPH}
 WHERE {
     ?iri dcterms:identifier ?id ;
                skos:notation ?identifiant ;
@@ -19,7 +19,7 @@ WHERE {
         ?iri qb:codeList ?codeList
     } .
 
-    FILTER (lang(?labelLg1) = '${LG1}') .
+    FILTER (lang(?labelLg1) = ${LG1}) .
 
     OPTIONAL {
         ?iri qb:concept ?conceptObject

@@ -4,7 +4,7 @@
 # Le FILTER écarte tout ce qui n'est pas un identifiant, sans quoi xsd:integer échoue et ?id
 # reste non lié.
 SELECT ?id
-FROM <${OPERATIONS_GRAPH}>
+FROM ${OPERATIONS_GRAPH}
 WHERE {
     VALUES ?type { insee:StatisticalOperationFamily insee:StatisticalOperationSeries insee:StatisticalOperation }
     ?s a ?type .

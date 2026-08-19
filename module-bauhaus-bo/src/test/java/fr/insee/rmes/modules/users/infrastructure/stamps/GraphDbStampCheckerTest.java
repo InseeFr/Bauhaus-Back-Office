@@ -120,6 +120,22 @@ class GraphDbStampCheckerTest {
     }
 
     @Test
+    void get_contributors_stamps_reports_a_fetch_failure_when_the_id_cannot_be_injected() throws Exception {
+        // Un identifiant qui ne peut pas être sérialisé en IRI fait échouer la construction de la
+        // requête : c'est un échec de récupération du timbre, pas un plantage du contrôle d'accès.
+        IRI structureIri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/structures/structure/1234");
+        when(structureQueries.getContributorsByStructureUri(structureIri.toString()))
+                .thenThrow(new IllegalArgumentException("Character forbidden in an IRI"));
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.STRUCTURE, "1234")).thenReturn(structureIri);
+
+            assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
+                    .isInstanceOf(StampFetchException.class);
+        }
+    }
+
+    @Test
     void get_creators_stamps_unsupported_module_throws_unsupported_module_exception() {
         assertThatThrownBy(() -> checker.getCreatorsStamps(RBAC.Module.CONCEPT_CONCEPT, "some-id"))
                 .isInstanceOf(UnsupportedModuleException.class);

@@ -2,26 +2,26 @@ select distinct ?id ?prefLabelLg1 ?prefLabelLg2
 (group_concat(?altLabelLg1V;separator=' || ') as ?altLabelLg1) 
 (group_concat(?altLabelLg2V;separator=' || ') as ?altLabelLg2) 
 ?isValidated ?creator ?contributor ?disseminationStatus ?additionalMaterial ?created ?modified ?valid ?conceptVersion ?defLongueLg1 ?defLongueLg2 ?defCourteLg1 ?defCourteLg2 ?editorialNoteLg1 ?editorialNoteLg2
-from <${CONCEPT_GRAPH}>
+from ${CONCEPT_GRAPH}
 			where { 
     {
 				?collection rdf:type skos:Collection .
-				FILTER(STRENDS(STR(?collection),'${COLLECTION_ID}')) .
+				FILTER(STRENDS(STR(?collection),${COLLECTION_ID})) .
 				?collection skos:member ?member .
          	    ?member skos:notation ?id .
     			?member skos:prefLabel ?prefLabelLg1 . 
-				 		FILTER (lang(?prefLabelLg1) = '${LG1}') .
+				 		FILTER (lang(?prefLabelLg1) = ${LG1}) .
 				 OPTIONAL {
         				?member skos:prefLabel ?prefLabelLg2 . 
-				 		FILTER (lang(?prefLabelLg2) = '${LG2}')
+				 		FILTER (lang(?prefLabelLg2) = ${LG2})
     					  }     		   
         	OPTIONAL {
             	 ?member skos:altLabel ?altLabelLg1V  
-				 FILTER (lang(?altLabelLg1V) = '${LG1}')
+				 FILTER (lang(?altLabelLg1V) = ${LG1})
     				}
                 OPTIONAL { 
         		?member skos:altLabel ?altLabelLg2V  
-				 FILTER (lang(?altLabelLg2V) = '${LG2}')
+				 FILTER (lang(?altLabelLg2V) = ${LG2})
     				}
     			OPTIONAL {?member insee:validationState ?isValidated . }
         	    OPTIONAL {?member dc:creator ?creator .}

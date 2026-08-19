@@ -2,7 +2,7 @@ SELECT DISTINCT ?labelLg1 ?idSims
 WHERE {
     ?indic a insee:StatisticalIndicator .
     ?indic skos:prefLabel ?labelLg1 .
-    FILTER (lang(?labelLg1) = '${LG1}')
+    FILTER (lang(?labelLg1) = ${LG1})
     ?report rdf:type sdmx-mm:MetadataReport .
     ?report sdmx-mm:target ?indic
     BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) .
