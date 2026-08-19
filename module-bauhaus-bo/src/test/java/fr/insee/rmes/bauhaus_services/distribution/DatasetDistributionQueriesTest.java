@@ -69,8 +69,8 @@ class DatasetDistributionQueriesTest {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
             }};
-            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getLastDatasetId.ftlh"), eq(map))).thenReturn("request");
-            String query = datasetDistributionQueries.lastDatasetId("distribution-graph");
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getLastDistributionId.ftlh"), eq(map))).thenReturn("request");
+            String query = datasetDistributionQueries.lastDistributionId("distribution-graph");
             Assertions.assertEquals("request", query);
         }
     }

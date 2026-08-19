@@ -56,9 +56,9 @@ public class DatasetDistributionQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributions.ftlh", params);
     }
 
-    public String lastDatasetId(String distributionGraph) throws RmesException {
+    public String lastDistributionId(String distributionGraph) throws RmesException {
         Map<String, Object> params = Map.of(DATASET_GRAPH, distributionGraph);
-        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDistributionId.ftlh", params);
     }
 
     public String getContributorsByDistributionUri(String uri) throws RmesException {
