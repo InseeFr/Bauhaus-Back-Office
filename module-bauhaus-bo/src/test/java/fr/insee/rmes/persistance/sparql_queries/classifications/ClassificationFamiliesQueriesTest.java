@@ -5,6 +5,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ClassificationFamiliesQueriesTest {
@@ -45,9 +46,5 @@ class ClassificationFamiliesQueriesTest {
                 }
                 ORDER BY ?labelLg1
                 """));
-    }
-
-    private static String normalize(String sparql) {
-        return sparql.replaceAll("\\s+", " ").trim();
     }
 }

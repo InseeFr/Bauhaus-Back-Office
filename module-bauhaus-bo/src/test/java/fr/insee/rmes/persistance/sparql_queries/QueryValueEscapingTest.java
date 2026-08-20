@@ -5,7 +5,6 @@ import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
@@ -130,7 +129,7 @@ class QueryValueEscapingTest {
     }
 
     private static void assertParsable(String query) {
-        assertDoesNotThrow(() -> QueryParserUtil.parseQuery(QueryLanguage.SPARQL, QueryUtils.PREFIXES + query, null),
+        assertDoesNotThrow(() -> QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null),
                 () -> "Not a parsable SPARQL query: " + query);
     }
 }

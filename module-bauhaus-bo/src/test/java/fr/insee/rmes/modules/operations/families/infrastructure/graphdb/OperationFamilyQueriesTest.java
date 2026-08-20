@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.HashMap;
 import java.util.Map;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -179,9 +180,5 @@ class OperationFamilyQueriesTest {
         assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg1) = \"" + testLg1 + "\")"));
         assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg2) = \"" + testLg2 + "\")"));
         assertTrue(subjectsQuery.contains("FROM <" + testBaseGraph + testOperationsGraph + ">"));
-    }
-
-    private static String normalize(String sparql) {
-        return sparql.replaceAll("\\s+", " ").trim();
     }
 }

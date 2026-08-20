@@ -1,7 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries;
 
 import fr.insee.rmes.freemarker.FreemarkerConfig;
-import fr.insee.rmes.graphdb.QueryUtils;
 import freemarker.template.Template;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.parser.QueryParserUtil;
@@ -9,10 +8,13 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,6 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Rend chaque template de requête avec des paramètres factices et le soumet au parseur SPARQL.
  * <p>
+ * Le périmètre est le réacteur, pas ce module : les templates de module-ddi et de module-operation
+ * sont couverts au même titre que ceux de module-bauhaus-bo, et tout module qui en ajoutera le sera
+ * aussi, sans rien à câbler ici.
+ * <p>
  * C'est le filet qui verrouille la classe de bugs « requête syntaxiquement cassée en production » :
  * une requête qui ne parse plus échoue au build, pas à l'exécution.
  * <p>
@@ -37,7 +43,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class SparqlTemplateRenderingTest {
 
+    /** Chemin des templates dans un module ; c'est aussi la racine des noms FreeMarker. */
     private static final Path TEMPLATE_ROOT = Path.of("src/main/resources/request");
+
+    /** Le réacteur, vu depuis le répertoire du module où surefire place le répertoire courant. */
+    private static final Path REACTOR_ROOT = Path.of("..");
+
+    /** Le prologue de préfixes inséré par auto-include : seul, ce n'est pas une requête. */
+    private static final String PREFIXES_TEMPLATE = "prefixes.ftlh";
 
     /** Un jeton SPARQL valide partout où un terme est attendu (sujet, objet, argument de fonction). */
     private static final String TOKEN = "<http://example.org/x>";
@@ -70,32 +83,87 @@ class SparqlTemplateRenderingTest {
     private static final Pattern LIST_ALIAS =
             Pattern.compile("<#list\\s+([A-Za-z_][\\w.]*)\\s+as\\s+([A-Za-z_]\\w*)");
 
+    /** Un template : son nom FreeMarker (relatif à {@code request/}), sa source et son fichier. */
+    private record SparqlTemplate(String name, String source, Path path) {
+        String fileName() {
+            return path.getFileName().toString();
+        }
+    }
+
     @TestFactory
     Stream<DynamicTest> everyTemplateRendersToAParsableQuery() throws Exception {
-        Set<String> fragments = includedFragments();
-        try (var files = Files.walk(TEMPLATE_ROOT)) {
-            return files.filter(p -> p.toString().endsWith(".ftlh"))
-                    .sorted()
-                    .filter(p -> !fragments.contains(p.getFileName().toString()))
-                    .map(path -> DynamicTest.dynamicTest(TEMPLATE_ROOT.relativize(path).toString(),
-                            () -> assertRendersToAParsableQuery(path)))
-                    .toList()
-                    .stream();
+        List<SparqlTemplate> templates = templates();
+        Set<String> fragments = includedFragments(templates);
+
+        return templates.stream()
+                .filter(template -> !fragments.contains(template.fileName()))
+                .map(template -> DynamicTest.dynamicTest(template.name(),
+                        () -> assertRendersToAParsableQuery(template)))
+                .toList()
+                .stream();
+    }
+
+    /**
+     * Les templates de <em>tous</em> les modules du réacteur, pas seulement ceux d'ici : module-ddi et
+     * module-operation en embarquent aussi, et un module qui en ajoutera sera couvert sans rien câbler.
+     * <p>
+     * La découverte part des sources et non du classpath : un {@code target/} non nettoyé garde les
+     * templates supprimés par les commits précédents, qui repasseraient alors au parseur. Le rendu,
+     * lui, passe par le template loader — un template qu'aucune dépendance de ce module n'expose
+     * échoue donc ici, ce qui est le but.
+     */
+    private static List<SparqlTemplate> templates() throws IOException {
+        if (!Files.isDirectory(TEMPLATE_ROOT)) {
+            throw new IllegalStateException("Ce test doit tourner depuis le répertoire du module, or le "
+                    + "répertoire courant est " + Path.of("").toAbsolutePath());
         }
+        List<SparqlTemplate> templates = new ArrayList<>();
+        for (Path root : templateRoots()) {
+            try (var files = Files.walk(root)) {
+                files.filter(path -> path.toString().endsWith(".ftlh"))
+                        .forEach(path -> templates.add(new SparqlTemplate(
+                                root.relativize(path).toString().replace('\\', '/'), readString(path), path)));
+            }
+        }
+        templates.removeIf(template -> PREFIXES_TEMPLATE.equals(template.fileName()));
+        templates.sort(Comparator.comparing(SparqlTemplate::name));
+        return templates;
+    }
+
+    private static List<Path> templateRoots() throws IOException {
+        try (var modules = Files.list(REACTOR_ROOT)) {
+            return modules.map(module -> module.resolve(TEMPLATE_ROOT))
+                    .filter(Files::isDirectory)
+                    .sorted()
+                    .toList();
+        }
+    }
+
+    /**
+     * Deux modules qui fourniraient le même nom de template se masqueraient l'un l'autre : le
+     * template loader lit le classpath, et le premier trouvé gagne, silencieusement.
+     */
+    @Test
+    void noTwoModulesProvideTheSameTemplate() throws Exception {
+        Set<String> names = new LinkedHashSet<>();
+        List<String> duplicates = templates().stream()
+                .map(SparqlTemplate::name)
+                .filter(name -> !names.add(name))
+                .toList();
+
+        assertTrue(duplicates.isEmpty(), () -> "Ces templates sont fournis par plusieurs modules : " + duplicates);
     }
 
     /**
      * Un fichier inclus par un autre n'est pas une requête autonome : il ne parse que dans son hôte.
      */
-    private static Set<String> includedFragments() throws Exception {
+    private static Set<String> includedFragments(List<SparqlTemplate> templates) {
         Set<String> fragments = new LinkedHashSet<>();
-        try (var files = Files.walk(TEMPLATE_ROOT)) {
-            files.filter(p -> p.toString().endsWith(".ftlh")).forEach(p -> {
-                Matcher includes = INCLUDE.matcher(readString(p));
-                while (includes.find()) {
-                    fragments.add(Path.of(includes.group(1)).getFileName().toString());
-                }
-            });
+        for (SparqlTemplate template : templates) {
+            Matcher includes = INCLUDE.matcher(template.source());
+            while (includes.find()) {
+                fragments.add(Path.of(includes.group(1)).getFileName().toString());
+            }
         }
         return fragments;
     }
@@ -107,31 +175,45 @@ class SparqlTemplateRenderingTest {
      */
     @Test
     void noTemplateOverridesTheOutputFormat() throws Exception {
-        try (var files = Files.walk(TEMPLATE_ROOT)) {
-            List<Path> offenders = files.filter(p -> p.toString().endsWith(".ftlh"))
-                    .filter(p -> readString(p).contains("output_format"))
-                    .toList();
+        List<String> offenders = templates().stream()
+                .filter(template -> template.source().contains("output_format"))
+                .map(SparqlTemplate::name)
+                .toList();
 
-            assertTrue(offenders.isEmpty(), () -> "Ces templates redéclarent le format de sortie : " + offenders);
-        }
+        assertTrue(offenders.isEmpty(), () -> "Ces templates redéclarent le format de sortie : " + offenders);
     }
 
-    private static void assertRendersToAParsableQuery(Path path) throws Exception {
-        String source = readString(path);
-        String name = TEMPLATE_ROOT.relativize(path).toString().replace('\\', '/');
+    /**
+     * Les préfixes sont déclarés une seule fois, dans {@code request/prefixes.ftlh} (module-utility),
+     * que FreeMarker insère en tête de chaque template (auto-include). Un template qui les redéclare
+     * les dupliquerait dans la requête et ferait diverger les deux listes.
+     */
+    @Test
+    void noTemplateRedeclaresThePrefixes() throws Exception {
+        List<String> offenders = templates().stream()
+                .filter(template -> !PREFIXES_TEMPLATE.equals(template.fileName()))
+                .filter(template -> template.source().contains("PREFIX "))
+                .map(SparqlTemplate::name)
+                .toList();
+
+        assertTrue(offenders.isEmpty(),
+                () -> "Ces templates redéclarent des préfixes déjà fournis par prefixes.ftlh : " + offenders);
+    }
+
+    private static void assertRendersToAParsableQuery(SparqlTemplate sparqlTemplate) throws Exception {
+        String name = sparqlTemplate.name();
         Template template = FreemarkerConfig.getCfg().getTemplate(name);
 
-        for (Map<String, Object> parameters : dummyParameterSets(source)) {
+        for (Map<String, Object> parameters : dummyParameterSets(sparqlTemplate.source())) {
             StringWriter out = new StringWriter();
             template.process(parameters, out);
             String query = out.toString();
-            String withPrefixes = QueryUtils.PREFIXES + query;
             assertDoesNotThrow(
                     () -> {
                         if (UPDATE_FORM.matcher(query).find()) {
-                            QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, withPrefixes, "http://example.org/");
+                            QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, query, "http://example.org/");
                         } else {
-                            QueryParserUtil.parseQuery(QueryLanguage.SPARQL, withPrefixes, "http://example.org/");
+                            QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, "http://example.org/");
                         }
                     },
                     () -> name + " ne rend pas une requête SPARQL analysable :\n" + query);
@@ -243,8 +325,8 @@ class SparqlTemplateRenderingTest {
     private static String readString(Path path) {
         try {
             return Files.readString(path);
-        } catch (Exception e) {
-            throw new IllegalStateException("Template illisible : " + path, e);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Template illisible : " + path, e);
         }
     }
 }

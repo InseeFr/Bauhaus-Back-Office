@@ -81,11 +81,10 @@ public class RepositoryUtils {
 	 */
 	public static HttpStatus executeUpdate(String updateQuery,Repository repository) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
-		String queryWithPrefixes = QueryUtils.PREFIXES + updateQuery;
 		try (RepositoryConnection conn = repository.getConnection()) {
-			Update update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
+			Update update = conn.prepareUpdate(QueryLanguage.SPARQL, updateQuery);
 			update.execute();
-			logTrace("Repo {} --- Executed update --- \n{}", repository, queryWithPrefixes);
+			logTrace("Repo {} --- Executed update --- \n{}", repository, updateQuery);
 		} catch (RepositoryException e) {
 			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
@@ -94,10 +93,10 @@ public class RepositoryUtils {
 		return(HttpStatus.OK);
 	}
 
-	private static void logTrace(String message, Repository repository, String queryWithPrefixes) {
+	private static void logTrace(String message, Repository repository, String query) {
 		if (logger.isTraceEnabled()){
 			var repoUrl=repository instanceof HTTPRepository httpRepository ? httpRepository.getRepositoryURL():"unknown ("+repository.getClass()+")";
-			logger.trace(message, repoUrl, queryWithPrefixes);
+			logger.trace(message, repoUrl, query);
 		}
 	}
 
@@ -173,8 +172,7 @@ public class RepositoryUtils {
 	public static String getResponse(String query, Repository repository) throws DatabaseQueryException {
 		String response = "";
 		try (RepositoryConnection conn = repository.getConnection()) {
-			String queryWithPrefixes = QueryUtils.PREFIXES + query;
-			response = executeQuery(conn, queryWithPrefixes);
+			response = executeQuery(conn, query);
 		} catch (RDF4JException e) {
 			logAndThrowError(query, e);
 		}
@@ -194,8 +192,7 @@ public class RepositoryUtils {
 	public static boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
 		boolean response = false;
 		try (RepositoryConnection conn = repository.getConnection()) {
-			String queryWithPrefixes = QueryUtils.PREFIXES + query;
-			response = executeAskQuery(conn, queryWithPrefixes);
+			response = executeAskQuery(conn, query);
 		} catch (RDF4JException e) {
 			logAndThrowError(query, e);
 		}

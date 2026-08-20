@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -193,9 +194,6 @@ class CodeListsQueriesTest {
                 """), query);
     }
 
-    private static String normalize(String sparql) {
-        return sparql.replaceAll("\\s+", " ").trim();
-    }
 
     @Test
     void getDetailedCodesShouldSortOnTheCodeWhenNoSortIsRequested() throws RmesException {

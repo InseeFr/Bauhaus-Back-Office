@@ -15,6 +15,9 @@ public class FreemarkerConfig {
 
     static final Logger logger = LoggerFactory.getLogger(FreemarkerConfig.class);
 
+    /** Le fichier qui déclare les préfixes SPARQL, inséré en tête de chaque requête. */
+    private static final String PREFIXES_TEMPLATE = "prefixes.ftlh";
+
     static Configuration cfg;
 
     public static void init() {
@@ -52,6 +55,13 @@ public class FreemarkerConfig {
 
         // Wrap unchecked exceptions thrown during template processing into TemplateException-s.
         cfg.setWrapUncheckedExceptions(true);
+
+        // Les préfixes SPARQL sont déclarés une seule fois, dans request/prefixes.ftlh, et FreeMarker
+        // les insère en tête de chaque template rendu. Une requête sortie de FreeMarkerUtils est donc
+        // exécutable telle quelle : ni concaténation côté Java, ni <#include> à répéter dans les 196
+        // templates. Les fragments inclus par un autre template n'héritent pas de l'auto-include, ils
+        // le reçoivent via leur hôte.
+        cfg.addAutoInclude(PREFIXES_TEMPLATE);
 
 
     }

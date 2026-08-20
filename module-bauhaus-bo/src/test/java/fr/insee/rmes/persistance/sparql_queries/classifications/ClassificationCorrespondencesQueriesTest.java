@@ -5,6 +5,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ClassificationCorrespondencesQueriesTest {
@@ -78,9 +79,5 @@ class ClassificationCorrespondencesQueriesTest {
                 .contains("?scopeLg1 dcterms:language \"fr\"^^xsd:language")
                 .contains("?scopeLg2 dcterms:language \"en\"^^xsd:language")
                 .contains("LIMIT 1");
-    }
-
-    private static String normalize(String sparql) {
-        return sparql.replaceAll("\\s+", " ").trim();
     }
 }

@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -49,7 +50,7 @@ class OperationSeriesQueriesTest {
                 	}""";
         assertThatCode(()->actualRequest= operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.objectIRI(ObjectType.SERIES,id).toString()))
                 .doesNotThrowAnyException();
-        assertThat(actualRequest).isEqualToIgnoringNewLines(expectedGeneratedQuery);
+        assertThat(normalize(actualRequest)).isEqualTo(normalize(expectedGeneratedQuery));
     }
 
     private void prepareRdfUtils() {

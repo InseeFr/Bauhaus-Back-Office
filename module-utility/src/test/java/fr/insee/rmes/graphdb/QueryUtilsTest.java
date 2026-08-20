@@ -10,27 +10,6 @@ class QueryUtilsTest {
 
 
     @Test
-    void shouldHaveCorrectPrefixes() {
-        String prefixes = QueryUtils.PREFIXES;
-        
-        assertNotNull(prefixes);
-        assertTrue(prefixes.contains("PREFIX dcterms:<http://purl.org/dc/terms/>"));
-        assertTrue(prefixes.contains("PREFIX xkos:<http://rdf-vocabulary.ddialliance.org/xkos#>"));
-        assertTrue(prefixes.contains("PREFIX skos:<http://www.w3.org/2004/02/skos/core#>"));
-        assertTrue(prefixes.contains("PREFIX insee:<http://rdf.insee.fr/def/base#>"));
-        assertTrue(prefixes.contains("PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>"));
-        assertTrue(prefixes.contains("PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>"));
-        assertTrue(prefixes.contains("PREFIX xsd:<http://www.w3.org/2001/XMLSchema#>"));
-    }
-
-    @Test
-    void shouldDeclareTheOwlPrefixUsedByTheTemplates() {
-        assertTrue(
-                QueryUtils.PREFIXES.contains("PREFIX owl:<http://www.w3.org/2002/07/owl#>"),
-                "owl: est utilisé par les requêtes, il doit être déclaré et non hérité des namespaces du triplestore");
-    }
-
-    @Test
     void shouldCorrectEmptyGroupConcatForAltLabel() {
         String input = "[{\"altLabel\":\"\"}]";
         String result = QueryUtils.correctEmptyGroupConcat(input);

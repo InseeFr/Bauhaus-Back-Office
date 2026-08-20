@@ -15,6 +15,7 @@ import org.mockito.MockedStatic;
 
 import java.util.Map;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mockStatic;
@@ -326,9 +327,5 @@ class OperationDocumentsQueriesTest {
                 FILTER (?document = <http://bauhaus/documents/document/1000>)
                 }
                 """), sparql);
-    }
-
-    private static String normalize(String sparql) {
-        return sparql.replaceAll("\\s+", " ").trim();
     }
 }

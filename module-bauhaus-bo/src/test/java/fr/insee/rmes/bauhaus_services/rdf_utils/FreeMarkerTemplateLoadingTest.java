@@ -16,8 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * <p>
  * Ce n'est pas un doublon de {@code fr.insee.rmes.freemarker.FreeMarkerUtilsTest} (module-utility) :
  * {@code FreemarkerConfig} charge les templates via un {@code ClassTemplateLoader} sur {@code /request},
- * or seul module-bauhaus-bo embarque ces ressources. Les tests de module-utility ne peuvent donc couvrir
- * que les cas d'erreur ; le cas passant se teste ici.
+ * or seul module-bauhaus-bo embarque les templates de requêtes (module-utility n'y fournit que
+ * {@code prefixes.ftlh}). Les tests de module-utility ne peuvent donc couvrir que les cas d'erreur ;
+ * le cas passant se teste ici.
  */
 class FreeMarkerTemplateLoadingTest {
 
