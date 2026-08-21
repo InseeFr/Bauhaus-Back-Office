@@ -1,7 +1,7 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
@@ -39,18 +39,18 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     private final ConceptCollectionsQueries conceptCollectionsQueries;
     private final ConceptConceptsQueries conceptConceptsQueries;
     private final BauhausLanguagesProperties languages;
-    private final ConceptsUtils conceptsUtils;
+    private final LegacyConceptsRepository legacyConceptsRepository;
 
     public GraphDBConceptsRepository(RepositoryGestion repositoryGestion,
                                      ConceptCollectionsQueries conceptCollectionsQueries,
                                      ConceptConceptsQueries conceptConceptsQueries,
                                      BauhausLanguagesProperties languages,
-                                     @Lazy ConceptsUtils conceptsUtils) {
+                                     @Lazy LegacyConceptsRepository legacyConceptsRepository) {
         this.repositoryGestion = repositoryGestion;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
         this.conceptConceptsQueries = conceptConceptsQueries;
         this.languages = languages;
-        this.conceptsUtils = conceptsUtils;
+        this.legacyConceptsRepository = legacyConceptsRepository;
     }
 
     @Override
@@ -159,7 +159,7 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     private void delegateUpsert(Concept concept) throws ConceptsSaveException {
         try {
             String body = toLegacyJsonBody(concept);
-            conceptsUtils.setConcept(concept.id().value(), body);
+            legacyConceptsRepository.setConcept(concept.id().value(), body);
         } catch (RmesException e) {
             throw new ConceptsSaveException(e);
         }
@@ -216,7 +216,7 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
         try {
             JSONArray body = new JSONArray();
             ids.forEach(id -> body.put(id.value()));
-            conceptsUtils.conceptsValidation(body.toString());
+            legacyConceptsRepository.conceptsValidation(body.toString());
         } catch (RmesException e) {
             throw new ConceptsSaveException(e);
         }
@@ -225,7 +225,7 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     @Override
     public void delete(ConceptId id) throws ConceptsSaveException {
         try {
-            conceptsUtils.deleteConcept(id.value());
+            legacyConceptsRepository.deleteConcept(id.value());
         } catch (RmesException e) {
             throw new ConceptsSaveException(e);
         }

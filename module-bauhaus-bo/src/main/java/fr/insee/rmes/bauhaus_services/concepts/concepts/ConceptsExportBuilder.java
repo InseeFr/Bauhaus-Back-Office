@@ -33,7 +33,7 @@ public class ConceptsExportBuilder extends RdfService {
 
     private static final String CONCEPT_VERSION = "conceptVersion";
 
-    private final ConceptsUtils conceptsUtils;
+    private final LegacyConceptsRepository legacyConceptsRepository;
     private final OrganisationService organisationService;
     private final ExportUtils exportUtils;
     private final ConceptConceptsQueries conceptConceptsQueries;
@@ -45,9 +45,9 @@ public class ConceptsExportBuilder extends RdfService {
     public ConceptsExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
                                  RepositoryPublication repositoryPublication,
                                  PublicationUtils publicationUtils,
-                                 ConceptsUtils conceptsUtils, OrganisationService organisationService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
+                                 LegacyConceptsRepository legacyConceptsRepository, OrganisationService organisationService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-        this.conceptsUtils = conceptsUtils;
+        this.legacyConceptsRepository = legacyConceptsRepository;
         this.organisationService = organisationService;
         this.exportUtils = exportUtils;
         this.conceptConceptsQueries = conceptConceptsQueries;
@@ -70,7 +70,7 @@ public class ConceptsExportBuilder extends RdfService {
 
     public ConceptForExport getConceptData(String id) throws RmesException {
         ConceptForExport concept;
-        JSONObject general = conceptsUtils.getConceptById(id);
+        JSONObject general = legacyConceptsRepository.getConceptById(id);
         transformAltLabelListInString(general);
 
 

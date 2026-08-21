@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 class ConceptsExportBuilderTest {
 
     @Mock
-    private ConceptsUtils conceptsUtils;
+    private LegacyConceptsRepository legacyConceptsRepository;
 
     @Mock
     private ExportUtils exportUtils;
@@ -52,7 +52,7 @@ class ConceptsExportBuilderTest {
 
     @BeforeEach
     void setUp() {
-        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationService, exportUtils, conceptConceptsQueries);
+        conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, legacyConceptsRepository, organisationService, exportUtils, conceptConceptsQueries);
     }
 
     @Test
@@ -82,7 +82,7 @@ class ConceptsExportBuilderTest {
                 .put("definitionLg1", "Definition FR")
                 .put("definitionLg2", "Definition EN");
 
-        when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(links);
         when(repoGestion.getResponseAsObject(any())).thenReturn(notes);
 
@@ -94,7 +94,7 @@ class ConceptsExportBuilderTest {
         assertEquals(id, result.getId());
         assertEquals("Concept FR", result.getPrefLabelLg1());
         assertEquals("Concept EN", result.getPrefLabelLg2());
-        verify(conceptsUtils, times(1)).getConceptById(id);
+        verify(legacyConceptsRepository, times(1)).getConceptById(id);
         verify(repoGestion, times(1)).getResponseAsArray(any());
         verify(repoGestion, times(1)).getResponseAsObject(any());
     }
@@ -115,7 +115,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -126,7 +126,7 @@ class ConceptsExportBuilderTest {
         assertNotNull(result);
         assertEquals(id, result.getId());
         // Alt labels should be transformed to string
-        verify(conceptsUtils, times(1)).getConceptById(id);
+        verify(legacyConceptsRepository, times(1)).getConceptById(id);
     }
 
     @Test
@@ -234,7 +234,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -260,7 +260,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -286,7 +286,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -314,7 +314,7 @@ class ConceptsExportBuilderTest {
                 .put("contributor", "Contributor")
                 .put("conceptVersion", "1");
 
-        when(conceptsUtils.getConceptById(id)).thenReturn(conceptJson);
+        when(legacyConceptsRepository.getConceptById(id)).thenReturn(conceptJson);
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
 
@@ -345,7 +345,7 @@ class ConceptsExportBuilderTest {
         String creator = "HIE2000069";
         String contributor = "http://bauhaus/organisations/insee/HIE2003216";
 
-        when(conceptsUtils.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
+        when(legacyConceptsRepository.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
         when(organisationService.getOrganisationsMap(List.of(creator, contributor)))
@@ -368,7 +368,7 @@ class ConceptsExportBuilderTest {
         String creator = "http://bauhaus/organisations/insee/HIE000000";
         String contributor = "DG75-L201";
 
-        when(conceptsUtils.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
+        when(legacyConceptsRepository.getConceptById("c1")).thenReturn(conceptJsonWith(creator, contributor));
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
         when(organisationService.getOrganisationsMap(anyList())).thenReturn(Map.of());
@@ -384,7 +384,7 @@ class ConceptsExportBuilderTest {
     @Test
     void shouldKeepRawStampsWhenOrganisationLookupFails() throws RmesException {
         // Given une résolution des organisations qui échoue
-        when(conceptsUtils.getConceptById("c1")).thenReturn(conceptJsonWith("HIE2000069", "DG75-L201"));
+        when(legacyConceptsRepository.getConceptById("c1")).thenReturn(conceptJsonWith("HIE2000069", "DG75-L201"));
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject());
         when(organisationService.getOrganisationsMap(anyList()))

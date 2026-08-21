@@ -52,11 +52,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ConceptsUtils extends RdfService {
+public class LegacyConceptsRepository extends RdfService {
     private final BauhausLanguagesProperties languages;
 
 
-	private static final Logger logger = LoggerFactory.getLogger(ConceptsUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(LegacyConceptsRepository.class);
 	private final ConceptsPublication conceptsPublication;
 	private final NoteManager noteManager;
 	private final int maxLength;
@@ -64,10 +64,10 @@ public class ConceptsUtils extends RdfService {
 	private final ConceptsService conceptsService;
 	private final CollectionsService collectionsService;
 
-	public ConceptsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-						 RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
-						 PublicationUtils publicationUtils,
-						 ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries, ConceptsService conceptsService, CollectionsService collectionsService) {
+	public LegacyConceptsRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+									RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
+									PublicationUtils publicationUtils,
+									ConceptsPublication conceptsPublication, NoteManager noteManager, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, ConceptConceptsQueries conceptConceptsQueries, ConceptsService conceptsService, CollectionsService collectionsService) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
 		this.conceptsPublication = conceptsPublication;

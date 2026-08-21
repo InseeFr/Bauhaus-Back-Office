@@ -55,7 +55,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
-class ConceptsUtilsTest {
+class LegacyConceptsRepositoryTest {
 
     @Mock
     private RepositoryGestion repoGestion;
@@ -78,7 +78,7 @@ class ConceptsUtilsTest {
     @Mock
     private CollectionsService collectionsService;
 
-    private ConceptsUtils conceptsUtils;
+    private LegacyConceptsRepository legacyConceptsRepository;
     private ConceptsPublication conceptsPublication;
     private NoteManager noteManager;
     private ConceptConceptsQueries conceptConceptsQueries;
@@ -92,7 +92,7 @@ class ConceptsUtilsTest {
 
         noteManager = new NoteManager(notesRepository);
 
-        conceptsUtils = new ConceptsUtils(repoGestion, idGenerator, repositoryPublication, new BauhausLanguagesProperties("fr", "en"), publicationUtils, conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
+        legacyConceptsRepository = new LegacyConceptsRepository(repoGestion, idGenerator, repositoryPublication, new BauhausLanguagesProperties("fr", "en"), publicationUtils, conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
     }
 
     @Test
@@ -100,14 +100,14 @@ class ConceptsUtilsTest {
 
         ConceptsPublication conceptsPublication =  new ConceptsPublication(null, null, null, null, null, null);
         NoteManager noteManager = new NoteManager(null);
-        ConceptsUtils conceptsUtilsExample = new ConceptsUtils(null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null);
+        LegacyConceptsRepository legacyConceptsRepositoryExample = new LegacyConceptsRepository(null, null, null, null, null, conceptsPublication, noteManager, 19, null, null, null);
 
         ConceptForExport conceptForExport = new ConceptForExport();
         conceptForExport.setId("id");
         conceptForExport.setPrefLabelLg1("prefLabel1");
         conceptForExport.setPrefLabelLg2("prefLabel2");
 
-        String response = conceptsUtilsExample.getConceptExportFileName(conceptForExport);
+        String response = legacyConceptsRepositoryExample.getConceptExportFileName(conceptForExport);
 
         assertEquals("idPreflabel1",response);
     }
@@ -119,7 +119,7 @@ class ConceptsUtilsTest {
             for (String element : identifiers ){
                 JSONObject json = new JSONObject().put(Constants.NOTATION,element);
                 when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID())).thenReturn(json);
-                actual.add(conceptsUtils.createID());
+                actual.add(legacyConceptsRepository.createID());
                 }
         List<String> expected = List.of("c8","c9","c10");
         assertEquals(expected,actual);
@@ -129,21 +129,21 @@ class ConceptsUtilsTest {
     void shouldReturnFalseWhenCheckIfConceptExists() throws RmesException {
         String id= "2025";
         when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(false);
-        assertFalse(conceptsUtils.checkIfConceptExists(id));
+        assertFalse(legacyConceptsRepository.checkIfConceptExists(id));
     }
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenGetConceptById() throws RmesException {
         String id= "2025";
         when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists(id))).thenReturn(false);
-        RmesException exception = assertThrows(RmesNotFoundException.class, () ->conceptsUtils.getConceptById(id));
+        RmesException exception = assertThrows(RmesNotFoundException.class, () ->legacyConceptsRepository.getConceptById(id));
         Assertions.assertTrue(exception.getDetails().contains("This concept cannot be found in database"));
     }
 
     @Test
     void shouldCheckIfConceptExists() throws RmesException {
         when(repoGestion.getResponseAsBoolean(conceptConceptsQueries.checkIfExists("c1000"))).thenReturn(true);
-        Assertions.assertTrue(conceptsUtils.checkIfConceptExists("c1000"));
+        Assertions.assertTrue(legacyConceptsRepository.checkIfConceptExists("c1000"));
     }
 
     @Test
@@ -151,7 +151,7 @@ class ConceptsUtilsTest {
         RdfUtils.setGraphs(GraphsPropertiesStub.stub());
         when(repoGestion.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,"c1000")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.OK);
         when(repositoryPublication.executeUpdate(conceptConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,"c1000")),RdfUtils.conceptGraph().toString()))).thenReturn(HttpStatus.BAD_REQUEST);
-        HttpStatus actual = conceptsUtils.deleteConcept("c1000");
+        HttpStatus actual = legacyConceptsRepository.deleteConcept("c1000");
         assertEquals(HttpStatus.BAD_REQUEST,actual);
     }
 
@@ -159,7 +159,7 @@ class ConceptsUtilsTest {
     void shouldGetRelatedConcepts() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
         when(repoGestion.getResponseAsArray(conceptConceptsQueries.getRelatedConceptsQuery("http://bauhaus/concepts/definition/c1000"))).thenReturn(jsonArray);
-        JSONArray actual = conceptsUtils.getRelatedConcepts("http://bauhaus/concepts/definition/c1000");
+        JSONArray actual = legacyConceptsRepository.getRelatedConcepts("http://bauhaus/concepts/definition/c1000");
         assertEquals(jsonArray,actual);
     }
 
@@ -167,7 +167,7 @@ class ConceptsUtilsTest {
     void shouldGetGraphsWithConcept() throws RmesException {
         JSONArray jsonArray = new JSONArray().put("mocked Array");
         when(repoGestion.getResponseAsArray(conceptConceptsQueries.getGraphWithConceptQuery("http://bauhaus/concepts/definition/c1000"))).thenReturn(jsonArray);
-        JSONArray actual = conceptsUtils.getGraphsWithConcept("http://bauhaus/concepts/definition/c1000");
+        JSONArray actual = legacyConceptsRepository.getGraphsWithConcept("http://bauhaus/concepts/definition/c1000");
         assertEquals(jsonArray,actual);
     }
 
@@ -180,7 +180,7 @@ class ConceptsUtilsTest {
         when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID())).thenReturn(json);
 
         // When
-        String id = conceptsUtils.setConcept(body);
+        String id = legacyConceptsRepository.setConcept(body);
 
         // Then
         assertNotNull(id);
@@ -194,7 +194,7 @@ class ConceptsUtilsTest {
         String body = "{\"prefLabelLg1\":\"Updated Concept\",\"creator\":\"https://testCreator\",\"contributor\":\"https://testContributor\",\"disseminationStatus\":\"http://example.com/status\"}";
 
         // When/Then - Should not throw exception
-        assertDoesNotThrow(() -> conceptsUtils.setConcept(id, body));
+        assertDoesNotThrow(() -> legacyConceptsRepository.setConcept(id, body));
     }
 
     @Test
@@ -222,7 +222,7 @@ class ConceptsUtilsTest {
         when(publicationUtils.tranformBaseURIToPublish(any())).thenReturn(mockResource);
 
         // When
-        conceptsUtils.conceptsValidation(body);
+        legacyConceptsRepository.conceptsValidation(body);
 
         // Then - the validation writes validationState=Validated on the management graph
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -238,7 +238,7 @@ class ConceptsUtilsTest {
                 .thenReturn(new JSONObject().put(Constants.NOTATION, "c0010"));
 
         // When
-        conceptsUtils.setConcept(body);
+        legacyConceptsRepository.setConcept(body);
 
         // Then
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -257,7 +257,7 @@ class ConceptsUtilsTest {
                 .thenReturn(new JSONObject().put("state", ValidationStatus.VALIDATED.getValue()));
 
         // When updating it
-        conceptsUtils.setConcept(id, body);
+        legacyConceptsRepository.setConcept(id, body);
 
         // Then it transitions to Modified (provisoire déjà publiée)
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -276,7 +276,7 @@ class ConceptsUtilsTest {
                 .thenReturn(new JSONObject().put("state", ValidationStatus.UNPUBLISHED.getValue()));
 
         // When updating it
-        conceptsUtils.setConcept(id, body);
+        legacyConceptsRepository.setConcept(id, body);
 
         // Then it stays Unpublished
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -299,7 +299,7 @@ class ConceptsUtilsTest {
         when(repoGestion.getResponseAsObject(conceptConceptsQueries.lastConceptID())).thenReturn(new JSONObject());
 
         // When
-        String id = conceptsUtils.createID();
+        String id = legacyConceptsRepository.createID();
 
         // Then
         assertEquals("c0001", id);
@@ -334,7 +334,7 @@ class ConceptsUtilsTest {
         when(conceptsService.getCollectionIdsByConceptId(id)).thenReturn(Collections.emptyList());
 
         // When
-        JSONObject result = conceptsUtils.getConceptById(id);
+        JSONObject result = legacyConceptsRepository.getConceptById(id);
 
         // Then
         assertNotNull(result);
@@ -358,7 +358,7 @@ class ConceptsUtilsTest {
         when(conceptsService.getCollectionIdsByConceptId(id)).thenReturn(Collections.emptyList());
 
         // When
-        JSONObject result = conceptsUtils.getConceptById(id);
+        JSONObject result = legacyConceptsRepository.getConceptById(id);
 
         // Then
         assertNotNull(result);

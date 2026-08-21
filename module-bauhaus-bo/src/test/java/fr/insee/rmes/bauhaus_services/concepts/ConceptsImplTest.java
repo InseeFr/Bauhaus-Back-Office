@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.concepts;
 
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
@@ -50,7 +50,7 @@ import static org.mockito.Mockito.when;
 class ConceptsImplTest {
 
     @Mock
-    ConceptsUtils conceptsUtils;
+    LegacyConceptsRepository legacyConceptsRepository;
 
     @Mock
     RepositoryGestion repoGestion;
@@ -161,7 +161,7 @@ class ConceptsImplTest {
     void exportConceptTest() throws RmesException, IOException, URISyntaxException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationService, new ExportUtils(200, null), conceptConceptsQueries);
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, legacyConceptsRepository, organisationService, new ExportUtils(200, null), conceptConceptsQueries);
 
         ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
 
@@ -180,7 +180,7 @@ class ConceptsImplTest {
                     "conceptVersion": "2"
                 }
                 """);
-        when(conceptsUtils.getConceptById(idConcept)).thenReturn(jsonConcept);
+        when(legacyConceptsRepository.getConceptById(idConcept)).thenReturn(jsonConcept);
         when(organisationService.getOrganisationsMap(List.of("SSM-SDES", "DG75-L201")))
                 .thenReturn(Map.of(
                         "SSM-SDES", new OrganisationOption("SSM-SDES", "Service des données et études statistiques (SDES)"),
