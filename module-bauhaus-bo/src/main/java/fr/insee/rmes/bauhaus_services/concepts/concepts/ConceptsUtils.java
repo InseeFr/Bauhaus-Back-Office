@@ -235,7 +235,7 @@ public class ConceptsUtils extends RdfService {
 		List<List<IRI>> notesToDeleteAndUpdate = noteManager.setNotes(concept, model);
 
 		// Add links to model and save member links
-		new LinksUtils().createRdfLinks(conceptURI, concept.getLinks(), model);
+		new ConceptLinksRdfMapper().createRdfLinks(conceptURI, concept.getLinks(), model);
 
 		repoGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}

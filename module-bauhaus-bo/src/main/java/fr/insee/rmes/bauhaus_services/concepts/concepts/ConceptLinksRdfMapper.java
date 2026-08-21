@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import java.util.List;
 
-public class LinksUtils {
+public class ConceptLinksRdfMapper {
 
 	public void createRdfLinks(IRI conceptURI, List<Link> links, Model model) {
 

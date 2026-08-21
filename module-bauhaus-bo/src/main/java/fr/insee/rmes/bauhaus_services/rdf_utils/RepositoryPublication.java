@@ -207,7 +207,7 @@ public class RepositoryPublication{
 
 	private void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		// DCTERMS.REFERENCES est volontairement exclu : c'est le seul lien unidirectionnel,
-		// porté uniquement par le concept référençant (cf. LinksUtils.addTripleReferences).
+		// porté uniquement par le concept référençant (cf. ConceptLinksRdfMapper.addTripleReferences).
 		// Aucune étape ne le reconstruit côté objet ; effacer le lien entrant en publiant le
 		// concept référencé le perdrait définitivement quand celui-ci est publié après le
 		// concept référençant (#1495). Sa mise à jour reste gérée à la republication du

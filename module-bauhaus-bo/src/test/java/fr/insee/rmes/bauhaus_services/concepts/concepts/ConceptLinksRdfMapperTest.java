@@ -23,13 +23,13 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class LinksUtilsTest {
+class ConceptLinksRdfMapperTest {
 
     private static final ValueFactory FACTORY = SimpleValueFactory.getInstance();
     private static final IRI CONCEPTS_GRAPH = FACTORY.createIRI("http://rdf.insee.fr/graphes/concepts/");
     private static final IRI SOURCE = FACTORY.createIRI("http://bauhaus//concepts/definition/c-source");
 
-    private final LinksUtils linksUtils = new LinksUtils();
+    private final ConceptLinksRdfMapper conceptLinksRdfMapper = new ConceptLinksRdfMapper();
     private final Model model = new LinkedHashModel();
 
     @BeforeAll
@@ -41,7 +41,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldMapNarrowerToSkosNarrowerAndItsInverse() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("narrower", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("narrower", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).containsExactlyInAnyOrder(
                 statement(SOURCE, SKOS.NARROWER, concept("c-target")),
@@ -50,7 +50,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldMapBroaderToSkosBroaderAndItsInverse() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("broader", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("broader", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).containsExactlyInAnyOrder(
                 statement(SOURCE, SKOS.BROADER, concept("c-target")),
@@ -59,7 +59,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldMapRelatedToSkosRelatedInBothDirections() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("related", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("related", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).containsExactlyInAnyOrder(
                 statement(SOURCE, SKOS.RELATED, concept("c-target")),
@@ -68,7 +68,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldMapReferencesWithoutAnyInverseStatement() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("references", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("references", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).containsExactly(
                 statement(SOURCE, DCTERMS.REFERENCES, concept("c-target")));
@@ -76,7 +76,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldMapSucceedToDctermsReplacesAndItsInverse() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("succeed", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("succeed", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).containsExactlyInAnyOrder(
                 statement(SOURCE, DCTERMS.REPLACES, concept("c-target")),
@@ -85,7 +85,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldMapSucceededByToDctermsIsReplacedByAndItsInverse() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("succeededBy", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("succeededBy", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).containsExactlyInAnyOrder(
                 statement(SOURCE, DCTERMS.IS_REPLACED_BY, concept("c-target")),
@@ -94,7 +94,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldBuildCloseMatchFromTheUrnAndNotFromTheIds() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE,
+        conceptLinksRdfMapper.createRdfLinks(SOURCE,
                 links("closeMatch", "\"ids\":[\"c-target\"],\"urn\":[\"http://external/concept/42\"]"), model);
 
         assertThat(model).containsExactly(
@@ -103,7 +103,7 @@ class LinksUtilsTest {
 
     @Test
     void shouldCreateFourStatementsWhenALinkCarriesTwoIds() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("narrower", "\"ids\":[\"c-first\",\"c-second\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("narrower", "\"ids\":[\"c-first\",\"c-second\"]"), model);
 
         assertThat(model).containsExactlyInAnyOrder(
                 statement(SOURCE, SKOS.NARROWER, concept("c-first")),
@@ -114,14 +114,14 @@ class LinksUtilsTest {
 
     @Test
     void shouldIgnoreAnUnknownTypeOfLink() throws RmesException {
-        linksUtils.createRdfLinks(SOURCE, links("unknownType", "\"ids\":[\"c-target\"]"), model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, links("unknownType", "\"ids\":[\"c-target\"]"), model);
 
         assertThat(model).isEmpty();
     }
 
     @Test
     void shouldLeaveTheModelUntouchedWhenThereIsNoLink() {
-        linksUtils.createRdfLinks(SOURCE, null, model);
+        conceptLinksRdfMapper.createRdfLinks(SOURCE, null, model);
 
         assertThat(model).isEmpty();
     }
