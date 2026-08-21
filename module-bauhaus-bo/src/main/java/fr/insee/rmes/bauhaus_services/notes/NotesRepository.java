@@ -28,14 +28,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
-public class NotesUtils  extends RdfService {
+public class NotesRepository  extends RdfService {
 
 	private final ConceptNotesQueries conceptNotesQueries;
 
-	public NotesUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-					  RepositoryPublication repositoryPublication,
-					  PublicationUtils publicationUtils,
-					  ConceptNotesQueries conceptNotesQueries) {
+	public NotesRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+						   RepositoryPublication repositoryPublication,
+						   PublicationUtils publicationUtils,
+						   ConceptNotesQueries conceptNotesQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.conceptNotesQueries = conceptNotesQueries;
 	}

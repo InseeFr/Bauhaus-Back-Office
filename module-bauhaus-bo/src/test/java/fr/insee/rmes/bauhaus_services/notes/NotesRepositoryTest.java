@@ -23,21 +23,21 @@ import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class NotesUtilsTest {
+class NotesRepositoryTest {
 
     @Test
     void shouldGetVersion() throws RmesException {
         Concept concept = new Concept("id",true);
         VersionableNote versionableNote = new VersionableNote();
         String defaultBVersion = "defaultVersion";
-        NotesUtils notesUtils = new NotesUtils(null, null, null, null, null);
-        String result= notesUtils.getVersion(concept,versionableNote,defaultBVersion);
+        NotesRepository notesRepository = new NotesRepository(null, null, null, null, null);
+        String result= notesRepository.getVersion(concept,versionableNote,defaultBVersion);
         assertEquals("1",result);
     }
 
     @Test
     void createRdfDatableNote_shouldAddExpectedStatements() {
-        NotesUtils notesUtils = new NotesUtils(null, null, null, null, null);
+        NotesRepository notesRepository = new NotesRepository(null, null, null, null, null);
 
 
         ValueFactory vf = SimpleValueFactory.getInstance();
@@ -77,7 +77,7 @@ class NotesUtilsTest {
             rdfUtils.when(() -> RdfUtils.setLiteralXML(content)).thenReturn(xmlLit);
             rdfUtils.when(() -> RdfUtils.setLiteralString(content)).thenReturn(stringLit);
 
-            notesUtils.createRdfDatableNote(conceptId, noteDto, model);
+            notesRepository.createRdfDatableNote(conceptId, noteDto, model);
 
             verify(model).add(conceptIri, predicate, noteIri, graph);
             verify(model).add(noteIri, RDF.TYPE, XKOS.EXPLANATORY_NOTE, graph);

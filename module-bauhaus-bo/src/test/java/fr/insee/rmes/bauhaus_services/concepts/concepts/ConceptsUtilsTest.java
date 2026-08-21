@@ -6,7 +6,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.notes.NoteManager;
-import fr.insee.rmes.bauhaus_services.notes.NotesUtils;
+import fr.insee.rmes.bauhaus_services.notes.NotesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
@@ -70,7 +70,7 @@ class ConceptsUtilsTest {
     private PublicationUtils publicationUtils;
 
     @Mock
-    private NotesUtils notesUtils;
+    private NotesRepository notesRepository;
 
     @Mock
     private ConceptsService conceptsService;
@@ -90,7 +90,7 @@ class ConceptsUtilsTest {
 
         conceptsPublication = new ConceptsPublication(repoGestion, idGenerator, repositoryPublication, publicationUtils, conceptConceptsQueries, null);
 
-        noteManager = new NoteManager(notesUtils);
+        noteManager = new NoteManager(notesRepository);
 
         conceptsUtils = new ConceptsUtils(repoGestion, idGenerator, repositoryPublication, new BauhausLanguagesProperties("fr", "en"), publicationUtils, conceptsPublication, noteManager, 5, conceptConceptsQueries, conceptsService, collectionsService);
     }
