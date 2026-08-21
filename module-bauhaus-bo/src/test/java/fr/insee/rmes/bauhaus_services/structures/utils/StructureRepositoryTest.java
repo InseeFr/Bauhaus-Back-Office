@@ -39,9 +39,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @AppSpringBootTest
-class StructureUtilsTest {
+class StructureRepositoryTest {
     @InjectMocks
-    StructureUtils structureUtils;
+    StructureRepository structureRepository;
 
     @Spy
     BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
@@ -62,46 +62,46 @@ class StructureUtilsTest {
         Structure structure = new Structure();
         structure.setId("id");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureUtils.deleteStructure("id"));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.deleteStructure("id"));
         Assertions.assertEquals("{\"code\":1103,\"message\":\"Only unpublished codelist can be deleted\"}", exception.getDetails());
     }
 
     @Test
     void shouldThrowRmesExceptionWhenSetStructure()  {
-        RmesException exception = assertThrows(RmesException.class, () -> structureUtils.setStructure(fakeJsonObjectBody));
+        RmesException exception = assertThrows(RmesException.class, () -> structureRepository.setStructure(fakeJsonObjectBody));
         Assertions.assertTrue( exception.getDetails().contains("{\"details\":\"IOException\",\"message\":\"Unrecognized token"));
     }
 
     @Test
     void shouldThrowRmesExceptionWhenPublishStructureWhenCreatorEmpty()  {
         JSONObject jsonObject = new JSONObject().put(Constants.CREATOR,"");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureUtils.publishStructure(jsonObject));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
         Assertions.assertEquals(("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}"), exception.getDetails());
     }
 
     @Test
     void shouldThrowRmesExceptionWhenPublishStructureWhenCreatorNull()  {
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureUtils.publishStructure(new JSONObject()));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(new JSONObject()));
         Assertions.assertEquals(("{\"code\":1004,\"details\":\"[]\",\"message\":\"The creator should not be empty\"}"), exception.getDetails());
     }
 
     @Test
     void shouldThrowRmesExceptionWhenPublishStructureWhenDisseminationStatusNull()  {
         JSONObject jsonObject = new JSONObject().put(Constants.CREATOR,"creatorExample");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureUtils.publishStructure(jsonObject));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
         Assertions.assertEquals("{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}",exception.getDetails());
     }
 
     @Test
     void shouldThrowRmesExceptionWhenPublishStructureWhenDisseminationStatusIsEmpty()  {
         JSONObject jsonObject = new JSONObject().put(Constants.CREATOR,"creatorExample").put("disseminationStatus","");
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureUtils.publishStructure(jsonObject));
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.publishStructure(jsonObject));
         Assertions.assertEquals("{\"code\":1005,\"details\":\"[]\",\"message\":\"The dissemination status should not be empty\"}",exception.getDetails());
     }
 
     @Test
     void shouldThrowRmesExceptionWhenSetStructureWithIdAndBody()  {
-       RmesException exception = assertThrows(RmesException.class, () -> structureUtils.setStructure("idExample",fakeJsonObjectBody));
+       RmesException exception = assertThrows(RmesException.class, () -> structureRepository.setStructure("idExample",fakeJsonObjectBody));
        Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"IOException\""));
     }
 
@@ -130,7 +130,7 @@ class StructureUtilsTest {
             structure.setContributor(List.of("http://contributor-uri"));
             structure.setComponentDefinitions(List.of());
 
-            structureUtils.createRdfStructure(structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
+            structureRepository.createRdfStructure(structure, "dsd1000", structureIri, graph, ValidationStatus.UNPUBLISHED);
 
             ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion).loadSimpleObject(eq(structureIri), modelCaptor.capture(), isNull());

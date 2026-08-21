@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
+import fr.insee.rmes.bauhaus_services.structures.utils.StructureRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructure;
 import fr.insee.rmes.graphdb.ontologies.QB;
@@ -30,7 +30,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	
 	static final Logger logger = LoggerFactory.getLogger(StructureImpl.class);
 
-	private final StructureUtils structureUtils;
+	private final StructureRepository structureRepository;
 
 	private final CodeListService codeListService;
 
@@ -41,10 +41,10 @@ public class StructureImpl  extends RdfService implements StructureService {
 	public StructureImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
 						 RepositoryPublication repositoryPublication,
 						 PublicationUtils publicationUtils,
-						 StructureUtils structureUtils, CodeListService codeListService,
+						 StructureRepository structureRepository, CodeListService codeListService,
 						 StructureQueries structureQueries, ConceptConceptsQueries conceptConceptsQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.structureUtils = structureUtils;
+		this.structureRepository = structureRepository;
 		this.codeListService = codeListService;
 		this.structureQueries = structureQueries;
 		this.conceptConceptsQueries = conceptConceptsQueries;
@@ -64,7 +64,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	public String getStructuresForSearch() throws RmesException {
 		logger.info("Starting to get Structures for advanced Search");
 		JSONArray structures = repoGestion.getResponseAsArray(structureQueries.getStructures());
-		return structureUtils.formatStructuresForSearch(structures).toString();
+		return structureRepository.formatStructuresForSearch(structures).toString();
 	}
 	
 	@Override
@@ -75,7 +75,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 		IRI iri = RdfUtils.structureIRI(id);
 		this.repoGestion.getMultipleTripletsForObject(structure, "contributor", structureQueries.getStructureContributors(iri), "contributor");
 
-		return structureUtils.formatStructure(structure, id).toString();
+		return structureRepository.formatStructure(structure, id).toString();
 	}
 
 	private void removeEmptyAttachment(JSONObject cd){
@@ -87,7 +87,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	public String getStructureByIdWithDetails(String id) throws RmesException {
 		logger.info("Starting to get all details of a structure");
 		JSONObject structure = repoGestion.getResponseAsObject(structureQueries.getStructureById(id));
-		JSONObject structureWithComponentSpecifications = structureUtils.formatStructure(structure, id);
+		JSONObject structureWithComponentSpecifications = structureRepository.formatStructure(structure, id);
 		JSONArray componentDefinitions = (JSONArray) structureWithComponentSpecifications.get("componentDefinitions");
 		componentDefinitions.forEach(o -> {
 			JSONObject cd = (JSONObject) o;
@@ -142,7 +142,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 
 	@Override
 	public String publishStructureById(String id) throws RmesException {
-		return structureUtils.publishStructure(new JSONObject(this.getStructureById(id)));
+		return structureRepository.publishStructure(new JSONObject(this.getStructureById(id)));
 	}
 
 	/**
@@ -151,7 +151,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	 */
 	@Override
 	public String setStructure(String body) throws RmesException {
-		return structureUtils.setStructure(body);
+		return structureRepository.setStructure(body);
 	}
 	
 	/**
@@ -160,12 +160,12 @@ public class StructureImpl  extends RdfService implements StructureService {
 	 */
 	@Override
 	public String setStructure(String id, String body) throws RmesException {
-		return structureUtils.setStructure(id, body);
+		return structureRepository.setStructure(id, body);
 	}
 
 	@Override
 	public void deleteStructure(String structureId) throws RmesException {
-		structureUtils.deleteStructure(structureId);
+		structureRepository.deleteStructure(structureId);
 	}
 
 

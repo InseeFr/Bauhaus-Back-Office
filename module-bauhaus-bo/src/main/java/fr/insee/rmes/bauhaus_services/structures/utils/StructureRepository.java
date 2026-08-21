@@ -41,12 +41,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class StructureUtils extends RdfService {
+public class StructureRepository extends RdfService {
     private final BauhausLanguagesProperties languages;
 
 
     private static final String IO_EXCEPTION = "IOException";
-	static final Logger logger = LoggerFactory.getLogger(StructureUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(StructureRepository.class);
     public static final String ATTACHMENT = "attachment";
     public static final String REQUIRED = "required";
     public static final String ORDER = "order";
@@ -65,11 +65,11 @@ public class StructureUtils extends RdfService {
 
     private final StructurePublication structurePublication;
 
-    public StructureUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                          RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
-                          PublicationUtils publicationUtils,
-                          StructureComponent structureComponent, StructureQueries structureQueries,
-                          StructureComponentRepository structureComponentRepository, StructurePublication structurePublication) {
+    public StructureRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                               RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
+                               PublicationUtils publicationUtils,
+                               StructureComponent structureComponent, StructureQueries structureQueries,
+                               StructureComponentRepository structureComponentRepository, StructurePublication structurePublication) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.structureComponent = structureComponent;
