@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.structures.utils;
+package fr.insee.rmes.bauhaus_services.structures.persistence;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
@@ -29,8 +29,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentRepository.MODIFIED;
-import static fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentRepository.VALIDATED;
+import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.MODIFIED;
+import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.VALIDATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;

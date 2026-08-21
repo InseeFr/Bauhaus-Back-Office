@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.structures.utils;
+package fr.insee.rmes.bauhaus_services.structures.persistence;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;

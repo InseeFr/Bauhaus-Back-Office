@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentRepository;
+import fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;

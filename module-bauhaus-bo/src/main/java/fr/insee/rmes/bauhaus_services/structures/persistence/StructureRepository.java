@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.structures.utils;
+package fr.insee.rmes.bauhaus_services.structures.persistence;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

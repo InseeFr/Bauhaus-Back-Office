@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureRepository;
+import fr.insee.rmes.bauhaus_services.structures.persistence.StructureRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructure;
 import fr.insee.rmes.graphdb.ontologies.QB;

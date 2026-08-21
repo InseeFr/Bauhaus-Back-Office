@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.structures.utils;
+package fr.insee.rmes.bauhaus_services.structures.persistence;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
