@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Cause racine : `RdfUtils.collectionIRI` produit une IRI doublée
  * (`http://bauhaus/http://bauhaus/...`) car `BauhausUriBuilder.getBaseUriGestion(COLLECTION)`
  * concatène `baseUriGestion` avec une `baseURI` qui le contient déjà. Côté legacy,
- * `CollectionsUtils.collectionsValidation` et `ConceptsPublication.publishCollection`
+ * `LegacyCollectionsRepository.collectionsValidation` et `ConceptsPublication.publishCollection`
  * écrivaient donc à la mauvaise IRI ; les triplets `isValidated true` n'étaient
  * jamais lisibles ni dans le graphe gestion ni dans le graphe publication.
  *

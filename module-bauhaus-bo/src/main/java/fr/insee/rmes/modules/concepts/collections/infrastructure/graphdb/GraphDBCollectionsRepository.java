@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.collections.LegacyCollectionsRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
@@ -63,7 +63,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     private final RepositoryGestion repositoryGestion;
     private final GraphDBCollectionProperties graphDBCollectionProperties;
     private final ConceptCollectionsQueries conceptCollectionsQueries;
-    private final CollectionsUtils collectionsUtils;
+    private final LegacyCollectionsRepository legacyCollectionsRepository;
     private final CollectionExportBuilder collectionExportBuilder;
     private final ConceptsService conceptsService;
     private final int filenameMaxLength;
@@ -71,14 +71,14 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     public GraphDBCollectionsRepository(RepositoryGestion repositoryGestion,
                                         GraphDBCollectionProperties graphDBCollectionProperties,
                                         ConceptCollectionsQueries conceptCollectionsQueries,
-                                        CollectionsUtils collectionsUtils,
+                                        LegacyCollectionsRepository legacyCollectionsRepository,
                                         CollectionExportBuilder collectionExportBuilder,
                                         @Lazy ConceptsService conceptsService,
                                         @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int filenameMaxLength) {
         this.repositoryGestion = repositoryGestion;
         this.graphDBCollectionProperties = graphDBCollectionProperties;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
-        this.collectionsUtils = collectionsUtils;
+        this.legacyCollectionsRepository = legacyCollectionsRepository;
         this.collectionExportBuilder = collectionExportBuilder;
         this.conceptsService = conceptsService;
         this.filenameMaxLength = filenameMaxLength;
@@ -251,7 +251,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         JSONArray ids = new JSONArray();
         collectionIds.forEach(id -> ids.put(id.value()));
         try {
-            collectionsUtils.collectionsValidation(ids);
+            legacyCollectionsRepository.collectionsValidation(ids);
         } catch (RmesException e) {
             throw new CollectionsSaveException(e);
         }

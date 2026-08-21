@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CollectionsUtilsTest {
+class LegacyCollectionsRepositoryTest {
 
     @Mock
     private ConceptsPublication conceptsPublication;
@@ -36,7 +36,7 @@ class CollectionsUtilsTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
-    private CollectionsUtils collectionsUtils;
+    private LegacyCollectionsRepository legacyCollectionsRepository;
 
     @BeforeAll
     static void initConfig() {
@@ -49,7 +49,7 @@ class CollectionsUtilsTest {
         GraphDBCollectionProperties collectionProperties =
                 new GraphDBCollectionProperties("http://rdf.insee.fr/graphes/concepts/definitions",
                         "http://bauhaus//concepts/definitions");
-        collectionsUtils = new CollectionsUtils(conceptsPublication, repositoryGestion, collectionProperties);
+        legacyCollectionsRepository = new LegacyCollectionsRepository(conceptsPublication, repositoryGestion, collectionProperties);
     }
 
     @Test
@@ -58,7 +58,7 @@ class CollectionsUtilsTest {
         String body = "[\"collection1\", \"collection2\", \"collection3\"]";
 
         // When/Then - Should not throw exception
-        assertDoesNotThrow(() -> collectionsUtils.collectionsValidation(body));
+        assertDoesNotThrow(() -> legacyCollectionsRepository.collectionsValidation(body));
 
         // Verify that publication was called
         verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
@@ -73,7 +73,7 @@ class CollectionsUtilsTest {
                 .put("collection2");
 
         // When
-        collectionsUtils.collectionsValidation(collectionsToValidate);
+        legacyCollectionsRepository.collectionsValidation(collectionsToValidate);
 
         // Then
         verify(conceptsPublication, times(1)).publishCollection(collectionsToValidate);
@@ -86,7 +86,7 @@ class CollectionsUtilsTest {
         String body = "[\"collection1\"]";
 
         // When
-        collectionsUtils.collectionsValidation(body);
+        legacyCollectionsRepository.collectionsValidation(body);
 
         // Then
         verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
@@ -99,7 +99,7 @@ class CollectionsUtilsTest {
         String body = "[\"collection1\"]";
 
         // When
-        collectionsUtils.collectionsValidation(body);
+        legacyCollectionsRepository.collectionsValidation(body);
 
         // Then - validation writes validationState=Validated
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -126,7 +126,7 @@ class CollectionsUtilsTest {
                 .put("col4");
 
         // When
-        collectionsUtils.collectionsValidation(collectionsToValidate);
+        legacyCollectionsRepository.collectionsValidation(collectionsToValidate);
 
         // Then
         verify(conceptsPublication, times(1)).publishCollection(collectionsToValidate);
@@ -139,7 +139,7 @@ class CollectionsUtilsTest {
         String body = "[\"Collection 1\", \"Collection 2\"]";
 
         // When
-        collectionsUtils.collectionsValidation(body);
+        legacyCollectionsRepository.collectionsValidation(body);
 
         // Then
         verify(conceptsPublication, times(1)).publishCollection(any(JSONArray.class));
@@ -152,7 +152,7 @@ class CollectionsUtilsTest {
         JSONArray emptyArray = new JSONArray();
 
         // When
-        collectionsUtils.collectionsValidation(emptyArray);
+        legacyCollectionsRepository.collectionsValidation(emptyArray);
 
         // Then
         verify(conceptsPublication, times(1)).publishCollection(emptyArray);

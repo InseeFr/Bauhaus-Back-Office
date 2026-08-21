@@ -19,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CollectionsUtils  {
+public class LegacyCollectionsRepository  {
 	
-	static final Logger logger = LoggerFactory.getLogger(CollectionsUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(LegacyCollectionsRepository.class);
 	
 	private final ConceptsPublication conceptsPublication;
 	private final RepositoryGestion repositoryGestion;
 	private final GraphDBCollectionProperties collectionProperties;
 
-	public CollectionsUtils(ConceptsPublication conceptsPublication,
-							RepositoryGestion repositoryGestion,
-							GraphDBCollectionProperties collectionProperties
+	public LegacyCollectionsRepository(ConceptsPublication conceptsPublication,
+									   RepositoryGestion repositoryGestion,
+									   GraphDBCollectionProperties collectionProperties
     ) {
         this.conceptsPublication = conceptsPublication;
         this.repositoryGestion = repositoryGestion;
