@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@code StructureQueries.lastId} alimente le compteur des composants mutualisés :
- * {@code StructureComponentUtils.generateNextId} rend « d »/« m »/« a » + (dernier identifiant + 1).
+ * {@code StructureComponentRepository.generateNextId} rend « d »/« m »/« a » + (dernier identifiant + 1).
  * Le graphe des composants contient d'autres ressources du même rdf:type que les composants
  * mutualisés ; seule une exécution réelle montre si elles polluent le compteur.
  */

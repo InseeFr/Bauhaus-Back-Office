@@ -38,10 +38,10 @@ import java.io.IOException;
 import java.util.Arrays;
 
 @Component
-public class StructureComponentUtils extends RdfService {
+public class StructureComponentRepository extends RdfService {
     private final BauhausLanguagesProperties languages;
 
-    static final Logger logger = LoggerFactory.getLogger(StructureComponentUtils.class);
+    static final Logger logger = LoggerFactory.getLogger(StructureComponentRepository.class);
 
     private static final String MAX_LENGTH = "maxLength";
 	private static final String MIN_LENGTH = "minLength";
@@ -58,11 +58,11 @@ public class StructureComponentUtils extends RdfService {
 
     private final ConceptConceptsQueries conceptConceptsQueries;
 
-    public StructureComponentUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-                                   RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
-                                   PublicationUtils publicationUtils,
-                                   ComponentPublication componentPublication, StructureQueries structureQueries,
-                                   CodeListsQueries codeListsQueries, ConceptConceptsQueries conceptConceptsQueries) {
+    public StructureComponentRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+                                        RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
+                                        PublicationUtils publicationUtils,
+                                        ComponentPublication componentPublication, StructureQueries structureQueries,
+                                        CodeListsQueries codeListsQueries, ConceptConceptsQueries conceptConceptsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.componentPublication = componentPublication;

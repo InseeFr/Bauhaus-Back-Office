@@ -61,7 +61,7 @@ public class StructureUtils extends RdfService {
 
     private final StructureQueries structureQueries;
 
-    private final StructureComponentUtils structureComponentUtils;
+    private final StructureComponentRepository structureComponentRepository;
 
     private final StructurePublication structurePublication;
 
@@ -69,12 +69,12 @@ public class StructureUtils extends RdfService {
                           RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                           PublicationUtils publicationUtils,
                           StructureComponent structureComponent, StructureQueries structureQueries,
-                          StructureComponentUtils structureComponentUtils, StructurePublication structurePublication) {
+                          StructureComponentRepository structureComponentRepository, StructurePublication structurePublication) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
         this.structureComponent = structureComponent;
         this.structureQueries = structureQueries;
-        this.structureComponentUtils = structureComponentUtils;
+        this.structureComponentRepository = structureComponentRepository;
         this.structurePublication = structurePublication;
     }
 
@@ -307,7 +307,7 @@ public class StructureUtils extends RdfService {
     }
 
     public void createMutualizedComponent(MutualizedComponent component) throws RmesException {
-        String id = structureComponentUtils.createComponent(component, new JSONObject());
+        String id = structureComponentRepository.createComponent(component, new JSONObject());
         component.setId(id);
     }
 

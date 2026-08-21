@@ -6,7 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
+import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
@@ -26,16 +26,16 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public static final String ATTRIBUTE_IRI = "attributeIRI";
     public static final String VALUE_IRI = "valueIri";
 
-    private final StructureComponentUtils structureComponentUtils;
+    private final StructureComponentRepository structureComponentRepository;
 
     private final StructureQueries structureQueries;
 
     public StructureComponentImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
                                   RepositoryPublication repositoryPublication,
                                   PublicationUtils publicationUtils,
-                                  StructureComponentUtils structureComponentUtils, StructureQueries structureQueries) {
+                                  StructureComponentRepository structureComponentRepository, StructureQueries structureQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-        this.structureComponentUtils = structureComponentUtils;
+        this.structureComponentRepository = structureComponentRepository;
         this.structureQueries = structureQueries;
     }
 
@@ -98,7 +98,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
             }
         }
 
-        return structureComponentUtils.formatComponent(id, component);
+        return structureComponentRepository.formatComponent(id, component);
     }
 
     @Override
@@ -108,12 +108,12 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
 
     @Override
     public String updateComponent(String componentId, String body) throws RmesException {
-        return structureComponentUtils.updateComponent(componentId, body);
+        return structureComponentRepository.updateComponent(componentId, body);
     }
 
     @Override
     public String createComponent( String body) throws RmesException {
-        return structureComponentUtils.createComponent(body);
+        return structureComponentRepository.createComponent(body);
     }
 
     @Override
@@ -123,11 +123,11 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
             throw new RmesNotFoundException("Not Found","component with "+id+" not found");
         }
         String type = response.getString("type");
-        structureComponentUtils.deleteComponent(response, id, type);
+        structureComponentRepository.deleteComponent(response, id, type);
     }
 
     @Override
     public String publishComponent(String id) throws RmesException {
-        return structureComponentUtils.publishComponent(this.getComponentObject(id));
+        return structureComponentRepository.publishComponent(this.getComponentObject(id));
     }
 }
