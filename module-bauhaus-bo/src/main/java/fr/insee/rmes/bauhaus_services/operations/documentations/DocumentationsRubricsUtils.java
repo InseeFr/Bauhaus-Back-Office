@@ -6,7 +6,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
+import fr.insee.rmes.bauhaus_services.organizations.OrganizationRepository;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -70,7 +70,7 @@ DocumentationsRubricsUtils extends RdfService {
 
 	private DocumentsUtils docUtils;
 
-	private final OrganizationUtils organizationUtils;
+	private final OrganizationRepository organizationRepository;
 
 	private final fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup;
 
@@ -84,7 +84,7 @@ DocumentationsRubricsUtils extends RdfService {
 									  RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 									  PublicationUtils publicationUtils,
 									  MetadataStructureDefUtils msdUtils, DocumentationQueries documentationQueries,
-									  DocumentsUtils docUtils, OrganizationUtils organizationUtils,
+									  DocumentsUtils docUtils, OrganizationRepository organizationRepository,
 									  fr.insee.rmes.bauhaus_services.utils.OrganisationLookup organisationLookup,
 									  CodeListService codeListService, LangService langService,
 									  GeographyService geoService) {
@@ -93,7 +93,7 @@ DocumentationsRubricsUtils extends RdfService {
 		this.msdUtils = msdUtils;
 		this.documentationQueries = documentationQueries;
 		this.docUtils = docUtils;
-		this.organizationUtils = organizationUtils;
+		this.organizationRepository = organizationRepository;
 		this.organisationLookup = organisationLookup;
 		this.codeListService = codeListService;
 		this.langService = langService;

@@ -24,7 +24,7 @@ import java.util.List;
 @Service
 public class OrganizationsServiceImpl  extends RdfService implements OrganizationsService {
 
-	private final OrganizationUtils organizationUtils;
+	private final OrganizationRepository organizationRepository;
 
 	private final FamOpeSerIndUtils famOpeSerUtils;
 
@@ -33,23 +33,23 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	public OrganizationsServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
 									RepositoryPublication repositoryPublication,
 									PublicationUtils publicationUtils,
-									OrganizationUtils organizationUtils, FamOpeSerIndUtils famOpeSerUtils,
+									OrganizationRepository organizationRepository, FamOpeSerIndUtils famOpeSerUtils,
 									OrganizationQueries organizationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.organizationUtils = organizationUtils;
+		this.organizationRepository = organizationRepository;
 		this.famOpeSerUtils = famOpeSerUtils;
 		this.organizationQueries = organizationQueries;
 	}
 	
 	@Override
 	public String getOrganizationJsonString(String organizationIdentifier) throws RmesException {
-		JSONObject orgaJson = organizationUtils.getOrganizationJson(organizationIdentifier);
+		JSONObject orgaJson = organizationRepository.getOrganizationJson(organizationIdentifier);
 		return QueryUtils.correctEmptyGroupConcat(orgaJson.toString());
 	}
 
 	@Override
 	public IdLabelTwoLangs getOrganization(String organizationIdentifier) throws RmesException {
-		return organizationUtils.buildOrganizationFromJson(organizationUtils.getOrganizationJson(organizationIdentifier));
+		return organizationRepository.buildOrganizationFromJson(organizationRepository.getOrganizationJson(organizationIdentifier));
 	}
 	
 

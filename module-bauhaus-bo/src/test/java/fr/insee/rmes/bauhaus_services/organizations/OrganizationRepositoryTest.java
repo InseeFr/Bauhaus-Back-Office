@@ -18,10 +18,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OrganizationUtilsTest {
+class OrganizationRepositoryTest {
 
     @InjectMocks
-    OrganizationUtils organizationUtils;
+    OrganizationRepository organizationRepository;
 
     @Mock
     FamOpeSerIndUtils famOpeSerUtils;
@@ -37,7 +37,7 @@ class OrganizationUtilsTest {
         JSONObject jsonObject = new JSONObject().put("color","blue");
         IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id","label1","label2");
         when(famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonObject)).thenReturn(idLabelTwoLangs);
-        assertNotNull(organizationUtils.buildOrganizationFromJson(jsonObject));
+        assertNotNull(organizationRepository.buildOrganizationFromJson(jsonObject));
     }
 
     @Test
@@ -49,7 +49,7 @@ class OrganizationUtilsTest {
         when(organizationQueries.organizationQuery("HIE2171581")).thenReturn("query");
         when(repoGestion.getResponseAsObject("query")).thenReturn(sparqlResult);
 
-        JSONObject result = organizationUtils.getOrganizationJson("HIE2171581");
+        JSONObject result = organizationRepository.getOrganizationJson("HIE2171581");
 
         assertThat(result.getString("labelLg1"))
                 .isEqualTo("Direction générale de l'Administration et de la Fonction publique (DGAFP)");
@@ -66,7 +66,7 @@ class OrganizationUtilsTest {
         when(organizationQueries.organizationQuery(anyString())).thenReturn("query");
         when(repoGestion.getResponseAsObject("query")).thenReturn(sparqlResult);
 
-        JSONObject result = organizationUtils.getOrganizationJson("ID");
+        JSONObject result = organizationRepository.getOrganizationJson("ID");
 
         assertThat(result.getString("labelLg1")).isEqualTo("Service des données");
         assertThat(result.getString("labelLg2")).isEqualTo("Data Department");

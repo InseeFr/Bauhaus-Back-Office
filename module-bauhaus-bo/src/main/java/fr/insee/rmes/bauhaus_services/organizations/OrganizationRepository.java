@@ -17,16 +17,16 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OrganizationUtils  extends RdfService {
+public class OrganizationRepository  extends RdfService {
 
 	private final FamOpeSerIndUtils famOpeSerUtils;
 
 	private final OrganizationQueries organizationQueries;
 
-	public OrganizationUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-							 RepositoryPublication repositoryPublication,
-							 PublicationUtils publicationUtils,
-							 FamOpeSerIndUtils famOpeSerUtils, OrganizationQueries organizationQueries) {
+	public OrganizationRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+								  RepositoryPublication repositoryPublication,
+								  PublicationUtils publicationUtils,
+								  FamOpeSerIndUtils famOpeSerUtils, OrganizationQueries organizationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.famOpeSerUtils = famOpeSerUtils;
 		this.organizationQueries = organizationQueries;

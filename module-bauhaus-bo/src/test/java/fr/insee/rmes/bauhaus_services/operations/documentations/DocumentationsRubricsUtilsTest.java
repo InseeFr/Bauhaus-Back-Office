@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
+import fr.insee.rmes.bauhaus_services.organizations.OrganizationRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
@@ -59,7 +59,7 @@ class DocumentationsRubricsUtilsTest {
 	private DocumentsUtils docUtils;
 
 	@Mock
-	private OrganizationUtils organizationUtils;
+	private OrganizationRepository organizationRepository;
 
 	@Mock
 	private OrganisationLookup organisationLookup;
