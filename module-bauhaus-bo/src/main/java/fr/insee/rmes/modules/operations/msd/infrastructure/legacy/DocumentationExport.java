@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
+import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
@@ -51,7 +51,7 @@ public class DocumentationExport {
 	
 	final SeriesUtils seriesUtils;
 	
-	final OperationsUtils operationsUtils;
+	final OperationsRepository operationsRepository;
 	
 	final IndicatorsUtils indicatorsUtils;
 	
@@ -78,11 +78,11 @@ public class DocumentationExport {
 			DocumentsUtils documentsUtils,
 			ExportUtils exportUtils,
 			SeriesUtils seriesUtils,
-			OperationsUtils operationsUtils,
+			OperationsRepository operationsRepository,
 			IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
 		this.seriesUtils = seriesUtils;
-		this.operationsUtils = operationsUtils;
+		this.operationsRepository = operationsRepository;
 		this.indicatorsUtils = indicatorsUtils;
 		this.parentUtils = parentUtils;
 		this.codeListServiceImpl = codeListServiceImpl;
@@ -248,7 +248,7 @@ public class DocumentationExport {
 		List<String> neededCodeLists=new ArrayList<>();
 
 		if (targetType.equals(Constants.OPERATION_UP)) {
-			operation=operationsUtils.getOperationById(idDatabase);
+			operation=operationsRepository.getOperationById(idDatabase);
 			operationXML = XMLUtils.produceXMLResponse(operation);
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));

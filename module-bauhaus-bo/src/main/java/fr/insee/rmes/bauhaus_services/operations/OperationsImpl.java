@@ -4,7 +4,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
+import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -42,7 +42,7 @@ public class OperationsImpl  implements OperationsService {
 
 	private final SeriesUtils seriesUtils;
 
-	private final OperationsUtils operationsUtils;
+	private final OperationsRepository operationsRepository;
 
 	private final FamiliesUtils familiesUtils;
 
@@ -56,14 +56,14 @@ public class OperationsImpl  implements OperationsService {
 
 	private final OperationSeriesQueries operationSeriesQueries;
 
-	public OperationsImpl(RepositoryGestion repoGestion, SeriesUtils seriesUtils, OperationsUtils operationsUtils,
+	public OperationsImpl(RepositoryGestion repoGestion, SeriesUtils seriesUtils, OperationsRepository operationsRepository,
 						  FamiliesUtils familiesUtils, IndicatorsUtils indicatorsUtils, UserDecoder userDecoder,
 						  OperationIndicatorsQueries operationIndicatorsQueries,
 						  OperationsOperationQueries operationsOperationQueries,
 						  OperationSeriesQueries operationSeriesQueries) {
 		this.repoGestion = repoGestion;
 		this.seriesUtils = seriesUtils;
-		this.operationsUtils = operationsUtils;
+		this.operationsRepository = operationsRepository;
 		this.familiesUtils = familiesUtils;
 		this.indicatorsUtils = indicatorsUtils;
 		this.userDecoder = userDecoder;
@@ -199,7 +199,7 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public Operation getOperationById(String id) throws RmesException {
-		return operationsUtils.getOperationById(id);
+		return operationsRepository.getOperationById(id);
 	}
 
 	/**
@@ -207,7 +207,7 @@ public class OperationsImpl  implements OperationsService {
 	 */
 	@Override
 	public void setOperation(String id, String body) throws RmesException {
-		operationsUtils.setOperation(id,body);
+		operationsRepository.setOperation(id,body);
 	}
 
 	/**
@@ -215,12 +215,12 @@ public class OperationsImpl  implements OperationsService {
 	 */
 	@Override
 	public String createOperation(String body) throws RmesException {
-		return operationsUtils.setOperation(body);				
+		return operationsRepository.setOperation(body);				
 	}
 
 	@Override
 	public void setOperationValidation(String id) throws RmesException{
-		operationsUtils.setOperationValidation(id);
+		operationsRepository.setOperationValidation(id);
 	}
 
 	/***************************************************************************************************

@@ -34,9 +34,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OperationsUtilsTest {
+class OperationsRepositoryTest {
     @InjectMocks
-    OperationsUtils operationsUtils;
+    OperationsRepository operationsRepository;
 
     @Spy
     BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
@@ -67,7 +67,7 @@ class OperationsUtilsTest {
         Operation operation = Operation.of("o1500");
         operation.setPrefLabelLg1("Opération de test");
 
-        operationsUtils.createRdfOperation(operation, null, ValidationStatus.UNPUBLISHED);
+        operationsRepository.createRdfOperation(operation, null, ValidationStatus.UNPUBLISHED);
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadSimpleObject(any(), captor.capture());
@@ -112,7 +112,7 @@ class OperationsUtilsTest {
                     .put("year", 2024)
                     .put("series", series);
 
-            operationsUtils.setOperation(operation.toString());
+            operationsRepository.setOperation(operation.toString());
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
@@ -150,7 +150,7 @@ class OperationsUtilsTest {
                     .put("series", series);
 
             try {
-                operationsUtils.setOperation(operation.toString());
+                operationsRepository.setOperation(operation.toString());
             } catch (RmesNotAcceptableException e) {
                 if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                     fail("La création d'une opération sur une série avec SIMS ne devrait plus lever 406 : " + e.getDetails());

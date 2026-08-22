@@ -37,11 +37,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OperationsUtils extends RdfService{
+public class OperationsRepository extends RdfService{
     private final BauhausLanguagesProperties languages;
 
 
-	static final Logger logger = LoggerFactory.getLogger(OperationsUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(OperationsRepository.class);
 
 	private final FamOpeSerIndUtils famOpeSerIndUtils;
 
@@ -55,13 +55,13 @@ public class OperationsUtils extends RdfService{
 
 	private final OperationSeriesQueries operationSeriesQueries;
 
-	public OperationsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
-						   RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
-						   PublicationUtils publicationUtils,
-						   FamOpeSerIndUtils famOpeSerIndUtils, DocumentationsUtils documentationsUtils,
-						   ParentUtils parentUtils, OperationPublication operationPublication,
-						   OperationsOperationQueries operationsOperationQueries,
-						   OperationSeriesQueries operationSeriesQueries) {
+	public OperationsRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+								RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
+								PublicationUtils publicationUtils,
+								FamOpeSerIndUtils famOpeSerIndUtils, DocumentationsUtils documentationsUtils,
+								ParentUtils parentUtils, OperationPublication operationPublication,
+								OperationsOperationQueries operationsOperationQueries,
+								OperationSeriesQueries operationSeriesQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
 		this.famOpeSerIndUtils = famOpeSerIndUtils;
