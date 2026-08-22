@@ -5,7 +5,7 @@ import fr.insee.rmes.modules.datasets.datasets.model.*;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -57,7 +57,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
 
-    private final SeriesUtils seriesUtils;
+    private final SeriesRepository seriesRepository;
 
     private final DatasetQueries datasetQueries;
 
@@ -87,7 +87,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             RepositoryPublication repositoryPublication,
             BauhausLanguagesProperties languages,
             PublicationUtils publicationUtils,
-            SeriesUtils seriesUtils,
+            SeriesRepository seriesRepository,
             @Qualifier("sparqlDatasetQueries") DatasetQueries datasetQueries,
             DatasetDistributionQueries datasetDistributionQueries,
             OrganizationsService organizationsService,
@@ -102,7 +102,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     ) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
-        this.seriesUtils = seriesUtils;
+        this.seriesRepository = seriesRepository;
         this.datasetQueries = datasetQueries;
         this.datasetDistributionQueries = datasetDistributionQueries;
         this.organizationsService = organizationsService;
@@ -611,7 +611,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
         }
 
-        if(!this.seriesUtils.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())){
+        if(!this.seriesRepository.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())){
             throw new RmesBadRequestException("Some series or operations do not exist");
         }
     }

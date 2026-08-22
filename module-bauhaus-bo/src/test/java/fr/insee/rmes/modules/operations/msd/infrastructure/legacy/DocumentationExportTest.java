@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUt
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentationExportTest {
     @Mock
-    private SeriesUtils seriesUtils;
+    private SeriesRepository seriesRepository;
 
     @Mock
     private OperationsRepository operationsRepository;
@@ -90,7 +90,7 @@ class DocumentationExportTest {
         var zip = "zip";
         var objectType = "objectType";
 
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
 
 
         InputStream inputStreamMock = mock(InputStream.class);
@@ -108,7 +108,7 @@ class DocumentationExportTest {
 
     @Test
     void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -131,7 +131,7 @@ class DocumentationExportTest {
 
     @Test
     void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -152,7 +152,7 @@ class DocumentationExportTest {
 
     @Test
     void testExportXmlFiles_Success() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
 
         Map<String, String> xmlContent = new HashMap<>();
         boolean includeEmptyMas = true;
@@ -173,7 +173,7 @@ class DocumentationExportTest {
                 50,
                 documentsUtils,
                 exportUtils,
-                seriesUtils,
+                seriesRepository,
                 operationsRepository,
                 indicatorsRepository,
                 parentUtils,
@@ -191,9 +191,9 @@ class DocumentationExportTest {
         when(parentUtils.getDocumentationTargetTypeAndId(id))
                 .thenReturn(new String[]{Constants.SERIES_UP, idDatabase});
 
-        // Mock seriesUtils to return a series
+        // Mock seriesRepository to return a series
         Series series = createSeriesForTest();
-        when(seriesUtils.getSeriesById(idDatabase, fr.insee.rmes.utils.EncodingType.XML))
+        when(seriesRepository.getSeriesById(idDatabase, fr.insee.rmes.utils.EncodingType.XML))
                 .thenReturn(series);
 
         // Mock organizations
@@ -342,7 +342,7 @@ class DocumentationExportTest {
                 50,
                 documentsUtils,
                 exportUtils,
-                seriesUtils,
+                seriesRepository,
                 operationsRepository,
                 indicatorsRepository,
                 parentUtils,
@@ -365,13 +365,13 @@ class DocumentationExportTest {
         when(indicatorsRepository.getIndicatorById(idDatabase, true))
                 .thenReturn(indicator);
 
-        // Mock seriesUtils for the series referenced by the indicator
+        // Mock seriesRepository for the series referenced by the indicator
         Series series = new Series();
         series.setId("s1034");
         series.setPrefLabelLg1("Autres indicateurs");
         series.setPrefLabelLg2("Other indexes");
         series.setCreators(new ArrayList<>());
-        when(seriesUtils.getSeriesById("s1034", fr.insee.rmes.utils.EncodingType.XML))
+        when(seriesRepository.getSeriesById("s1034", fr.insee.rmes.utils.EncodingType.XML))
                 .thenReturn(series);
 
         // Mock organizations

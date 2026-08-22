@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.*;
 
 @Component
-public class SeriesUtils {
+public class SeriesRepository {
 
     private static final String ID_SERIE = "idSerie";
 
@@ -66,7 +66,7 @@ public class SeriesUtils {
 
     private final DocumentationsUtils documentationsUtils;
 
-    private static final Logger logger = LoggerFactory.getLogger(SeriesUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(SeriesRepository.class);
     private final BauhausUriBuilder bauhausUriBuilder;
     private final String lg2;
     private final String lg1;
@@ -75,7 +75,7 @@ public class SeriesUtils {
 
     private final OperationSeriesQueries operationSeriesQueries;
 
-    public SeriesUtils(
+    public SeriesRepository(
             @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
             @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
             RepositoryGestion repositoryGestion,

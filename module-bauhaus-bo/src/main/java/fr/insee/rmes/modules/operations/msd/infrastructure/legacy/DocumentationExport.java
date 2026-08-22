@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUt
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
@@ -49,7 +49,7 @@ public class DocumentationExport {
 	public static final String DOCUMENTATION = "documentation";
 	final ExportUtils exportUtils;
 	
-	final SeriesUtils seriesUtils;
+	final SeriesRepository seriesRepository;
 	
 	final OperationsRepository operationsRepository;
 	
@@ -77,11 +77,11 @@ public class DocumentationExport {
 			@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
 			DocumentsUtils documentsUtils,
 			ExportUtils exportUtils,
-			SeriesUtils seriesUtils,
+			SeriesRepository seriesRepository,
 			OperationsRepository operationsRepository,
 			IndicatorsRepository indicatorsRepository, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
-		this.seriesUtils = seriesUtils;
+		this.seriesRepository = seriesRepository;
 		this.operationsRepository = operationsRepository;
 		this.indicatorsRepository = indicatorsRepository;
 		this.parentUtils = parentUtils;
@@ -253,7 +253,7 @@ public class DocumentationExport {
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
+			series=seriesRepository.getSeriesById(idSeries,EncodingType.XML);
 			transformCreatorsStampsToLabels(series);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
@@ -272,7 +272,7 @@ public class DocumentationExport {
 							indicatorXML,
 							Constants.WASGENERATEDBY).getFirst(),
 					Constants.ID).getFirst();
-			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
+			series=seriesRepository.getSeriesById(idSeries,EncodingType.XML);
 			transformCreatorsStampsToLabels(series);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
@@ -281,7 +281,7 @@ public class DocumentationExport {
 
 
 		if (targetType.equals(Constants.SERIES_UP)) {
-			series = seriesUtils.getSeriesById(idDatabase,EncodingType.XML);
+			series = seriesRepository.getSeriesById(idDatabase,EncodingType.XML);
 			transformCreatorsStampsToLabels(series);
 			seriesXML=XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));

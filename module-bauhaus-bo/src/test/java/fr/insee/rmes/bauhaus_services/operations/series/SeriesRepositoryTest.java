@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 @AppSpringBootTest
 @ExtendWith(MockitoExtension.class)
-class SeriesUtilsTest {
+class SeriesRepositoryTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
@@ -47,7 +47,7 @@ class SeriesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        SeriesUtils indicatorsUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
 
         var series = new Series();
         series.setId("1");
@@ -59,7 +59,7 @@ class SeriesUtilsTest {
 
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
 
-        indicatorsUtils.addMulltiLangValues(model, seriesIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"), "fr", "en", DCTERMS.ABSTRACT);
+        seriesRepository.addMulltiLangValues(model, seriesIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"), "fr", "en", DCTERMS.ABSTRACT);
 
 
         Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
@@ -75,12 +75,12 @@ class SeriesUtilsTest {
     @Test
     void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
         SeriesValidator validator = mock(SeriesValidator.class);
-        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, validator, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, validator, null, null);
         Series series = new Series();
         series.setId("s2000");
         series.setPrefLabelLg1("Série de test");
 
-        seriesUtils.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
+        seriesRepository.createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
 
         ArgumentCaptor<Model> captor = ArgumentCaptor.forClass(Model.class);
         verify(repositoryGestion).loadObjectWithReplaceLinks(any(), captor.capture());
@@ -94,14 +94,14 @@ class SeriesUtilsTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
+        SeriesRepository seriesRepository = new SeriesRepository("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
         OperationsLink link = new OperationsLink();
         link.id = "http://bauhaus/organisations/DG75-A001";
 
-        seriesUtils.addOperationLinksOrganization(List.of(link), DCTERMS.PUBLISHER, model, seriesURI, TEST_GRAPH);
+        seriesRepository.addOperationLinksOrganization(List.of(link), DCTERMS.PUBLISHER, model, seriesURI, TEST_GRAPH);
 
         IRI publisher = vf.createIRI(DCTERMS.PUBLISHER.toString());
         List<Value> publishers = model.filter(seriesURI, publisher, null).stream()
@@ -117,14 +117,14 @@ class SeriesUtilsTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
+        SeriesRepository seriesRepository = new SeriesRepository("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
         OperationsLink link = new OperationsLink();
         link.id = "DG75-A001";
 
-        seriesUtils.addOperationLinksOrganization(List.of(link), DCTERMS.CONTRIBUTOR, model, seriesURI, TEST_GRAPH);
+        seriesRepository.addOperationLinksOrganization(List.of(link), DCTERMS.CONTRIBUTOR, model, seriesURI, TEST_GRAPH);
 
         IRI contributor = vf.createIRI(DCTERMS.CONTRIBUTOR.toString());
         List<Value> contributors = model.filter(seriesURI, contributor, null).stream()
@@ -137,11 +137,11 @@ class SeriesUtilsTest {
 
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
-        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
         String body = "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
 
         try {
-            seriesUtils.setSeries("1", body);
+            seriesRepository.setSeries("1", body);
         } catch (RmesNotAcceptableException e) {
             if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                 fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : " + e.getDetails());
@@ -153,12 +153,12 @@ class SeriesUtilsTest {
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        SeriesUtils seriesUtils = new SeriesUtils("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository("fr", "en", repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
 
-        seriesUtils.addCreators(model, seriesURI, List.of(
+        seriesRepository.addCreators(model, seriesURI, List.of(
                 "http://bauhaus/organisations/DG75-A001",
                 "http://bauhaus/organisations/DG75-B002"), TEST_GRAPH);
 

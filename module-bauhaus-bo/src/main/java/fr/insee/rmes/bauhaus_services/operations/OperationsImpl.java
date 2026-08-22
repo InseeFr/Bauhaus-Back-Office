@@ -5,7 +5,7 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.QueryUtils;
@@ -40,7 +40,7 @@ public class OperationsImpl  implements OperationsService {
 
 	private final RepositoryGestion repoGestion;
 
-	private final SeriesUtils seriesUtils;
+	private final SeriesRepository seriesRepository;
 
 	private final OperationsRepository operationsRepository;
 
@@ -56,13 +56,13 @@ public class OperationsImpl  implements OperationsService {
 
 	private final OperationSeriesQueries operationSeriesQueries;
 
-	public OperationsImpl(RepositoryGestion repoGestion, SeriesUtils seriesUtils, OperationsRepository operationsRepository,
+	public OperationsImpl(RepositoryGestion repoGestion, SeriesRepository seriesRepository, OperationsRepository operationsRepository,
 						  FamiliesUtils familiesUtils, IndicatorsRepository indicatorsRepository, UserDecoder userDecoder,
 						  OperationIndicatorsQueries operationIndicatorsQueries,
 						  OperationsOperationQueries operationsOperationQueries,
 						  OperationSeriesQueries operationSeriesQueries) {
 		this.repoGestion = repoGestion;
-		this.seriesUtils = seriesUtils;
+		this.seriesRepository = seriesRepository;
 		this.operationsRepository = operationsRepository;
 		this.familiesUtils = familiesUtils;
 		this.indicatorsRepository = indicatorsRepository;
@@ -91,7 +91,7 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String getSeriesForSearch() throws RmesException  {
-		return seriesUtils.getSeriesForSearch(null);
+		return seriesRepository.getSeriesForSearch(null);
 	}
 
 	@Override
@@ -133,12 +133,12 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String getSeriesForSearchWithStamp(String stamp) throws RmesException {
-		return seriesUtils.getSeriesForSearch(stamp);
+		return seriesRepository.getSeriesForSearch(stamp);
 	}
 
 	@Override
 	public Series getSeriesByID(String id) throws RmesException {
-		return seriesUtils.getSeriesById(id,EncodingType.MARKDOWN);
+		return seriesRepository.getSeriesById(id,EncodingType.MARKDOWN);
 	}
 
 
@@ -147,13 +147,13 @@ public class OperationsImpl  implements OperationsService {
 	 */
 	@Override
 	public String getSeriesJsonByID(String id) throws RmesException {
-		JSONObject series = seriesUtils.getSeriesJsonById(id, EncodingType.MARKDOWN);
+		JSONObject series = seriesRepository.getSeriesJsonById(id, EncodingType.MARKDOWN);
 		return series.toString();
 	}
 
 	@Override
 	public void setSeries(String id, String body) throws RmesException {
-		seriesUtils.setSeries(id,body);
+		seriesRepository.setSeries(id,body);
 	}
 
 	@Override
@@ -172,12 +172,12 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String createSeries(String body) throws RmesException {
-		return seriesUtils.createSeries(body);
+		return seriesRepository.createSeries(body);
 	}
 
 	@Override
 	public void setSeriesValidation(String id) throws RmesException{
-		seriesUtils.setSeriesValidation(id);
+		seriesRepository.setSeriesValidation(id);
 	}
 
 	/***************************************************************************************************
