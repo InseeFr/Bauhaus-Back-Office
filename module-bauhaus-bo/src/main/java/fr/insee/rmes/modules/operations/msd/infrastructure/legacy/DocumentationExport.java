@@ -7,7 +7,7 @@ import fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -53,7 +53,7 @@ public class DocumentationExport {
 	
 	final OperationsRepository operationsRepository;
 	
-	final IndicatorsUtils indicatorsUtils;
+	final IndicatorsRepository indicatorsRepository;
 	
 	final ParentUtils parentUtils;
 	
@@ -79,11 +79,11 @@ public class DocumentationExport {
 			ExportUtils exportUtils,
 			SeriesUtils seriesUtils,
 			OperationsRepository operationsRepository,
-			IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
+			IndicatorsRepository indicatorsRepository, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
 		this.seriesUtils = seriesUtils;
 		this.operationsRepository = operationsRepository;
-		this.indicatorsUtils = indicatorsUtils;
+		this.indicatorsRepository = indicatorsRepository;
 		this.parentUtils = parentUtils;
 		this.codeListServiceImpl = codeListServiceImpl;
 		this.organizationsServiceImpl = organizationsServiceImpl;
@@ -262,7 +262,7 @@ public class DocumentationExport {
 
 
 		if (targetType.equals(Constants.INDICATOR_UP)) {
-			Indicator indicator = indicatorsUtils.getIndicatorById(idDatabase,true);
+			Indicator indicator = indicatorsRepository.getIndicatorById(idDatabase,true);
 			transformIndicatorCreatorsStampsToLabels(indicator);
 			indicatorXML=XMLUtils.produceXMLResponse(indicator);
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));

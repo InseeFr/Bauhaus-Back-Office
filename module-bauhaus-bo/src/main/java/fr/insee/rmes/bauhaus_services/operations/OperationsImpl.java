@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
@@ -46,7 +46,7 @@ public class OperationsImpl  implements OperationsService {
 
 	private final FamiliesUtils familiesUtils;
 
-	private final IndicatorsUtils indicatorsUtils;
+	private final IndicatorsRepository indicatorsRepository;
 
     private final UserDecoder userDecoder;
 
@@ -57,7 +57,7 @@ public class OperationsImpl  implements OperationsService {
 	private final OperationSeriesQueries operationSeriesQueries;
 
 	public OperationsImpl(RepositoryGestion repoGestion, SeriesUtils seriesUtils, OperationsRepository operationsRepository,
-						  FamiliesUtils familiesUtils, IndicatorsUtils indicatorsUtils, UserDecoder userDecoder,
+						  FamiliesUtils familiesUtils, IndicatorsRepository indicatorsRepository, UserDecoder userDecoder,
 						  OperationIndicatorsQueries operationIndicatorsQueries,
 						  OperationsOperationQueries operationsOperationQueries,
 						  OperationSeriesQueries operationSeriesQueries) {
@@ -65,7 +65,7 @@ public class OperationsImpl  implements OperationsService {
 		this.seriesUtils = seriesUtils;
 		this.operationsRepository = operationsRepository;
 		this.familiesUtils = familiesUtils;
-		this.indicatorsUtils = indicatorsUtils;
+		this.indicatorsRepository = indicatorsRepository;
 		this.userDecoder = userDecoder;
 		this.operationIndicatorsQueries = operationIndicatorsQueries;
 		this.operationsOperationQueries = operationsOperationQueries;
@@ -277,18 +277,18 @@ public class OperationsImpl  implements OperationsService {
 
 	@Override
 	public String getIndicatorJsonByID(String id) throws RmesException {
-		JSONObject indicator = indicatorsUtils.getIndicatorJsonById(id);
+		JSONObject indicator = indicatorsRepository.getIndicatorJsonById(id);
 		return indicator.toString();
 	}
 
 	@Override
 	public Indicator getIndicatorById(String id) throws RmesException {
-		return indicatorsUtils.getIndicatorById(id,false);
+		return indicatorsRepository.getIndicatorById(id,false);
 	}
 
 	@Override
 	public void setIndicator(String id, String body) throws RmesException {
-		indicatorsUtils.setIndicator(id,body);
+		indicatorsRepository.setIndicator(id,body);
 	}
 
 	/**
@@ -297,7 +297,7 @@ public class OperationsImpl  implements OperationsService {
 	 */
 	@Override
 	public void validateIndicator(String id) throws RmesException{
-		indicatorsUtils.validateIndicator(id);
+		indicatorsRepository.validateIndicator(id);
 	}
 
 	/**
@@ -306,7 +306,7 @@ public class OperationsImpl  implements OperationsService {
 	 */
 	@Override
 	public String setIndicator(String body) throws RmesException {
-		return indicatorsUtils.setIndicator(body);
+		return indicatorsRepository.setIndicator(body);
 	}
 
 }

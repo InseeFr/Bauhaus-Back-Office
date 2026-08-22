@@ -48,9 +48,9 @@ import java.util.Optional;
 
 
 @Component
-public class IndicatorsUtils {
+public class IndicatorsRepository {
 
-	static final Logger logger = LoggerFactory.getLogger(IndicatorsUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(IndicatorsRepository.class);
 
 	protected final RepositoryGestion repositoryGestion;
 
@@ -71,7 +71,7 @@ public class IndicatorsUtils {
 	private final OperationIndicatorsQueries operationIndicatorsQueries;
 	private final OrganisationLookup organisationLookup;
 
-	public IndicatorsUtils(
+	public IndicatorsRepository(
 			RepositoryGestion repositoryGestion,
 			CodeListService codeListService,
 			OrganizationsService organizationsService,
