@@ -52,7 +52,7 @@ class MetadataReportResourcesDeleteTest {
     void deleteMetadataReport_withAcceptJson_shouldReturnSuccess() throws Exception {
         when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
 
-        mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "42")
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
@@ -62,7 +62,7 @@ class MetadataReportResourcesDeleteTest {
         when(documentationsService.deleteMetadataReport("unknown"))
                 .thenThrow(new RmesNotFoundException("Documentation not found", "unknown"));
 
-        mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "unknown"))
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "unknown"))
                 .andExpect(status().isNotFound());
     }
 
@@ -70,7 +70,7 @@ class MetadataReportResourcesDeleteTest {
     void deleteMetadataReport_withoutAccept_shouldReturnSuccess() throws Exception {
         when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
 
-        mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "42"))
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42"))
                 .andExpect(status().isNoContent());
     }
 }
