@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.classifications.nomenclatures.model.Classification;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -23,7 +24,6 @@ import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,8 +172,7 @@ public class ClassificationRepository extends RdfService {
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.AFTER, graph, null);
         repoGestion.deleteTripletByPredicate(classificationIri, XKOS.VARIANT, graph, null);
 
-        for (int i=0; i<codes.length(); i++) {
-            JSONObject code = codes.getJSONObject(i);
+        JSONUtils.stream(codes).forEach(code -> {
             String codeUri = code.getString("uri");
             String codeId = code.getString("id");
             logger.debug("updateClassification - xkos link, codeId={}, codeUri=[{}]", codeId, codeUri);
@@ -187,7 +186,7 @@ public class ClassificationRepository extends RdfService {
             if(codeId.equalsIgnoreCase(classification.getIdVariant())){
                 model.add(classificationIri, XKOS.VARIANT, RdfUtils.createIRI(codeUri), graph);
             }
-        }
+        });
 
         this.classificationNoteService.addNotes(graph, classification.getChangeNoteUriLg1(), classification.getChangeNoteLg1(), model);
         this.classificationNoteService.addNotes(graph, classification.getChangeNoteUriLg2(), classification.getChangeNoteUriLg2(), model);

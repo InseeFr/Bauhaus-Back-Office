@@ -15,6 +15,7 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.PAV;
 import fr.insee.rmes.graphdb.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptNotesQueries;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -78,12 +79,11 @@ public class NotesRepository  extends RdfService {
 	public void keepHistoricalNotes(String conceptId, String conceptVersion, Model model)  throws RmesException{
 		JSONArray notes = repoGestion.getResponseAsArray(
 				conceptNotesQueries.getHistoricalNotes(conceptId, conceptVersion));
-		for (int i = 0; i < notes.length(); i++) {
-			JSONObject note = (JSONObject) notes.get(i);
+		JSONUtils.stream(notes).forEach(note -> {
 			IRI predicat = RdfUtils.toURI(note.getString("predicat"));
 			IRI noteURI = RdfUtils.toURI(note.getString("note"));
 			model.add(RdfUtils.conceptIRI(conceptId), predicat, noteURI, RdfUtils.conceptGraph());
-		}
+		});
 	}
 	
 	public void updateNoteConceptVersion(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{

@@ -19,6 +19,7 @@ import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQuer
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -173,12 +174,11 @@ public class GraphDbStampChecker implements StampChecker {
         try {
             JSONArray contributors = this.repositoryGestion.getResponseAsArray(query);
             List<String> stamps = new ArrayList<>();
-            for (int i = 0; i < contributors.length(); i++) {
-                JSONObject obj = contributors.getJSONObject(i);
+            JSONUtils.stream(contributors).forEach(obj -> {
                 if (obj.has(key)) {
                     stamps.add(obj.getString(key));
                 }
-            }
+            });
             return stamps;
         } catch (RmesException e) {
             throw new RuntimeException(e);

@@ -26,6 +26,7 @@ import fr.insee.rmes.graphdb.ontologies.PAV;
 import fr.insee.rmes.graphdb.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.UriUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -179,10 +180,9 @@ public class DocumentsUtils extends RdfService {
 
     private void formatDateInJsonArray(JSONArray allDocs) {
         if (!allDocs.isEmpty()) {
-            for (int i = 0; i < allDocs.length(); i++) {
-                JSONObject doc = allDocs.getJSONObject(i);
+            JSONUtils.stream(allDocs).forEach(doc -> {
                 formatDateInJsonObject(doc);
-            }
+            });
         }
     }
 

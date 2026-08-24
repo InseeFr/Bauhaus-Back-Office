@@ -10,6 +10,7 @@ import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
@@ -55,13 +56,12 @@ public class MetadataStructureDefUtils  extends RdfService {
 		Map<String,String> attributes = new HashMap<>();
 		JSONArray attributesList = repoGestion.getResponseAsArray(documentationQueries.getAttributesUriQuery());
 		if (!attributesList.isEmpty()) {
-			 for (int i = 0; i < attributesList.length(); i++) {
-		         JSONObject attribute = attributesList.getJSONObject(i);
+			 JSONUtils.stream(attributesList).forEach(attribute -> {
 		         if (attribute.has(Constants.ID)&& attribute.has(Constants.URI)) {
 		        	 String id = StringUtils.upperCase(attribute.getString(Constants.ID));
 		        	 attributes.put(id, attribute.getString(Constants.URI));
 		         }
-		     }
+		     });
 		}
 		return attributes;
 	}

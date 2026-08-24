@@ -21,7 +21,7 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -196,12 +196,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);
         Set<String> themes = new HashSet<>();
-        for (int i = 0; i < datasetWithThemes.length(); i++) {
-            JSONObject tempDataset = datasetWithThemes.getJSONObject(i);
+        JSONUtils.stream(datasetWithThemes).forEach(tempDataset -> {
             if (tempDataset.has(THEME)) {
                 themes.add(tempDataset.getString(THEME));
             }
-        }
+        });
         dataset.put("themes", themes);
         dataset.remove(THEME);
 
@@ -624,10 +623,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (contributors == null) {
             return;
         }
-        List<String> resolved = new ArrayList<>(contributors.length());
-        for (int i = 0; i < contributors.length(); i++) {
-            resolved.add(resolveOrganisationIri(contributors.optString(i)));
-        }
+        List<String> resolved = JSONUtils.jsonArrayToList(contributors).stream()
+                .map(this::resolveOrganisationIri)
+                .toList();
         catalogRecord.put(CONTRIBUTOR, resolved);
     }
 

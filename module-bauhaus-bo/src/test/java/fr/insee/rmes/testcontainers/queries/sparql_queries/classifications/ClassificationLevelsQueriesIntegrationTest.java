@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationLevelsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -108,9 +109,9 @@ class ClassificationLevelsQueriesIntegrationTest extends WithGraphDBContainer {
 
     private static List<String> valuesOf(JSONArray array, String key) {
         List<String> values = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) {
-            values.add(array.getJSONObject(i).getString(key));
-        }
+        JSONUtils.stream(array)
+                .map(row -> row.getString(key))
+                .forEach(values::add);
         return values;
     }
 }

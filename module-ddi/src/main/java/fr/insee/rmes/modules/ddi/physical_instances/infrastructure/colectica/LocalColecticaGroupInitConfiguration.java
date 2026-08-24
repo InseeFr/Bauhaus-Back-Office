@@ -33,8 +33,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Study
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
 import fr.insee.rmes.graphdb.SparqlLiterals;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -675,8 +675,7 @@ public class LocalColecticaGroupInitConfiguration {
         // Group operations by series
         Map<String, SeriesBuilder> seriesMap = new HashMap<>();
 
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject row = results.getJSONObject(i);
+        JSONUtils.stream(results).forEach(row -> {
             String seriesId = row.getString("seriesId");
             String seriesIri = row.getString("seriesIri");
             String seriesLabel = row.optString("seriesLabel", seriesId);
@@ -692,7 +691,7 @@ public class LocalColecticaGroupInitConfiguration {
                     builder.addOperation(new OperationInfo(operationId, operationIri, operationLabel));
                 }
             }
-        }
+        });
 
         return seriesMap.values().stream()
                 .map(SeriesBuilder::build)

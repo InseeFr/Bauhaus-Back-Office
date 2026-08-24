@@ -1,4 +1,4 @@
-package fr.insee.rmes.utils;
+package fr.insee.rmes.json;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,11 +46,17 @@ public class JSONUtils {
 	}
 
 	/**
+	 * Stream the raw values of an array, for arrays that do not only contain JSONObject
+	 */
+	public static Stream<Object> streamValues(JSONArray array) {
+		return generateIntStreamBasedOnJsonArray(array).mapToObj(array::get);
+	}
+
+	/**
 	 * Transform an array to a list of strings
 	 */
 	public static List<String> jsonArrayToList(JSONArray array) {
-		return generateIntStreamBasedOnJsonArray(array)
-		        .mapToObj(array::get)
+		return streamValues(array)
 		        .map(Object::toString)
 		        .toList();
 	}

@@ -7,6 +7,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -46,12 +47,12 @@ public class LegacyCollectionsRepository  {
 	public void collectionsValidation(JSONArray collectionsToValidate) throws  RmesException  {
 		Model model = new LinkedHashModel();
 		List<IRI> collectionsToValidateList = new ArrayList<>();
-		for (int i = 0; i < collectionsToValidate.length(); i++) {
-			IRI collectionURI = collectionProperties.getResourceIRI(collectionsToValidate.getString(i).replace(" ", ""));
+		JSONUtils.jsonArrayToList(collectionsToValidate).forEach(collectionId -> {
+			IRI collectionURI = collectionProperties.getResourceIRI(collectionId.replace(" ", ""));
 			collectionsToValidateList.add(collectionURI);
 			model.add(collectionURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.conceptGraph());
 			logger.info("Validate collection : {}" , collectionURI);
-		}
+		});
 
 		repositoryGestion.objectsValidation(collectionsToValidateList, model);
 		conceptsPublication.publishCollection(collectionsToValidate);

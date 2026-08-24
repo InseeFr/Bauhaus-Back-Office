@@ -25,6 +25,7 @@ import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -38,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,10 +99,9 @@ public class StructureRepository extends RdfService {
             JSONObject componentDefinitionFlat = componentDefinitionsFlat.getJSONObject(i);
             JSONArray attachmentsArray = repoGestion.getResponseAsArray(structureQueries.getStructuresAttachments(id, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID)));
 
-            List<String> attachments = new ArrayList<>();
-            for(int j = 0; j < attachmentsArray.length(); j++){
-                attachments.add(attachmentsArray.getJSONObject(j).getString(ATTACHMENT));
-            }
+            List<String> attachments = JSONUtils.stream(attachmentsArray)
+                    .map(attachment -> attachment.getString(ATTACHMENT))
+                    .toList();
 
 
             JSONObject componentDefinition= new JSONObject();

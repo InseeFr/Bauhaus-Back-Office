@@ -7,8 +7,8 @@ import fr.insee.rmes.modules.checks.domain.port.serverside.RuleChecker;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -37,10 +37,8 @@ public class ConceptDateChecker implements RuleChecker  {
             concepts = this.getConceptsWithDates();
             List<Map<String, Object>> invalidConcepts = new ArrayList<>();
             int totalConcepts = concepts.length();
-            int validConcepts = 0;
 
-            for (int i = 0; i < concepts.length(); i++) {
-                JSONObject concept = concepts.getJSONObject(i);
+            JSONUtils.stream(concepts).forEach(concept -> {
                 String conceptId = concept.optString("id", "");
                 String created = concept.optString("created", "");
                 String modified = concept.optString("modified", "");
@@ -58,16 +56,14 @@ public class ConceptDateChecker implements RuleChecker  {
                         invalidConcept.put("modifiedValid", modifiedValid);
                     }
                     invalidConcepts.add(invalidConcept);
-                } else {
-                    validConcepts++;
                 }
-            }
+            });
 
 
             result.put("status", "completed");
             result.put("description", "Concepts date format validation (ISO8601)");
             result.put("totalConcepts", totalConcepts);
-            result.put("validConcepts", validConcepts);
+            result.put("validConcepts", totalConcepts - invalidConcepts.size());
             result.put("invalidConcepts", invalidConcepts.size());
             result.put("invalidConceptsList", invalidConcepts);
         } catch (RmesException _) {

@@ -26,6 +26,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -347,9 +348,9 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     private List<String> memberConceptIds(String collectionId) throws RmesException {
         var concepts = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(collectionId));
         List<String> ids = new ArrayList<>();
-        for (int i = 0; i < concepts.length(); i++) {
-            ids.add(concepts.getJSONObject(i).getString("id"));
-        }
+        JSONUtils.stream(concepts)
+                .map(concept -> concept.getString("id"))
+                .forEach(ids::add);
         return ids;
     }
 

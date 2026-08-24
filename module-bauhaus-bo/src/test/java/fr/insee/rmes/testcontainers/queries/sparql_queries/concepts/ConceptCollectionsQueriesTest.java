@@ -5,6 +5,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,11 +47,10 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         assertEquals(5, result.length());
 
         // Verify that all collections have required fields
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject collection = result.getJSONObject(i);
+        JSONUtils.stream(result).forEach(collection -> {
             assertTrue(collection.has("id"), "Collection should have an id");
             assertTrue(collection.has("label"), "Collection should have a label");
-        }
+        });
     }
 
     @Test
@@ -89,12 +91,11 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         assertEquals(2, result.length(), "Should return only non-validated collections");
 
         // Verify all returned collections are not validated
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject collection = result.getJSONObject(i);
+        JSONUtils.stream(result).forEach(collection -> {
             String id = collection.getString("id");
             assertTrue(id.equals("c2000") || id.equals("c4000"),
                 "Only c2000 and c4000 should be non-validated");
-        }
+        });
 
         // Verify Commerce collection
         JSONObject commerceCollection = findCollectionById(result, "c2000");
@@ -130,15 +131,10 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         assertEquals(3, result.length(), "Agriculture collection should have 3 members");
 
         // Verify member concepts are returned
-        boolean hasC1 = false, hasC2 = false, hasC3 = false;
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject member = result.getJSONObject(i);
-            String memberId = member.getString("id");
-            if (memberId.equals("c1")) hasC1 = true;
-            if (memberId.equals("c2")) hasC2 = true;
-            if (memberId.equals("c3")) hasC3 = true;
-        }
-        assertTrue(hasC1 && hasC2 && hasC3, "All three concepts should be members");
+        List<String> memberIds = JSONUtils.stream(result)
+                .map(member -> member.getString("id"))
+                .toList();
+        assertTrue(memberIds.containsAll(List.of("c1", "c2", "c3")), "All three concepts should be members");
     }
 
     @Test
@@ -160,15 +156,12 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
         assertTrue(result.length() > 0, "Should return concepts from the collection");
 
         // Verify concept c1 which exists in both graphs
-        boolean foundC1 = false;
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject concept = result.getJSONObject(i);
-            if (concept.has("id") && concept.getString("id").equals("c1")) {
-                foundC1 = true;
-                assertTrue(concept.has("prefLabelLg1") || concept.has("label"));
-            }
-        }
-        assertTrue(foundC1, "Should find concept c1 which is used as dimension");
+        JSONObject c1 = JSONUtils.stream(result)
+                .filter(concept -> concept.has("id") && concept.getString("id").equals("c1"))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(c1, "Should find concept c1 which is used as dimension");
+        assertTrue(c1.has("prefLabelLg1") || c1.has("label"));
     }
 
     @Test
@@ -228,12 +221,9 @@ class ConceptCollectionsQueriesTest extends WithGraphDBContainer {
 
     // Helper method to find a collection by id in a JSONArray
     private JSONObject findCollectionById(JSONArray collections, String id) {
-        for (int i = 0; i < collections.length(); i++) {
-            JSONObject collection = collections.getJSONObject(i);
-            if (collection.getString("id").equals(id)) {
-                return collection;
-            }
-        }
-        return null;
+        return JSONUtils.stream(collections)
+                .filter(collection -> collection.getString("id").equals(id))
+                .findFirst()
+                .orElse(null);
     }
 }

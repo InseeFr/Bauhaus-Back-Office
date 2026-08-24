@@ -2,6 +2,7 @@ package fr.insee.rmes.model.concepts;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -72,8 +73,7 @@ public class ConceptForExport {
 
 
 	public void addLinks(JSONArray links) {
-		for (int i = 0; i < links.length(); i++) {
-			JSONObject jsonO = (JSONObject) links.get(i);
+		JSONUtils.stream(links).forEach(jsonO -> {
 			String typeOfLink = jsonO.getString("typeOfLink");
 			String lg1 = jsonO.has(Constants.PREF_LABEL_LG1) ? jsonO.getString(Constants.PREF_LABEL_LG1) : null;
 			String lg2 =  jsonO.has(Constants.PREF_LABEL_LG2) ? jsonO.getString(Constants.PREF_LABEL_LG2) : null;
@@ -97,7 +97,7 @@ public class ConceptForExport {
 				relatedLg1.add(lg1);
 				relatedLg2.add(lg2);
 			}
-		}
+		});
 		
 	}
 

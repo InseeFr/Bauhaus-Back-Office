@@ -3,6 +3,7 @@ package fr.insee.rmes.testcontainers.operations;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.eclipse.rdf4j.model.IRI;
@@ -121,9 +122,9 @@ class OperationsGestionWriteIntegrationTest extends WithGraphDBContainer {
         JSONArray array = repositoryGestion.getResponseAsArray(query);
         List<String> labels = new ArrayList<>();
         if (array != null) {
-            for (int i = 0; i < array.length(); i++) {
-                labels.add(array.getJSONObject(i).getString("label"));
-            }
+            JSONUtils.stream(array)
+                    .map(row -> row.getString("label"))
+                    .forEach(labels::add);
         }
         return labels;
     }

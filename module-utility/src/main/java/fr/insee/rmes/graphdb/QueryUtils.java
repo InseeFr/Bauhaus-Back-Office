@@ -1,8 +1,8 @@
 package fr.insee.rmes.graphdb;
 
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class QueryUtils {
 
@@ -22,15 +22,14 @@ public class QueryUtils {
 	}
 
 	public static JSONArray transformRdfTypeInString(JSONArray jArray) {
-		for (int i = 0; i < jArray.length(); i++) {
-			JSONObject jsonObject = jArray.getJSONObject(i);
-			if (jsonObject.has(TYPE_OF_OBJECT_PARAM)) {
-				String typeOfObject = jsonObject.getString(TYPE_OF_OBJECT_PARAM);
-				String type = ObjectType.getLabelType(SimpleValueFactory.getInstance().createIRI(typeOfObject));
-				jsonObject.put("type", type);
-				jsonObject.remove(TYPE_OF_OBJECT_PARAM);
-			}
-		}
+		JSONUtils.stream(jArray)
+				.filter(jsonObject -> jsonObject.has(TYPE_OF_OBJECT_PARAM))
+				.forEach(jsonObject -> {
+					String typeOfObject = jsonObject.getString(TYPE_OF_OBJECT_PARAM);
+					String type = ObjectType.getLabelType(SimpleValueFactory.getInstance().createIRI(typeOfObject));
+					jsonObject.put("type", type);
+					jsonObject.remove(TYPE_OF_OBJECT_PARAM);
+				});
 		return jArray;
 	}
 }

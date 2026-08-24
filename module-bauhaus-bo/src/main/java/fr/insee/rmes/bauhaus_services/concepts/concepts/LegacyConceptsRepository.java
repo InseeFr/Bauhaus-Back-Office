@@ -30,7 +30,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchExc
 import fr.insee.rmes.modules.concepts.concept.domain.port.clientside.ConceptsService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
-import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -243,12 +243,12 @@ public class LegacyConceptsRepository extends RdfService {
 	private void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
 		Model model = new LinkedHashModel();
 		List<IRI> conceptsToValidateList = new ArrayList<>();
-		for (int i = 0; i < conceptsToValidate.length(); i++) {
-			IRI conceptURI = RdfUtils.conceptIRI(conceptsToValidate.getString(i));
+		JSONUtils.jsonArrayToList(conceptsToValidate).forEach(conceptId -> {
+			IRI conceptURI = RdfUtils.conceptIRI(conceptId);
 			conceptsToValidateList.add(conceptURI);
 			model.add(conceptURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.conceptGraph());
 			logger.info("Validate concept : {}" , conceptURI);
-		}
+		});
 		repoGestion.objectsValidation(conceptsToValidateList, model);
 		conceptsPublication.publishConcepts(conceptsToValidate);
 	}

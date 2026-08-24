@@ -20,6 +20,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQu
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.EncodingType;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -120,9 +121,7 @@ public class OperationsImpl  implements OperationsService {
 
         JSONArray series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithStampQuery(stamps, isAdmin));
 		List<JSONObject> seriesList = new ArrayList<>();
-		for (int i = 0; i < series.length(); i++) {
-			seriesList.add(series.getJSONObject(i));
-		}
+		JSONUtils.stream(series).forEach(seriesList::add);
 		seriesList.sort(( o1,  o2) -> {
 				String key1 = Normalizer.normalize(o1.getString(Constants.LABEL), Normalizer.Form.NFD);
 				String key2 = Normalizer.normalize(o2.getString(Constants.LABEL), Normalizer.Form.NFD);

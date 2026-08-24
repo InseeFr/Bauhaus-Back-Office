@@ -3,6 +3,7 @@ package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
@@ -85,9 +86,7 @@ class ParentUtilsCanonicalizeIntegrationTest extends WithGraphDBContainer {
 
     private static List<String> toCreatorList(JSONArray array) {
         List<String> list = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) {
-            list.add(array.getString(i));
-        }
+        list.addAll(JSONUtils.jsonArrayToList(array));
         return list;
     }
 }

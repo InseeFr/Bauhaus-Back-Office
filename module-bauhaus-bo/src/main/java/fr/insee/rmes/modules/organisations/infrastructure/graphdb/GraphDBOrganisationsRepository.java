@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,15 +48,14 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
         try {
             JSONArray organisations = this.repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
             List<OrganisationSummary> result = new ArrayList<>();
-            for (int i = 0; i < organisations.length(); i++) {
-                JSONObject org = organisations.getJSONObject(i);
+            JSONUtils.stream(organisations).forEach(org -> {
                 String acronym = org.optString("acronym", null);
                 result.add(new OrganisationSummary(
                         org.optString("iri", null),
                         org.optString("id", null),
                         OrganisationLabel.withAcronym(org.optString("label", null), acronym),
                         OrganisationLabel.withAcronym(org.optString("labelLg2", null), acronym)));
-            }
+            });
             return result;
         } catch (RmesException e) {
             throw new OrganisationFetchException();

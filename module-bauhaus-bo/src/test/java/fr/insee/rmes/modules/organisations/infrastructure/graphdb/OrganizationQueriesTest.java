@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
@@ -47,14 +48,10 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
         assertEquals(220, result.length());
 
-        JSONObject hieOrg = null;
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject obj = result.getJSONObject(i);
-            if ("HIE2000069".equals(obj.getString("id"))) {
-                hieOrg = obj;
-                break;
-            }
-        }
+        JSONObject hieOrg = JSONUtils.stream(result)
+                .filter(obj -> "HIE2000069".equals(obj.getString("id")))
+                .findFirst()
+                .orElse(null);
 
         assertNotNull(hieOrg);
         assertNotNull(hieOrg.getString("iri"));
@@ -68,14 +65,10 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsTwoLangsQuery());
         assertEquals(219, result.length());
 
-        JSONObject hieOrg = null;
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject obj = result.getJSONObject(i);
-            if ("HIE2000069".equals(obj.getString("id"))) {
-                hieOrg = obj;
-                break;
-            }
-        }
+        JSONObject hieOrg = JSONUtils.stream(result)
+                .filter(obj -> "HIE2000069".equals(obj.getString("id")))
+                .findFirst()
+                .orElse(null);
 
         assertNotNull(hieOrg);
         assertEquals("HIE2000069", hieOrg.getString("id"));
@@ -109,25 +102,19 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
         assertNotNull(result);
         assertTrue(result.length() >= 3, "Should return at least 3 organizations");
 
-        boolean foundHIE69 = false;
-        boolean foundHIE70 = false;
-        boolean foundHIE71 = false;
-
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject org = result.getJSONObject(i);
+        JSONUtils.stream(result).forEach(org -> {
             assertNotNull(org.getString("identifier"));
             assertNotNull(org.getString("label"));
             assertNotNull(org.getString("iri"));
+        });
 
-            String id = org.getString("identifier");
-            if ("HIE2000069".equals(id)) foundHIE69 = true;
-            if ("HIE2000070".equals(id)) foundHIE70 = true;
-            if ("HIE2000071".equals(id)) foundHIE71 = true;
-        }
+        List<String> identifiersFound = JSONUtils.stream(result)
+                .map(org -> org.getString("identifier"))
+                .toList();
 
-        assertTrue(foundHIE69, "Should find HIE2000069");
-        assertTrue(foundHIE70, "Should find HIE2000070");
-        assertTrue(foundHIE71, "Should find HIE2000071");
+        assertTrue(identifiersFound.contains("HIE2000069"), "Should find HIE2000069");
+        assertTrue(identifiersFound.contains("HIE2000070"), "Should find HIE2000070");
+        assertTrue(identifiersFound.contains("HIE2000071"), "Should find HIE2000071");
     }
 
     @Test

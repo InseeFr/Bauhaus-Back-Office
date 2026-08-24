@@ -16,6 +16,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -187,12 +188,11 @@ public class DocumentsPublication  extends RdfService{
 
 	private void transformTuplesToPublish(String filename, Model model, Resource document, JSONArray tuples) {
 		Resource newSubject = publicationUtils.tranformBaseURIToPublish(document);
-		Value object ;
-		
-		for (int i = 0; i < tuples.length(); i++) {
-			JSONObject tuple = (JSONObject) tuples.get(i);
+
+		JSONUtils.stream(tuples).forEach(tuple -> {
 			String predicatString = tuple.getString("predicat");
-			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
+			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));
+			Value object;
 			if (predicatString.endsWith(Constants.URL)) {
 				String newUrl = documentsStorage.baseUrl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
@@ -208,7 +208,7 @@ public class DocumentsPublication  extends RdfService{
 				}
 			}
 			model.add(newSubject, predicate, object, RdfUtils.documentsGraph());
-		}
+		});
 	}
 	
 	private Model getLinkModelToPublish(String linkId) throws RmesException {

@@ -17,6 +17,7 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueri
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
@@ -88,12 +89,10 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
         JSONArray result = repositoryGestion.getResponseAsArray(query);
         if (result == null) return new JSONArray();
         JSONArray out = new JSONArray();
-        for (int i = 0; i < result.length(); i++) {
-            String label = result.getJSONObject(i).optString("altLabel");
-            if (!label.isEmpty()) {
-                out.put(label);
-            }
-        }
+        JSONUtils.stream(result)
+                .map(altLabel -> altLabel.optString("altLabel"))
+                .filter(label -> !label.isEmpty())
+                .forEach(out::put);
         return out;
     }
 

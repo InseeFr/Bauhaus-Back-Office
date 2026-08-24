@@ -6,6 +6,7 @@ import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,11 +70,10 @@ public class XhtmlToMarkdownUtils {
 	}
 
 	public static void convertJSONArray(JSONArray jsonArr) {
-		for (int i = 0; i < jsonArr.length(); i++) {
-			if (jsonArr.get(i) instanceof JSONObject) {
-				convertJSONObject(jsonArr.getJSONObject(i));
-			}
-		}
+		JSONUtils.streamValues(jsonArr)
+				.filter(JSONObject.class::isInstance)
+				.map(JSONObject.class::cast)
+				.forEach(XhtmlToMarkdownUtils::convertJSONObject);
 	}
 
 }

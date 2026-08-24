@@ -5,12 +5,12 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -87,12 +87,11 @@ class SeriesWithStampQueryIntegrationTest extends WithGraphDBContainer {
     private List<String> idsOf(String query) throws RmesException {
         JSONArray result = repositoryGestion.getResponseAsArray(query);
         List<String> ids = new ArrayList<>();
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject row = result.getJSONObject(i);
+        JSONUtils.stream(result).forEach(row -> {
             if (row.has("id")) {
                 ids.add(row.getString("id"));
             }
-        }
+        });
         return ids;
     }
 }

@@ -12,12 +12,14 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.stream.IntStream;
 import java.util.List;
 
 @Service
@@ -88,15 +90,13 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
             component.remove(VALUE_IRI);
         }
 
-        int index = 0;
-        for (int i = 0; i < response.length(); i++) {
-            JSONObject current = response.getJSONObject(i);
-            if(current.has(ATTRIBUTE_IRI) && current.has(VALUE_IRI) && !current.getString(ATTRIBUTE_IRI).isEmpty() && !current.getString(VALUE_IRI).isEmpty()){
-                component.put("attribute_" + index, current.getString(ATTRIBUTE_IRI));
-                component.put("attributeValue_" + index, current.getString(VALUE_IRI));
-                index++;
-            }
-        }
+        List<JSONObject> attributes = JSONUtils.stream(response)
+                .filter(current -> current.has(ATTRIBUTE_IRI) && current.has(VALUE_IRI) && !current.getString(ATTRIBUTE_IRI).isEmpty() && !current.getString(VALUE_IRI).isEmpty())
+                .toList();
+        IntStream.range(0, attributes.size()).forEach(index -> {
+            component.put("attribute_" + index, attributes.get(index).getString(ATTRIBUTE_IRI));
+            component.put("attributeValue_" + index, attributes.get(index).getString(VALUE_IRI));
+        });
 
         return structureComponentRepository.formatComponent(id, component);
     }

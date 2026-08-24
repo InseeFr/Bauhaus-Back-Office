@@ -9,7 +9,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
-import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;

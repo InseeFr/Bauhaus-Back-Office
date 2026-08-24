@@ -3,6 +3,7 @@ package fr.insee.rmes.testcontainers.queries;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -31,13 +32,10 @@ class DatasetDistributionQueriesIntegrationTest extends WithGraphDBContainer {
     private JSONObject rowOfDistribution(String distributionId) throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(
                 datasetDistributionQueries.getDistributionsForSearch(DISTRIBUTION_GRAPH, ADMS_GRAPH));
-        for (int i = 0; i < result.length(); i++) {
-            JSONObject row = result.getJSONObject(i);
-            if (distributionId.equals(row.optString("distributionId"))) {
-                return row;
-            }
-        }
-        throw new AssertionError("No row found for distribution " + distributionId + " in " + result);
+        return JSONUtils.stream(result)
+                .filter(row -> distributionId.equals(row.optString("distributionId")))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No row found for distribution " + distributionId + " in " + result));
     }
 
     @Test

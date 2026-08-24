@@ -5,6 +5,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -118,12 +119,11 @@ class ClassificationsCrudIntegrationTest extends WithGraphDBContainer {
     private static List<String> valuesOf(JSONArray array, String key) {
         List<String> values = new ArrayList<>();
         if (array != null) {
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject row = array.getJSONObject(i);
+            JSONUtils.stream(array).forEach(row -> {
                 if (row.has(key)) {
                     values.add(row.getString(key));
                 }
-            }
+            });
         }
         return values;
     }

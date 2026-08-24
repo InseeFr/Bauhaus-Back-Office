@@ -1,4 +1,4 @@
-package fr.insee.rmes.utils;
+package fr.insee.rmes.json;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -79,6 +79,14 @@ class JSONUtilsTest {
         jsonArray.put(charlie);
 
         assertThat(JSONUtils.stream(jsonArray).toList()).isEqualTo(List.of(alice, bob, charlie));
+    }
+
+    @Test
+    void shouldStreamHeterogeneousValuesAsIs() {
+        JSONObject alice = new JSONObject().put("name", "Alice");
+        JSONArray jsonArray = new JSONArray().put(alice).put("Bob").put(42);
+
+        assertThat(JSONUtils.streamValues(jsonArray).toList()).isEqualTo(List.of(alice, "Bob", 42));
     }
 
     @Test

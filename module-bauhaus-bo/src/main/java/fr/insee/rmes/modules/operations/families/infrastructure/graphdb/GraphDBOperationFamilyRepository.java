@@ -9,9 +9,9 @@ import fr.insee.rmes.modules.operations.families.domain.model.PartialOperationFa
 import fr.insee.rmes.modules.operations.families.domain.port.serverside.OperationFamilyRepository;
 import fr.insee.rmes.modules.operations.families.infrastructure.graphdb.OperationFamilyQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.http.HttpStatus;
-import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -75,10 +75,9 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         List<OperationFamilySeries> series = new ArrayList<>();
 
         if (!array.isEmpty()) {
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject attribute = array.getJSONObject(i);
+            JSONUtils.stream(array).forEach(attribute -> {
                 series.add(OperationFamilySeries.fromJSON(attribute));
-            }
+            });
         }
         return series;
     }
@@ -89,10 +88,9 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         List<OperationFamilySubject> subjects = new ArrayList<>();
 
         if (!array.isEmpty()) {
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject attribute = array.getJSONObject(i);
+            JSONUtils.stream(array).forEach(attribute -> {
                 subjects.add(OperationFamilySubject.fromJSON(attribute));
-            }
+            });
         }
         return subjects;
     }

@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRe
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,12 +56,11 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         JSONArray results = repositoryGestion.getResponseAsArray(query);
 
         List<OrganisationOption> organisations = new ArrayList<>();
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject org = results.getJSONObject(i);
+        JSONUtils.stream(results).forEach(org -> {
             String stamp = org.getString(STAMP_FIELD);
             String label = org.getString(LABEL_FIELD);
             organisations.add(new OrganisationOption(stamp, label));
-        }
+        });
 
         return organisations;
     }
@@ -118,16 +118,14 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         JSONArray results = repositoryGestion.getResponseAsArray(query);
 
         Map<String, OrganisationOption> organisationsMap = new HashMap<>();
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject org = results.getJSONObject(i);
+        JSONUtils.stream(results).forEach(org -> {
             String label = org.getString(LABEL_FIELD);
             String stamp = org.has(STAMP_FIELD) ? org.getString(STAMP_FIELD) : null;
             String key = org.has(KEY_FIELD) ? org.getString(KEY_FIELD) : stamp;
-            if (key == null) {
-                continue;
+            if (key != null) {
+                organisationsMap.put(key, new OrganisationOption(stamp, label));
             }
-            organisationsMap.put(key, new OrganisationOption(stamp, label));
-        }
+        });
 
         return organisationsMap;
     }

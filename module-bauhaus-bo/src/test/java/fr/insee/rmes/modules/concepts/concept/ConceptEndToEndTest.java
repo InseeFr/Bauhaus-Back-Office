@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -377,21 +378,18 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     }
 
     private static JSONObject findById(JSONArray array, String id) {
-        for (int i = 0; i < array.length(); i++) {
-            if (array.get(i) instanceof JSONObject obj && id.equals(obj.optString("id"))) {
-                return obj;
-            }
-        }
-        return null;
+        return JSONUtils.streamValues(array)
+                .filter(JSONObject.class::isInstance)
+                .map(JSONObject.class::cast)
+                .filter(obj -> id.equals(obj.optString("id")))
+                .findFirst()
+                .orElse(null);
     }
 
     private static boolean toValidateContainsId(JSONArray array, String id) {
-        for (int i = 0; i < array.length(); i++) {
-            Object item = array.get(i);
-            if (item instanceof JSONObject obj && id.equals(obj.optString("id"))) {
-                return true;
-            }
-        }
-        return false;
+        return JSONUtils.streamValues(array)
+                .filter(JSONObject.class::isInstance)
+                .map(JSONObject.class::cast)
+                .anyMatch(obj -> id.equals(obj.optString("id")));
     }
 }

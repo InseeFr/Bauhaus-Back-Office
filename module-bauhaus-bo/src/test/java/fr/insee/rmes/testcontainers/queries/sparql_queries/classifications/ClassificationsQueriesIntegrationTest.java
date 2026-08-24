@@ -5,6 +5,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -83,9 +84,9 @@ class ClassificationsQueriesIntegrationTest extends WithGraphDBContainer {
 
     private static List<String> idsOf(JSONArray result) {
         List<String> ids = new ArrayList<>();
-        for (int i = 0; i < result.length(); i++) {
-            ids.add(result.getJSONObject(i).getString("id"));
-        }
+        JSONUtils.stream(result)
+                .map(row -> row.getString("id"))
+                .forEach(ids::add);
         return ids;
     }
 }

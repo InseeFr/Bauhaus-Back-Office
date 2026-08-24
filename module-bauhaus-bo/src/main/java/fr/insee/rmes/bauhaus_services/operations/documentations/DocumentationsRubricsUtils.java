@@ -24,7 +24,7 @@ import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.graphdb.ontologies.SDMX_MM;
 import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -428,13 +428,10 @@ DocumentationsRubricsUtils extends RdfService {
 		List<Document> docs = new ArrayList<>();
 
 		JSONArray documents = rubric.getJSONArray(documentsWithRubricLang);
-		Document currentDoc;
 
-		for (int i = 0; i < documents.length(); i++) {
-			JSONObject doc = documents.getJSONObject(i);
-			currentDoc = docUtils.buildDocumentFromJson(doc);
-			docs.add(currentDoc);
-		}	
+		JSONUtils.stream(documents)
+				.map(docUtils::buildDocumentFromJson)
+				.forEach(docs::add);
 		if (documentsWithRubricLang.equals(Constants.DOCUMENTS_LG1)) {
 			documentationRubric.setDocumentsLg1(docs);
 		}else {

@@ -20,6 +20,7 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueri
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XsltUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
@@ -79,9 +80,7 @@ public class CollectionExportBuilder extends RdfService {
 		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
-		for (int i = 0; i < members.length(); i++) {
-			orderMembers.add(members.getJSONObject(i));
-		}
+		JSONUtils.stream(members).forEach(orderMembers::add);
 
 		instance.setStrength(Collator.NO_DECOMPOSITION);
 
@@ -261,9 +260,7 @@ public class CollectionExportBuilder extends RdfService {
 		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
-		for (int i = 0; i < members.length(); i++) {
-			orderMembers.add(members.getJSONObject(i));
-		}
+		JSONUtils.stream(members).forEach(orderMembers::add);
 
 		instance.setStrength(Collator.NO_DECOMPOSITION);
 

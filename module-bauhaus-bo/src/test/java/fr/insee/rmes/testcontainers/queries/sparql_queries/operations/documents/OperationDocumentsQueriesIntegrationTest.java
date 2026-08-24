@@ -5,13 +5,13 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -139,10 +139,9 @@ class OperationDocumentsQueriesIntegrationTest extends WithGraphDBContainer {
 
     private static List<String> predicateObjectPairs(JSONArray tuples) {
         List<String> pairs = new ArrayList<>();
-        for (int i = 0; i < tuples.length(); i++) {
-            JSONObject tuple = tuples.getJSONObject(i);
+        JSONUtils.stream(tuples).forEach(tuple -> {
             pairs.add(tuple.getString("predicat") + "=" + tuple.getString("obj"));
-        }
+        });
         return pairs;
     }
 }

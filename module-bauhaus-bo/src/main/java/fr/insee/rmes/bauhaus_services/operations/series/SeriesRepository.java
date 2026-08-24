@@ -28,6 +28,7 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.modules.operations.series.domain.model.Series;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.utils.*;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -167,8 +168,7 @@ public class SeriesRepository {
         Map<String, JSONArray> contribs = getOneTypeOfLink(DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
         Map<String, JSONArray> dataCollectors = getOneTypeOfLink(INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
         Map<String, JSONArray> publishers = getOneTypeOfLink(DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
-        for (int i = 0; i < resQuery.length(); i++) {
-            JSONObject series = resQuery.getJSONObject(i);
+        JSONUtils.stream(resQuery).forEach(series -> {
             String idSeries = series.get(Constants.ID).toString();
             if (series.has("hasCreator")) {
                 series.put(Constants.CREATORS, creators.get(idSeries));
@@ -188,7 +188,7 @@ public class SeriesRepository {
             }
             famOpeSerIndUtils.fixOrganizationsNames(series);
             result.put(series);
-        }
+        });
         return QueryUtils.correctEmptyGroupConcat(result.toString());
     }
 
@@ -247,8 +247,7 @@ public class SeriesRepository {
 
         if (!links.isEmpty()) {
             links = QueryUtils.transformRdfTypeInString(links);
-            for (int i = 0; i < links.length(); i++) {
-                JSONObject l = links.getJSONObject(i);
+            JSONUtils.stream(links).forEach(l -> {
                 if (l.has(ID_SERIE)) {
                     String idSerie = l.getString(ID_SERIE);
                     l.remove(ID_SERIE);
@@ -261,7 +260,7 @@ public class SeriesRepository {
                     temp.put(l);
                     map.put(idSerie, temp);
                 }
-            }
+            });
         }
         return map;
     }
@@ -275,8 +274,7 @@ public class SeriesRepository {
         Map<String, List<String>> map = new HashMap<>();
         JSONArray creators = repositoryGestion.getResponseAsArray(operationSeriesQueries.getCreatorsById(""));
         if (!creators.isEmpty()) {
-            for (int i = 0; i < creators.length(); i++) {
-                JSONObject crea = creators.getJSONObject(i);
+            JSONUtils.stream(creators).forEach(crea -> {
                 if (crea.has(ID_SERIE)) {
                     String idSerie = crea.getString(ID_SERIE);
                     String creaUri = crea.getString(Constants.CREATORS);
@@ -289,7 +287,7 @@ public class SeriesRepository {
                     temp.add(creaUri);
                     map.put(idSerie, temp);
                 }
-            }
+            });
         }
         return map;
     }

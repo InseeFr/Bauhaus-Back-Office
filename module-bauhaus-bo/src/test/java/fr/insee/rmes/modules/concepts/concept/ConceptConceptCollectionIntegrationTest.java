@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.DisplayName;
@@ -99,12 +100,8 @@ class ConceptConceptCollectionIntegrationTest extends WithGraphDBContainer {
     }
 
     private static boolean containsId(JSONArray array, String id) {
-        for (int i = 0; i < array.length(); i++) {
-            if (id.equals(array.getJSONObject(i).optString("id"))) {
-                return true;
-            }
-        }
-        return false;
+        return JSONUtils.stream(array)
+                .anyMatch(row -> id.equals(row.optString("id")));
     }
 
     @Test

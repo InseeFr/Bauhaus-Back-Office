@@ -21,6 +21,7 @@ import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeLi
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -329,15 +330,9 @@ public class StructureComponentRepository extends RdfService {
         }
         JSONArray structures = component.getJSONArray("structures");
 
-        boolean findPublishedStructure = false;
-        for (int i = 0; i < structures.length(); i++) {
-            JSONObject structure = (JSONObject) structures.get(i);
-            String stateStructure = structure.getString("validationState"); //update state to test foreach
-            if(stateStructure.equals(VALIDATED) || stateStructure.equals(MODIFIED)){
-                findPublishedStructure = true;
-                break;
-            }
-        }
+        boolean findPublishedStructure = JSONUtils.stream(structures)
+                .map(structure -> structure.getString("validationState"))
+                .anyMatch(stateStructure -> stateStructure.equals(VALIDATED) || stateStructure.equals(MODIFIED));
 
         if(findPublishedStructure){
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());

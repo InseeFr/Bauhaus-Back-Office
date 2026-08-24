@@ -16,6 +16,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -64,25 +65,17 @@ public class FamOpeSerIndUtils  extends RdfService {
 			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString(Constants.LABEL_LG2));
 		}
 		if(jsonFamOpeSer.has(Constants.CREATORS)) {
-			List<String> stringList = new ArrayList<>();
-			for (int i = 0; i < jsonFamOpeSer.getJSONArray(Constants.CREATORS).length(); i++) {
-				Object element = jsonFamOpeSer.getJSONArray(Constants.CREATORS).get(i);
-				if (element instanceof String) {
-					stringList.add((String) element);
-				}
-			}
+			List<String> stringList = JSONUtils.streamValues(jsonFamOpeSer.getJSONArray(Constants.CREATORS))
+					.filter(String.class::isInstance)
+					.map(String.class::cast)
+					.toList();
 			idLabelTwoLangs.setCreators(stringList);
 		}
 		return idLabelTwoLangs;
 	}
 	
 	public List<String> buildStringListFromJson(JSONArray items) {
-		List<String> result = new ArrayList<>();
-		for (int i = 0; i < items.length(); i++) {
-			String item = items.getString(i);
-			result.add(item);
-		}	
-		return result;
+		return JSONUtils.jsonArrayToList(items);
 	}
 	
 	public List<Object> buildObjectListFromJson(JSONArray items, String className) {

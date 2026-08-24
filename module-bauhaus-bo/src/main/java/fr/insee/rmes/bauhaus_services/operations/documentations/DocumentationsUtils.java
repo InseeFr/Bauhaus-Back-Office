@@ -26,6 +26,7 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -138,13 +139,10 @@ public class DocumentationsUtils  {
 
 		if(jsonSims.has("rubrics")) {
 			JSONArray docRubrics = jsonSims.getJSONArray("rubrics");
-			DocumentationRubric currentRubric ;
 
-			for (int i = 0; i < docRubrics.length(); i++) {
-				JSONObject rubric = docRubrics.getJSONObject(i);
-				currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric,forXml);
-				rubrics.add(currentRubric);
-			}	
+			JSONUtils.stream(docRubrics)
+					.map(rubric -> documentationsRubricsUtils.buildRubricFromJson(rubric, forXml))
+					.forEach(rubrics::add);
 			sims.setRubrics(rubrics);
 		}
 		return sims;
@@ -203,13 +201,12 @@ public class DocumentationsUtils  {
 	private Set<String> getAutoUpdatedAttributeIds() throws RmesException {
 		JSONArray attributes = repoGestion.getResponseAsArray(documentationQueries.getAttributesQuery());
 		Set<String> ids = new HashSet<>();
-		for (int i = 0; i < attributes.length(); i++) {
-			JSONObject attribute = attributes.getJSONObject(i);
+		JSONUtils.stream(attributes).forEach(attribute -> {
 			if (AutoUpdatedDateRubrics.DCTERMS_MODIFIED.equals(attribute.optString("subPropertyOf", null))) {
 				String id = attribute.optString(Constants.ID, null);
 				if (id != null) ids.add(id.toUpperCase());
 			}
-		}
+		});
 		return ids;
 	}
 
@@ -407,13 +404,10 @@ public class DocumentationsUtils  {
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
-		MAS currentRubric;
 
-		for (int i = 0; i < jsonMsd.length(); i++) {
-			JSONObject rubric = jsonMsd.getJSONObject(i);
-			currentRubric = buildMSDRubricFromJson(rubric);
-			msd.add(currentRubric);
-		}	
+		JSONUtils.stream(jsonMsd)
+				.map(this::buildMSDRubricFromJson)
+				.forEach(msd::add);
 		return MSD.of(msd) ;
 	}
 

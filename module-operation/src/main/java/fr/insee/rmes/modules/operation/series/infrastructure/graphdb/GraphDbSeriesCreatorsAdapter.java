@@ -7,8 +7,8 @@ import fr.insee.rmes.graphdb.SparqlLiterals;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import fr.insee.rmes.modules.operation.series.infrastructure.PublicationToGestionIriRewriter;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -55,15 +55,14 @@ public class GraphDbSeriesCreatorsAdapter implements SeriesCreatorsPort {
 
             JSONArray results = repositoryGestion.getResponseAsArray(query);
             Map<String, List<String>> creatorsByIri = new HashMap<>();
-            for (int i = 0; i < results.length(); i++) {
-                JSONObject row = results.getJSONObject(i);
+            JSONUtils.stream(results).forEach(row -> {
                 String gestionIri = row.optString("seriesIri", null);
                 String creator = row.optString("creators", null);
                 if (gestionIri != null && !gestionIri.isBlank() && creator != null && !creator.isBlank()) {
                     String publicationIri = publicationByGestionIri.getOrDefault(gestionIri, gestionIri);
                     creatorsByIri.computeIfAbsent(publicationIri, k -> new ArrayList<>()).add(creator);
                 }
-            }
+            });
             return creatorsByIri;
         } catch (RmesException | IllegalArgumentException e) {
             // IllegalArgumentException : une des IRI venant du Group n'est pas injectable telle quelle.
