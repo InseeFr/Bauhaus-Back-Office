@@ -27,6 +27,21 @@ class OperationPublicationTest {
     ParentUtils ownerUtils;
 
     @Test
+    void shouldThrowExceptionIfOperationIsAlreadyPublished() throws RmesException {
+        JSONObject operation = new JSONObject();
+        operation.put(Constants.ID, "1");
+
+        when(ownerUtils.getFamOpSerValidationStatus("1")).thenReturn(ValidationStatus.VALIDATED.getValue());
+
+        var exception = assertThrows(
+                RmesBadRequestException.class,
+                () -> operationPublication.publishOperation("1", operation)
+        );
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("Operation: 1");
+    }
+
+    @Test
     void shouldThrowExceptionIfParentSeriesIsUnpublished() throws RmesException {
         JSONObject operation = new JSONObject();
         operation.put(Constants.ID, "1");

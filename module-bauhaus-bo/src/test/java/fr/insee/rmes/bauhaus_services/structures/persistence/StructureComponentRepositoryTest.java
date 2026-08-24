@@ -114,6 +114,21 @@ class StructureComponentRepositoryTest {
     }
 
     @Test
+    void shouldThrowRmesExceptionWhenPublishingAnAlreadyPublishedComponent() {
+        JSONObject component = new JSONObject()
+                .put(Constants.ID, "c1000")
+                .put(Constants.CREATOR, "creatorExample")
+                .put("disseminationStatus", "http://status")
+                .put("validationState", "Validated");
+
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureComponentRepository.publishComponent(component));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("This component is already published");
+        assertThat(exception.getDetails()).contains("Component: c1000");
+    }
+
+    @Test
     void shouldThrowRmesExceptionWhenPublishComponentWithInvalidCreator() {
         JSONObject component = new JSONObject().put(Constants.CREATOR,"");
         RmesException exception = assertThrows(RmesException.class, () -> structureComponentRepository.publishComponent(component));

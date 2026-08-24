@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.domain;
 
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
@@ -69,7 +70,7 @@ public class DomainConceptsService implements ConceptsService {
     }
 
     @Override
-    public void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException {
+    public void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         if (ids.isEmpty()) return;
         List<String> rawIds = ids.stream().map(ConceptId::value).toList();
         Set<String> existing = this.repository.findExistingConceptIds(rawIds);
@@ -77,6 +78,11 @@ public class DomainConceptsService implements ConceptsService {
         if (!missing.isEmpty()) {
             throw new ConceptsFetchException(
                     new ConceptNotFoundException("Concepts not found: " + String.join(", ", missing)));
+        }
+        Set<String> alreadyPublished = this.repository.findValidatedConceptIds(rawIds);
+        List<String> published = rawIds.stream().filter(alreadyPublished::contains).toList();
+        if (!published.isEmpty()) {
+            throw new ConceptAlreadyPublishedException("Concepts already published: " + String.join(", ", published));
         }
         this.repository.validate(ids);
     }

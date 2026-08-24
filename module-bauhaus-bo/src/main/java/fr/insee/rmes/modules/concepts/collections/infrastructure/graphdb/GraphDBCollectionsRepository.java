@@ -213,6 +213,20 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     }
 
     @Override
+    public Set<String> findValidatedCollectionIds(List<String> ids) throws CollectionsFetchException {
+        if (ids.isEmpty()) return Set.of();
+        try {
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.findValidatedCollectionIds(ids));
+            if (results == null) return Set.of();
+            return IntStream.range(0, results.length())
+                    .mapToObj(i -> results.getJSONObject(i).getString("id"))
+                    .collect(Collectors.toSet());
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
     public List<String> getCollectionIdsByConceptId(String conceptId) throws CollectionsFetchException {
         try {
             var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.getCollectionsByConceptId(conceptId));

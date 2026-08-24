@@ -22,7 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,6 +69,9 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
     private static final String ALT_LABEL = "http://www.w3.org/2004/02/skos/core#altLabel";
     private static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
     private static final String SIMS_TARGET = "http://www.w3.org/ns/sdmx-mm#target";
+
+    /** Paths already published by {@link #publishOnce(String)}, shared by every test of the class. */
+    private static final Set<String> alreadyPublished = new HashSet<>();
 
     @Autowired
     RepositoryPublication repositoryPublication;
@@ -114,7 +119,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void copiesTheLiteralsOfTheSeries() throws RmesException {
-            validate("/operations/series/s9101/validate");
+            publishOnce("/operations/series/s9101/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9101", PREF_LABEL))
                     .containsExactlyInAnyOrder("Série à publier", "Series to publish");
@@ -124,7 +129,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void doesNotCopyTheValidationStateToThePublicationBase() throws RmesException {
-            validate("/operations/series/s9101/validate");
+            publishOnce("/operations/series/s9101/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9101", VALIDATION_STATE))
                     .as("the validation state is a gestion-only property")
@@ -133,7 +138,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void rewritesTheLinksOfTheSeriesToThePublicationNamespace() throws RmesException {
-            validate("/operations/series/s9101/validate");
+            publishOnce("/operations/series/s9101/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9101", IS_PART_OF))
                     .containsExactly(PUBLISHED_FAMILY + "s9100");
@@ -146,7 +151,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void publishesHasPartLinksOnlyTowardsOperationsThatAreThemselvesPublished() throws RmesException {
-            validate("/operations/series/s9101/validate");
+            publishOnce("/operations/series/s9101/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9101", HAS_PART))
                     .as("s9105 is unpublished, only s9102 must appear")
@@ -164,6 +169,17 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
                     .as("a refused publication must leave the gestion base untouched")
                     .isEqualTo("Unpublished");
             assertThat(publishedTriples(PUBLISHED_SERIES + "s9111")).isEmpty();
+        }
+
+        @Test
+        void refusesToPublishASeriesThatIsAlreadyPublished() throws RmesException {
+            publishOnce("/operations/series/s9101/validate");
+
+            ResponseEntity<String> response = validate("/operations/series/s9101/validate");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
+            assertThat(gestionValidationState(GESTION_SERIES + "s9101")).isEqualTo("Validated");
         }
 
         @Test
@@ -199,7 +215,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void copiesTheLiteralsOfTheOperation() throws RmesException {
-            validate("/operations/operation/s9104/validate");
+            publishOnce("/operations/operation/s9104/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", PREF_LABEL))
                     .containsExactlyInAnyOrder("Opération à publier", "Operation to publish");
@@ -209,7 +225,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void doesNotCopyTheGestionOnlyProperties() throws RmesException {
-            validate("/operations/operation/s9104/validate");
+            publishOnce("/operations/operation/s9104/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", VALIDATION_STATE)).isEmpty();
             assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", PUBLISHER))
@@ -219,12 +235,23 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void rewritesTheSeriesLinksToThePublicationNamespace() throws RmesException {
-            validate("/operations/operation/s9104/validate");
+            publishOnce("/operations/operation/s9104/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_OPERATION + "s9104", IS_PART_OF))
                     .containsExactly(PUBLISHED_SERIES + "s9103");
             assertThat(publishedObjectsOf(PUBLISHED_SERIES + "s9103", HAS_PART))
                     .contains(PUBLISHED_OPERATION + "s9104");
+        }
+
+        @Test
+        void refusesToPublishAnOperationThatIsAlreadyPublished() throws RmesException {
+            publishOnce("/operations/operation/s9104/validate");
+
+            ResponseEntity<String> response = validate("/operations/operation/s9104/validate");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
+            assertThat(gestionValidationState(GESTION_OPERATION + "s9104")).isEqualTo("Validated");
         }
 
         @Test
@@ -264,7 +291,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void rewritesTheTargetOfTheReportToThePublicationNamespace() throws RmesException {
-            validate("/operations/metadataReport/9202/validate");
+            publishOnce("/operations/metadataReport/9202/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_REPORT + "9202", SIMS_TARGET))
                     .containsExactly(PUBLISHED_OPERATION + "s9102");
@@ -272,7 +299,7 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void publishesThePublishableRubrics() throws RmesException {
-            validate("/operations/metadataReport/9202/validate");
+            publishOnce("/operations/metadataReport/9202/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_ATTRIBUTE + "9202/S.1.1", PUBLISHED_SIMS_ATTRIBUTE + "S.1.1"))
                     .containsExactly("Rubrique publiable");
@@ -280,12 +307,23 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
 
         @Test
         void filtersOutTheInternalRubricsAndTheValidationState() throws RmesException {
-            validate("/operations/metadataReport/9202/validate");
+            publishOnce("/operations/metadataReport/9202/validate");
 
             assertThat(publishedObjectsOf(PUBLISHED_ATTRIBUTE + "9202/S.1.5", PUBLISHED_SIMS_ATTRIBUTE + "S.1.5"))
                     .as("S.1.3 to S.1.8 are internal rubrics, they never reach the publication base")
                     .isEmpty();
             assertThat(publishedObjectsOf(PUBLISHED_REPORT + "9202", VALIDATION_STATE)).isEmpty();
+        }
+
+        @Test
+        void refusesToPublishAReportThatIsAlreadyPublished() throws RmesException {
+            publishOnce("/operations/metadataReport/9202/validate");
+
+            ResponseEntity<String> response = validate("/operations/metadataReport/9202/validate");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.ALREADY_PUBLISHED);
+            assertThat(gestionValidationState(GESTION_REPORT + "9202")).isEqualTo("Validated");
         }
 
         @Test
@@ -299,6 +337,20 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
                     .as("a refused publication must leave the gestion base untouched")
                     .isEqualTo("Unpublished");
             assertThat(publishedTriples(PUBLISHED_REPORT + "9203")).isEmpty();
+        }
+    }
+
+    /**
+     * Publishes the resource once for the whole class. Several tests assert different facets of the
+     * very same publication ; since republishing an already published resource is now a 400, the
+     * publication has to happen exactly once and the tests that follow only read its outcome.
+     */
+    private void publishOnce(String path) {
+        if (alreadyPublished.add(path)) {
+            ResponseEntity<String> response = validate(path);
+            assertThat(response.getStatusCode())
+                    .as("the shared publication of %s must succeed", path)
+                    .isEqualTo(HttpStatus.OK);
         }
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.GraphsProperties;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -186,6 +187,9 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 		JSONObject listGraph = repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
 		if (listGraph.isEmpty()) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classificationId);}
+		JSONObject classification = repoGestion.getResponseAsObject(classificationsQueries.classificationQuery(classificationId));
+		PublicationUtils.rejectIfAlreadyPublished("Classification", classificationId, classification.optString("validationState"));
+
 		String graph = listGraph.getString("graph");
 		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);

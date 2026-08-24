@@ -339,6 +339,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public void publishCodeList(String id, CodeListKind kind) throws RmesException {
 
 		JSONObject codesList = getDetailedPartialCodesListJson(id);
+		PublicationUtils.rejectIfAlreadyPublished("Codes list", id, codesList.optString(VALIDATION_STATE));
+
 		String iri = codesList.getString("iri");
 		IRI codelist = RdfUtils.createIRI(iri);
 

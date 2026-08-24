@@ -6,6 +6,7 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidConceptIdException;
@@ -163,7 +164,7 @@ public class ConceptsResources {
         try {
             List<ConceptId> conceptIds = idsToValidate.stream().map(ConceptId::new).toList();
             conceptsService.validateConcepts(conceptIds);
-        } catch (InvalidConceptIdException e) {
+        } catch (InvalidConceptIdException | ConceptAlreadyPublishedException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (ConceptsFetchException | ConceptsSaveException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);

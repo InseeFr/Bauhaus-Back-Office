@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -253,5 +254,21 @@ class CodeListServiceImplTest {
         List<Boolean> expected = List.of(true,true,true,true,true,true);
 
         assertEquals(expected,actual);
+    }
+
+    @Test
+    void publishCodeList_shouldReturn400_whenTheCodeListIsAlreadyPublished() throws RmesException {
+        JSONObject codesList = new JSONObject()
+                .put("iri", "http://codelist/CL_TEST")
+                .put("validationState", "Validated");
+        doReturn(codesList).when(codeListService).getDetailedPartialCodesListJson("CL_TEST");
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> codeListService.publishCodeList("CL_TEST", CodeListKind.FULL));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("This codes list is already published");
+        assertThat(exception.getDetails()).contains("Codes list: CL_TEST");
+        verify(repositoryGestion, never()).objectValidation(any(), any());
     }
 }

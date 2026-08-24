@@ -42,6 +42,14 @@ public class ErrorCodes {
 	public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
 
 	/*
+	 *  400 BADREQUESTEXCEPTIONS
+	 */
+
+	// PUBLICATION
+	// Shared by every /{id}/validate endpoint : the resource is already published (Validated).
+	public static final int ALREADY_PUBLISHED = 1301;
+
+	/*
 	 *  404 NOTFOUNDEXCEPTIONS
 	 */
 

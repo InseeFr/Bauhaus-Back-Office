@@ -149,9 +149,29 @@ class DocumentationsUtilsTest {
 	void shouldThrowRmesBadRequestExceptionIfParentTargetIsUnpublished() throws RmesException {
 		String[] target = {"series", "seriesExample"};
 		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		givenMetadataReportState("1", ValidationStatus.UNPUBLISHED);
 		when(parentUtils.getValidationStatus("seriesExample")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
 		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
 		assertTrue(exception.getDetails().contains("This metadataReport cannot be published before its target is published. "));
+	}
+
+	@Test
+	void shouldThrowRmesBadRequestExceptionIfMetadataReportIsAlreadyPublished() throws RmesException {
+		String[] target = {"series", "seriesExample"};
+		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		givenMetadataReportState("1", ValidationStatus.VALIDATED);
+
+		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
+
+		assertTrue(exception.getDetails().contains("\"code\":1301"));
+		assertTrue(exception.getDetails().contains("MetadataReport: 1"));
+		verify(documentationPublication, org.mockito.Mockito.never()).publishSims(anyString());
+	}
+
+	private void givenMetadataReportState(String id, ValidationStatus status) throws RmesException {
+		String query = "getPublicationState-" + id;
+		when(documentationQueries.getPublicationState(id)).thenReturn(query);
+		when(repoGestion.getResponseAsObject(query)).thenReturn(new JSONObject().put("state", status.getValue()));
 	}
 
 	@Test

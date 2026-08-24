@@ -234,6 +234,8 @@ public class DocumentationsUtils  {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
+		PublicationUtils.rejectIfAlreadyPublished("MetadataReport", id, getDocumentationValidationStatus(id));
+
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
 		String status = parentUtils.getValidationStatus(targetId);
 		if (PublicationUtils.isUnublished(status)) {

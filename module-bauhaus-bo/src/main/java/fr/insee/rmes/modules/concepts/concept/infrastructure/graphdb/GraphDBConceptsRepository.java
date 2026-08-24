@@ -210,6 +210,20 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     }
 
     @Override
+    public Set<String> findValidatedConceptIds(List<String> ids) throws ConceptsFetchException {
+        if (ids.isEmpty()) return Set.of();
+        try {
+            JSONArray results = repositoryGestion.getResponseAsArray(conceptConceptsQueries.findValidatedConceptIds(ids));
+            if (results == null) return Set.of();
+            return IntStream.range(0, results.length())
+                    .mapToObj(i -> results.getJSONObject(i).getString("id"))
+                    .collect(Collectors.toSet());
+        } catch (RmesException e) {
+            throw new ConceptsFetchException(e);
+        }
+    }
+
+    @Override
     public void validate(List<ConceptId> ids) throws ConceptsSaveException {
         if (ids.isEmpty()) return;
         try {

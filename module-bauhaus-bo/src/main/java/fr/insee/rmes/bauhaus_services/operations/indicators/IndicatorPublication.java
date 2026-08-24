@@ -43,6 +43,8 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 	@Override
 	public void validate(Indicator indicator) throws RmesException {
 
+		PublicationUtils.rejectIfAlreadyPublished("Indicator", indicator.getId(), ownersUtils.getIndicatorsValidationStatus(indicator.getId()));
+
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
 		}

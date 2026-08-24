@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.concepts.collections.domain;
 
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyExistsException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionNotFoundException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
@@ -128,13 +129,18 @@ public class DomainCollectionsService implements CollectionsService {
     }
 
     @Override
-    public void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException, CollectionsFetchException {
+    public void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException, CollectionsFetchException, CollectionAlreadyPublishedException {
         if (collectionIds.isEmpty()) return;
         List<String> ids = collectionIds.stream().map(CollectionId::value).toList();
         Set<String> existing = this.repository.findExistingCollectionIds(ids);
         List<String> missing = ids.stream().filter(id -> !existing.contains(id)).toList();
         if (!missing.isEmpty()) {
             throw new CollectionsFetchException(new CollectionNotFoundException("Collections not found: " + String.join(", ", missing)));
+        }
+        Set<String> alreadyPublished = this.repository.findValidatedCollectionIds(ids);
+        List<String> published = ids.stream().filter(alreadyPublished::contains).toList();
+        if (!published.isEmpty()) {
+            throw new CollectionAlreadyPublishedException("Collections already published: " + String.join(", ", published));
         }
         this.repository.publishCollections(collectionIds);
     }

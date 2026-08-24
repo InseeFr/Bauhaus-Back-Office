@@ -46,6 +46,19 @@ class IndicatorPublicationTest {
 
 
     @Test
+    void validate_ShouldThrowBadRequestException_WhenIndicatorIsAlreadyPublished() throws RmesException {
+        OperationsLink link = new OperationsLink();
+        link.id = "series-1";
+        indicator.wasGeneratedBy = List.of(link);
+
+        when(ownersUtils.getIndicatorsValidationStatus("123")).thenReturn(ValidationStatus.VALIDATED.getValue());
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("Indicator: 123");
+    }
+
+    @Test
     void validate_ShouldThrowBadRequestException_WhenParentSeriesIsNotValidated() throws RmesException {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             OperationsLink link = new OperationsLink();

@@ -349,6 +349,7 @@ public class StructureComponentRepository extends RdfService {
     }
 
     public String publishComponent(JSONObject component) throws RmesException {
+        PublicationUtils.rejectIfAlreadyPublished("Component", component.optString(Constants.ID), component.optString("validationState"));
 
         if(jsonObjecthasPropertyNullOrEmpty(component, Constants.CREATOR)){
             throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());

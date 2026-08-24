@@ -150,6 +150,12 @@ public class ConceptConceptsQueries {
 		return buildConceptRequest("findExistingConceptIds.ftlh", params);
 	}
 
+	public String findValidatedConceptIds(List<String> ids) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("IDS", ids.stream().map(SparqlLiterals::literal).toList());
+		return buildConceptRequest("findValidatedConceptIds.ftlh", params);
+	}
+
 	public String getConceptCreated(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));

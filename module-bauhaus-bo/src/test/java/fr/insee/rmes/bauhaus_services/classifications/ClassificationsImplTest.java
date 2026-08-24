@@ -9,6 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
@@ -33,6 +34,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -246,6 +248,28 @@ class ClassificationsImplTest {
 
 
     @Test
+    void setClassificationValidation_shouldReturn400_whenTheClassificationIsAlreadyPublished() throws RmesException {
+        String classificationId = "naf2025";
+        ClassificationPublication classificationPublication = mock(ClassificationPublication.class);
+        ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, classificationPublication, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
+        when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId)))
+                .thenReturn(new JSONObject()
+                        .put("graph", "http://rdf.insee.fr/graphes/codes/" + classificationId)
+                        .put("uri", "http://rdf.insee.fr/codes/naf2025/"));
+        when(repoGestion.getResponseAsObject(classificationsQueries.classificationQuery(classificationId)))
+                .thenReturn(new JSONObject().put("validationState", "Validated"));
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> classificationImpl.setClassificationValidation(classificationId));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("This classification is already published");
+        assertThat(exception.getDetails()).contains("Classification: naf2025");
+        verify(classificationPublication, never()).publishClassification(any());
+        verify(repoGestion, never()).objectValidation(any(), any());
+    }
+
+    @Test
     void setClassificationValidation_writesTheValidatedStateInTheGraphReadByTheGetEndpoint() throws RmesException {
         String classificationId = "naf2025";
         String classificationUri = "http://rdf.insee.fr/codes/naf2025/";
@@ -255,6 +279,8 @@ class ClassificationsImplTest {
                 .thenReturn(new JSONObject()
                         .put("graph", "http://rdf.insee.fr/graphes/codes/" + classificationId)
                         .put("uri", classificationUri));
+        when(repoGestion.getResponseAsObject(classificationsQueries.classificationQuery(classificationId)))
+                .thenReturn(new JSONObject().put("validationState", "Unpublished"));
 
         classificationImpl.setClassificationValidation(classificationId);
 
@@ -276,6 +302,8 @@ class ClassificationsImplTest {
                 .thenReturn(new JSONObject()
                         .put("graph", classificationGraph)
                         .put("uri", "http://rdf.insee.fr/codes/" + classificationId + "/"));
+        when(repoGestion.getResponseAsObject(classificationsQueries.classificationQuery(classificationId)))
+                .thenReturn(new JSONObject().put("validationState", "Unpublished"));
         RmesException markingFailure = new RmesException(500, "Failure validation", "connection reset");
         doThrow(markingFailure).when(repoGestion).objectValidation(any(), any());
 

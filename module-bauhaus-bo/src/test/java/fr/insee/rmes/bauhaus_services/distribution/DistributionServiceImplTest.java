@@ -30,6 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -251,8 +252,37 @@ class DistributionServiceImplTest {
     }
 
     @Test
+    void shouldNotPublishAnAlreadyPublishedDistributionAndReturn400() throws RmesException {
+        givenDistributionWithValidationState("Validated");
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.publishDistribution("1"));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("This distribution is already published");
+        assertThat(exception.getDetails()).contains("Distribution: 1");
+        verify(repositoryGestion, never()).objectValidation(any(), any());
+    }
+
+    @Test
+    void shouldPublishADistributionModifiedSinceItsPublication() throws RmesException {
+        IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
+        givenDistributionWithValidationState("Modified");
+
+        doNothing().when(publicationUtils).publishResource(iri, Set.of());
+
+        Assertions.assertEquals("1", distributionService.publishDistribution("1"));
+    }
+
+    private void givenDistributionWithValidationState(String validationState) throws RmesException {
+        JSONObject distribution = new JSONObject("{\"id\": \"1\", \"validationState\": \"" + validationState + "\"}");
+        when(datasetDistributionQueries.getDistribution(eq("1"), any())).thenReturn("get-distribution-query");
+        when(repositoryGestion.getResponseAsObject("get-distribution-query")).thenReturn(distribution);
+    }
+
+    @Test
     void shouldPublishADistribution() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
+        givenDistributionWithValidationState("Unpublished");
 
         doNothing().when(publicationUtils).publishResource(iri, Set.of());
         String id = distributionService.publishDistribution("1");

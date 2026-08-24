@@ -212,7 +212,7 @@ public class CollectionsResources {
         try {
             this.service.publishCollections(collectionIds.stream().map(CollectionId::new).toList());
             return ResponseEntity.noContent().build();
-        } catch (InvalidCollectionIdException e) {
+        } catch (InvalidCollectionIdException | CollectionAlreadyPublishedException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (CollectionsFetchException e) {
             Throwable cause = e.getCause();

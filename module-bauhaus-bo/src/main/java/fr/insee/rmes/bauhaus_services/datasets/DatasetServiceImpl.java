@@ -156,6 +156,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String publishDataset(String id) throws RmesException {
+        PublicationUtils.rejectIfAlreadyPublished("Dataset", id, getDatasetByID(id).getValidationState());
+
         Model model = new LinkedHashModel();
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);

@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.concepts.concept.domain.port.clientside;
 
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
 import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
@@ -31,7 +32,7 @@ public interface ConceptsService {
 
     void updateConcept(UpdateConceptCommand command) throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException;
 
-    void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException;
+    void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException;
 
     void deleteConcept(ConceptId id) throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException;
 }

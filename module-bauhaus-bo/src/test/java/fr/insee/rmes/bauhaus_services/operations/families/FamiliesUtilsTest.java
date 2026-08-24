@@ -8,6 +8,8 @@ import fr.insee.rmes.graphdb.ontologies.ADMS;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.operations.Family;
 import org.eclipse.rdf4j.model.IRI;
@@ -80,6 +82,21 @@ class FamiliesUtilsTest {
 
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@fr", model.objects().toArray()[0].toString());
         Assertions.assertEquals("\"<p>AbstractLg1</p>\"@en", model.objects().toArray()[1].toString());
+    }
+
+    @Test
+    void setFamilyValidation_shouldThrowBadRequest_whenFamilyIsAlreadyPublished() throws RmesException {
+        ParentUtils ownersUtils = mock(ParentUtils.class);
+        FamilyPublication familyPublication = mock(FamilyPublication.class);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, familyPublication, ownersUtils, repositoryGestion, "fr", "en", null);
+
+        when(ownersUtils.getFamOpSerValidationStatus("f1")).thenReturn(ValidationStatus.VALIDATED.getValue());
+
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> familiesUtils.setFamilyValidation("f1"));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("Family: f1");
+        verify(familyPublication, never()).publishFamily(any());
     }
 
     @Test

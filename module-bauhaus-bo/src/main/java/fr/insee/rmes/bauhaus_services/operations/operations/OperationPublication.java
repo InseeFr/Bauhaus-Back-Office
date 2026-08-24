@@ -40,6 +40,8 @@ public class OperationPublication extends RdfService{
 	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
 
 	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
+		PublicationUtils.rejectIfAlreadyPublished("Operation", operationId, ownersUtils.getFamOpSerValidationStatus(operationId));
+
 		checkSeriesIsPublished(operationId, operationJson);
 
 		Model model = new LinkedHashModel();

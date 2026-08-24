@@ -2,6 +2,8 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import jakarta.validation.constraints.NotNull;
@@ -47,6 +49,29 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
 
     public static boolean isUnublished(String status) {
         return ValidationStatus.UNPUBLISHED.getValue().equals(status) || Constants.UNDEFINED.equals(status);
+    }
+
+    /**
+     * A resource is already published when its validation state is exactly {@code Validated}.
+     * {@code Modified} means it has been published then edited again : republishing it is the
+     * normal way to propagate the edition, so it is not considered as already published.
+     */
+    public static boolean isPublished(String status) {
+        return ValidationStatus.VALIDATED.getValue().equalsIgnoreCase(status);
+    }
+
+    /**
+     * Guard shared by every publication endpoint : publishing twice the very same version of a
+     * resource is a client mistake, not a no-op, so it is rejected with a 400.
+     *
+     * @param resourceType the human readable type of the resource, used in the error message
+     */
+    public static void rejectIfAlreadyPublished(String resourceType, String id, String status) throws RmesBadRequestException {
+        if (isPublished(status)) {
+            throw new RmesBadRequestException(ErrorCodes.ALREADY_PUBLISHED,
+                    "This " + resourceType.toLowerCase() + " is already published",
+                    resourceType + ": " + id);
+        }
     }
 
     public void publishResource(Resource resource, Set<String> denyList) throws RmesException {

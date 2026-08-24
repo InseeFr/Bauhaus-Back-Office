@@ -92,6 +92,33 @@ class SeriesPublicationTest {
     }
 
     @Test
+    void publishSeries_shouldThrowRmesBadRequestException_whenSeriesIsAlreadyPublished() throws RmesException {
+        String seriesId = "series123";
+
+        when(parentUtils.getFamOpSerValidationStatus(seriesId)).thenReturn(ValidationStatus.VALIDATED.getValue());
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> seriesPublication.publishSeries(seriesId, seriesJson));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("Series: " + seriesId);
+        verify(repoGestion, never()).getConnection();
+    }
+
+    @Test
+    void publishSeries_shouldNotThrow_whenSeriesHasBeenModifiedSinceItsPublication() throws RmesException {
+        String seriesId = "series123";
+
+        when(parentUtils.getFamOpSerValidationStatus(seriesId)).thenReturn(ValidationStatus.MODIFIED.getValue());
+        when(parentUtils.getValidationStatus("family123")).thenReturn(ValidationStatus.UNPUBLISHED.getValue());
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> seriesPublication.publishSeries(seriesId, seriesJson));
+
+        assertThat(exception.getDetails()).contains("cannot be published before its family is published");
+    }
+
+    @Test
     void publishSeries_shouldThrowRmesBadRequestException_whenFamilyIsUnpublished() throws RmesException {
         String seriesId = "series123";
         String familyId = "family123";

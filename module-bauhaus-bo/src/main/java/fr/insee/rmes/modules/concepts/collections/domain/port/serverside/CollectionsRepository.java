@@ -31,6 +31,7 @@ public interface CollectionsRepository {
     void linkConceptToCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException;
     void unlinkConceptFromCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException;
     void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException;
+    Set<String> findValidatedCollectionIds(List<String> ids) throws CollectionsFetchException;
     CollectionExport exportCollection(CollectionId id) throws CollectionsFetchException;
     CollectionExport exportCollectionByType(CollectionId id, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException;
     CollectionExport exportCollectionsZip(List<CollectionId> ids, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException;

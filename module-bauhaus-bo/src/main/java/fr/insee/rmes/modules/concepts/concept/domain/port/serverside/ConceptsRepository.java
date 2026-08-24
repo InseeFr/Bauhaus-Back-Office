@@ -33,6 +33,8 @@ public interface ConceptsRepository {
 
     Set<String> findExistingConceptIds(List<String> ids) throws ConceptsFetchException;
 
+    Set<String> findValidatedConceptIds(List<String> ids) throws ConceptsFetchException;
+
     void validate(List<ConceptId> ids) throws ConceptsSaveException;
 
     void delete(ConceptId id) throws ConceptsSaveException;

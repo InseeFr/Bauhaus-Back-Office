@@ -88,6 +88,12 @@ public class ConceptCollectionsQueries {
 		return buildRequest("findExistingCollectionIds.ftlh", params);
 	}
 
+	public String findValidatedCollectionIds(List<String> ids) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("IDS", ids.stream().map(SparqlLiterals::literal).toList());
+		return buildRequest("findValidatedCollectionIds.ftlh", params);
+	}
+
 	public String linkConceptToCollection(String collectionId, String conceptUri, String graph) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put("COLLECTION_URI_SUFFIX", SparqlLiterals.literal("/concepts/definitions/" + collectionId));

@@ -7,6 +7,7 @@ import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -152,6 +153,8 @@ public class FamiliesUtils {
 
 
 	public void setFamilyValidation(String id) throws  RmesException  {
+		PublicationUtils.rejectIfAlreadyPublished("Family", id, ownersUtils.getFamOpSerValidationStatus(id));
+
 		Model model = new LinkedHashModel();
 		familyPublication.publishFamily(id);
 

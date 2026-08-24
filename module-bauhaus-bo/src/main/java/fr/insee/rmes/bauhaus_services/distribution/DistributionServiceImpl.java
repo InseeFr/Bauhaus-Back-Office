@@ -167,6 +167,8 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String publishDistribution(String id) throws RmesException {
+        PublicationUtils.rejectIfAlreadyPublished("Distribution", id, getDistributionByID(id).getValidationState());
+
         Model model = new LinkedHashModel();
         IRI iri = getDistributionIri(id);
 

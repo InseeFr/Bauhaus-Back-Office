@@ -417,6 +417,8 @@ public class StructureRepository extends RdfService {
     }
 
     public String publishStructure(JSONObject structure) throws RmesException {
+        PublicationUtils.rejectIfAlreadyPublished("Structure", structure.optString(Constants.ID), structure.optString("validationState"));
+
         if(structure.isNull(Constants.CREATOR) || "".equals(structure.getString(Constants.CREATOR))){
             throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }

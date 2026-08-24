@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept.domain;
 
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
@@ -215,7 +216,7 @@ class DomainConceptsServiceTest {
 
     @Test
     void validateConcepts_delegates_to_repository_when_all_ids_exist()
-            throws ConceptsFetchException, ConceptsSaveException {
+            throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         var id1 = new ConceptId("c00001");
         var id2 = new ConceptId("c00002");
         when(conceptsRepository.findExistingConceptIds(List.of("c00001", "c00002")))
@@ -241,7 +242,22 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void validateConcepts_is_a_noop_on_empty_input() throws ConceptsFetchException, ConceptsSaveException {
+    void validateConcepts_throws_when_at_least_one_concept_is_already_published()
+            throws ConceptsFetchException {
+        var id1 = new ConceptId("c00001");
+        var id2 = new ConceptId("c00002");
+        when(conceptsRepository.findExistingConceptIds(List.of("c00001", "c00002")))
+                .thenReturn(Set.of("c00001", "c00002"));
+        when(conceptsRepository.findValidatedConceptIds(List.of("c00001", "c00002")))
+                .thenReturn(Set.of("c00002"));
+
+        assertThatThrownBy(() -> domainConceptsService.validateConcepts(List.of(id1, id2)))
+                .isInstanceOf(ConceptAlreadyPublishedException.class)
+                .hasMessageContaining("c00002");
+    }
+
+    @Test
+    void validateConcepts_is_a_noop_on_empty_input() throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         domainConceptsService.validateConcepts(List.of());
 
         verify(conceptsRepository, never()).validate(any());

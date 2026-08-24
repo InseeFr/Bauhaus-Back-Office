@@ -4,6 +4,7 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCreateCollectionCommandException;
+import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.collections.domain.model.Collection;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionDashboardItem;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
@@ -278,4 +279,29 @@ class DomainCollectionsServiceTest {
         verify(collectionsRepository, never()).findExistingCollectionIds(any());
     }
 
+    @Test
+    void publish_should_throw_when_a_collection_is_already_published() throws CollectionsFetchException, CollectionsSaveException {
+        when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(Set.of(uuid1.toString()));
+        when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(Set.of(uuid1.toString()));
+
+        CollectionAlreadyPublishedException exception = assertThrows(CollectionAlreadyPublishedException.class, () ->
+                domainCollectionsService.publishCollections(List.of(ID)));
+
+        assertThat(exception.getMessage()).contains(uuid1.toString());
+        verify(collectionsRepository, never()).publishCollections(any());
+    }
+
+    @Test
+    void publish_should_succeed_when_no_collection_is_already_published() throws CollectionsFetchException, CollectionsSaveException {
+        when(collectionsRepository.findExistingCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(Set.of(uuid1.toString()));
+        when(collectionsRepository.findValidatedCollectionIds(List.of(uuid1.toString())))
+                .thenReturn(Set.of());
+
+        assertDoesNotThrow(() -> domainCollectionsService.publishCollections(List.of(ID)));
+
+        verify(collectionsRepository).publishCollections(List.of(ID));
+    }
 }

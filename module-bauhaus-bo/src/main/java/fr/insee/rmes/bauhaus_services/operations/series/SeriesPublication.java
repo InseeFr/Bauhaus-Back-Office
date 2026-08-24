@@ -67,6 +67,8 @@ public class SeriesPublication {
     }
 
     public void publishSeries(String id, JSONObject series) throws RmesException {
+        PublicationUtils.rejectIfAlreadyPublished("Series", id, ownersUtils.getFamOpSerValidationStatus(id));
+
         String familyId = series.getJSONObject(Constants.FAMILY).getString(Constants.ID);
         String status = ownersUtils.getValidationStatus(familyId);
 

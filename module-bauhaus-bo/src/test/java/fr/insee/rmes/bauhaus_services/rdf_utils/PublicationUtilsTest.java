@@ -58,4 +58,15 @@ class PublicationUtilsTest {
 
         assertFalse(PublicationUtils.isUnublished(null));
     }
+
+    @Test
+    void testIsPublished() {
+        assertTrue(PublicationUtils.isPublished(ValidationStatus.VALIDATED.getValue()));
+        assertTrue(PublicationUtils.isPublished("validated"));
+
+        assertFalse(PublicationUtils.isPublished(ValidationStatus.MODIFIED.getValue()));
+        assertFalse(PublicationUtils.isPublished(ValidationStatus.UNPUBLISHED.getValue()));
+        assertFalse(PublicationUtils.isPublished(Constants.UNDEFINED));
+        assertFalse(PublicationUtils.isPublished(null));
+    }
 }
