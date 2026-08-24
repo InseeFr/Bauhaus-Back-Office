@@ -53,13 +53,11 @@ public class PartialCodeListsResources extends GenericResources {
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
     public ResponseEntity<Object> publishPartialCodeList(
-            @PathVariable(Constants.ID) String id) {
-        try {
-            codeListService.publishCodeList(id, CodeListKind.PARTIAL);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+            @PathVariable(Constants.ID) String id) throws RmesException {
+        // Handled by RmesExceptionHandler, like the full codes list endpoint : returnRmesException
+        // would answer with an empty body, losing the error code the front needs to translate it.
+        codeListService.publishCodeList(id, CodeListKind.PARTIAL);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_PARTIALCODESLIST, privilege = RBAC.Privilege.READ)
