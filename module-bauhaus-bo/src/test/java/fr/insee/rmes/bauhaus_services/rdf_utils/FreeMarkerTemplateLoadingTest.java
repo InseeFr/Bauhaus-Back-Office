@@ -26,12 +26,21 @@ class FreeMarkerTemplateLoadingTest {
     void buildRequestTest() throws RmesException {
         assertThatCode(()-> FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
                 .doesNotThrowAnyException();
-        assertThat(FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
+        assertThat(withUnixLineSeparators(FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of())))
                 .contains("""
                         SELECT DISTINCT ?g
                         WHERE {
                           GRAPH ?g {?a ?b ?c }
                         }""");
+    }
+
+    /**
+     * Le contenu rendu reprend les fins de ligne du fichier {@code .ftlh} tel qu'il est sur le disque,
+     * or celles-ci dépendent de la configuration Git/IDE du poste (CRLF sous Windows). Les blocs de texte
+     * Java, eux, sont toujours en LF : on normalise donc avant de comparer.
+     */
+    private static String withUnixLineSeparators(String request) {
+        return request.replace("\r\n", "\n").replace("\r", "\n");
     }
 
     @Test
