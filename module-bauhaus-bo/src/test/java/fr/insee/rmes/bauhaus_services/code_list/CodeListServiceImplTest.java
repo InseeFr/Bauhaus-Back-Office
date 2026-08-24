@@ -2,12 +2,14 @@ package fr.insee.rmes.bauhaus_services.code_list;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -26,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.mockito.Answers.CALLS_REAL_METHODS;
 
 @ExtendWith(MockitoExtension.class)
 class CodeListServiceImplTest {
@@ -133,9 +136,10 @@ class CodeListServiceImplTest {
 
     @Test
     void updateCodeFromCodeList() throws RmesException {
+        String body = new JSONObject().put("code", "code").put("labelLg1", "labelLg1").toString();
         doReturn(null).when(codeListService).deleteCodeFromCodeList("notation", "code");
-        doReturn("code").when(codeListService).addCodeFromCodeList("notation", "body");
-        String code = codeListService.updateCodeFromCodeList("notation", "code", "body");
+        doReturn("code").when(codeListService).addCodeFromCodeList("notation", body);
+        String code = codeListService.updateCodeFromCodeList("notation", "code", body);
         assertEquals("code", code);
     }
 
@@ -173,6 +177,103 @@ class CodeListServiceImplTest {
             assertEquals("code", result);
             Assertions.assertEquals("[(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, \"code\") [http://codesListGraph]]", model.getValue().toString());
         }
+    }
+
+    private static String codesListBody(String id) {
+        return new JSONObject()
+                .put(Constants.ID, id)
+                .put(Constants.LABEL_LG1, "labelLg1")
+                .put(Constants.LABEL_LG2, "labelLg2")
+                .put("lastClassUriSegment", "lastClassUriSegment")
+                .put("lastListUriSegment", "lastListUriSegment")
+                .put("lastCodeUriSegment", "lastCodeUriSegment")
+                .toString();
+    }
+
+    @Test
+    void updateCodeFromCodeList_whenTheBodyCodeDoesNotMatchTheUrlCode_shouldThrowBadRequest() throws RmesException {
+        String body = new JSONObject().put("code", "tutu").put("labelLg1", "labelLg1").toString();
+
+        RmesException exception = assertThrows(RmesBadRequestException.class,
+                () -> codeListService.updateCodeFromCodeList("notation", "toto", body));
+
+        assertEquals(400, exception.getStatus());
+        assertThat(exception.getDetails()).contains("The code of the body should match the code of the url");
+        verify(codeListService, never()).deleteCodeFromCodeList(anyString(), anyString());
+    }
+
+    @Test
+    void setCodesList_whenTheBodyIdDoesNotMatchTheUrlId_shouldThrowBadRequest() {
+        RmesException exception = assertThrows(RmesBadRequestException.class,
+                () -> codeListService.setCodesList("CL_TEST", codesListBody("CL_OTHER"), CodeListKind.FULL));
+
+        assertEquals(400, exception.getStatus());
+        assertThat(exception.getDetails()).contains("The id of the list should match the id of the url");
+    }
+
+    /**
+     * L'existence est cherchée par IRI et non par notation : l'identifiant d'une liste complète
+     * reste modifiable depuis le front, un contrôle par notation renverrait 404 sur un renommage.
+     */
+    @Test
+    void setCodesList_whenTheCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
+        IRI codeListIri = RdfUtils.createIRI("http://codelists/lastListUriSegment");
+
+        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
+            mockedRdfUtils.when(() -> RdfUtils.codeListIRI("lastListUriSegment")).thenReturn(codeListIri);
+            when(codeListsQueries.getCodesListByIri("http://codelists/lastListUriSegment")).thenReturn("iri-query");
+            when(repositoryGestion.getResponseAsObject("iri-query")).thenReturn(new JSONObject());
+
+            RmesException exception = assertThrows(RmesNotFoundException.class,
+                    () -> codeListService.setCodesList("CL_TEST", codesListBody("CL_TEST"), CodeListKind.FULL));
+
+            assertEquals(404, exception.getStatus());
+            verify(repositoryGestion, never()).loadSimpleObject(any(), any(), any());
+            verify(codeListsQueries, never()).getDetailedCodeListByNotation(anyString());
+        }
+    }
+
+    @Test
+    void setCodesList_whenTheIdIsRenamed_shouldKeepTheIriAndThePersistedCreationDate() throws RmesException {
+        IRI codeListIri = RdfUtils.createIRI("http://codelists/lastListUriSegment");
+        IRI owlClassIri = RdfUtils.createIRI("http://codelists/concept/lastClassUriSegment");
+        IRI graph = RdfUtils.createIRI("http://codesListGraph");
+        CodeListServiceImpl service = new CodeListServiceImpl(repositoryGestion, null, null,
+                new BauhausLanguagesProperties("fr", "en"), null, null, codeListsQueries);
+
+        try (MockedStatic<RdfUtils> mockedRdfUtils = Mockito.mockStatic(RdfUtils.class, CALLS_REAL_METHODS)) {
+            mockedRdfUtils.when(() -> RdfUtils.codeListIRI("lastListUriSegment")).thenReturn(codeListIri);
+            mockedRdfUtils.when(() -> RdfUtils.codeListIRI("concept/lastClassUriSegment")).thenReturn(owlClassIri);
+            mockedRdfUtils.when(RdfUtils::codesListGraph).thenReturn(graph);
+
+            when(codeListsQueries.getCodesListByIri("http://codelists/lastListUriSegment")).thenReturn("iri-query");
+            when(repositoryGestion.getResponseAsObject("iri-query"))
+                    .thenReturn(new JSONObject().put("created", "2020-01-01T00:00:00"));
+
+            String id = service.setCodesList("CL_RENAMED", codesListBody("CL_RENAMED"), CodeListKind.FULL);
+
+            assertEquals("CL_RENAMED", id);
+            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+            verify(repositoryGestion).loadSimpleObject(eq(codeListIri), model.capture(), eq(null));
+            assertThat(model.getValue().toString())
+                    .contains("http://purl.org/dc/terms/created, \"2020-01-01T00:00:00\"")
+                    .contains("\"CL_RENAMED\"");
+        }
+    }
+
+    @Test
+    void getCodeListJson_whenCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
+        when(codeListsQueries.getCodeListLabelByNotation("unknown")).thenReturn("label-query");
+        when(repositoryGestion.getResponseAsObject("label-query")).thenReturn(new JSONObject());
+
+        RmesException exception = assertThrows(RmesNotFoundException.class,
+                () -> codeListService.getCodeListJson("unknown"));
+
+        assertEquals(404, exception.getStatus());
+        // Le front résout le libellé traduit via `code` : il doit être exposé comme sur les 400.
+        assertThat(exception.getDetails())
+                .contains("\"code\":" + CodesListErrorCodes.CODE_LIST_UNKNOWN_ID)
+                .contains("\"message\":\"CodeList not found\"");
     }
 
     @Test

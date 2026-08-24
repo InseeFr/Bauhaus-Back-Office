@@ -176,6 +176,16 @@ public class CodeListsQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
 	}
 
+	/**
+	 * L'IRI est l'identité stable d'une liste de codes : sa notation, elle, peut être renommée.
+	 */
+	public String getCodesListByIri(String iri) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
+		params.put("IRI", SparqlLiterals.iri(iri));
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesListByIri.ftlh", params);
+	}
+
 	public String getDetailedCodeListByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);

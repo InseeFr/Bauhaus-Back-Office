@@ -99,6 +99,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
     private JSONObject getCodeListAsJSONObject(String notation) throws RmesException {
         JSONObject codeList = repoGestion.getResponseAsObject(codeListsQueries.getCodeListLabelByNotation(notation));
+        if (codeList.isEmpty()) {
+            throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", notation);
+        }
         return codeList.put(Constants.NOTATION, notation);
     }
 
@@ -290,12 +293,27 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		this.validateCodeList(codesList, kind);
 
+		if (!id.equals(codesList.getString(Constants.ID))) {
+			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_ID_MISMATCH,
+					"The id of the list should match the id of the url", id);
+		}
+
 		IRI codeListIri = this.generateIri(codesList, kind);
+
+		// Lève un 404 si la liste n'existe pas : sans ce contrôle, le PUT était un upsert silencieux.
+		// La recherche se fait par IRI et non par notation, car l'identifiant reste renommable.
+		JSONObject persistedCodesList = repoGestion.getResponseAsObject(
+				codeListsQueries.getCodesListByIri(RdfUtils.toString(codeListIri)));
+		if (persistedCodesList.isEmpty()) {
+			throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", id);
+		}
+
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();
 
-		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, codesList.getString("created"), model, graph);
+		// La date de création n'appartient pas au client : on garde celle qui est en base.
+		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, persistedCodesList.optString(Constants.CREATED), model, graph);
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
 
 		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, kind);
@@ -451,14 +469,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getCode(String notationCodeList, String notationCode) throws RmesException{
-		JSONObject code = repoGestion.getResponseAsObject(codeListsQueries.getCodeByNotation(notationCodeList,notationCode));
-		code.put(CODE, notationCode);
-		code.put("notationCodeList", notationCodeList);
-		return QueryUtils.correctEmptyGroupConcat(code.toString());
-	}
-
-	@Override
 	public String getCodeUri(String notationCodeList, String notationCode) throws RmesException{
 		if (StringUtils.isEmpty(notationCodeList) || StringUtils.isEmpty(notationCode)) {return null;}
 		JSONObject code = repoGestion.getResponseAsObject(codeListsQueries.getCodeUriByNotation(notationCodeList,notationCode));
@@ -480,6 +490,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String updateCodeFromCodeList(String notation, String code, String body) throws RmesException {
+		// La mise à jour est un delete suivi d'un add : sans ce contrôle, un body portant un autre code
+		// renommait le code de l'url et écrasait silencieusement un éventuel code homonyme.
+		if (!code.equals(new JSONObject(body).optString(CODE))) {
+			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_CODE_MISMATCH,
+					"The code of the body should match the code of the url", code);
+		}
 		this.deleteCodeFromCodeList(notation, code);
 		return this.addCodeFromCodeList(notation, body);
 	}

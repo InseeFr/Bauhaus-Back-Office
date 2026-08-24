@@ -8,7 +8,6 @@ import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
-import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -145,15 +144,6 @@ public class CodesListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(codeListCodes);
 
     }
-
-    @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.READ)
-    @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CodeLabelList> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
-        String codeLabelListJson = codeListService.getCode(notation, code);
-        CodeLabelList codeLabelList=Deserializer.deserializeJsonString(codeLabelListJson, CodeLabelList.class);
-        return ResponseEntity.status(HttpStatus.OK).body(codeLabelList);
-    }
-
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.PUBLISH)
     @PutMapping("/{id}/validate")
