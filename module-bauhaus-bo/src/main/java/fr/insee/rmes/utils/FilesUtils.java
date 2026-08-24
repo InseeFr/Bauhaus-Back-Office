@@ -1,6 +1,5 @@
 package fr.insee.rmes.utils;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +25,7 @@ public class FilesUtils {
 	public static final String PDF_EXTENSION = ".pdf";
 	public static final String XML_EXTENSION = ".xml";
 	public static final String FODT_EXTENSION = ".fodt";
+	private static final char EXTENSION_SEPARATOR = '.';
 
 	public static MediaType getMediaTypeFromExtension(String extension) {
 		return switch (extension){
@@ -46,9 +46,15 @@ public class FilesUtils {
         };
 	}
 
+	/**
+	 * Le nom passé en paramètre est un libellé métier, pas un chemin du système de fichiers :
+	 * il peut contenir des caractères (dont {@code :}) que {@code FilenameUtils} refuse sous Windows
+	 * (séparateur NTFS ADS). La découpe nom/extension est donc faite ici, indépendamment de l'OS.
+	 */
 	public static String generateFinalFileNameWithExtension(String fileName, int maxLength){
-		var basename = FilenameUtils.getBaseName(fileName);
-		var extension = FilenameUtils.getExtension(fileName);
+		var extensionIndex = fileName.lastIndexOf(EXTENSION_SEPARATOR);
+		var basename = extensionIndex == -1 ? fileName : fileName.substring(0, extensionIndex);
+		var extension = extensionIndex == -1 ? "" : fileName.substring(extensionIndex + 1);
 		return generateFinalBaseName(basename, maxLength) + "." + extension;
 	}
 
