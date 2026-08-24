@@ -1,0 +1,36 @@
+# Fixture de codes-list/getCodeListLabelByNotation.ftlh (CodeListsQueries.getCodeListLabelByNotation).
+#
+# La requête ouvre explicitement GRAPH <http://rdf.insee.fr/graphes/codes>, sélectionne les
+# ressources de type skos:ConceptScheme portant la notation demandée, et exige DEUX
+# skos:prefLabel : un dans lg1 et un dans lg2.
+#
+# Le jeu couvre les trois traits du parcours :
+#   - CL_LBL_BILINGUE  : le cas nominal (fr + en) ;
+#   - CL_LBL_FR_SEUL   : une liste sans libellé lg2, que le double FILTER doit écarter ;
+#   - CL_LBL_CODE      : un skos:Concept homonyme, que le rdf:type doit écarter.
+#
+# IRIs et notations suffixées « LBL » et uniques : le conteneur GraphDB est partagé entre
+# classes de test.
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://rdf.insee.fr/graphes/codes> {
+
+  <http://codelist/CL_LBL_BILINGUE>
+      a skos:ConceptScheme ;
+      skos:notation "CL_LBL_BILINGUE" ;
+      skos:prefLabel "Liste de codes bilingue (test)"@fr ;
+      skos:prefLabel "Bilingual code list (test)"@en .
+
+  <http://codelist/CL_LBL_FR_SEUL>
+      a skos:ConceptScheme ;
+      skos:notation "CL_LBL_FR_SEUL" ;
+      skos:prefLabel "Liste sans libelle anglais (test)"@fr .
+
+  <http://codelist/CL_LBL_BILINGUE/CL_LBL_CODE>
+      a skos:Concept ;
+      skos:inScheme <http://codelist/CL_LBL_BILINGUE> ;
+      skos:notation "CL_LBL_CODE" ;
+      skos:prefLabel "Code homonyme (test)"@fr ;
+      skos:prefLabel "Homonym code (test)"@en .
+}
