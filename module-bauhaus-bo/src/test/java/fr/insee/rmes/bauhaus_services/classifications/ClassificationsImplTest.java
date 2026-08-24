@@ -243,7 +243,7 @@ class ClassificationsImplTest {
     void shouldThrowRmesExceptionWhenUpdateClassification() {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
         RmesException exception = assertThrows(RmesNotFoundException.class, () -> classificationImpl.updateClassification("idExample","bodyExample"));
-        Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"Can't read request body\",\"message\":\"1142 "));
+        Assertions.assertTrue(exception.getDetails().contains("{\"code\":1142,\"details\":\"Can't read request body\""));
     }
 
 
@@ -334,7 +334,7 @@ class ClassificationsImplTest {
         ClassificationsServiceImpl classificationImpl = new ClassificationsServiceImpl(repoGestion, null, null, classificationsQueries, classificationLevelsQueries, classificationSeriesQueries, classificationFamiliesQueries, classificationCorrespondencesQueries, GraphsPropertiesStub.stub());
         when(repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId))).thenReturn(new JSONObject());
         RmesException exception = assertThrows(RmesException.class, () -> classificationImpl.setClassificationValidation(classificationId));
-        Assertions.assertEquals("{\"details\":\"2025\",\"message\":\"1141 : Classification not found\"}", exception.getDetails());
+        Assertions.assertEquals("{\"code\":1141,\"details\":\"2025\",\"message\":\"Classification not found\"}", exception.getDetails());
     }
 
 }

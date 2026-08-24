@@ -187,8 +187,8 @@ class OperationsPublicationE2ETest extends BaseE2ETest {
             ResponseEntity<String> response = validate("/operations/series/s9199/validate");
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-            assertThat(new JSONObject(response.getBody()).getString("message"))
-                    .startsWith(ErrorCodes.SERIES_UNKNOWN_ID + " : ");
+            assertThat(new JSONObject(response.getBody()).getInt("code")).isEqualTo(ErrorCodes.SERIES_UNKNOWN_ID);
+            assertThat(new JSONObject(response.getBody()).getString("message")).isEqualTo("Series not found");
         }
     }
 

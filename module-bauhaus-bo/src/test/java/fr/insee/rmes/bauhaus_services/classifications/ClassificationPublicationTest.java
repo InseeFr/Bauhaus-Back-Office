@@ -47,7 +47,7 @@ class ClassificationPublicationTest {
         when(repoGestion.getCompleteGraph(con, graphIri)).thenReturn(fakeRepositoryResult);
 
         RmesException exception = assertThrows(RmesException.class, () -> classificationPublication.publishClassification(graphIri));
-        Assertions.assertEquals("{\"details\":\"namespacelocalName\",\"message\":\"1141 : Classification not found\"}", exception.getDetails());
+        Assertions.assertEquals("{\"code\":1141,\"details\":\"namespacelocalName\",\"message\":\"Classification not found\"}", exception.getDetails());
 
     }
 
