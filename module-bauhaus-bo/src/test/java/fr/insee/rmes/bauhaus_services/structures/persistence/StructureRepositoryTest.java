@@ -5,6 +5,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.structures.structures.domain.model.Structure;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -64,6 +65,15 @@ class StructureRepositoryTest {
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> structureRepository.deleteStructure("id"));
         Assertions.assertEquals("{\"code\":1103,\"message\":\"Only unpublished codelist can be deleted\"}", exception.getDetails());
+    }
+
+    @Test
+    void shouldReturnNotFoundExceptionIfStructureDoesNotExist() throws RmesException {
+        when(structureQueries.getValidationStatus(anyString())).thenReturn("validation-status-query");
+        when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(new JSONObject());
+
+        RmesException exception = assertThrows(RmesNotFoundException.class, () -> structureRepository.deleteStructure("unknown"));
+        Assertions.assertEquals(404, exception.getStatus());
     }
 
     @Test

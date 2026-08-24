@@ -17,6 +17,7 @@ import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeL
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -115,6 +116,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	public JSONObject getDetailedCodesListJson(String notation) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(codeListsQueries.getDetailedCodeListByNotation(notation));
+		if (codeList.isEmpty()) {
+			throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", notation);
+		}
 		this.repoGestion.getMultipleTripletsForObject(codeList, "contributor", codeListsQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
 		return codeList;
 	}
@@ -498,6 +502,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String deleteCodeFromCodeList(String notation, String code) throws RmesException {
+		if (repoGestion.getResponseAsObject(codeListsQueries.getCodeByNotation(notation, code)).isEmpty()) {
+			throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_CODE, "Code not found in this code list", code);
+		}
 		JSONObject codesList = this.getDetailedCodesListJson(notation);
 		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code);

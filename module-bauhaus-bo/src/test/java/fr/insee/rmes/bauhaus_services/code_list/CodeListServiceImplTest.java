@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -174,6 +175,28 @@ class CodeListServiceImplTest {
     }
 
     @Test
+    void deleteCodeList_whenCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
+        when(codeListsQueries.getDetailedCodeListByNotation("unknown")).thenReturn("detailed-query");
+        when(repositoryGestion.getResponseAsObject("detailed-query")).thenReturn(new JSONObject());
+
+        RmesException exception = assertThrows(RmesNotFoundException.class,
+                () -> codeListService.deleteCodeList("unknown", CodeListKind.FULL));
+
+        assertEquals(404, exception.getStatus());
+    }
+
+    @Test
+    void deleteCodeList_whenPartialCodeListDoesNotExist_shouldThrowNotFound() throws RmesException {
+        when(codeListsQueries.getDetailedCodeListByNotation("unknown")).thenReturn("detailed-query");
+        when(repositoryGestion.getResponseAsObject("detailed-query")).thenReturn(new JSONObject());
+
+        RmesException exception = assertThrows(RmesNotFoundException.class,
+                () -> codeListService.deleteCodeList("unknown", CodeListKind.PARTIAL));
+
+        assertEquals(404, exception.getStatus());
+    }
+
+    @Test
     void deleteCodeFromCodeList() throws RmesException {
         IRI codeIRI = RdfUtils.createIRI("http://lastCodeUriSegment/code");
 
@@ -182,10 +205,24 @@ class CodeListServiceImplTest {
             JSONObject codesList = new JSONObject();
             codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
 
+            when(codeListsQueries.getCodeByNotation("notation", "code")).thenReturn("code-query");
+            when(repositoryGestion.getResponseAsObject("code-query")).thenReturn(new JSONObject().put("code", "code"));
             doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation");
             codeListService.deleteCodeFromCodeList("notation", "code");
             verify(repositoryGestion, times(1)).deleteObject(codeIRI, null);
         }
+    }
+
+    @Test
+    void deleteCodeFromCodeList_whenCodeDoesNotExist_shouldThrowNotFound() throws RmesException {
+        when(codeListsQueries.getCodeByNotation("notation", "unknown")).thenReturn("code-query");
+        when(repositoryGestion.getResponseAsObject("code-query")).thenReturn(new JSONObject());
+
+        RmesException exception = assertThrows(RmesNotFoundException.class,
+                () -> codeListService.deleteCodeFromCodeList("notation", "unknown"));
+
+        assertEquals(404, exception.getStatus());
+        verify(repositoryGestion, never()).deleteObject(any(IRI.class), any());
     }
 
     @Test

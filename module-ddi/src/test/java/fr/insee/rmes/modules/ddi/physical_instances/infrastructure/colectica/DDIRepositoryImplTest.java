@@ -1,6 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationNotFoundException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.StudyUnitNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
@@ -3306,6 +3310,27 @@ class DDIRepositoryImplTest {
 
         assertThrows(MissingValuesRepresentationInUseException.class,
             () -> ddiRepository.deleteMissingValuesRepresentation(agencyId, "mmvr-1"));
+
+        verify(colecticaClient, never()).deleteItem(anyString(), anyString());
+        verify(colecticaClient, never()).createOrUpdateItems(any());
+    }
+
+    @Test
+    void deleteMissingValuesRepresentation_throwsNotFoundWhenMmvrIsUnknown() {
+        String agencyId = "fr.insee";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("Variable", variableType));
+        when(colecticaClient.findRelatedItems(
+                eq(RelationshipDirection.BY_OBJECT),
+                eq(new ItemReference(agencyId, "unknown")),
+                eq(List.of(variableType))))
+            .thenReturn(List.of());
+        when(colecticaClient.getItem(agencyId, "unknown", null))
+            .thenThrow(HttpClientErrorException.create(
+                HttpStatus.NOT_FOUND, "Not Found", HttpHeaders.EMPTY, new byte[0], null));
+
+        assertThrows(MissingValuesRepresentationNotFoundException.class,
+            () -> ddiRepository.deleteMissingValuesRepresentation(agencyId, "unknown"));
 
         verify(colecticaClient, never()).deleteItem(anyString(), anyString());
         verify(colecticaClient, never()).createOrUpdateItems(any());

@@ -80,13 +80,19 @@ public class DocumentationsUtils  {
 	 * @return
 	 * @throws RmesException
 	 */
-	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
-
-		// Get general informations
+	/** Titre du SIMS, ou 404 s'il n'existe pas : seule sonde d'existence d'un rapport de métadonnées. */
+	private JSONObject getExistingDocumentationTitle(String idSims) throws RmesException {
 		JSONObject doc = repoGestion.getResponseAsObject(documentationQueries.getDocumentationTitleQuery(idSims));
 		if (doc.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Documentation not found", idSims);
 		}
+		return doc;
+	}
+
+	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
+
+		// Get general informations
+		JSONObject doc = getExistingDocumentationTitle(idSims);
 		doc.put(Constants.ID, idSims);
 
 		// Get all rubrics
@@ -439,6 +445,7 @@ public class DocumentationsUtils  {
 
 
 	public HttpStatus deleteMetadataReport(String id) throws RmesException {
+		getExistingDocumentationTitle(id);
 		Resource graph = RdfUtils.simsGraph(id);
 
 		HttpStatus result =  repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));

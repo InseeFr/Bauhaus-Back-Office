@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.clientconfig.webservice.ClientConfigResources;
 import fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
 import fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources;
+import fr.insee.rmes.modules.structures.components.webservice.ComponentResources;
 import fr.insee.rmes.modules.structures.structures.webservice.StructureResources;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ import java.nio.file.NoSuchFileException;
         ConceptsResources.class,
 
         StructureResources.class,
+        ComponentResources.class,
 
         ClassificationsResources.class,
 

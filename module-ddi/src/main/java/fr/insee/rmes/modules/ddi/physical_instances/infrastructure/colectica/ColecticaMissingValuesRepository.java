@@ -13,6 +13,7 @@ import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Valeurs sentinelles réutilisables d'un groupe (#1566) : les ManagedMissingValuesRepresentations
@@ -116,7 +118,7 @@ class ColecticaMissingValuesRepository {
         }
 
         Reference sentinelCodeListRef =
-            firstSentinelCodeListReference(readMissingValues(agencyId, mmvrId));
+            firstSentinelCodeListReference(readExistingMissingValues(agencyId, mmvrId));
 
         // Défilage : re-registre les schemes du groupe sans les références supprimées.
         List<ColecticaItemResponse> updatedSchemes = new ArrayList<>();
@@ -203,6 +205,16 @@ class ColecticaMissingValuesRepository {
     private List<ItemReference> referencedBy(ItemReference item, String parentTypeKey) {
         return colecticaClient.findRelatedDescriptions(
             RelationshipDirection.BY_OBJECT, item, List.of(itemType(parentTypeKey)));
+    }
+
+    /** Lecture d'une MMVR dont l'absence est une erreur fonctionnelle (404) et non une panne. */
+    private Ddi4ManagedMissingValuesRepresentation readExistingMissingValues(String agencyId, String id) {
+        try {
+            return readMissingValues(agencyId, id);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new MissingValuesRepresentationNotFoundException(
+                "Aucune liste de valeurs sentinelles %s/%s".formatted(agencyId, id));
+        }
     }
 
     private Ddi4ManagedMissingValuesRepresentation readMissingValues(String agencyId, String id) {

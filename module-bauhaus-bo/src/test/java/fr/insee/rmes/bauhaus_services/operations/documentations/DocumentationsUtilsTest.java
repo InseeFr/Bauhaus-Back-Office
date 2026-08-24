@@ -109,11 +109,24 @@ class DocumentationsUtilsTest {
 	}
 
 	@Test
+	void deleteMetadataReport_whenSimsDoesNotExist_shouldThrowNotFound() throws RmesException {
+		String id = "unknown";
+		when(documentationQueries.getDocumentationTitleQuery(id)).thenReturn("mock-title-query");
+		when(repoGestion.getResponseAsObject("mock-title-query")).thenReturn(new JSONObject());
+
+		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.deleteMetadataReport(id));
+
+		assertTrue(exception.getDetails().contains("Documentation not found"));
+	}
+
+	@Test
 	void deleteMetadataReport_shouldSucceed_regardlessOfTargetType() throws RmesException {
 		// La suppression d'un SIMS est désormais autorisée pour tout type de cible
 		// (série, opération ou indicateur) — cf. retrait de la contrainte "Only a sims
 		// that documents a series can be deleted".
 		String id = "2025";
+		when(documentationQueries.getDocumentationTitleQuery(id)).thenReturn("mock-title-query");
+		when(repoGestion.getResponseAsObject("mock-title-query")).thenReturn(new JSONObject().put(Constants.LABEL_LG1, "Sims"));
 		when(documentationQueries.deleteGraph(any(Resource.class))).thenReturn("delete-graph-query");
 		when(repoGestion.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
 		when(repositoryPublication.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);

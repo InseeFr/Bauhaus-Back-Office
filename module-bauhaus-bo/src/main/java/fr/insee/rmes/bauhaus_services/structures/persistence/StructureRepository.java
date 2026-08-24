@@ -14,6 +14,7 @@ import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class StructureRepository extends RdfService {
@@ -193,6 +195,12 @@ public class StructureRepository extends RdfService {
 
     private String getValidationStatus(String id) throws RmesException {
         return repoGestion.getResponseAsObject(structureQueries.getValidationStatus(id)).getString("state");
+    }
+
+    /** Empty when no structure or component carries this id : the caller decides between 404 and default value. */
+    private Optional<String> findValidationStatus(String id) throws RmesException {
+        JSONObject validationStatus = repoGestion.getResponseAsObject(structureQueries.getValidationStatus(id));
+        return validationStatus.isEmpty() ? Optional.empty() : Optional.of(validationStatus.getString("state"));
     }
 
     public String setStructure(String id, String body) throws RmesException {
@@ -397,7 +405,8 @@ public class StructureRepository extends RdfService {
     }
 
     public void deleteStructure(String structureId) throws RmesException {
-        String structureState = getValidationStatus(structureId);
+        String structureState = findValidationStatus(structureId)
+                .orElseThrow(() -> new RmesNotFoundException("Structure not found", structureId));
         if(!structureState.equalsIgnoreCase("Unpublished")){
             throw new RmesBadRequestException(CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
         }

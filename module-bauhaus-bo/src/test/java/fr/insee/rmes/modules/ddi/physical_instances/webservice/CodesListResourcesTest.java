@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
@@ -152,6 +153,17 @@ class CodesListResourcesTest {
                 codesListResources.deleteMissingValuesRepresentation("fr.insee", "mmvr-1");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void deleteMissingValuesRepresentation_shouldReturn404WhenUnknown() {
+        doThrow(new MissingValuesRepresentationNotFoundException("introuvable"))
+                .when(ddiService).deleteMissingValuesRepresentation("fr.insee", "unknown");
+
+        ResponseEntity<Void> response =
+                codesListResources.deleteMissingValuesRepresentation("fr.insee", "unknown");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test

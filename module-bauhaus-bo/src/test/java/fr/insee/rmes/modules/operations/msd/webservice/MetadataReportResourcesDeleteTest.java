@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.operations.msd.webservice;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
@@ -54,6 +55,15 @@ class MetadataReportResourcesDeleteTest {
         mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "42")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteMetadataReport_whenSimsDoesNotExist_shouldReturnNotFound() throws Exception {
+        when(documentationsService.deleteMetadataReport("unknown"))
+                .thenThrow(new RmesNotFoundException("Documentation not found", "unknown"));
+
+        mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "unknown"))
+                .andExpect(status().isNotFound());
     }
 
     @Test

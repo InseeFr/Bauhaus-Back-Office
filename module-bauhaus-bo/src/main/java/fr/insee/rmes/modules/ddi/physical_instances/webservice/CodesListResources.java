@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -157,6 +158,10 @@ public class CodesListResources {
         try {
             ddiService.deleteMissingValuesRepresentation(agencyId, id);
             return ResponseEntity.noContent().build();
+        } catch (MissingValuesRepresentationNotFoundException e) {
+            logger.warn("Missing values representation {}/{} not found: {}",
+                agencyId, id, e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (MissingValuesRepresentationInUseException e) {
             logger.warn("Refused to delete missing values representation {}/{}: {}",
                 agencyId, id, e.getMessage());
