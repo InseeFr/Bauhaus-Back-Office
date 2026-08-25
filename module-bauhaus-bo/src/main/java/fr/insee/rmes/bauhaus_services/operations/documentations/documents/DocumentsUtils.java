@@ -280,8 +280,11 @@ public class DocumentsUtils extends RdfService {
         }
 
         try {
+            // URI.create rejette une URI syntaxiquement invalide et toURL une URI relative,
+            // toutes deux par IllegalArgumentException : sans elle, une URL saisie de travers
+            // remonterait en 500 au lieu du 406 attendu par le front.
             URI.create(url).toURL();
-        } catch (MalformedURLException _) {
+        } catch (MalformedURLException | IllegalArgumentException _) {
             logger.debug("The Link {} is not valid", id);
             throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);
         }
