@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
 import fr.insee.rmes.rdf_utils.SubjectModelGraph;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -62,7 +63,7 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public String getResponse(String query) throws RmesException {
-		return RepositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+		return repositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 	
 	/**
@@ -73,7 +74,7 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public String getResponsePublication(String query) throws RmesException {
-		return RepositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+		return repositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 	/**
@@ -84,7 +85,7 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public JSONArray getResponseAsArray(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsArray(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+		return repositoryUtils.getResponseAsArray(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 
@@ -96,7 +97,7 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-        return RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+        return repositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 	public void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
@@ -126,6 +127,7 @@ public class RepositoryPublication{
 			conn.add(model);
 			logger.info("Publication of concept : {}", concept);
 		} catch (RepositoryException e) {
+			throwIfUnauthorized(e, "Publication of concept : " + concept);
 			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
 			logger.error(THREE_PARAMS_LOG, CONNECTION_TO , repo, FAILED);
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
@@ -136,7 +138,7 @@ public class RepositoryPublication{
 		publishResource(resource, model, type, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
-	private static void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
+	private void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
 		if (repo == null) {return ;}
 
 		try (RepositoryConnection conn = repo.getConnection()) {
@@ -144,6 +146,7 @@ public class RepositoryPublication{
 			conn.add(model);
 			logger.info("Publication of Resource {} : {}" ,type, resource);
 		} catch (RepositoryException e) {
+			throwIfUnauthorized(e, "Publication of Resource " + type + " : " + resource);
 			logger.error("Publication of Resource {} : {} {}" ,type, resource, FAILED);
 			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
@@ -157,7 +160,7 @@ public class RepositoryPublication{
 	}
 
 
-	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
+	private void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
 		if (repo == null) {
 			logger.warn("Publication of Graph {} : {} skipped, the publication repository could not be initialized", type, context);
 			return ;
@@ -169,6 +172,7 @@ public class RepositoryPublication{
 			conn.add(model);
 			logger.info("Publication of Graph {} : {}" ,type, context);
 		} catch (RepositoryException e) {
+			throwIfUnauthorized(e, "Publication of Graph " + type + " : " + context);
 			logger.error("Publication of Graph {} : {} {}" ,type, context, FAILED);
 			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
@@ -176,7 +180,7 @@ public class RepositoryPublication{
 	}
 
 	public void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
-		RepositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
+		repositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 	public void overrideTriplets(IRI subject, Model model, Resource graph) throws RmesException {
@@ -185,6 +189,7 @@ public class RepositoryPublication{
 			model.predicates().forEach(predicate -> conn.remove(subject, predicate, null, graph));
 			conn.add(model);
 		} catch (RepositoryException e) {
+			throwIfUnauthorized(e, "Override of triplets : " + subject);
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
@@ -201,6 +206,7 @@ public class RepositoryPublication{
 			conn.add(combinedModel);
 			conn.commit();
 		} catch (RepositoryException e) {
+			throwIfUnauthorized(e, "Bulk override of triplets");
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
@@ -219,8 +225,19 @@ public class RepositoryPublication{
 			try (RepositoryResult<Statement> statements = conn.getStatements(null, predicat, concept, false)) {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
+				throwIfUnauthorized(e, "Clear of concept links : " + concept);
 				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
+		}
+	}
+
+	/**
+	 * Un 401 de GraphDB est signalé par RDF4J sans message : on le remplace par une erreur
+	 * qui nomme le mode d'authentification RDF configuré plutôt qu'une 500 au corps vide.
+	 */
+	private void throwIfUnauthorized(RepositoryException e, String context) throws GraphDbUnauthorizedException {
+		if (GraphDbUnauthorizedException.isUnauthorized(e)) {
+			throw new GraphDbUnauthorizedException(e, context, repositoryUtils.authType());
 		}
 	}
 }

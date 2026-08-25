@@ -37,6 +37,6 @@ public class RepositoryPublicationReader {
 
     public JSONArray getResponseAsArray(String query) throws RmesException {
         Repository repository = repositoryUtils.initRepository(sesameServer, repositoryId);
-        return RepositoryUtils.getResponseAsArray(query, repository);
+        return repositoryUtils.getResponseAsArray(query, repository);
     }
 }

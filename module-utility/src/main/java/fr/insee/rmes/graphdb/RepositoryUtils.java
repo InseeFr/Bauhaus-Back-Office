@@ -3,6 +3,7 @@ package fr.insee.rmes.graphdb;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.QB;
 import fr.insee.rmes.graphdb.exceptions.DatabaseQueryException;
+import fr.insee.rmes.graphdb.exceptions.GraphDbUnauthorizedException;
 import fr.insee.rmes.keycloak.TokenService;
 import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Resource;
@@ -40,10 +41,19 @@ public class RepositoryUtils {
 	
 	static final Logger logger = LoggerFactory.getLogger(RepositoryUtils.class);
 	private final RepositoryInitiator repositoryInitiator;
+	private final RepositoryInitiator.Type authType;
 
 
 	public RepositoryUtils(TokenService tokenService, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){
+		this.authType=type;
 		repositoryInitiator=RepositoryInitiator.newInstance(type, tokenService);
+	}
+
+	/**
+	 * @return le mode d'authentification RDF configuré, nécessaire pour expliciter un 401 de GraphDB.
+	 */
+	public RepositoryInitiator.Type authType() {
+		return authType;
 	}
 
 	public Repository initRepository(String rdfServer, String repositoryID) {
@@ -79,13 +89,16 @@ public class RepositoryUtils {
 	 * @return String
 	 * @throws RmesException 
 	 */
-	public static HttpStatus executeUpdate(String updateQuery,Repository repository) throws RmesException {
+	public HttpStatus executeUpdate(String updateQuery,Repository repository) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
 		try (RepositoryConnection conn = repository.getConnection()) {
 			Update update = conn.prepareUpdate(QueryLanguage.SPARQL, updateQuery);
 			update.execute();
 			logTrace("Repo {} --- Executed update --- \n{}", repository, updateQuery);
 		} catch (RepositoryException e) {
+			if (GraphDbUnauthorizedException.isUnauthorized(e)) {
+				throw new GraphDbUnauthorizedException(e, updateQuery, authType);
+			}
 			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);
@@ -119,7 +132,7 @@ public class RepositoryUtils {
 	 * @param query
 	 * @return String
      */
-	public static String executeQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
+	public String executeQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
 		TupleQuery tupleQuery;
 
 		String result;
@@ -150,7 +163,7 @@ public class RepositoryUtils {
 	 * @param query
 	 * @return String
      */
-	public static boolean executeAskQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
+	public boolean executeAskQuery(RepositoryConnection conn, String query) throws DatabaseQueryException {
 		BooleanQuery tupleQuery;
 		try {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
@@ -169,7 +182,7 @@ public class RepositoryUtils {
 	 * @param query
 	 * @return String
      */
-	public static String getResponse(String query, Repository repository) throws DatabaseQueryException {
+	public String getResponse(String query, Repository repository) throws DatabaseQueryException {
 		String response = "";
 		try (RepositoryConnection conn = repository.getConnection()) {
 			response = executeQuery(conn, query);
@@ -179,8 +192,8 @@ public class RepositoryUtils {
 		return response;
 	}
 
-	private static void logAndThrowError(String query, RDF4JException e) throws DatabaseQueryException {
-		throw new DatabaseQueryException(e, query);
+	private void logAndThrowError(String query, RDF4JException e) throws DatabaseQueryException {
+		throw DatabaseQueryException.from(e, query, authType);
 	}
 	
 	/**
@@ -189,7 +202,7 @@ public class RepositoryUtils {
 	 * @param query
 	 * @return String
      */
-	public static boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
+	public boolean getResponseForAskQuery(String query, Repository repository) throws DatabaseQueryException {
 		boolean response = false;
 		try (RepositoryConnection conn = repository.getConnection()) {
 			response = executeAskQuery(conn, query);
@@ -206,7 +219,7 @@ public class RepositoryUtils {
 	 * @return JSONArray
 	 * @throws RmesException 
 	 */
-	public static JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
+	public JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
 		if (response.isEmpty()){
 			return null;
@@ -222,7 +235,7 @@ public class RepositoryUtils {
 	 * @return JSONArray
 	 * @throws RmesException 
 	 */
-	public static JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
+	public JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
 		if (response.isEmpty()){
 			return null;
@@ -239,7 +252,7 @@ public class RepositoryUtils {
 	 * @return JSONObject
 	 * @throws RmesException 
 	 */
-	public static JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
+	public JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
 		JSONArray resArray = getResponseAsArray(query, repository);
 		if (resArray==null || resArray.isEmpty()) {
 			return new JSONObject();
@@ -301,7 +314,7 @@ public class RepositoryUtils {
 	}
 
 	
-	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
+	public void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
 		try (RepositoryConnection conn = repository.getConnection()) {
 			try (RepositoryResult<Statement> nodes = conn.getStatements(structure, QB.COMPONENT, null, false)) {
