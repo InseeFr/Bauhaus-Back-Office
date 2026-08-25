@@ -8,8 +8,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class WithGraphDBContainer {
 
+    /**
+     * Image du triplestore utilisée par tous les tests d'intégration. La ligne est annotée pour que
+     * Renovate (custom manager « docker images in Java sources », voir renovate.json) propose la mise
+     * à jour du tag comme pour n'importe quelle autre dépendance. Garder l'annotation juste au-dessus
+     * de la constante et le tag dans le littéral, sans concaténation.
+     */
+    // renovate: datasource=docker depName=ontotext/graphdb
+    public static final String GRAPHDB_IMAGE = "ontotext/graphdb:10.8.4";
+
     @Container
-    public static final GraphDBContainer container = new GraphDBContainer("ontotext/graphdb:10.8.4");
+    public static final GraphDBContainer container = new GraphDBContainer(GRAPHDB_IMAGE);
     public static final String BAUHAUS_TEST_REPOSITORY = "bauhaus-test";
 
 

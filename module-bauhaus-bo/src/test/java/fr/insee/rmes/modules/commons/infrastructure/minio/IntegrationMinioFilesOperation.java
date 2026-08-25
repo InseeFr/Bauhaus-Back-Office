@@ -22,8 +22,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Testcontainers
 class IntegrationMinioFilesOperation {
 
+    /** Voir {@code WithGraphDBContainer#GRAPHDB_IMAGE} : annotation lue par le custom manager Renovate. */
+    // renovate: datasource=docker depName=minio/minio
+    static final String MINIO_IMAGE = "minio/minio:RELEASE.2024-11-07T00-52-20Z";
+
     @Container
-    MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z");
+    MinIOContainer container = new MinIOContainer(MINIO_IMAGE);
 
     @BeforeAll
     public static void configureSlf4j() {

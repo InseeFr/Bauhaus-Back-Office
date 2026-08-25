@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "timezone": "Europe/Paris",
+  "schedule": ["every weekend"],
+  "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__fixtures__/**"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Images Docker référencées en dur dans les sources Java (conteneurs de test), repérées par un commentaire `// renovate: datasource=... depName=...`",
+      "managerFilePatterns": ["/\\.java$/"],
+      "matchStrings": [
+        "//\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+?)(?:\\s+versioning=(?<versioning>\\S+))?\\s*\\n[^\"\\n]*\"[^\":]+:(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    }
+  ],
+  "docker-compose": {
+    "managerFilePatterns": [
+      "/(^|/)(?:docker-)?compose[^/]*\\.ya?ml$/",
+      "/^module-bauhaus-bo/compose/[^/]+\\.ya?ml$/"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Les tags MinIO sont de la forme RELEASE.2024-11-07T00-52-20Z : le versionnage sémantique ne s'y applique pas. Le motif exclut volontairement les variantes (.fips, -cpuv1, ...) qui ne sont pas les images standard.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["minio/minio"],
+      "versioning": "regex:^RELEASE\\.(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})T(?<build>\\d{2}-\\d{2}-\\d{2}Z)$"
+    }
+  ]
+}
