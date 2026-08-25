@@ -37,6 +37,8 @@ import java.util.function.Function;
  */
 public class ColecticaClient {
 
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final RestClient restClient;
     private final String baseApiUrl;
     private final String baseServerUrl;
@@ -66,7 +68,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "_query")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(new QueryRequest(itemTypes))
             .retrieve()
             .body(ColecticaResponse.class));
@@ -82,7 +84,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "_query/advanced")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(new QueryAdvancedRequest(itemTypes))
             .retrieve()
             .body(ColecticaAdvancedResponse.class));
@@ -96,7 +98,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "item/_getList")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(new GetDescriptionsRequest(identifiers))
             .retrieve()
             .body(ColecticaItemResponse[].class));
@@ -116,7 +118,7 @@ public class ColecticaClient {
         return withAuth(token -> restClient
             .get()
             .uri(finalUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .body(ColecticaItemResponse.class));
     }
@@ -131,7 +133,7 @@ public class ColecticaClient {
         withAuth(token -> restClient
             .delete()
             .uri(url)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .toBodilessEntity());
     }
@@ -149,7 +151,7 @@ public class ColecticaClient {
         return withAuth(token -> restClient
             .get()
             .uri(finalUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .body(ColecticaSetItem[].class));
     }
@@ -163,7 +165,7 @@ public class ColecticaClient {
         return withAuth(token -> restClient
             .get()
             .uri(baseApiUrl + "ddiset/" + agency + "/" + id)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .body(byte[].class));
     }
@@ -176,7 +178,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "item")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(request)
             .retrieve()
             .body(String.class));
@@ -190,7 +192,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "item/_updateState")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(request)
             .retrieve()
             .body(String.class));
@@ -219,7 +221,7 @@ public class ColecticaClient {
             .post()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(query)
             .retrieve()
             .body(ItemReference[].class));
@@ -247,7 +249,7 @@ public class ColecticaClient {
             .post()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(query)
             .retrieve()
             .body(ColecticaItem[].class));
