@@ -483,12 +483,22 @@ public class DocumentsUtils extends RdfService {
 
 
     private void validate(Document document) throws RmesException {
-        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), languages.lg1()))) {
+        if (isLabelAlreadyUsed(document, document.getLabelLg1(), languages.lg1())) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
         }
-        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), languages.lg2()))) {
+        if (isLabelAlreadyUsed(document, document.getLabelLg2(), languages.lg2())) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
         }
+    }
+
+    /**
+     * Un libellé absent n'a rien à comparer : l'écriture RDF les traite comme optionnels
+     * (cf. writeRdfDocument) et SparqlLiterals refuse d'injecter une valeur nulle dans une
+     * requête. Sans ce garde-fou, un corps sans labelLg2 se solde par une 500.
+     */
+    private boolean isLabelAlreadyUsed(Document document, String label, String lang) throws RmesException {
+        return StringUtils.isNotEmpty(label)
+                && repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), label, lang));
     }
 
     private void writeRdfDocument(Document document, IRI docUri) throws RmesException {
