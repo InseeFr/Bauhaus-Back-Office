@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialCodeListSchemeResponse;

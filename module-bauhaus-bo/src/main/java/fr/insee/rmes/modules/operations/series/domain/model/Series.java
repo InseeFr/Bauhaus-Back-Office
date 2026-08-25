@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.operations.series.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.model.links.OperationsLink;
 

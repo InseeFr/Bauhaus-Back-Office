@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.users.domain.port.serverside;
 
-import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.users.domain.exceptions.StampFetchException;
 import fr.insee.rmes.modules.users.domain.exceptions.UnsupportedModuleException;

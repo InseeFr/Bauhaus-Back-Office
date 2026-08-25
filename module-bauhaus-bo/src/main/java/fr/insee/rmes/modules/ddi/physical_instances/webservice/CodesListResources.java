@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
-import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;

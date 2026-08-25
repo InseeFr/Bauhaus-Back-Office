@@ -18,7 +18,6 @@ import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCo
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @ClientSidePort
 public interface CollectionsService {

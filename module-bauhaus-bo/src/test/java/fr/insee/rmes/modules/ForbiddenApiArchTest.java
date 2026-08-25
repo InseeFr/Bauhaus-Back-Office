@@ -7,7 +7,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @AnalyzeClasses(packages = { "fr.insee.rmes" }, importOptions = ImportOption.DoNotIncludeTests.class)

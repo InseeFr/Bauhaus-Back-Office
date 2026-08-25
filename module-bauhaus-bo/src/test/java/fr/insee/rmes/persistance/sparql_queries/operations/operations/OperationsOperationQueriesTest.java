@@ -2,8 +2,6 @@ package fr.insee.rmes.persistance.sparql_queries.operations.operations;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;

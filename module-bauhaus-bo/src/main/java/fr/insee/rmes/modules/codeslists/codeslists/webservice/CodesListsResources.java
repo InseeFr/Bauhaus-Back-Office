@@ -1,12 +1,10 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
-import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;

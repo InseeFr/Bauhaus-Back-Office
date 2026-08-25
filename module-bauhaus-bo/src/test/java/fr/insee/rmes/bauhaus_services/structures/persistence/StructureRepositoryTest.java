@@ -27,9 +27,7 @@ import org.mockito.Spy;
 import org.mockito.Mockito;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 

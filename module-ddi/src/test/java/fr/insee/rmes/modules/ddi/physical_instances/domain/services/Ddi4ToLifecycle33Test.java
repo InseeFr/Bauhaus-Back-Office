@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
-import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.BasedOnObject;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;

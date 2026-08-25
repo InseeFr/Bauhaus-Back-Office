@@ -1,8 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -13,7 +10,6 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.json.JSONUtils;

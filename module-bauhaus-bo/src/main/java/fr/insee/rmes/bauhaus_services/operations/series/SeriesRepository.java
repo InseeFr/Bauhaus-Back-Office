@@ -16,7 +16,6 @@ import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.graphdb.QueryUtils;

@@ -1,6 +1,5 @@
 package fr.insee.rmes.integration.authorizations;
 
-
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
@@ -25,7 +24,6 @@ import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

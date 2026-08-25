@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;

@@ -8,7 +8,6 @@ import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -43,7 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

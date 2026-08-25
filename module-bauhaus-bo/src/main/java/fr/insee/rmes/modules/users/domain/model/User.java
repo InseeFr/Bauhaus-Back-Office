@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.users.domain.model;
 
-import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.model.Source;
 
 import java.util.List;

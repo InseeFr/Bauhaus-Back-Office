@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.concepts.collections.domain.model;
 
-import fr.insee.rmes.modules.concepts.collections.domain.model.commands.UpdateCollectionCommand;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;

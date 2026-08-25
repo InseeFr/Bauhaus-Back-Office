@@ -8,7 +8,6 @@ import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchEx
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
 import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;

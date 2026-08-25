@@ -4,8 +4,6 @@ import fr.insee.rmes.graphdb.ObjectType;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

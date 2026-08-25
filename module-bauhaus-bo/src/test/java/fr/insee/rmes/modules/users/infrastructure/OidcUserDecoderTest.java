@@ -3,7 +3,6 @@ package fr.insee.rmes.modules.users.infrastructure;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.exceptions.EmptyUserInformationException;
-import fr.insee.rmes.modules.users.domain.exceptions.MissingStampException;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.User;
 import org.junit.jupiter.api.BeforeEach;
