@@ -392,14 +392,14 @@ public class DocumentsUtils extends RdfService {
     public HttpStatus deleteDocument(String docId, boolean isLink) throws RmesException {
         JSONObject jsonDoc = getDocument(docId, isLink);
         String uri = jsonDoc.getString(Constants.URI);
-        String url = getDocumentUrlFromDocument(jsonDoc);
         IRI docUri = RdfUtils.toURI(uri);
 
         // Check that the document is not referred to by any sims
         checkDocumentReference(docId, uri);
-        // remove the physical file
+        // remove the physical file : c'est bien schema:url qui porte le chemin du fichier,
+        // l'IRI RDF n'a pas de schéma file:// et ne désigne aucun emplacement de stockage.
         if (!isLink) {
-            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(uri)));
+            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(jsonDoc.getString(Constants.URL))));
         }
         // delete the Document in the rdf base
         return repoGestion.executeUpdate(operationDocumentsQueries.deleteDocumentQuery(docUri));
