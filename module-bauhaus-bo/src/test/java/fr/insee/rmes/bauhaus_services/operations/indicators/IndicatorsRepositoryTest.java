@@ -90,7 +90,7 @@ class IndicatorsRepositoryTest {
                 .put("prefLabelLg1", "prefLabelLg1")
                 .put("prefLabelLg2", "prefLabelLg2");
 
-        when(operationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query");
+        when(operationIndicatorsQueries.checkPrefLabelUnicity("p1001", "prefLabelLg1", "fr")).thenReturn("query");
         when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
@@ -107,8 +107,8 @@ class IndicatorsRepositoryTest {
                 .put("prefLabelLg1", "prefLabelLg1")
                 .put("prefLabelLg2", "prefLabelLg2");
 
-        when(operationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg1"), eq("fr"))).thenReturn("query1");
-        when(operationIndicatorsQueries.checkPrefLabelUnicity(eq("p1001"), eq("prefLabelLg2"), eq("en"))).thenReturn("query2");
+        when(operationIndicatorsQueries.checkPrefLabelUnicity("p1001", "prefLabelLg1", "fr")).thenReturn("query1");
+        when(operationIndicatorsQueries.checkPrefLabelUnicity("p1001", "prefLabelLg2", "en")).thenReturn("query2");
         when(repositoryGestion.getResponseAsBoolean("query1")).thenReturn(false);
         when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));

@@ -84,8 +84,8 @@ class OperationsRepositoryTest {
         when(famOpeSerIndUtils.createId()).thenReturn("1");
         when(famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
 
-        when(operationsOperationQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg1"), eq("fr"))).thenReturn("unicity-labelLg1");
-        when(operationsOperationQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg2"), eq("en"))).thenReturn("unicity-labelLg2");
+        when(operationsOperationQueries.checkPrefLabelUnicity("1", "prefLabelLg1", "fr")).thenReturn("unicity-labelLg1");
+        when(operationsOperationQueries.checkPrefLabelUnicity("1", "prefLabelLg2", "en")).thenReturn("unicity-labelLg2");
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();

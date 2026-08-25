@@ -241,7 +241,7 @@ class SeriesPublicationTest {
 
         seriesPublication.transformSubjectAndObject(model, statement);
 
-        verify(publicationUtils, times(2)).tranformBaseURIToPublish(eq(resource));
+        verify(publicationUtils, times(2)).tranformBaseURIToPublish(resource);
         assertThat(model.size()).isEqualTo(1);
     }
 

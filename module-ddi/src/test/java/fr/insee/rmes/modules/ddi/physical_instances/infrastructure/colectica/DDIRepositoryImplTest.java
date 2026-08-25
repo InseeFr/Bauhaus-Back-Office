@@ -158,7 +158,7 @@ class DDIRepositoryImplTest {
 
 
         // Verify query was issued for the PhysicalInstance item type
-        verify(colecticaClient).query(eq(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8")));
+        verify(colecticaClient).query(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
     }
 
     @Test
@@ -204,7 +204,7 @@ class DDIRepositoryImplTest {
         assertEquals("Titre 2", result.get(1).label());
         assertNull(result.get(1).versionDate());
 
-        verify(colecticaClient).queryAdvanced(eq(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8")));
+        verify(colecticaClient).queryAdvanced(List.of("a51e85bb-6259-4488-8df2-f08cb43485f8"));
     }
 
     @Test
@@ -289,7 +289,7 @@ class DDIRepositoryImplTest {
         assertEquals("agency2", result.get(1).agency());
         assertNull(result.get(1).versionDate());
 
-        verify(colecticaClient).query(eq(List.of("965c8d28-7d48-4950-bea7-04b27e52bb9b")));
+        verify(colecticaClient).query(List.of("965c8d28-7d48-4950-bea7-04b27e52bb9b"));
     }
 
     @Test
@@ -1244,7 +1244,7 @@ class DDIRepositoryImplTest {
         assertEquals("Group", result.topLevelReference().get(0).type());
 
         // Verify ddiset endpoint was called
-        verify(colecticaClient).getDdiSet(eq(agencyId), eq(groupId));
+        verify(colecticaClient).getDdiSet(agencyId, groupId);
     }
 
     @Test
@@ -1351,9 +1351,9 @@ class DDIRepositoryImplTest {
     /** package → CodeListScheme → CodeListGroup → CodeList */
     private void stubChildren(String agencyId, String parentId, String childType, ItemReference... children) {
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, parentId)),
-                eq(List.of(childType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, parentId),
+                List.of(childType)))
             .thenReturn(List.of(children));
     }
 
@@ -2037,15 +2037,15 @@ class DDIRepositoryImplTest {
 
         // PI → StudyUnit
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, piId)),
-                eq(List.of(studyUnitType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, piId),
+                List.of(studyUnitType)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-222")));
         // StudyUnit → Group
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-222")),
-                eq(List.of(groupType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-222"),
+                List.of(groupType)))
             .thenReturn(List.of(new ItemReference("fr.insee", "grp-333")));
 
         // When
@@ -2069,9 +2069,9 @@ class DDIRepositoryImplTest {
         String piId = "pi-111";
 
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, piId)),
-                eq(List.of(studyUnitType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, piId),
+                List.of(studyUnitType)))
             .thenReturn(List.of());
 
         // When / Then
@@ -2134,7 +2134,7 @@ class DDIRepositoryImplTest {
         assertEquals(1, result.codeList().size());
         assertEquals(codeListId, result.codeList().get(0).id());
         assertEquals(1, result.category().size());
-        verify(colecticaClient).getSet(eq(agencyId), eq(codeListId), eq(version));
+        verify(colecticaClient).getSet(agencyId, codeListId, version);
         verify(colecticaClient).getDescriptions(anyList());
     }
 
@@ -2475,9 +2475,9 @@ class DDIRepositoryImplTest {
         // Colectica returns only the LogicalProduct directly referenced by the group, filtered
         // server-side by item type.
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, groupId)),
-                eq(List.of(lpType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, groupId),
+                List.of(lpType)))
             .thenReturn(List.of(new ItemReference(agencyId, "lp-1")));
 
         // Repository-wide LogicalProduct query carries the labels. lp-2 exists globally but is not
@@ -2509,9 +2509,9 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", lpType));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, groupId)),
-                eq(List.of(lpType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, groupId),
+                List.of(lpType)))
             .thenReturn(List.of());
 
         List<PartialLogicalProduct> result = ddiRepository.getLogicalProductsByGroup(agencyId, groupId);
@@ -2532,9 +2532,9 @@ class DDIRepositoryImplTest {
         // Colectica returns only the CodeListScheme directly referenced by the logical product,
         // filtered server-side by item type.
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, logicalProductId)),
-                eq(List.of(clsType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, logicalProductId),
+                List.of(clsType)))
             .thenReturn(List.of(new ItemReference(agencyId, "cls-1")));
 
         // Repository-wide CodeListScheme query carries the labels. cls-2 exists globally but is not
@@ -2566,9 +2566,9 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeListScheme", clsType));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, logicalProductId)),
-                eq(List.of(clsType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, logicalProductId),
+                List.of(clsType)))
             .thenReturn(List.of());
 
         List<PartialCodeListScheme> result = ddiRepository.getCodeListSchemesByLogicalProduct(agencyId, logicalProductId);
@@ -2592,7 +2592,7 @@ class DDIRepositoryImplTest {
             null, Map.of("fr-FR", "Schéma 2"), Map.of("fr-FR", "Schéma 2"),
             null, null, 0, "test-repo", true, List.of(), "CodeListScheme", agencyId, 1, "cls-2",
             null, null, "2025-01-01T00:00:00", null, true, false, false, "DDI", 2L, 0);
-        when(colecticaClient.query(eq(List.of(clsType))))
+        when(colecticaClient.query(List.of(clsType)))
                 .thenReturn(new ColecticaResponse(List.of(cls1, cls2), 2, 2, null, null, null));
 
         List<PartialCodeListScheme> result = ddiRepository.getCodeListSchemes();
@@ -2614,9 +2614,9 @@ class DDIRepositoryImplTest {
 
         // Colectica returns only the CodeList directly referenced by the scheme, filtered server-side.
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, codeListSchemeId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, codeListSchemeId),
+                List.of(codeListType)))
             .thenReturn(List.of(new ItemReference(agencyId, "code-list-1")));
 
         // Repository-wide CodeList query carries the labels. code-list-2 exists globally but is not
@@ -2650,9 +2650,9 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, codeListSchemeId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, codeListSchemeId),
+                List.of(codeListType)))
             .thenReturn(List.of(new ItemReference(agencyId, "code-list-1")));
 
         ColecticaItem codeList1 = new ColecticaItem(
@@ -2687,9 +2687,9 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, codeListSchemeId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, codeListSchemeId),
+                List.of(codeListType)))
             .thenReturn(List.of());
 
         List<PartialCodesList> result = ddiRepository.getCodeListsByCodeListScheme(agencyId, codeListSchemeId);
@@ -2715,9 +2715,9 @@ class DDIRepositoryImplTest {
 
     private void mockBySubjectChildren(String agencyId, String parentId, String childType, ItemReference... children) {
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agencyId, parentId)),
-                eq(List.of(childType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agencyId, parentId),
+                List.of(childType)))
             .thenReturn(List.of(children));
     }
 
@@ -2751,7 +2751,7 @@ class DDIRepositoryImplTest {
             null, Map.of("fr-FR", "Liste ordinaire"), Map.of("fr-FR", "Liste ordinaire"),
             null, null, 0, "test-repo", true, List.of(), "CodeList", agencyId, 1, "code-list-other",
             null, null, "0001-01-01T00:00:00", null, true, false, false, "DDI", 1L, 0);
-        when(colecticaClient.query(eq(List.of(CODE_LIST_ITEM_TYPE))))
+        when(colecticaClient.query(List.of(CODE_LIST_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(List.of(codeList1, codeList2, unrelated), 3, 3, null, null, null));
 
         // versionDate fiable lu depuis le XML de l'item (comme les autres listings de CodeLists).
@@ -2868,24 +2868,24 @@ class DDIRepositoryImplTest {
         // Labels come from the /descriptions endpoint directly (findRelatedItems → ColecticaItem),
         // so no separate label query is made. DataRelationships are only intermediate (bare refs).
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, codeListId)),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, codeListId),
+                List.of(variableType)))
             .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "var-1")),
-                eq(List.of(dataRelationshipType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "var-1"),
+                List.of(dataRelationshipType)))
             .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "dr-1")),
-                eq(List.of(physicalInstanceType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "dr-1"),
+                List.of(physicalInstanceType)))
             .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "pi-1")),
-                eq(List.of(studyUnitType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "pi-1"),
+                List.of(studyUnitType)))
             .thenReturn(List.of(labelItem(studyUnitType, agencyId, "su-1", "Recensement 2024")));
 
         List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, codeListId);
@@ -2916,9 +2916,9 @@ class DDIRepositoryImplTest {
                 "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
                 "StudyUnit", STUDY_UNIT_ITEM_TYPE));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, codeListId)),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, codeListId),
+                List.of(variableType)))
             .thenReturn(List.of());
 
         List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, codeListId);
@@ -2948,39 +2948,39 @@ class DDIRepositoryImplTest {
 
         // Category ← CodeList (via les codes de la liste) : marche byobject, type-filtrée.
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, categoryId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, categoryId),
+                List.of(codeListType)))
             .thenReturn(List.of(labelItem(codeListType, agencyId, "cl-1", "Pays")));
 
         // CodeList ← Variable ← DataRelationship ← PhysicalInstance ← StudyUnit (même marche que
         // getVariablesUsingCodeList)…
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "cl-1")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "cl-1"),
+                List.of(variableType)))
             .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "var-1")),
-                eq(List.of(dataRelationshipType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "var-1"),
+                List.of(dataRelationshipType)))
             .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "dr-1")),
-                eq(List.of(physicalInstanceType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "dr-1"),
+                List.of(physicalInstanceType)))
             .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "pi-1")),
-                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "pi-1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
 
         // …puis StudyUnit ← Group pour le niveau racine de l'arbre du front.
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "su-1")),
-                eq(List.of(groupType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "su-1"),
+                List.of(groupType)))
             .thenReturn(List.of(labelItem(groupType, agencyId, "grp-1", "Groupe démographie")));
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
@@ -3010,14 +3010,14 @@ class DDIRepositoryImplTest {
                 "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, categoryId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, categoryId),
+                List.of(codeListType)))
             .thenReturn(List.of(labelItem(codeListType, agencyId, "cl-orpheline", "Pays")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "cl-orpheline")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "cl-orpheline"),
+                List.of(variableType)))
             .thenReturn(List.of());
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
@@ -3058,9 +3058,9 @@ class DDIRepositoryImplTest {
 
         // Deux listes de codes utilisent la catégorie…
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, categoryId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, categoryId),
+                List.of(codeListType)))
             .thenReturn(List.of(
                 labelItem(codeListType, agencyId, "cl-1", "Pays"),
                 labelItem(codeListType, agencyId, "cl-2", "Pays de naissance")));
@@ -3068,14 +3068,14 @@ class DDIRepositoryImplTest {
         // …chacune par une variable différente, mais du MÊME fichier, donc de la même StudyUnit
         // et du même Group.
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "cl-1")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "cl-1"),
+                List.of(variableType)))
             .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "cl-2")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "cl-2"),
+                List.of(variableType)))
             .thenReturn(List.of(labelItem(variableType, agencyId, "var-2", "Âge")));
         when(colecticaClient.findRelatedDescriptions(
                 eq(RelationshipDirection.BY_OBJECT),
@@ -3083,19 +3083,19 @@ class DDIRepositoryImplTest {
                 eq(List.of(dataRelationshipType))))
             .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "dr-1")),
-                eq(List.of(physicalInstanceType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "dr-1"),
+                List.of(physicalInstanceType)))
             .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "pi-1")),
-                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "pi-1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "su-1")),
-                eq(List.of(groupType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "su-1"),
+                List.of(groupType)))
             .thenReturn(List.of(labelItem(groupType, agencyId, "grp-1", "Groupe démographie")));
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
@@ -3123,9 +3123,9 @@ class DDIRepositoryImplTest {
 
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("CodeList", codeListType));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, categoryId)),
-                eq(List.of(codeListType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, categoryId),
+                List.of(codeListType)))
             .thenReturn(List.of());
 
         List<CategoryCodeListUsage> result = ddiRepository.getCodeListsUsingCategory(agencyId, categoryId);
@@ -3154,24 +3154,24 @@ class DDIRepositoryImplTest {
                 "StudyUnit", STUDY_UNIT_ITEM_TYPE));
 
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, mmvrId)),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, mmvrId),
+                List.of(variableType)))
             .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "var-1")),
-                eq(List.of(dataRelationshipType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "var-1"),
+                List.of(dataRelationshipType)))
             .thenReturn(List.of(new ItemReference(agencyId, "dr-1")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "dr-1")),
-                eq(List.of(physicalInstanceType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "dr-1"),
+                List.of(physicalInstanceType)))
             .thenReturn(List.of(labelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail")));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "pi-1")),
-                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "pi-1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024")));
 
         List<CodeListVariableUsage> result =
@@ -3203,9 +3203,9 @@ class DDIRepositoryImplTest {
 
         // Aucun usage : la suppression est autorisée.
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "mmvr-1")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "mmvr-1"),
+                List.of(variableType)))
             .thenReturn(List.of());
 
         // La MMVR référence la CodeList de sentinelles cl-sent.
@@ -3222,9 +3222,9 @@ class DDIRepositoryImplTest {
 
         // Le ManagedRepresentationScheme du groupe référence mmvr-1 (et une autre MMVR).
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "mmvr-1")),
-                eq(List.of(MANAGED_REPRESENTATION_SCHEME_TYPE))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "mmvr-1"),
+                List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
             .thenReturn(List.of(new ItemReference(agencyId, "mrs-1")));
         when(colecticaClient.getItem(agencyId, "mrs-1", null)).thenReturn(
             new ColecticaItemResponse("mrs-type", agencyId, 1, "mrs-1", "<mrs/>",
@@ -3244,9 +3244,9 @@ class DDIRepositoryImplTest {
 
         // Le CodeListScheme du groupe référence cl-sent (et une autre liste).
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "cl-sent")),
-                eq(List.of(CODE_LIST_SCHEME_TYPE))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "cl-sent"),
+                List.of(CODE_LIST_SCHEME_TYPE)))
             .thenReturn(List.of(new ItemReference(agencyId, "cls-1")));
         when(colecticaClient.getItem(agencyId, "cls-1", null)).thenReturn(
             new ColecticaItemResponse("cls-type", agencyId, 1, "cls-1", "<cls/>",
@@ -3303,9 +3303,9 @@ class DDIRepositoryImplTest {
                 "PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8",
                 "StudyUnit", STUDY_UNIT_ITEM_TYPE));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "mmvr-1")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "mmvr-1"),
+                List.of(variableType)))
             .thenReturn(List.of(labelItem(variableType, agencyId, "var-1", "Sexe")));
 
         assertThrows(MissingValuesRepresentationInUseException.class,
@@ -3321,9 +3321,9 @@ class DDIRepositoryImplTest {
         String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("Variable", variableType));
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference(agencyId, "unknown")),
-                eq(List.of(variableType))))
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "unknown"),
+                List.of(variableType)))
             .thenReturn(List.of());
         when(colecticaClient.getItem(agencyId, "unknown", null))
             .thenThrow(HttpClientErrorException.create(
@@ -3348,19 +3348,19 @@ class DDIRepositoryImplTest {
         when(colecticaClient.queryAdvanced(anyList()))
                 .thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
         // Descente : Groups (query) -> StudyUnits (bysubject) -> PhysicalInstances (bysubject).
-        when(colecticaClient.query(eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(
                         List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
         when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
         when(colecticaClient.findRelatedItems(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agency, "g1")),
-                eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agency, "g1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
                 .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
         when(colecticaClient.findRelatedDescriptions(
-                eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference(agency, "su-1")),
-                eq(List.of(piType))))
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agency, "su-1"),
+                List.of(piType)))
                 .thenReturn(List.of(new ItemReference(agency, "pi-1")));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
@@ -3387,7 +3387,7 @@ class DDIRepositoryImplTest {
         when(colecticaClient.queryAdvanced(anyList()))
                 .thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
         // Aucun groupe : la PI ne peut être rattachée -> orpheline (parents null), mais présente.
-        when(colecticaClient.query(eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
                 .thenReturn(new ColecticaResponse(List.of(), 0, 0, null, null, null));
 
         List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
@@ -3452,19 +3452,19 @@ class DDIRepositoryImplTest {
         stubChildren("fr.insee", "GROUP_M", CODE_LIST_TYPE, new ItemReference("fr.insee", "CL_MUT"));
 
         // Parents: PI -> StudyUnit -> Group
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> CodeListScheme
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of(CODE_LIST_SCHEME_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "lp-1"), List.of(CODE_LIST_SCHEME_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "CLS_1")));
 
         // Existing scheme already references CL_EXISTING.
@@ -3521,16 +3521,16 @@ class DDIRepositoryImplTest {
         when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
 
         // Parents: PI -> StudyUnit -> Group
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
 
         // The group has NO LogicalProduct at all -> no CodeListScheme reachable
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of());
 
         // The existing group can be fetched and parsed (to re-register it with a LogicalProductReference)
@@ -3604,19 +3604,19 @@ class DDIRepositoryImplTest {
             "ManagedRepresentationScheme", MANAGED_REPRESENTATION_SCHEME_TYPE));
 
         // Parents: PI -> StudyUnit -> Group
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
 
         // Scheme resolution: Group -> LogicalProduct -> ManagedRepresentationScheme
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of(MANAGED_REPRESENTATION_SCHEME_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "lp-1"), List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "MRS_1")));
 
         // Existing scheme already references MMVR_EXISTING.
@@ -3675,19 +3675,19 @@ class DDIRepositoryImplTest {
             "ManagedRepresentationScheme", MANAGED_REPRESENTATION_SCHEME_TYPE));
 
         // Parents: PI -> StudyUnit -> Group
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
 
         // The group exposes a LogicalProduct, but no ManagedRepresentationScheme under it.
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of(MANAGED_REPRESENTATION_SCHEME_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "lp-1"), List.of(MANAGED_REPRESENTATION_SCHEME_TYPE)))
             .thenReturn(List.of());
 
         // The existing LogicalProduct is fetched and completed with the new scheme reference.
@@ -3781,18 +3781,18 @@ class DDIRepositoryImplTest {
             .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type"));
 
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
         // Group -> LogicalProduct -> CategoryScheme
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of("cats-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "lp-1"), List.of("cats-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "CATS_1")));
 
         when(colecticaClient.getItem("fr.insee", "CATS_1", null)).thenReturn(new ColecticaItemResponse(
@@ -3828,15 +3828,15 @@ class DDIRepositoryImplTest {
             .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", "lp-type", "VariableScheme", "vs-type"));
 
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
         // StudyUnit has no LogicalProduct -> no VariableScheme
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
             .thenReturn(List.of());
 
         when(colecticaClient.getItem("fr.insee", "su-1", null)).thenReturn(new ColecticaItemResponse(
@@ -3886,8 +3886,8 @@ class DDIRepositoryImplTest {
         when(ddi4ToDdi3Converter.convertDdi4ToDdi3(any()))
             .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
 
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of());
 
         Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
@@ -3946,11 +3946,11 @@ class DDIRepositoryImplTest {
             "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
 
         // The StudyUnit from the request already files a VariableScheme (StudyUnit -> LP -> VS)
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of("lp-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of("vs-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "lp-1"), List.of("vs-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "VS_1")));
         when(colecticaClient.getItem("fr.insee", "VS_1", null)).thenReturn(new ColecticaItemResponse(
             "vs-type", "fr.insee", 1, "VS_1", "<vs/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
@@ -3993,18 +3993,18 @@ class DDIRepositoryImplTest {
             .thenReturn(new Ddi3Response(new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")), List.of(piItem)));
         when(instanceConfiguration.itemTypes()).thenReturn(Map.of("LogicalProduct", "lp-type", "CategoryScheme", "cats-type"));
 
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
         // The group already exposes a LogicalProduct (filing its CodeListScheme), but no CategoryScheme yet.
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of(new ItemReference("fr.insee", "lp-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "lp-1")), eq(List.of("cats-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "lp-1"), List.of("cats-type")))
             .thenReturn(List.of());
 
         when(colecticaClient.getItem("fr.insee", "lp-1", null)).thenReturn(new ColecticaItemResponse(
@@ -4057,15 +4057,15 @@ class DDIRepositoryImplTest {
             "LogicalProduct", "lp-type", "CodeListScheme", CODE_LIST_SCHEME_TYPE, "CategoryScheme", "cats-type"));
         when(colecticaConfiguration.mutualizedCodesPackage()).thenReturn(null);
 
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "pi-1")), eq(List.of(STUDY_UNIT_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "su-1")));
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_OBJECT),
-                eq(new ItemReference("fr.insee", "su-1")), eq(List.of(GROUP_ITEM_TYPE))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_OBJECT,
+                new ItemReference("fr.insee", "su-1"), List.of(GROUP_ITEM_TYPE)))
             .thenReturn(List.of(new ItemReference("fr.insee", "group-1")));
         // Group has no LogicalProduct -> neither CodeListScheme nor CategoryScheme
-        when(colecticaClient.findRelatedDescriptions(eq(RelationshipDirection.BY_SUBJECT),
-                eq(new ItemReference("fr.insee", "group-1")), eq(List.of("lp-type"))))
+        when(colecticaClient.findRelatedDescriptions(RelationshipDirection.BY_SUBJECT,
+                new ItemReference("fr.insee", "group-1"), List.of("lp-type")))
             .thenReturn(List.of());
 
         when(colecticaClient.getItem("fr.insee", "group-1", null)).thenReturn(new ColecticaItemResponse(
