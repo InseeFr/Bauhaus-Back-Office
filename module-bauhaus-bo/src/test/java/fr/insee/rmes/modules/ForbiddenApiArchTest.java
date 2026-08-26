@@ -11,6 +11,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
+import fr.insee.rmes.modules.commons.webservice.ValidationExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
@@ -25,8 +26,15 @@ public class ForbiddenApiArchTest {
     private static final String LG1_PROPERTY = "fr.insee.rmes.bauhaus.lg1";
     private static final String LG2_PROPERTY = "fr.insee.rmes.bauhaus.lg2";
 
+    /**
+     * {@link ValidationExceptionHandler} est explicitement exempté : le format d'erreur de la
+     * validation des corps de requête est transverse par nature, aucun contrôleur ne peut le rendre
+     * lui-même avec une {@code ResponseStatusException}. Les autres handlers restent de la dette,
+     * gelée dans {@code archunit_store}.
+     */
     @ArchTest
     public static final ArchRule noControllerAdvice = FreezingArchRule.freeze(noClasses()
+            .that().areNotAssignableTo(ValidationExceptionHandler.class)
             .should().beMetaAnnotatedWith(ControllerAdvice.class)
             .because("The exception handler should be managed by the controller with a ResponseStatusException exception"));
 

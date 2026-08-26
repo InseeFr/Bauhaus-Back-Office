@@ -1,0 +1,45 @@
+fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources.updateClassification(fr.insee.rmes.modules.commons.configuration.swagger.model.Id, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources.updateClassificationItem(java.lang.String, java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.addCodeForCodeList(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.setCodesList(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.updateCodeForCodeList(java.lang.String, java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.updateCodesList(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources.createPartialCodeList(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources.updatePartialCodeList(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.create(fr.insee.rmes.modules.concepts.collections.webservice.CreateCollectionRequest, jakarta.servlet.http.HttpServletResponse) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.publish(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.concepts.collections.webservice.CollectionsResources.update(java.lang.String, fr.insee.rmes.modules.concepts.collections.webservice.UpdateCollectionRequest) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConcept(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConcept(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.concepts.concept.webservice.ConceptsResources.setConceptsValidation(java.lang.String, java.util.List) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources.setDataset(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources.setDataset(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources.createDistribution(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources.patchDistribution(java.lang.String, fr.insee.rmes.modules.datasets.distributions.model.PatchDistribution) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.datasets.distributions.webservice.DistributionResources.updateDistribution(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.convertDdi3ToDdi4(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.convertDdi4ToDdi3(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.createPhysicalInstance(fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.replacePhysicalInstance(java.lang.String, java.lang.String, fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.updatePhysicalInstance(java.lang.String, java.lang.String, fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiResources.validateDdi4(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.GroupResources.createOrUpdateGroup(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.ddi.physical_instances.webservice.StudyUnitResources.createOrUpdateStudyUnit(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.geographies.webservice.GeographyResources.createGeography(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.geographies.webservice.GeographyResources.updateGeography(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources.setDocument(fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation.DocumentId, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources.setLink(fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation.DocumentId, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.families.webservice.FamilyResources.createFamily(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.families.webservice.FamilyResources.setFamilyById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources.setIndicator(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources.setIndicatorById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReport(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReportById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.operations.webservice.OperationsResources.createOperation(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.operations.webservice.OperationsResources.setOperationById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.series.webservice.SeriesResources.createSeries(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.operations.series.webservice.SeriesResources.setSeriesById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.structures.components.webservice.ComponentResources.createComponent(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.structures.components.webservice.ComponentResources.updateComponentById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.structures.structures.webservice.StructureResources.setStructure(java.lang.String) takes a @RequestBody that is not annotated with @Valid
+fr.insee.rmes.modules.structures.structures.webservice.StructureResources.setStructure(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid

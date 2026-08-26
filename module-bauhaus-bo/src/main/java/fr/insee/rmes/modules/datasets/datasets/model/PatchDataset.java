@@ -1,14 +1,12 @@
 package fr.insee.rmes.modules.datasets.datasets.model;
 
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
+import jakarta.validation.constraints.Positive;
 
-public record PatchDataset(String updated, String issued, Integer numObservations, Integer numSeries,
+public record PatchDataset(String updated, String issued, @Positive Integer numObservations, Integer numSeries,
                            Temporal temporal) {
 
     public PatchDataset {
-        if (numObservations != null && numObservations <= 0) {
-            throw new RmesRuntimeBadRequestException("observationNumber must be greater than zero");
-        }
         if (updated == null &&
                 issued == null &&
                 numObservations == null &&
@@ -18,5 +16,3 @@ public record PatchDataset(String updated, String issued, Integer numObservation
         }
     }
 }
-
-
