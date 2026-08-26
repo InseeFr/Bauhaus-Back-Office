@@ -145,6 +145,18 @@ public class HexagonaleArchTest {
 
 
 
+    /**
+     * Compteur de migration. Chaque contrôleur encore branché sur {@code bauhaus_services} (les
+     * services historiques, hors architecture hexagonale) est une violation gelée ; le nombre
+     * restant mesure ce qui reste à migrer et ne doit que décroître.
+     */
+    @ArchTest
+    public static final ArchRule webServiceShouldNotDependOnLegacyServices = FreezingArchRule.freeze(noClasses()
+            .that().resideInAPackage("..webservice..")
+            .should().dependOnClassesThat().resideInAPackage("fr.insee.rmes.bauhaus_services..")
+            .because("The webservices should depend on the domain ports, not on the legacy bauhaus_services"));
+
+
     // Port structure
 
     @ArchTest
