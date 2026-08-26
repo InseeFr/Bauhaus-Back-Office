@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,7 @@ class OperationFamilyQueriesTest {
 
     @BeforeEach
     void setUp() {
-        operationFamilyQueries = new OperationFamilyQueries(lg1, lg2, baseGraph, operationsGraph);
+        operationFamilyQueries = new OperationFamilyQueries(new BauhausLanguagesProperties(lg1, lg2), baseGraph, operationsGraph);
     }
 
     @Test
@@ -174,7 +175,7 @@ class OperationFamilyQueriesTest {
         String testBaseGraph = "http://test-base/";
         String testOperationsGraph = "test-operations/";
 
-        OperationFamilyQueries queries = new OperationFamilyQueries(testLg1, testLg2, testBaseGraph, testOperationsGraph);
+        OperationFamilyQueries queries = new OperationFamilyQueries(new BauhausLanguagesProperties(testLg1, testLg2), testBaseGraph, testOperationsGraph);
 
         String subjectsQuery = queries.getSubjects("test-id");
         assertTrue(subjectsQuery.contains("FILTER (lang(?labelLg1) = \"" + testLg1 + "\")"));

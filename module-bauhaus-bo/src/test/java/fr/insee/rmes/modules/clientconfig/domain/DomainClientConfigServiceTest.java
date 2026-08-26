@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.clientconfig.domain;
 
+import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,8 +20,7 @@ class DomainClientConfigServiceTest {
                 "http://localhost:3000",
                 "350",
                 "DG75-L201",
-                "fr",
-                "en",
+                new ConfiguredLanguages("fr", "en"),
                 "dev",
                 List.of(new ModuleConfig("concepts", false), new ModuleConfig("classifications", false)),
                 "1.0.0",
@@ -53,7 +53,7 @@ class DomainClientConfigServiceTest {
     void should_return_openid_connect_auth_for_pre_prod() {
         domainClientConfigService = new DomainClientConfigService(
                 "http://localhost:3000", "350", "DG75-L201",
-                "fr", "en", "pre-prod",
+                new ConfiguredLanguages("fr", "en"), "pre-prod",
                 List.of(), "1.0.0",
                 List.of(), "fr.insee", List.of(), true
         );
@@ -67,7 +67,7 @@ class DomainClientConfigServiceTest {
     void should_return_openid_connect_auth_for_prod() {
         domainClientConfigService = new DomainClientConfigService(
                 "http://localhost:3000", "350", "DG75-L201",
-                "fr", "en", "prod",
+                new ConfiguredLanguages("fr", "en"), "prod",
                 List.of(), "1.0.0",
                 List.of(), "fr.insee", List.of(), true
         );
@@ -81,7 +81,7 @@ class DomainClientConfigServiceTest {
     void should_return_openid_connect_auth_for_PROD() {
         domainClientConfigService = new DomainClientConfigService(
                 "http://localhost:3000", "350", "DG75-L201",
-                "fr", "en", "PROD",
+                new ConfiguredLanguages("fr", "en"), "PROD",
                 List.of(), "1.0.0",
                 List.of(), "fr.insee", List.of(), true
         );

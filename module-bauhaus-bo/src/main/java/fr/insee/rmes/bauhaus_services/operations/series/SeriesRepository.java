@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -39,7 +40,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -68,16 +68,14 @@ public class SeriesRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(SeriesRepository.class);
     private final BauhausUriBuilder bauhausUriBuilder;
-    private final String lg2;
-    private final String lg1;
+    private final BauhausLanguagesProperties languages;
 
     private final SeriesValidator validator;
 
     private final OperationSeriesQueries operationSeriesQueries;
 
     public SeriesRepository(
-            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+            BauhausLanguagesProperties languages,
             RepositoryGestion repositoryGestion,
             CodeListService codeListService,
             OrganizationsService organizationsService,
@@ -89,8 +87,7 @@ public class SeriesRepository {
             SeriesValidator validator,
             OperationSeriesQueries operationSeriesQueries,
             OrganisationLookup organisationLookup) {
-        this.lg1 = lg1;
-        this.lg2 = lg2;
+        this.languages = languages;
         this.repositoryGestion = repositoryGestion;
         this.codeListService = codeListService;
         this.organizationsService = organizationsService;
@@ -293,8 +290,8 @@ public class SeriesRepository {
 
 
     public void addMulltiLangValues(Model model, IRI seriesIri, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
-        RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg1, lg1, model, graph);
-        RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg2, lg2, model, graph);
+        RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg1, languages.lg1(), model, graph);
+        RdfUtils.addTripleStringMdToXhtml(seriesIri, predicate, valueLg2, languages.lg2(), model, graph);
     }
 
     void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
@@ -306,12 +303,12 @@ public class SeriesRepository {
         model.add(seriesURI, RDF.TYPE, INSEE.SERIES, RdfUtils.operationsGraph());
         model.add(seriesURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(series.getId()), RdfUtils.operationsGraph());
         /*Required*/
-        model.add(seriesURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(series.getPrefLabelLg1(), lg1), RdfUtils.operationsGraph());
+        model.add(seriesURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(series.getPrefLabelLg1(), languages.lg1()), RdfUtils.operationsGraph());
         model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
         /*Optional*/
-        RdfUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), lg2, model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), lg1, model, RdfUtils.operationsGraph());
-        RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), lg2, model, RdfUtils.operationsGraph());
+        RdfUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
+        RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), languages.lg1(), model, RdfUtils.operationsGraph());
+        RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
         RdfUtils.addTripleDateTime(seriesURI, DCTERMS.CREATED, series.getCreated(), model, RdfUtils.operationsGraph());
         RdfUtils.addTripleDateTime(seriesURI, DCTERMS.MODIFIED, series.getUpdated(), model, RdfUtils.operationsGraph());
 

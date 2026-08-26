@@ -1,5 +1,6 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.families;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -33,7 +34,7 @@ class OperationFamilyQueriesIntegrationTest extends WithGraphDBContainer {
             new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     private final OperationFamilyQueries queries = new OperationFamilyQueries(
-            "fr", "en", "http://rdf.insee.fr/graphes/", "operations");
+            new BauhausLanguagesProperties("fr", "en"), "http://rdf.insee.fr/graphes/", "operations");
 
     @BeforeAll
     static void initData() {
@@ -72,7 +73,7 @@ class OperationFamilyQueriesIntegrationTest extends WithGraphDBContainer {
     @Test
     void getSubjects_returns_nothing_when_the_operations_graph_is_not_the_one_holding_the_family() throws RmesException {
         OperationFamilyQueries otherGraph = new OperationFamilyQueries(
-                "fr", "en", "http://rdf.insee.fr/graphes/", "concepts/");
+                new BauhausLanguagesProperties("fr", "en"), "http://rdf.insee.fr/graphes/", "concepts/");
 
         JSONArray subjects = repositoryGestion.getResponseAsArray(otherGraph.getSubjects("famOpMig"));
 

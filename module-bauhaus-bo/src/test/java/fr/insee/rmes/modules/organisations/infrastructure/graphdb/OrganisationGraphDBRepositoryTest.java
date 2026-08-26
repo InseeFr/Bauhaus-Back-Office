@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -35,7 +36,7 @@ class OrganisationGraphDBRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, ORGANISATIONS_GRAPH, INSEE_GRAPH, LANGUAGE);
+        repository = new OrganisationGraphDBRepository(repositoryGestion, BASE_GRAPH, ORGANISATIONS_GRAPH, INSEE_GRAPH, new BauhausLanguagesProperties(LANGUAGE, "en"));
     }
 
     @Test

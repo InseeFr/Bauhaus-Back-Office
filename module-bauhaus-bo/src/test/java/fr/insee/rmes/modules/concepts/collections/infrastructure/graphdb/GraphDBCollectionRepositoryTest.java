@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.concepts.Collection;
@@ -50,7 +51,7 @@ class GraphDBCollectionRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repo = new GraphDBCollectionRepository(repositoryGestion, LG1, LG2);
+        repo = new GraphDBCollectionRepository(repositoryGestion, new BauhausLanguagesProperties(LG1, LG2));
     }
 
     @Test
@@ -188,7 +189,7 @@ class GraphDBCollectionRepositoryTest {
             utils.when(() -> RdfUtils.addTripleString(any(), any(), any(), anyString(), any(LinkedHashModel.class), any()))
                     .thenAnswer(inv -> null);
 
-            GraphDBCollectionRepository repo = new GraphDBCollectionRepository(repositoryGestion, "fr", "en");
+            GraphDBCollectionRepository repo = new GraphDBCollectionRepository(repositoryGestion, new BauhausLanguagesProperties("fr", "en"));
 
             String id = repo.save(col);
 

@@ -1,5 +1,6 @@
 package fr.insee.rmes;
 
+import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,6 +23,11 @@ class BauhausLanguagesPropertiesTest {
     void shouldBindLg1AndLg2() {
         assertEquals("fr", languages.lg1());
         assertEquals("en", languages.lg2());
+    }
+
+    @Test
+    void shouldExposeBothLanguagesToTheDomainWithoutSwappingThem() {
+        assertEquals(new ConfiguredLanguages("fr", "en"), languages.toDomain());
     }
 
     @EnableConfigurationProperties(BauhausLanguagesProperties.class)

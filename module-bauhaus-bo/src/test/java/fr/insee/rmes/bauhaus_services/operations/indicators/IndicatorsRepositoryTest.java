@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.AppSpringBootTest;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
@@ -60,7 +61,7 @@ class IndicatorsRepositoryTest {
     void shouldThrowExceptionIfWasGeneratedByNull() throws RmesException {
         JSONObject indicator = new JSONObject();
 
-        IndicatorsRepository indicatorsRepository = spy(new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null));
+        IndicatorsRepository indicatorsRepository = spy(new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), null, null));
         doReturn("p1000").when(indicatorsRepository).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsRepository.setIndicator(indicator.toString()));
@@ -73,7 +74,7 @@ class IndicatorsRepositoryTest {
     void shouldThrowExceptionIfWasGeneratedByEmpty() throws RmesException {
         JSONObject indicator = new JSONObject().put("wasGeneratedBy", new JSONArray());
 
-        IndicatorsRepository indicatorsRepository = spy(new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null));
+        IndicatorsRepository indicatorsRepository = spy(new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), null, null));
         doReturn("p1000").when(indicatorsRepository).createID();
 
         Exception exception = assertThrows(Exception.class, () -> indicatorsRepository.setIndicator(indicator.toString()));
@@ -94,7 +95,7 @@ class IndicatorsRepositoryTest {
         when(repositoryGestion.getResponseAsBoolean("query")).thenReturn(true);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), operationIndicatorsQueries, null);
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsRepository.setIndicator(indicator.toString()));
         assertThat(exception.getDetails()).contains("This prefLabelLg1 is already used by another indicator.");
     }
@@ -113,14 +114,14 @@ class IndicatorsRepositoryTest {
         when(repositoryGestion.getResponseAsBoolean("query2")).thenReturn(true);
         when(repositoryGestion.getResponseAsObject(any())).thenReturn(new JSONObject().put(Constants.ID, "p1000"));
 
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), operationIndicatorsQueries, null);
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorsRepository.setIndicator(indicator.toString()));
         assertThat(exception.getDetails()).contains("This prefLabelLg2 is already used by another indicator.");
     }
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), null, null);
 
         var indicator = new Indicator();
         indicator.setId("1");
@@ -148,7 +149,7 @@ class IndicatorsRepositoryTest {
         JSONObject jsonIndicator = new JSONObject(json);
         Indicator indicator = initIndicator();
 
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), null, null);
 
 
         Indicator indicatorByApp = indicatorsRepository.buildIndicatorFromJson(jsonIndicator);
@@ -185,7 +186,7 @@ class IndicatorsRepositoryTest {
 
     @Test
     void createID_returnsP1_whenNoIndicatorExistsInProductsGraph() throws RmesException {
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), operationIndicatorsQueries, null);
         when(operationIndicatorsQueries.lastID()).thenReturn("query");
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(new JSONObject());
 
@@ -196,7 +197,7 @@ class IndicatorsRepositoryTest {
 
     @Test
     void createID_returnsP1_whenLastIdIsUndefined() throws RmesException {
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), operationIndicatorsQueries, null);
         when(operationIndicatorsQueries.lastID()).thenReturn("query");
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(new JSONObject().put(Constants.ID, Constants.UNDEFINED));
 
@@ -210,7 +211,7 @@ class IndicatorsRepositoryTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.findUnknown(any())).thenReturn(List.of("http://bauhaus/organisations/MISSING"));
         when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", operationIndicatorsQueries, lookup);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), operationIndicatorsQueries, lookup);
 
         Indicator indicator = new Indicator();
         OperationsLink wgb = OperationsLink.of("s1", null, "Series", "Series");
@@ -229,7 +230,7 @@ class IndicatorsRepositoryTest {
         when(codeListService.getCodeUri(any(), any())).thenReturn("http://bauhaus/codes/freq/A");
         when(repositoryGestion.getResponseAsBoolean(any())).thenReturn(false);
         BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/gestion/", p -> Optional.of("operations"));
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, codeListService, null, null, famOpeSerIndUtils, null, null, bauhausUriBuilder, "fr", "en", operationIndicatorsQueries, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, codeListService, null, null, famOpeSerIndUtils, null, null, bauhausUriBuilder, new BauhausLanguagesProperties("fr", "en"), operationIndicatorsQueries, null);
 
         Indicator indicator = Indicator.of("p2000");
         indicator.setPrefLabelLg1("Indicateur de test");
@@ -246,7 +247,7 @@ class IndicatorsRepositoryTest {
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, null);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), null, null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI indicURI = vf.createIRI("http://bauhaus/indicators/i1");
         Model model = new LinkedHashModel();
@@ -269,7 +270,7 @@ class IndicatorsRepositoryTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, "fr", "en", null, lookup);
+        IndicatorsRepository indicatorsRepository = new IndicatorsRepository(repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, new BauhausLanguagesProperties("fr", "en"), null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI indicURI = vf.createIRI("http://bauhaus/indicators/i1");
         Model model = new LinkedHashModel();

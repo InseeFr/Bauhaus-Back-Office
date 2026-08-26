@@ -1,5 +1,6 @@
 package fr.insee.rmes.testcontainers.queries.organisations;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
@@ -34,7 +35,7 @@ class OrganisationGraphDBRepositoryIntegrationTest extends WithGraphDBContainer 
                 "http://rdf.insee.fr/graphes/",
                 "organisations",
                 "organisations/insee",
-                "fr"
+                new BauhausLanguagesProperties("fr", "en")
         );
     }
 

@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
@@ -45,7 +46,7 @@ class FamiliesUtilsTest {
 
     @Test
     void createRdfFamily_addsAdmsIdentifierTriple() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, repositoryGestion, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, repositoryGestion, new BauhausLanguagesProperties("fr", "en"), null);
         Family family = new Family();
         family.setId("s1");
         family.prefLabelLg1 = "Famille de test";
@@ -62,7 +63,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, repositoryGestion, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, repositoryGestion, new BauhausLanguagesProperties("fr", "en"), null);
 
         var family = new Family();
         family.setId("1");
@@ -88,7 +89,7 @@ class FamiliesUtilsTest {
     void setFamilyValidation_shouldThrowBadRequest_whenFamilyIsAlreadyPublished() throws RmesException {
         ParentUtils ownersUtils = mock(ParentUtils.class);
         FamilyPublication familyPublication = mock(FamilyPublication.class);
-        FamiliesUtils familiesUtils = new FamiliesUtils(null, familyPublication, ownersUtils, repositoryGestion, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, familyPublication, ownersUtils, repositoryGestion, new BauhausLanguagesProperties("fr", "en"), null);
 
         when(ownersUtils.getFamOpSerValidationStatus("f1")).thenReturn(ValidationStatus.VALIDATED.getValue());
 
@@ -101,14 +102,14 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenFamilyIsNull()  {
-        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, new BauhausLanguagesProperties("fr", "en"), null);
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(null,null));
         assertThat(exception.getDetails()).contains("{\"code\":541,\"details\":\"Can't read request body\",\"message\":\"No id found\"}");
     }
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenIdIsAbsent(){
-        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, new BauhausLanguagesProperties("fr", "en"), null);
         Family familyCreate = new Family();
         familyCreate.setCreated("today");
         RmesException exception = assertThrows(RmesNotFoundException.class, () ->  familiesUtils.createRdfFamily(familyCreate,null));
@@ -117,7 +118,7 @@ class FamiliesUtilsTest {
 
     @Test
     void shouldThrowRmesNotFoundExceptionWhenPrefLabelLg1IsAbsent() {
-        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, "fr", "en", null);
+        FamiliesUtils familiesUtils = new FamiliesUtils(null, null, null, null, new BauhausLanguagesProperties("fr", "en"), null);
         Family familyCreate = new Family();
         familyCreate.setId("idExample");
         familyCreate.setAbstractLg1("");

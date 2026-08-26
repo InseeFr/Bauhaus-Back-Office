@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
@@ -30,7 +31,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -47,34 +47,31 @@ public class FamiliesUtils {
 	final FamilyPublication familyPublication;
 	final ParentUtils ownersUtils;
 	final RepositoryGestion repositoryGestion;
-	final String lg1;
-	final String lg2;
+	final BauhausLanguagesProperties languages;
 	final OperationFamilyQueries operationFamilyQueries;
 
 	public FamiliesUtils(FamOpeSerIndUtils famOpeSerUtils,
 						 FamilyPublication familyPublication,
 						 ParentUtils ownersUtils,
 						 RepositoryGestion repositoryGestion,
-						 @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-						 @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+						 BauhausLanguagesProperties languages,
 						 OperationFamilyQueries operationFamilyQueries) {
 
 		this.famOpeSerUtils = famOpeSerUtils;
 		this.familyPublication = familyPublication;
 		this.ownersUtils = ownersUtils;
 		this.repositoryGestion = repositoryGestion;
-		this.lg1 = lg1;
-		this.lg2 = lg2;
+		this.languages = languages;
 		this.operationFamilyQueries = operationFamilyQueries;
 	}
 
 
 
 	private void validateFamily(Family family) throws RmesException {
-		if(repositoryGestion.getResponseAsBoolean(operationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
+		if(repositoryGestion.getResponseAsBoolean(operationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), languages.lg1()))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(operationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
+		if(repositoryGestion.getResponseAsBoolean(operationFamilyQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), languages.lg2()))){
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
 		}
 	}
@@ -132,10 +129,10 @@ public class FamiliesUtils {
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, RdfUtils.operationsGraph());
 		model.add(familyURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(family.getId()), RdfUtils.operationsGraph());
 		/*Required*/
-		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), lg1), RdfUtils.operationsGraph());
+		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), languages.lg1()), RdfUtils.operationsGraph());
 		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), lg2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), languages.lg2(), model, RdfUtils.operationsGraph());
 		addAbstractToFamily(family, model, familyURI, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
@@ -147,8 +144,8 @@ public class FamiliesUtils {
 
 
 	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) {
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), lg1, model, graph);
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), lg2, model, graph);
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), languages.lg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), languages.lg2(), model, graph);
 	}
 
 

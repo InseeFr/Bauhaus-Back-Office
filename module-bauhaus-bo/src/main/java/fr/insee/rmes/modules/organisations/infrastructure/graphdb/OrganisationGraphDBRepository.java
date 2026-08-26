@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.organisations.infrastructure.graphdb;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationRepository;
@@ -30,27 +31,27 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
     private final RepositoryGestion repositoryGestion;
     private final String organizationsGraph;
     private final String organizationsRootGraph;
-    private final String language;
+    private final BauhausLanguagesProperties languages;
 
     public OrganisationGraphDBRepository(
             RepositoryGestion repositoryGestion,
             @Value("${fr.insee.rmes.bauhaus.baseGraph}") String baseGraph,
             @Value("${fr.insee.rmes.bauhaus.organisations.graph}") String organisationsGraph,
             @Value("${fr.insee.rmes.bauhaus.insee.graph}") String inseeGraph,
-            @Value("${fr.insee.rmes.bauhaus.lg1}") String language) {
+            BauhausLanguagesProperties languages) {
         this.repositoryGestion = repositoryGestion;
         // Existing methods (getOrganisations, getOrganisation) target the insee sub-graph.
         this.organizationsGraph = baseGraph + inseeGraph;
         // The map-resolution path needs the outer graph too, since some IRIs (sub-units) live there.
         this.organizationsRootGraph = baseGraph + organisationsGraph;
-        this.language = language;
+        this.languages = languages;
     }
 
     @Override
     public List<OrganisationOption> getOrganisations() throws RmesException {
         Map<String, Object> params = new HashMap<>();
         params.put(ORGANIZATIONS_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
-        params.put("LANG", SparqlLiterals.literal(language));
+        params.put("LANG", SparqlLiterals.literal(languages.lg1()));
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisations.ftlh", params);
         JSONArray results = repositoryGestion.getResponseAsArray(query);
@@ -69,7 +70,7 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
     public OrganisationOption getOrganisation(String identifier) throws RmesException {
         Map<String, Object> params = new HashMap<>();
         params.put(ORGANIZATIONS_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
-        params.put("LANG", SparqlLiterals.literal(language));
+        params.put("LANG", SparqlLiterals.literal(languages.lg1()));
         params.put("IDENTIFIER", SparqlLiterals.literal(identifier));
 
         String query = FreeMarkerUtils.buildRequest(ORGANISATIONS_PATH, "getOrganisation.ftlh", params);
@@ -110,7 +111,7 @@ public class OrganisationGraphDBRepository implements OrganisationRepository {
         Map<String, Object> params = new HashMap<>();
         params.put(ORGANIZATIONS_GRAPH_PARAM, SparqlLiterals.iri(organizationsRootGraph));
         params.put(ORGANIZATIONS_INSEE_GRAPH_PARAM, SparqlLiterals.iri(organizationsGraph));
-        params.put("LANG", SparqlLiterals.literal(language));
+        params.put("LANG", SparqlLiterals.literal(languages.lg1()));
         params.put("IRI_IDENTIFIERS", iris.stream().map(SparqlLiterals::iri).toList());
         params.put("LITERAL_IDENTIFIERS", literals.stream().map(SparqlLiterals::literal).toList());
 

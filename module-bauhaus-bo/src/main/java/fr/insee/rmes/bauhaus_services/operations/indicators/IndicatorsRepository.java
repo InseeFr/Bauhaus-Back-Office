@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -38,7 +39,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -66,8 +66,7 @@ public class IndicatorsRepository {
 
 	private final DocumentationsUtils documentationsUtils;
 	private final BauhausUriBuilder bauhausUriBuilder;
-	private final String lg1;
-	private final String lg2;
+	private final BauhausLanguagesProperties languages;
 	private final OperationIndicatorsQueries operationIndicatorsQueries;
 	private final OrganisationLookup organisationLookup;
 
@@ -80,8 +79,7 @@ public class IndicatorsRepository {
 			ParentUtils ownersUtils,
 			DocumentationsUtils documentationsUtils,
 			BauhausUriBuilder bauhausUriBuilder,
-			@Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
-			@Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
+			BauhausLanguagesProperties languages,
 			OperationIndicatorsQueries operationIndicatorsQueries,
 			OrganisationLookup organisationLookup) {
 		this.repositoryGestion = repositoryGestion;
@@ -92,8 +90,7 @@ public class IndicatorsRepository {
 		this.ownersUtils = ownersUtils;
 		this.documentationsUtils = documentationsUtils;
 		this.bauhausUriBuilder = bauhausUriBuilder;
-		this.lg1 = lg1;
-		this.lg2 = lg2;
+		this.languages = languages;
 		this.operationIndicatorsQueries = operationIndicatorsQueries;
 		this.organisationLookup = organisationLookup;
 	}
@@ -102,10 +99,10 @@ public class IndicatorsRepository {
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){
+		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), languages.lg1()))){
 			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
 		}
-		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
+		if(repositoryGestion.getResponseAsBoolean(operationIndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), languages.lg2()))){
 			throw new RmesBadRequestException(IndicatorErrorCode.EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
 		}
 		validateOrganisations(indicator);
@@ -311,8 +308,8 @@ public class IndicatorsRepository {
 	}
 
 	public void addMulltiLangValues(Model model, IRI indicatorIRI, Resource graph, String valueLg1, String valueLg2, IRI predicate) {
-		RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg1, lg1, model, graph);
-		RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg2, lg2, model, graph);
+		RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg1, languages.lg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(indicatorIRI, predicate, valueLg2, languages.lg2(), model, graph);
 	}
 
 	void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
@@ -324,12 +321,12 @@ public class IndicatorsRepository {
 		model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, RdfUtils.productsGraph());
 		model.add(indicURI, ADMS.HAS_IDENTIFIER, RdfUtils.setLiteralString(indicator.getId()), RdfUtils.productsGraph());
 		/*Required*/
-		model.add(indicURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(indicator.getPrefLabelLg1(), lg1), RdfUtils.productsGraph());
+		model.add(indicURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(indicator.getPrefLabelLg1(), languages.lg1()), RdfUtils.productsGraph());
 		model.add(indicURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.productsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(indicURI, SKOS.PREF_LABEL, indicator.getPrefLabelLg2(), lg2, model, RdfUtils.productsGraph());
-		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), lg1, model, RdfUtils.productsGraph());
-		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), lg2, model, RdfUtils.productsGraph());
+		RdfUtils.addTripleString(indicURI, SKOS.PREF_LABEL, indicator.getPrefLabelLg2(), languages.lg2(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), languages.lg1(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), languages.lg2(), model, RdfUtils.productsGraph());
 		RdfUtils.addTripleDateTime(indicURI, DCTERMS.CREATED, indicator.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(indicURI, DCTERMS.MODIFIED, indicator.getUpdated(), model, RdfUtils.operationsGraph());
 
