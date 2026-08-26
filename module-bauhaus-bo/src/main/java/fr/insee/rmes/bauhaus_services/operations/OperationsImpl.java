@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -122,11 +121,7 @@ public class OperationsImpl  implements OperationsService {
         JSONArray series = repoGestion.getResponseAsArray(operationSeriesQueries.seriesWithStampQuery(stamps, isAdmin));
 		List<JSONObject> seriesList = new ArrayList<>();
 		JSONUtils.stream(series).forEach(seriesList::add);
-		seriesList.sort(( o1,  o2) -> {
-				String key1 = Normalizer.normalize(o1.getString(Constants.LABEL), Normalizer.Form.NFD);
-				String key2 = Normalizer.normalize(o2.getString(Constants.LABEL), Normalizer.Form.NFD);
-				return key1.compareTo(key2);
-			});
+		seriesList.sort(DiacriticSorter.getComparator(seriesItem -> seriesItem.optString(Constants.LABEL)));
 		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
 	}
 

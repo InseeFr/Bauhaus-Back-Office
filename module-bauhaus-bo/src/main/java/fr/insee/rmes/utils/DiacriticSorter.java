@@ -50,7 +50,11 @@ public class DiacriticSorter {
         return sort(jsonArray, targetArrayClass, keyExtractor, Optional.empty());
     }
 
-    private static <T> Comparator<T> getComparator(Function<T, String> projectToComparableField) {
+    /**
+     * Comparator shared by every sorted listing of the application: French collation,
+     * insensitive to case and diacritics, and null-safe on the extracted key.
+     */
+    public static <T> Comparator<T> getComparator(Function<T, String> projectToComparableField) {
         Collator collator = Collator.getInstance(Locale.FRENCH);
         collator.setStrength(Collator.PRIMARY);
         UnaryOperator<String> nullSafer = s -> s == null ? "" : s;
