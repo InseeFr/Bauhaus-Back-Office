@@ -107,6 +107,26 @@ class DocumentationExportTest {
     }
 
     @Test
+    void export_as_zip_should_name_the_archive_without_any_diacritic() throws Exception {
+        when(documentsUtils.getDocumentsUriAndUrlForSims("sims123")).thenReturn(new JSONArray());
+        var sims = new JSONObject();
+        sims.put("id", "sims123");
+        sims.put("labelLg1", "Rapport qualité : Enquête « Emploi » 2022");
+
+        var xmlContent = new HashMap<String, String>();
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils);
+
+        InputStream inputStreamMock = mock(InputStream.class);
+        when(exportUtils.exportAsInputStream(any(), any(), any(), any(), any(), any(), any())).thenReturn(inputStreamMock);
+        when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
+
+        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, "xslFile", "xmlPattern", "zip", "objectType", 50);
+
+        assertThat(response.getHeaders().getContentDisposition().getFilename())
+                .isEqualTo("rapportQualiteEnqueteEmploi2022.zip");
+    }
+
+    @Test
     void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
         DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
 

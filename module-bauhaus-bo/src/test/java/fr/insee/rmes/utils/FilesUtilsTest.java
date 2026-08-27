@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FilesUtilsTest {
 
@@ -112,4 +113,49 @@ class FilesUtilsTest {
 		// Test with unknown input
 		assertEquals(".odt", FilesUtils.getExtension("unknown/type"));
 	}
+
+	@Test
+	void generate_final_file_name_should_remove_every_diacritic() {
+		assertEquals("eleveAeiouCnu", FilesUtils.generateFinalFileNameWithoutExtension("Élève àéîôû çñü", 50));
+	}
+
+	@Test
+	void generate_final_file_name_should_transliterate_letters_that_have_no_diacritic_to_strip() {
+		assertEquals("coeurAequoOstStrasse", FilesUtils.generateFinalFileNameWithoutExtension("Cœur æquo Øst Straße", 50));
+	}
+
+	@Test
+	void generate_final_file_name_should_remove_typographic_punctuation() {
+		assertEquals("enqueteEmploi2022N1", FilesUtils.generateFinalFileNameWithoutExtension("Enquête « Emploi » – 2022 … n°1", 50));
+	}
+
+	@Test
+	void generate_final_file_name_should_treat_a_non_breaking_space_as_a_word_separator() {
+		assertEquals("statistiques2024", FilesUtils.generateFinalFileNameWithoutExtension("Statistiques\u00A02024", 50));
+	}
+
+	@Test
+	void generate_final_file_name_should_only_keep_ascii_letters_and_digits() {
+		String result = FilesUtils.generateFinalFileNameWithoutExtension("Отчёт λ 2024 — €100 %", 50);
+
+		assertTrue(result.matches("[A-Za-z0-9]*"), "Le nom de fichier généré doit être purement ASCII, obtenu : " + result);
+	}
+
+	@Test
+	void generate_final_file_name_with_extension_should_clean_the_extension_too() {
+		assertEquals("rapportEte.pdf", FilesUtils.generateFinalFileNameWithExtension("Rapport été.pdf", 50));
+	}
+
+	@Test
+	void generate_final_file_name_with_extension_should_not_append_a_dot_when_the_name_has_no_extension() {
+		assertEquals("rapportEte", FilesUtils.generateFinalFileNameWithExtension("Rapport été", 50));
+	}
+
+
+	@Test
+	void generate_final_file_name_should_fall_back_on_a_default_name_when_nothing_ascii_remains() {
+		assertEquals("export", FilesUtils.generateFinalFileNameWithoutExtension("«»…", 50));
+		assertEquals("export.pdf", FilesUtils.generateFinalFileNameWithExtension("«»….pdf", 50));
+	}
+
 }

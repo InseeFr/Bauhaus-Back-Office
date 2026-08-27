@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -26,6 +27,10 @@ public class FilesUtils {
 	public static final String XML_EXTENSION = ".xml";
 	public static final String FODT_EXTENSION = ".fodt";
 	private static final char EXTENSION_SEPARATOR = '.';
+	private static final Pattern COMBINING_MARKS = Pattern.compile("\\p{M}+");
+	private static final Pattern SEPARATORS = Pattern.compile("[-_\\s\\p{Z}]+");
+	private static final Pattern NON_ASCII_ALPHANUMERIC = Pattern.compile("[^A-Za-z0-9 ]");
+	private static final String DEFAULT_BASE_NAME = "export";
 
 	public static MediaType getMediaTypeFromExtension(String extension) {
 		return switch (extension){
@@ -54,8 +59,9 @@ public class FilesUtils {
 	public static String generateFinalFileNameWithExtension(String fileName, int maxLength){
 		var extensionIndex = fileName.lastIndexOf(EXTENSION_SEPARATOR);
 		var basename = extensionIndex == -1 ? fileName : fileName.substring(0, extensionIndex);
-		var extension = extensionIndex == -1 ? "" : fileName.substring(extensionIndex + 1);
-		return generateFinalBaseName(basename, maxLength) + "." + extension;
+		var extension = extensionIndex == -1 ? "" : toAscii(fileName.substring(extensionIndex + 1)).trim();
+		var finalBaseName = generateFinalBaseName(basename, maxLength);
+		return extension.isEmpty() ? finalBaseName : finalBaseName + "." + extension;
 	}
 
 	public static String generateFinalFileNameWithoutExtension(String fileName, int maxLength){
@@ -63,22 +69,43 @@ public class FilesUtils {
 	}
 
 	private static String generateFinalBaseName(String baseName, int maxLength){
-		return reduceFileNameSize(CaseUtils.toCamelCase(removeAsciiCharacters(baseName), false), maxLength);
+		var finalBaseName = reduceFileNameSize(CaseUtils.toCamelCase(toAscii(baseName), false), maxLength);
+		// Un libellé entièrement non-ASCII se réduirait à une chaîne vide : le fichier, et surtout le
+		// dossier créé pour un zip, doivent tout de même porter un nom.
+		return finalBaseName.isEmpty() ? DEFAULT_BASE_NAME : finalBaseName;
 	}
 
 	private static String reduceFileNameSize(String fileName, int maxLength) {
 		return fileName.substring(0, Math.min(fileName.length(), maxLength));
 	}
 
-	private static String removeAsciiCharacters(String fileName) {
-		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
-				.replaceAll("\\p{M}+", "")
-				.replace("œ", "oe")
-				.replace("Œ", "OE")
-				.replaceAll("[-_]", " ")
-				.replaceAll("\\p{Punct}", "")
-				.replace(":", "")
-				.replace("’", "");
+	/**
+	 * Ne conserve que des lettres et chiffres ASCII, séparés par des espaces : c'est ce qui garantit
+	 * qu'un libellé métier (accentué, ponctué à la française) donne un nom de fichier ou de dossier
+	 * exploitable sur tous les systèmes de fichiers et tous les outils d'archivage.
+	 */
+	private static String toAscii(String fileName) {
+		var withoutDiacritics = COMBINING_MARKS.matcher(Normalizer.normalize(fileName, Normalizer.Form.NFD)).replaceAll("");
+		var transliterated = transliterateUndecomposableLetters(withoutDiacritics);
+		var separated = SEPARATORS.matcher(transliterated).replaceAll(" ");
+		return NON_ASCII_ALPHANUMERIC.matcher(separated).replaceAll("");
+	}
+
+	/**
+	 * Ces lettres n'ont pas de forme décomposée : la normalisation NFD les laisse intactes, il faut
+	 * donc les translittérer explicitement pour qu'elles ne survivent pas au filtre ASCII.
+	 */
+	private static String transliterateUndecomposableLetters(String fileName) {
+		return fileName
+				.replace("œ", "oe").replace("Œ", "OE")
+				.replace("æ", "ae").replace("Æ", "AE")
+				.replace("ø", "o").replace("Ø", "O")
+				.replace("ß", "ss").replace("ẞ", "SS")
+				.replace("đ", "d").replace("Đ", "D")
+				.replace("ð", "d").replace("Ð", "D")
+				.replace("ł", "l").replace("Ł", "L")
+				.replace("þ", "th").replace("Þ", "TH")
+				.replace("ı", "i");
 	}
 
 	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {
