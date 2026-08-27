@@ -42,6 +42,7 @@ public class NotesRepository  extends RdfService {
 	}
 
 	private static final String ONE = "1";
+	private static final String ZERO = "0";
 	
 
 	public void createRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model) {
@@ -119,13 +120,12 @@ public class NotesRepository  extends RdfService {
 	public String getVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException {
 		if (Boolean.TRUE.equals(concept.getCreation())) {
 			return ONE;
-		} else {
-			String version = getLastVersion(concept,note,defaultVersion);
-			if (Boolean.FALSE.equals(concept.getVersioning())) {
-				return version;
-			}
-			return String.valueOf(Integer.parseInt(version)+1) ;
 		}
+		if (Boolean.FALSE.equals(concept.getVersioning())) {
+			return getLastVersion(concept, note, defaultVersion);
+		}
+		// A note left empty until now has no version to increment : it starts at 1, not at 2.
+		return String.valueOf(Integer.parseInt(getLastVersion(concept, note, ZERO)) + 1);
 	}
 	
 	public String getLastVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException{

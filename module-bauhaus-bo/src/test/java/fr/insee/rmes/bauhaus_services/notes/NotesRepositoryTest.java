@@ -1,8 +1,11 @@
 package fr.insee.rmes.bauhaus_services.notes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Concept;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptNotesQueries;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
 import fr.insee.rmes.graphdb.ontologies.EVOC;
@@ -16,8 +19,10 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.jupiter.api.Test;
+import org.json.JSONObject;
 import org.mockito.MockedStatic;
 
+import java.io.IOException;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,5 +93,44 @@ class NotesRepositoryTest {
             verify(model).add(noteIri, RDF.VALUE, stringLit, graph);
             verifyNoMoreInteractions(model);
         }
+    }
+
+    @Test
+    void shouldStartAtVersionOne_whenTheNoteHasNeverBeenFilledIn_andTheConceptIsVersioned() throws Exception {
+        NotesRepository notesRepository = notesRepositoryReturning(new JSONObject());
+
+        String version = notesRepository.getVersion(conceptUnderUpdate(true), new VersionableNote(), "1");
+
+        assertEquals("1", version);
+    }
+
+    @Test
+    void shouldIncrementTheLastVersion_whenTheNoteAlreadyExists_andTheConceptIsVersioned() throws Exception {
+        NotesRepository notesRepository = notesRepositoryReturning(new JSONObject().put("version", "3"));
+
+        String version = notesRepository.getVersion(conceptUnderUpdate(true), new VersionableNote(), "1");
+
+        assertEquals("4", version);
+    }
+
+    @Test
+    void shouldKeepTheCurrentVersion_whenTheConceptIsNotVersioned() throws Exception {
+        NotesRepository notesRepository = notesRepositoryReturning(new JSONObject().put("version", "3"));
+
+        String version = notesRepository.getVersion(conceptUnderUpdate(false), new VersionableNote(), "1");
+
+        assertEquals("3", version);
+    }
+
+    private static NotesRepository notesRepositoryReturning(JSONObject lastVersionResponse) throws RmesException {
+        RepositoryGestion repoGestion = mock(RepositoryGestion.class);
+        when(repoGestion.getResponseAsObject(any())).thenReturn(lastVersionResponse);
+        return new NotesRepository(repoGestion, null, null, null, mock(ConceptNotesQueries.class));
+    }
+
+    private static Concept conceptUnderUpdate(boolean versioning) throws IOException {
+        return new ObjectMapper()
+                .readerForUpdating(new Concept("c1000", false))
+                .readValue("{\"versioning\":" + versioning + "}");
     }
 }
