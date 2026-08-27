@@ -29,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -49,11 +51,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class DdiResourcesTest {
@@ -890,7 +895,7 @@ class DdiResourcesTest {
         verify(ddiService).getCodeList(CL_AGENCY, CL_ID, CL_VERSION);
     }
 
-    // --- GET /ddi/operation/{id}/studyUnit (JSON, public) ---
+    // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test
     void getOperationStudyUnitJson_returns200WithJson_whenStudyUnitExists() throws RmesException {
@@ -923,7 +928,7 @@ class DdiResourcesTest {
         assertNull(response.getBody());
     }
 
-    // --- GET /ddi/operation/{id}/studyUnit (XML DDI 3.3, public) ---
+    // --- GET /ddi/operation/{id}/fichiers (XML DDI 3.3, public) ---
 
     @Test
     void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() throws RmesException {
@@ -952,6 +957,52 @@ class DdiResourcesTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
+    }
+
+    // #1143 : le endpoint est exposé sous /ddi/public/operation/{id}/fichiers (et plus sous /studyUnit).
+
+    @Test
+    void operationStudyUnitEndpointMappedUnderFichiers_json() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String xml = "<Fragment><StudyUnit/></Fragment>";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+        when(ddiItemConvertService.convert(xml)).thenReturn(new ObjectMapper().createObjectNode().put("ID", id));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void operationStudyUnitEndpointMappedUnderFichiers_xml() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String xml = "<Fragment><StudyUnit/></Fragment>";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void oldStudyUnitPathNoLongerMapped() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        // Réponse non nulle : si l'ancien path était encore mappé on aurait 200, pas 404.
+        lenient().when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        lenient().when(ddiService.getStudyUnitXmlByOperationIri(operationIri))
+                .thenReturn(Optional.of("<Fragment><StudyUnit/></Fragment>"));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/studyUnit", id)
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isNotFound());
     }
 
 }

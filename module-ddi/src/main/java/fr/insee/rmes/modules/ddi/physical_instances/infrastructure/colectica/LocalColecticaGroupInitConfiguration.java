@@ -168,7 +168,7 @@ public class LocalColecticaGroupInitConfiguration {
             // Step 1: Query the publication GraphDB repository for series and operations.
             // On lit le dépôt de publication (et non gestion) pour que les IRIs récupérées soient
             // en base de publication (http://id.insee.fr/...), donc cohérentes avec la clé de
-            // recherche de l'endpoint GET /ddi/operation/{id}/studyUnit.
+            // recherche de l'endpoint GET /ddi/operation/{id}/fichiers.
             logger.info("Step 1: Querying publication GraphDB for series and operations");
             String graphUri = baseGraph + operationsGraph;
             List<SeriesWithOperations> seriesData = querySeriesAndOperations(repositoryPublicationReader, graphUri);

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * management-base equivalent (e.g. {@code http://bauhaus/...}).
  * <p>
  * The Group built by the DDI init stores the <em>publication</em> IRI (the canonical identifier the
- * front uses to resolve {@code GET /ddi/operation/{id}/studyUnit}), whereas the security path queries
+ * front uses to resolve {@code GET /ddi/operation/{id}/fichiers}), whereas the security path queries
  * the management repository, whose subjects carry the {@code gestion} prefix. This rewriter keeps that
  * prefix knowledge confined to the management infrastructure.
  */

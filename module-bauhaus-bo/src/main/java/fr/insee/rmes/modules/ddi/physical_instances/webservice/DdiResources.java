@@ -523,12 +523,12 @@ public class DdiResources {
     }
 
     /**
-     * Endpoint #496 : {@code GET /ddi/operation/{id}/studyUnit} renvoie le StudyUnit d'une opération
+     * Endpoint #496 : {@code GET /ddi/operation/{id}/fichiers} renvoie le StudyUnit d'une opération
      * en DDI 3.3 XML ou DDI 4 JSON selon la négociation de contenu (en-tête {@code Accept}), de manière
      * cohérente avec les autres services DDI ({@code /ddi/item}, {@code /ddi/codelist}).
      */
     @GetMapping(
-        value = "/public/operation/{id}/studyUnit",
+        value = "/public/operation/{id}/fichiers",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
@@ -551,7 +551,7 @@ public class DdiResources {
     }
 
     @GetMapping(
-        value = "/public/operation/{id}/studyUnit",
+        value = "/public/operation/{id}/fichiers",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     @PublicEndpoint
