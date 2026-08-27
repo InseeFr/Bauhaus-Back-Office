@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class OperationFamilySeriesTest {
 
     @Test
-    void fromJSON_withAllFields() {
+    void from_json_with_all_fields() {
         JSONObject json = new JSONObject()
                 .put("id", "series001")
                 .put("labelLg1", "Economic Series")
@@ -22,7 +22,7 @@ class OperationFamilySeriesTest {
     }
 
     @Test
-    void fromJSON_withMissingFields() {
+    void from_json_with_missing_fields() {
         JSONObject json = new JSONObject()
                 .put("id", "series002");
 
@@ -34,7 +34,7 @@ class OperationFamilySeriesTest {
     }
 
     @Test
-    void fromJSON_withEmptyJson() {
+    void from_json_with_empty_json() {
         JSONObject json = new JSONObject();
 
         OperationFamilySeries series = OperationFamilySeries.fromJSON(json);
@@ -45,7 +45,7 @@ class OperationFamilySeriesTest {
     }
 
     @Test
-    void fromJSON_withPartialFields() {
+    void from_json_with_partial_fields() {
         JSONObject json = new JSONObject()
                 .put("id", "series003")
                 .put("labelLg1", "Population Series");
@@ -75,7 +75,7 @@ class OperationFamilySeriesTest {
     }
 
     @Test
-    void toString_containsAllFields() {
+    void to_string_contains_all_fields() {
         OperationFamilySeries series = new OperationFamilySeries("s1", "Label1", "Label2");
 
         String toString = series.toString();
@@ -86,7 +86,7 @@ class OperationFamilySeriesTest {
     }
 
     @Test
-    void constructor_withNullValues() {
+    void constructor_with_null_values() {
         OperationFamilySeries series = new OperationFamilySeries(null, null, null);
 
         assertNull(series.id());

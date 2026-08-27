@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class OperationFamilyTest {
 
     @Test
-    void fromJson_withAllFields() {
+    void from_json_with_all_fields() {
         JSONObject json = new JSONObject()
                 .put("id", "fam001")
                 .put("prefLabelLg1", "Economic Indicators")
@@ -37,7 +37,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void fromJson_withMissingFields() {
+    void from_json_with_missing_fields() {
         JSONObject json = new JSONObject()
                 .put("id", "fam002");
 
@@ -56,7 +56,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void fromJson_withEmptyJson() {
+    void from_json_with_empty_json() {
         JSONObject json = new JSONObject();
 
         OperationFamily family = OperationFamily.fromJson(json);
@@ -74,7 +74,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void withSeries_replacesSeriesList() {
+    void with_series_replaces_series_list() {
         OperationFamily original = new OperationFamily(
                 "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
                 "DRAFT", "2023-01-01", "2023-06-01",
@@ -101,7 +101,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void withSubject_replacesSubjectsList() {
+    void with_subject_replaces_subjects_list() {
         OperationFamily original = new OperationFamily(
                 "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
                 "DRAFT", "2023-01-01", "2023-06-01",
@@ -128,7 +128,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void withSeries_maintainsImmutability() {
+    void with_series_maintains_immutability() {
         OperationFamily original = new OperationFamily(
                 "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
                 "DRAFT", "2023-01-01", "2023-06-01",
@@ -147,7 +147,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void withSubject_maintainsImmutability() {
+    void with_subject_maintains_immutability() {
         OperationFamily original = new OperationFamily(
                 "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
                 "DRAFT", "2023-01-01", "2023-06-01",
@@ -201,7 +201,7 @@ class OperationFamilyTest {
     }
 
     @Test
-    void toString_containsAllFields() {
+    void to_string_contains_all_fields() {
         OperationFamily family = new OperationFamily(
                 "fam001", "Label1", "Label2", "Abstract1", "Abstract2",
                 "DRAFT", "2023-01-01", "2023-06-01",

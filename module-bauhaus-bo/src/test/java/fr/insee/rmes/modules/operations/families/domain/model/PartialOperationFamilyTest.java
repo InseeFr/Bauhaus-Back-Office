@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PartialOperationFamilyTest {
 
     @Test
-    void constructor_withValidValues() {
+    void constructor_with_valid_values() {
         PartialOperationFamily family = new PartialOperationFamily("fam001", "Economic Indicators");
 
         assertEquals("fam001", family.id());
@@ -15,7 +15,7 @@ class PartialOperationFamilyTest {
     }
 
     @Test
-    void constructor_withNullValues() {
+    void constructor_with_null_values() {
         PartialOperationFamily family = new PartialOperationFamily(null, null);
 
         assertNull(family.id());
@@ -23,7 +23,7 @@ class PartialOperationFamilyTest {
     }
 
     @Test
-    void constructor_withMixedNullValues() {
+    void constructor_with_mixed_null_values() {
         PartialOperationFamily family1 = new PartialOperationFamily("fam001", null);
         PartialOperationFamily family2 = new PartialOperationFamily(null, "Label");
 
@@ -53,7 +53,7 @@ class PartialOperationFamilyTest {
     }
 
     @Test
-    void toString_containsAllFields() {
+    void to_string_contains_all_fields() {
         PartialOperationFamily family = new PartialOperationFamily("fam001", "Economic Indicators");
 
         String toString = family.toString();
@@ -63,7 +63,7 @@ class PartialOperationFamilyTest {
     }
 
     @Test
-    void toString_withNullValues() {
+    void to_string_with_null_values() {
         PartialOperationFamily family = new PartialOperationFamily(null, null);
 
         String toString = family.toString();
