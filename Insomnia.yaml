@@ -814,7 +814,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/ddi/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
+      - url: "{{ _.API_URL }}/ddi/fichier/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}"
         name: "#447 Variables (DataRelationship) — DDI 4 JSON"
         meta:
           id: req_ddi_variables_json_00000000000000000
@@ -836,7 +836,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/ddi/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/variables"
+      - url: "{{ _.API_URL }}/ddi/fichier/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}"
         name: "#447 Variables (DataRelationship) — DDI 3 XML"
         meta:
           id: req_ddi_variables_xml_000000000000000000
@@ -858,7 +858,7 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.API_URL }}/ddi/structures/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/{{ _.DDI_VERSION }}/variables"
+      - url: "{{ _.API_URL }}/ddi/fichier/{{ _.DDI_AGENCY }}/{{ _.DDI_PI_ID }}/{{ _.DDI_VERSION }}"
         name: "#447 Variables (version) — DDI 4 JSON"
         meta:
           id: req_ddi_variables_version_json_0000000

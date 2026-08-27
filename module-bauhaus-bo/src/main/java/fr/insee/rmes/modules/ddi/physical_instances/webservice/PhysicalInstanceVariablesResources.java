@@ -12,17 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Endpoint #447 : {@code GET /ddi/public/structures/{agency}/{uuid}[/{version}]/variables} renvoie tous les
+ * Endpoint #447 / #1144 : {@code GET /ddi/public/fichier/{agency}/{uuid}[/{version}]} renvoie tous les
  * DataRelationship (et donc les variables) d'une PhysicalInstance, en DDI 3.3 XML (multi-fragments
  * {@code <FragmentInstance>}) ou DDI 4 JSON.
  *
- * <p>{@code {uuid}} désigne une PhysicalInstance. Le préfixe {@code /ddi/} est imposé par la
- * redirection Gravitee (qui route vers Bauhaus les endpoints commençant par {@code /ddi/}). Ce
- * contrôleur dédié reste séparé du {@code StructureResources} du module structures (DSD) ; les
- * patterns se terminent par le segment littéral {@code variables}.
+ * <p>{@code {uuid}} désigne une PhysicalInstance (le « fichier »). Le préfixe {@code /ddi/} est imposé
+ * par la redirection Gravitee (qui route vers Bauhaus les endpoints commençant par {@code /ddi/}).
  */
 @RestController
-@RequestMapping("/ddi/public/structures")
+@RequestMapping("/ddi/public/fichier")
 @ConditionalOnModule("ddi")
 @PublicEndpoint
 public class PhysicalInstanceVariablesResources {
@@ -34,7 +32,7 @@ public class PhysicalInstanceVariablesResources {
     }
 
     @GetMapping(
-        value = "/{agency}/{id}/{version}/variables",
+        value = "/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     public ResponseEntity<String> getVariablesXmlByVersion(
@@ -48,7 +46,7 @@ public class PhysicalInstanceVariablesResources {
     }
 
     @GetMapping(
-        value = "/{agency}/{id}/{version}/variables",
+        value = "/{agency}/{id}/{version}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Ddi4Response> getVariablesJsonByVersion(
@@ -62,7 +60,7 @@ public class PhysicalInstanceVariablesResources {
     }
 
     @GetMapping(
-        value = "/{agency}/{id}/variables",
+        value = "/{agency}/{id}",
         produces = MediaType.APPLICATION_XML_VALUE
     )
     public ResponseEntity<String> getVariablesXml(
@@ -75,7 +73,7 @@ public class PhysicalInstanceVariablesResources {
     }
 
     @GetMapping(
-        value = "/{agency}/{id}/variables",
+        value = "/{agency}/{id}",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Ddi4Response> getVariablesJson(
