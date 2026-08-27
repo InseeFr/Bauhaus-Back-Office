@@ -1,5 +1,8 @@
 package fr.insee.rmes.modules.operations.families.domain.model;
 
+import fr.insee.rmes.modules.operations.families.domain.model.commands.CreateFamilyCommand;
+import fr.insee.rmes.modules.operations.families.domain.model.commands.UpdateFamilyCommand;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -16,6 +19,21 @@ public record OperationFamily(
         String modified,
         List<OperationFamilySeries> series,
         List<OperationFamilySubject> subjects) {
+
+    /** Famille nouvellement créée : jamais publiée, créée et modifiée à la même seconde. */
+    public static OperationFamily create(String id, CreateFamilyCommand command, String creationDate) {
+        return new OperationFamily(id, command.prefLabelLg1(), command.prefLabelLg2(),
+                command.abstractLg1(), command.abstractLg2(),
+                ValidationStatus.UNPUBLISHED.getValue(), creationDate, creationDate,
+                Collections.emptyList(), Collections.emptyList());
+    }
+
+    public static OperationFamily update(UpdateFamilyCommand command, ValidationStatus validationStatus, String modificationDate) {
+        return new OperationFamily(command.id(), command.prefLabelLg1(), command.prefLabelLg2(),
+                command.abstractLg1(), command.abstractLg2(),
+                validationStatus.getValue(), command.created(), modificationDate,
+                Collections.emptyList(), Collections.emptyList());
+    }
 
     public static OperationFamily fromJson(JSONObject obj) {
         String id = obj.optString("id", null);

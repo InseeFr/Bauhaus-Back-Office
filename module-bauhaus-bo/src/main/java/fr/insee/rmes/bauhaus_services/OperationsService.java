@@ -9,18 +9,6 @@ import java.util.List;
 public interface OperationsService {
 
 	/******************************************************************************************
-	 * FAMILIES
-	 * *******************************************************************************************/
-
-	void setFamily(String id, String body) throws RmesException;
-
-	void setFamilyValidation(String body) throws RmesException;
-
-	String createFamily(String body) throws RmesException;
-
-	String getSeriesWithReport(String id) throws RmesException;
-
-	/******************************************************************************************
 	 * SERIES
 	 * *******************************************************************************************/
 

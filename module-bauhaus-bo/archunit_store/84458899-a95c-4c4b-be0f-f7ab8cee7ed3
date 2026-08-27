@@ -29,8 +29,6 @@ fr.insee.rmes.modules.geographies.webservice.GeographyResources.createGeography(
 fr.insee.rmes.modules.geographies.webservice.GeographyResources.updateGeography(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources.setDocument(fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation.DocumentId, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.documents.webservice.DocumentsResources.setLink(fr.insee.rmes.modules.commons.configuration.swagger.model.operations.documentation.DocumentId, java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.operations.families.webservice.FamilyResources.createFamily(java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.operations.families.webservice.FamilyResources.setFamilyById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources.setIndicator(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.indicators.webservice.IndicatorsResources.setIndicatorById(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.operations.msd.webservice.MetadataReportResources.setMetadataReport(java.lang.String) takes a @RequestBody that is not annotated with @Valid

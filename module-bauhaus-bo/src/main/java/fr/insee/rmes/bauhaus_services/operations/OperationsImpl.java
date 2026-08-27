@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
@@ -44,8 +43,6 @@ public class OperationsImpl  implements OperationsService {
 
 	private final OperationsRepository operationsRepository;
 
-	private final FamiliesUtils familiesUtils;
-
 	private final IndicatorsRepository indicatorsRepository;
 
     private final UserDecoder userDecoder;
@@ -57,14 +54,13 @@ public class OperationsImpl  implements OperationsService {
 	private final OperationSeriesQueries operationSeriesQueries;
 
 	public OperationsImpl(RepositoryGestion repoGestion, SeriesRepository seriesRepository, OperationsRepository operationsRepository,
-						  FamiliesUtils familiesUtils, IndicatorsRepository indicatorsRepository, UserDecoder userDecoder,
+						  IndicatorsRepository indicatorsRepository, UserDecoder userDecoder,
 						  OperationIndicatorsQueries operationIndicatorsQueries,
 						  OperationsOperationQueries operationsOperationQueries,
 						  OperationSeriesQueries operationSeriesQueries) {
 		this.repoGestion = repoGestion;
 		this.seriesRepository = seriesRepository;
 		this.operationsRepository = operationsRepository;
-		this.familiesUtils = familiesUtils;
 		this.indicatorsRepository = indicatorsRepository;
 		this.userDecoder = userDecoder;
 		this.operationIndicatorsQueries = operationIndicatorsQueries;
@@ -216,35 +212,6 @@ public class OperationsImpl  implements OperationsService {
 	public void setOperationValidation(String id) throws RmesException{
 		operationsRepository.setOperationValidation(id);
 	}
-
-	/***************************************************************************************************
-	 * FAMILIES
-	 * @throws RmesException 
-	 *****************************************************************************************************/
-
-
-
-	@Override
-	public void setFamily(String id, String body) throws RmesException {
-		familiesUtils.setFamily(id, body);
-	}
-
-	@Override
-	public String createFamily(String body) throws RmesException {
-		return familiesUtils.createFamily(body);
-	}
-
-	@Override
-	public void setFamilyValidation(String id) throws RmesException{
-		familiesUtils.setFamilyValidation(id);
-	}
-
-	public String getSeriesWithReport(String idFamily) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(operationsOperationQueries.seriesWithSimsQuery(idFamily));
-		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
-		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
-	}
-
 
 	/***************************************************************************************************
 	 * INDICATORS

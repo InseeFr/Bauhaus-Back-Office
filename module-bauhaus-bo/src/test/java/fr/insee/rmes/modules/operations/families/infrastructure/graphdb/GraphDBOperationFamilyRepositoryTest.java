@@ -1,5 +1,9 @@
 package fr.insee.rmes.modules.operations.families.infrastructure.graphdb;
 
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationQueries;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
@@ -34,6 +38,15 @@ class GraphDBOperationFamilyRepositoryTest {
     @Mock
     private OperationFamilyQueries operationFamilyQueries;
 
+    @Mock
+    private OperationQueries operationQueries;
+
+    @Mock
+    private RepositoryPublication repositoryPublication;
+
+    @Mock
+    private PublicationUtils publicationUtils;
+
     private GraphDBOperationFamilyRepository repository;
 
 
@@ -41,12 +54,16 @@ class GraphDBOperationFamilyRepositoryTest {
     void setUp() {
         repository = new GraphDBOperationFamilyRepository(
                 repositoryGestion,
-                operationFamilyQueries
+                operationFamilyQueries,
+                operationQueries,
+                repositoryPublication,
+                publicationUtils,
+                new BauhausLanguagesProperties("fr", "en")
         );
     }
 
     @Test
-    void getFamilies_returnsEmptyList_whenNoFamilies() throws RmesException {
+    void get_families_returns_empty_list_when_no_families() throws RmesException {
         JSONArray emptyArray = new JSONArray();
         when(operationFamilyQueries.familiesQuery()).thenReturn("query");
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(emptyArray);
@@ -66,7 +83,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamilies_returnsSortedList_whenFamiliesExist() throws RmesException {
+    void get_families_returns_sorted_list_when_families_exist() throws RmesException {
         JSONArray familiesArray = new JSONArray()
                 .put(new JSONObject().put("id", "fam1").put("label", "Family 1"))
                 .put(new JSONObject().put("id", "fam2").put("label", "Family 2"));
@@ -94,7 +111,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamily_returnsFamily_whenFamilyExists() throws RmesException {
+    void get_family_returns_family_when_family_exists() throws RmesException {
         String familyId = "fam001";
         JSONObject familyJson = new JSONObject()
                 .put("id", familyId)
@@ -120,7 +137,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamily_throwsException_whenFamilyNotFound() throws RmesException {
+    void get_family_throws_exception_when_family_not_found() throws RmesException {
         String familyId = "nonexistent";
         JSONObject emptyJson = new JSONObject();
 
@@ -134,7 +151,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamilySeries_returnsEmptyList_whenNoSeries() throws RmesException {
+    void get_family_series_returns_empty_list_when_no_series() throws RmesException {
         String familyId = "fam001";
         JSONArray emptyArray = new JSONArray();
 
@@ -148,7 +165,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamilySeries_returnsList_whenSeriesExist() throws RmesException {
+    void get_family_series_returns_list_when_series_exist() throws RmesException {
         String familyId = "fam001";
         JSONArray seriesArray = new JSONArray()
                 .put(new JSONObject().put("id", "s1").put("labelLg1", "Series 1"))
@@ -167,7 +184,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamilySubjects_returnsEmptyList_whenNoSubjects() throws RmesException {
+    void get_family_subjects_returns_empty_list_when_no_subjects() throws RmesException {
         String familyId = "fam001";
         JSONArray emptyArray = new JSONArray();
 
@@ -181,7 +198,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFamilySubjects_returnsList_whenSubjectsExist() throws RmesException {
+    void get_family_subjects_returns_list_when_subjects_exist() throws RmesException {
         String familyId = "fam001";
         JSONArray subjectsArray = new JSONArray()
                 .put(new JSONObject().put("id", "sub1").put("labelLg1", "Subject 1"))
@@ -200,7 +217,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFullFamily_returnsFamilyWithSeriesAndSubjects() throws RmesException {
+    void get_full_family_returns_family_with_series_and_subjects() throws RmesException {
         String familyId = "fam001";
         
         // Mock base family
@@ -240,7 +257,7 @@ class GraphDBOperationFamilyRepositoryTest {
     }
 
     @Test
-    void getFullFamily_returnsFamilyWithoutSeriesAndSubjects_whenNoneExist() throws RmesException {
+    void get_full_family_returns_family_without_series_and_subjects_when_none_exist() throws RmesException {
         String familyId = "fam001";
         
         JSONObject familyJson = new JSONObject()
@@ -269,4 +286,28 @@ class GraphDBOperationFamilyRepositoryTest {
         }
     }
 
+
+    @Test
+    void get_series_with_report_maps_every_row_of_the_query() throws RmesException {
+        when(operationFamilyQueries.seriesWithReportQuery("s1")).thenReturn("query");
+        JSONArray rows = new JSONArray()
+                .put(new JSONObject().put("id", "s1033").put("labelLg1", "Série").put("labelLg2", "Series").put("idSims", "1234"));
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(rows);
+
+        var series = repository.getSeriesWithReport("s1");
+
+        assertEquals(1, series.size());
+        assertEquals("s1033", series.getFirst().id());
+        assertEquals("Série", series.getFirst().labelLg1());
+        assertEquals("Series", series.getFirst().labelLg2());
+        assertEquals("1234", series.getFirst().idSims());
+    }
+
+    @Test
+    void get_series_with_report_skips_the_empty_row_of_a_sparql_query_without_solution() throws RmesException {
+        when(operationFamilyQueries.seriesWithReportQuery("s1")).thenReturn("query");
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put(new JSONObject()));
+
+        assertTrue(repository.getSeriesWithReport("s1").isEmpty());
+    }
 }

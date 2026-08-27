@@ -9,7 +9,8 @@ import fr.insee.rmes.modules.structures.infrastructure.graphdb.StructureQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.OperationFamilyQueries;
+import fr.insee.rmes.modules.operations.families.infrastructure.graphdb.OperationFamilyQueries;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationIndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
@@ -49,7 +50,14 @@ class QueryValueEscapingTest {
     private static final GraphsProperties GRAPHS = GraphsPropertiesStub.stub();
 
     private static final OperationsOperationQueries OPERATIONS = new OperationsOperationQueries(LANGUAGES, GRAPHS);
-    private static final OperationFamilyQueries FAMILIES = new OperationFamilyQueries(GRAPHS);
+    /**
+     * Les familles ne prennent plus la langue en paramètre : elle vient de la configuration. Le
+     * rendu du gabarit reste identique, la langue est donc réinjectée via les propriétés de langue
+     * pour continuer à couvrir les trois cas d'échappement.
+     */
+    private static final UnicityQuery FAMILIES = (id, label, lang) ->
+            new OperationFamilyQueries(new BauhausLanguagesProperties(lang, lang), GRAPHS.baseGraph(), "operations")
+                    .checkPrefLabelUnicity(id, label, Language.lg1);
     private static final OperationSeriesQueries SERIES = new OperationSeriesQueries(LANGUAGES, GRAPHS);
     private static final OperationIndicatorsQueries INDICATORS =
             new OperationIndicatorsQueries(BauhausUriPropertiesStub.stub(), LANGUAGES, GRAPHS);
@@ -72,7 +80,7 @@ class QueryValueEscapingTest {
     static Stream<Arguments> unicityQueries() {
         return Stream.of(
                 Arguments.of(Named.<UnicityQuery>of("operation", OPERATIONS::checkPrefLabelUnicity)),
-                Arguments.of(Named.<UnicityQuery>of("family", FAMILIES::checkPrefLabelUnicity)),
+                Arguments.of(Named.<UnicityQuery>of("family", FAMILIES)),
                 Arguments.of(Named.<UnicityQuery>of("series", SERIES::checkPrefLabelUnicity)),
                 Arguments.of(Named.<UnicityQuery>of("indicator", INDICATORS::checkPrefLabelUnicity)),
                 Arguments.of(Named.<UnicityQuery>of("document", DOCUMENTS::checkLabelUnicity))
