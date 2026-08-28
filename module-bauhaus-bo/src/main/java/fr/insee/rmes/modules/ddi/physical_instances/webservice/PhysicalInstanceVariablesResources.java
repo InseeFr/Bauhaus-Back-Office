@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Endpoint #447 / #1144 : {@code GET /ddi/public/fichier/{agency}/{uuid}[/{version}]} renvoie tous les
- * DataRelationship (et donc les variables) d'une PhysicalInstance, en DDI 3.3 XML (multi-fragments
+ * Endpoint #447 / #1144 / #1146 : {@code GET /ddi/public/fichier/{agency}/{uuid}[/{version}]} renvoie
+ * le fragment de la PhysicalInstance puis ceux des éléments qui la composent — tous les
+ * DataRelationship (et donc les variables) —, en DDI 3.3 XML (multi-fragments
  * {@code <FragmentInstance>}) ou DDI 4 JSON.
  *
  * <p>{@code {uuid}} désigne une PhysicalInstance (le « fichier »). Le préfixe {@code /ddi/} est imposé

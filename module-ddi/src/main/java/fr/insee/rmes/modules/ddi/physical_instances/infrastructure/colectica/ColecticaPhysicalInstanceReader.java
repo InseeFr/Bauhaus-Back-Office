@@ -93,9 +93,10 @@ class ColecticaPhysicalInstanceReader {
     }
 
     /**
-     * Toutes les DataRelationships d'un set de PhysicalInstance en DDI4 (#447), dernière version quand
-     * {@code version} est {@code null}. Les fragments DataRelationship et les Variables qu'ils
-     * référencent sont convertis ; les CodeList/Category référencées sont écartées.
+     * Le fragment de la PhysicalInstance et toutes ses DataRelationships en DDI4 (#447 / #1146),
+     * dernière version quand {@code version} est {@code null}. La PhysicalInstance, les fragments
+     * DataRelationship et les Variables qu'ils référencent sont convertis ; les CodeList/Category
+     * référencées sont écartées.
      */
     Ddi4Response getDataRelationships(String agencyId, String id, String version) {
         logger.info("Fetching data relationships {}/{}/{}", agencyId, id, version);
@@ -104,9 +105,9 @@ class ColecticaPhysicalInstanceReader {
             if (setReader.isMissingOrWrongType(itemResponses, id, PHYSICAL_INSTANCE)) {
                 return null;
             }
-            ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
+            ColecticaItemResponse[] fragments = filterPhysicalInstanceDataRelationshipsAndVariables(itemResponses);
             Ddi4Response response = ddi3ToDdi4Converter.convertDdi3ToDdi4(
-                new Ddi3Response(null, ColecticaItems.toDdi3Items(dataRelationships)), Ddi4Response.SCHEMA);
+                new Ddi3Response(null, ColecticaItems.toDdi3Items(fragments)), Ddi4Response.SCHEMA);
             return ColecticaSetReader.withTopLevelReference(
                 response, setReader.findTopLevelReference(itemResponses, PHYSICAL_INSTANCE));
         } catch (Exception e) {
@@ -126,9 +127,9 @@ class ColecticaPhysicalInstanceReader {
             if (setReader.isMissingOrWrongType(itemResponses, id, PHYSICAL_INSTANCE)) {
                 return null;
             }
-            ColecticaItemResponse[] dataRelationships = filterDataRelationshipsAndVariables(itemResponses);
+            ColecticaItemResponse[] fragments = filterPhysicalInstanceDataRelationshipsAndVariables(itemResponses);
             return ColecticaXml.assembleFragmentInstance(
-                ColecticaItems.fragmentXmls(Arrays.stream(dataRelationships).toList()));
+                ColecticaItems.fragmentXmls(Arrays.stream(fragments).toList()));
         } catch (Exception e) {
             throw new RuntimeException(
                 "Failed to fetch data relationships XML " + agencyId + "/" + id + "/" + version, e);
@@ -136,18 +137,26 @@ class ColecticaPhysicalInstanceReader {
     }
 
     /**
-     * Garde les fragments DataRelationship du set et les Variables référencées par leurs
-     * {@code VariablesInRecord}/{@code VariableUsedReference} (#447). Dans un set de PhysicalInstance
-     * les Variables sont exactement celles utilisées par les data relationships, un filtre sur le type
-     * suffit donc. Les CodeList/Category référencées sont délibérément écartées.
+     * Garde le fragment de la PhysicalInstance, les fragments DataRelationship du set et les Variables
+     * référencées par leurs {@code VariablesInRecord}/{@code VariableUsedReference} (#447). Dans un set
+     * de PhysicalInstance les Variables sont exactement celles utilisées par les data relationships, un
+     * filtre sur le type suffit donc. Les CodeList/Category référencées sont délibérément écartées.
+     *
+     * <p>La PhysicalInstance est placée en tête (#1146), avant les éléments qui la composent, quel que
+     * soit l'ordre des descriptions renvoyées par Colectica.
      */
-    private ColecticaItemResponse[] filterDataRelationshipsAndVariables(ColecticaItemResponse[] itemResponses) {
+    private ColecticaItemResponse[] filterPhysicalInstanceDataRelationshipsAndVariables(
+        ColecticaItemResponse[] itemResponses) {
         Map<String, String> types = instanceConfiguration.itemTypes();
+        String physicalInstanceType = types.get(PHYSICAL_INSTANCE);
         String dataRelationshipType = types.get(DATA_RELATIONSHIP);
         String variableType = types.get(VARIABLE);
-        return Arrays.stream(itemResponses)
-            .filter(item -> Objects.equals(item.itemType(), dataRelationshipType)
-                || Objects.equals(item.itemType(), variableType))
+        return Stream.concat(
+                Arrays.stream(itemResponses)
+                    .filter(item -> Objects.equals(item.itemType(), physicalInstanceType)),
+                Arrays.stream(itemResponses)
+                    .filter(item -> Objects.equals(item.itemType(), dataRelationshipType)
+                        || Objects.equals(item.itemType(), variableType)))
             .toArray(ColecticaItemResponse[]::new);
     }
 

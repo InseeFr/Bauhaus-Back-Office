@@ -2333,9 +2333,10 @@ class DDIRepositoryImplTest {
     // ---- #447 : getDataRelationships / getDataRelationshipsXml (PhysicalInstance) ----
 
     @Test
-    void getDataRelationships_keepsDataRelationshipAndReferencedVariables() {
-        // #447 : la réponse /variables porte les DataRelationship ET les Variable référencées
-        // (VariableUsedReference des VariablesInRecord), mais pas les CodeList/Category référencées.
+    void getDataRelationships_keepsPhysicalInstanceDataRelationshipAndReferencedVariables() {
+        // #447 / #1146 : la réponse /fichier porte la PhysicalInstance, les DataRelationship ET les
+        // Variable référencées (VariableUsedReference des VariablesInRecord), mais pas les
+        // CodeList/Category référencées.
         String agencyId = "fr.insee";
         String piId = "pi-1";
         String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
@@ -2388,12 +2389,13 @@ class DDIRepositoryImplTest {
 
         ddiRepository.getDataRelationships(agencyId, piId, null);
 
-        // DataRelationship + Variable sont convertis ; PI, CodeList et Category sont écartés.
+        // PI + DataRelationship + Variable sont convertis ; CodeList et Category sont écartés.
         List<Ddi3Response.Ddi3Item> converted = captor.getValue().items();
-        assertEquals(2, converted.size());
+        assertEquals(3, converted.size());
+        // #1146 : la PhysicalInstance ouvre la liste, avant les éléments qui la composent.
+        assertEquals(piType, converted.get(0).itemType());
         assertTrue(converted.stream().anyMatch(i -> drType.equals(i.itemType())));
         assertTrue(converted.stream().anyMatch(i -> variableType.equals(i.itemType())));
-        assertTrue(converted.stream().noneMatch(i -> piType.equals(i.itemType())));
         assertTrue(converted.stream().noneMatch(i -> codeListType.equals(i.itemType())));
         assertTrue(converted.stream().noneMatch(i -> categoryType.equals(i.itemType())));
     }
@@ -2430,8 +2432,8 @@ class DDIRepositoryImplTest {
         };
         when(colecticaClient.getDescriptions(anyList())).thenReturn(itemResponses);
 
-        // Le convertisseur renvoie un TopLevelReference null (comportement réel : il ne le dérive
-        // que pour les items PhysicalInstance, absents de la sortie /variables).
+        // Le convertisseur renvoie ici un TopLevelReference null : la référence est alors reconstruite
+        // depuis les descriptions brutes du set.
         Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, null, List.of(), List.of(), null, null, null);
         when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0"))).thenReturn(mockDdi4);
 
@@ -2491,7 +2493,7 @@ class DDIRepositoryImplTest {
     }
 
     @Test
-    void getDataRelationshipsXml_includesDataRelationshipAndVariableFragmentsOnly() {
+    void getDataRelationshipsXml_includesPhysicalInstanceThenDataRelationshipAndVariableFragments() {
         String agencyId = "fr.insee";
         String piId = "pi-1";
         String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
@@ -2534,10 +2536,45 @@ class DDIRepositoryImplTest {
 
         assertNotNull(xml);
         assertTrue(xml.contains("FragmentInstance"));
+        assertTrue(xml.contains("<PhysicalInstance"));
         assertTrue(xml.contains("<DataRelationship"));
         assertTrue(xml.contains("<Variable"));
-        assertFalse(xml.contains("<PhysicalInstance"));
         assertFalse(xml.contains("<CodeList"));
+        // #1146 : le fragment de la PhysicalInstance précède ceux des éléments qui la composent.
+        assertTrue(xml.indexOf("<PhysicalInstance") < xml.indexOf("<DataRelationship"));
+    }
+
+    @Test
+    void getDataRelationshipsXml_putsPhysicalInstanceFragmentFirst_whenColecticaReturnsItLast() {
+        // #1146 : l'ordre de la sortie ne dépend pas de celui des descriptions Colectica.
+        String agencyId = "fr.insee";
+        String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", piType,
+                "DataRelationship", drType
+        ));
+
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[] {
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem(piId, 1, agencyId)
+        });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(drType, agencyId, 1, "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(piType, agencyId, 1, piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        String xml = ddiRepository.getDataRelationshipsXml(agencyId, piId, null);
+
+        assertNotNull(xml);
+        assertTrue(xml.contains("<PhysicalInstance"));
+        assertTrue(xml.indexOf("<PhysicalInstance") < xml.indexOf("<DataRelationship"));
     }
 
     @Test
