@@ -67,6 +67,23 @@ class ColecticaPhysicalInstanceReader {
         }
     }
 
+    /**
+     * Tous les items du set, sans l'exclusion CodeList/Category de {@link #getPhysicalInstance} :
+     * l'état stocké complet, tel qu'attendu par la réconciliation des {@code VersionDate}.
+     */
+    Ddi4Response getFullPhysicalInstance(String agencyId, String id) {
+        try {
+            ColecticaItemResponse[] itemResponses = setReader.fetchSetItems(agencyId, id, null);
+            if (itemResponses == null || itemResponses.length == 0) {
+                return null;
+            }
+            return ddi3ToDdi4Converter.convertDdi3ToDdi4(
+                new Ddi3Response(null, ColecticaItems.toDdi3Items(itemResponses)), Ddi4Response.SCHEMA);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to process DDI response", e);
+        }
+    }
+
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id) {
         try {
             ColecticaItemResponse[] itemResponses = setReader.fetchSetItems(agencyId, id, null);

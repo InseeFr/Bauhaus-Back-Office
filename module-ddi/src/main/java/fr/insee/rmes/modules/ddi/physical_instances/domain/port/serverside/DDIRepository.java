@@ -49,6 +49,14 @@ public interface DDIRepository {
     List<PartialStudyUnit> getStudyUnits();
     Ddi4Response getPhysicalInstance(String agencyId, String id);
     List<Ddi4CodeList> getPhysicalInstanceCodeLists(String agencyId, String id);
+
+    /**
+     * Tous les items du set de la PhysicalInstance, listes de codes et catégories comprises —
+     * contrairement à {@link #getPhysicalInstance(String, String)} qui les écarte pour alléger le
+     * GET. Sert de référence à la réconciliation des {@code VersionDate} : un item absent de cette
+     * référence est réellement nouveau, et non simplement hors périmètre de lecture.
+     */
+    Ddi4Response getFullPhysicalInstance(String agencyId, String id);
     Ddi4GroupResponse getGroup(String agencyId, String id);
     void updatePhysicalInstance(String agencyId, String id, UpdatePhysicalInstanceRequest request);
     void updateFullPhysicalInstance(String agencyId, String id, Ddi4Response ddi4Response);

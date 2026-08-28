@@ -934,6 +934,44 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void getFullPhysicalInstance_convertsEveryItemOfTheSetIncludingCodeListsAndCategories() {
+        // Référence de la réconciliation des VersionDate : contrairement à getPhysicalInstance,
+        // rien n'est écarté — sans quoi les listes de codes passeraient pour de nouveaux items.
+        String instanceId = "32799021-0663-41cd-aca6-3ad8dbdae3e3";
+        String agencyId = "fr.insee";
+        String codeListId = "2f70f505-4a9e-4abe-82d4-c4ddfed25d52";
+        String categoryId = "d363a730-14d4-4c54-9464-982312cf9330";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
+
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[]{
+            new ColecticaSetItem(instanceId, 1, agencyId),
+            new ColecticaSetItem(codeListId, 1, agencyId),
+            new ColecticaSetItem(categoryId, 1, agencyId)
+        });
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
+            new ColecticaItemResponse("a51e85bb-6259-4488-8df2-f08cb43485f8", agencyId, 1, instanceId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, codeListId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(categoryType, agencyId, 1, categoryId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(Ddi3Response.class), eq("ddi:4.0")))
+                .thenReturn(new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null));
+
+        ddiRepository.getFullPhysicalInstance(agencyId, instanceId);
+
+        ArgumentCaptor<Ddi3Response> ddi3Captor = ArgumentCaptor.forClass(Ddi3Response.class);
+        verify(ddi3ToDdi4Converter).convertDdi3ToDdi4(ddi3Captor.capture(), eq("ddi:4.0"));
+        assertEquals(List.of(instanceId, codeListId, categoryId),
+                ddi3Captor.getValue().items().stream().map(Ddi3Response.Ddi3Item::identifier).toList());
+    }
+
+    @Test
     void getPhysicalInstanceCodeLists_keepsOnlyCodeListAndCategoryItems() {
         // L'endpoint /codeslists doit fonctionner sans repasser par getPhysicalInstance
         // (qui n'inclut plus les CodeList). On filtre côté repo pour ne convertir que

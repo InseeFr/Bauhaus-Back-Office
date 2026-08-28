@@ -27,6 +27,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalIns
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
@@ -543,14 +544,14 @@ class DDIServiceImplTest {
         Ddi4Response stored = physicalInstanceOnlyResponse(storedDate, "Ma PI");
         Ddi4Response incoming = physicalInstanceOnlyResponse(
                 CogsDate.ofDateTime("2026-01-01T00:00:00Z"), "Ma PI");
-        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
 
         // When
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
 
         // Then : GET préalable, puis update avec le payload réconcilié (date stockée)
         InOrder inOrder = inOrder(ddiRepository);
-        inOrder.verify(ddiRepository).getPhysicalInstance("fr.insee", "pi-1");
+        inOrder.verify(ddiRepository).getFullPhysicalInstance("fr.insee", "pi-1");
         ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
         inOrder.verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
         assertEquals(storedDate, saved.getValue().physicalInstance().getFirst().versionDate());
@@ -563,7 +564,7 @@ class DDIServiceImplTest {
                 CogsDate.ofDateTime("2020-01-01T00:00:00Z"), "Ma PI");
         Ddi4Response incoming = physicalInstanceOnlyResponse(
                 CogsDate.ofDateTime("2020-01-01T00:00:00Z"), "Ma PI modifiée");
-        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
 
         // When
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
@@ -631,7 +632,7 @@ class DDIServiceImplTest {
                 LangStrings.of("fr-FR", "Sentinelles"), null, List.of());
         Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
                 List.of(sentinelCodeList), null, List.of(mmvr));
-        when(ddiRepository.getPhysicalInstance("fr.insee", "pi-1")).thenReturn(null);
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(null);
 
         ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
 
@@ -1149,5 +1150,53 @@ class DDIServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
+    }
+
+    /**
+     * Le GET de référence exclut volontairement les CodeList/Category du payload : si la
+     * réconciliation s'appuyait sur lui seul, toute liste de codes accompagnant le PUT passerait
+     * pour nouvelle et redaterait, par propagation, les variables qui la référencent — y compris
+     * celles que l'utilisateur n'a pas touchées.
+     */
+    @Test
+    void shouldKeepStoredVersionDateOfUntouchedVariableWhenItsCodeListIsPartOfThePayload() {
+        // Given : une variable code inchangée, dont la liste de codes (inchangée elle aussi)
+        // accompagne le payload parce qu'une autre variable l'a chargée.
+        CogsDate storedDate = CogsDate.ofDateTime("2020-01-01T00:00:00Z");
+        Ddi4Variable variable = codeVariable(storedDate);
+        Ddi4CodeList codeList = sharedCodeList(storedDate);
+
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1"))
+                .thenReturn(new Ddi4Response(Ddi4Response.SCHEMA, null,
+                        null, null, List.of(variable), List.of(codeList), null, null));
+
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null,
+                null, null, List.of(variable), List.of(codeList), null, null);
+
+        // When
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        // Then
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        assertEquals(storedDate, saved.getValue().variable().getFirst().versionDate());
+    }
+
+    private static Ddi4Variable codeVariable(CogsDate date) {
+        return new Ddi4Variable(Ddi4Variable.TYPE, date,
+                Reference.synthesizeUrn("fr.insee", "var-1", "1"), "fr.insee", "var-1", "1", null,
+                List.of(new LangString("fr", "VAR1")), List.of(new LangString("fr", "Variable 1")),
+                null,
+                new VariableRepresentation(null,
+                        new CodeRepresentation(CodeRepresentation.TYPE, null,
+                                Reference.of("fr.insee", "cl-1", "1", Ddi4CodeList.TYPE)),
+                        null, null, null, null),
+                null);
+    }
+
+    private static Ddi4CodeList sharedCodeList(CogsDate date) {
+        return new Ddi4CodeList(Ddi4CodeList.TYPE, date,
+                Reference.synthesizeUrn("fr.insee", "cl-1", "1"), "fr.insee", "cl-1", "1",
+                List.of(new LangString("fr", "Liste 1")), null, null);
     }
 }

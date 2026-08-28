@@ -182,6 +182,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     }
 
     @Override
+    public Ddi4Response getFullPhysicalInstance(String agencyId, String id) {
+        return physicalInstanceReader.getFullPhysicalInstance(agencyId, id);
+    }
+
+    @Override
     public Ddi4Response getDataRelationships(String agencyId, String id, String version) {
         return physicalInstanceReader.getDataRelationships(agencyId, id, version);
     }

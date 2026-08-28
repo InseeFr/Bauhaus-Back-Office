@@ -307,7 +307,9 @@ public class DDIServiceImpl implements DDIService {
         validateSentinelValues(ddi4Response);
         // GET préalable : les items non modifiés gardent leur date stockée, les items
         // modifiés ou nouveaux passent à « maintenant », avec propagation enfant → parent.
-        Ddi4Response current = ddiRepository.getPhysicalInstance(agencyId, id);
+        // Lecture complète (listes de codes et catégories comprises) : sur le GET allégé, elles
+        // passeraient pour nouvelles et redateraient les variables qui les référencent.
+        Ddi4Response current = ddiRepository.getFullPhysicalInstance(agencyId, id);
         Ddi4Response reconciled = VersionDateReconciler.reconcile(current, ddi4Response,
                 CogsDate.ofDateTime(ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         ddiRepository.updateFullPhysicalInstance(agencyId, id, reconciled);
