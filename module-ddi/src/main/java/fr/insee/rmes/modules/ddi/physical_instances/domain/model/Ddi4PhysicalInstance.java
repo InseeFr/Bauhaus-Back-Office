@@ -16,7 +16,7 @@ public record Ddi4PhysicalInstance(
         @JsonProperty("BasedOnObject") BasedOnObject basedOnObject,
         @JsonProperty("Citation") Citation citation,
         @JsonProperty("DataRelationshipReference") List<Reference> dataRelationshipReference
-) implements Ddi4VersionedItem {
+) implements Ddi4VersionedItem, Ddi4Item {
 
     public static final String TYPE = "PhysicalInstance";
 

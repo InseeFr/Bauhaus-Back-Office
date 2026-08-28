@@ -5,6 +5,7 @@ import static javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA;
 import static javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
+import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -121,6 +122,49 @@ final class ColecticaXml {
             logger.warn("Failed to parse XML to extract UserIDs", e);
             return List.of();
         }
+    }
+
+    /**
+     * Les items désignés par les éléments de référence {@code r:<referenceLocalName>} d'un fragment
+     * DDI 3.3 (par exemple les {@code r:PhysicalInstanceReference} d'une StudyUnit), prêts pour un
+     * {@code item/_getList}. Les doublons sont écartés, ainsi que les références incomplètes ou dont
+     * la version n'est pas un entier : Colectica ne saurait rien en faire. Liste vide quand le XML
+     * est absent ou illisible.
+     */
+    static List<GetDescriptionsRequest.IdentifierRef> referencedIdentifiers(
+        String xml, String referenceLocalName) {
+        if (xml == null || xml.isBlank()) {
+            return List.of();
+        }
+        try {
+            NodeList references = parse(xml).getElementsByTagNameNS(REUSABLE_NS, referenceLocalName);
+            List<GetDescriptionsRequest.IdentifierRef> identifiers = new ArrayList<>();
+            for (int i = 0; i < references.getLength(); i++) {
+                Element reference = (Element) references.item(i);
+                String agency = trimmed(textContent(reference, REUSABLE_NS, "Agency"));
+                String id = trimmed(textContent(reference, REUSABLE_NS, "ID"));
+                String version = trimmed(textContent(reference, REUSABLE_NS, "Version"));
+                if (agency == null || id == null || version == null || !version.matches("\\d+")) {
+                    logger.warn("Ignoring unusable {}: agency={}, id={}, version={}",
+                        referenceLocalName, agency, id, version);
+                    continue;
+                }
+                identifiers.add(new GetDescriptionsRequest.IdentifierRef(
+                    agency, id, Integer.parseInt(version)));
+            }
+            return identifiers.stream().distinct().toList();
+        } catch (Exception e) {
+            logger.warn("Failed to parse XML to extract {} identifiers", referenceLocalName, e);
+            return List.of();
+        }
+    }
+
+    private static String trimmed(String text) {
+        if (text == null) {
+            return null;
+        }
+        String trimmed = text.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     /**

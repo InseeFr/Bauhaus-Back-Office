@@ -7,6 +7,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariabl
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
@@ -542,5 +543,11 @@ public class DDIServiceImpl implements DDIService {
     public Optional<String> getStudyUnitXmlByOperationIri(String operationIri) {
         logger.info("Getting StudyUnit XML by operationIri: {}", operationIri);
         return ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+    }
+
+    @Override
+    public Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri) {
+        logger.info("Getting StudyUnit DDI4 by operationIri: {}", operationIri);
+        return ddiRepository.findStudyUnitByOperationIri(operationIri);
     }
 }

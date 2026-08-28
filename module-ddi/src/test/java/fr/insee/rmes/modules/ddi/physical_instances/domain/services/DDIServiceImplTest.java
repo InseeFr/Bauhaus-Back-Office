@@ -11,6 +11,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
@@ -1105,6 +1106,30 @@ class DDIServiceImplTest {
 
         assertFalse(result.isPresent());
         verify(ddiRepository).findStudyUnitXmlByOperationIri(operationIri);
+    }
+
+    @Test
+    void shouldGetStudyUnitByOperationIri_returnsDdi4WhenFound() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        Ddi4StudyUnitResponse expected = new Ddi4StudyUnitResponse(
+                Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri))
+                .thenReturn(Optional.of(expected));
+
+        Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri);
+
+        assertTrue(result.isPresent());
+        assertEquals(expected, result.get());
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Test
+    void shouldGetStudyUnitByOperationIri_returnsEmptyWhenNotFound() {
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
+
+        assertFalse(ddiService.getStudyUnitByOperationIri(operationIri).isPresent());
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
     }
 
     @Test

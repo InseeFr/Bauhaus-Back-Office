@@ -1958,69 +1958,182 @@ class DDIRepositoryImplTest {
         assertNull(result);
     }
 
+    /**
+     * Une StudyUnit sans PhysicalInstance sort quand même dans une {@code FragmentInstance} : le
+     * contrat du endpoint est multi-fragments depuis #1145, indépendamment du nombre de fragments.
+     */
     @Test
-    void shouldFindStudyUnitXmlByOperationIri_returnsXmlWhenMatching() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
+    void shouldFindStudyUnitXmlByOperationIri_returnsFragmentInstanceWhenMatching() {
         String operationIri = "http://id.insee.fr/operations/operation/op1";
         String suId = "su-abc";
         String suAgency = "fr.insee";
 
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
 
-        ColecticaItem suItem = new ColecticaItem(
-            null, Map.of("fr-FR", "BPE 2021"), Map.of(), null, null, 0, "repo", true, List.of(),
-            "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
-            null, null, "2025-01-01T00:00:00", null, false, false, false, "DDI", 1L, 0
-        );
-        ColecticaResponse queryResponse = new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
-        when(colecticaClient.query(anyList()))
-                .thenReturn(queryResponse);
-
-        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
-                + "<StudyUnit xmlns=\"ddi:studyunit:3_3\">"
-                + "<r:UserID>" + operationIri + "</r:UserID>"
-                + "</StudyUnit></Fragment>";
-        ColecticaItemResponse itemResponse = new ColecticaItemResponse(
-                "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
-                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
-        );
-        when(colecticaClient.getDescriptions(anyList()))
-                .thenReturn(new ColecticaItemResponse[]{itemResponse});
+        String studyUnitXml = studyUnitFragment(operationIri, "");
+        when(colecticaClient.getDescriptions(List.of(
+                new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[]{studyUnitItemResponse(suAgency, suId, studyUnitXml)});
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 
         assertTrue(result.isPresent());
-        assertEquals(studyUnitXml, result.get());
+        assertThat(result.get())
+                .contains("<ddi:FragmentInstance")
+                .contains("<StudyUnit xmlns=\"ddi:studyunit:3_3\">")
+                .contains("</ddi:FragmentInstance>");
+    }
+
+    /**
+     * #1145 : les PhysicalInstances référencées par la StudyUnit sont déréférencées et leurs
+     * fragments suivent celui de la StudyUnit dans la {@code FragmentInstance}.
+     */
+    @Test
+    void shouldFindStudyUnitXmlByOperationIri_appendsDereferencedPhysicalInstanceFragments() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String suId = "su-abc";
+        String suAgency = "fr.insee";
+
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+
+        String studyUnitXml = studyUnitFragment(operationIri,
+                physicalInstanceReference(suAgency, "pi-1", "1")
+                        + physicalInstanceReference(suAgency, "pi-2", "3"));
+        when(colecticaClient.getDescriptions(List.of(
+                new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[]{studyUnitItemResponse(suAgency, suId, studyUnitXml)});
+
+        String firstPiXml = physicalInstanceFragment("pi-1");
+        String secondPiXml = physicalInstanceFragment("pi-2");
+        when(colecticaClient.getDescriptions(List.of(
+                new GetDescriptionsRequest.IdentifierRef(suAgency, "pi-1", 1),
+                new GetDescriptionsRequest.IdentifierRef(suAgency, "pi-2", 3))))
+                .thenReturn(new ColecticaItemResponse[]{
+                        physicalInstanceItemResponse(suAgency, "pi-1", 1, firstPiXml),
+                        physicalInstanceItemResponse(suAgency, "pi-2", 3, secondPiXml)});
+
+        Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get())
+                .contains("<r:ID>pi-1</r:ID>")
+                .contains("<r:ID>pi-2</r:ID>");
+        assertThat(result.get().indexOf("<StudyUnit"))
+                .isLessThan(result.get().indexOf("<PhysicalInstance"));
+    }
+
+    /** #1145 : la même descente, projetée en DDI 4 pour la négociation JSON. */
+    @Test
+    void shouldFindStudyUnitByOperationIri_returnsStudyUnitAndItsPhysicalInstances() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String suId = "su-abc";
+        String suAgency = "fr.insee";
+
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+
+        String studyUnitXml = studyUnitFragment(operationIri,
+                physicalInstanceReference(suAgency, "pi-1", "1"));
+        when(colecticaClient.getDescriptions(List.of(
+                new GetDescriptionsRequest.IdentifierRef(suAgency, suId, 1))))
+                .thenReturn(new ColecticaItemResponse[]{studyUnitItemResponse(suAgency, suId, studyUnitXml)});
+
+        String piXml = physicalInstanceFragment("pi-1");
+        when(colecticaClient.getDescriptions(List.of(
+                new GetDescriptionsRequest.IdentifierRef(suAgency, "pi-1", 1))))
+                .thenReturn(new ColecticaItemResponse[]{
+                        physicalInstanceItemResponse(suAgency, "pi-1", 1, piXml)});
+
+        Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                Ddi4StudyUnit.TYPE, null, "urn:ddi:" + suAgency + ":" + suId + ":1", suAgency, suId,
+                "1", null, operationIri, null);
+        when(ddi3ToDdi4Converter.toStudyUnit(studyUnitXml)).thenReturn(studyUnit);
+        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE, null, "urn:ddi:" + suAgency + ":pi-1:1", suAgency, "pi-1",
+                "1", null, null, null);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(any(), eq(Ddi4Response.SCHEMA)))
+                .thenReturn(new Ddi4Response(Ddi4Response.SCHEMA, null, List.of(physicalInstance),
+                        null, null, null, null, null));
+
+        Optional<Ddi4StudyUnitResponse> result =
+                ddiRepository.findStudyUnitByOperationIri(operationIri);
+
+        assertTrue(result.isPresent());
+        assertThat(result.get().studyUnit()).containsExactly(studyUnit);
+        assertThat(result.get().physicalInstance()).containsExactly(physicalInstance);
+        assertThat(result.get().topLevelReference())
+                .containsExactly(Reference.of(suAgency, suId, "1", Ddi4StudyUnit.TYPE));
     }
 
     @Test
-    void shouldFindStudyUnitXmlByOperationIri_returnsEmptyWhenNoMatch() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
+    void shouldFindStudyUnitByOperationIri_returnsEmptyWhenNoMatch() {
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
         String suId = "su-xyz";
         String suAgency = "fr.insee";
 
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
+                studyUnitItemResponse(suAgency, suId, studyUnitFragment(
+                        "http://id.insee.fr/operations/operation/other", ""))});
 
+        assertFalse(ddiRepository.findStudyUnitByOperationIri(operationIri).isPresent());
+    }
+
+    private static ColecticaResponse studyUnitQueryResponse(String agency, String id) {
         ColecticaItem suItem = new ColecticaItem(
             null, Map.of("fr-FR", "BPE 2021"), Map.of(), null, null, 0, "repo", true, List.of(),
-            "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
+            "30ea0200-7121-4f01-8d21-a931a182b86d", agency, 1, id,
             null, null, "2025-01-01T00:00:00", null, false, false, false, "DDI", 1L, 0
         );
-        ColecticaResponse queryResponse = new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
-        when(colecticaClient.query(anyList()))
-                .thenReturn(queryResponse);
+        return new ColecticaResponse(List.of(suItem), 1, 1, null, null, null);
+    }
 
-        String studyUnitXml = "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+    private static ColecticaItemResponse studyUnitItemResponse(String agency, String id, String xml) {
+        return new ColecticaItemResponse(
+                "30ea0200-7121-4f01-8d21-a931a182b86d", agency, 1, id,
+                xml, "2025-01-01T00:00:00", null, false, false, false, "DDI");
+    }
+
+    private static ColecticaItemResponse physicalInstanceItemResponse(
+            String agency, String id, int version, String xml) {
+        return new ColecticaItemResponse(
+                "a51e85bb-6259-4488-8df2-f08cb43485f8", agency, version, id,
+                xml, "2025-01-01T00:00:00", null, false, false, false, "DDI");
+    }
+
+    private static String studyUnitFragment(String operationIri, String physicalInstanceReferences) {
+        return "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
                 + "<StudyUnit xmlns=\"ddi:studyunit:3_3\">"
-                + "<r:UserID>http://id.insee.fr/operations/operation/other</r:UserID>"
+                + "<r:UserID>" + operationIri + "</r:UserID>"
+                + physicalInstanceReferences
                 + "</StudyUnit></Fragment>";
-        ColecticaItemResponse itemResponse = new ColecticaItemResponse(
-                "30ea0200-7121-4f01-8d21-a931a182b86d", suAgency, 1, suId,
-                studyUnitXml, "2025-01-01T00:00:00", null, false, false, false, "DDI"
-        );
-        when(colecticaClient.getDescriptions(anyList()))
-                .thenReturn(new ColecticaItemResponse[]{itemResponse});
+    }
+
+    private static String physicalInstanceReference(String agency, String id, String version) {
+        return "<r:PhysicalInstanceReference>"
+                + "<r:Agency>" + agency + "</r:Agency>"
+                + "<r:ID>" + id + "</r:ID>"
+                + "<r:Version>" + version + "</r:Version>"
+                + "<r:TypeOfObject>PhysicalInstance</r:TypeOfObject>"
+                + "</r:PhysicalInstanceReference>";
+    }
+
+    private static String physicalInstanceFragment(String id) {
+        return "<Fragment xmlns:r=\"ddi:reusable:3_3\" xmlns=\"ddi:instance:3_3\">"
+                + "<PhysicalInstance xmlns=\"ddi:physicalinstance:3_3\">"
+                + "<r:ID>" + id + "</r:ID>"
+                + "</PhysicalInstance></Fragment>";
+    }
+
+    @Test
+    void shouldFindStudyUnitXmlByOperationIri_returnsEmptyWhenNoMatch() {
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        String suId = "su-xyz";
+        String suAgency = "fr.insee";
+
+        when(colecticaClient.query(anyList())).thenReturn(studyUnitQueryResponse(suAgency, suId));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
+                studyUnitItemResponse(suAgency, suId, studyUnitFragment(
+                        "http://id.insee.fr/operations/operation/other", ""))});
 
         Optional<String> result = ddiRepository.findStudyUnitXmlByOperationIri(operationIri);
 

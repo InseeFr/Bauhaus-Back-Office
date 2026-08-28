@@ -13,6 +13,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProd
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
@@ -82,7 +83,8 @@ public class DDIRepositoryImpl implements DDIRepository {
         ColecticaSetReader setReader = new ColecticaSetReader(instanceConfiguration, colecticaClient);
         ColecticaVersionDates versionDates = new ColecticaVersionDates(colecticaClient);
 
-        this.catalog = new ColecticaCatalogRepository(instanceConfiguration, colecticaClient, labels);
+        this.catalog = new ColecticaCatalogRepository(
+            instanceConfiguration, colecticaClient, labels, ddi3ToDdi4Converter);
         this.physicalInstanceReader = new ColecticaPhysicalInstanceReader(
             instanceConfiguration, ddi3ToDdi4Converter, setReader);
         this.groupReader = new ColecticaGroupSetReader(colecticaClient, defaultLang);
@@ -150,6 +152,11 @@ public class DDIRepositoryImpl implements DDIRepository {
     @Override
     public Optional<String> findStudyUnitXmlByOperationIri(String operationIri) {
         return catalog.findStudyUnitXmlByOperationIri(operationIri);
+    }
+
+    @Override
+    public Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri) {
+        return catalog.findStudyUnitByOperationIri(operationIri);
     }
 
     @Override

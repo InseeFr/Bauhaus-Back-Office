@@ -898,21 +898,19 @@ class DdiResourcesTest {
     // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test
-    void getOperationStudyUnitJson_returns200WithJson_whenStudyUnitExists() throws RmesException {
+    void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() throws RmesException {
         String id = "op1";
         String operationIri = "http://id.insee.fr/operations/operation/op1";
-        String xml = "<Fragment><StudyUnit/></Fragment>";
-        ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
+        Ddi4StudyUnitResponse expected = aStudyUnitResponse(operationIri);
         when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
-        when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
+        when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.of(expected));
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
+        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expectedJson.toString(), response.getBody());
-        verify(ddiItemConvertService).convert(xml);
+        assertEquals(expected, response.getBody());
+        verify(ddiItemConvertService, never()).convert(any());
     }
 
     @Test
@@ -920,12 +918,40 @@ class DdiResourcesTest {
         String id = "unknown";
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
         when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
+        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
+    }
+
+    /** #1145 : la sortie JSON porte la StudyUnit et les PhysicalInstances qu'elle référence. */
+    @Test
+    void getOperationStudyUnitJson_carriesTheStudyUnitAndItsPhysicalInstances() throws Exception {
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitByOperationIri(operationIri))
+                .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
+
+        JsonNode body = new ObjectMapper().valueToTree(
+                ddiResources.getOperationStudyUnitJson(id).getBody());
+
+        assertEquals(List.of("StudyUnit", "PhysicalInstance"),
+                body.get("items").findValuesAsText("$type"));
+    }
+
+    private static Ddi4StudyUnitResponse aStudyUnitResponse(String operationIri) {
+        return new Ddi4StudyUnitResponse(
+                Ddi4Response.SCHEMA,
+                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE)),
+                List.of(new Ddi4StudyUnit(
+                        Ddi4StudyUnit.TYPE, null, "urn:ddi:fr.insee:su-1:1", "fr.insee", "su-1", "1",
+                        null, operationIri, null)),
+                List.of(new Ddi4PhysicalInstance(
+                        Ddi4PhysicalInstance.TYPE, null, "urn:ddi:fr.insee:pi-1:1", "fr.insee",
+                        "pi-1", "1", null, null, null)));
     }
 
     // --- GET /ddi/operation/{id}/fichiers (XML DDI 3.3, public) ---
@@ -966,10 +992,9 @@ class DdiResourcesTest {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
         String id = "op1";
         String operationIri = "http://id.insee.fr/operations/operation/op1";
-        String xml = "<Fragment><StudyUnit/></Fragment>";
         when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
-        when(ddiItemConvertService.convert(xml)).thenReturn(new ObjectMapper().createObjectNode().put("ID", id));
+        when(ddiService.getStudyUnitByOperationIri(operationIri))
+                .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
 
         mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
                         .accept(MediaType.APPLICATION_JSON))

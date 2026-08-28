@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupRespon
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
@@ -92,4 +93,10 @@ public interface DDIService {
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
     Optional<String> getStudyUnitXmlByOperationIri(String operationIri);
+
+    /**
+     * La StudyUnit d'une opération et les PhysicalInstances qu'elle référence, en DDI 4 (#1145) —
+     * pendant JSON de {@link #getStudyUnitXmlByOperationIri(String)}.
+     */
+    Optional<Ddi4StudyUnitResponse> getStudyUnitByOperationIri(String operationIri);
 }

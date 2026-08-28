@@ -9,6 +9,7 @@ import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
@@ -526,13 +527,17 @@ public class DdiResources {
      * Endpoint #496 : {@code GET /ddi/operation/{id}/fichiers} renvoie le StudyUnit d'une opération
      * en DDI 3.3 XML ou DDI 4 JSON selon la négociation de contenu (en-tête {@code Accept}), de manière
      * cohérente avec les autres services DDI ({@code /ddi/item}, {@code /ddi/codelist}).
+     * <p>
+     * Depuis #1145 la sortie ne se limite plus au StudyUnit : les PhysicalInstances qu'il référence
+     * sont déréférencées et l'accompagnent — fragments d'une même {@code <FragmentInstance>} côté
+     * XML, items de l'enveloppe {@code topLevelReferences}/{@code items} côté JSON.
      */
     @GetMapping(
         value = "/public/operation/{id}/fichiers",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
-    public ResponseEntity<String> getOperationStudyUnitJson(
+    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(
         @PathVariable(Constants.ID) String id
     ) {
         String operationIri = bauhausUriBuilder.getCompleteUriPublication(
@@ -540,14 +545,9 @@ public class DdiResources {
             id
         );
 
-        return ddiService
-            .getStudyUnitXmlByOperationIri(operationIri)
-            .map(xml ->
-                ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ddiItemConvertService.convert(xml).toString())
-            )
-            .orElse(ResponseEntity.notFound().build());
+        return DdiResponses.json(
+            ddiService.getStudyUnitByOperationIri(operationIri).orElse(null)
+        );
     }
 
     @GetMapping(

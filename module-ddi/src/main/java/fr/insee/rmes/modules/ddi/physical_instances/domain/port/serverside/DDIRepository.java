@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupRespon
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
@@ -105,5 +106,12 @@ public interface DDIRepository {
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);
+    /**
+     * Le DDI 3.3 de la StudyUnit d'une opération, dans une {@code <FragmentInstance>} qui porte aussi
+     * les fragments des PhysicalInstances qu'elle référence (#1145).
+     */
     Optional<String> findStudyUnitXmlByOperationIri(String operationIri);
+
+    /** Les mêmes objets — StudyUnit et PhysicalInstances déréférencées — en DDI 4 (#1145). */
+    Optional<Ddi4StudyUnitResponse> findStudyUnitByOperationIri(String operationIri);
 }
