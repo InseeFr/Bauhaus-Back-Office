@@ -1,7 +1,7 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.series;
 
 import fr.insee.rmes.AppSpringBootTest;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -33,13 +33,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Tag("integration")
 @AppSpringBootTest
-class ParentUtilsCanonicalizeIntegrationTest extends WithGraphDBContainer {
+class OperationsParentRepositoryCanonicalizeIntegrationTest extends WithGraphDBContainer {
 
     private static final String SHORT_HIE_069 = "HIE2000069";
     private static final String SHORT_HIE_076 = "HIE2000076";
 
     @Autowired
-    private ParentUtils parentUtils;
+    private OperationsParentRepository operationsParentRepository;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -55,21 +55,21 @@ class ParentUtilsCanonicalizeIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getSeriesCreators_returnsShortStamp_whenStoredAsIri() throws RmesException {
-        JSONArray creators = parentUtils.getSeriesCreators("sIRI");
+        JSONArray creators = operationsParentRepository.getSeriesCreators("sIRI");
 
         assertThat(toCreatorList(creators)).containsExactly(SHORT_HIE_069);
     }
 
     @Test
     void getSeriesCreators_resolvesLegacyLiteralToShortStamp() throws RmesException {
-        JSONArray creators = parentUtils.getSeriesCreators("sLIT");
+        JSONArray creators = operationsParentRepository.getSeriesCreators("sLIT");
 
         assertThat(toCreatorList(creators)).containsExactly(SHORT_HIE_069);
     }
 
     @Test
     void getSeriesCreators_returnsBothInShortForm_whenMixed() throws RmesException {
-        JSONArray creators = parentUtils.getSeriesCreators("sMIX");
+        JSONArray creators = operationsParentRepository.getSeriesCreators("sMIX");
 
         assertThat(toCreatorList(creators)).containsExactlyInAnyOrder(
                 SHORT_HIE_069,
@@ -79,7 +79,7 @@ class ParentUtilsCanonicalizeIntegrationTest extends WithGraphDBContainer {
 
     @Test
     void getSeriesCreators_dropsRowsWithUnresolvableLiterals() throws RmesException {
-        JSONArray creators = parentUtils.getSeriesCreators("sBAD");
+        JSONArray creators = operationsParentRepository.getSeriesCreators("sBAD");
 
         assertThat(toCreatorList(creators)).isEmpty();
     }

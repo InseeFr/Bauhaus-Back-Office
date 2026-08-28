@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class IndicatorPublicationTest {
 
     @Mock
-    private ParentUtils ownersUtils;
+    private OperationsParentRepository operationsParentRepository;
 
     @InjectMocks
     private IndicatorPublication indicatorPublication;
@@ -51,7 +51,7 @@ class IndicatorPublicationTest {
         link.id = "series-1";
         indicator.wasGeneratedBy = List.of(link);
 
-        when(ownersUtils.getIndicatorsValidationStatus("123")).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getIndicatorsValidationStatus("123")).thenReturn(ValidationStatus.VALIDATED.getValue());
 
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
         assertThat(exception.getDetails()).contains("\"code\":1301");
@@ -63,7 +63,7 @@ class IndicatorPublicationTest {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             OperationsLink link = new OperationsLink();
             link.id = "series-1";
-            when(ownersUtils.getValidationStatus("series-1")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+            when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
             indicator.wasGeneratedBy = List.of(link);
 
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123"))).thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));
@@ -78,7 +78,7 @@ class IndicatorPublicationTest {
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             OperationsLink link = new OperationsLink();
             link.id = "series-1";
-            when(ownersUtils.getValidationStatus("series-1")).thenReturn(ValidationStatus.VALIDATED.toString());
+            when(operationsParentRepository.getValidationStatus("series-1")).thenReturn(ValidationStatus.VALIDATED.toString());
             indicator.wasGeneratedBy = List.of(link);
 
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.INDICATOR), eq("123"))).thenReturn(SimpleValueFactory.getInstance().createIRI("http://indicator/1"));

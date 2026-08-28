@@ -6,7 +6,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -62,7 +62,7 @@ public class IndicatorsRepository {
 
 	final FamOpeSerIndUtils famOpeSerIndUtils;
 	
-	final ParentUtils ownersUtils;
+	final OperationsParentRepository operationsParentRepository;
 
 	private final DocumentationsUtils documentationsUtils;
 	private final BauhausUriBuilder bauhausUriBuilder;
@@ -76,7 +76,7 @@ public class IndicatorsRepository {
 			OrganizationsService organizationsService,
 			IndicatorPublication indicatorPublication,
 			FamOpeSerIndUtils famOpeSerIndUtils,
-			ParentUtils ownersUtils,
+			OperationsParentRepository operationsParentRepository,
 			DocumentationsUtils documentationsUtils,
 			BauhausUriBuilder bauhausUriBuilder,
 			BauhausLanguagesProperties languages,
@@ -87,7 +87,7 @@ public class IndicatorsRepository {
 		this.organizationsService = organizationsService;
 		this.indicatorPublication = indicatorPublication;
 		this.famOpeSerIndUtils = famOpeSerIndUtils;
-		this.ownersUtils = ownersUtils;
+		this.operationsParentRepository = operationsParentRepository;
 		this.documentationsUtils = documentationsUtils;
 		this.bauhausUriBuilder = bauhausUriBuilder;
 		this.languages = languages;
@@ -206,7 +206,7 @@ public class IndicatorsRepository {
 
 	private void addIndicatorCreators(String id, JSONObject indicator) throws RmesException {
 		// URI des organisations (objets de dc:creator), pas des stamps.
-		// NB : ParentUtils.getIndicatorCreators (canonicalize -> stamps) reste utilisé
+		// NB : OperationsParentRepository.getIndicatorCreators (canonicalize -> stamps) reste utilisé
 		// pour le contrôle d'accès par stamp.
 		indicator.put(Constants.CREATORS, repositoryGestion.getResponseAsJSONList(operationIndicatorsQueries.getCreatorsById(id)));
 	}
@@ -294,7 +294,7 @@ public class IndicatorsRepository {
 
 		indicator.setUpdated(DateUtils.getCurrentDate());
 
-		String status= ownersUtils.getIndicatorsValidationStatus(id);
+		String status= operationsParentRepository.getIndicatorsValidationStatus(id);
 
 		documentationsUtils.updateDocumentationTitle(indicator.getIdSims(), indicator.getPrefLabelLg1(), indicator.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {

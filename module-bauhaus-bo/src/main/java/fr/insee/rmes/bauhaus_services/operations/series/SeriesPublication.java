@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -46,14 +46,14 @@ public class SeriesPublication {
         Constants.HAS_PART
     );
 
-    private final ParentUtils ownersUtils;
+    private final OperationsParentRepository operationsParentRepository;
     private final PublicationUtils publicationUtils;
     private final RepositoryGestion repoGestion;
     private final RepositoryPublication repositoryPublication;
     private final OperationSeriesQueries operationSeriesQueries;
 
-    public SeriesPublication(ParentUtils ownersUtils, PublicationUtils publicationUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, OperationSeriesQueries operationSeriesQueries) {
-        this.ownersUtils = ownersUtils;
+    public SeriesPublication(OperationsParentRepository operationsParentRepository, PublicationUtils publicationUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, OperationSeriesQueries operationSeriesQueries) {
+        this.operationsParentRepository = operationsParentRepository;
         this.publicationUtils = publicationUtils;
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
@@ -67,10 +67,10 @@ public class SeriesPublication {
     }
 
     public void publishSeries(String id, JSONObject series) throws RmesException {
-        PublicationUtils.rejectIfAlreadyPublished("Series", id, ownersUtils.getFamOpSerValidationStatus(id));
+        PublicationUtils.rejectIfAlreadyPublished("Series", id, operationsParentRepository.getFamOpSerValidationStatus(id));
 
         String familyId = series.getJSONObject(Constants.FAMILY).getString(Constants.ID);
-        String status = ownersUtils.getValidationStatus(familyId);
+        String status = operationsParentRepository.getValidationStatus(familyId);
 
         if (PublicationUtils.isUnublished(status)) {
             throw new RmesBadRequestException(

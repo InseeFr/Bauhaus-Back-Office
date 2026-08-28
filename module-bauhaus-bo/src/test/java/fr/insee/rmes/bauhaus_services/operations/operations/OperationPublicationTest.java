@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import org.json.JSONObject;
@@ -24,14 +24,14 @@ class OperationPublicationTest {
     OperationPublication operationPublication;
 
     @Mock
-    ParentUtils ownerUtils;
+    OperationsParentRepository operationsParentRepository;
 
     @Test
     void shouldThrowExceptionIfOperationIsAlreadyPublished() throws RmesException {
         JSONObject operation = new JSONObject();
         operation.put(Constants.ID, "1");
 
-        when(ownerUtils.getFamOpSerValidationStatus("1")).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getFamOpSerValidationStatus("1")).thenReturn(ValidationStatus.VALIDATED.getValue());
 
         var exception = assertThrows(
                 RmesBadRequestException.class,
@@ -49,7 +49,7 @@ class OperationPublicationTest {
         series.put("id", "2");
         operation.put("series", series);
 
-        when(ownerUtils.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+        when(operationsParentRepository.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
         var exception = assertThrows(
                 RmesBadRequestException.class,
                 () -> operationPublication.publishOperation("1", operation)
@@ -65,7 +65,7 @@ class OperationPublicationTest {
         series.put("id", "2");
         operation.put("series", series);
 
-        when(ownerUtils.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+        when(operationsParentRepository.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
         var exception = assertThrows(
                 RmesBadRequestException.class,
                 () -> operationPublication.publishOperation("1", operation)

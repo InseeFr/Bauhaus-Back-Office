@@ -4,7 +4,7 @@ package fr.insee.rmes.modules.operations.msd.infrastructure.legacy;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
@@ -58,7 +58,7 @@ class DocumentationExportTest {
     private CodesListExport codeListService;
 
     @Mock
-    private ParentUtils parentUtils;
+    private OperationsParentRepository operationsParentRepository;
 
     @Mock
     private DocumentationsUtils documentationsUtils;
@@ -90,7 +90,7 @@ class DocumentationExportTest {
         var zip = "zip";
         var objectType = "objectType";
 
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
 
         InputStream inputStreamMock = mock(InputStream.class);
@@ -114,7 +114,7 @@ class DocumentationExportTest {
         sims.put("labelLg1", "Rapport qualité : Enquête « Emploi » 2022");
 
         var xmlContent = new HashMap<String, String>();
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils);
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils);
 
         InputStream inputStreamMock = mock(InputStream.class);
         when(exportUtils.exportAsInputStream(any(), any(), any(), any(), any(), any(), any())).thenReturn(inputStreamMock);
@@ -128,7 +128,7 @@ class DocumentationExportTest {
 
     @Test
     void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -141,7 +141,7 @@ class DocumentationExportTest {
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
         when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject().put("labelLg1", "labelLg1"));
-        when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
         when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
 
@@ -151,7 +151,7 @@ class DocumentationExportTest {
 
     @Test
     void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -160,7 +160,7 @@ class DocumentationExportTest {
         boolean document = true;
         String goal = "unknownGoal";
 
-        when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{"someTargetType", "someId"});
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{"someTargetType", "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
 
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
@@ -172,7 +172,7 @@ class DocumentationExportTest {
 
     @Test
     void testExportXmlFiles_Success() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
         Map<String, String> xmlContent = new HashMap<>();
         boolean includeEmptyMas = true;
@@ -196,7 +196,7 @@ class DocumentationExportTest {
                 seriesRepository,
                 operationsRepository,
                 indicatorsRepository,
-                parentUtils,
+                operationsParentRepository,
                 codeListService,
                 organizationsService,
                 organisationService,
@@ -207,8 +207,8 @@ class DocumentationExportTest {
         String idDatabase = "s2144";
         Map<String, String> xmlContent = new HashMap<>();
 
-        // Mock parentUtils to return SERIES targetType
-        when(parentUtils.getDocumentationTargetTypeAndId(id))
+        // Mock operationsParentRepository to return SERIES targetType
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
                 .thenReturn(new String[]{Constants.SERIES_UP, idDatabase});
 
         // Mock seriesRepository to return a series
@@ -365,7 +365,7 @@ class DocumentationExportTest {
                 seriesRepository,
                 operationsRepository,
                 indicatorsRepository,
-                parentUtils,
+                operationsParentRepository,
                 codeListService,
                 organizationsService,
                 organisationService,
@@ -376,8 +376,8 @@ class DocumentationExportTest {
         String idDatabase = "p1723";
         Map<String, String> xmlContent = new HashMap<>();
 
-        // Mock parentUtils to return INDICATOR targetType
-        when(parentUtils.getDocumentationTargetTypeAndId(id))
+        // Mock operationsParentRepository to return INDICATOR targetType
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
                 .thenReturn(new String[]{Constants.INDICATOR_UP, idDatabase});
 
         // Mock indicatorsRepository to return an indicator

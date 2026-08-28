@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
@@ -60,7 +60,7 @@ class DocumentationsUtilsTest {
 
 
 	@Mock
-	private ParentUtils parentUtils;
+	private OperationsParentRepository operationsParentRepository;
 
 	@Mock
 	private DocumentationsRubricsUtils documentationsRubricsUtils;
@@ -140,7 +140,7 @@ class DocumentationsUtilsTest {
 	@Test
 	void shouldThrowRmesNotFoundExceptionIfParentTargetIsUnpublished() throws RmesException {
 		String[] target = {"series", ""};
-		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		when(operationsParentRepository.getDocumentationTargetTypeAndId("1")).thenReturn(target);
 		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.publishMetadataReport("1"));
 		assertTrue(exception.getDetails().contains("target not found for this Sims"));
 	}
@@ -148,9 +148,9 @@ class DocumentationsUtilsTest {
 	@Test
 	void shouldThrowRmesBadRequestExceptionIfParentTargetIsUnpublished() throws RmesException {
 		String[] target = {"series", "seriesExample"};
-		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		when(operationsParentRepository.getDocumentationTargetTypeAndId("1")).thenReturn(target);
 		givenMetadataReportState("1", ValidationStatus.UNPUBLISHED);
-		when(parentUtils.getValidationStatus("seriesExample")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+		when(operationsParentRepository.getValidationStatus("seriesExample")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
 		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
 		assertTrue(exception.getDetails().contains("This metadataReport cannot be published before its target is published. "));
 	}
@@ -158,7 +158,7 @@ class DocumentationsUtilsTest {
 	@Test
 	void shouldThrowRmesBadRequestExceptionIfMetadataReportIsAlreadyPublished() throws RmesException {
 		String[] target = {"series", "seriesExample"};
-		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		when(operationsParentRepository.getDocumentationTargetTypeAndId("1")).thenReturn(target);
 		givenMetadataReportState("1", ValidationStatus.VALIDATED);
 
 		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
@@ -194,7 +194,7 @@ class DocumentationsUtilsTest {
 		when(documentationsRubricsUtils.buildRubricFromJson(letterA,true)).thenReturn(docA);
 		when(documentationsRubricsUtils.buildRubricFromJson(letterB,true)).thenReturn(docB);
 		when(documentationsRubricsUtils.buildRubricFromJson(letterC,true)).thenReturn(docC);
-		when(parentUtils.getDocumentationTargetTypeAndId(anyString())).thenReturn(st);
+		when(operationsParentRepository.getDocumentationTargetTypeAndId(anyString())).thenReturn(st);
 
 		JSONObject jsonSims = new JSONObject()
 										.put("rubrics", alphabet)

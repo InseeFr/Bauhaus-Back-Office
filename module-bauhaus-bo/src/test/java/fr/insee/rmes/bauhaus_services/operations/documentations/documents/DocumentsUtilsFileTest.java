@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentsStorageProperties;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -70,7 +70,7 @@ class DocumentsUtilsFileTest {
     @Mock IdGenerator idGenerator;
     @Mock RepositoryPublication repositoryPublication;
     @Mock PublicationUtils publicationUtils;
-    @Mock ParentUtils ownersUtils;
+    @Mock OperationsParentRepository operationsParentRepository;
     @Mock FilesOperations filesOperations;
     @Mock StorageProperties storageProperties;
     @Mock OperationDocumentsQueries operationDocumentsQueries;
@@ -91,7 +91,7 @@ class DocumentsUtilsFileTest {
         }));
 
         documentsUtils = new DocumentsUtils(repoGestion, idGenerator, repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"), publicationUtils, ownersUtils,
+                new BauhausLanguagesProperties("fr", "en"), publicationUtils, operationsParentRepository,
                 filesOperations, storageProperties, operationDocumentsQueries, documentsStorage);
 
         when(documentsStorage.storageGestion()).thenReturn(storageFolder.toString());

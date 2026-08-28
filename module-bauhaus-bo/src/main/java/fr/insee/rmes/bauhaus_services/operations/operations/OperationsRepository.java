@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -47,7 +47,7 @@ public class OperationsRepository extends RdfService{
 
 	private final DocumentationsUtils documentationsUtils;
 
-	private final ParentUtils parentUtils;
+	private final OperationsParentRepository operationsParentRepository;
 
 	private final OperationPublication operationPublication;
 
@@ -59,14 +59,14 @@ public class OperationsRepository extends RdfService{
 								RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 								PublicationUtils publicationUtils,
 								FamOpeSerIndUtils famOpeSerIndUtils, DocumentationsUtils documentationsUtils,
-								ParentUtils parentUtils, OperationPublication operationPublication,
+								OperationsParentRepository operationsParentRepository, OperationPublication operationPublication,
 								OperationsOperationQueries operationsOperationQueries,
 								OperationSeriesQueries operationSeriesQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
 		this.famOpeSerIndUtils = famOpeSerIndUtils;
 		this.documentationsUtils = documentationsUtils;
-		this.parentUtils = parentUtils;
+		this.operationsParentRepository = operationsParentRepository;
 		this.operationPublication = operationPublication;
 		this.operationsOperationQueries = operationsOperationQueries;
 		this.operationSeriesQueries = operationSeriesQueries;
@@ -143,7 +143,7 @@ public class OperationsRepository extends RdfService{
 
 		operation.setModified(DateUtils.getCurrentDate());
 
-		String status= parentUtils.getValidationStatus(id);
+		String status= operationsParentRepository.getValidationStatus(id);
 		documentationsUtils.updateDocumentationTitle(operation.getIdSims(), operation.getPrefLabelLg1(), operation.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);

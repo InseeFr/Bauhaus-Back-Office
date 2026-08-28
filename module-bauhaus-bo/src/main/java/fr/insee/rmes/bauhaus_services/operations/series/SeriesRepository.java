@@ -6,7 +6,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
@@ -60,7 +60,7 @@ public class SeriesRepository {
 
     final FamOpeSerIndUtils famOpeSerIndUtils;
 
-    final ParentUtils ownersUtils;
+    final OperationsParentRepository operationsParentRepository;
 
     final SeriesPublication seriesPublication;
 
@@ -80,7 +80,7 @@ public class SeriesRepository {
             CodeListService codeListService,
             OrganizationsService organizationsService,
             FamOpeSerIndUtils famOpeSerIndUtils,
-            ParentUtils ownersUtils,
+            OperationsParentRepository operationsParentRepository,
             SeriesPublication seriesPublication,
             DocumentationsUtils documentationsUtils,
             BauhausUriBuilder bauhausUriBuilder,
@@ -92,7 +92,7 @@ public class SeriesRepository {
         this.codeListService = codeListService;
         this.organizationsService = organizationsService;
         this.famOpeSerIndUtils = famOpeSerIndUtils;
-        this.ownersUtils = ownersUtils;
+        this.operationsParentRepository = operationsParentRepository;
         this.seriesPublication = seriesPublication;
         this.documentationsUtils = documentationsUtils;
         this.bauhausUriBuilder = bauhausUriBuilder;
@@ -451,7 +451,7 @@ public class SeriesRepository {
 
         series.setUpdated(DateUtils.getCurrentDate());
 
-        String status = ownersUtils.getFamOpSerValidationStatus(id);
+        String status = operationsParentRepository.getFamOpSerValidationStatus(id);
         documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
         if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
             createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);

@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentsStorageProperties;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -64,7 +64,7 @@ class DocumentsUtilsReadDeleteTest {
     @Mock IdGenerator idGenerator;
     @Mock RepositoryPublication repositoryPublication;
     @Mock PublicationUtils publicationUtils;
-    @Mock ParentUtils ownersUtils;
+    @Mock OperationsParentRepository operationsParentRepository;
     @Mock FilesOperations filesOperations;
     @Mock StorageProperties storageProperties;
     @Mock OperationDocumentsQueries operationDocumentsQueries;
@@ -82,7 +82,7 @@ class DocumentsUtilsReadDeleteTest {
         }));
 
         documentsUtils = new DocumentsUtils(repoGestion, idGenerator, repositoryPublication,
-                new BauhausLanguagesProperties("fr", "en"), publicationUtils, ownersUtils,
+                new BauhausLanguagesProperties("fr", "en"), publicationUtils, operationsParentRepository,
                 filesOperations, storageProperties, operationDocumentsQueries, documentsStorage);
 
         when(storageProperties.directoryGestion()).thenReturn(STORAGE);
@@ -100,7 +100,7 @@ class DocumentsUtilsReadDeleteTest {
         when(operationDocumentsQueries.getSimsByDocument(ID, false)).thenReturn("sims-query");
         when(repoGestion.getResponseAsArray("sims-query"))
                 .thenReturn(new JSONArray().put(new JSONObject().put(Constants.ID, "1234")));
-        when(ownersUtils.getDocumentationOwnersByIdSims("1234")).thenReturn("[\"DG75-L001\"]");
+        when(operationsParentRepository.getDocumentationOwnersByIdSims("1234")).thenReturn("[\"DG75-L001\"]");
 
         JSONObject document = documentsUtils.getDocument(ID, false);
 

@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
@@ -45,7 +45,7 @@ class OperationsRepositoryTest {
     FamOpeSerIndUtils famOpeSerIndUtils;
 
     @Mock
-    ParentUtils parentUtils;
+    OperationsParentRepository operationsParentRepository;
 
 
     @Mock

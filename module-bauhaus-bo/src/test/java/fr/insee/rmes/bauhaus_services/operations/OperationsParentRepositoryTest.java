@@ -24,10 +24,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ParentUtilsTest {
+class OperationsParentRepositoryTest {
 
     @InjectMocks
-    ParentUtils parentUtils;
+    OperationsParentRepository operationsParentRepository;
 
     @Mock
     RepositoryGestion repoGestion;
@@ -60,7 +60,7 @@ class ParentUtilsTest {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"").put(Constants.ID_INDICATOR,"");
         when(documentationQueries.getTargetByIdSims(id)).thenReturn("mock-target-query");
         when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-        RmesException exception = assertThrows(RmesException.class, () -> parentUtils.getDocumentationOwnersByIdSims(id));
+        RmesException exception = assertThrows(RmesException.class, () -> operationsParentRepository.getDocumentationOwnersByIdSims(id));
         assertTrue(exception.getDetails().contains("Documentation has no target"));
     }
 
@@ -68,14 +68,14 @@ class ParentUtilsTest {
     void shouldCheckIfParentExists() throws RmesException {
         when(parentQueries.checkIfExists("uriParent")).thenReturn("mock-parent-exists-query");
         when(repoGestion.getResponseAsBoolean("mock-parent-exists-query")).thenReturn(true);
-        parentUtils.checkIfParentExists("uriParent");
+        operationsParentRepository.checkIfParentExists("uriParent");
     }
 
     @Test
     void shouldGetDocumentationOwnersByIdSims() throws RmesException {
         when(documentationQueries.getTargetByIdSims(id)).thenReturn("mock-target-query");
         when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(null);
-        assertNull(parentUtils.getDocumentationOwnersByIdSims(id));
+        assertNull(operationsParentRepository.getDocumentationOwnersByIdSims(id));
     }
 
     @Test
@@ -86,14 +86,14 @@ class ParentUtilsTest {
         when(repoGestion.getResponseAsJSONList("query")).thenReturn(raw);
         when(organisationLookup.canonicalize(raw)).thenReturn(canonicalized);
 
-        assertEquals(canonicalized, parentUtils.getIndicatorCreators(id));
+        assertEquals(canonicalized, operationsParentRepository.getIndicatorCreators(id));
     }
 
     @Test
     void shouldGetSeriesCreatorsWithIri() throws RmesException {
         when(operationSeriesQueries.getCreatorsById(id)).thenReturn("mock-query");
         when(repoGestion.getResponseAsJSONList("mock-query")).thenReturn(null);
-        assertNull(parentUtils.getSeriesCreators(id));
+        assertNull(operationsParentRepository.getSeriesCreators(id));
     }
 
     @Test
@@ -101,7 +101,7 @@ class ParentUtilsTest {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"A");
         when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
         when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        String actual = Arrays.toString(operationsParentRepository.getDocumentationTargetTypeAndId("idSims"));
         assertEquals("[OPERATION, A]",actual);
     }
 
@@ -110,7 +110,7 @@ class ParentUtilsTest {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"A");
         when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
         when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        String actual = Arrays.toString(operationsParentRepository.getDocumentationTargetTypeAndId("idSims"));
         assertEquals("[SERIES, A]",actual);
     }
 
@@ -119,7 +119,7 @@ class ParentUtilsTest {
         JSONObject jsonObject = new JSONObject().put(Constants.ID_OPERATION,"").put(Constants.ID_SERIES,"").put(Constants.ID_INDICATOR,"A").put(Constants.INDICATOR_UP,"B");
         when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
         when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        String actual = Arrays.toString(operationsParentRepository.getDocumentationTargetTypeAndId("idSims"));
         assertEquals("[INDICATOR, A]",actual);
     }
 
@@ -128,7 +128,7 @@ class ParentUtilsTest {
         JSONObject jsonObject = null;
         when(documentationQueries.getTargetByIdSims("idSims")).thenReturn("mock-target-query");
         when(repoGestion.getResponseAsObject("mock-target-query")).thenReturn(jsonObject);
-        String actual = Arrays.toString(parentUtils.getDocumentationTargetTypeAndId("idSims"));
+        String actual = Arrays.toString(operationsParentRepository.getDocumentationTargetTypeAndId("idSims"));
         assertEquals("[null, null]",actual);
     }
 }

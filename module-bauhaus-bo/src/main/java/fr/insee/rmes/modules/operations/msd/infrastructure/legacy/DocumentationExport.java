@@ -4,7 +4,7 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
 import fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
@@ -55,7 +55,7 @@ public class DocumentationExport {
 	
 	final IndicatorsRepository indicatorsRepository;
 	
-	final ParentUtils parentUtils;
+	final OperationsParentRepository operationsParentRepository;
 	
 	final CodesListExport codeListServiceImpl;
 	
@@ -79,12 +79,12 @@ public class DocumentationExport {
 			ExportUtils exportUtils,
 			SeriesRepository seriesRepository,
 			OperationsRepository operationsRepository,
-			IndicatorsRepository indicatorsRepository, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
+			IndicatorsRepository indicatorsRepository, OperationsParentRepository operationsParentRepository, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
 		this.seriesRepository = seriesRepository;
 		this.operationsRepository = operationsRepository;
 		this.indicatorsRepository = indicatorsRepository;
-		this.parentUtils = parentUtils;
+		this.operationsParentRepository = operationsParentRepository;
 		this.codeListServiceImpl = codeListServiceImpl;
 		this.organizationsServiceImpl = organizationsServiceImpl;
 		this.organisationService = organisationService;
@@ -241,7 +241,7 @@ public class DocumentationExport {
 		String seriesXML = emptyXML;
 		String indicatorXML;
 
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
+		String[] target = operationsParentRepository.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String idDatabase = target[1];
 

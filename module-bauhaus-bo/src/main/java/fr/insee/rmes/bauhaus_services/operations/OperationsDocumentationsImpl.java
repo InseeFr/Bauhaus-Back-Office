@@ -34,7 +34,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	private final DocumentationsUtils documentationsUtils;
 
-	private final ParentUtils ownersUtils;
+	private final OperationsParentRepository operationsParentRepository;
 
 	private final DocumentationRepository documentationRepository;
 
@@ -45,13 +45,13 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 										PublicationUtils publicationUtils,
 										@Value("classpath:bauhaus-sims.json") org.springframework.core.io.Resource simsDefaultValue,
 										DocumentationsUtils documentationsUtils,
-										ParentUtils ownersUtils,
+										OperationsParentRepository operationsParentRepository,
 										DocumentationRepository documentationRepository,
 										DocumentationQueries documentationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.simsDefaultValue = simsDefaultValue;
 		this.documentationsUtils = documentationsUtils;
-		this.ownersUtils = ownersUtils;
+		this.operationsParentRepository = operationsParentRepository;
 		this.documentationRepository = documentationRepository;
 		this.documentationQueries = documentationQueries;
 	}
@@ -98,7 +98,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
-		return ownersUtils.getDocumentationOwnersByIdSims(id);
+		return operationsParentRepository.getDocumentationOwnersByIdSims(id);
 	}
 
 

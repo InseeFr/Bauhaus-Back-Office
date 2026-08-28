@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ParentUtils extends RdfService{
+public class OperationsParentRepository extends RdfService{
 
-	static final Logger logger = LoggerFactory.getLogger(ParentUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(OperationsParentRepository.class);
 
 	private final OperationIndicatorsQueries operationIndicatorsQueries;
 
@@ -45,7 +45,7 @@ public class ParentUtils extends RdfService{
 
 	private final OrganisationLookup organisationLookup;
 
-	public ParentUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+	public OperationsParentRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
 					   RepositoryPublication repositoryPublication,
 					   PublicationUtils publicationUtils,
 					   OperationIndicatorsQueries operationIndicatorsQueries,

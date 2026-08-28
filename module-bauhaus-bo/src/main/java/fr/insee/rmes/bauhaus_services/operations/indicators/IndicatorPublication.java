@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -28,13 +28,13 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class IndicatorPublication implements ObjectPublication<Indicator> {
-	final ParentUtils ownersUtils;
+	final OperationsParentRepository operationsParentRepository;
 	final RepositoryGestion repoGestion;
 	final RepositoryPublication repositoryPublication;
 	final PublicationUtils publicationUtils;
 
-	public IndicatorPublication(ParentUtils ownersUtils, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, PublicationUtils publicationUtils) {
-		this.ownersUtils = ownersUtils;
+	public IndicatorPublication(OperationsParentRepository operationsParentRepository, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, PublicationUtils publicationUtils) {
+		this.operationsParentRepository = operationsParentRepository;
 		this.repoGestion = repoGestion;
 		this.repositoryPublication = repositoryPublication;
 		this.publicationUtils = publicationUtils;
@@ -43,14 +43,14 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 	@Override
 	public void validate(Indicator indicator) throws RmesException {
 
-		PublicationUtils.rejectIfAlreadyPublished("Indicator", indicator.getId(), ownersUtils.getIndicatorsValidationStatus(indicator.getId()));
+		PublicationUtils.rejectIfAlreadyPublished("Indicator", indicator.getId(), operationsParentRepository.getIndicatorsValidationStatus(indicator.getId()));
 
 		if(indicator.isWasGeneratedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
 		}
 
 		for (OperationsLink link : indicator.wasGeneratedBy) {
-			var status = ownersUtils.getValidationStatus(link.getId());
+			var status = operationsParentRepository.getValidationStatus(link.getId());
 			if (!status.equalsIgnoreCase(ValidationStatus.VALIDATED.toString())) {
 				throw new RmesBadRequestException(IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES, "An indicator can be published if and only if all parent series have been published.");
 			}

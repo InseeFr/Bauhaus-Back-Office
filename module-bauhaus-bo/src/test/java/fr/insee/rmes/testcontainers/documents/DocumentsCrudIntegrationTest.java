@@ -5,7 +5,7 @@ import fr.insee.rmes.BauhausUriProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.DocumentsStorageProperties;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsImpl;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
@@ -97,7 +97,7 @@ class DocumentsCrudIntegrationTest extends WithGraphDBContainer {
         DocumentsUtils documentsUtils = new DocumentsUtils(
                 repositoryGestion, mock(IdGenerator.class), mock(RepositoryPublication.class),
                 new BauhausLanguagesProperties("fr", "en"), mock(PublicationUtils.class),
-                mock(ParentUtils.class), new FileSystemOperation(),
+                mock(OperationsParentRepository.class), new FileSystemOperation(),
                 new StorageProperties(storageFolder.toString(), storageFolder.toString()),
                 queries, new DocumentsStorageProperties(storageFolder.toString(), "http://bauhaus/"));
         documents = new DocumentsImpl(documentsUtils);

@@ -7,7 +7,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -72,7 +72,7 @@ public class DocumentsUtils extends RdfService {
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
     public static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
 
-    private final ParentUtils ownersUtils;
+    private final OperationsParentRepository operationsParentRepository;
     private final FilesOperations filesOperations;
     private final StorageProperties storageProperties;
 
@@ -83,12 +83,12 @@ public class DocumentsUtils extends RdfService {
     public DocumentsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
                           RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                           PublicationUtils publicationUtils,
-                          ParentUtils ownersUtils, FilesOperations filesOperations,
+                          OperationsParentRepository operationsParentRepository, FilesOperations filesOperations,
                           StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries,
                           DocumentsStorageProperties documentsStorage) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
-        this.ownersUtils = ownersUtils;
+        this.operationsParentRepository = operationsParentRepository;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.operationDocumentsQueries = operationDocumentsQueries;
@@ -380,7 +380,7 @@ public class DocumentsUtils extends RdfService {
 
         for (int i = 0; i < sims.length(); i++) {
             JSONObject sim = sims.getJSONObject(i);
-            sim.put(Constants.CREATORS, new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
+            sim.put(Constants.CREATORS, new JSONArray(operationsParentRepository.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
         }
         return sims;
     }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.DocumentationsProperties;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -61,17 +61,17 @@ public class DocumentationsUtils  {
     private final DocumentationsProperties documentations;
 	private final DocumentationsRubricsUtils documentationsRubricsUtils;
 	private final DocumentationPublication documentationPublication;
-	private final ParentUtils parentUtils;
+	private final OperationsParentRepository operationsParentRepository;
 	private final DocumentationQueries documentationQueries;
 
-    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages, DocumentationsProperties documentations, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils, DocumentationQueries documentationQueries) {
+    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages, DocumentationsProperties documentations, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, OperationsParentRepository operationsParentRepository, DocumentationQueries documentationQueries) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.languages = languages;
         this.documentations = documentations;
         this.documentationsRubricsUtils = documentationsRubricsUtils;
         this.documentationPublication = documentationPublication;
-        this.parentUtils = parentUtils;
+        this.operationsParentRepository = operationsParentRepository;
         this.documentationQueries = documentationQueries;
     }
 
@@ -124,7 +124,7 @@ public class DocumentationsUtils  {
 		sims.setLabelLg1(jsonSims.getString(Constants.LABEL_LG1));
 		sims.setLabelLg2(jsonSims.getString(Constants.LABEL_LG2));
 
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(idSims);
+		String[] target = operationsParentRepository.getDocumentationTargetTypeAndId(idSims);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
@@ -227,7 +227,7 @@ public class DocumentationsUtils  {
 	public void publishMetadataReport(String id) throws RmesException {
 
 		// Find target
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
+		String[] target = operationsParentRepository.getDocumentationTargetTypeAndId(id);
 		String targetId = target[1];
 
 		if (targetId.isEmpty()) {
@@ -237,7 +237,7 @@ public class DocumentationsUtils  {
 		PublicationUtils.rejectIfAlreadyPublished("MetadataReport", id, getDocumentationValidationStatus(id));
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
-		String status = parentUtils.getValidationStatus(targetId);
+		String status = operationsParentRepository.getValidationStatus(targetId);
 		if (PublicationUtils.isUnublished(status)) {
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
 					"This metadataReport cannot be published before its target is published. ",
@@ -275,7 +275,7 @@ public class DocumentationsUtils  {
 		if (StringUtils.isNotEmpty(sims.getIdIndicator())) {				 
 			target = RdfUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
 		}
-		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) target = null; 
+		if (!operationsParentRepository.checkIfParentExists(RdfUtils.toString(target))) target = null; 
 		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
 			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
