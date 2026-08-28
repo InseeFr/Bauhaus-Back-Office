@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CodesListsResourcesTest {
+
+    private static final CodeRequest MOCKED_CODE = new CodeRequest("mocked code", "mocked labelLg1", "mocked labelLg2", null, null);
+
     @Mock
     CodeListService codeListService;
 
@@ -110,16 +113,16 @@ class CodesListsResourcesTest {
     @Test
     void shouldReturnResponseWhenUpdateCodeForCodeList() throws RmesException{
         CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
-        when(codeListService.updateCodeFromCodeList("mocked notation", "mocked code", "mocked body")).thenReturn("mocked result");
-        String actual = myCodeListsResources.updateCodeForCodeList("mocked notation", "mocked code", "mocked body").toString();
+        when(codeListService.updateCodeFromCodeList("mocked notation", "mocked code", MOCKED_CODE)).thenReturn("mocked result");
+        String actual = myCodeListsResources.updateCodeForCodeList("mocked notation", "mocked code", MOCKED_CODE).toString();
         Assertions.assertTrue(actual.startsWith("<200 OK OK"));
     }
 
     @Test
     void shouldReturnResponseWhenAddCodeForCodeList() throws RmesException {
         CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
-        when(codeListService.addCodeFromCodeList("mocked notation", "mocked body")).thenReturn("mocked result");
-        String actual = myCodeListsResources.addCodeForCodeList("mocked notation", "mocked body").toString();
+        when(codeListService.addCodeFromCodeList("mocked notation", MOCKED_CODE)).thenReturn("mocked result");
+        String actual = myCodeListsResources.addCodeForCodeList("mocked notation", MOCKED_CODE).toString();
         Assertions.assertTrue(actual.startsWith("<201 CREATED"));
     }
 
@@ -187,31 +190,31 @@ class CodesListsResourcesTest {
 
     @Test
     void shouldReturn200WithUpdateCodeForCodeList() throws RmesException {
-        when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenReturn("code1");
-        ResponseEntity<CodeListItem> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
+        when(codeListService.updateCodeFromCodeList("notation", "1", MOCKED_CODE)).thenReturn("code1");
+        ResponseEntity<CodeListItem> response = codeListsResources.updateCodeForCodeList("notation", "1", MOCKED_CODE);
         assertEquals("code1", response.getBody().getCode());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void shouldThrowErrorWithUpdateCodeForCodeList() throws RmesException {
-        when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
-        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.updateCodeForCodeList("notation", "1", "body"));
+        when(codeListService.updateCodeFromCodeList("notation", "1", MOCKED_CODE)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
+        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.updateCodeForCodeList("notation", "1", MOCKED_CODE));
         Assertions.assertEquals(500, exception.getStatus());
     }
 
     @Test
     void shouldReturn201WithAddCodeForCodeList() throws RmesException {
-        when(codeListService.addCodeFromCodeList("notation", "body")).thenReturn("id1");
-        ResponseEntity<CodeListItem> response = codeListsResources.addCodeForCodeList("notation", "body");
+        when(codeListService.addCodeFromCodeList("notation", MOCKED_CODE)).thenReturn("id1");
+        ResponseEntity<CodeListItem> response = codeListsResources.addCodeForCodeList("notation", MOCKED_CODE);
         assertEquals("id1", response.getBody().getCode());
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     @Test
     void shouldThrowErrorWithAddCodeForCodeList() throws RmesException {
-        when(codeListService.addCodeFromCodeList("notation", "body")).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
-        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.addCodeForCodeList("notation","body"));
+        when(codeListService.addCodeFromCodeList("notation", MOCKED_CODE)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
+        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.addCodeForCodeList("notation", MOCKED_CODE));
         Assertions.assertEquals(500, exception.getStatus());
     }
 }

@@ -19,6 +19,7 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
+import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeRequest;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
@@ -433,26 +434,20 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 
-	private void createMainCodeTriplet(Resource graph, IRI codeListIri, JSONObject code, Model codeListModel, IRI codeIri, IRI uriOwlClass) {
+	private void createMainCodeTriplet(Resource graph, IRI codeListIri, CodeRequest code, Model codeListModel, IRI codeIri, IRI uriOwlClass) {
 		RdfUtils.addTripleUri(codeIri, SKOS.IN_SCHEME, codeListIri, codeListModel, graph);
-		if(code.has(CODE)){
-			RdfUtils.addTripleString(codeIri, SKOS.NOTATION, code.getString(CODE), codeListModel, graph);
-		}
+		RdfUtils.addTripleString(codeIri, SKOS.NOTATION, code.code(), codeListModel, graph);
 		RdfUtils.addTripleUri(codeIri, RDF.TYPE, SKOS.CONCEPT, codeListModel, graph);
 		RdfUtils.addTripleUri(codeIri, RDF.TYPE, uriOwlClass, codeListModel, graph);
 
-		if(code.has(Constants.LABEL_LG1)){
-			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG1), languages.lg1()), graph);
-		}
-		if(code.has(Constants.LABEL_LG2)){
-			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG2), languages.lg2()), graph);
-		}
+		codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.labelLg1(), languages.lg1()), graph);
+		codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.labelLg2(), languages.lg2()), graph);
 
-		if(code.has(Constants.DESCRIPTION_LG1)){
-			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG1), languages.lg1()), graph);
+		if(code.descriptionLg1() != null){
+			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.descriptionLg1(), languages.lg1()), graph);
 		}
-		if(code.has(Constants.DESCRIPTION_LG2)){
-			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG2), languages.lg2()), graph);
+		if(code.descriptionLg2() != null){
+			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.descriptionLg2(), languages.lg2()), graph);
 		}
 	}
 
@@ -489,10 +484,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String updateCodeFromCodeList(String notation, String code, String body) throws RmesException {
+	public String updateCodeFromCodeList(String notation, String code, CodeRequest body) throws RmesException {
 		// La mise à jour est un delete suivi d'un add : sans ce contrôle, un body portant un autre code
 		// renommait le code de l'url et écrasait silencieusement un éventuel code homonyme.
-		if (!code.equals(new JSONObject(body).optString(CODE))) {
+		if (!code.equals(body.code())) {
 			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_CODE_MISMATCH,
 					"The code of the body should match the code of the url", code);
 		}
@@ -501,13 +496,18 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String addCodeFromCodeList(String notation, String body) throws RmesException {
-		JSONObject code = new JSONObject(body);
+	public String addCodeFromCodeList(String notation, CodeRequest code) throws RmesException {
+		// L'écriture remplace tous les triplets du code : sans cette garde, poster deux fois la même
+		// notation écrasait silencieusement le premier code, libellés compris.
+		if (!repoGestion.getResponseAsObject(codeListsQueries.getCodeByNotation(notation, code.code())).isEmpty()) {
+			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_CODE_ALREADY_EXISTS,
+					"Code already exists in this code list", code.code());
+		}
 		JSONObject codesList = this.getDetailedCodesListJson(notation);
 
 		IRI owlClassUri = RdfUtils.codeListIRI(CONCEPT + codesList.getString(LAST_CLASS_URI_SEGMENT));
 		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
-		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.getString(CODE));
+		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.code());
 		IRI codeListIri = this.generateIri(codesList, CodeListKind.FULL);
 
 		Model codeModel = new LinkedHashModel();
@@ -515,7 +515,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		repoGestion.loadSimpleObject(codeIri, codeModel, null);
 
-		return code.getString(CODE);
+		return code.code();
 	}
 
 	@Override

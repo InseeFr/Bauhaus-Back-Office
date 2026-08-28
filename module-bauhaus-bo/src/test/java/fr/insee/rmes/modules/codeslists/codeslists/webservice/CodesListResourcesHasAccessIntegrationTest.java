@@ -102,6 +102,9 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
         mvc.perform(request).andExpect(status().is(code));
     }
 
+    private static final String VALID_CODE_BODY = """
+            {"code":"2","labelLg1":"libellé","labelLg2":"label"}""";
+
     private static Stream<Arguments> provideCodeData() {
         return Stream.of(
                 Arguments.of(201, true),
@@ -115,7 +118,10 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = post("/codeList/detailed/1/codes").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        var request = post("/codeList/detailed/1/codes").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                // Corps complet : la validation du @RequestBody passe avant le contrôle RBAC,
+                // un corps incomplet répondrait 400 sans jamais atteindre le HasAccess testé ici.
+                .content(VALID_CODE_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -128,7 +134,10 @@ class CodesListResourcesHasAccessIntegrationTest extends AbstractResourcesEnvPro
         when(checker.hasAccess(any(), any(), any(), any())).thenReturn(hasAccessReturn);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
 
-        var request = put("/codeList/detailed/1/codes/2").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("{\"id\": \"1\"}");
+        var request = put("/codeList/detailed/1/codes/2").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                // Corps complet : la validation du @RequestBody passe avant le contrôle RBAC,
+                // un corps incomplet répondrait 400 sans jamais atteindre le HasAccess testé ici.
+                .content(VALID_CODE_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

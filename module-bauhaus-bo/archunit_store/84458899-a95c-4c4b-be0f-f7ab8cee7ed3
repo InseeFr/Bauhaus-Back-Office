@@ -1,8 +1,6 @@
 fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources.updateClassification(fr.insee.rmes.modules.commons.configuration.swagger.model.Id, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.classifications.nomenclatures.webservice.ClassificationsResources.updateClassificationItem(java.lang.String, java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.addCodeForCodeList(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.setCodesList(java.lang.String) takes a @RequestBody that is not annotated with @Valid
-fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.updateCodeForCodeList(java.lang.String, java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.codeslists.codeslists.webservice.CodesListsResources.updateCodesList(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources.createPartialCodeList(java.lang.String) takes a @RequestBody that is not annotated with @Valid
 fr.insee.rmes.modules.codeslists.partialcodeslists.webservice.PartialCodeListsResources.updatePartialCodeList(java.lang.String, java.lang.String) takes a @RequestBody that is not annotated with @Valid

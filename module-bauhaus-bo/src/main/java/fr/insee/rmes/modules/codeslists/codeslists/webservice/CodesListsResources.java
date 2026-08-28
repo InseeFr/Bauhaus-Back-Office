@@ -14,6 +14,7 @@ import fr.insee.rmes.modules.commons.webservice.GenericResources;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.utils.Deserializer;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -111,7 +112,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/detailed/{id}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CodeListItem> updateCodeForCodeList(@PathVariable("id") String id, @PathVariable("code") String code, @RequestBody String body) throws RmesException {
+    public ResponseEntity<CodeListItem> updateCodeForCodeList(@PathVariable("id") String id, @PathVariable("code") String code, @Valid @RequestBody CodeRequest body) throws RmesException {
         String response = codeListService.updateCodeFromCodeList(id, code, body);
         CodeListItem idCodeListItem = CodeListItem.of(response);
         return ResponseEntity.status(HttpStatus.OK).body(idCodeListItem);
@@ -120,7 +121,7 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(value = "/detailed/{id}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("id") String id, @RequestBody String body) throws RmesException {
+    public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("id") String id, @Valid @RequestBody CodeRequest body) throws RmesException {
         String response = codeListService.addCodeFromCodeList(id, body);
         CodeListItem idCodeListItem = CodeListItem.of(response);
         return ResponseEntity.status(HttpStatus.CREATED).body(idCodeListItem);

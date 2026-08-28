@@ -12,6 +12,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.codeslists.codeslists.infrastructure.graphdb.CodeListsQueries;
+import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeRequest;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.json.JSONArray;
@@ -20,8 +21,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.InOrder;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +50,52 @@ class CodeListServiceImplTest {
     CodeListServiceImpl codeListService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final IRI OWL_CLASS_IRI = RdfUtils.createIRI("http://concept/lastClassUriSegment");
+    private static final IRI CODE_IRI = RdfUtils.createIRI("http://lastCodeUriSegment/code");
+    private static final IRI CODES_LIST_IRI = RdfUtils.createIRI("http://codeLists");
+    private static final IRI CODES_LIST_GRAPH = RdfUtils.createIRI("http://codesListGraph");
+
+    /**
+     * Service réel, doté des deux langues, dont seule la lecture de la liste de codes est simulée :
+     * les tests d'écriture d'un code veulent le vrai modèle RDF, pas un stub.
+     */
+    private CodeListServiceImpl serviceWritingInto(String notation) throws RmesException {
+        JSONObject codesList = new JSONObject()
+                .put("lastClassUriSegment", "lastClassUriSegment")
+                .put("lastListUriSegment", "lastListUriSegment")
+                .put("lastCodeUriSegment", "lastCodeUriSegment");
+        CodeListServiceImpl service = spy(new CodeListServiceImpl(repositoryGestion, null, null,
+                new BauhausLanguagesProperties("fr", "en"), null, null, codeListsQueries));
+        doReturn(codesList).when(service).getDetailedCodesListJson(notation);
+        return service;
+    }
+
+    /** IRI et littéraux passent par des méthodes statiques : sans ces stubs, le modèle sort vide. */
+    private static void stubRdfUtilsForCode(MockedStatic<RdfUtils> rdfUtils) {
+        rdfUtils.when(() -> RdfUtils.codeListIRI("concept/lastClassUriSegment")).thenReturn(OWL_CLASS_IRI);
+        rdfUtils.when(() -> RdfUtils.codeListIRI("lastCodeUriSegment/code")).thenReturn(CODE_IRI);
+        rdfUtils.when(() -> RdfUtils.codeListIRI("lastListUriSegment")).thenReturn(CODES_LIST_IRI);
+        rdfUtils.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any())).thenCallRealMethod();
+        rdfUtils.when(() -> RdfUtils.setLiteralString(any(String.class))).thenCallRealMethod();
+        rdfUtils.when(() -> RdfUtils.setLiteralString(any(String.class), any(String.class))).thenCallRealMethod();
+        rdfUtils.when(RdfUtils::codesListGraph).thenReturn(CODES_LIST_GRAPH);
+    }
+
+    /** Réponse de la requête d'existence d'un code : vide = le code n'est pas dans la liste. */
+    private void stubCodeExistence(String notation, String code, JSONObject... responses) throws RmesException {
+        when(codeListsQueries.getCodeByNotation(notation, code)).thenReturn("code-query");
+        JSONObject[] next = Arrays.copyOfRange(responses, 1, responses.length);
+        when(repositoryGestion.getResponseAsObject("code-query")).thenReturn(responses[0], next);
+    }
+
+    private static JSONObject noCode() {
+        return new JSONObject();
+    }
+
+    private static JSONObject existingCode(String code) {
+        return new JSONObject().put("code", code);
+    }
 
 
     @Test
@@ -136,7 +185,7 @@ class CodeListServiceImplTest {
 
     @Test
     void updateCodeFromCodeList() throws RmesException {
-        String body = new JSONObject().put("code", "code").put("labelLg1", "labelLg1").toString();
+        CodeRequest body = new CodeRequest("code", "labelLg1", "labelLg2", null, null);
         doReturn(null).when(codeListService).deleteCodeFromCodeList("notation", "code");
         doReturn("code").when(codeListService).addCodeFromCodeList("notation", body);
         String code = codeListService.updateCodeFromCodeList("notation", "code", body);
@@ -145,37 +194,69 @@ class CodeListServiceImplTest {
 
     @Test
     void addCodeFromCodeList() throws RmesException {
-        IRI owlClassUri = RdfUtils.createIRI("http://concept/lastClassUriSegment");
-        IRI codeIri = RdfUtils.createIRI("http://lastCodeUriSegment/code");
-        IRI codesListIri = RdfUtils.createIRI("http://codeLists");
-        IRI codesListGraph = RdfUtils.createIRI("http://codesListGraph");
+        CodeListServiceImpl service = serviceWritingInto("notation");
+        stubCodeExistence("notation", "code", noCode());
 
-        JSONObject codesList = new JSONObject();
-        codesList.put("lastClassUriSegment", "lastClassUriSegment");
-        codesList.put("lastListUriSegment", "lastListUriSegment");
-        codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
-
-        doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation");
-
-        JSONObject code = new JSONObject();
-        code.put("code", "code");
-
+        CodeRequest code = new CodeRequest("code", "labelLg1", "labelLg2", null, null);
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            mockedFactory.when(() -> RdfUtils.codeListIRI("concept/lastClassUriSegment")).thenReturn(owlClassUri);
-            mockedFactory.when(() -> RdfUtils.codeListIRI("lastCodeUriSegment/code")).thenReturn(codeIri);
-            mockedFactory.when(() -> RdfUtils.codeListIRI("lastListUriSegment")).thenReturn(codesListIri);
-            mockedFactory.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any())).thenCallRealMethod();
-            mockedFactory.when(() -> RdfUtils.setLiteralString(any(String.class))).thenCallRealMethod();
-            mockedFactory.when(RdfUtils::codesListGraph).thenReturn(codesListGraph);
+            stubRdfUtilsForCode(mockedFactory);
 
-            String result = codeListService.addCodeFromCodeList("notation", code.toString());
+            String result = service.addCodeFromCodeList("notation", code);
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
-            verify(repositoryGestion, times(1)).loadSimpleObject(eq(codeIri), model.capture(), eq(null));
+            verify(repositoryGestion, times(1)).loadSimpleObject(eq(CODE_IRI), model.capture(), eq(null));
 
             assertEquals("code", result);
-            Assertions.assertEquals("[(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, \"code\") [http://codesListGraph]]", model.getValue().toString());
+            Assertions.assertEquals("""
+                    [(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, "code") [http://codesListGraph], \
+                    (http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#prefLabel, "labelLg1"@fr) [http://codesListGraph], \
+                    (http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#prefLabel, "labelLg2"@en) [http://codesListGraph]]""",
+                    model.getValue().toString());
+        }
+    }
+
+    @Test
+    void addCodeFromCodeList_whenTheCodeAlreadyExists_shouldThrowBadRequestAndKeepTheFirstCode() throws RmesException {
+        CodeListServiceImpl service = serviceWritingInto("notation");
+        // Le premier ajout ne trouve rien, le second retrouve le code que le premier vient d'écrire.
+        stubCodeExistence("notation", "code", noCode(), existingCode("code"));
+
+        CodeRequest first = new CodeRequest("code", "labelLg1", "labelLg2", null, null);
+        CodeRequest second = new CodeRequest("code", "autre libellé", "another label", null, null);
+
+        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
+            stubRdfUtilsForCode(mockedFactory);
+
+            assertEquals("code", service.addCodeFromCodeList("notation", first));
+
+            RmesException exception = assertThrows(RmesBadRequestException.class,
+                    () -> service.addCodeFromCodeList("notation", second));
+
+            assertEquals(400, exception.getStatus());
+            assertThat(exception.getDetails()).contains("Code already exists in this code list");
+            assertThat(exception.getDetails()).contains(String.valueOf(CodesListErrorCodes.CODE_LIST_CODE_ALREADY_EXISTS));
+            // Le second appel n'a rien écrit : la liste garde le code et les libellés du premier.
+            verify(repositoryGestion, times(1)).loadSimpleObject(eq(CODE_IRI), any(), eq(null));
+        }
+    }
+
+    @Test
+    void updateCodeFromCodeList_whenTheCodeExists_shouldStillReplaceIt() throws RmesException {
+        CodeListServiceImpl service = serviceWritingInto("notation");
+        // L'ordre delete puis add protège la mise à jour : le delete trouve le code, l'add ne le trouve plus.
+        stubCodeExistence("notation", "code", existingCode("code"), noCode());
+
+        CodeRequest body = new CodeRequest("code", "nouveau libellé", "new label", null, null);
+
+        try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
+            stubRdfUtilsForCode(mockedFactory);
+
+            assertEquals("code", service.updateCodeFromCodeList("notation", "code", body));
+
+            InOrder inOrder = inOrder(repositoryGestion);
+            inOrder.verify(repositoryGestion).deleteObject(CODE_IRI, null);
+            inOrder.verify(repositoryGestion).loadSimpleObject(eq(CODE_IRI), any(), eq(null));
         }
     }
 
@@ -192,7 +273,7 @@ class CodeListServiceImplTest {
 
     @Test
     void updateCodeFromCodeList_whenTheBodyCodeDoesNotMatchTheUrlCode_shouldThrowBadRequest() throws RmesException {
-        String body = new JSONObject().put("code", "tutu").put("labelLg1", "labelLg1").toString();
+        CodeRequest body = new CodeRequest("tutu", "labelLg1", "labelLg2", null, null);
 
         RmesException exception = assertThrows(RmesBadRequestException.class,
                 () -> codeListService.updateCodeFromCodeList("notation", "toto", body));
