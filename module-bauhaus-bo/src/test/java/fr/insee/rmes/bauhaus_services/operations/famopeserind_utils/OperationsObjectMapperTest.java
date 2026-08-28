@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class FamOpeSerIndUtilsTest {
+class OperationsObjectMapperTest {
 
     @Test
     void shouldBuildIdLabelTwoLangsFromJson() {
@@ -24,9 +24,9 @@ class FamOpeSerIndUtilsTest {
 
         jsonObject.put(Constants.CREATORS,creators);
 
-        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils(null, null, null, null, null);
+        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
 
-        IdLabelTwoLangs labelTwoLangs  = famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(jsonObject);
+        IdLabelTwoLangs labelTwoLangs  = operationsObjectMapper.buildIdLabelTwoLangsFromJson(jsonObject);
 
         boolean isIdCorrect = ("id2025").equals(labelTwoLangs.getId());
         boolean isLabelLg1Correct = Objects.equals(labelTwoLangs.getLabelLg1(), "fr");
@@ -54,8 +54,8 @@ class FamOpeSerIndUtilsTest {
         jsonObjectAfter.put(Constants.CONTRIBUTORS,"contributorsExample");
         jsonObjectAfter.put(Constants.DATA_COLLECTORS,"dataCollectorsExample");
 
-        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils(null, null, null, null, null);
-        famOpeSerIndUtils.fixOrganizationsNames(jsonObjectBefore);
+        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
+        operationsObjectMapper.fixOrganizationsNames(jsonObjectBefore);
 
         assertEquals(jsonObjectAfter.toString(),jsonObjectBefore.toString());
     }
@@ -65,9 +65,9 @@ class FamOpeSerIndUtilsTest {
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(Constants.ID).put(Constants.UNDEFINED).put(Constants.LABEL_LG1);
-        FamOpeSerIndUtils famOpeSerIndUtils = new FamOpeSerIndUtils(null, null, null, null, null);
+        OperationsObjectMapper operationsObjectMapper = new OperationsObjectMapper(null, null, null, null, null);
 
-        String actual= famOpeSerIndUtils.buildStringListFromJson(jsonArray).toString();
+        String actual= operationsObjectMapper.buildStringListFromJson(jsonArray).toString();
         String expected = "[id, undefined, labelLg1]";
 
         assertEquals(expected,actual);

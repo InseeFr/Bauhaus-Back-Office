@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -42,7 +42,7 @@ class OperationsRepositoryTest {
     BauhausLanguagesProperties languages = new BauhausLanguagesProperties("fr", "en");
 
     @Mock
-    FamOpeSerIndUtils famOpeSerIndUtils;
+    OperationsObjectMapper operationsObjectMapper;
 
     @Mock
     OperationsParentRepository operationsParentRepository;
@@ -81,8 +81,8 @@ class OperationsRepositoryTest {
 
         when(repositoryGestion.getResponseAsBoolean("unicity-labelLg1")).thenReturn(false);
         when(repositoryGestion.getResponseAsBoolean("unicity-labelLg2")).thenReturn(false);
-        when(famOpeSerIndUtils.createId()).thenReturn("1");
-        when(famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
+        when(operationsObjectMapper.createId()).thenReturn("1");
+        when(operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
 
         when(operationsOperationQueries.checkPrefLabelUnicity("1", "prefLabelLg1", "fr")).thenReturn("unicity-labelLg1");
         when(operationsOperationQueries.checkPrefLabelUnicity("1", "prefLabelLg2", "en")).thenReturn("unicity-labelLg2");
@@ -128,8 +128,8 @@ class OperationsRepositoryTest {
     @Test
     void setOperation_shouldNotRejectWith406_whenSeriesAlreadyHasSims() throws RmesException {
         // Une série déjà documentée par un SIMS doit pouvoir accueillir une opération (cf. ticket #1452).
-        when(famOpeSerIndUtils.createId()).thenReturn("1");
-        when(famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
+        when(operationsObjectMapper.createId()).thenReturn("1");
+        when(operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES, "2")).thenReturn(true);
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();

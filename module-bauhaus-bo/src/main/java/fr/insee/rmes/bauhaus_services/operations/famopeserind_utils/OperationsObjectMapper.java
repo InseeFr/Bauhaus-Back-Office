@@ -23,13 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class FamOpeSerIndUtils  extends RdfService {
+public class OperationsObjectMapper  extends RdfService {
 
-	static final Logger logger = LoggerFactory.getLogger(FamOpeSerIndUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(OperationsObjectMapper.class);
 
 	private final OperationQueries operationQueries;
 
-	public FamOpeSerIndUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
+	public OperationsObjectMapper(RepositoryGestion repoGestion, IdGenerator idGenerator,
 							 RepositoryPublication repositoryPublication,
 							 PublicationUtils publicationUtils,
 							 OperationQueries operationQueries) {

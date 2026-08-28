@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
@@ -60,7 +60,7 @@ public class IndicatorsRepository {
 
 	final IndicatorPublication indicatorPublication;
 
-	final FamOpeSerIndUtils famOpeSerIndUtils;
+	final OperationsObjectMapper operationsObjectMapper;
 	
 	final OperationsParentRepository operationsParentRepository;
 
@@ -75,7 +75,7 @@ public class IndicatorsRepository {
 			CodeListService codeListService,
 			OrganizationsService organizationsService,
 			IndicatorPublication indicatorPublication,
-			FamOpeSerIndUtils famOpeSerIndUtils,
+			OperationsObjectMapper operationsObjectMapper,
 			OperationsParentRepository operationsParentRepository,
 			DocumentationsUtils documentationsUtils,
 			BauhausUriBuilder bauhausUriBuilder,
@@ -86,7 +86,7 @@ public class IndicatorsRepository {
 		this.codeListService = codeListService;
 		this.organizationsService = organizationsService;
 		this.indicatorPublication = indicatorPublication;
-		this.famOpeSerIndUtils = famOpeSerIndUtils;
+		this.operationsObjectMapper = operationsObjectMapper;
 		this.operationsParentRepository = operationsParentRepository;
 		this.documentationsUtils = documentationsUtils;
 		this.bauhausUriBuilder = bauhausUriBuilder;
@@ -175,7 +175,7 @@ public class IndicatorsRepository {
 
 	private List<OperationsLink> buildListFromJsonToArray(JSONObject jsonIndicator, String constant) {
 		List<OperationsLink> list = new ArrayList<>();
-		List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(jsonIndicator.getJSONArray(constant),
+		List<Object> objects = operationsObjectMapper.buildObjectListFromJson(jsonIndicator.getJSONArray(constant),
 				OperationsLink.getClassOperationsLink());
 		for (Object o : objects) {
 			list.add((OperationsLink) o);
@@ -233,7 +233,7 @@ public class IndicatorsRepository {
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
 		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
-		famOpeSerIndUtils.fixOrganizationsNames(indicator);
+		operationsObjectMapper.fixOrganizationsNames(indicator);
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject object, IRI predicate) throws RmesException {

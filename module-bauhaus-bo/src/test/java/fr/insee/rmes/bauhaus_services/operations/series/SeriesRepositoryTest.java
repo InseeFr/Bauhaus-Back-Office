@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.series;
 
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
@@ -44,11 +44,11 @@ class SeriesRepositoryTest {
     private RepositoryGestion repositoryGestion;
 
     @Autowired
-    private FamOpeSerIndUtils famOpeSerIndUtils;
+    private OperationsObjectMapper operationsObjectMapper;
 
     @Test
     void shouldAddAbstractPropertyAsPlainMarkdownLiterals() {
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, null);
 
         var series = new Series();
         series.setId("1");
@@ -76,7 +76,7 @@ class SeriesRepositoryTest {
     @Test
     void createRdfSeries_addsAdmsIdentifierTriple() throws RmesException {
         SeriesValidator validator = mock(SeriesValidator.class);
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, validator, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, validator, null, null);
         Series series = new Series();
         series.setId("s2000");
         series.setPrefLabelLg1("Série de test");
@@ -95,7 +95,7 @@ class SeriesRepositoryTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("http://bauhaus/organisations/DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
+        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -118,7 +118,7 @@ class SeriesRepositoryTest {
         OrganisationLookup lookup = mock(OrganisationLookup.class);
         when(lookup.resolve("DG75-A001"))
                 .thenReturn(Optional.of("http://bauhaus/organisations/DG75-A001"));
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, lookup);
+        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, lookup);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();
@@ -138,7 +138,7 @@ class SeriesRepositoryTest {
 
     @Test
     void setSeries_shouldNotRejectWith406_whenBodyContainsBothIdSimsAndOperations() {
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, null);
         String body = "{\"idSims\":\"sims-1\",\"operations\":[{\"id\":\"op1\",\"labelLg1\":\"L1\",\"labelLg2\":\"L2\"}]}";
 
         try {
@@ -154,7 +154,7 @@ class SeriesRepositoryTest {
 
     @Test
     void addCreators_writesEachCreatorAsAnIriTriple() {
-        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, famOpeSerIndUtils, null, null, null, null, null, null, null);
+        SeriesRepository seriesRepository = new SeriesRepository(new BauhausLanguagesProperties("fr", "en"), repositoryGestion, null, null, operationsObjectMapper, null, null, null, null, null, null, null);
         SimpleValueFactory vf = SimpleValueFactory.getInstance();
         IRI seriesURI = vf.createIRI("http://bauhaus/series/s1");
         Model model = new LinkedHashModel();

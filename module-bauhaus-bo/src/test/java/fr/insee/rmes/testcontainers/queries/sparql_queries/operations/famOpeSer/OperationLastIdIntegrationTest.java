@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@code OperationQueries.lastId()} alimente le compteur partagé des familles, séries et
- * opérations : {@code FamOpeSerIndUtils.createId()} rend « s » + (dernier identifiant + 1).
+ * opérations : {@code OperationsObjectMapper.createId()} rend « s » + (dernier identifiant + 1).
  * Un dernier identifiant trop grand fait sauter des numéros, un dernier identifiant trop petit
  * — ou absent — provoque une collision avec un objet existant. Seule une exécution réelle
  * montre ce que la requête tire du graphe.

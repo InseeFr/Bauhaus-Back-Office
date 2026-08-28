@@ -8,7 +8,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.bauhaus_services.operations.series.validation.SeriesValidator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
@@ -58,7 +58,7 @@ public class SeriesRepository {
 
     private final OrganisationLookup organisationLookup;
 
-    final FamOpeSerIndUtils famOpeSerIndUtils;
+    final OperationsObjectMapper operationsObjectMapper;
 
     final OperationsParentRepository operationsParentRepository;
 
@@ -79,7 +79,7 @@ public class SeriesRepository {
             RepositoryGestion repositoryGestion,
             CodeListService codeListService,
             OrganizationsService organizationsService,
-            FamOpeSerIndUtils famOpeSerIndUtils,
+            OperationsObjectMapper operationsObjectMapper,
             OperationsParentRepository operationsParentRepository,
             SeriesPublication seriesPublication,
             DocumentationsUtils documentationsUtils,
@@ -91,7 +91,7 @@ public class SeriesRepository {
         this.repositoryGestion = repositoryGestion;
         this.codeListService = codeListService;
         this.organizationsService = organizationsService;
-        this.famOpeSerIndUtils = famOpeSerIndUtils;
+        this.operationsObjectMapper = operationsObjectMapper;
         this.operationsParentRepository = operationsParentRepository;
         this.seriesPublication = seriesPublication;
         this.documentationsUtils = documentationsUtils;
@@ -104,7 +104,7 @@ public class SeriesRepository {
     /*READ*/
 
     public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
-        return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id, EncodingType.MARKDOWN));
+        return operationsObjectMapper.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id, EncodingType.MARKDOWN));
     }
 
     public Series getSeriesById(String id, EncodingType encode) throws RmesException {
@@ -120,7 +120,7 @@ public class SeriesRepository {
         if (seriesJson.has(Constants.ID) && !seriesJson.getString(Constants.ID).isEmpty()) {
             id = seriesJson.getString(Constants.ID);
         } else {
-            id = famOpeSerIndUtils.createId();
+            id = operationsObjectMapper.createId();
         }
         Series series = new Series();
         try {
@@ -182,7 +182,7 @@ public class SeriesRepository {
                 series.put(DCTERMS.PUBLISHER.getLocalName(), publishers.get(idSeries));
                 series.remove("hasPublisher");
             }
-            famOpeSerIndUtils.fixOrganizationsNames(series);
+            operationsObjectMapper.fixOrganizationsNames(series);
             result.put(series);
         });
         return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -215,7 +215,7 @@ public class SeriesRepository {
         addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
         addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
         addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
-        famOpeSerIndUtils.fixOrganizationsNames(series);
+        operationsObjectMapper.fixOrganizationsNames(series);
     }
 
 
@@ -421,7 +421,7 @@ public class SeriesRepository {
 
         // Tester l'existence de la famille
         String idFamily = series.getFamily().getId();
-        if (!famOpeSerIndUtils.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
+        if (!operationsObjectMapper.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
             throw new RmesBadRequestException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
         }
 

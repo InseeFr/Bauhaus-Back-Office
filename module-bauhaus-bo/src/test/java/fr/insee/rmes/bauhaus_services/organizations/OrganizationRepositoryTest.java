@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganizationQueries;
@@ -24,7 +24,7 @@ class OrganizationRepositoryTest {
     OrganizationRepository organizationRepository;
 
     @Mock
-    FamOpeSerIndUtils famOpeSerUtils;
+    OperationsObjectMapper operationsObjectMapper;
 
     @Mock
     RepositoryGestion repoGestion;
@@ -36,7 +36,7 @@ class OrganizationRepositoryTest {
     void shouldBuildOrganizationFromJson()  {
         JSONObject jsonObject = new JSONObject().put("color","blue");
         IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id","label1","label2");
-        when(famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonObject)).thenReturn(idLabelTwoLangs);
+        when(operationsObjectMapper.buildIdLabelTwoLangsFromJson(jsonObject)).thenReturn(idLabelTwoLangs);
         assertNotNull(organizationRepository.buildOrganizationFromJson(jsonObject));
     }
 

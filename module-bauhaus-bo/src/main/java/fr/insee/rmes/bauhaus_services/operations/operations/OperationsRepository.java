@@ -4,7 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -43,7 +43,7 @@ public class OperationsRepository extends RdfService{
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsRepository.class);
 
-	private final FamOpeSerIndUtils famOpeSerIndUtils;
+	private final OperationsObjectMapper operationsObjectMapper;
 
 	private final DocumentationsUtils documentationsUtils;
 
@@ -58,13 +58,13 @@ public class OperationsRepository extends RdfService{
 	public OperationsRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
 								RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
 								PublicationUtils publicationUtils,
-								FamOpeSerIndUtils famOpeSerIndUtils, DocumentationsUtils documentationsUtils,
+								OperationsObjectMapper operationsObjectMapper, DocumentationsUtils documentationsUtils,
 								OperationsParentRepository operationsParentRepository, OperationPublication operationPublication,
 								OperationsOperationQueries operationsOperationQueries,
 								OperationSeriesQueries operationSeriesQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
-		this.famOpeSerIndUtils = famOpeSerIndUtils;
+		this.operationsObjectMapper = operationsObjectMapper;
 		this.documentationsUtils = documentationsUtils;
 		this.operationsParentRepository = operationsParentRepository;
 		this.operationPublication = operationPublication;
@@ -101,7 +101,7 @@ public class OperationsRepository extends RdfService{
 
 	private Operation buildOperationFromJson(JSONObject operationJson) throws RmesException {
 		Operation operation = Deserializer.deserializeJsonString(operationJson.toString(), Operation.class);
-		IdLabelTwoLangs series = famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
+		IdLabelTwoLangs series = operationsObjectMapper.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
 		operation.setSeries(series);
 		return operation;
 	}
@@ -113,12 +113,12 @@ public class OperationsRepository extends RdfService{
 	 * @throws RmesException
 	 */
 	public String setOperation(String body) throws RmesException {
-		String id = famOpeSerIndUtils.createId();
+		String id = operationsObjectMapper.createId();
 		Operation operation = Deserializer.deserializeJsonString(body, Operation.class);
 		operation.setId(id);
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
-		if (! famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
+		if (! operationsObjectMapper.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);

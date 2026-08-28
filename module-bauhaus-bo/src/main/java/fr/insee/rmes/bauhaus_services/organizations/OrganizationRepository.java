@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -19,16 +19,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrganizationRepository  extends RdfService {
 
-	private final FamOpeSerIndUtils famOpeSerUtils;
+	private final OperationsObjectMapper operationsObjectMapper;
 
 	private final OrganizationQueries organizationQueries;
 
 	public OrganizationRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
 								  RepositoryPublication repositoryPublication,
 								  PublicationUtils publicationUtils,
-								  FamOpeSerIndUtils famOpeSerUtils, OrganizationQueries organizationQueries) {
+								  OperationsObjectMapper operationsObjectMapper, OrganizationQueries organizationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.famOpeSerUtils = famOpeSerUtils;
+		this.operationsObjectMapper = operationsObjectMapper;
 		this.organizationQueries = organizationQueries;
 	}
 	
@@ -39,7 +39,7 @@ public class OrganizationRepository  extends RdfService {
 	}
 
 	public IdLabelTwoLangs buildOrganizationFromJson(JSONObject organizationJson) {
-		return famOpeSerUtils.buildIdLabelTwoLangsFromJson(organizationJson);	
+		return operationsObjectMapper.buildIdLabelTwoLangsFromJson(organizationJson);	
 	}
 	
 	public JSONObject getOrganizationJson(String organizationIdentifier) throws RmesException {
