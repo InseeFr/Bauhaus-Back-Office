@@ -26,6 +26,12 @@
       <groupId>io.github.fbibonne</groupId>
       <artifactId>boot-properties-logger-starter</artifactId>
     </dependency>
+    <!-- Swagger UI / OpenAPI, désactivé par défaut : voir OpenApiConfiguration et la propriété
+         fr.insee.rmes.bauhaus.swagger.enabled. -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-testcontainer-graphdb</artifactId>

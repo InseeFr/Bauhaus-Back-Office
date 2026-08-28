@@ -32,6 +32,8 @@
   </developers>
   <properties>
     <java.version>25</java.version>
+    <!-- springdoc 3.0.x est la ligne alignée sur Spring Boot 4.0.x (la 2.8.x ciblait Boot 3). -->
+    <springdoc.version>3.0.3</springdoc.version>
     <rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.2.0</xdocreport.version>
     <jacoco.version>0.8.13</jacoco.version>
@@ -78,6 +80,11 @@
         <groupId>fr.insee.ddi</groupId>
         <artifactId>ddi-lifecycle</artifactId>
         <version>${ddi-lifecycle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>${springdoc.version}</version>
       </dependency>
       <dependency>
         <groupId>com.github.dasniko</groupId>
