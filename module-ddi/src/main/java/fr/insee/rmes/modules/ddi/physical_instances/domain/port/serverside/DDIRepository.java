@@ -105,12 +105,6 @@ public interface DDIRepository {
      * sentinelles côté front.
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
-    /**
-     * Supprime une ManagedMissingValuesRepresentation sans usage (cf. #1566) : défile ses
-     * références des schemes du groupe puis supprime la MMVR, sa CodeList de sentinelles et les
-     * catégories de celle-ci. Refuse (exception typée) si au moins une variable la référence.
-     */
-    void deleteMissingValuesRepresentation(String agencyId, String mmvrId);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);

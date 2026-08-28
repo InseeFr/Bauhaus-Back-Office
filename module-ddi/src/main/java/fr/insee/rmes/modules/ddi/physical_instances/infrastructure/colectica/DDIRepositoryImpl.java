@@ -95,7 +95,7 @@ public class DDIRepositoryImpl implements DDIRepository {
             instanceConfiguration, colecticaClient, catalog, codeLists);
         this.usages = new ColecticaUsageRepository(instanceConfiguration, colecticaClient, labels);
         this.missingValues = new ColecticaMissingValuesRepository(
-            instanceConfiguration, colecticaClient, ddi3ToDdi4Converter, ddi4ToDdi3Converter, hierarchy);
+            colecticaClient, ddi3ToDdi4Converter, hierarchy);
         ColecticaSchemeFiler schemeFiler = new ColecticaSchemeFiler(
             instanceConfiguration, colecticaConfiguration, colecticaClient, ddi3ToDdi4Converter,
             ddi4ToDdi3Converter, mutualizedCodeListRefsProvider, catalog, defaultLang);
@@ -317,11 +317,6 @@ public class DDIRepositoryImpl implements DDIRepository {
         String agencyId, String groupId
     ) {
         return missingValues.getMissingValuesRepresentationsByGroup(agencyId, groupId);
-    }
-
-    @Override
-    public void deleteMissingValuesRepresentation(String agencyId, String mmvrId) {
-        missingValues.deleteMissingValuesRepresentation(agencyId, mmvrId);
     }
 
     // --- Créations unitaires -----------------------------------------------------------------------

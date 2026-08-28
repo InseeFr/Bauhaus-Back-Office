@@ -212,12 +212,6 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
-    public void deleteMissingValuesRepresentation(String agencyId, String mmvrId) {
-        logger.info("Starting to delete missing values representation {}/{}", agencyId, mmvrId);
-        ddiRepository.deleteMissingValuesRepresentation(agencyId, mmvrId);
-    }
-
-    @Override
     public List<PartialGroup> getGroups() {
         logger.info("Starting to get groups list");
         return ddiRepository.getGroups().stream()

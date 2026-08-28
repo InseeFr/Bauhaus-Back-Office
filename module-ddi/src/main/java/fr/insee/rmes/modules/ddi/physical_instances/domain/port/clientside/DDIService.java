@@ -84,11 +84,6 @@ public interface DDIService {
      * alimente la règle lecture seule/écriture des valeurs sentinelles côté front.
      */
     List<CodeListVariableUsage> getVariablesUsingMissingValuesRepresentation(String agencyId, String mmvrId);
-    /**
-     * Supprime une ManagedMissingValuesRepresentation sans usage (cf. #1566) — refuse si au moins
-     * une variable la référence encore.
-     */
-    void deleteMissingValuesRepresentation(String agencyId, String mmvrId);
     String getItemXml(String agency, String id, String version);
     String getItemXml(String agency, String id);
     PhysicalInstanceParents getPhysicalInstanceParents(String agencyId, String id);

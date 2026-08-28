@@ -1,30 +1,19 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CODE_LIST_SCHEME;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.LOGICAL_PRODUCT;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.MANAGED_MISSING_VALUES_REPRESENTATION;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.MANAGED_REPRESENTATION_SCHEME;
-import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE;
 
 import fr.insee.rmes.colectica.client.ColecticaClient;
 import fr.insee.rmes.colectica.client.ItemReference;
-import fr.insee.rmes.colectica.client.RelationshipDirection;
-import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
-import fr.insee.rmes.colectica.client.dto.ColecticaItem;
-import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationInUseException;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.MissingValuesRepresentationNotFoundException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
-import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,33 +21,26 @@ import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * Valeurs sentinelles réutilisables d'un groupe (#1566) : les ManagedMissingValuesRepresentations
- * rangées dans les ManagedRepresentationSchemes de ses LogicalProducts, et leur suppression.
+ * rangées dans les ManagedRepresentationSchemes de ses LogicalProducts.
  */
 class ColecticaMissingValuesRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaMissingValuesRepository.class);
 
-    private final ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration;
     private final ColecticaClient colecticaClient;
     private final DDI3toDDI4ConverterService ddi3ToDdi4Converter;
-    private final DDI4toDDI3ConverterService ddi4ToDdi3Converter;
     private final ColecticaHierarchyBrowser hierarchy;
 
     ColecticaMissingValuesRepository(
-        ColecticaConfiguration.ColecticaInstanceConfiguration instanceConfiguration,
         ColecticaClient colecticaClient,
         DDI3toDDI4ConverterService ddi3ToDdi4Converter,
-        DDI4toDDI3ConverterService ddi4ToDdi3Converter,
         ColecticaHierarchyBrowser hierarchy
     ) {
-        this.instanceConfiguration = instanceConfiguration;
         this.colecticaClient = colecticaClient;
         this.ddi3ToDdi4Converter = ddi3ToDdi4Converter;
-        this.ddi4ToDdi3Converter = ddi4ToDdi3Converter;
         this.hierarchy = hierarchy;
     }
 
@@ -98,77 +80,6 @@ class ColecticaMissingValuesRepository {
         return result;
     }
 
-    /**
-     * Supprime une ManagedMissingValuesRepresentation orpheline (#1566) : refuse si une variable la
-     * référence encore, sinon la défile du ManagedRepresentationScheme du groupe (et sa CodeList de
-     * sentinelles du CodeListScheme), puis supprime la MMVR, la CodeList et les catégories de celle-ci.
-     */
-    void deleteMissingValuesRepresentation(String agencyId, String mmvrId) {
-        logger.info("Deleting missing values representation {}/{}", agencyId, mmvrId);
-        ItemReference mmvrRef = new ItemReference(agencyId, mmvrId);
-
-        // Refus au premier niveau : toute Variable référençant la MMVR bloque la suppression,
-        // même si sa chaîne DataRelationship/PhysicalInstance n'est pas résoluble.
-        List<ColecticaItem> referencingVariables = colecticaClient.findRelatedItems(
-            RelationshipDirection.BY_OBJECT, mmvrRef, List.of(itemType(VARIABLE)));
-        if (!referencingVariables.isEmpty()) {
-            throw new MissingValuesRepresentationInUseException(
-                "La liste de valeurs sentinelles %s/%s est encore utilisée par %d variable(s)"
-                    .formatted(agencyId, mmvrId, referencingVariables.size()));
-        }
-
-        Reference sentinelCodeListRef =
-            firstSentinelCodeListReference(readExistingMissingValues(agencyId, mmvrId));
-
-        // Défilage : re-registre les schemes du groupe sans les références supprimées.
-        List<ColecticaItemResponse> updatedSchemes = new ArrayList<>();
-        for (ItemReference schemeRef : referencedBy(mmvrRef, MANAGED_REPRESENTATION_SCHEME)) {
-            Ddi4ManagedRepresentationScheme scheme =
-                ddi3ToDdi4Converter.toManagedRepresentationScheme(itemXml(schemeRef));
-            Ddi4ManagedRepresentationScheme updated = new Ddi4ManagedRepresentationScheme(
-                scheme.type(), scheme.versionDate(), scheme.urn(), scheme.agency(), scheme.id(),
-                scheme.version(), scheme.label(),
-                withoutReference(scheme.managedRepresentationReference(), agencyId, mmvrId));
-            updatedSchemes.add(ColecticaItems.toColecticaItem(
-                ddi4ToDdi3Converter.toManagedRepresentationSchemeItem(updated)));
-        }
-
-        List<Reference> categoryRefs = List.of();
-        if (sentinelCodeListRef != null) {
-            ItemReference codeListRef =
-                new ItemReference(sentinelCodeListRef.agency(), sentinelCodeListRef.id());
-            for (ItemReference schemeRef : referencedBy(codeListRef, CODE_LIST_SCHEME)) {
-                Ddi4CodeListScheme scheme = ddi3ToDdi4Converter.toCodeListScheme(itemXml(schemeRef));
-                Ddi4CodeListScheme updated = new Ddi4CodeListScheme(
-                    scheme.type(), scheme.versionDate(), scheme.urn(), scheme.agency(), scheme.id(),
-                    scheme.version(), scheme.label(),
-                    withoutReference(scheme.codeListReference(),
-                        sentinelCodeListRef.agency(), sentinelCodeListRef.id()));
-                updatedSchemes.add(ColecticaItems.toColecticaItem(
-                    ddi4ToDdi3Converter.toCodeListSchemeItem(updated)));
-            }
-            Ddi4CodeList sentinelCodeList = readCodeList(codeListRef);
-            categoryRefs = codesOf(sentinelCodeList).stream()
-                .map(Code::categoryReference)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        }
-
-        if (!updatedSchemes.isEmpty()) {
-            colecticaClient.createOrUpdateItems(new ColecticaCreateItemRequest(updatedSchemes));
-        }
-        colecticaClient.deleteItem(agencyId, mmvrId);
-        if (sentinelCodeListRef != null) {
-            colecticaClient.deleteItem(sentinelCodeListRef.agency(), sentinelCodeListRef.id());
-            for (Reference categoryRef : categoryRefs) {
-                colecticaClient.deleteItem(categoryRef.agency(), categoryRef.id());
-            }
-        }
-        logger.info("Deleted missing values representation {}/{} (code list: {})",
-            agencyId, mmvrId, sentinelCodeListRef != null ? sentinelCodeListRef.id() : "none");
-    }
-
     private Reference firstSentinelCodeListReference(Ddi4ManagedMissingValuesRepresentation mmvr) {
         if (mmvr.missingCodeRepresentation() == null) {
             return null;
@@ -193,30 +104,6 @@ class ColecticaMissingValuesRepository {
         return codeList.code() != null ? codeList.code() : List.of();
     }
 
-    private static List<Reference> withoutReference(
-        List<Reference> references, String agency, String id
-    ) {
-        List<Reference> kept = (references != null ? references : List.<Reference>of()).stream()
-            .filter(ref -> !(agency.equals(ref.agency()) && id.equals(ref.id())))
-            .toList();
-        return kept.isEmpty() ? null : kept;
-    }
-
-    private List<ItemReference> referencedBy(ItemReference item, String parentTypeKey) {
-        return colecticaClient.findRelatedDescriptions(
-            RelationshipDirection.BY_OBJECT, item, List.of(itemType(parentTypeKey)));
-    }
-
-    /** Lecture d'une MMVR dont l'absence est une erreur fonctionnelle (404) et non une panne. */
-    private Ddi4ManagedMissingValuesRepresentation readExistingMissingValues(String agencyId, String id) {
-        try {
-            return readMissingValues(agencyId, id);
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new MissingValuesRepresentationNotFoundException(
-                "Aucune liste de valeurs sentinelles %s/%s".formatted(agencyId, id));
-        }
-    }
-
     private Ddi4ManagedMissingValuesRepresentation readMissingValues(String agencyId, String id) {
         return ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(
             colecticaClient.getItem(agencyId, id, null).item());
@@ -230,7 +117,4 @@ class ColecticaMissingValuesRepository {
         return colecticaClient.getItem(ref.agencyId(), ref.identifier(), null).item();
     }
 
-    private String itemType(String typeKey) {
-        return instanceConfiguration.itemTypes().get(typeKey);
-    }
 }
