@@ -52,6 +52,10 @@ public class Ddi4ToLifecycle33 {
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
     private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
 
+    /** #1592 : représentation Text sans aucun attribut, utilisée comme repli à l'export. */
+    private static final TextRepresentation EMPTY_TEXT_REPRESENTATION =
+            new TextRepresentation(TextRepresentation.TYPE, null, null, null, null);
+
     public FragmentDocument toPhysicalInstance(Ddi4PhysicalInstance pi) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var piType = doc.addNewFragment().addNewPhysicalInstance();
@@ -172,27 +176,42 @@ public class Ddi4ToLifecycle33 {
 
         var varRepType = varType.addNewVariableRepresentation();
         VariableRepresentation rep = var.variableRepresentation();
+        boolean hasValueRepresentation = false;
         if (rep != null) {
             if (rep.codeRepresentation() != null) {
                 populateCodeRepresentation(varRepType.addNewValueRepresentation(),
                         rep.codeRepresentation());
+                hasValueRepresentation = true;
             }
             if (rep.numericRepresentation() != null) {
                 populateNumericRepresentation(varRepType.addNewValueRepresentation(),
                         rep.numericRepresentation());
+                hasValueRepresentation = true;
             }
             if (rep.dateTimeRepresentation() != null) {
                 populateDateTimeRepresentation(varRepType.addNewValueRepresentation(),
                         rep.dateTimeRepresentation());
+                hasValueRepresentation = true;
             }
             if (rep.textRepresentation() != null) {
                 populateTextRepresentation(varRepType.addNewValueRepresentation(),
                         rep.textRepresentation());
+                hasValueRepresentation = true;
             }
-            if (rep.missingValuesReference() != null) {
-                populateReference(varRepType.addNewMissingValuesReference(),
-                        rep.missingValuesReference());
-            }
+        }
+
+        // #1592 : sans ValueRepresentation, l'export ne produit qu'un <VariableRepresentation/>
+        // vide et le type de la variable est perdu. Text étant le type par défaut côté
+        // application (cf. getVariableType), on l'écrit explicitement.
+        if (!hasValueRepresentation) {
+            populateTextRepresentation(varRepType.addNewValueRepresentation(),
+                    EMPTY_TEXT_REPRESENTATION);
+        }
+
+        // MissingValuesReference se place après la ValueRepresentation dans le schéma.
+        if (rep != null && rep.missingValuesReference() != null) {
+            populateReference(varRepType.addNewMissingValuesReference(),
+                    rep.missingValuesReference());
         }
 
         return doc;

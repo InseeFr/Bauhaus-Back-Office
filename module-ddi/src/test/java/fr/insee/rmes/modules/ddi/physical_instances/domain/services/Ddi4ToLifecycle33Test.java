@@ -146,7 +146,8 @@ class Ddi4ToLifecycle33Test {
                 .contains(">TEST_VAR<")
                 .contains("<r:Label")
                 .contains(">Test Variable<")
-                .contains("<ddi:VariableRepresentation/>");
+                // #1592 : la VariableRepresentation n'est plus vide, elle porte le repli Text.
+                .contains("<ddi:VariableRepresentation><r:TextRepresentation");
     }
 
     @Test
@@ -236,6 +237,35 @@ class Ddi4ToLifecycle33Test {
                 .contains("minLength=\"1\"")
                 .contains("regExp=\"[A-Z]+\"")
                 .contains("blankIsMissingValue=\"true\"");
+    }
+
+    /**
+     * #1592 : une variable Text sans longueur ni expression reguliere doit conserver
+     * l'element {@code <r:TextRepresentation/>} ; sans lui, le type Text est perdu a l'export.
+     */
+    @Test
+    void shouldBuildTextRepresentationWithoutAnyAttribute() {
+        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
+                null, null, null, null,
+                new TextRepresentation(TextRepresentation.TYPE, null, null, null, null), null));
+
+        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml).contains("<r:TextRepresentation");
+    }
+
+    /**
+     * #1592 : les variables enregistrees avant le correctif n'ont aucune representation dans le
+     * DDI4 stocke. A l'export, elles doivent retomber sur TextRepresentation (comme le fait
+     * l'affichage), plutot que de produire un {@code <ddi:VariableRepresentation/>} vide.
+     */
+    @Test
+    void shouldFallBackToTextRepresentationWhenNoValueRepresentation() {
+        Ddi4Variable var = variableWithRepresentation(null);
+
+        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml).contains("<r:TextRepresentation");
     }
 
     @Test
