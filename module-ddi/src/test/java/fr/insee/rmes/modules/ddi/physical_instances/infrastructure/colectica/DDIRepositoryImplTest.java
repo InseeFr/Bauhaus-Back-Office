@@ -2434,6 +2434,167 @@ class DDIRepositoryImplTest {
     }
 
     @Test
+    void getDataRelationships_keepsSentinelValuesRepresentationWithItsCodeListAndCategories() {
+        // #1591 : les valeurs sentinelles d'une variable doivent être consultables sur /fichier — la
+        // ManagedMissingValuesRepresentation, la CodeList de sentinelles qu'elle référence et les
+        // Category de ses codes. Les CodeList/Category de représentation restent écartées.
+        String agencyId = "fr.insee";
+        String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
+        String mmvrType = "c9ec9f5b-b9b4-4a1a-a5b6-2a89b1a52ffe";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", piType,
+                "DataRelationship", drType,
+                "Variable", variableType,
+                "CodeList", codeListType,
+                "Category", categoryType,
+                "ManagedMissingValuesRepresentation", mmvrType
+        ));
+
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[] {
+            new ColecticaSetItem(piId, 1, agencyId),
+            new ColecticaSetItem("dr-1", 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("mmvr-1", 1, agencyId),
+            new ColecticaSetItem("cl-sentinel", 1, agencyId),
+            new ColecticaSetItem("cat-sentinel", 1, agencyId),
+            new ColecticaSetItem("cl-representation", 1, agencyId),
+            new ColecticaSetItem("cat-representation", 1, agencyId)
+        });
+
+        String mmvrXml =
+            "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedMissingValuesRepresentation/></Fragment>";
+        String sentinelCodeListXml =
+            "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-sentinel\"/></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(piType, agencyId, 1, piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(drType, agencyId, 1, "dr-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><DataRelationship/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(variableType, agencyId, 1, "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(mmvrType, agencyId, 1, "mmvr-1", mmvrXml,
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, "cl-sentinel", sentinelCodeListXml,
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(categoryType, agencyId, 1, "cat-sentinel",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category ID=\"cat-sentinel\"/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, "cl-representation",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-representation\"/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(categoryType, agencyId, 1, "cat-representation",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category ID=\"cat-representation\"/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(mmvrXml)).thenReturn(
+            new Ddi4ManagedMissingValuesRepresentation(
+                    Ddi4ManagedMissingValuesRepresentation.TYPE, null, null, agencyId, "mmvr-1", "1",
+                    null,
+                    List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                            Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
+        when(ddi3ToDdi4Converter.toCodeList(sentinelCodeListXml)).thenReturn(
+            new Ddi4CodeList(Ddi4CodeList.TYPE, null, null, agencyId, "cl-sentinel", "1", null, null,
+                    List.of(new Code(Code.TYPE, null, agencyId, "code-1", "1",
+                            Reference.of(agencyId, "cat-sentinel", "1", "Category"), null, null))));
+
+        Ddi4Response mockDdi4 = new Ddi4Response("ddi:4.0", null, List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of());
+        ArgumentCaptor<Ddi3Response> captor = ArgumentCaptor.forClass(Ddi3Response.class);
+        when(ddi3ToDdi4Converter.convertDdi3ToDdi4(captor.capture(), eq("ddi:4.0"))).thenReturn(mockDdi4);
+
+        ddiRepository.getDataRelationships(agencyId, piId, null);
+
+        List<Ddi3Response.Ddi3Item> converted = captor.getValue().items();
+        assertThat(converted).extracting(Ddi3Response.Ddi3Item::identifier)
+            .containsExactlyInAnyOrder(piId, "dr-1", "var-1", "mmvr-1", "cl-sentinel", "cat-sentinel");
+        // #1146 : la PhysicalInstance ouvre toujours la liste.
+        assertEquals(piId, converted.get(0).identifier());
+    }
+
+    @Test
+    void getDataRelationshipsXml_includesSentinelValuesFragments() {
+        // #1591 : même contenu côté XML — les fragments MMVR, CodeList de sentinelles et Category
+        // associées figurent dans la FragmentInstance.
+        String agencyId = "fr.insee";
+        String piId = "pi-1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        String drType = "f39ff278-8500-45fe-a850-3906da2d242b";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String codeListType = "8b108ef8-b642-4484-9c49-f88e4bf7cf1d";
+        String categoryType = "7e47c269-bcab-40f7-a778-af7bbc4e3d00";
+        String mmvrType = "c9ec9f5b-b9b4-4a1a-a5b6-2a89b1a52ffe";
+
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+                "PhysicalInstance", piType,
+                "DataRelationship", drType,
+                "Variable", variableType,
+                "CodeList", codeListType,
+                "Category", categoryType,
+                "ManagedMissingValuesRepresentation", mmvrType
+        ));
+
+        when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[] {
+            new ColecticaSetItem(piId, 1, agencyId),
+            new ColecticaSetItem("var-1", 1, agencyId),
+            new ColecticaSetItem("mmvr-1", 1, agencyId),
+            new ColecticaSetItem("cl-sentinel", 1, agencyId),
+            new ColecticaSetItem("cat-sentinel", 1, agencyId),
+            new ColecticaSetItem("cl-representation", 1, agencyId)
+        });
+
+        String mmvrXml =
+            "<Fragment xmlns=\"ddi:instance:3_3\"><ManagedMissingValuesRepresentation/></Fragment>";
+        String sentinelCodeListXml =
+            "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-sentinel\"/></Fragment>";
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[] {
+            new ColecticaItemResponse(piType, agencyId, 1, piId,
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><PhysicalInstance/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(variableType, agencyId, 1, "var-1",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Variable/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(mmvrType, agencyId, 1, "mmvr-1", mmvrXml,
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, "cl-sentinel", sentinelCodeListXml,
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(categoryType, agencyId, 1, "cat-sentinel",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><Category ID=\"cat-sentinel\"/></Fragment>",
+                    null, null, false, false, false, null),
+            new ColecticaItemResponse(codeListType, agencyId, 1, "cl-representation",
+                    "<Fragment xmlns=\"ddi:instance:3_3\"><CodeList ID=\"cl-representation\"/></Fragment>",
+                    null, null, false, false, false, null)
+        });
+
+        when(ddi3ToDdi4Converter.toManagedMissingValuesRepresentation(mmvrXml)).thenReturn(
+            new Ddi4ManagedMissingValuesRepresentation(
+                    Ddi4ManagedMissingValuesRepresentation.TYPE, null, null, agencyId, "mmvr-1", "1",
+                    null,
+                    List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                            Reference.of(agencyId, "cl-sentinel", "1", "CodeList")))));
+        when(ddi3ToDdi4Converter.toCodeList(sentinelCodeListXml)).thenReturn(
+            new Ddi4CodeList(Ddi4CodeList.TYPE, null, null, agencyId, "cl-sentinel", "1", null, null,
+                    List.of(new Code(Code.TYPE, null, agencyId, "code-1", "1",
+                            Reference.of(agencyId, "cat-sentinel", "1", "Category"), null, null))));
+
+        String xml = ddiRepository.getDataRelationshipsXml(agencyId, piId, null);
+
+        assertNotNull(xml);
+        assertTrue(xml.contains("<ManagedMissingValuesRepresentation"));
+        assertTrue(xml.contains("<CodeList ID=\"cl-sentinel\""));
+        assertTrue(xml.contains("<Category ID=\"cat-sentinel\""));
+        assertFalse(xml.contains("cl-representation"));
+    }
+    @Test
     void getDataRelationships_setsPhysicalInstanceTopLevelReference() {
         // #494 : le TopLevelReference de /variables doit pointer la PhysicalInstance interrogée,
         // pas rester null (la PI est écartée de la sortie mais reste la racine du FragmentInstance).

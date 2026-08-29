@@ -3,13 +3,18 @@ package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CATEGORY;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.CODE_LIST;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.DATA_RELATIONSHIP;
+import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.MANAGED_MISSING_VALUES_REPRESENTATION;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.PHYSICAL_INSTANCE;
 import static fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaItemTypes.VARIABLE;
 
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import java.util.Arrays;
 import java.util.List;
@@ -157,7 +162,14 @@ class ColecticaPhysicalInstanceReader {
      * Garde le fragment de la PhysicalInstance, les fragments DataRelationship du set et les Variables
      * référencées par leurs {@code VariablesInRecord}/{@code VariableUsedReference} (#447). Dans un set
      * de PhysicalInstance les Variables sont exactement celles utilisées par les data relationships, un
-     * filtre sur le type suffit donc. Les CodeList/Category référencées sont délibérément écartées.
+     * filtre sur le type suffit donc.
+     *
+     * <p>S'y ajoutent les valeurs sentinelles des variables (#1591) : les
+     * {@code ManagedMissingValuesRepresentation} du set — elles aussi exactement celles référencées par
+     * ses variables —, la CodeList de sentinelles que chacune référence et les Category de ses codes,
+     * sans quoi les sentinelles seraient consultables sans leurs valeurs ni leurs libellés. Les autres
+     * CodeList/Category, celles des représentations, restent délibérément écartées : le front les charge
+     * paresseusement par un endpoint dédié.
      *
      * <p>La PhysicalInstance est placée en tête (#1146), avant les éléments qui la composent, quel que
      * soit l'ordre des descriptions renvoyées par Colectica.
@@ -168,13 +180,76 @@ class ColecticaPhysicalInstanceReader {
         String physicalInstanceType = types.get(PHYSICAL_INSTANCE);
         String dataRelationshipType = types.get(DATA_RELATIONSHIP);
         String variableType = types.get(VARIABLE);
-        return Stream.concat(
+
+        List<ColecticaItemResponse> missingValuesRepresentations =
+            itemsOfType(itemResponses, types.get(MANAGED_MISSING_VALUES_REPRESENTATION));
+        List<ColecticaItemResponse> sentinelCodeLists = itemsWithIdentifiers(
+            itemsOfType(itemResponses, types.get(CODE_LIST)),
+            sentinelCodeListIds(missingValuesRepresentations));
+        List<ColecticaItemResponse> sentinelCategories = itemsWithIdentifiers(
+            itemsOfType(itemResponses, types.get(CATEGORY)), categoryIds(sentinelCodeLists));
+
+        return Stream.of(
                 Arrays.stream(itemResponses)
                     .filter(item -> Objects.equals(item.itemType(), physicalInstanceType)),
                 Arrays.stream(itemResponses)
                     .filter(item -> Objects.equals(item.itemType(), dataRelationshipType)
-                        || Objects.equals(item.itemType(), variableType)))
+                        || Objects.equals(item.itemType(), variableType)),
+                missingValuesRepresentations.stream(),
+                sentinelCodeLists.stream(),
+                sentinelCategories.stream())
+            .flatMap(items -> items)
             .toArray(ColecticaItemResponse[]::new);
+    }
+
+    /** Les identifiants des CodeLists de sentinelles référencées par ces MMVR. */
+    private Set<String> sentinelCodeListIds(List<ColecticaItemResponse> missingValuesRepresentations) {
+        return missingValuesRepresentations.stream()
+            .map(ColecticaItemResponse::item)
+            .filter(Objects::nonNull)
+            .map(ddi3ToDdi4Converter::toManagedMissingValuesRepresentation)
+            .map(Ddi4ManagedMissingValuesRepresentation::missingCodeRepresentation)
+            .filter(Objects::nonNull)
+            .flatMap(List::stream)
+            .map(CodeRepresentation::codeListReference)
+            .filter(Objects::nonNull)
+            .map(Reference::id)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    }
+
+    /** Les identifiants des Category référencées par les codes de ces CodeLists. */
+    private Set<String> categoryIds(List<ColecticaItemResponse> codeLists) {
+        return codeLists.stream()
+            .map(ColecticaItemResponse::item)
+            .filter(Objects::nonNull)
+            .map(ddi3ToDdi4Converter::toCodeList)
+            .map(Ddi4CodeList::code)
+            .filter(Objects::nonNull)
+            .flatMap(List::stream)
+            .map(Code::categoryReference)
+            .filter(Objects::nonNull)
+            .map(Reference::id)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    }
+
+    /** Les items du type donné, ou aucun quand le type n'est pas configuré. */
+    private static List<ColecticaItemResponse> itemsOfType(
+        ColecticaItemResponse[] itemResponses, String itemType) {
+        if (itemType == null) {
+            return List.of();
+        }
+        return Arrays.stream(itemResponses)
+            .filter(item -> Objects.equals(item.itemType(), itemType))
+            .toList();
+    }
+
+    private static List<ColecticaItemResponse> itemsWithIdentifiers(
+        List<ColecticaItemResponse> items, Set<String> identifiers) {
+        return items.stream()
+            .filter(item -> identifiers.contains(item.identifier()))
+            .toList();
     }
 
     private Set<String> codeListAndCategoryItemTypes() {
