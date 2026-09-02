@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.concepts.concept.domain.port.serverside;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -19,7 +19,7 @@ public interface ConceptsRepository {
 
     Optional<Concept> getConcept(ConceptId id) throws ConceptsFetchException;
 
-    List<CompactConcept> getConcepts() throws ConceptsFetchException;
+    List<PartialConcept> getConcepts() throws ConceptsFetchException;
 
     List<ConceptToValidate> getConceptsToValidate() throws ConceptsFetchException;
 

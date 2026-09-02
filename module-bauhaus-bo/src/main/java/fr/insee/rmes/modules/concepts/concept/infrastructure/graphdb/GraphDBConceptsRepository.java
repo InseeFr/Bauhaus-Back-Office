@@ -6,11 +6,11 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
@@ -25,8 +25,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -97,14 +98,16 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     }
 
     @Override
-    public List<CompactConcept> getConcepts() throws ConceptsFetchException {
+    public List<PartialConcept> getConcepts() throws ConceptsFetchException {
         try {
             JSONArray rows = repositoryGestion.getResponseAsArray(conceptConceptsQueries.conceptsQuery());
             if (rows == null) return List.of();
             GraphDBPartialConcept[] mapped = Deserializer.deserializeJSONArray(rows, GraphDBPartialConcept[].class);
-            Set<String> seenIds = new HashSet<>();
-            return Arrays.stream(mapped)
-                    .filter(row -> seenIds.add(row.id()))
+            Map<String, GraphDBPartialConcept> byId = new LinkedHashMap<>();
+            for (GraphDBPartialConcept row : mapped) {
+                byId.merge(row.id(), row, GraphDBPartialConcept::mergeAltLabelOf);
+            }
+            return byId.values().stream()
                     .map(GraphDBPartialConcept::toDomain)
                     .toList();
         } catch (RmesException e) {

@@ -1,8 +1,13 @@
 package fr.insee.rmes.modules.concepts.concept.webservice;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.AppSpringBootTest;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
+import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
+import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +23,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.List;
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +39,37 @@ class ConceptsResourcesTest {
 
     private ConceptsResources newController() {
         return new ConceptsResources(legacyConceptsService, conceptsService);
+    }
+
+    @Test
+    void shouldExposeTheAlternativeLabelWhenListingConcepts() throws Throwable {
+        PartialConcept concept = new PartialConcept(
+                new ConceptId("c00001"),
+                LocalisedLabel.ofDefaultLanguage("Répertoire des personnes physiques"),
+                LocalisedLabel.ofDefaultLanguage("RNIPP"));
+
+        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
+
+        var response = newController().getConcepts();
+
+        JsonNode body = new ObjectMapper().valueToTree(response.getBody());
+        assertThat(body.get(0).get("id").asText()).isEqualTo("c00001");
+        assertThat(body.get(0).get("altLabel").asText()).isEqualTo("RNIPP");
+    }
+
+    @Test
+    void shouldExposeANullAlternativeLabelWhenTheConceptHasNone() throws Throwable {
+        PartialConcept concept = new PartialConcept(
+                new ConceptId("c00002"),
+                LocalisedLabel.ofDefaultLanguage("Concept sans sigle"),
+                null);
+
+        when(conceptsService.getAllConcepts()).thenReturn(List.of(concept));
+
+        var response = newController().getConcepts();
+
+        JsonNode body = new ObjectMapper().valueToTree(response.getBody());
+        assertThat(body.get(0).get("altLabel").isNull()).isTrue();
     }
 
     @Test

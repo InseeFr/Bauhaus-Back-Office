@@ -5,7 +5,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundE
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -22,7 +22,7 @@ public interface ConceptsService {
 
     Optional<Concept> getConcept(ConceptId id) throws ConceptsFetchException;
 
-    List<CompactConcept> getAllConcepts() throws ConceptsFetchException;
+    List<PartialConcept> getAllConcepts() throws ConceptsFetchException;
 
     List<ConceptToValidate> getConceptsToValidate() throws ConceptsFetchException;
 

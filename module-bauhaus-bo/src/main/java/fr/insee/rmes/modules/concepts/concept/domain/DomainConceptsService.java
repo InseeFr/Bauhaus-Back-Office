@@ -4,7 +4,7 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPu
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -37,7 +37,7 @@ public class DomainConceptsService implements ConceptsService {
     }
 
     @Override
-    public List<CompactConcept> getAllConcepts() throws ConceptsFetchException {
+    public List<PartialConcept> getAllConcepts() throws ConceptsFetchException {
         return this.repository.getConcepts();
     }
 

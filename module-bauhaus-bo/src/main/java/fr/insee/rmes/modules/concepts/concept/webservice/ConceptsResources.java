@@ -51,7 +51,10 @@ public class ConceptsResources {
     public ResponseEntity<List<PartialConceptResponse>> getConcepts() {
         try {
             List<PartialConceptResponse> responses = conceptsService.getAllConcepts().stream()
-                    .map(compact -> new PartialConcept(compact.id().value(), compact.prefLabel().value(), null))
+                    .map(concept -> new PartialConcept(
+                            concept.id().value(),
+                            concept.defaultLabel().value(),
+                            concept.alternativeLabel() == null ? null : concept.alternativeLabel().value()))
                     .map(partial -> {
                         var response = PartialConceptResponse.fromDomain(partial);
                         response.add(linkTo(ConceptsResources.class).slash("concept").slash(partial.id()).withSelfRel());

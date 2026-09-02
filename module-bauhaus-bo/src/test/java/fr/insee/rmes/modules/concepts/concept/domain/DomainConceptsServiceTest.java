@@ -6,10 +6,10 @@ import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchExc
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidConceptIdException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidCreateConceptCommandException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
@@ -99,14 +99,15 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void getAllConcepts_returns_compact_list_from_repository() throws ConceptsFetchException {
-        var compact1 = new CompactConcept(new ConceptId("c00001"), LocalisedLabel.ofDefaultLanguage("A"));
-        var compact2 = new CompactConcept(new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("B"));
-        when(conceptsRepository.getConcepts()).thenReturn(List.of(compact1, compact2));
+    void getAllConcepts_returns_partial_list_from_repository() throws ConceptsFetchException {
+        var partial1 = new PartialConcept(new ConceptId("c00001"), LocalisedLabel.ofDefaultLanguage("A"),
+                LocalisedLabel.ofDefaultLanguage("RNIPP"));
+        var partial2 = new PartialConcept(new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("B"), null);
+        when(conceptsRepository.getConcepts()).thenReturn(List.of(partial1, partial2));
 
-        List<CompactConcept> result = domainConceptsService.getAllConcepts();
+        List<PartialConcept> result = domainConceptsService.getAllConcepts();
 
-        assertThat(result).containsExactly(compact1, compact2);
+        assertThat(result).containsExactly(partial1, partial2);
     }
 
     @Test
