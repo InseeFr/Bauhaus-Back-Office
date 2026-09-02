@@ -151,12 +151,18 @@ public class CodeListsQueries {
 		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
 	}
 
+	/**
+	 * Existence d'un code <em>dans</em> une liste. Pointait sur getCodeListLabelByNotation.ftlh, qui
+	 * n'interpole que la notation de la liste : la garde d'unicité de l'ajout de code répondait donc
+	 * « Code already exists » pour n'importe quel code d'une liste existante, et le 404 de la
+	 * suppression ne se déclenchait jamais.
+	 */
 	public String getCodeByNotation(String notationCodeList, String notationCode) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
 		params.put(NOTATION, SparqlLiterals.literal(notationCodeList));
 		params.put(CODE, SparqlLiterals.literal(notationCode));
-		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
+		return buildCodesListRequest("getCodeByNotation.ftlh", params);
 	}
 
 	public String getCodeUriByNotation(String notationCodeList, String notationCode) throws RmesException {

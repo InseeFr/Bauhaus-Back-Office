@@ -44,6 +44,25 @@ class CodeListsQueriesTest {
         codeListsQueries = new CodeListsQueries(uris, new BauhausLanguagesProperties("fr", "en"), graphs, new PaginationProperties(5));
     }
 
+    /**
+     * La requête d'existence d'un code doit contraindre le code, pas seulement la liste.
+     * <p>
+     * Elle pointait sur {@code getCodeListLabelByNotation.ftlh}, qui n'interpole que la notation de
+     * la liste : la garde d'unicité de {@code addCodeFromCodeList} répondait donc « Code already
+     * exists » pour n'importe quel code d'une liste existante, et le 404 de la suppression ne se
+     * déclenchait jamais.
+     */
+    @Test
+    void getCodeByNotation_should_constrain_the_code() throws RmesException {
+        when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
+
+        String query = codeListsQueries.getCodeByNotation("CL_TEST", "A");
+
+        org.assertj.core.api.Assertions.assertThat(normalize(query))
+                .contains("\"CL_TEST\"")
+                .contains("\"A\"");
+    }
+
     @Test
     void getCodeListItemsByNotation() throws RmesException {
         when(graphs.codeListGraph()).thenReturn("http://rdf.insee.fr/graphes/codes/nomenclatures");
