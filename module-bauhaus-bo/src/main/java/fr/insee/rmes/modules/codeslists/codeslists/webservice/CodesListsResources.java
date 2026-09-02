@@ -9,6 +9,16 @@ import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListAlreadyExistsException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListIdMismatchException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListNotFoundException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListsFetchException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListsSaveException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.model.CodesListId;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 import fr.insee.rmes.modules.commons.webservice.GenericResources;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
@@ -19,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -29,15 +40,24 @@ import java.util.List;
 public class CodesListsResources extends GenericResources {
 
     private final CodeListService codeListService;
+    private final CodesListsService codesListsService;
 
-    public CodesListsResources(CodeListService codeListService) {
+    public CodesListsResources(CodeListService codeListService, CodesListsService codesListsService) {
         this.codeListService = codeListService;
+        this.codesListsService = codesListsService;
     }
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.CREATE)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> setCodesList(@RequestBody String body) throws RmesException {
-        String id = codeListService.setCodesList(body, CodeListKind.FULL);
+    public ResponseEntity<String> setCodesList(@Valid @RequestBody CodesListRequest body) throws RmesException {
+        String id;
+        try {
+            id = codesListsService.create(body.toCreateCommand()).value();
+        } catch (CodesListAlreadyExistsException e) {
+            throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_UNICITY, e.getMessage(), "");
+        } catch (CodesListsFetchException | CodesListsSaveException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -50,8 +70,16 @@ public class CodesListsResources extends GenericResources {
 
     @HasAccess(module = RBAC.Module.CODESLIST_CODESLIST, privilege = RBAC.Privilege.UPDATE)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> updateCodesList(@PathVariable(Constants.ID) String id, @RequestBody String body) throws RmesException {
-        codeListService.setCodesList(id, body, CodeListKind.FULL);
+    public ResponseEntity<String> updateCodesList(@PathVariable(Constants.ID) String id, @Valid @RequestBody CodesListRequest body) throws RmesException {
+        try {
+            codesListsService.update(new CodesListId(id), body.toUpdateCommand());
+        } catch (CodesListIdMismatchException e) {
+            throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_ID_MISMATCH, e.getMessage(), id);
+        } catch (CodesListNotFoundException e) {
+            throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, e.getMessage(), id);
+        } catch (CodesListsFetchException | CodesListsSaveException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 

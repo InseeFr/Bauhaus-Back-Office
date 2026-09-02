@@ -229,6 +229,20 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 
+	/**
+	 * Contrôles de présence restants, pour le seul chemin qui passe encore par ici : les listes
+	 * partielles.
+	 * <p>
+	 * Les listes complètes sont validées à la frontière HTTP par {@code CodesListRequest}
+	 * (Bean Validation, {@code @NotBlank} sur les huit champs obligatoires) : leurs contrôles de
+	 * présence — {@code lastClassUriSegment} et {@code lastListUriSegment} compris — ont disparu
+	 * d'ici, ils faisaient double emploi et ne voyaient de toute façon pas la différence entre une
+	 * clé absente et une valeur blanche.
+	 * <p>
+	 * Ce qui reste : les trois champs que les listes partielles n'ont pas encore de DTO validé pour
+	 * garder (à migrer avec elles), et la règle « au moins un code », qui a besoin du contexte et
+	 * n'est pas exprimable en contrainte de champ.
+	 */
 	public void validateCodeList(JSONObject codeList, CodeListKind kind) throws RmesException {
 		if (!codeList.has(Constants.ID)) {
 			throw new RmesBadRequestException("The id of the list should be defined");
@@ -238,12 +252,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 		if (!codeList.has(Constants.LABEL_LG2)) {
 			throw new RmesBadRequestException("The labelLg2 of the list should be defined");
-		}
-		if (!kind.isPartial() && !codeList.has(LAST_CLASS_URI_SEGMENT)) {
-			throw new RmesBadRequestException("The lastClassUriSegment of the list should be defined");
-		}
-		if (!kind.isPartial() && !codeList.has(LAST_LIST_URI_SEGMENT)) {
-			throw new RmesBadRequestException("The lastListUriSegment of the list should be defined");
 		}
 		if(kind.isPartial() && (!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty())){
 			throw new RmesBadRequestException(CodesListErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");

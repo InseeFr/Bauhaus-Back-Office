@@ -1,6 +1,9 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListIdMismatchException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListNotFoundException;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -18,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,6 +42,9 @@ class CodesListsResourcesErrorMappingTest {
 
     @MockitoBean
     private CodeListService codeListService;
+
+    @MockitoBean
+    private CodesListsService codesListsService;
 
     @Autowired
     MockMvc mockMvc;
@@ -60,25 +67,41 @@ class CodesListsResourcesErrorMappingTest {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Corps complet : la validation Bean Validation passe avant le contrôleur, un corps placeholder
+     * donnerait 400 quelle que soit la réponse du service.
+     */
+    private static final String CODES_LIST_BODY = """
+            {
+              "id": "%s",
+              "labelLg1": "libellé",
+              "labelLg2": "label",
+              "creator": "http://bauhaus/HIE000000",
+              "disseminationStatus": "http://id.insee.fr/codes/base/statutDiffusion/Public",
+              "lastListUriSegment": "cl-test",
+              "lastClassUriSegment": "ClTest",
+              "lastCodeUriSegment": "cl-test-code"
+            }""";
+
     @Test
     void updateCodesList_whenCodeListDoesNotExist_shouldReturnNotFound() throws Exception {
-        when(codeListService.setCodesList("unknown", "{}", CodeListKind.FULL))
-                .thenThrow(new RmesNotFoundException("CodeList not found", "unknown"));
+        when(codesListsService.update(any(), any()))
+                .thenThrow(new CodesListNotFoundException("CodeList not found"));
 
         mockMvc.perform(put("/codeList/{id}", "unknown")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(CODES_LIST_BODY.formatted("unknown")))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateCodesList_whenTheBodyIdDoesNotMatchTheUrlId_shouldReturnBadRequest() throws Exception {
-        when(codeListService.setCodesList("CL_TEST", "{}", CodeListKind.FULL))
-                .thenThrow(new RmesBadRequestException("The id of the list should match the id of the url", "CL_TEST"));
+        when(codesListsService.update(any(), any()))
+                .thenThrow(new CodesListIdMismatchException("The id of the list should match the id of the url"));
 
         mockMvc.perform(put("/codeList/{id}", "CL_TEST")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(CODES_LIST_BODY.formatted("CL_OTHER")))
                 .andExpect(status().isBadRequest());
     }
 

@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.codeslists.codeslists.webservice;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ class CodesListsResourcesCodeValidationTest {
 
     @MockitoBean
     private CodeListService codeListService;
+
+    @MockitoBean
+    private CodesListsService codesListsService;
 
     @Autowired
     MockMvc mockMvc;
