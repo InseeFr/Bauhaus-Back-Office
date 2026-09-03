@@ -1,6 +1,11 @@
 services:
   bauhaus-back:
-    build: ../Dockerfile.bauhaus
+    build:
+      # Chemins relatifs à CE fichier (compose/), pas à compose.yaml qui l'étend.
+      # Le contexte est la racine du dépôt : le Dockerfile y copie mvnw et .mvn,
+      # puis lance le build Maven de tous les modules.
+      context: ../..
+      dockerfile: Dockerfile.bauhaus
     ports:
       - "8080:8080"
     environment:
