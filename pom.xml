@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.7</version>
+    <version>4.1.0</version>
     <relativePath/>
     <!-- lookup parent from repository -->
   </parent>
@@ -36,15 +36,15 @@
     <springdoc.version>3.0.3</springdoc.version>
     <rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.2.0</xdocreport.version>
-    <jacoco.version>0.8.13</jacoco.version>
+    <jacoco.version>0.8.15</jacoco.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Default empty value so surefire's @{argLine} resolves even when JaCoCo is skipped -->
     <argLine></argLine>
-    <java-jwt.version>4.5.0</java-jwt.version>
-    <json.version>20250107</json.version>
+    <java-jwt.version>4.5.2</java-jwt.version>
+    <json.version>20260522</json.version>
     <flexmark.version>0.64.8</flexmark.version>
-    <jaxb.version>4.0.5</jaxb.version>
-    <zt.version>1.17</zt.version>
+    <jaxb.version>4.0.9</jaxb.version>
+    <zt.version>1.18.2</zt.version>
     <saxon.version>12.5</saxon.version>
     <minio.version>9.0.3</minio.version>
     <!-- okhttp 5.x est publié en Kotlin Multiplatform : l'artefact `okhttp` est un stub vide côté Maven,
@@ -52,7 +52,7 @@
          Garder cette version alignée sur celle que minio déclare. -->
     <okhttp.version>5.3.2</okhttp.version>
     <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
-    <record.builder.version>44</record.builder.version>
+    <record.builder.version>53</record.builder.version>
     <!-- SONAR -->
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -60,17 +60,27 @@
     <boot-properties-logger-starter.version>2.2.0</boot-properties-logger-starter.version>
     <ddi-lifecycle.version>2.0.0</ddi-lifecycle.version>
     <testcontainers-keycloak.version>4.2.1</testcontainers-keycloak.version>
-    <testcontainers.version>1.20.4</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
     <!-- Overrides Spring Boot 4.0.7 (5.3.6), vulnerable to CVE-2026-54399 (httpcore5, HTTP/1.1 parser)
          and CVE-2026-54428 (httpcore5-h2, HPACK decoder). Both fixed in 5.4.3.
          À supprimer dès qu'une version de Spring Boot managera >= 5.4.3. -->
     <httpcore5.version>5.4.3</httpcore5.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
+    <!-- Voir la dépendance bcprov-jdk18on ci-dessous : surcharge de la version que minio ramène. -->
+    <bouncycastle.version>1.85.2</bouncycastle.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+    <!-- minio 9.0.3 ramène bcprov 1.84, vulnérable : on force 1.85.2 (#1140).
+         À supprimer dès que minio embarquera >= 1.85.2 — la condition d'origine
+         (« quand on passera à minio 8.6.0 ») est caduque, la branche est en 9.0.3. -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>
       <dependency>
         <groupId>io.github.fbibonne</groupId>
         <artifactId>boot-properties-logger-starter</artifactId>
