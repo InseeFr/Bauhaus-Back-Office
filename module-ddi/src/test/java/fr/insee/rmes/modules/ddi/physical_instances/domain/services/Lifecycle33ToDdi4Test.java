@@ -299,6 +299,32 @@ class Lifecycle33ToDdi4Test {
     }
 
     @Test
+    void shouldParseVariableWithDecimalNumericBounds() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
+                    <VariableRepresentation>
+                        <r:NumericRepresentation blankIsMissingValue="false">
+                            <r:NumberRange>
+                                <r:Low isInclusive="true">0.0001</r:Low>
+                                <r:High isInclusive="true">12345678.5</r:High>
+                            </r:NumberRange>
+                            <r:NumericTypeCode>Decimal</r:NumericTypeCode>
+                        </r:NumericRepresentation>
+                    </VariableRepresentation>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable var = converter.toVariable(doc);
+
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0001);
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(12345678.5);
+    }
+
+    @Test
     void shouldParseVariableWithDateTimeRepresentation() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""
             <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">

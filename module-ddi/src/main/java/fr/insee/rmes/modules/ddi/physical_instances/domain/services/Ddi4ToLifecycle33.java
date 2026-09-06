@@ -44,6 +44,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableReprese
 import org.apache.xmlbeans.XmlCursor;
 
 import javax.xml.namespace.QName;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -694,11 +695,12 @@ public class Ddi4ToLifecycle33 {
         }
     }
 
+    /**
+     * Les bornes sont des {@code xs:decimal} : la notation exponentielle que produit
+     * {@link Double#toString(double)} hors de [1e-3, 1e7[ n'y est pas un lexical valide.
+     */
     private static String formatRangeValue(double value) {
-        if (value == Math.floor(value) && !Double.isInfinite(value)) {
-            return Long.toString((long) value);
-        }
-        return Double.toString(value);
+        return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
     }
 
     private static void populateDateTimeRepresentation(RepresentationType rep, DateTimeRepresentation source) {

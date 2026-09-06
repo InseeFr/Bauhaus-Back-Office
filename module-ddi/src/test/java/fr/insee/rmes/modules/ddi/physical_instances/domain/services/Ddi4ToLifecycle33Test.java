@@ -209,6 +209,21 @@ class Ddi4ToLifecycle33Test {
     }
 
     @Test
+    void shouldBuildVariableWithDecimalNumericBounds() {
+        Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
+                null, null,
+                new NumericRepresentation(NumericRepresentation.TYPE, "Decimal",
+                        new NumberRange(new RangeValue(true, 0.0001), new RangeValue(true, 12345678.5))),
+                null, null, null));
+
+        String xml = converter.toVariable(var).xmlText(logicalProductXmlOptions());
+
+        Assertions.assertThat(xml)
+                .contains("<r:Low isInclusive=\"true\">0.0001</r:Low>")
+                .contains("<r:High isInclusive=\"true\">12345678.5</r:High>");
+    }
+
+    @Test
     void shouldBuildVariableWithDateTimeRepresentation() {
         Ddi4Variable var = variableWithRepresentation(new VariableRepresentation(
                 null, null, null,
