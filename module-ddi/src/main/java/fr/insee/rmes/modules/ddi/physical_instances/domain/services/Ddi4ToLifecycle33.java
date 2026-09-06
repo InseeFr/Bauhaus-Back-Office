@@ -425,7 +425,12 @@ public class Ddi4ToLifecycle33 {
         var mmvrType = doc.addNewFragment().addNewManagedMissingValuesRepresentation();
 
         mmvrType.setIsUniversallyUnique(true);
-        mmvrType.setVersionDate(mmvr.versionDate() != null ? mmvr.versionDate().dateTime() : null);
+        // Attribut posé seulement s'il est connu : une MMVR seulement réutilisée arrive sans
+        // VersionDate (l'aperçu du front n'en invente pas), et `setVersionDate(null)` écrirait un
+        // `versionDate=""` que le schéma DDI 3.3 rejette — et que la relecture ne sait pas parser.
+        if (mmvr.versionDate() != null) {
+            mmvrType.setVersionDate(mmvr.versionDate().dateTime());
+        }
         mmvrType.addNewURN().setStringValue(mmvr.urn());
         mmvrType.addAgency(mmvr.agency());
         mmvrType.addNewID().setStringValue(mmvr.id());

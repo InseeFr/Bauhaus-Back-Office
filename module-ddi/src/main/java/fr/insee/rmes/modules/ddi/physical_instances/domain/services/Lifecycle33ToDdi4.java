@@ -264,7 +264,7 @@ public class Lifecycle33ToDdi4 {
         }
         return new Ddi4ManagedMissingValuesRepresentation(
                 Ddi4ManagedMissingValuesRepresentation.TYPE,
-                CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue()),
+                mmvr.isSetVersionDate() ? CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue()) : null,
                 mmvr.getURNArray(0).getStringValue(),
                 mmvr.getAgencyArray(0),
                 mmvr.getIDArray(0).getStringValue(),

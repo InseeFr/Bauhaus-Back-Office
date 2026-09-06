@@ -102,6 +102,29 @@ class SentinelValuesRoundTripTest {
         assertThat(roundTripped).isEqualTo(mmvr);
     }
 
+    @Test
+    void managedMissingValuesRepresentation_isWritable_withoutVersionDate() throws XmlException {
+        // L'aperçu du front reconstruit une MMVR seulement réutilisée depuis la vue partielle du
+        // groupe, qui ne porte pas la VersionDate : l'écriture doit l'accepter absente plutôt que
+        // de forcer le front à en inventer une.
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                null,
+                "urn:ddi:fr.insee:mmvr-1:1",
+                "fr.insee", "mmvr-1", "1",
+                LangStrings.of("fr-FR", "Valeurs sentinelles NSP/REF"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"))));
+
+        String xml = writer.toManagedMissingValuesRepresentation(mmvr).xmlText();
+        Ddi4ManagedMissingValuesRepresentation roundTripped =
+                reader.toManagedMissingValuesRepresentation(FragmentDocument.Factory.parse(xml));
+
+        assertThat(roundTripped.versionDate()).isNull();
+        assertThat(roundTripped.missingCodeRepresentation().getFirst().codeListReference().id())
+                .isEqualTo("cl-sentinelles");
+    }
+
     private VariableRepresentation roundTrip(VariableRepresentation rep) throws XmlException {
         Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
