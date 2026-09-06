@@ -65,6 +65,12 @@
          and CVE-2026-54428 (httpcore5-h2, HPACK decoder). Both fixed in 5.4.3.
          À supprimer dès qu'une version de Spring Boot managera >= 5.4.3. -->
     <httpcore5.version>5.4.3</httpcore5.version>
+    <!-- Surcharge le Tomcat embarqué managé par Spring Boot 4.1.0 (11.0.22), affecté entre autres par
+         CVE-2026-68763 (fuite d'allocation dans le suivi du backlog HTTP/2 lors d'un reset de stream, DoS)
+         et CVE-2026-68569 (authentification qui réussit pour un utilisateur absent du realm), toutes deux
+         corrigées en 11.0.25.
+         À supprimer dès qu'une version de Spring Boot managera >= 11.0.25. -->
+    <tomcat.version>11.0.25</tomcat.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
     <!-- Voir la dépendance bcprov-jdk18on ci-dessous : surcharge de la version que minio ramène. -->
