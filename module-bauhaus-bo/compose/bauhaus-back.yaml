@@ -9,4 +9,23 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # bauhaus-local-dev.properties, embarqué dans l'image, pointe tout sur
+      # localhost : depuis le conteneur il faut réécrire chaque service par son
+      # nom de service compose : les deux dépôts RDF et minio, sinon
+      # /api/healthcheck sort en 500 (« could not read protocol version »).
       - fr.insee.rmes.bauhaus.sesame.gestion.sesameServer=http://graphdb:7200
+      - fr.insee.rmes.bauhaus.sesame.publication.sesameServer=http://graphdb:7200
+      - minio.url=http://minio:9000
+      # Chemins posés dans le tmpfs ci-dessous : la valeur par défaut vaut
+      # ${HOME}/… or useradd ne crée pas /home/javauser, donc rien n'est
+      # inscriptible dans l'image et /api/healthcheck sort en 500. Le profil s3
+      # étant actif, les documents vont dans minio : ces chemins ne servent qu'au
+      # healthcheck, d'où le tmpfs plutôt qu'un volume.
+      - fr.insee.rmes.bauhaus.storage.document.gestion=/opt/app/data/storage/gestion
+      - fr.insee.rmes.bauhaus.storage.document.publication=/opt/app/data/storage/publication
+      - fr.insee.rmes.bauhaus.storage.document.publication.interne=/opt/app/data/storage/publicationInterne
+    tmpfs:
+      # Le healthcheck écrit `<chemin>` + `testHealthcheck.txt` sans séparateur :
+      # ses trois fichiers de test atterrissent donc ici, dans le répertoire
+      # parent, et non dans trois sous-dossiers. uid/gid : l'image tourne en 10000.
+      - /opt/app/data/storage:uid=10000,gid=10000
