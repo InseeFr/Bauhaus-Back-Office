@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.commons.infrastructure.minio;
 
 import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.modules.commons.domain.model.Document;
+import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.errors.MinioException;
@@ -26,8 +27,13 @@ class IntegrationMinioFilesOperation {
     // renovate: datasource=docker depName=minio/minio
     static final String MINIO_IMAGE = "minio/minio:RELEASE.2024-11-07T00-52-20Z";
 
+    /**
+     * Champ statique : un champ d'instance ferait démarrer puis arrêter un conteneur MinIO par
+     * méthode de test. Les tests écrivent chacun sous des noms de fichiers distincts, ils peuvent
+     * donc partager le même serveur.
+     */
     @Container
-    MinIOContainer container = new MinIOContainer(MINIO_IMAGE);
+    static final MinIOContainer container = new MinIOContainer(MINIO_IMAGE);
 
     @BeforeAll
     public static void configureSlf4j() {
@@ -125,7 +131,11 @@ class IntegrationMinioFilesOperation {
                 .hasMessageContaining("Error copying file");
     }
 
+    /** Le conteneur étant partagé par la classe, le bucket survit d'une méthode de test à l'autre. */
     private void createBucket(String bucketName, MinioClient minioClient) throws MinioException {
+        if (minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
+            return;
+        }
         minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     }
 

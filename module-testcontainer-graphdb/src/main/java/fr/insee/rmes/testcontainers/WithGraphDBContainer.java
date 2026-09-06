@@ -1,11 +1,23 @@
 package fr.insee.rmes.testcontainers;
 
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
-@Testcontainers
+/**
+ * Base des tests d'intégration qui ont besoin d'un triplestore.
+ *
+ * <p>Le conteneur est un <em>singleton</em> : il est démarré une seule fois pour toute la JVM de
+ * tests, puis réclamé par Ryuk à l'arrêt de celle-ci. L'annotation {@code @Testcontainers} n'est
+ * volontairement pas utilisée : elle attache le cycle de vie du conteneur à la classe de tests, ce
+ * qui redémarrait GraphDB pour chacune des dizaines de classes qui héritent d'ici — soit ~20 s
+ * perdues à chaque fois, GraphDB n'acceptant de répondre qu'après une quinzaine de secondes.
+ *
+ * <p>L'isolation entre classes est assurée à la place par {@link GraphDBResetExtension}, qui vide
+ * les dépôts avant chaque classe : chacune retrouve donc la base vierge qu'un redémarrage lui
+ * donnait, sans en payer le prix.
+ */
+@ExtendWith(GraphDBResetExtension.class)
 public class WithGraphDBContainer {
 
     /**
@@ -17,16 +29,20 @@ public class WithGraphDBContainer {
     // renovate: datasource=docker depName=ontotext/graphdb
     public static final String GRAPHDB_IMAGE = "ontotext/graphdb:10.8.4";
 
-    @Container
-    public static final GraphDBContainer container = new GraphDBContainer(GRAPHDB_IMAGE);
-    public static final String BAUHAUS_TEST_REPOSITORY = "bauhaus-test";
+    public static final GraphDBContainer container = startSharedContainer();
+    public static final String BAUHAUS_TEST_REPOSITORY = GraphDBContainer.GESTION_REPOSITORY;
 
+    private static GraphDBContainer startSharedContainer() {
+        GraphDBContainer sharedContainer = new GraphDBContainer(GRAPHDB_IMAGE);
+        sharedContainer.start();
+        return sharedContainer;
+    }
 
     protected static RdfConnectionDetails getRdfGestionConnectionDetails() {
         return new RdfConnectionDetails() {
             @Override
             public String getUrlServer() {
-                return "http://" + container.getHost() + ":" + container.getMappedPort(7200);
+                return "http://" + container.getHost() + ":" + container.getMappedPort(GraphDBContainer.GRAPHDB_PORT);
             }
 
             @Override

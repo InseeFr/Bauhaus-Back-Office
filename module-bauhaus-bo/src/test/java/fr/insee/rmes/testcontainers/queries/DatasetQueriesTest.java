@@ -13,8 +13,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("integration")
@@ -106,26 +108,35 @@ class DatasetQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_all_was_generated_if_multiple_values() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetWasGeneratedIris("jeuDeDonneesTousChampsEtMultiValeurs", "http://rdf.insee.fr/graphes/catalogue"));
-        assertEquals("http://bauhaus/operations/operation/s2159", result.getJSONObject(0).getString("iri"));
-        assertEquals("http://bauhaus/operations/operation/s2160", result.getJSONObject(1).getString("iri"));
-        assertEquals(2, result.length());
+        assertThat(valuesOf(result, "iri")).containsExactlyInAnyOrder(
+                "http://bauhaus/operations/operation/s2159",
+                "http://bauhaus/operations/operation/s2160");
     }
 
     @Test
     void should_return_all_creators_if_multiple_values() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetCreators("jeuDeDonneesTousChampsEtMultiValeurs", "http://rdf.insee.fr/graphes/catalogue"));
-        assertEquals("http://bauhaus/organisations/ined", result.getJSONObject(0).getString("creator"));
-        assertEquals("http://bauhaus/organisations/insee", result.getJSONObject(1).getString("creator"));
-        assertEquals(2, result.length());
+        assertThat(valuesOf(result, "creator")).containsExactlyInAnyOrder(
+                "http://bauhaus/organisations/ined",
+                "http://bauhaus/organisations/insee");
     }
 
     @Test
     void should_return_all_spacial_resolutions_if_multiple_values() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(datasetQueries.getDatasetSpacialResolutions("jeuDeDonneesTousChampsEtMultiValeurs", "http://rdf.insee.fr/graphes/catalogue"));
-        assertEquals("http://bauhaus/codes/typeTerritoireGeographique/COM", result.getJSONObject(0).getString("spacialResolution"));
-        assertEquals("http://bauhaus/codes/typeTerritoireGeographique/DEP", result.getJSONObject(1).getString("spacialResolution"));
-        assertEquals("http://bauhaus/codes/typeTerritoireGeographique/REG", result.getJSONObject(2).getString("spacialResolution"));
-        assertEquals(3, result.length());
+        assertThat(valuesOf(result, "spacialResolution")).containsExactlyInAnyOrder(
+                "http://bauhaus/codes/typeTerritoireGeographique/COM",
+                "http://bauhaus/codes/typeTerritoireGeographique/DEP",
+                "http://bauhaus/codes/typeTerritoireGeographique/REG");
+    }
+
+    /**
+     * Ces trois requêtes n'ont pas d'ORDER BY : l'ordre des lignes n'est pas un contrat, il dépend
+     * de l'ordre d'insertion dans le triplestore. Les asserter par position rendait le test
+     * dépendant du fait que chaque classe démarrait sur un GraphDB neuf.
+     */
+    private static List<String> valuesOf(JSONArray result, String key) {
+        return JSONUtils.stream(result).map(row -> row.getString(key)).toList();
     }
 
     @Test

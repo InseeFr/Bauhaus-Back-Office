@@ -43,9 +43,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * that a published IRI is immediately recognizable.</p>
  *
  * <p>The three endpoints live in the same class, and not in three classes sharing a base class,
- * on purpose: the GraphDB container is restarted between top-level test classes, which would
- * leave the (identically configured, hence cached) Spring context pointing at the previous
- * mapped port. Nested classes share the enclosing context and its container.</p>
+ * because nested classes share the fixtures and the publication repository seeded once by the
+ * enclosing {@code @BeforeAll}. Splitting them would mean reloading and republishing everything
+ * three times.</p>
  */
 @Tag("integration")
 class OperationsPublicationE2ETest extends BaseE2ETest {
