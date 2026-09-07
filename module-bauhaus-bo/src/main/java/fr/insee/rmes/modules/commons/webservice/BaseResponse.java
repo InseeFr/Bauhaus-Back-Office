@@ -2,7 +2,6 @@ package fr.insee.rmes.modules.commons.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import fr.insee.rmes.modules.commons.webservice.DomainToResponseConverter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;

@@ -8,8 +8,6 @@ import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.modules.commons.domain.GenericInternalServerException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
-import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.GraphDBDocumentationRepository;
-import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.junit.jupiter.api.Assertions;

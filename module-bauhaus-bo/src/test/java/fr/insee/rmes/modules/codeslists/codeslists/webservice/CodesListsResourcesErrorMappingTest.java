@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListIdMismatchException;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.exceptions.CodesListNotFoundException;
 import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
-import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;

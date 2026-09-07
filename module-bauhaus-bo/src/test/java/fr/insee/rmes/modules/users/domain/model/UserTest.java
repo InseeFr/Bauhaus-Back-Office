@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.users.domain.model;
 
-import fr.insee.rmes.modules.users.domain.model.Source;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -10,7 +10,6 @@ import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySeries;
 import fr.insee.rmes.modules.operations.families.domain.model.OperationFamilySubject;
 import fr.insee.rmes.modules.operations.families.domain.model.PartialOperationFamily;
-import fr.insee.rmes.modules.operations.families.infrastructure.graphdb.OperationFamilyQueries;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.http.HttpStatus;

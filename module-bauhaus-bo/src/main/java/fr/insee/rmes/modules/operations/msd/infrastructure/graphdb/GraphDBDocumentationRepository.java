@@ -10,7 +10,6 @@ import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.operations.msd.domain.NotFoundAttributeException;
 import fr.insee.rmes.modules.operations.msd.domain.OperationDocumentationRubricWithoutRangeException;
 import fr.insee.rmes.modules.operations.msd.domain.port.serverside.DocumentationRepository;
-import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Repository;

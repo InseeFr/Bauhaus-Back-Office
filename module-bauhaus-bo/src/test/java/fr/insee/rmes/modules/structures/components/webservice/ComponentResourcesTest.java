@@ -3,8 +3,6 @@ package fr.insee.rmes.modules.structures.components.webservice;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.structures.components.webservice.ComponentResources;
-import fr.insee.rmes.modules.structures.components.webservice.PartialStructureComponentResponse;
 import fr.insee.rmes.modules.structures.structures.domain.model.PartialStructureComponent;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
