@@ -69,8 +69,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetPhysicalInstances() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
         Map<String, String> itemTypes = Map.of("PhysicalInstance", "a51e85bb-6259-4488-8df2-f08cb43485f8");
 
         ColecticaItem item1 = new ColecticaItem(
@@ -205,8 +203,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetLogicalProducts() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
         Map<String, String> itemTypes = Map.of("LogicalProduct", "965c8d28-7d48-4950-bea7-04b27e52bb9b");
 
         ColecticaItem item1 = new ColecticaItem(
@@ -379,8 +375,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldCreatePhysicalInstance() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String itemUrl = baseApiUrl + "item";
         String studyUnitId = "su-uuid-1";
         String studyUnitAgency = "fr.insee";
 
@@ -488,8 +482,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldPreserveExistingPhysicalInstanceReferencesInStudyUnit() {
         // Given: a StudyUnit that already contains one PhysicalInstanceReference
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String itemUrl = baseApiUrl + "item";
         String studyUnitId = "su-uuid-existing";
         String studyUnitAgency = "fr.insee";
         String existingPiId = "existing-pi-uuid";
@@ -544,8 +536,6 @@ class DDIRepositoryImplTest {
         // Given
         String instanceId = "test-pi-id";
         String agencyId = "fr.insee";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String itemUrl = baseApiUrl + "item";
 
         String newLabel = "Updated Physical Instance Label";
         String newDataRelationshipLabel = "Updated Data Relationship Label";
@@ -1088,8 +1078,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetGroups() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String queryUrl = baseApiUrl + "_query";
 
         ColecticaItem group1 = new ColecticaItem(
             null, // summary
@@ -1599,7 +1587,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetMutualizedCodesListWithCodesAndCategories() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
         String codeListId = "fc65a527-a04b-4505-85de-0a181e54dbad";
         String categoryId = "cat-1";
@@ -1673,8 +1660,6 @@ class DDIRepositoryImplTest {
         // Given
         String instanceId = "test-pi-id";
         String agencyId = "fr.insee";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String itemUrl = baseApiUrl + "item";
 
         // Request with null dataRelationshipLabel - should preserve existing
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
@@ -1760,8 +1745,6 @@ class DDIRepositoryImplTest {
         // Given
         String instanceId = "test-pi-id";
         String agencyId = "fr.insee";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String itemUrl = baseApiUrl + "item";
 
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
                 "Updated PI Label",
@@ -1846,8 +1829,6 @@ class DDIRepositoryImplTest {
         // Given
         String instanceId = "test-pi-id";
         String agencyId = "fr.insee";
-        String baseApiUrl = "http://localhost:8082/api/v1/";
-        String itemUrl = baseApiUrl + "item";
 
         UpdatePhysicalInstanceRequest updateRequest = new UpdatePhysicalInstanceRequest(
                 "Updated PI Label",
@@ -1928,7 +1909,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetItemXmlWithVersion() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agency = "fr.insee";
         String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
         String version = "1";
@@ -1953,7 +1933,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldGetItemXmlLatestVersion() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agency = "fr.insee";
         String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
         String expectedXml = "<CodeList><URN>urn:ddi:fr.insee:3b317f4c-79ae-422c-8cd4-04ba9d2e4be4:2</URN></CodeList>";
@@ -1977,7 +1956,6 @@ class DDIRepositoryImplTest {
     @Test
     void shouldReturnNullWhenItemXmlResponseIsNull() {
         // Given
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agency = "fr.insee";
         String id = "3b317f4c-79ae-422c-8cd4-04ba9d2e4be4";
         String version = "1";
@@ -2233,7 +2211,6 @@ class DDIRepositoryImplTest {
 
     @Test
     void getCodeList_withVersion_usesVersionedSetUrlAndConvertsToDdi4() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
         String codeListId = "fc65a527-a04b-4505-85de-0a181e54dbad";
         String categoryId = "cat-1";
@@ -2286,7 +2263,6 @@ class DDIRepositoryImplTest {
 
     @Test
     void getCodeListXml_returnsMultiFragmentFragmentInstance() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
         String codeListId = "cl-1";
         String categoryId = "cat-1";
@@ -2320,7 +2296,6 @@ class DDIRepositoryImplTest {
 
     @Test
     void getCodeListXml_returnsNullWhenSetEmpty() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         when(colecticaClient.getSet(anyString(), anyString(), any())).thenReturn(new ColecticaSetItem[0]);
 
         assertNull(ddiRepository.getCodeListXml("fr.insee", "unknown", null));
@@ -2866,7 +2841,6 @@ class DDIRepositoryImplTest {
 
     @Test
     void getCodeListSchemesByLogicalProduct_keepsOnlySchemesReferencedByLogicalProduct() {
-        String baseApiUrl = "http://localhost:8082/api/v1/";
         String agencyId = "fr.insee";
         String logicalProductId = "lp-1";
         String clsType = "4193d389-b5ae-4368-b399-cd5a7ee3653c";

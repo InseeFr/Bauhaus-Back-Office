@@ -26,7 +26,6 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
-import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
@@ -40,7 +39,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.stream.Collectors;
 import java.util.*;
 
 @Service
@@ -138,11 +136,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 		/* check concept isn't used in several graphs */
 		if (graphArray.length()>1) {
-			/* list the graphs involved in log */
-			String listGraphs = JSONUtils.stream(graphArray)
-					.map(currentGraph -> currentGraph.getString("src") + "-")
-					.collect(Collectors.joining());
-			 
 			JSONObject details = new JSONObject();
 			details.put("idConcept", id);
 			details.put("graphs", graphArray);

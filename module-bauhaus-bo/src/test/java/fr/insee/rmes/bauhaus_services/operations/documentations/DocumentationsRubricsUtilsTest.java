@@ -209,8 +209,6 @@ class DocumentationsRubricsUtilsTest {
 				"Le modèle devrait contenir le type REPORTED_ATTRIBUTE");
 
 		// Vérifie que les valeurs textuelles ont été ajoutées
-		// Le predicateUri réel après transformation par getAttributeUri
-		IRI realPredicateUri = factory.createIRI("http://rdf.insee.fr/def/base/attribut/" + simsId + "/title");
 		boolean hasTextValue = model.stream()
 				.anyMatch(stmt -> stmt.getSubject().equals(attributeUri));
 
