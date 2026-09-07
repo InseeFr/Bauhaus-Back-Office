@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -133,7 +134,10 @@ class CollectionsEndToEndTest extends WithGraphDBContainer {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.TEXT_PLAIN)
                 .retrieve()
-                .onStatus(status -> true, (req, res) -> assertThat(res.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+                .onStatus(HttpStatusCode::isError, (req, res) -> { })
+                .toBodilessEntity();
+
+        assertThat(updateResponseKo.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
         var updateResponseOk = restClient.put().uri(collectionsEndpoint + "/" + uuid).body(UPDATE_COLLECTION_REQUEST_JSON.formatted(uuid))
                 .contentType(MediaType.APPLICATION_JSON)
