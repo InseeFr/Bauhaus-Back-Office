@@ -168,7 +168,7 @@ class SeriesRepositoryTest {
                 .map(Statement::getObject)
                 .toList();
         assertThat(creators).hasSize(2);
-        assertThat(creators).allMatch(value -> value instanceof IRI,
+        assertThat(creators).allMatch(IRI.class::isInstance,
                 "every dc:creator object must be an IRI, not a literal");
         assertThat(creators).extracting(Value::stringValue)
                 .containsExactlyInAnyOrder(

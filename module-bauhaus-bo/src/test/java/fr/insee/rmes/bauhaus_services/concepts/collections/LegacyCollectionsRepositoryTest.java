@@ -20,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -156,6 +157,6 @@ class LegacyCollectionsRepositoryTest {
 
         // Then
         verify(conceptsPublication, times(1)).publishCollection(emptyArray);
-        verify(repositoryGestion, times(1)).objectsValidation(argThat(list -> list.isEmpty()), any());
+        verify(repositoryGestion, times(1)).objectsValidation(argThat(Collection::isEmpty), any());
     }
 }
