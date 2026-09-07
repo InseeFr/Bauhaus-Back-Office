@@ -108,21 +108,21 @@ public final class VersionDateReconciler {
             case Reference reference -> references.add(reference);
             case BasedOnObject ignored -> { /* lignage : exclu de la propagation */ }
             case List<?> list -> list.forEach(element -> collectReferences(element, references));
-            case Record record -> {
-                for (RecordComponent component : record.getClass().getRecordComponents()) {
-                    collectReferences(componentValue(record, component), references);
+            case Record recordValue -> {
+                for (RecordComponent component : recordValue.getClass().getRecordComponents()) {
+                    collectReferences(componentValue(recordValue, component), references);
                 }
             }
             default -> { /* scalaire : rien à collecter */ }
         }
     }
 
-    private static Object componentValue(Record record, RecordComponent component) {
+    private static Object componentValue(Record recordValue, RecordComponent component) {
         try {
-            return component.getAccessor().invoke(record);
+            return component.getAccessor().invoke(recordValue);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(
-                    "Unable to read record component " + component.getName() + " of " + record.getClass(), e);
+                    "Unable to read record component " + component.getName() + " of " + recordValue.getClass(), e);
         }
     }
 

@@ -126,12 +126,12 @@ class SentinelValuesRoundTripTest {
     }
 
     private VariableRepresentation roundTrip(VariableRepresentation rep) throws XmlException {
-        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE,
+        Ddi4Variable variable = new Ddi4Variable(Ddi4Variable.TYPE,
                 CogsDate.ofDateTime("2025-12-23T09:52:06.355Z"),
                 "urn:ddi:fr.insee:var-rt:1", "fr.insee", "var-rt", "1", null,
                 LangStrings.of("fr-FR", "VAR_RT"), null, null, rep, null);
 
-        String xml = writer.toVariable(var).xmlText();
+        String xml = writer.toVariable(variable).xmlText();
 
         return reader.toVariable(FragmentDocument.Factory.parse(xml)).variableRepresentation();
     }

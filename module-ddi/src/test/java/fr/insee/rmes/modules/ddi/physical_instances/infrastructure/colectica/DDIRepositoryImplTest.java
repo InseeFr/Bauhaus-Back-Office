@@ -4050,9 +4050,9 @@ class DDIRepositoryImplTest {
         when(ddi4ToDdi3Converter.toStudyUnitItem(suCaptor.capture(), anyString())).thenReturn(new Ddi3Response.Ddi3Item(
             "su-type", "fr.insee", "1", "su-1", "<su-updated/>", "2026-01-01T00:00:00", "resp", false, false, false, "fmt"));
 
-        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+        Ddi4Variable variable = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
             "urn:ddi:fr.insee:VAR_1:1", "fr.insee", "VAR_1", "1", null, null, null, null, null, null);
-        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(var), null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(variable), null, null, null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
 
@@ -4084,9 +4084,9 @@ class DDIRepositoryImplTest {
                 new ItemReference("fr.insee", "pi-1"), List.of(STUDY_UNIT_ITEM_TYPE)))
             .thenReturn(List.of());
 
-        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+        Ddi4Variable variable = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
             "urn:ddi:fr.insee:VAR_1:1", "fr.insee", "VAR_1", "1", null, null, null, null, null, null);
-        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(var), null, null, null);
+        Ddi4Response ddi4 = new Ddi4Response("schema", null, null, null, List.of(variable), null, null, null);
 
         ddiRepository.updateFullPhysicalInstance("fr.insee", "pi-1", ddi4);
 
@@ -4117,11 +4117,11 @@ class DDIRepositoryImplTest {
             CogsDate.ofDateTime("2026-01-01T00:00:00"), "urn:ddi:fr.insee:pi-1:1",
             agencyId, instanceId, "1", null,
             new Citation(LangStrings.of("fr-FR", "Copied PI")), null);
-        Ddi4Variable var = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
+        Ddi4Variable variable = new Ddi4Variable(Ddi4Variable.TYPE, CogsDate.ofDateTime("2026-01-01T00:00:00"),
             "urn:ddi:fr.insee:VAR_1:1", "fr.insee", "VAR_1", "1", null, null, null, null, null, null);
         Ddi4Response mockDdi4Response = new Ddi4Response("ddi:4.0",
             List.of(Reference.of(agencyId, instanceId, "1", "PhysicalInstance")),
-            List.of(mockPhysicalInstance), List.of(), List.of(var), List.of(), List.of(), null);
+            List.of(mockPhysicalInstance), List.of(), List.of(variable), List.of(), List.of(), null);
         when(colecticaClient.getSet(anyString(), anyString(), any()))
             .thenReturn(new ColecticaSetItem[]{ new ColecticaSetItem(instanceId, 1, agencyId) });
         when(colecticaClient.getDescriptions(anyList())).thenReturn(new ColecticaItemResponse[]{
