@@ -33,12 +33,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-@Component
+@Repository
 public class StructureComponentRepository extends RdfService {
     private final BauhausLanguagesProperties languages;
 

@@ -23,12 +23,12 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
+@Repository
 public class NotesRepository  extends RdfService {
 
 	private final ConceptNotesQueries conceptNotesQueries;

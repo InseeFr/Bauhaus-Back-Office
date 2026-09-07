@@ -14,9 +14,9 @@ import fr.insee.rmes.modules.organisations.domain.OrganisationLabel;
 import fr.insee.rmes.modules.organisations.infrastructure.graphdb.OrganizationQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
+@Repository
 public class OrganizationRepository  extends RdfService {
 
 	private final OperationsObjectMapper operationsObjectMapper;

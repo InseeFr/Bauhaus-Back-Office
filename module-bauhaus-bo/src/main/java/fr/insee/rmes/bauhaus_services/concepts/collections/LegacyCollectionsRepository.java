@@ -14,12 +14,12 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Repository
 public class LegacyCollectionsRepository  {
 	
 	static final Logger logger = LoggerFactory.getLogger(LegacyCollectionsRepository.class);
