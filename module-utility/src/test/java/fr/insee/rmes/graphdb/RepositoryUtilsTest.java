@@ -80,7 +80,7 @@ class RepositoryUtilsTest {
     void shouldExecuteUpdateSuccessfully() throws RmesException {
         String updateQuery = "INSERT DATA { <http://example.org/subject> <http://example.org/predicate> \"object\" . }";
         
-        HttpStatus result = RepositoryUtils.executeUpdate(updateQuery, testRepository);
+        HttpStatus result = repositoryUtils.executeUpdate(updateQuery, testRepository);
         assertEquals(HttpStatus.OK, result);
     }
 
@@ -88,7 +88,7 @@ class RepositoryUtilsTest {
     void shouldReturnExpectationFailedForNullRepository() throws RmesException {
         String updateQuery = "INSERT DATA { <http://example.org/subject> <http://example.org/predicate> \"object\" . }";
         
-        HttpStatus result = RepositoryUtils.executeUpdate(updateQuery, null);
+        HttpStatus result = repositoryUtils.executeUpdate(updateQuery, null);
         assertEquals(HttpStatus.EXPECTATION_FAILED, result);
     }
 
@@ -110,7 +110,7 @@ class RepositoryUtilsTest {
         try (RepositoryConnection conn = testRepository.getConnection()) {
             String query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10";
 
-            String result = RepositoryUtils.executeQuery(conn, query);
+            String result = repositoryUtils.executeQuery(conn, query);
             assertNotNull(result);
             assertTrue(result.contains("results"));
         }
@@ -129,7 +129,7 @@ class RepositoryUtilsTest {
             );
 
             String query = "SELECT ?label WHERE { ?s <http://example.org/label> ?label }";
-            String result = RepositoryUtils.executeQuery(conn, query);
+            String result = repositoryUtils.executeQuery(conn, query);
 
             assertNotNull(result);
             assertTrue(
@@ -144,7 +144,7 @@ class RepositoryUtilsTest {
         try (RepositoryConnection conn = testRepository.getConnection()) {
             String askQuery = "ASK { ?s ?p ?o }";
             
-            boolean result = RepositoryUtils.executeAskQuery(conn, askQuery);
+            boolean result = repositoryUtils.executeAskQuery(conn, askQuery);
             // Should return false for empty repository
             assertFalse(result);
         }
@@ -154,7 +154,7 @@ class RepositoryUtilsTest {
     void shouldGetResponse() throws RmesException {
         String query = "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10";
         
-        String response = RepositoryUtils.getResponse(query, testRepository);
+        String response = repositoryUtils.getResponse(query, testRepository);
         assertNotNull(response);
         assertTrue(response.contains("results"));
     }
@@ -163,7 +163,7 @@ class RepositoryUtilsTest {
     void shouldGetResponseForAskQuery() throws RmesException {
         String askQuery = "ASK { ?s ?p ?o }";
         
-        boolean response = RepositoryUtils.getResponseForAskQuery(askQuery, testRepository);
+        boolean response = repositoryUtils.getResponseForAskQuery(askQuery, testRepository);
         assertFalse(response); // Empty repository
     }
 
@@ -171,7 +171,7 @@ class RepositoryUtilsTest {
     void shouldGetResponseAsArray() throws RmesException {
         String query = "SELECT ?s WHERE { ?s ?p ?o } LIMIT 10";
         
-        JSONArray response = RepositoryUtils.getResponseAsArray(query, testRepository);
+        JSONArray response = repositoryUtils.getResponseAsArray(query, testRepository);
         // Should return empty array for empty repository
         assertTrue(response == null || response.isEmpty());
     }
@@ -180,7 +180,7 @@ class RepositoryUtilsTest {
     void shouldGetResponseAsJSONList() throws RmesException {
         String query = "SELECT ?s WHERE { ?s ?p ?o } LIMIT 10";
         
-        JSONArray response = RepositoryUtils.getResponseAsJSONList(query, testRepository);
+        JSONArray response = repositoryUtils.getResponseAsJSONList(query, testRepository);
         // Should return empty array for empty repository
         assertTrue(response == null || response.isEmpty());
     }
@@ -189,7 +189,7 @@ class RepositoryUtilsTest {
     void shouldGetResponseAsObject() throws RmesException {
         String query = "SELECT ?s WHERE { ?s ?p ?o } LIMIT 1";
         
-        JSONObject response = RepositoryUtils.getResponseAsObject(query, testRepository);
+        JSONObject response = repositoryUtils.getResponseAsObject(query, testRepository);
         assertNotNull(response);
     }
 
@@ -258,7 +258,7 @@ class RepositoryUtilsTest {
         Resource structure = SimpleValueFactory.getInstance().createIRI("http://example.org/structure");
         
         assertDoesNotThrow(() -> {
-            RepositoryUtils.clearStructureAndComponents(structure, testRepository);
+            repositoryUtils.clearStructureAndComponents(structure, testRepository);
         });
     }
 

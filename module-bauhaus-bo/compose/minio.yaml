@@ -1,6 +1,6 @@
 services:
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
     restart: always
     ports:
       - "9000:9000"

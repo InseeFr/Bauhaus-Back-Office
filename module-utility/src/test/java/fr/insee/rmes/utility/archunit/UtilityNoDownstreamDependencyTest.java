@@ -16,7 +16,6 @@ class UtilityNoDownstreamDependencyTest {
                     "fr.insee.rmes.modules.ddi..",
                     "fr.insee.rmes.persistance..",
                     "fr.insee.rmes.bauhaus_services..",
-                    "fr.insee.rmes.onion..",
                     "fr.insee.rmes.model..",
                     "fr.insee.rmes.exceptions..",
                     "fr.insee.rmes.utils..",

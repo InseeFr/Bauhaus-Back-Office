@@ -6,6 +6,7 @@ import fr.insee.rmes.config.BauhausUriPropertiesStub;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
@@ -88,9 +89,9 @@ class DocumentRubricOrderEndToEndTest extends WithGraphDBContainer {
 
     private static List<String> idsOf(JSONArray docs) {
         List<String> ids = new ArrayList<>(docs.length());
-        for (int i = 0; i < docs.length(); i++) {
-            ids.add(docs.getJSONObject(i).getString(Constants.ID));
-        }
+        JSONUtils.stream(docs)
+                .map(doc -> doc.getString(Constants.ID))
+                .forEach(ids::add);
         return ids;
     }
 }

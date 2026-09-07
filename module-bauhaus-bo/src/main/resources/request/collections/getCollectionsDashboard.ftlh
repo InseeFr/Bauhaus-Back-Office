@@ -8,7 +8,7 @@ WHERE {
     OPTIONAL {?collection dcterms:modified ?modified} .
     ?collection insee:validationState ?validationState
     OPTIONAL {?collection dc:creator ?creator} .
-    FILTER (lang(?label) = '${LG1}')
+    FILTER (lang(?label) = ${LG1})
     ?collection skos:member ?member .
 }
 GROUP BY ?id ?label ?created ?modified ?validationState ?creator

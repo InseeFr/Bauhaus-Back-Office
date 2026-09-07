@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.domain.port.serverside;
 
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsFetchException;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.CollectionsSaveException;
@@ -31,6 +31,7 @@ public interface CollectionsRepository {
     void linkConceptToCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException;
     void unlinkConceptFromCollection(CollectionId collectionId, String conceptId) throws CollectionsSaveException;
     void publishCollections(List<CollectionId> collectionIds) throws CollectionsSaveException;
+    Set<String> findValidatedCollectionIds(List<String> ids) throws CollectionsFetchException;
     CollectionExport exportCollection(CollectionId id) throws CollectionsFetchException;
     CollectionExport exportCollectionByType(CollectionId id, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException;
     CollectionExport exportCollectionsZip(List<CollectionId> ids, CollectionExportType type, Language language, boolean withConcepts) throws CollectionsFetchException;

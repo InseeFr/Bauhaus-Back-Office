@@ -2,8 +2,8 @@ package fr.insee.rmes.model.concepts;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,11 +39,10 @@ public class CollectionForExportOld extends CollectionForExport{
     }
 
     public void addMembers(JSONArray members) {
-        for (int i = 0; i < members.length(); i++) {
-            JSONObject member = (JSONObject) members.get(i);
+        JSONUtils.stream(members).forEach(member -> {
             membersLg1.add(member.getString(Constants.PREF_LABEL_LG1));
             if (member.has(Constants.PREF_LABEL_LG2)) membersLg2.add(member.getString(Constants.PREF_LABEL_LG2));
-        }
+        });
     }
 
     public String getCreated() {

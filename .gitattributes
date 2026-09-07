@@ -2,3 +2,8 @@
 * text=auto
 
 mvnw -text -eol=lf
+
+# Templates FreeMarker : LF imposé au checkout, quel que soit l'OS.
+# Sans cela, Git (text=auto) les restitue en CRLF sous Windows et le rendu ne
+# correspond plus aux blocs de texte Java des tests.
+*.ftlh text eol=lf

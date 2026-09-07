@@ -2,10 +2,10 @@ package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.collections.LegacyCollectionsRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
@@ -26,6 +26,7 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -63,7 +64,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     private final RepositoryGestion repositoryGestion;
     private final GraphDBCollectionProperties graphDBCollectionProperties;
     private final ConceptCollectionsQueries conceptCollectionsQueries;
-    private final CollectionsUtils collectionsUtils;
+    private final LegacyCollectionsRepository legacyCollectionsRepository;
     private final CollectionExportBuilder collectionExportBuilder;
     private final ConceptsService conceptsService;
     private final int filenameMaxLength;
@@ -71,14 +72,14 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     public GraphDBCollectionsRepository(RepositoryGestion repositoryGestion,
                                         GraphDBCollectionProperties graphDBCollectionProperties,
                                         ConceptCollectionsQueries conceptCollectionsQueries,
-                                        CollectionsUtils collectionsUtils,
+                                        LegacyCollectionsRepository legacyCollectionsRepository,
                                         CollectionExportBuilder collectionExportBuilder,
                                         @Lazy ConceptsService conceptsService,
                                         @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int filenameMaxLength) {
         this.repositoryGestion = repositoryGestion;
         this.graphDBCollectionProperties = graphDBCollectionProperties;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
-        this.collectionsUtils = collectionsUtils;
+        this.legacyCollectionsRepository = legacyCollectionsRepository;
         this.collectionExportBuilder = collectionExportBuilder;
         this.conceptsService = conceptsService;
         this.filenameMaxLength = filenameMaxLength;
@@ -212,6 +213,20 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     }
 
     @Override
+    public Set<String> findValidatedCollectionIds(List<String> ids) throws CollectionsFetchException {
+        if (ids.isEmpty()) return Set.of();
+        try {
+            var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.findValidatedCollectionIds(ids));
+            if (results == null) return Set.of();
+            return IntStream.range(0, results.length())
+                    .mapToObj(i -> results.getJSONObject(i).getString("id"))
+                    .collect(Collectors.toSet());
+        } catch (Exception e) {
+            throw new CollectionsFetchException(e);
+        }
+    }
+
+    @Override
     public List<String> getCollectionIdsByConceptId(String conceptId) throws CollectionsFetchException {
         try {
             var results = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.getCollectionsByConceptId(conceptId));
@@ -251,7 +266,7 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
         JSONArray ids = new JSONArray();
         collectionIds.forEach(id -> ids.put(id.value()));
         try {
-            collectionsUtils.collectionsValidation(ids);
+            legacyCollectionsRepository.collectionsValidation(ids);
         } catch (RmesException e) {
             throw new CollectionsSaveException(e);
         }
@@ -347,9 +362,9 @@ public class GraphDBCollectionsRepository implements CollectionsRepository  {
     private List<String> memberConceptIds(String collectionId) throws RmesException {
         var concepts = repositoryGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(collectionId));
         List<String> ids = new ArrayList<>();
-        for (int i = 0; i < concepts.length(); i++) {
-            ids.add(concepts.getJSONObject(i).getString("id"));
-        }
+        JSONUtils.stream(concepts)
+                .map(concept -> concept.getString("id"))
+                .forEach(ids::add);
         return ids;
     }
 

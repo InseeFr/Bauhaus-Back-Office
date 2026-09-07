@@ -36,7 +36,7 @@ class PhysicalInstanceVariablesResourcesTest {
     private static final String VERSION = "3";
 
     private static Ddi4Response emptyDdi4() {
-        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null);
+        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null);
     }
 
     @Test
@@ -109,36 +109,48 @@ class PhysicalInstanceVariablesResourcesTest {
         verify(ddiService).getDataRelationships(AGENCY, ID, VERSION);
     }
 
-    // #447 (dernier commentaire) : le endpoint est exposé sous /ddi/public/structures pour la
-    // redirection Gravitee (les endpoints Bauhaus repris par /ddi/).
+    // #1144 : le endpoint est exposé sous /ddi/public/fichier/{agency}/{id} (et plus sous
+    // /ddi/public/structures/{agency}/{id}/variables). Le préfixe /ddi/ reste imposé par la
+    // redirection Gravitee.
 
     @Test
-    void endpointMappedUnderDdiStructures() throws Exception {
+    void endpointMappedUnderDdiFichier() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
         when(ddiService.getDataRelationships(AGENCY, ID, null)).thenReturn(emptyDdi4());
 
-        mockMvc.perform(get("/ddi/public/structures/{agency}/{id}/variables", AGENCY, ID)
+        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}", AGENCY, ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void endpointMappedUnderDdiStructures_withVersion() throws Exception {
+    void endpointMappedUnderDdiFichier_withVersion() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
         when(ddiService.getDataRelationships(AGENCY, ID, VERSION)).thenReturn(emptyDdi4());
 
-        mockMvc.perform(get("/ddi/public/structures/{agency}/{id}/{version}/variables", AGENCY, ID, VERSION)
+        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}/{version}", AGENCY, ID, VERSION)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void oldStructuresPathNoLongerMapped() throws Exception {
+    void endpointMappedUnderDdiFichier_xml() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
+        when(ddiService.getDataRelationshipsXml(AGENCY, ID, null))
+                .thenReturn("<ddi:FragmentInstance/>");
+
+        mockMvc.perform(get("/ddi/public/fichier/{agency}/{id}", AGENCY, ID)
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void oldStructuresVariablesPathNoLongerMapped() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(resources).build();
         // Réponse non nulle : si l'ancien path était encore mappé on aurait 200, pas 404.
         lenient().when(ddiService.getDataRelationships(AGENCY, ID, null)).thenReturn(emptyDdi4());
 
-        mockMvc.perform(get("/structures/{agency}/{id}/variables", AGENCY, ID)
+        mockMvc.perform(get("/ddi/public/structures/{agency}/{id}/variables", AGENCY, ID)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

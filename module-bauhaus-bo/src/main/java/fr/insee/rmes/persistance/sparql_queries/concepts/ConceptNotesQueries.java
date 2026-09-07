@@ -4,6 +4,7 @@ import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 
@@ -28,42 +29,42 @@ public class ConceptNotesQueries {
 
 	public String getLastVersionnableNoteVersion(String conceptId, IRI predicat) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CONCEPT_ID, conceptId);
-		params.put("PREDICAT", predicat);
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
+		params.put("PREDICAT", SparqlLiterals.iri(predicat.stringValue()));
 		return buildRequest("getLastVersionnableNoteVersion.ftlh", params);
 	}
 
 	public String getConceptVersion(String conceptId) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CONCEPT_ID, conceptId);
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
 		return buildRequest("getConceptVersion.ftlh", params);
 	}
 
 	public String getChangeNoteToDelete(String conceptId, DatableNote datableNote) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CONCEPT_ID, conceptId);
-		params.put("LANG", datableNote.getLang());
-		params.put("CONCEPT_VERSION", datableNote.getConceptVersion());
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
+		params.put("LANG", SparqlLiterals.literal(datableNote.getLang()));
+		params.put("CONCEPT_VERSION", SparqlLiterals.literal(String.valueOf(datableNote.getConceptVersion())));
 		return buildRequest("getChangeNoteToDelete.ftlh", params);
 	}
 
 	public String getHistoricalNotes(String conceptId, String maxVersion) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CONCEPT_ID, conceptId);
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
 		params.put("MAX_VERSION", maxVersion);
-		params.put("CONCEPTS_GRAPH", graphs.conceptsGraph());
+		params.put("CONCEPTS_GRAPH", SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildRequest("getHistoricalNotes.ftlh", params);
 	}
 
 	public String isExist(IRI note) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("NOTE", note);
+		params.put("NOTE", SparqlLiterals.iri(note.stringValue()));
 		return buildRequest("isNoteExist.ftlh", params);
 	}
 
 	public String isClosed(IRI note) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("NOTE", note);
+		params.put("NOTE", SparqlLiterals.iri(note.stringValue()));
 		return buildRequest("isNoteClosed.ftlh", params);
 	}
 }

@@ -21,8 +21,55 @@ class DDI3toDDI4ConverterServiceImplTest {
             "DataRelationship", "f39ff278-8500-45fe-a850-3906da2d242b",
             "Variable", "683889c6-f74b-4d5e-92ed-908c0a42bb2d",
             "CodeList", "8b108ef8-b642-4484-9c49-f88e4bf7cf1d",
-            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00"
+            "Category", "7e47c269-bcab-40f7-a778-af7bbc4e3d00",
+            "ManagedMissingValuesRepresentation", "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed"
         ));
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : les items {@code ManagedMissingValuesRepresentation} du set
+     * DDI 3 sont agrégés dans la {@code Ddi4Response}.
+     */
+    @Test
+    void shouldConvertManagedMissingValuesRepresentationItems() {
+        String mmvrXml = """
+                <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                    <r:ManagedMissingValuesRepresentation isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                        <r:URN>urn:ddi:fr.insee:mmvr-1:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                        <r:Label><r:Content xml:lang="fr-FR">Valeurs sentinelles NSP/REF</r:Content></r:Label>
+                        <r:MissingCodeRepresentation blankIsMissingValue="false">
+                            <r:CodeListReference>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cl-sentinelles</r:ID><r:Version>1</r:Version>
+                                <r:TypeOfObject>CodeList</r:TypeOfObject>
+                            </r:CodeListReference>
+                        </r:MissingCodeRepresentation>
+                    </r:ManagedMissingValuesRepresentation>
+                </Fragment>
+                """;
+        Ddi3Response ddi3 = new Ddi3Response(
+                new Ddi3Response.Ddi3Options(List.of("RegisterOrReplace")),
+                List.of(new Ddi3Response.Ddi3Item(
+                        "c29c3125-2a53-4179-8fa6-aa3beb2bb5ed",
+                        "fr.insee",
+                        "1",
+                        "mmvr-1",
+                        mmvrXml,
+                        "2026-04-03T12:00:00Z",
+                        "abcde",
+                        false,
+                        false,
+                        false,
+                        "DC337820-AF3A-4C0B-82F9-CF02535CDE83"
+                )));
+
+        Ddi4Response result = converter.convertDdi3ToDdi4(ddi3, SCHEMA_URL);
+
+        assertNotNull(result.managedMissingValuesRepresentation());
+        assertEquals(1, result.managedMissingValuesRepresentation().size());
+        Ddi4ManagedMissingValuesRepresentation mmvr = result.managedMissingValuesRepresentation().get(0);
+        assertEquals("mmvr-1", mmvr.id());
+        assertEquals("cl-sentinelles", mmvr.missingCodeRepresentation().get(0).codeListReference().id());
     }
 
     @Test
@@ -78,6 +125,132 @@ class DDI3toDDI4ConverterServiceImplTest {
         assertEquals("1", scheme.version());
         assertEquals(1, scheme.codeListReference().size());
         assertEquals("cl-1", scheme.codeListReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseGroupFromFragmentXml() {
+        // Build a schema-valid Group fragment with the real serializer, then parse it back:
+        // this is the exact round-trip the auto-provision of a group's CodeListScheme relies on.
+        Ddi4Group original = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"),
+                "urn:ddi:fr.insee:group-id:1", "fr.insee", "group-id", "1", "resp",
+                new Citation(LangStrings.of("fr-FR", "Enquête innovation")),
+                List.of(Reference.of("fr.insee", "su-1", "1", "StudyUnit")),
+                List.of("http://id.insee.fr/operations/serie/s1001"),
+                "insee:StatisticalOperationSeries");
+        java.util.HashMap<String, String> prefixes = new java.util.HashMap<>();
+        prefixes.put("ddi:instance:3_3", "");
+        prefixes.put("ddi:group:3_3", "");
+        prefixes.put("ddi:reusable:3_3", "r");
+        org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
+        opts.setSaveSuggestedPrefixes(prefixes);
+        String groupXml = new Ddi4ToLifecycle33().toGroup(original).xmlText(opts);
+
+        Ddi4Group group = converter.toGroup(groupXml);
+
+        assertEquals("group-id", group.id());
+        assertEquals("fr.insee", group.agency());
+        assertEquals("1", group.version());
+        assertEquals("insee:StatisticalOperationSeries", group.typeOfGroup());
+        assertEquals(List.of("http://id.insee.fr/operations/serie/s1001"), group.seriesIris());
+        assertEquals(1, group.studyUnitReference().size());
+        assertEquals("su-1", group.studyUnitReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseCategorySchemeFromFragmentXml() {
+        Ddi4CategoryScheme original = new Ddi4CategoryScheme(Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:cats-id:1",
+                "fr.insee", "cats-id", "1", LangStrings.of("fr-FR", "Schéma catégories"),
+                List.of(Reference.of("fr.insee", "cat-1", "1", "Category")));
+        String xml = new Ddi4ToLifecycle33().toCategoryScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4CategoryScheme scheme = converter.toCategoryScheme(xml);
+
+        assertEquals("cats-id", scheme.id());
+        assertEquals("fr.insee", scheme.agency());
+        assertEquals(1, scheme.categoryReference().size());
+        assertEquals("cat-1", scheme.categoryReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseVariableSchemeFromFragmentXml() {
+        Ddi4VariableScheme original = new Ddi4VariableScheme(Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:vars-id:1",
+                "fr.insee", "vars-id", "1", LangStrings.of("fr-FR", "Schéma variables"),
+                List.of(Reference.of("fr.insee", "var-1", "1", "Variable")));
+        String xml = new Ddi4ToLifecycle33().toVariableScheme(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4VariableScheme scheme = converter.toVariableScheme(xml);
+
+        assertEquals("vars-id", scheme.id());
+        assertEquals("fr.insee", scheme.agency());
+        assertEquals(1, scheme.variableReference().size());
+        assertEquals("var-1", scheme.variableReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseLogicalProductFromFragmentXml() {
+        // Round-trip through the real serializer: this is what reading a group's existing
+        // LogicalProduct relies on, to add a scheme reference to it instead of creating a second one.
+        Ddi4LogicalProduct original = new Ddi4LogicalProduct(Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:lp-id:1",
+                "fr.insee", "lp-id", "1", LangStrings.of("fr-FR", "Produit logique"),
+                List.of(Reference.of("fr.insee", "cls-1", "1", "CodeListScheme")),
+                List.of(Reference.of("fr.insee", "cats-1", "1", "CategoryScheme")),
+                List.of(Reference.of("fr.insee", "vars-1", "1", "VariableScheme")),
+                List.of(Reference.of("fr.insee", "mrs-1", "1", "ManagedRepresentationScheme")));
+        String xml = new Ddi4ToLifecycle33().toLogicalProduct(original).xmlText(logicalProductFragmentOptions());
+
+        Ddi4LogicalProduct logicalProduct = converter.toLogicalProduct(xml);
+
+        assertEquals("lp-id", logicalProduct.id());
+        assertEquals("fr.insee", logicalProduct.agency());
+        assertEquals("1", logicalProduct.version());
+        assertEquals(1, logicalProduct.codeListSchemeReference().size());
+        assertEquals("cls-1", logicalProduct.codeListSchemeReference().get(0).id());
+        assertEquals(1, logicalProduct.categorySchemeReference().size());
+        assertEquals("cats-1", logicalProduct.categorySchemeReference().get(0).id());
+        assertEquals(1, logicalProduct.variableSchemeReference().size());
+        assertEquals("vars-1", logicalProduct.variableSchemeReference().get(0).id());
+        assertEquals(1, logicalProduct.managedRepresentationSchemeReference().size());
+        assertEquals("mrs-1", logicalProduct.managedRepresentationSchemeReference().get(0).id());
+    }
+
+    @Test
+    void shouldParseStudyUnitFromFragmentXml() {
+        Ddi4StudyUnit original = new Ddi4StudyUnit(Ddi4StudyUnit.TYPE,
+                CogsDate.ofDateTime("2026-04-03T12:00:00Z"), "urn:ddi:fr.insee:su-id:1",
+                "fr.insee", "su-id", "1", new Citation(LangStrings.of("fr-FR", "Study Unit")),
+                "http://id.insee.fr/operations/operation/op1",
+                List.of(Reference.of("fr.insee", "pi-1", "1", "PhysicalInstance")),
+                List.of(Reference.of("fr.insee", "lp-1", "1", "LogicalProduct")));
+        String xml = new Ddi4ToLifecycle33().toStudyUnit(original).xmlText(studyUnitFragmentOptions());
+
+        Ddi4StudyUnit studyUnit = converter.toStudyUnit(xml);
+
+        assertEquals("su-id", studyUnit.id());
+        assertEquals("http://id.insee.fr/operations/operation/op1", studyUnit.operationIri());
+        assertEquals(1, studyUnit.physicalInstanceReferences().size());
+        assertEquals("pi-1", studyUnit.physicalInstanceReferences().get(0).id());
+    }
+
+    private static org.apache.xmlbeans.XmlOptions logicalProductFragmentOptions() {
+        return fragmentOptions("ddi:logicalproduct:3_3");
+    }
+
+    private static org.apache.xmlbeans.XmlOptions studyUnitFragmentOptions() {
+        return fragmentOptions("ddi:studyunit:3_3");
+    }
+
+    private static org.apache.xmlbeans.XmlOptions fragmentOptions(String contentNs) {
+        java.util.HashMap<String, String> prefixes = new java.util.HashMap<>();
+        prefixes.put("ddi:instance:3_3", "");
+        prefixes.put(contentNs, "");
+        prefixes.put("ddi:reusable:3_3", "r");
+        org.apache.xmlbeans.XmlOptions opts = new org.apache.xmlbeans.XmlOptions();
+        opts.setSaveSuggestedPrefixes(prefixes);
+        return opts;
     }
 
     @Test

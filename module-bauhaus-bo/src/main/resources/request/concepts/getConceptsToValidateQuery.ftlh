@@ -1,6 +1,6 @@
 SELECT DISTINCT ?id ?label ?creator ?valid
 	WHERE {
-	    GRAPH <${CONCEPTS_GRAPH}> {
+	    GRAPH ${CONCEPTS_GRAPH} {
 		    ?concept rdf:type skos:Concept .
 		    BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) .
 		    ?concept skos:prefLabel ?label .
@@ -8,7 +8,7 @@ SELECT DISTINCT ?id ?label ?creator ?valid
 		    ?concept insee:validationState ?validationState .
 		    FILTER(?validationState != 'Validated') .
 		    OPTIONAL {?concept dcterms:valid ?valid .}
-		    FILTER (lang(?label) = '${LG1}') .
+		    FILTER (lang(?label) = ${LG1}) .
 		}
 	}
 ORDER BY ?label

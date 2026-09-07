@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +41,7 @@ public class CollectionForExport {
 	}
 
 	public void addMembers(JSONArray members) {
-		for (int i = 0; i < members.length(); i++) {
-			JSONObject member = (JSONObject) members.get(i);
+		JSONUtils.stream(members).forEach(member -> {
 			MembersLg rep = new MembersLg();
 			rep.setId(member.getString(Constants.ID));
 			rep.setPrefLabelLg1(member.getString(Constants.PREF_LABEL_LG1));
@@ -58,7 +57,7 @@ public class CollectionForExport {
 			if (member.has(Constants.CREATED)) rep.setCreated(DateUtils.toDate(member.getString(Constants.CREATED)));
 			if (member.has(Constants.MODIFIED)) rep.setModified(DateUtils.toDate(member.getString(Constants.MODIFIED)));
 			membersLg.add(rep);
-		}
+		});
 	}
 
 

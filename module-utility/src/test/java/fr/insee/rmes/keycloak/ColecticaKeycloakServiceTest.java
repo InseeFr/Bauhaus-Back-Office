@@ -48,14 +48,14 @@ class ColecticaKeycloakServiceTest {
                 return "colectica-token";
             }
         };
-        when(responseSpec.body(eq(Token.class))).thenReturn(token);
+        when(responseSpec.body(Token.class)).thenReturn(token);
     }
 
     @Test
     void getAccessToken_shouldCallKeycloakServerWithColecticaRealm() {
         colecticaKeycloakService.getAccessToken();
         verify(requestBodyUriSpec).uri(
-                eq("keycloak.test/realms/colectica-realm/protocol/openid-connect/token")
+                "keycloak.test/realms/colectica-realm/protocol/openid-connect/token"
         );
     }
 

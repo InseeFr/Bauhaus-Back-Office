@@ -8,6 +8,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Study
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,6 +39,12 @@ public class StudyUnitServiceImpl extends AbstractDdiItemService<Ddi4StudyUnit> 
     public void addPhysicalInstance(Ddi4StudyUnit studyUnit, Reference physicalInstanceReference) {
         logger.info("Adding physical instance to study unit: id={}, piId={}", studyUnit.id(), physicalInstanceReference.id());
         studyUnitRepository.addPhysicalInstance(studyUnit, physicalInstanceReference);
+    }
+
+    @Override
+    public void deprecate(Collection<String> studyUnitIds) {
+        logger.info("Deprecating {} targeted study unit(s)", studyUnitIds != null ? studyUnitIds.size() : 0);
+        studyUnitRepository.deprecate(studyUnitIds);
     }
 
     @Override

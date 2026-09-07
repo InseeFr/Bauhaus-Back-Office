@@ -8,11 +8,14 @@ import fr.insee.rmes.PaginationProperties;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class CodeListsQueries {
@@ -22,6 +25,14 @@ public class CodeListsQueries {
 	private static final String NOTATION = "NOTATION";
 	private static final String CODE = "CODE";
 	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
+	private static final String DEFAULT_SORT = "code";
+	/**
+	 * Un nom de variable ne peut pas être échappé : il est validé contre les colonnes que
+	 * getDetailedCodes.ftlh projette, sans quoi le tri ouvrirait une injection dans le ORDER BY.
+	 */
+	private static final Set<String> SORTABLE_COLUMNS = Set.of(
+			"code", "labelLg1", "labelLg2", "descriptionLg1", "descriptionLg2", "parents", "codeUri",
+			"lastCodeUriSegment");
 
     private final BauhausUriProperties uris;
     private final BauhausLanguagesProperties languages;
@@ -37,16 +48,16 @@ public class CodeListsQueries {
 
 	public String isCodesListValidated(String codesListUri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("IRI", codesListUri);
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put("IRI", SparqlLiterals.iri(codesListUri));
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "isCodesListValidated.ftlh", params);
 	}
 
 	public String getAllCodesLists(CodeListKind kind) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(PARTIAL, kind.isPartial());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
@@ -61,7 +72,7 @@ public class CodeListsQueries {
 	public String getBroaderNarrowerCloseMatch(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put(NOTATION, notation);
+		params.put(NOTATION, SparqlLiterals.literal(notation));
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getBroaderNarrowerCloseMatch.ftlh", params);
 	}
 
@@ -70,22 +81,23 @@ public class CodeListsQueries {
 			search.forEach(s -> {
 				if (!s.isEmpty()) {
 					String key = s.startsWith("code:") ? "SEARCH_CODE" : "SEARCH_LABEL_LG1";
-					params.put(key, s.substring(s.indexOf(":") + 1));
+					params.put(key, SparqlLiterals.literal(s.substring(s.indexOf(":") + 1)));
 				}
 			});
 		}
 	}
 
 	public String getDetailedCodes(String notation, CodeListKind kind, List<String> search, int page, Integer perPage, String sort) throws RmesException {
+		String sortVariable = SparqlLiterals.variable(sortColumn(sort));
 		Map<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put(NOTATION, notation);
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put(NOTATION, SparqlLiterals.literal(notation));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(PARTIAL, kind.isPartial());
-		params.put(CODE_LIST_BASE_URI, uris.codeListBaseUri());
-		params.put("SORT", sort == null ? "code" : sort);
+		params.put("CODE_LIST_BASE_URI_PREFIX", SparqlLiterals.literal(uris.codeListBaseUri() + "/"));
+		params.put("SORT", sortVariable);
 
 		addSearchPredicates(params, search);
 
@@ -96,12 +108,22 @@ public class CodeListsQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
 	}
 
+	private static String sortColumn(String sort) {
+		if (sort == null) {
+			return DEFAULT_SORT;
+		}
+		if (!SORTABLE_COLUMNS.contains(sort)) {
+			throw new RmesRuntimeBadRequestException("Unknown sort column: " + sort + ". Expected one of " + SORTABLE_COLUMNS);
+		}
+		return sort;
+	}
+
 	public String countCodesForCodeList(String notation, List<String> search) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put(NOTATION, notation);
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put(NOTATION, SparqlLiterals.literal(notation));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		addSearchPredicates(params, search);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
 	}
@@ -110,10 +132,10 @@ public class CodeListsQueries {
 		int perPageValue = getPerPageConfiguration(perPage);
 
 		Map<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put(NOTATION, notation);
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put(NOTATION, SparqlLiterals.literal(notation));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		if (perPageValue > 0) {
 			var offset = perPageValue * (page - 1);
 			params.put("OFFSET", String.valueOf(offset));
@@ -125,42 +147,56 @@ public class CodeListsQueries {
 	public String getCodeListLabelByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put(NOTATION, notation);
+		params.put(NOTATION, SparqlLiterals.literal(notation));
 		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
 	}
 
+	/**
+	 * Existence d'un code <em>dans</em> une liste. Pointait sur getCodeListLabelByNotation.ftlh, qui
+	 * n'interpole que la notation de la liste : la garde d'unicité de l'ajout de code répondait donc
+	 * « Code already exists » pour n'importe quel code d'une liste existante, et le 404 de la
+	 * suppression ne se déclenchait jamais.
+	 */
 	public String getCodeByNotation(String notationCodeList, String notationCode) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put(NOTATION, notationCodeList);
-		params.put(CODE, notationCode);
-		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
+		params.put(NOTATION, SparqlLiterals.literal(notationCodeList));
+		params.put(CODE, SparqlLiterals.literal(notationCode));
+		return buildCodesListRequest("getCodeByNotation.ftlh", params);
 	}
 
-	public String getCodeUriByNotation(String notationCodeList, String notationCode) {
-		return "SELECT  ?uri  \n"
-				+ "WHERE { GRAPH <" + graphs.codeListGraph() + "> { \n"
-				+ "?codeList rdf:type skos:ConceptScheme . \n"
-				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
-				+ "?uri skos:inScheme ?codeList . \n"
-				+ "?uri skos:notation '" + notationCode + "' . \n"
-				+ " }}";
+	public String getCodeUriByNotation(String notationCodeList, String notationCode) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put(NOTATION, SparqlLiterals.literal(notationCodeList));
+		params.put(CODE, SparqlLiterals.literal(notationCode));
+		return buildCodesListRequest("getCodeUriByNotation.ftlh", params);
 	}
 
 	public String geCodesListByIRI(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("CODE_LIST", id);
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put("CODE_LIST", SparqlLiterals.iri(id));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
+	}
+
+	/**
+	 * L'IRI est l'identité stable d'une liste de codes : sa notation, elle, peut être renommée.
+	 */
+	public String getCodesListByIri(String iri) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
+		params.put("IRI", SparqlLiterals.iri(iri));
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesListByIri.ftlh", params);
 	}
 
 	public String getDetailedCodeListByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put(NOTATION, notation);
-		params.put(CODE_LIST_BASE_URI, uris.codeListBaseUri());
+		params.put(NOTATION, SparqlLiterals.literal(notation));
+		params.put("CODE_LIST_BASE_URI_PREFIX", SparqlLiterals.literal(uris.codeListBaseUri() + "/"));
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 
@@ -179,17 +215,17 @@ public class CodeListsQueries {
 	}
 
 	private void initParams(HashMap<String, Object> params) {
-		params.put(CODES_LISTS_GRAPH, graphs.codeListGraph());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put(CODES_LISTS_GRAPH, SparqlLiterals.iri(graphs.codeListGraph()));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 	}
 
 	public String checkCodeListUnicity(String id, String iri, String seeAlso, CodeListKind kind) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put("ID", id);
-		params.put("IRI", iri);
-		params.put("SEE_ALSO", seeAlso);
+		params.put("ID", SparqlLiterals.literal(id));
+		params.put("IRI", SparqlLiterals.iri(iri));
+		params.put("SEE_ALSO", SparqlLiterals.iri(seeAlso));
 		params.put(PARTIAL, kind.isPartial());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "checkCodeListUnicity.ftlh", params);
 	}
@@ -197,7 +233,7 @@ public class CodeListsQueries {
 	public String getPartialCodeListByParentUri(String iri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put("IRI", iri);
+		params.put("IRI", SparqlLiterals.iri(iri));
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getPartialCodeListByParentUri.ftlh", params);
 	}
 
@@ -206,7 +242,7 @@ public class CodeListsQueries {
 	}
 
 	public String getCodesListContributors(String IRI) throws RmesException {
-		Map<String, Object> params = Map.of("GRAPH", graphs.codeListGraph(), "IRI", IRI, "PREDICATE", "dc:contributor");
+		Map<String, Object> params = Map.of("GRAPH", SparqlLiterals.iri(graphs.codeListGraph()), "IRI", SparqlLiterals.iri(IRI), "PREDICATE", "dc:contributor");
 		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
 	}
 }

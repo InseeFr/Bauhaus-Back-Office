@@ -1,0 +1,168 @@
+@prefix skos:     <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms:  <http://purl.org/dc/terms/> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix insee:    <http://rdf.insee.fr/def/base#> .
+@prefix sdmx-mm:  <http://www.w3.org/ns/sdmx-mm#> .
+@prefix simsv2fr: <http://bauhaus/qualite/simsv2fr/attribut/> .
+
+# Fixture dédiée aux tests d'intégration des trois endpoints de publication
+# (PUT /api/operations/{series|operation|metadataReport}/{id}/validate).
+#
+# Les identifiants s91xx / 92xx ne sont utilisés par aucune autre fixture : le conteneur
+# GraphDB est partagé par toute la campagne de tests et la publication modifie les données.
+
+<http://rdf.insee.fr/graphes/operations> {
+
+    ##########################################################################
+    # Familles
+    ##########################################################################
+
+    # Famille publiée : autorise la publication de ses séries.
+    <http://bauhaus/operations/famille/s9100>
+            a                     insee:StatisticalOperationFamily ;
+            skos:prefLabel        "Famille publiée pour tests de publication"@fr , "Published family for publication tests"@en ;
+            dcterms:hasPart       <http://bauhaus/operations/serie/s9101> , <http://bauhaus/operations/serie/s9103> , <http://bauhaus/operations/serie/s9106> ;
+            insee:validationState "Validated" .
+
+    # Famille non publiée : bloque la publication de sa série.
+    <http://bauhaus/operations/famille/s9110>
+            a                     insee:StatisticalOperationFamily ;
+            skos:prefLabel        "Famille non publiée"@fr , "Unpublished family"@en ;
+            dcterms:hasPart       <http://bauhaus/operations/serie/s9111> ;
+            insee:validationState "Unpublished" .
+
+    ##########################################################################
+    # Séries
+    ##########################################################################
+
+    # Série du cas nominal de PUT /series/{id}/validate.
+    <http://bauhaus/operations/serie/s9101>
+            a                     insee:StatisticalOperationSeries ;
+            skos:prefLabel        "Série à publier"@fr , "Series to publish"@en ;
+            skos:altLabel         "SAP"@fr , "STP"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/famille/s9100> ;
+            dcterms:publisher     <http://bauhaus/organisations/insee/DG75-E001> ;
+            dcterms:hasPart       <http://bauhaus/operations/operation/s9102> , <http://bauhaus/operations/operation/s9105> ;
+            insee:validationState "Unpublished" .
+
+    # Série du cas nominal de PUT /operation/{id}/validate : elle doit être publiée.
+    <http://bauhaus/operations/serie/s9103>
+            a                     insee:StatisticalOperationSeries ;
+            skos:prefLabel        "Série publiée"@fr , "Published series"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/famille/s9100> ;
+            dcterms:hasPart       <http://bauhaus/operations/operation/s9104> , <http://bauhaus/operations/operation/s9107> ;
+            insee:validationState "Validated" .
+
+    # Série dédiée au test de transition d'état : aucun autre test ne la publie, son état
+    # initial « Unpublished » est donc observable.
+    <http://bauhaus/operations/serie/s9106>
+            a                     insee:StatisticalOperationSeries ;
+            skos:prefLabel        "Série pour la transition d'état"@fr , "Series for the state transition"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/famille/s9100> ;
+            insee:validationState "Unpublished" .
+
+    # Série rattachée à une famille non publiée : sa publication doit être refusée.
+    <http://bauhaus/operations/serie/s9111>
+            a                     insee:StatisticalOperationSeries ;
+            skos:prefLabel        "Série d'une famille non publiée"@fr , "Series of an unpublished family"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/famille/s9110> ;
+            dcterms:hasPart       <http://bauhaus/operations/operation/s9112> ;
+            insee:validationState "Unpublished" .
+
+    ##########################################################################
+    # Opérations
+    ##########################################################################
+
+    # Opération déjà publiée de la série s9101 : son lien hasPart doit être republié
+    # avec la série.
+    <http://bauhaus/operations/operation/s9102>
+            a                     insee:StatisticalOperation ;
+            skos:prefLabel        "Opération publiée"@fr , "Published operation"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/serie/s9101> ;
+            insee:validationState "Validated" .
+
+    # Opération non publiée de la série s9101 : son lien hasPart ne doit PAS être publié.
+    <http://bauhaus/operations/operation/s9105>
+            a                     insee:StatisticalOperation ;
+            skos:prefLabel        "Opération non publiée de la série à publier"@fr , "Unpublished operation of the series to publish"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/serie/s9101> ;
+            insee:validationState "Unpublished" .
+
+    # Opération du cas nominal de PUT /operation/{id}/validate.
+    <http://bauhaus/operations/operation/s9104>
+            a                     insee:StatisticalOperation ;
+            skos:prefLabel        "Opération à publier"@fr , "Operation to publish"@en ;
+            skos:altLabel         "OAP"@fr , "OTP"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/serie/s9103> ;
+            dcterms:publisher     <http://bauhaus/organisations/insee/DG75-E001> ;
+            insee:validationState "Unpublished" .
+
+    # Opération dédiée au test de transition d'état : aucun autre test ne la publie.
+    <http://bauhaus/operations/operation/s9107>
+            a                     insee:StatisticalOperation ;
+            skos:prefLabel        "Opération pour la transition d'état"@fr , "Operation for the state transition"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/serie/s9103> ;
+            insee:validationState "Unpublished" .
+
+    # Opération d'une série non publiée : sa publication doit être refusée.
+    <http://bauhaus/operations/operation/s9112>
+            a                     insee:StatisticalOperation ;
+            skos:prefLabel        "Opération d'une série non publiée"@fr , "Operation of an unpublished series"@en ;
+            dcterms:isPartOf      <http://bauhaus/operations/serie/s9111> ;
+            insee:validationState "Unpublished" .
+}
+
+##############################################################################
+# SIMS du cas nominal : cible = opération publiée s9102
+##############################################################################
+<http://rdf.insee.fr/graphes/qualite/rapport/9202> {
+    <http://bauhaus/qualite/rapport/9202>
+            a                     sdmx-mm:MetadataReport ;
+            rdfs:label            "Rapport qualité à publier"@fr ;
+            sdmx-mm:target        <http://bauhaus/operations/operation/s9102> ;
+            insee:validationState "Unpublished" .
+
+    # Rubrique publiable
+    <http://bauhaus/qualite/attribut/9202/S.1.1>
+            a                      sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.1         "Rubrique publiable"@fr ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9202> .
+
+    # Rubrique interne : ne doit jamais atteindre la base de publication
+    <http://bauhaus/qualite/attribut/9202/S.1.5>
+            a                      sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.5         "Rubrique interne non publiable"@fr ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9202> .
+}
+
+##############################################################################
+# SIMS dont la cible n'est pas publiée : la publication doit être refusée
+##############################################################################
+<http://rdf.insee.fr/graphes/qualite/rapport/9203> {
+    <http://bauhaus/qualite/rapport/9203>
+            a                     sdmx-mm:MetadataReport ;
+            rdfs:label            "Rapport qualité d'une opération non publiée"@fr ;
+            sdmx-mm:target        <http://bauhaus/operations/operation/s9112> ;
+            insee:validationState "Unpublished" .
+
+    <http://bauhaus/qualite/attribut/9203/S.1.1>
+            a                      sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.1         "Rubrique du rapport non publiable"@fr ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9203> .
+}
+
+##############################################################################
+# SIMS dédié au test de transition d'état : cible = opération publiée s9102
+##############################################################################
+<http://rdf.insee.fr/graphes/qualite/rapport/9204> {
+    <http://bauhaus/qualite/rapport/9204>
+            a                     sdmx-mm:MetadataReport ;
+            rdfs:label            "Rapport qualité pour la transition d'état"@fr ;
+            sdmx-mm:target        <http://bauhaus/operations/operation/s9102> ;
+            insee:validationState "Unpublished" .
+
+    <http://bauhaus/qualite/attribut/9204/S.1.1>
+            a                      sdmx-mm:ReportedAttribute ;
+            simsv2fr:S.1.1         "Rubrique du rapport de transition"@fr ;
+            sdmx-mm:metadataReport <http://bauhaus/qualite/rapport/9204> .
+}

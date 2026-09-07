@@ -1,6 +1,6 @@
 SELECT ?iri
-FROM <${DATASET_GRAPH}>
+FROM ${DATASET_GRAPH}
 WHERE {
-    ?dataset dcterms:identifier '${ID}' ;
+    ?dataset dcterms:identifier ${ID} ;
              prov:wasGeneratedBy ?iri .
 }

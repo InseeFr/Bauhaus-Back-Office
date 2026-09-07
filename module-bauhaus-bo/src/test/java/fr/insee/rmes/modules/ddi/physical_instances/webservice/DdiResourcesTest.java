@@ -1,16 +1,18 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.*;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.domain.model.User;
@@ -27,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -47,10 +51,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class DdiResourcesTest {
@@ -74,13 +82,13 @@ class DdiResourcesTest {
     private RbacFetcher rbacFetcher;
 
     @Mock
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
 
     private DdiResources ddiResources;
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils);
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, bauhausUriBuilder, mock(Ddi4SchemaService.class));
 
         // Setup mock request context for ServletUriComponentsBuilder
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -169,6 +177,7 @@ class DdiResourcesTest {
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId, "cl-1", "1",
                 LangStrings.of("fr-FR", "ma cl"),
+                null,
                 List.of()
         );
         when(ddiService.getPhysicalInstanceCodeLists(agencyId, id))
@@ -227,6 +236,38 @@ class DdiResourcesTest {
 
         verify(ddiService, never()).evictMutualizedCodesListsCache();
         verify(ddiService).getMutualizedCodesLists();
+    }
+
+    @Test
+    void getMutualizedCodesLists_exposesTechnicalNameAlongsideLabel() {
+        when(ddiService.getMutualizedCodesLists())
+                .thenReturn(List.of(new PartialCodesList(
+                        "cl-1", "Libellé lisible", new Date(), "fr.insee", "CL_NOM_TECHNIQUE")));
+
+        ResponseEntity<List<CodeListSummaryResponse>> response =
+                ddiResources.getMutualizedCodesLists(null);
+
+        List<CodeListSummaryResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals("Libellé lisible", body.get(0).label());
+        assertEquals("CL_NOM_TECHNIQUE", body.get(0).name());
+    }
+
+    @Test
+    void getMutualizedCodesLists_exposesVersionDate() {
+        Date versionDate = new Date(1_750_000_000_000L);
+        when(ddiService.getMutualizedCodesLists())
+                .thenReturn(List.of(new PartialCodesList(
+                        "cl-1", "ma cl", versionDate, "fr.insee", "CL_NOM")));
+
+        ResponseEntity<List<CodeListSummaryResponse>> response =
+                ddiResources.getMutualizedCodesLists(null);
+
+        List<CodeListSummaryResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals(versionDate, body.get(0).versionDate());
     }
 
     @Test
@@ -450,7 +491,7 @@ class DdiResourcesTest {
         Ddi4Response emptyDdi4 = new Ddi4Response(
             "file:/jsonSchema.json",
             null, null, null, null, null, null
-        );
+        , null);
         String emptyXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<ddi:FragmentInstance xmlns:r=\"ddi:reusable:3_3\" xmlns:ddi=\"ddi:instance:3_3\"/>";
         when(ddi4toDdi3ConverterService.convertDdi4ToDdi3Xml(emptyDdi4)).thenReturn(emptyXml);
 
@@ -479,7 +520,7 @@ class DdiResourcesTest {
         Ddi4Response emptyDdi4 = new Ddi4Response(
             "file:/jsonSchema.json",
             null, null, null, null, null, null
-        );
+        , null);
         when(ddi3toDdi4ConverterService.convertDdi3ToDdi4(eq(emptyDdi3), anyString())).thenReturn(emptyDdi4);
 
         // When
@@ -627,10 +668,55 @@ class DdiResourcesTest {
     }
 
     @Test
+    void searchPhysicalInstances_mapsRowsWithResolvedParentLabels() {
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Instance A", new Date(),
+                "fr.insee", "su-1", "Study One",
+                "fr.insee", "g1", "Group One");
+        when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
+
+        ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
+                ddiResources.searchPhysicalInstances();
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
+        List<PhysicalInstanceSearchResponse> body = response.getBody();
+        assertNotNull(body);
+        assertEquals(1, body.size());
+        assertEquals("pi-1", body.getFirst().id());
+        assertEquals("Instance A", body.getFirst().label());
+        assertEquals("Study One", body.getFirst().studyUnitLabel());
+        assertEquals("Group One", body.getFirst().groupLabel());
+        verify(ddiService).searchPhysicalInstances();
+    }
+
+    @Test
+    void searchPhysicalInstances_appliesStampStrategy() throws MissingUserInformationException, RmesException {
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Instance A", new Date(),
+                "fr.insee", "su-1", "Study One",
+                "fr.insee", "g1", "Group One");
+        User stampUser = new User("user-1", List.of("role-stamp"), Set.of("stamp-A"));
+        when(userProvider.findUser()).thenReturn(Optional.of(stampUser));
+        when(rbacFetcher.getApplicationActionStrategyByRole(any(), eq(RBAC.Module.DDI_PHYSICALINSTANCE), eq(RBAC.Privilege.READ)))
+                .thenReturn(RBAC.Strategy.STAMP);
+        when(ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"))).thenReturn(List.of(row));
+
+        ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
+                ddiResources.searchPhysicalInstances();
+
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        verify(ddiService).searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+        verify(ddiService, never()).searchPhysicalInstances();
+    }
+
+    @Test
     void getPhysicalInstanceParents_serializesStampsField() {
         when(ddiService.getPhysicalInstanceParents("fr.insee", "pi-1"))
                 .thenReturn(new PhysicalInstanceParents(
-                        "fr.insee", "su-1", "fr.insee", "grp-1", "Mon groupe", List.of("stamp-A", "stamp-B")));
+                        "fr.insee", "su-1", "Mon étude", "fr.insee", "grp-1", "Mon groupe", List.of("stamp-A", "stamp-B")));
 
         ResponseEntity<PhysicalInstanceParentsResponse> response =
                 ddiResources.getPhysicalInstanceParents("fr.insee", "pi-1");
@@ -685,7 +771,7 @@ class DdiResourcesTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
     }
 
     private Ddi3Response createMockDdi3Response() {
@@ -735,7 +821,7 @@ class DdiResourcesTest {
     private static final String CL_VERSION = "2";
 
     private static Ddi4Response emptyDdi4() {
-        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null);
+        return new Ddi4Response("ddi:4.0", null, null, null, null, null, null, null);
     }
 
     @Test
@@ -809,37 +895,139 @@ class DdiResourcesTest {
         verify(ddiService).getCodeList(CL_AGENCY, CL_ID, CL_VERSION);
     }
 
-    // --- GET /ddi/operation/{id}/studyUnit (JSON, public) ---
+    // --- GET /ddi/operation/{id}/fichiers (JSON, public) ---
 
     @Test
-    void getOperationStudyUnitJson_returns200WithJson_whenStudyUnitExists() throws RmesException {
+    void getOperationStudyUnitJson_returns200WithDdi4_whenStudyUnitExists() throws RmesException {
         String id = "op1";
         String operationIri = "http://id.insee.fr/operations/operation/op1";
-        String xml = "<Fragment><StudyUnit/></Fragment>";
-        ObjectNode expectedJson = new ObjectMapper().createObjectNode().put("ID", id);
-        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
-        when(ddiItemConvertService.convert(xml)).thenReturn(expectedJson);
+        Ddi4StudyUnitResponse expected = aStudyUnitResponse(operationIri);
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.of(expected));
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
+        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-        assertEquals(expectedJson.toString(), response.getBody());
-        verify(ddiItemConvertService).convert(xml);
+        assertEquals(expected, response.getBody());
+        verify(ddiItemConvertService, never()).convert(any());
     }
 
     @Test
     void getOperationStudyUnitJson_returns404_whenStudyUnitNotFound() throws RmesException {
         String id = "unknown";
         String operationIri = "http://id.insee.fr/operations/operation/unknown";
-        when(uriUtils.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
-        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = ddiResources.getOperationStudyUnitJson(id);
+        ResponseEntity<Ddi4StudyUnitResponse> response = ddiResources.getOperationStudyUnitJson(id);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
+    }
+
+    /** #1145 : la sortie JSON porte la StudyUnit et les PhysicalInstances qu'elle référence. */
+    @Test
+    void getOperationStudyUnitJson_carriesTheStudyUnitAndItsPhysicalInstances() throws Exception {
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitByOperationIri(operationIri))
+                .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
+
+        JsonNode body = new ObjectMapper().valueToTree(
+                ddiResources.getOperationStudyUnitJson(id).getBody());
+
+        assertEquals(List.of("StudyUnit", "PhysicalInstance"),
+                body.get("items").findValuesAsText("$type"));
+    }
+
+    private static Ddi4StudyUnitResponse aStudyUnitResponse(String operationIri) {
+        return new Ddi4StudyUnitResponse(
+                Ddi4Response.SCHEMA,
+                List.of(Reference.of("fr.insee", "su-1", "1", Ddi4StudyUnit.TYPE)),
+                List.of(new Ddi4StudyUnit(
+                        Ddi4StudyUnit.TYPE, null, "urn:ddi:fr.insee:su-1:1", "fr.insee", "su-1", "1",
+                        null, operationIri, null)),
+                List.of(new Ddi4PhysicalInstance(
+                        Ddi4PhysicalInstance.TYPE, null, "urn:ddi:fr.insee:pi-1:1", "fr.insee",
+                        "pi-1", "1", null, null, null)));
+    }
+
+    // --- GET /ddi/operation/{id}/fichiers (XML DDI 3.3, public) ---
+
+    @Test
+    void getOperationStudyUnitXml_returns200WithXml_whenStudyUnitExists() throws RmesException {
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String xml = "<Fragment><StudyUnit/></Fragment>";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(MediaType.APPLICATION_XML, response.getHeaders().getContentType());
+        assertEquals(xml, response.getBody());
+        verify(ddiItemConvertService, never()).convert(any());
+    }
+
+    @Test
+    void getOperationStudyUnitXml_returns404_whenStudyUnitNotFound() throws RmesException {
+        String id = "unknown";
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = ddiResources.getOperationStudyUnitXml(id);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+    // #1143 : le endpoint est exposé sous /ddi/public/operation/{id}/fichiers (et plus sous /studyUnit).
+
+    @Test
+    void operationStudyUnitEndpointMappedUnderFichiers_json() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitByOperationIri(operationIri))
+                .thenReturn(Optional.of(aStudyUnitResponse(operationIri)));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void operationStudyUnitEndpointMappedUnderFichiers_xml() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        String xml = "<Fragment><StudyUnit/></Fragment>";
+        when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        when(ddiService.getStudyUnitXmlByOperationIri(operationIri)).thenReturn(Optional.of(xml));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/fichiers", id)
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void oldStudyUnitPathNoLongerMapped() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(ddiResources).build();
+        String id = "op1";
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        // Réponse non nulle : si l'ancien path était encore mappé on aurait 200, pas 404.
+        lenient().when(bauhausUriBuilder.getCompleteUriPublication("operation", id)).thenReturn(operationIri);
+        lenient().when(ddiService.getStudyUnitXmlByOperationIri(operationIri))
+                .thenReturn(Optional.of("<Fragment><StudyUnit/></Fragment>"));
+
+        mockMvc.perform(get("/ddi/public/operation/{id}/studyUnit", id)
+                        .accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isNotFound());
     }
 
 }

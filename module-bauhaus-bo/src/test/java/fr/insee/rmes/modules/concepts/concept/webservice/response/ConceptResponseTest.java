@@ -80,7 +80,7 @@ class ConceptResponseTest {
         assertThat(json.has("additionalMaterial")).isFalse();
         assertThat(json.has("valid")).isFalse();
         // collections is always present even when empty (matches the legacy enrichment in
-        // ConceptsUtils.getConceptById).
+        // LegacyConceptsRepository.getConceptById).
         assertThat(json.has("collections")).isTrue();
         assertThat(json.getJSONArray("collections").length()).isZero();
     }

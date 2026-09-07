@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.concepts;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -11,7 +11,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -20,12 +20,13 @@ import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.model.concepts.Collection;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptForAdvancedSearch;
-import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
@@ -39,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.util.stream.Collectors;
 import java.util.*;
 
 @Service
@@ -48,7 +50,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	static final Logger logger = LoggerFactory.getLogger(ConceptsImpl.class);
 
-	private final ConceptsUtils conceptsUtils;
+	private final LegacyConceptsRepository legacyConceptsRepository;
 
 	private final ConceptsExportBuilder conceptsExport;
 	private final CollectionExportBuilder collectionExport;
@@ -64,7 +66,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             IdGenerator idGenerator,
             RepositoryPublication repositoryPublication,
             PublicationUtils publicationUtils,
-            ConceptsUtils conceptsUtils,
+            LegacyConceptsRepository legacyConceptsRepository,
             ConceptsExportBuilder conceptsExport,
             CollectionExportBuilder collectionExport,
             CollectionRepository collectionRepository,
@@ -72,7 +74,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
             ConceptCollectionsQueries conceptCollectionsQueries,
             ConceptConceptsQueries conceptConceptsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-        this.conceptsUtils = conceptsUtils;
+        this.legacyConceptsRepository = legacyConceptsRepository;
         this.conceptsExport = conceptsExport;
         this.collectionExport = collectionExport;
 		this.collectionRepository = collectionRepository;
@@ -112,14 +114,14 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Override
 	public String getConceptByID(String id)  throws RmesException{
-		JSONObject concept = conceptsUtils.getConceptById(id);
+		JSONObject concept = legacyConceptsRepository.getConceptById(id);
 		return concept.toString();
 	}
 	
 	@Override
 	public String getRelatedConcepts(String id)  throws RmesException{
 		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
-		JSONArray resQuery = conceptsUtils.getRelatedConcepts(uriConcept);
+		JSONArray resQuery = legacyConceptsRepository.getRelatedConcepts(uriConcept);
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
@@ -132,17 +134,14 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	@Override
 	public void deleteConcept(String id) throws RmesException {
 		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
-		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
+		JSONArray graphArray = legacyConceptsRepository.getGraphsWithConcept(uriConcept);
 
 		/* check concept isn't used in several graphs */
 		if (graphArray.length()>1) {
-			String listGraphs="";
 			/* list the graphs involved in log */
-			for (int i=0; i<graphArray.length(); i++) {
-				JSONObject currentGraph=(JSONObject) graphArray.get(i);
-				listGraphs = listGraphs.concat(currentGraph.getString("src"));
-				listGraphs = listGraphs.concat("-");
-			}
+			String listGraphs = JSONUtils.stream(graphArray)
+					.map(currentGraph -> currentGraph.getString("src") + "-")
+					.collect(Collectors.joining());
 			 
 			JSONObject details = new JSONObject();
 			details.put("idConcept", id);
@@ -164,7 +163,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 					details);
 		}
 		/* deletion */
-		HttpStatus result= conceptsUtils.deleteConcept(id);
+		HttpStatus result= legacyConceptsRepository.deleteConcept(id);
 		if (result!= HttpStatus.OK) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Unexpected return message: ",result.toString());
 		}
@@ -192,7 +191,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */
 	@Override
 	public String setConcept(String body) throws RmesException {
-		return conceptsUtils.setConcept(body);
+		return legacyConceptsRepository.setConcept(body);
 	}
 
 
@@ -202,7 +201,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */
 	@Override
 	public void setConcept(String id, String body) throws RmesException {
-		conceptsUtils.setConcept(id, body);
+		legacyConceptsRepository.setConcept(id, body);
 	}
 
 
@@ -238,7 +237,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */
 	@Override
 	public void setConceptsValidation(String body) throws  RmesException  {
-		conceptsUtils.conceptsValidation(body);
+		legacyConceptsRepository.conceptsValidation(body);
 	}
 
 	/**
@@ -329,7 +328,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			try {
 				ConceptForExport concept = conceptsExport.getConceptData(id);
 				Map<String, String> xmlContent = convertConceptInXml(concept);
-				String fileName = conceptsUtils.getConceptExportFileName(concept);
+				String fileName = legacyConceptsRepository.getConceptExportFileName(concept);
 				ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
 
 				if(members != null){

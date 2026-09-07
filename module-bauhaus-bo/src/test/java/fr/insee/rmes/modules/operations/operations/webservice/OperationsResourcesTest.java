@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.operations.operations.webservice;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.PartialOperation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
@@ -34,13 +34,13 @@ class OperationsResourcesTest {
     private DDIService ddiService;
 
     @Mock
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
 
     private OperationsResources operationsResources;
 
     @BeforeEach
     void setUp() {
-        operationsResources = new OperationsResources(operationsService, documentationsService, ddiService, uriUtils);
+        operationsResources = new OperationsResources(operationsService, documentationsService, ddiService, bauhausUriBuilder);
     }
 
     @Test

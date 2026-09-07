@@ -1,6 +1,6 @@
 SELECT ?id ?uri ?url
-FROM <${DOCUMENTATIONS_GRAPH}/${id}>
-FROM <${DOCUMENTS_GRAPH}>
+FROM ${DOCUMENTATION_GRAPH_IRI}
+FROM ${DOCUMENTS_GRAPH}
 WHERE {
     ?sims insee:additionalMaterial/rdf:rest*/rdf:first ?uri .
     ?uri <http://schema.org/url> ?url .

@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.users.domain.port.serverside;
 
-import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.modules.users.domain.model.Source;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
 import fr.insee.rmes.modules.users.domain.model.ModuleAccessPrivileges;
 import fr.insee.rmes.modules.users.domain.model.RBAC;

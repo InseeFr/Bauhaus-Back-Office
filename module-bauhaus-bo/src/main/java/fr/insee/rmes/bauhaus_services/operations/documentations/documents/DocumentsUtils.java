@@ -7,7 +7,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.modules.commons.configuration.StorageProperties;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -26,6 +26,7 @@ import fr.insee.rmes.graphdb.ontologies.PAV;
 import fr.insee.rmes.graphdb.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.UriUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -71,7 +72,7 @@ public class DocumentsUtils extends RdfService {
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
     public static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
 
-    private final ParentUtils ownersUtils;
+    private final OperationsParentRepository operationsParentRepository;
     private final FilesOperations filesOperations;
     private final StorageProperties storageProperties;
 
@@ -82,12 +83,12 @@ public class DocumentsUtils extends RdfService {
     public DocumentsUtils(RepositoryGestion repoGestion, IdGenerator idGenerator,
                           RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages,
                           PublicationUtils publicationUtils,
-                          ParentUtils ownersUtils, FilesOperations filesOperations,
+                          OperationsParentRepository operationsParentRepository, FilesOperations filesOperations,
                           StorageProperties storageProperties, OperationDocumentsQueries operationDocumentsQueries,
                           DocumentsStorageProperties documentsStorage) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.languages = languages;
-        this.ownersUtils = ownersUtils;
+        this.operationsParentRepository = operationsParentRepository;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.operationDocumentsQueries = operationDocumentsQueries;
@@ -179,10 +180,9 @@ public class DocumentsUtils extends RdfService {
 
     private void formatDateInJsonArray(JSONArray allDocs) {
         if (!allDocs.isEmpty()) {
-            for (int i = 0; i < allDocs.length(); i++) {
-                JSONObject doc = allDocs.getJSONObject(i);
+            JSONUtils.stream(allDocs).forEach(doc -> {
                 formatDateInJsonObject(doc);
-            }
+            });
         }
     }
 
@@ -280,8 +280,11 @@ public class DocumentsUtils extends RdfService {
         }
 
         try {
+            // URI.create rejette une URI syntaxiquement invalide et toURL une URI relative,
+            // toutes deux par IllegalArgumentException : sans elle, une URL saisie de travers
+            // remonterait en 500 au lieu du 406 attendu par le front.
             URI.create(url).toURL();
-        } catch (MalformedURLException _) {
+        } catch (MalformedURLException | IllegalArgumentException _) {
             logger.debug("The Link {} is not valid", id);
             throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);
         }
@@ -377,7 +380,7 @@ public class DocumentsUtils extends RdfService {
 
         for (int i = 0; i < sims.length(); i++) {
             JSONObject sim = sims.getJSONObject(i);
-            sim.put(Constants.CREATORS, new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
+            sim.put(Constants.CREATORS, new JSONArray(operationsParentRepository.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
         }
         return sims;
     }
@@ -392,14 +395,14 @@ public class DocumentsUtils extends RdfService {
     public HttpStatus deleteDocument(String docId, boolean isLink) throws RmesException {
         JSONObject jsonDoc = getDocument(docId, isLink);
         String uri = jsonDoc.getString(Constants.URI);
-        String url = getDocumentUrlFromDocument(jsonDoc);
         IRI docUri = RdfUtils.toURI(uri);
 
         // Check that the document is not referred to by any sims
         checkDocumentReference(docId, uri);
-        // remove the physical file
+        // remove the physical file : c'est bien schema:url qui porte le chemin du fichier,
+        // l'IRI RDF n'a pas de schéma file:// et ne désigne aucun emplacement de stockage.
         if (!isLink) {
-            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(uri)));
+            filesOperations.delete(fr.insee.rmes.modules.commons.domain.model.Document.fromUri(URI.create(jsonDoc.getString(Constants.URL))));
         }
         // delete the Document in the rdf base
         return repoGestion.executeUpdate(operationDocumentsQueries.deleteDocumentQuery(docUri));
@@ -480,12 +483,22 @@ public class DocumentsUtils extends RdfService {
 
 
     private void validate(Document document) throws RmesException {
-        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), languages.lg1()))) {
+        if (isLabelAlreadyUsed(document, document.getLabelLg1(), languages.lg1())) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
         }
-        if (repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), languages.lg2()))) {
+        if (isLabelAlreadyUsed(document, document.getLabelLg2(), languages.lg2())) {
             throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
         }
+    }
+
+    /**
+     * Un libellé absent n'a rien à comparer : l'écriture RDF les traite comme optionnels
+     * (cf. writeRdfDocument) et SparqlLiterals refuse d'injecter une valeur nulle dans une
+     * requête. Sans ce garde-fou, un corps sans labelLg2 se solde par une 500.
+     */
+    private boolean isLabelAlreadyUsed(Document document, String label, String lang) throws RmesException {
+        return StringUtils.isNotEmpty(label)
+                && repoGestion.getResponseAsBoolean(operationDocumentsQueries.checkLabelUnicity(document.getId(), label, lang));
     }
 
     private void writeRdfDocument(Document document, IRI docUri) throws RmesException {

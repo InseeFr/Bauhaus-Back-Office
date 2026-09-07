@@ -4,5 +4,5 @@ WHERE {
     ?value rdf:type adms:Identifier .
     ?value skos:inScheme <http://bauhaus/identifierSchemes/uniteArchivageNamingScheme> .
     ?value skos:prefLabel ?label .
-    FILTER(lang(?label) = '${LG1}') .
+    FILTER(lang(?label) = ${LG1}) .
 }

@@ -1,0 +1,28 @@
+# Fixture dédiée à classifications/getClassificationsUriById.ftlh (classificationsUriById).
+#
+# La requête résout, à partir d'une liste d'identifiants, les IRIs des nomenclatures
+# pointées par xkos:before / xkos:after / xkos:variant lors de la mise à jour d'une
+# nomenclature (ClassificationRepository#updateClassification).
+#
+# Les IRIs reproduisent la forme exigée par le BIND du template :
+#   .../codes/<idClassif>/   (BIND STRBEFORE(STRAFTER '/codes/', '/'))
+#
+# IRIs suffixées « UriById » et uniques : le conteneur GraphDB est partagé entre classes
+# de test et cette requête interroge le graphe par défaut (union de tous les graphes) ;
+# des identifiants uniques garantissent que les comptages restent déterministes.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+<http://rdf.insee.fr/graphes/codes/nomenclatures> {
+
+  <http://rdf.insee.fr/codes/clsUriByIdA/>
+      a skos:ConceptScheme ;
+      skos:prefLabel "Nomenclature A (test)"@fr .
+
+  <http://rdf.insee.fr/codes/clsUriByIdB/>
+      a skos:ConceptScheme ;
+      skos:prefLabel "Nomenclature B (test)"@fr .
+
+  <http://rdf.insee.fr/codes/clsUriByIdC/>
+      a skos:ConceptScheme ;
+      skos:prefLabel "Nomenclature C (test)"@fr .
+}

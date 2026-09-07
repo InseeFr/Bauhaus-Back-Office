@@ -8,5 +8,5 @@ import java.util.List;
 
 @ClientSidePort
 public interface ThemeService {
-    List<Theme> getThemes(String schemeFilter) throws ThemeFetchException;
+    List<Theme> getThemes() throws ThemeFetchException;
 }

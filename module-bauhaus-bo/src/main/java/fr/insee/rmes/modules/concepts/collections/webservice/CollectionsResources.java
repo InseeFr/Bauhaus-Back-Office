@@ -1,6 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections.webservice;
 
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.collections.domain.exceptions.*;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionExport;
@@ -212,7 +212,7 @@ public class CollectionsResources {
         try {
             this.service.publishCollections(collectionIds.stream().map(CollectionId::new).toList());
             return ResponseEntity.noContent().build();
-        } catch (InvalidCollectionIdException e) {
+        } catch (InvalidCollectionIdException | CollectionAlreadyPublishedException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (CollectionsFetchException e) {
             Throwable cause = e.getCause();

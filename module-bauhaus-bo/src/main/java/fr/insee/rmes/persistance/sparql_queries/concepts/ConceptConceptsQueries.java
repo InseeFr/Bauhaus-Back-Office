@@ -4,6 +4,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -26,140 +27,146 @@ public class ConceptConceptsQueries {
 
 	public String lastConceptID() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("getLastConceptId.ftlh", params);
 	}
 
 	public String conceptsQuery() throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
 
 	public String conceptsSearchQuery() throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("getConceptsForAdvancedSearch.ftlh", params);
 	}
 
 	public String conceptsToValidateQuery() throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("getConceptsToValidateQuery.ftlh", params);
 	}
 
 	public String conceptQuery(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", id);
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("conceptQuery.ftlh", params);
 	}
 
 	public String conceptQueryForDetailStructure(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", id);
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
 	}
 
 	public String altLabel(String id, String lang) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG", lang);
-		params.put("ID", id);
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("LG", SparqlLiterals.literal(lang));
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("altLabel.ftlh", params);
 	}
 
 	public String conceptNotesQuery(String id, int conceptVersion) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", id);
-		params.put("CONCEPT_VERSION", conceptVersion);
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
+		params.put("CONCEPT_VERSION", SparqlLiterals.literal(String.valueOf(conceptVersion)));
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("conceptNotesQuery.ftlh", params);
 	}
 
 	public String conceptLinks(String idConcept) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("ID_CONCEPT", idConcept);
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + idConcept));
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("getConceptLinksById.ftlh", params);
 	}
 
 	public String getNarrowers(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("ID", id);
+		params.put("ID", SparqlLiterals.literal(id));
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
 		return buildConceptRequest("getNarrowers.ftlh", params);
 	}
 
 	public String hasBroader(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("ID", id);
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
 		return buildConceptRequest("hasBroader.ftlh", params);
 	}
 
 	public String getGraphWithConceptQuery(String uriConcept) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(URI_CONCEPT, uriConcept);
+		params.put(URI_CONCEPT, SparqlLiterals.iri(uriConcept));
 		return buildConceptRequest("getGraphWithConceptQuery.ftlh", params);
 	}
 
 	public String getRelatedConceptsQuery(String uriConcept) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(URI_CONCEPT, uriConcept);
+		params.put(URI_CONCEPT, SparqlLiterals.iri(uriConcept));
 		return buildConceptRequest("getLinkedConceptsQuery.ftlh", params);
 	}
 
 	public String deleteConcept(String uriConcept, String uriGraph) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(URI_CONCEPT, uriConcept);
-		params.put("uriGraph", uriGraph);
+		params.put(URI_CONCEPT, SparqlLiterals.iri(uriConcept));
+		params.put("uriGraph", SparqlLiterals.iri(uriGraph));
 		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);
 	}
 
 	public String isConceptValidated(String conceptId) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
-		params.put("ID", conceptId);
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
+		params.put("ID", SparqlLiterals.literal(conceptId));
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}
 
 	public String getConceptValidationStatus(String conceptId) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
-		params.put("ID", conceptId);
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
+		params.put("ID", SparqlLiterals.literal(conceptId));
 		return buildConceptRequest("getConceptValidationStatus.ftlh", params);
 	}
 
-	public String checkIfExists(String id) {
-		return "ASK \n"
-				+ "WHERE  \n"
-				+ "{ ?uri ?b ?c .\n "
-				+ "FILTER(STRENDS(STR(?uri),'/concepts/definition/" + id + "')) . }";
+	public String checkIfExists(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
+		return buildConceptRequest("checkIfConceptExists.ftlh", params);
 	}
 
 	public String findExistingConceptIds(List<String> ids) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("IDS", ids);
+		params.put("IDS", ids.stream().map(SparqlLiterals::literal).toList());
 		return buildConceptRequest("findExistingConceptIds.ftlh", params);
+	}
+
+	public String findValidatedConceptIds(List<String> ids) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("IDS", ids.stream().map(SparqlLiterals::literal).toList());
+		return buildConceptRequest("findValidatedConceptIds.ftlh", params);
 	}
 
 	public String getConceptCreated(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("ID", id);
-		params.put(CONCEPTS_GRAPH, graphs.conceptsGraph());
+		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + id));
+		params.put(CONCEPTS_GRAPH, SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildConceptRequest("getConceptCreated.ftlh", params);
 	}
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		return params;
 	}
 

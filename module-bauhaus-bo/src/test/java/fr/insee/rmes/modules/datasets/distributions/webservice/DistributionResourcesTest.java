@@ -3,7 +3,7 @@ package fr.insee.rmes.modules.datasets.distributions.webservice;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
-import fr.insee.rmes.domain.Roles;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.port.serverside.UserDecoder;
 import fr.insee.rmes.modules.users.domain.model.User;

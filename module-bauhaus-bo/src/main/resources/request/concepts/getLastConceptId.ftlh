@@ -1,6 +1,6 @@
 SELECT ?notation
 WHERE {
-    GRAPH <${CONCEPTS_GRAPH}> {
+    GRAPH ${CONCEPTS_GRAPH} {
 
 		?concept skos:notation ?notation  .
 		BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }

@@ -5,16 +5,12 @@ import fr.insee.rmes.modules.commons.domain.model.Document;
 import fr.insee.rmes.modules.commons.domain.port.serverside.FilesOperations;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import io.minio.*;
-import io.minio.errors.*;
+import io.minio.errors.MinioException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 @ServerSideAdaptor
 public record MinioFilesOperation(MinioClient minioClient, String bucketName) implements FilesOperations {
@@ -35,7 +31,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .bucket(bucketName)
                     .object(document.getFullPath())
                     .build());
-        } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+        } catch (MinioException e) {
             throw new RmesFileException(document.name(), "Error reading file: " + document.getFullPath()+"  in bucket "+bucketName, e);
         }
     }
@@ -47,11 +43,9 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
                     .object(targetDocument.getFullPath())
-                    .stream(content, content.available(), -1)
+                    .stream(content, (long) content.available(), -1L)
                     .build());
-        } catch (IOException | ErrorResponseException | InsufficientDataException | InternalException |
-                 InvalidKeyException | InvalidResponseException | NoSuchAlgorithmException | ServerException |
-                 XmlParserException e) {
+        } catch (MinioException | IOException e) {
             throw new RmesFileException(targetDocument.name(), "Error writing file: " + targetDocument.name()+ " in bucket "+bucketName, e);
         }
     }
@@ -65,7 +59,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
         logger.debug("Copy from source {} as object {} to destination {} in bucket {}", srcFullPath, targetFullPath, bucketName);
 
         try {
-            CopySource source = CopySource.builder()
+            SourceObject source = SourceObject.builder()
                     .bucket(bucketName)
                     .object(srcFullPath)
                     .build();
@@ -75,7 +69,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .object(targetFullPath)
                     .source(source)
                     .build());
-        } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+        } catch (MinioException e) {
             throw new RmesFileException(srcFullPath,"Error copying file from `" + srcFullPath + "` to `" + targetFullPath+"` in bucket "+bucketName, e);
         }
     }
@@ -90,7 +84,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .bucket(bucketName)
                     .object(document.getFullPath())
                     .build()).size() > 0;
-        } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+        } catch (MinioException e) {
             return false;
         }
     }
@@ -112,7 +106,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .bucket(bucketName)
                     .object(objectName)
                     .build());
-        } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+        } catch (MinioException e) {
             throw new RmesFileException(objectName,"Error deleting file: " + objectName+" in bucket "+bucketName, e);
         }
     }

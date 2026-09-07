@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -64,9 +63,6 @@ class TestIndicatorsResourcesAuthorizationsEnvProd extends AbstractResourcesEnvP
 
                 Arguments.of("/operations/indicators/withSims", 200, true),
                 Arguments.of("/operations/indicators/withSims", 403, false),
-
-                Arguments.of("/operations/indicators/advanced-search", 200, true),
-                Arguments.of("/operations/indicators/advanced-search", 403, false),
 
                 Arguments.of("/operations/indicator/1", 200, true),
                 Arguments.of("/operations/indicator/1", 403, false)

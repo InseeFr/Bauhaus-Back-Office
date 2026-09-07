@@ -8,8 +8,10 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesMissingDocumentsException;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -34,6 +36,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
 
     private RepositoryPublication repositoryPublication;
     private DocumentationPublication documentationPublication;
+    private DocumentsPublication documentsPublication;
 
     @BeforeAll
     static void initData() {
@@ -44,15 +47,15 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
     @BeforeEach
     void setUp() throws Exception {
 
-        // Create a simple PropertiesFinder for UriUtils
-        UriUtils.PropertiesFinder propertiesFinder = Optional::of;
+        // Create a simple PropertiesFinder for BauhausUriBuilder
+        BauhausUriBuilder.PropertiesFinder propertiesFinder = Optional::of;
 
-        UriUtils uriUtils = new UriUtils(
+        BauhausUriBuilder bauhausUriBuilder = new BauhausUriBuilder(
                 "http://publication/",
                 "http://bauhaus/",
                 propertiesFinder
         );
-        RdfUtils.setUriUtils(uriUtils);
+        RdfUtils.setBauhausUriBuilder(bauhausUriBuilder);
 
         RepositoryUtils repositoryUtils = new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED);
 
@@ -71,7 +74,7 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
         );
 
         // Create DocumentsPublication mock (we don't need to test document publication here)
-        DocumentsPublication documentsPublication = Mockito.mock(DocumentsPublication.class);
+        documentsPublication = Mockito.mock(DocumentsPublication.class);
 
         // Create DocumentationPublication with constructor injection
         var documentationConfiguration = new DocumentationConfiguration(
@@ -108,6 +111,25 @@ class DocumentationPublicationTest extends WithGraphDBContainer {
     void shouldPublishSimsSuccessfully() {
         // SIMS 9999 exists in our test data
         assertDoesNotThrow(() -> documentationPublication.publishSims("9999"));
+    }
+
+    @Test
+    void shouldBlockPublicationAndListMissingDocumentsWhenADocumentIsMissing() throws RmesException {
+        Mockito.when(documentsPublication.findMissingDocuments("9999"))
+                .thenReturn(java.util.Set.of("1", "3"));
+
+        RmesMissingDocumentsException exception = assertThrows(RmesMissingDocumentsException.class,
+                () -> documentationPublication.publishSims("9999"));
+
+        // 400 with a structured body carrying the dedicated code and the missing ids
+        assertThat(exception.getStatus()).isEqualTo(org.apache.http.HttpStatus.SC_BAD_REQUEST);
+        assertThat(exception.getDetails())
+                .contains(String.valueOf(ErrorCodes.SIMS_PUBLICATION_MISSING_DOCUMENTS))
+                .contains("1")
+                .contains("3");
+
+        // Atomicity : nothing must be published when a document is missing
+        Mockito.verify(documentsPublication, Mockito.never()).publishAllDocumentsInSims(Mockito.anyString());
     }
 
     @Test

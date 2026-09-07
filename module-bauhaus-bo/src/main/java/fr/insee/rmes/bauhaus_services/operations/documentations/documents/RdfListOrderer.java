@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -30,8 +31,7 @@ final class RdfListOrderer {
         Map<String, JSONObject> byCell = new HashMap<>();
         Set<String> referencedAsNext = new HashSet<>();
         Set<String> insertionOrder = new LinkedHashSet<>();
-        for (int i = 0; i < rows.length(); i++) {
-            JSONObject row = rows.getJSONObject(i);
+        JSONUtils.stream(rows).forEach(row -> {
             String cell = row.getString(cellField);
             byCell.put(cell, row);
             insertionOrder.add(cell);
@@ -39,7 +39,7 @@ final class RdfListOrderer {
             if (!next.isEmpty() && !RDF_NIL.equals(next)) {
                 referencedAsNext.add(next);
             }
-        }
+        });
         List<JSONObject> result = new ArrayList<>(rows.length());
         Set<String> visited = new HashSet<>();
         for (String start : insertionOrder) {

@@ -2,9 +2,10 @@ package fr.insee.rmes.modules.concepts.concept.domain.port.clientside;
 
 import fr.insee.rmes.modules.commons.hexagonal.ClientSidePort;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
@@ -21,7 +22,7 @@ public interface ConceptsService {
 
     Optional<Concept> getConcept(ConceptId id) throws ConceptsFetchException;
 
-    List<CompactConcept> getAllConcepts() throws ConceptsFetchException;
+    List<PartialConcept> getAllConcepts() throws ConceptsFetchException;
 
     List<ConceptToValidate> getConceptsToValidate() throws ConceptsFetchException;
 
@@ -31,7 +32,7 @@ public interface ConceptsService {
 
     void updateConcept(UpdateConceptCommand command) throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException;
 
-    void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException;
+    void validateConcepts(List<ConceptId> ids) throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException;
 
     void deleteConcept(ConceptId id) throws ConceptsFetchException, ConceptsSaveException, ConceptNotFoundException;
 }

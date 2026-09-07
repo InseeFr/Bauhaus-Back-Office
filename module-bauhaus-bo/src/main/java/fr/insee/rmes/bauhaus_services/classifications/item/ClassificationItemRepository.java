@@ -6,7 +6,9 @@ import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
 import fr.insee.rmes.modules.classifications.nomenclatures.model.ClassificationItem;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationItemsQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -111,9 +113,37 @@ public class ClassificationItemRepository {
         this.classificationNoteService.addNotes(graph, item.getChangeNoteLg1Uri(), item.getChangeNoteLg1(), model);
         this.classificationNoteService.addNotes(graph, item.getChangeNoteLg2Uri(), item.getChangeNoteLg2(), model);
 
+        updateValidationState(classificationItemIri, graph, model, previousItem);
+
         repoGestion.loadSimpleObjectWithoutDeletion(classificationItemIri, model, null);
     }
 
+
+    /**
+     * Updates the 3-state publication status of an item (provisoire / provisoire déjà publié / publié).
+     * Editing an already-published item (Validated or Modified) moves it to Modified, otherwise it stays Unpublished.
+     * The legacy boolean {@code insee:isValidated} triple is dropped in favour of {@code insee:validationState}.
+     */
+    private void updateValidationState(IRI itemIri, Resource graph, Model model, JSONObject previousItem) throws RmesException {
+        repoGestion.deleteTripletByPredicate(itemIri, INSEE.IS_VALIDATED, graph, null);
+        repoGestion.deleteTripletByPredicate(itemIri, INSEE.VALIDATION_STATE, graph, null);
+
+        ValidationStatus newState = wasPublished(previousItem) ? ValidationStatus.MODIFIED : ValidationStatus.UNPUBLISHED;
+        model.add(itemIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newState), graph);
+    }
+
+    private boolean wasPublished(JSONObject previousItem) {
+        if (previousItem == null) {
+            return false;
+        }
+        String previousState = previousItem.optString("validationState", null);
+        if (previousState == null) {
+            // legacy data still carrying the boolean insee:isValidated
+            return previousItem.optBoolean("isValidated", false);
+        }
+        return ValidationStatus.VALIDATED.getValue().equalsIgnoreCase(previousState)
+                || ValidationStatus.MODIFIED.getValue().equalsIgnoreCase(previousState);
+    }
 
     private void validate(ClassificationItem item) throws RmesBadRequestException {
         if(item.getPrefLabelLg1() == null){

@@ -261,7 +261,7 @@
                     text:name="__RefHeading___concept_${collectionConcept/id}"/>${collectionConcept/prefLabelLg1}<text:bookmark-end
                         text:name="__RefHeading___concept_${collectionConcept/id}"/></text:h>
                 <text:p text:style-name="Info_20_concept"><text:a xlink:type="simple"
-                    xlink:href="${rmesUrl}/concept/${collectionConcept/id}"
+                    xlink:href="${rmesUrl}/concepts/${collectionConcept/id}"
                     text:style-name="Internet_20_link"
                     text:visited-style-name="Visited_20_Internet_20_Link">${collectionConcept/id}</text:a></text:p>
                 <text:p text:style-name="Info_20_concept">Propriétaire: ${collectionConcept/creator}</text:p>

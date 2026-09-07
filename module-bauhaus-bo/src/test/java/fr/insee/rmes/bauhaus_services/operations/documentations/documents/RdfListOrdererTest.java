@@ -1,11 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,10 +84,8 @@ class RdfListOrdererTest {
     }
 
     private static List<String> idsOf(JSONArray arr) {
-        List<String> ids = new ArrayList<>(arr.length());
-        for (int i = 0; i < arr.length(); i++) {
-            ids.add(arr.getJSONObject(i).getString("id"));
-        }
-        return ids;
+        return JSONUtils.stream(arr)
+                .map(row -> row.getString("id"))
+                .toList();
     }
 }

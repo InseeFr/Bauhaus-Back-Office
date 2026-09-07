@@ -2,13 +2,13 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?idSims
 WHERE {
     ?serie a insee:StatisticalOperationSeries .
     ?family dcterms:hasPart ?serie
-    FILTER(STRENDS(STR(?family),'/operations/famille/${ID_FAMILY}')) .
+    FILTER(STRENDS(STR(?family),${FAMILY_URI_SUFFIX})) .
 
     ?serie skos:prefLabel ?labelLg1 .
-    FILTER (lang(?labelLg1) = '${LG1}')
+    FILTER (lang(?labelLg1) = ${LG1})
 
     ?serie skos:prefLabel ?labelLg2 .
-    FILTER (lang(?labelLg2) = '${LG2}')
+    FILTER (lang(?labelLg2) = ${LG2})
 
     BIND(STRAFTER(STR(?serie),'/operations/serie/') AS ?id) .
     ?report rdf:type sdmx-mm:MetadataReport .

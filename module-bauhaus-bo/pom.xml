@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>module-bauhaus-bo</artifactId>
-  <version>4.20.6</version>
+  <version>4.21.0-rc11</version>
   <name>module-bauhaus-bo</name>
 
   <dependencies>
@@ -16,12 +16,6 @@
       <groupId>fr.insee.rmes</groupId>
       <artifactId>module-utility</artifactId>
       <version>1.0.0</version>
-    </dependency>
-    <!-- JSON Schema Validator (used by DdiResources) -->
-    <dependency>
-      <groupId>com.networknt</groupId>
-      <artifactId>json-schema-validator</artifactId>
-      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jspecify</groupId>
@@ -31,6 +25,12 @@
     <dependency>
       <groupId>io.github.fbibonne</groupId>
       <artifactId>boot-properties-logger-starter</artifactId>
+    </dependency>
+    <!-- Swagger UI / OpenAPI, désactivé par défaut : voir OpenApiConfiguration et la propriété
+         fr.insee.rmes.bauhaus.swagger.enabled. -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
     </dependency>
     <dependency>
       <groupId>fr.insee.rmes</groupId>
@@ -74,6 +74,15 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-restclient</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Enregistre SPARQLParserFactory dans le QueryParserRegistry : permet aux tests de rendre une
+         requête et de la faire analyser par le parseur, sans dépôt. Le runtime n'en a pas besoin,
+         c'est GraphDB qui analyse les requêtes envoyées par rdf4j-repository-http. -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-queryparser-sparql</artifactId>
+      <version>${rdf4j.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

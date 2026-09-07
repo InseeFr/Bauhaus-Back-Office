@@ -9,18 +9,6 @@ import java.util.List;
 public interface OperationsService {
 
 	/******************************************************************************************
-	 * FAMILIES
-	 * *******************************************************************************************/
-
-	void setFamily(String id, String body) throws RmesException;
-
-	void setFamilyValidation(String body) throws RmesException;
-
-	String createFamily(String body) throws RmesException;
-
-	String getSeriesWithReport(String id) throws RmesException;
-
-	/******************************************************************************************
 	 * SERIES
 	 * *******************************************************************************************/
 
@@ -72,8 +60,6 @@ public interface OperationsService {
 	List<PartialOperationIndicator> getIndicators() throws RmesException;
 
 	String getIndicatorsWithSims() throws RmesException;
-
-	String getIndicatorsForSearch() throws RmesException;
 
 	String getIndicatorJsonByID(String id) throws RmesException;
 

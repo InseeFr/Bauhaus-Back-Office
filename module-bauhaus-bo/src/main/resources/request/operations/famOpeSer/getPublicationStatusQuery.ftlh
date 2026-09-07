@@ -1,6 +1,6 @@
 SELECT ?state 
-  FROM <${OPERATIONS_GRAPH}>
+  FROM ${OPERATIONS_GRAPH}
   WHERE {  
 	?famopeser insee:validationState ?state . 
-	 FILTER(STRENDS(STR(?famopeser), '${id}'))
+	 FILTER(STRENDS(STR(?famopeser), ${id}))
   }  

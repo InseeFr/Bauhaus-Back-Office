@@ -75,7 +75,7 @@ class ClassificationItemServiceImplTest {
     @Test
     void shouldThrowRmesExceptionWhenUpdateClassificationItem(){
         RmesException exception = assertThrows(RmesException.class, () -> classificationItemServiceImpl.updateClassificationItem(classificationId,itemId,body));
-        Assertions.assertTrue(exception.getDetails().contains("{\"details\":\"Can't read request body\""));
+        Assertions.assertTrue(exception.getDetails().contains("\"details\":\"Can't read request body\""));
     }
 
 }

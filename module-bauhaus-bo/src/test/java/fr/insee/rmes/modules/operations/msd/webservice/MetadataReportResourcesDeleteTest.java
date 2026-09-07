@@ -2,6 +2,7 @@ package fr.insee.rmes.modules.operations.msd.webservice;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationExportService;
 import fr.insee.rmes.modules.operations.msd.domain.port.clientside.DocumentationService;
@@ -51,16 +52,25 @@ class MetadataReportResourcesDeleteTest {
     void deleteMetadataReport_withAcceptJson_shouldReturnSuccess() throws Exception {
         when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
 
-        mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "42")
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteMetadataReport_whenSimsDoesNotExist_shouldReturnNotFound() throws Exception {
+        when(documentationsService.deleteMetadataReport("unknown"))
+                .thenThrow(new RmesNotFoundException("Documentation not found", "unknown"));
+
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "unknown"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void deleteMetadataReport_withoutAccept_shouldReturnSuccess() throws Exception {
         when(documentationsService.deleteMetadataReport("42")).thenReturn(HttpStatus.NO_CONTENT);
 
-        mockMvc.perform(delete("/operations/metadataReport/delete/{id}", "42"))
+        mockMvc.perform(delete("/operations/metadataReport/{id}", "42"))
                 .andExpect(status().isNoContent());
     }
 }

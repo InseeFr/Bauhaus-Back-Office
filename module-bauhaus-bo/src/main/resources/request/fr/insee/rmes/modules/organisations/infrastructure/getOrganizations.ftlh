@@ -1,15 +1,15 @@
 SELECT DISTINCT ?iri ?id ?label ?labelLg2 ?acronym
-FROM <${ORGANIZATIONS_GRAPH}>
-FROM <${ORGANIZATIONS_INSEE_GRAPH}>
+FROM ${ORGANIZATIONS_GRAPH}
+FROM ${ORGANIZATIONS_INSEE_GRAPH}
 WHERE {
     ?iri adms:identifier ?id .
 
     OPTIONAL { ?iri skos:prefLabel ?label .
-    FILTER (lang(?label) = '${LG1}')}
+    FILTER (lang(?label) = ${LG1})}
 
     OPTIONAL {
         ?iri skos:prefLabel ?label2 .
-        FILTER (lang(?label2) = '${LG2}')
+        FILTER (lang(?label2) = ${LG2})
     } .
 
     OPTIONAL { ?iri vaem:acronym ?acronym . }

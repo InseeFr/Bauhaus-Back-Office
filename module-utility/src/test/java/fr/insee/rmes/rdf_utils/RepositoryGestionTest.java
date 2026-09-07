@@ -2,6 +2,7 @@ package fr.insee.rmes.rdf_utils;
 
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.RdfConnectionDetails;
+import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
 import org.eclipse.rdf4j.model.*;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
@@ -37,8 +39,10 @@ class RepositoryGestionTest {
     @Mock
     private RdfConnectionDetails rdfConnectionDetails;
 
-    @Mock
-    private RepositoryUtils repositoryUtils;
+    // RepositoryUtils exécute réellement les requêtes SPARQL sur le Repository qu'on lui passe :
+    // les tests s'appuient sur ce comportement (dépôt mémoire) et n'espionnent que initRepository.
+    @Spy
+    private RepositoryUtils repositoryUtils = new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED);
 
     @Mock
     private Repository repository;
@@ -59,7 +63,7 @@ class RepositoryGestionTest {
         
         lenient().when(rdfConnectionDetails.getUrlServer()).thenReturn("http://localhost:8080");
         lenient().when(rdfConnectionDetails.repositoryId()).thenReturn("test-repo");
-        lenient().when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(repository);
+        lenient().doReturn(repository).when(repositoryUtils).initRepository(anyString(), anyString());
         lenient().when(repository.getConnection()).thenReturn(connection);
     }
 
@@ -69,7 +73,7 @@ class RepositoryGestionTest {
         
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         String result = repositoryGestion.getResponse(query);
 
@@ -83,7 +87,7 @@ class RepositoryGestionTest {
         
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         HttpStatus result = repositoryGestion.executeUpdate(updateQuery);
 
@@ -97,7 +101,7 @@ class RepositoryGestionTest {
         
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         JSONObject result = repositoryGestion.getResponseAsObject(query);
 
@@ -111,7 +115,7 @@ class RepositoryGestionTest {
         
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         JSONArray result = repositoryGestion.getResponseAsArray(query);
 
@@ -125,7 +129,7 @@ class RepositoryGestionTest {
         
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         JSONArray result = repositoryGestion.getResponseAsJSONList(query);
 
@@ -139,7 +143,7 @@ class RepositoryGestionTest {
         
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         boolean result = repositoryGestion.getResponseAsBoolean(query);
 
@@ -351,7 +355,7 @@ class RepositoryGestionTest {
 
     @Test
     void shouldGetConnection() throws RmesException {
-        when(repositoryUtils.getConnection(repository)).thenReturn(connection);
+        doReturn(connection).when(repositoryUtils).getConnection(repository);
 
         RepositoryConnection result = repositoryGestion.getConnection();
 
@@ -378,7 +382,7 @@ class RepositoryGestionTest {
     void shouldGetCompleteGraph() throws RmesException {
         IRI graphIri = valueFactory.createIRI("http://example.org/graph");
 
-        when(repositoryUtils.getCompleteGraph(connection, graphIri)).thenReturn(repositoryResult);
+        doReturn(repositoryResult).when(repositoryUtils).getCompleteGraph(connection, graphIri);
 
         RepositoryResult<Statement> result = repositoryGestion.getCompleteGraph(connection, graphIri);
 
@@ -395,7 +399,7 @@ class RepositoryGestionTest {
 
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         repositoryGestion.getMultipleTripletsForObject(object, objectKey, query, queryKey);
 
@@ -413,7 +417,7 @@ class RepositoryGestionTest {
 
         Repository memoryRepo = new SailRepository(new MemoryStore());
         memoryRepo.init();
-        when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(memoryRepo);
+        doReturn(memoryRepo).when(repositoryUtils).initRepository(anyString(), anyString());
 
         repositoryGestion.getMultipleTripletsForObject(object, objectKey, query, queryKey);
 

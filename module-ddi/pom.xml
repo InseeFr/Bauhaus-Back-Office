@@ -36,6 +36,12 @@
       <artifactId>jspecify</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <!-- JSON Schema Validator : porte NetworkntDdi4SchemaValidator -->
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>1.5.1</version>
+    </dependency>
   </dependencies>
 
   <build>

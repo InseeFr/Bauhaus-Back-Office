@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.concepts.collections.infrastructure.graphdb;
 
-import fr.insee.rmes.modules.concepts.collections.domain.exceptions.InvalidCollectionIdException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.modules.concepts.collections.domain.model.CollectionId;
 import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;

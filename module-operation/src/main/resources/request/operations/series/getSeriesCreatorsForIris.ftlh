@@ -1,7 +1,8 @@
+<#-- SERIES_IRIS contient des IRI complètes (<…>), échappées par SparqlLiterals. -->
 SELECT ?seriesIri ?creators
-FROM <${OPERATIONS_GRAPH}>
+FROM ${OPERATIONS_GRAPH}
 WHERE {
-    VALUES ?seriesIri { <#list SERIES_IRIS as iri><${iri?no_esc}> </#list>}
+    VALUES ?seriesIri { <#list SERIES_IRIS as iri>${iri} </#list>}
     {
         ?seriesIri dc:creator ?creators .
     }

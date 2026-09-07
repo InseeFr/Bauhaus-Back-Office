@@ -4,7 +4,8 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,10 @@ class DdiResourcesEnabledIntegrationTest {
     private RbacFetcher rbacFetcher;
 
     @MockitoBean
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
+
+    @MockitoBean
+    private Ddi4SchemaService ddi4SchemaService;
 
     @Autowired
     private DdiResources ddiResources;

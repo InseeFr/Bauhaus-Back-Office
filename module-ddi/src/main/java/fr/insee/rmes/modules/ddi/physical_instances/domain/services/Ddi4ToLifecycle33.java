@@ -1,7 +1,10 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
+import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.reusable.BasedOnObjectType;
+import fr.insee.ddi.lifecycle33.reusable.CategoryRelationCodeType;
 import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
@@ -19,14 +22,20 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.RangeValue;
@@ -35,11 +44,18 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableReprese
 import org.apache.xmlbeans.XmlCursor;
 
 import javax.xml.namespace.QName;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 public class Ddi4ToLifecycle33 {
 
     private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
+    private static final String DDI_LOGICAL_PRODUCT_NS = "ddi:logicalproduct:3_3";
+
+    /** #1592 : représentation Text sans aucun attribut, utilisée comme repli à l'export. */
+    private static final TextRepresentation EMPTY_TEXT_REPRESENTATION =
+            new TextRepresentation(TextRepresentation.TYPE, null, null, null, null);
 
     public FragmentDocument toPhysicalInstance(Ddi4PhysicalInstance pi) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
@@ -161,23 +177,42 @@ public class Ddi4ToLifecycle33 {
 
         var varRepType = varType.addNewVariableRepresentation();
         VariableRepresentation rep = var.variableRepresentation();
+        boolean hasValueRepresentation = false;
         if (rep != null) {
             if (rep.codeRepresentation() != null) {
                 populateCodeRepresentation(varRepType.addNewValueRepresentation(),
                         rep.codeRepresentation());
+                hasValueRepresentation = true;
             }
             if (rep.numericRepresentation() != null) {
                 populateNumericRepresentation(varRepType.addNewValueRepresentation(),
                         rep.numericRepresentation());
+                hasValueRepresentation = true;
             }
             if (rep.dateTimeRepresentation() != null) {
                 populateDateTimeRepresentation(varRepType.addNewValueRepresentation(),
                         rep.dateTimeRepresentation());
+                hasValueRepresentation = true;
             }
             if (rep.textRepresentation() != null) {
                 populateTextRepresentation(varRepType.addNewValueRepresentation(),
                         rep.textRepresentation());
+                hasValueRepresentation = true;
             }
+        }
+
+        // #1592 : sans ValueRepresentation, l'export ne produit qu'un <VariableRepresentation/>
+        // vide et le type de la variable est perdu. Text étant le type par défaut côté
+        // application (cf. getVariableType), on l'écrit explicitement.
+        if (!hasValueRepresentation) {
+            populateTextRepresentation(varRepType.addNewValueRepresentation(),
+                    EMPTY_TEXT_REPRESENTATION);
+        }
+
+        // MissingValuesReference se place après la ValueRepresentation dans le schéma.
+        if (rep != null && rep.missingValuesReference() != null) {
+            populateReference(varRepType.addNewMissingValuesReference(),
+                    rep.missingValuesReference());
         }
 
         return doc;
@@ -189,36 +224,70 @@ public class Ddi4ToLifecycle33 {
 
         clType.setIsUniversallyUnique(true);
         clType.setVersionDate(cl.versionDate() != null ? cl.versionDate().dateTime() : null);
-        clType.addNewURN().setStringValue(cl.urn());
+        clType.addNewURN().setStringValue(urnOf(cl.urn(), cl.agency(), cl.id(), cl.version()));
         clType.addAgency(cl.agency());
         clType.addNewID().setStringValue(cl.id());
         clType.addVersion(cl.version());
+
+        // Variante d'une liste partagée : référence DDI vers la liste d'origine.
+        if (cl.basedOnObject() != null) {
+            populateBasedOnObject(clType.addNewBasedOnObject(), cl.basedOnObject());
+        }
 
         if (cl.label() != null && !cl.label().isEmpty()) {
             writeLabelContent(clType.addNewLabel().addNewContent(), cl.label().get(0));
         }
 
-        if (cl.code() != null) {
-            for (Code code : cl.code()) {
-                var codeType = clType.addNewCode();
-                codeType.setIsUniversallyUnique(true);
-                codeType.addNewURN().setStringValue(code.urn());
-                codeType.addAgency(code.agency());
-                codeType.addNewID().setStringValue(code.id());
-                codeType.addVersion(code.version());
-
-                if (code.categoryReference() != null) {
-                    populateReference(codeType.addNewCategoryReference(), code.categoryReference());
+        if (cl.level() != null) {
+            for (Level level : cl.level()) {
+                var levelType = clType.addNewLevel();
+                if (level.levelNumber() != null) {
+                    levelType.setLevelNumber(BigInteger.valueOf(level.levelNumber()));
                 }
-
-                if (code.value() != null && code.value().stringValue() != null
-                        && !code.value().stringValue().isEmpty()) {
-                    codeType.addNewValue().setStringValue(code.value().stringValue());
+                if (level.levelName() != null && !level.levelName().isEmpty()) {
+                    LangString first = level.levelName().get(0);
+                    var nameString = levelType.addNewLevelName().addNewString();
+                    nameString.setLang(first.language());
+                    nameString.setStringValue(first.value());
+                }
+                if (level.categoryRelationship() != null) {
+                    levelType.setCategoryRelationship(
+                            CategoryRelationCodeType.Enum.forString(level.categoryRelationship()));
                 }
             }
         }
 
+        if (cl.code() != null) {
+            for (Code code : cl.code()) {
+                populateCode(clType.addNewCode(), code);
+            }
+        }
+
         return doc;
+    }
+
+    private void populateCode(CodeType codeType, Code code) {
+        codeType.setIsUniversallyUnique(true);
+        codeType.addNewURN().setStringValue(
+                urnOf(code.urn(), code.agency(), code.id(), code.version()));
+        codeType.addAgency(code.agency());
+        codeType.addNewID().setStringValue(code.id());
+        codeType.addVersion(code.version());
+
+        if (code.categoryReference() != null) {
+            populateReference(codeType.addNewCategoryReference(), code.categoryReference());
+        }
+
+        if (code.value() != null && code.value().stringValue() != null
+                && !code.value().stringValue().isEmpty()) {
+            codeType.addNewValue().setStringValue(code.value().stringValue());
+        }
+
+        if (code.code() != null) {
+            for (Code child : code.code()) {
+                populateCode(codeType.addNewCode(), child);
+            }
+        }
     }
 
     public FragmentDocument toCodeListScheme(Ddi4CodeListScheme scheme) {
@@ -245,6 +314,145 @@ public class Ddi4ToLifecycle33 {
         return doc;
     }
 
+    public FragmentDocument toCategoryScheme(Ddi4CategoryScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewCategoryScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.categoryReference() != null) {
+            for (Reference ref : scheme.categoryReference()) {
+                populateReference(schemeType.addNewCategoryReference(), ref);
+            }
+        }
+
+        return doc;
+    }
+
+    public FragmentDocument toVariableScheme(Ddi4VariableScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewVariableScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.variableReference() != null) {
+            for (Reference ref : scheme.variableReference()) {
+                populateReference(schemeType.addNewVariableReference(), ref);
+            }
+        }
+
+        return doc;
+    }
+
+    public FragmentDocument toManagedRepresentationScheme(Ddi4ManagedRepresentationScheme scheme) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var schemeType = doc.addNewFragment().addNewManagedRepresentationScheme();
+
+        schemeType.setIsUniversallyUnique(true);
+        schemeType.setVersionDate(scheme.versionDate() != null ? scheme.versionDate().dateTime() : null);
+        schemeType.addNewURN().setStringValue(scheme.urn());
+        schemeType.addAgency(scheme.agency());
+        schemeType.addNewID().setStringValue(scheme.id());
+        schemeType.addVersion(scheme.version());
+
+        if (scheme.label() != null && !scheme.label().isEmpty()) {
+            writeLabelContent(schemeType.addNewLabel().addNewContent(), scheme.label().get(0));
+        }
+
+        if (scheme.managedRepresentationReference() != null) {
+            for (Reference ref : scheme.managedRepresentationReference()) {
+                ReferenceType refType = schemeType.addNewManagedRepresentationReference();
+                populateReference(refType, ref);
+                renameToConcreteMemberReference(refType, ref.type());
+            }
+        }
+
+        return doc;
+    }
+
+    /**
+     * Éléments concrets du groupe de substitution dont {@code ManagedRepresentationReference} est la
+     * tête abstraite : un membre d'un ManagedRepresentationScheme doit être référencé par l'élément
+     * correspondant à son type, sinon Colectica ignore la référence (membre absent du scheme dans le
+     * portail et relation bysubject non indexée).
+     */
+    private static final List<String> MANAGED_REPRESENTATION_REFERENCE_MEMBERS = List.of(
+            "ManagedTextRepresentationReference",
+            "ManagedNumericRepresentationReference",
+            "ManagedDateTimeRepresentationReference",
+            "ManagedScaleRepresentationReference",
+            "ManagedMissingValuesRepresentationReference");
+
+    /**
+     * Renomme une référence membre écrite sous la tête abstraite {@code ManagedRepresentationReference}
+     * (seul élément que l'API générée sait créer) en l'élément concret dérivé du {@code TypeOfObject}
+     * de la référence (ex. {@code ManagedMissingValuesRepresentationReference}). Type absent ou hors
+     * du groupe de substitution → l'élément générique est conservé.
+     */
+    private static void renameToConcreteMemberReference(ReferenceType refType, String typeOfObject) {
+        if (typeOfObject == null) {
+            return;
+        }
+        String memberElement = typeOfObject + "Reference";
+        if (!MANAGED_REPRESENTATION_REFERENCE_MEMBERS.contains(memberElement)) {
+            return;
+        }
+        try (XmlCursor cursor = refType.newCursor()) {
+            cursor.setName(new QName(DDI_REUSABLE_NS, memberElement));
+        }
+    }
+
+    public FragmentDocument toManagedMissingValuesRepresentation(Ddi4ManagedMissingValuesRepresentation mmvr) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var mmvrType = doc.addNewFragment().addNewManagedMissingValuesRepresentation();
+
+        mmvrType.setIsUniversallyUnique(true);
+        // Attribut posé seulement s'il est connu : une MMVR seulement réutilisée arrive sans
+        // VersionDate (l'aperçu du front n'en invente pas), et `setVersionDate(null)` écrirait un
+        // `versionDate=""` que le schéma DDI 3.3 rejette — et que la relecture ne sait pas parser.
+        if (mmvr.versionDate() != null) {
+            mmvrType.setVersionDate(mmvr.versionDate().dateTime());
+        }
+        mmvrType.addNewURN().setStringValue(mmvr.urn());
+        mmvrType.addAgency(mmvr.agency());
+        mmvrType.addNewID().setStringValue(mmvr.id());
+        mmvrType.addVersion(mmvr.version());
+
+        if (mmvr.label() != null && !mmvr.label().isEmpty()) {
+            writeLabelContent(mmvrType.addNewLabel().addNewContent(), mmvr.label().get(0));
+        }
+
+        if (mmvr.missingCodeRepresentation() != null) {
+            for (CodeRepresentation rep : mmvr.missingCodeRepresentation()) {
+                CodeRepresentationBaseType missingRep = mmvrType.addNewMissingCodeRepresentation();
+                missingRep.setBlankIsMissingValue(Boolean.TRUE.equals(rep.blankIsMissingValue()));
+                if (rep.codeListReference() != null) {
+                    populateReference(missingRep.addNewCodeListReference(), rep.codeListReference());
+                }
+            }
+        }
+
+        return doc;
+    }
+
     public FragmentDocument toCategory(Ddi4Category cat) {
         FragmentDocument doc = FragmentDocument.Factory.newInstance();
         var catType = doc.addNewFragment().addNewCategory();
@@ -252,10 +460,15 @@ public class Ddi4ToLifecycle33 {
         catType.setIsUniversallyUnique(true);
         catType.setVersionDate(cat.versionDate() != null ? cat.versionDate().dateTime() : null);
         catType.setIsMissing(false);
-        catType.addNewURN().setStringValue(cat.urn());
+        catType.addNewURN().setStringValue(urnOf(cat.urn(), cat.agency(), cat.id(), cat.version()));
         catType.addAgency(cat.agency());
         catType.addNewID().setStringValue(cat.id());
         catType.addVersion(cat.version());
+
+        // Variante d'une catégorie partagée : référence DDI vers la catégorie d'origine.
+        if (cat.basedOnObject() != null) {
+            populateBasedOnObject(catType.addNewBasedOnObject(), cat.basedOnObject());
+        }
 
         if (cat.label() != null && !cat.label().isEmpty()) {
             writeLabelContent(catType.addNewLabel().addNewContent(), cat.label().get(0));
@@ -300,6 +513,71 @@ public class Ddi4ToLifecycle33 {
             }
         }
 
+        if (group.logicalProductReference() != null) {
+            for (Reference lpRef : group.logicalProductReference()) {
+                populateReference(groupType.addNewLogicalProductReference(), lpRef);
+            }
+        }
+
+        return doc;
+    }
+
+    /**
+     * Serializes a {@link Ddi4LogicalProduct} as a DDI 3.3 {@code <LogicalProduct>} fragment.
+     * <p>
+     * {@code LogicalProduct} is a substitution-group member of the {@code BaseLogicalProduct} head
+     * element, which is the only logical-product element the generated {@code FragmentType} exposes;
+     * we therefore add the base element and re-type it to {@code LogicalProduct} through a cursor —
+     * the same approach used for representation elements elsewhere in this converter.
+     */
+    public FragmentDocument toLogicalProduct(Ddi4LogicalProduct logicalProduct) {
+        FragmentDocument doc = FragmentDocument.Factory.newInstance();
+        var base = doc.addNewFragment().addNewBaseLogicalProduct();
+        LogicalProductType lpType;
+        try (XmlCursor cursor = base.newCursor()) {
+            cursor.setName(new QName(DDI_LOGICAL_PRODUCT_NS, "LogicalProduct"));
+            lpType = (LogicalProductType) cursor.getObject().changeType(LogicalProductType.type);
+        }
+
+        lpType.setIsUniversallyUnique(true);
+        lpType.setVersionDate(logicalProduct.versionDate() != null ? logicalProduct.versionDate().dateTime() : null);
+        lpType.addNewURN().setStringValue(logicalProduct.urn());
+        lpType.addAgency(logicalProduct.agency());
+        lpType.addNewID().setStringValue(logicalProduct.id());
+        lpType.addVersion(logicalProduct.version());
+
+        if (logicalProduct.label() != null && !logicalProduct.label().isEmpty()) {
+            LangString first = logicalProduct.label().get(0);
+            var nameString = lpType.addNewLogicalProductName().addNewString();
+            nameString.setLang(first.language());
+            nameString.setStringValue(first.value());
+            writeLabelContent(lpType.addNewLabel().addNewContent(), first);
+        }
+
+        if (logicalProduct.codeListSchemeReference() != null) {
+            for (Reference ref : logicalProduct.codeListSchemeReference()) {
+                populateReference(lpType.addNewCodeListSchemeReference(), ref);
+            }
+        }
+
+        if (logicalProduct.categorySchemeReference() != null) {
+            for (Reference ref : logicalProduct.categorySchemeReference()) {
+                populateReference(lpType.addNewCategorySchemeReference(), ref);
+            }
+        }
+
+        if (logicalProduct.variableSchemeReference() != null) {
+            for (Reference ref : logicalProduct.variableSchemeReference()) {
+                populateReference(lpType.addNewVariableSchemeReference(), ref);
+            }
+        }
+
+        if (logicalProduct.managedRepresentationSchemeReference() != null) {
+            for (Reference ref : logicalProduct.managedRepresentationSchemeReference()) {
+                populateReference(lpType.addNewManagedRepresentationSchemeReference(), ref);
+            }
+        }
+
         return doc;
     }
 
@@ -325,6 +603,12 @@ public class Ddi4ToLifecycle33 {
             var titleString = suType.addNewCitation().addNewTitle().addNewString();
             titleString.setLang(first.language());
             titleString.setStringValue(first.value());
+        }
+
+        if (studyUnit.logicalProductReferences() != null) {
+            for (Reference lpRef : studyUnit.logicalProductReferences()) {
+                populateReference(suType.addNewLogicalProductReference(), lpRef);
+            }
         }
 
         if (studyUnit.physicalInstanceReferences() != null) {
@@ -363,6 +647,15 @@ public class Ddi4ToLifecycle33 {
         if (source.codeListReference() != null) {
             populateReference(codeRep.addNewCodeListReference(), source.codeListReference());
         }
+    }
+
+    /**
+     * URN de l'item, dérivée de son identité quand elle n'est pas fournie — l'URN DDI étant une
+     * pure fonction de {@code agence/id/version}, elle n'a pas à être fabriquée par l'appelant.
+     * Pendant de {@code AbstractDDIItemConverter#buildReference} sur le chemin de lecture.
+     */
+    private static String urnOf(String urn, String agency, String id, String version) {
+        return urn != null && !urn.isBlank() ? urn : Reference.synthesizeUrn(agency, id, version);
     }
 
     private static void populateReference(ReferenceType target, Reference source) {
@@ -407,11 +700,12 @@ public class Ddi4ToLifecycle33 {
         }
     }
 
+    /**
+     * Les bornes sont des {@code xs:decimal} : la notation exponentielle que produit
+     * {@link Double#toString(double)} hors de [1e-3, 1e7[ n'y est pas un lexical valide.
+     */
     private static String formatRangeValue(double value) {
-        if (value == Math.floor(value) && !Double.isInfinite(value)) {
-            return Long.toString((long) value);
-        }
-        return Double.toString(value);
+        return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
     }
 
     private static void populateDateTimeRepresentation(RepresentationType rep, DateTimeRepresentation source) {

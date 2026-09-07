@@ -1,14 +1,14 @@
 SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?typeOfObject
-		FROM <${OPERATIONS_GRAPH}> 
-		FROM <${PRODUCTS_GRAPH}> 
+		FROM ${OPERATIONS_GRAPH} 
+		FROM ${PRODUCTS_GRAPH} 
 	WHERE {   
-				?series <${LINK_PREDICATE}> ?uriLinked .   
+				?series ${LINK_PREDICATE} ?uriLinked .   
 
 				?uriLinked skos:prefLabel ?labelLg1 .  
-				FILTER (lang(?labelLg1) = '${LG1}') .  
+				FILTER (lang(?labelLg1) = ${LG1}) .  
 				
 				OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . 
-				FILTER (lang(?labelLg2) = '${LG2}')} .   
+				FILTER (lang(?labelLg2) = ${LG2})} .   
 				
 				OPTIONAL {?uriLinked rdf:type ?typeOfObject .}
 				
@@ -20,6 +20,6 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?typeOfObject
 					STR(?uriLinked) ))
 				AS ?id) .
 				
-				FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) . 
+				FILTER(STRENDS(STR(?series),${SERIES_URI_SUFFIX})) . 
 			}   
 			ORDER BY ?labelLg1

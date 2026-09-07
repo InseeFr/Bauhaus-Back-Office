@@ -32,6 +32,8 @@
   </developers>
   <properties>
     <java.version>25</java.version>
+    <!-- springdoc 3.0.x est la ligne alignée sur Spring Boot 4.0.x (la 2.8.x ciblait Boot 3). -->
+    <springdoc.version>3.0.3</springdoc.version>
     <rdf4j.version>5.3.1</rdf4j.version>
     <xdocreport.version>2.2.0</xdocreport.version>
     <jacoco.version>0.8.15</jacoco.version>
@@ -44,9 +46,13 @@
     <jaxb.version>4.0.9</jaxb.version>
     <zt.version>1.18.2</zt.version>
     <saxon.version>12.5</saxon.version>
-    <minio.version>8.5.17</minio.version>
+    <minio.version>9.0.3</minio.version>
+    <!-- okhttp 5.x est publié en Kotlin Multiplatform : l'artefact `okhttp` est un stub vide côté Maven,
+         seul `okhttp-jvm` contient les classes. minio ne déclare que `okhttp`, d'où l'ajout explicite.
+         Garder cette version alignée sur celle que minio déclare. -->
+    <okhttp.version>5.3.2</okhttp.version>
+    <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
     <record.builder.version>53</record.builder.version>
-    <testcontainers-minio.version>1.26.0</testcontainers-minio.version>
     <!-- SONAR -->
     <sonar.organization>inseefr</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -55,14 +61,32 @@
     <ddi-lifecycle.version>2.0.0</ddi-lifecycle.version>
     <testcontainers-keycloak.version>4.2.1</testcontainers-keycloak.version>
     <testcontainers.version>1.21.4</testcontainers.version>
+    <!-- Overrides Spring Boot 4.0.7 (5.3.6), vulnerable to CVE-2026-54399 (httpcore5, HTTP/1.1 parser)
+         and CVE-2026-54428 (httpcore5-h2, HPACK decoder). Both fixed in 5.4.3.
+         À supprimer dès qu'une version de Spring Boot managera >= 5.4.3. -->
+    <httpcore5.version>5.4.3</httpcore5.version>
+    <!-- Surcharge le Tomcat embarqué managé par Spring Boot 4.1.0 (11.0.22), affecté entre autres par
+         CVE-2026-68763 (fuite d'allocation dans le suivi du backlog HTTP/2 lors d'un reset de stream, DoS)
+         et CVE-2026-68569 (authentification qui réussit pour un utilisateur absent du realm), toutes deux
+         corrigées en 11.0.25.
+         À supprimer dès qu'une version de Spring Boot managera >= 11.0.25. -->
+    <tomcat.version>11.0.25</tomcat.version>
     <!-- Docker API version forced for Testcontainers (workaround: it falls back to 1.32 which is rejected by Docker Engine 20.10+ that requires min API 1.40) -->
     <docker.api.version>1.41</docker.api.version>
-    <!-- on force l'usage de la version 1.85.2, cette dépendance est utilisée par minio /à supprimer quand on passera à minio 8.6.0 -->
+    <!-- Voir la dépendance bcprov-jdk18on ci-dessous : surcharge de la version que minio ramène. -->
     <bouncycastle.version>1.85.2</bouncycastle.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+    <!-- minio 9.0.3 ramène bcprov 1.84, vulnérable : on force 1.85.2 (#1140).
+         À supprimer dès que minio embarquera >= 1.85.2 — la condition d'origine
+         (« quand on passera à minio 8.6.0 ») est caduque, la branche est en 9.0.3. -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
+    </dependency>
       <dependency>
         <groupId>io.github.fbibonne</groupId>
         <artifactId>boot-properties-logger-starter</artifactId>
@@ -74,22 +98,27 @@
         <version>${ddi-lifecycle.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>${springdoc.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.github.dasniko</groupId>
         <artifactId>testcontainers-keycloak</artifactId>
         <version>${testcontainers-keycloak.version}</version>
+      </dependency>
+      <!-- kotlin-stdlib (via okhttp-jvm, déclaré directement) tire annotations 13.0, dont @NotNull n'a pas
+           de target TYPE_USE : sans ce pin il gagnerait la médiation face au 24.0.1 de flexmark (plus profond)
+           et casserait la compilation des `@NotNull Path` de XsltUtilsTest. -->
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
-    <!--      on force l'usage de la version 1.85.2 utilisée par minio-->
-    <!--      à supprimer quand on passera à minio 8.6.0-->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk18on</artifactId>
-      <version>${bouncycastle.version}</version>
-    </dependency>
-    <!--      fin surcharge-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -110,6 +139,11 @@
       <groupId>io.minio</groupId>
       <artifactId>minio</artifactId>
       <version>${minio.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp-jvm</artifactId>
+      <version>${okhttp.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -137,6 +171,12 @@
     <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+    <!-- L'API seule ne valide rien : le starter apporte hibernate-validator et le
+         MethodValidationPostProcessor qui déclenche @Valid sur les @RequestBody. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
     <!-- SECURITY -->
     <dependency>

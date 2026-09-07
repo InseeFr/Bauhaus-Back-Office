@@ -6,9 +6,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.GroupService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.StudyUnitService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaValidator;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
@@ -16,6 +19,7 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI3toDDI4Co
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDI4toDDI3ConverterServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIItemConvertServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DDIServiceImpl;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Lifecycle33ToDdi4;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.GroupDDIItemConverter;
@@ -23,9 +27,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.services.GroupService
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.converters.StudyUnitDDIItemConverter;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.StudyUnitServiceImpl;
 import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica.ColecticaConfiguration;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.ClasspathDdi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Clock;
 import java.util.List;
 
 @Configuration
@@ -33,7 +40,23 @@ public class PhysicalInstanceConfiguration {
 
     @Bean
     DDIService ddiService(DDIRepository repository, SeriesCreatorsPort seriesCreatorsPort) {
-        return new DDIServiceImpl(repository, seriesCreatorsPort);
+        return new DDIServiceImpl(repository, seriesCreatorsPort, Clock.systemDefaultZone());
+    }
+
+    @Bean
+    Ddi4SchemaRepository ddi4SchemaRepository() {
+        return new ClasspathDdi4SchemaRepository();
+    }
+
+    @Bean
+    Ddi4SchemaValidator ddi4SchemaValidator(Ddi4SchemaRepository ddi4SchemaRepository) {
+        return new NetworkntDdi4SchemaValidator(ddi4SchemaRepository);
+    }
+
+    @Bean
+    Ddi4SchemaService ddi4SchemaService(Ddi4SchemaRepository ddi4SchemaRepository,
+                                        Ddi4SchemaValidator ddi4SchemaValidator) {
+        return new DomainDdi4SchemaService(ddi4SchemaRepository, ddi4SchemaValidator);
     }
 
     @Bean

@@ -15,6 +15,7 @@ import org.mockito.MockedStatic;
 
 import java.util.Map;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mockStatic;
@@ -41,12 +42,10 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "doc123".equals(map.get("ID")) &&
-                               "Test Document".equals(map.get("LABEL")) &&
-                               "en".equals(map.get("LANG")) &&
-                               "".equals(map.get("URI_PREFIX")) &&
+                        return "\"Test Document\"@en".equals(map.get("LABEL")) &&
+                               "\"doc123\"".equals(map.get("URI_SUFFIX")) &&
                                "foaf:Document".equals(map.get("TYPE")) &&
-                               GraphsPropertiesStub.stub().documentsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               ("<" + GraphsPropertiesStub.stub().documentsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -65,7 +64,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("deleteDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return uri.equals(map.get(Constants.URI));
+                        return ("<" + uri + ">").equals(map.get(Constants.URI));
                     })));
         }
     }
@@ -83,7 +82,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentUriFromUrlQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "test.pdf".equals(map.get(Constants.URL));
+                        return "\"test.pdf\"".equals(map.get(Constants.URL));
                     })));
         }
     }
@@ -94,17 +93,17 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), any(Map.class)))
                     .thenReturn("SELECT ?document WHERE { ?document ?p ?o }");
 
-            String result = operationDocumentsQueries.getDocumentsForSimsRubricQuery("sims123", "rubric456", "fr");
+            String result = operationDocumentsQueries.getDocumentsForSimsRubricQuery("sims123", "rubric456", "http://bauhaus/codes/langue/fr");
 
             assertNotNull(result);
             assertEquals("SELECT ?document WHERE { ?document ?p ?o }", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "".equals(map.get(Constants.ID)) &&
-                               "sims123".equals(map.get(Constants.ID_SIMS)) &&
-                               "rubric456".equals(map.get("idRubric")) &&
-                               "fr".equals(map.get("LANG"));
+                        return map.get(Constants.ID) == null &&
+                               "\"sims123\"".equals(map.get(Constants.ID_SIMS)) &&
+                               "\"rubric456\"".equals(map.get("idRubric")) &&
+                               "<http://bauhaus/codes/langue/fr>".equals(map.get("LANG"));
                     })));
         }
     }
@@ -123,10 +122,10 @@ class OperationDocumentsQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
-                        return "".equals(map.get(Constants.ID)) &&
-                               "sims123".equals(map.get(Constants.ID_SIMS)) &&
-                               "".equals(map.get("idRubric")) &&
-                               (expectedType != null ? expectedType.equals(map.get("type")) : map.get("type") == null);
+                        return map.get(Constants.ID) == null &&
+                               "\"sims123\"".equals(map.get(Constants.ID_SIMS)) &&
+                               map.get("idRubric") == null &&
+                               ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -146,10 +145,10 @@ class OperationDocumentsQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
-                        return "".equals(map.get(Constants.ID)) &&
-                               "sims123".equals(map.get(Constants.ID_SIMS)) &&
-                               "".equals(map.get("idRubric")) &&
-                               (expectedType != null ? expectedType.equals(map.get("type")) : map.get("type") == null);
+                        return map.get(Constants.ID) == null &&
+                               "\"sims123\"".equals(map.get(Constants.ID_SIMS)) &&
+                               map.get("idRubric") == null &&
+                               ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -168,8 +167,8 @@ class OperationDocumentsQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().documentsBaseUri();
-                        return "doc123".equals(map.get(Constants.ID)) &&
-                               (expectedType != null ? expectedType.equals(map.get("type")) : map.get("type") == null);
+                        return "\"doc123\"".equals(map.get(Constants.ID)) &&
+                               ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -188,8 +187,8 @@ class OperationDocumentsQueriesTest {
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
                         String expectedType = BauhausUriPropertiesStub.stub().linksBaseUri();
-                        return "link123".equals(map.get(Constants.ID)) &&
-                               (expectedType != null ? expectedType.equals(map.get("type")) : map.get("type") == null);
+                        return "\"link123\"".equals(map.get(Constants.ID)) &&
+                               ("\"" + expectedType + "\"").equals(map.get("type"));
                     })));
         }
     }
@@ -208,10 +207,10 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "".equals(map.get(Constants.ID)) &&
-                               "".equals(map.get(Constants.ID_SIMS)) &&
-                               "".equals(map.get("idRubric")) &&
-                               "".equals(map.get("type"));
+                        return map.get(Constants.ID) == null &&
+                               map.get(Constants.ID_SIMS) == null &&
+                               map.get("idRubric") == null &&
+                               map.get("type") == null;
                     })));
         }
     }
@@ -229,7 +228,7 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getLinksToDocumentQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "doc123".equals(map.get(Constants.ID));
+                        return "\"doc123\"".equals(map.get(Constants.ID));
                     })));
         }
     }
@@ -240,16 +239,16 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("changeDocumentUrlQuery.ftlh"), any(Map.class)))
                     .thenReturn("DELETE/INSERT query");
 
-            String result = operationDocumentsQueries.changeDocumentUrlQuery("http://example.org/doc/123", "old.pdf", "new.pdf");
+            String result = operationDocumentsQueries.changeDocumentUrlQuery("http://example.org/doc/123", "http://old.example.org/doc.pdf", "http://new.example.org/doc.pdf");
 
             assertNotNull(result);
             assertEquals("DELETE/INSERT query", result);
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("changeDocumentUrlQuery.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "http://example.org/doc/123".equals(map.get("iri")) &&
-                               "old.pdf".equals(map.get("oldUrl")) &&
-                               "new.pdf".equals(map.get("newUrl"));
+                        return "\"http://example.org/doc/123\"".equals(map.get("iri")) &&
+                               "<http://old.example.org/doc.pdf>".equals(map.get("oldUrl")) &&
+                               "<http://new.example.org/doc.pdf>".equals(map.get("newUrl"));
                     })));
         }
     }
@@ -295,8 +294,8 @@ class OperationDocumentsQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/documentations/documents/"), eq("getDocumentsUriAndUrlForSims.ftlh"), 
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "sims123".equals(map.get(Constants.ID)) &&
-                               GraphsPropertiesStub.stub().documentationsGraph().equals(map.get("DOCUMENTATIONS_GRAPH"));
+                        return ("<" + GraphsPropertiesStub.stub().documentationsGraph() + "/sims123>")
+                                .equals(map.get("DOCUMENTATION_GRAPH_IRI"));
                     })));
         }
     }
@@ -314,5 +313,19 @@ class OperationDocumentsQueriesTest {
 
             assertEquals(testException, exception);
         }
+    }
+
+    @Test
+    void getDocumentPredicatesAndObjects_returnsExpectedSparql() throws RmesException {
+        IRI document = SimpleValueFactory.getInstance().createIRI("http://bauhaus/documents/document/1000");
+
+        String sparql = normalize(operationDocumentsQueries.getDocumentPredicatesAndObjects(document));
+
+        assertEquals(normalize("""
+                select ?predicat ?obj FROM <http://rdf.insee.fr/graphes/qualite/documents>
+                WHERE {?document ?predicat ?obj .
+                FILTER (?document = <http://bauhaus/documents/document/1000>)
+                }
+                """), sparql);
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * Il sert à retrouver, lors de l'initialisation Colectica, les series et operations
  * <em>publiées</em> : leurs IRIs sont alors en base de publication
  * ({@code http://id.insee.fr/...}), cohérentes avec la clé de recherche de l'endpoint
- * {@code GET /ddi/operation/{id}/studyUnit}.
+ * {@code GET /ddi/operation/{id}/fichiers}.
  */
 @Component
 public class RepositoryPublicationReader {
@@ -37,6 +37,6 @@ public class RepositoryPublicationReader {
 
     public JSONArray getResponseAsArray(String query) throws RmesException {
         Repository repository = repositoryUtils.initRepository(sesameServer, repositoryId);
-        return RepositoryUtils.getResponseAsArray(query, repository);
+        return repositoryUtils.getResponseAsArray(query, repository);
     }
 }

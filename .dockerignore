@@ -1,4 +1,6 @@
-target
+**/target
 .github
 .idea
+.claude
+.git
 hooks

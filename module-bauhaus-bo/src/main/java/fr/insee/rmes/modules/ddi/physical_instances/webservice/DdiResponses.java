@@ -1,6 +1,5 @@
 package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
-import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -20,7 +19,7 @@ final class DdiResponses {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(xml);
     }
 
-    static ResponseEntity<Ddi4Response> json(Ddi4Response ddi4) {
+    static <T> ResponseEntity<T> json(T ddi4) {
         if (ddi4 == null) {
             return ResponseEntity.notFound().build();
         }

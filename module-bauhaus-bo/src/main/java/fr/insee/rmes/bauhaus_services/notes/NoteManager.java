@@ -19,10 +19,10 @@ import java.util.Set;
 @Component
 public class NoteManager {
 	
-	final NotesUtils noteUtils;
+	final NotesRepository notesRepository;
 
-	public NoteManager(NotesUtils noteUtils) {
-		this.noteUtils = noteUtils;
+	public NoteManager(NotesRepository notesRepository) {
+		this.notesRepository = notesRepository;
 	}
 
 	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
@@ -30,7 +30,7 @@ public class NoteManager {
 		List<DatableNote> datableNotes = concept.getDatableNotes();
 
 		String conceptId = concept.getId();
-		String conceptVersion = noteUtils.getConceptVersion(concept);
+		String conceptVersion = notesRepository.getConceptVersion(concept);
 
 		List<IRI> notesToDelete = new ArrayList<>();
 		List<IRI> notesToUpdate = new ArrayList<>();
@@ -54,7 +54,7 @@ public class NoteManager {
 		}
 		
 		// Keep historical notes
-		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);
+		notesRepository.keepHistoricalNotes(conceptId, conceptVersion, model);
 
 		List<List<IRI>> notesToDeleteAndUpdate = new ArrayList<>();
 		notesToDeleteAndUpdate.add(notesToDelete);
@@ -74,10 +74,10 @@ public class NoteManager {
 					versionableNote.setPredicat(c.owlProperty());
 					versionableNote.setLang(c.lang());
 					versionableNote.setConceptVersion(conceptVersion);
-					versionableNote.setVersion(noteUtils.getVersion(concept, versionableNote, "1"));
+					versionableNote.setVersion(notesRepository.getVersion(concept, versionableNote, "1"));
 					if (Boolean.TRUE.equals(concept.getVersioning())) {
 						// Close previous note
-						noteUtils.closeRdfVersionableNote(conceptId, versionableNote, model);
+						notesRepository.closeRdfVersionableNote(conceptId, versionableNote, model);
 					} else if (Boolean.FALSE.equals(concept.getCreation())){
 						// Delete note in the current conceptVersion
 						notesToDelete.add(RdfUtils.versionableNoteIRI(conceptId, versionableNote));
@@ -86,7 +86,7 @@ public class NoteManager {
 				}
 			}
 			if (!versionableNote.getContent().isEmpty() && !versionableNote.getContent().equals("<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>")) {
-				noteUtils.createRdfVersionableNote(conceptId, versionableNote, model);
+				notesRepository.createRdfVersionableNote(conceptId, versionableNote, model);
 			}
 		}
 	}
@@ -99,11 +99,11 @@ public class NoteManager {
 					datableNote.setPath(c.pathComponent());
 					datableNote.setPredicat(c.owlProperty());
 					datableNote.setLang(c.lang());
-					datableNote.setConceptVersion(noteUtils.getConceptVersion(concept));
+					datableNote.setConceptVersion(notesRepository.getConceptVersion(concept));
 				}
 			}
-			noteUtils.deleteDatableNote(conceptId, datableNote, notesToDelete);
-			noteUtils.createRdfDatableNote(conceptId, datableNote, model);
+			notesRepository.deleteDatableNote(conceptId, datableNote, notesToDelete);
+			notesRepository.createRdfDatableNote(conceptId, datableNote, model);
 		}
 	}
 
@@ -116,16 +116,16 @@ public class NoteManager {
 			versionableNote.setConceptVersion(conceptVersion);
 			versionableNote.setLang(versionnedNoteType.lang());
 			versionableNote.setPredicat(versionnedNoteType.owlProperty());
-			versionableNote.setVersion(noteUtils.getLastVersion(concept, versionableNote, "0"));
+			versionableNote.setVersion(notesRepository.getLastVersion(concept, versionableNote, "0"));
 			// Update concept version of unchanged versionable notes
 			if (Boolean.TRUE.equals(concept.getVersioning())) {
 				String previousConceptVersion = String.valueOf(Integer.parseInt(conceptVersion) - 1);
 				versionableNote.setConceptVersion(previousConceptVersion);
-				noteUtils.updateNoteConceptVersion(conceptId, versionableNote, model);
+				notesRepository.updateNoteConceptVersion(conceptId, versionableNote, model);
 			}
 			// Keep link with unchanged notes of this concept version
 			else if (Boolean.FALSE.equals(concept.getCreation())) {
-				noteUtils.keepNote(conceptId, versionableNote, model);
+				notesRepository.keepNote(conceptId, versionableNote, model);
 			}
 		}
 	}

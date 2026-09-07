@@ -7,10 +7,12 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRe
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.services.Ddi4ToLifecycle33;
 import fr.insee.rmes.colectica.client.ColecticaClient;
+import fr.insee.rmes.colectica.client.dto.UpdateItemStateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepository implements StudyUnitRepository {
@@ -37,6 +39,28 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
     }
 
     @Override
+    public void deprecate(Collection<String> studyUnitIds) {
+        if (studyUnitIds == null || studyUnitIds.isEmpty()) {
+            logger.info("No study unit id provided to deprecate");
+            return;
+        }
+        List<UpdateItemStateRequest.ItemIdentifier> ids = ddiRepository.getStudyUnits().stream()
+                .filter(studyUnit -> studyUnitIds.contains(studyUnit.id()))
+                .map(studyUnit -> {
+                    String agency = studyUnit.agency() != null ? studyUnit.agency() : instanceConfiguration.defaultAgencyId();
+                    return new UpdateItemStateRequest.ItemIdentifier(agency, studyUnit.id(), 1);
+                })
+                .toList();
+        if (ids.isEmpty()) {
+            logger.info("None of the {} requested study unit id(s) exist in Colectica: nothing to deprecate", studyUnitIds.size());
+            return;
+        }
+        colecticaClient.updateItemState(
+                new UpdateItemStateRequest(ids, true, true));
+        logger.info("Deprecated {} study unit(s) from Colectica", ids.size());
+    }
+
+    @Override
     public void addPhysicalInstance(Ddi4StudyUnit studyUnit, Reference physicalInstanceReference) {
         logger.info("Linking physical instance piId={} to study unit id={}", physicalInstanceReference.id(), studyUnit.id());
         List<Reference> refs = new ArrayList<>(
@@ -52,7 +76,8 @@ public class ColecticaStudyUnitRepository extends AbstractColecticaItemRepositor
                 studyUnit.version(),
                 studyUnit.citation(),
                 studyUnit.operationIri(),
-                refs
+                refs,
+                studyUnit.logicalProductReferences()
         );
         createOrUpdate(updated);
     }

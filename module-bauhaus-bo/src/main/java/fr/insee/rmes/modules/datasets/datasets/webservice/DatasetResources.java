@@ -10,6 +10,7 @@ import fr.insee.rmes.modules.datasets.datasets.model.PartialDataset;
 import fr.insee.rmes.modules.datasets.datasets.model.PatchDataset;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -93,7 +94,7 @@ public class DatasetResources {
     @HasAccess(module = RBAC.Module.DATASET_DATASET, privilege = RBAC.Privilege.UPDATE)
     public void patchDataset(
             @PathVariable("id") String id,
-            @RequestBody PatchDataset dataset
+            @Valid @RequestBody PatchDataset dataset
     ) throws RmesException {
         this.datasetService.patchDataset(id, dataset);
     }

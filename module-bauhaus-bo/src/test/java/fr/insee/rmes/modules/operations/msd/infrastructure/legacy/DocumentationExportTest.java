@@ -4,12 +4,12 @@ package fr.insee.rmes.modules.operations.msd.infrastructure.legacy;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
+import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
@@ -43,13 +43,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentationExportTest {
     @Mock
-    private SeriesUtils seriesUtils;
+    private SeriesRepository seriesRepository;
 
     @Mock
-    private OperationsUtils operationsUtils;
+    private OperationsRepository operationsRepository;
 
     @Mock
-    private IndicatorsUtils indicatorsUtils;
+    private IndicatorsRepository indicatorsRepository;
 
     @Mock
     private ExportUtils exportUtils;
@@ -58,7 +58,7 @@ class DocumentationExportTest {
     private CodesListExport codeListService;
 
     @Mock
-    private ParentUtils parentUtils;
+    private OperationsParentRepository operationsParentRepository;
 
     @Mock
     private DocumentationsUtils documentationsUtils;
@@ -67,7 +67,7 @@ class DocumentationExportTest {
     private OrganizationsService organizationsService;
 
     @Mock
-    private fr.insee.rmes.domain.port.clientside.OrganisationService organisationService;
+    private fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService organisationService;
 
     @Mock
     private DocumentsUtils documentsUtils;
@@ -90,7 +90,7 @@ class DocumentationExportTest {
         var zip = "zip";
         var objectType = "objectType";
 
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
 
         InputStream inputStreamMock = mock(InputStream.class);
@@ -107,8 +107,28 @@ class DocumentationExportTest {
     }
 
     @Test
+    void export_as_zip_should_name_the_archive_without_any_diacritic() throws Exception {
+        when(documentsUtils.getDocumentsUriAndUrlForSims("sims123")).thenReturn(new JSONArray());
+        var sims = new JSONObject();
+        sims.put("id", "sims123");
+        sims.put("labelLg1", "Rapport qualité : Enquête « Emploi » 2022");
+
+        var xmlContent = new HashMap<String, String>();
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils);
+
+        InputStream inputStreamMock = mock(InputStream.class);
+        when(exportUtils.exportAsInputStream(any(), any(), any(), any(), any(), any(), any())).thenReturn(inputStreamMock);
+        when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
+
+        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, "xslFile", "xmlPattern", "zip", "objectType", 50);
+
+        assertThat(response.getHeaders().getContentDisposition().getFilename())
+                .isEqualTo("rapportQualiteEnqueteEmploi2022.zip");
+    }
+
+    @Test
     void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -121,7 +141,7 @@ class DocumentationExportTest {
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
         when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject().put("labelLg1", "labelLg1"));
-        when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
         when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
 
@@ -131,7 +151,7 @@ class DocumentationExportTest {
 
     @Test
     void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -140,7 +160,7 @@ class DocumentationExportTest {
         boolean document = true;
         String goal = "unknownGoal";
 
-        when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{"someTargetType", "someId"});
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{"someTargetType", "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
 
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
@@ -152,7 +172,7 @@ class DocumentationExportTest {
 
     @Test
     void testExportXmlFiles_Success() throws RmesException {
-        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, organisationService, documentationsUtils );
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesRepository, operationsRepository, indicatorsRepository, operationsParentRepository, codeListService, organizationsService, organisationService, documentationsUtils );
 
         Map<String, String> xmlContent = new HashMap<>();
         boolean includeEmptyMas = true;
@@ -173,10 +193,10 @@ class DocumentationExportTest {
                 50,
                 documentsUtils,
                 exportUtils,
-                seriesUtils,
-                operationsUtils,
-                indicatorsUtils,
-                parentUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
                 codeListService,
                 organizationsService,
                 organisationService,
@@ -187,13 +207,13 @@ class DocumentationExportTest {
         String idDatabase = "s2144";
         Map<String, String> xmlContent = new HashMap<>();
 
-        // Mock parentUtils to return SERIES targetType
-        when(parentUtils.getDocumentationTargetTypeAndId(id))
+        // Mock operationsParentRepository to return SERIES targetType
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
                 .thenReturn(new String[]{Constants.SERIES_UP, idDatabase});
 
-        // Mock seriesUtils to return a series
+        // Mock seriesRepository to return a series
         Series series = createSeriesForTest();
-        when(seriesUtils.getSeriesById(idDatabase, fr.insee.rmes.utils.EncodingType.XML))
+        when(seriesRepository.getSeriesById(idDatabase, fr.insee.rmes.utils.EncodingType.XML))
                 .thenReturn(series);
 
         // Mock organizations
@@ -202,9 +222,9 @@ class DocumentationExportTest {
         // Mock batch organization lookups for creators using OrganisationService from module-domain
         when(organisationService.getOrganisationsMap(List.of("HIE2004993", "DG75-G401", "DG75-G450")))
                 .thenReturn(Map.of(
-                        "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993"),
-                        "DG75-G401", new fr.insee.rmes.domain.model.OrganisationOption("DG75-G401", "Organisation DG75-G401"),
-                        "DG75-G450", new fr.insee.rmes.domain.model.OrganisationOption("DG75-G450", "Organisation DG75-G450")
+                        "HIE2004993", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993"),
+                        "DG75-G401", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-G401", "Organisation DG75-G401"),
+                        "DG75-G450", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-G450", "Organisation DG75-G450")
                 ));
 
         // Mock documentation
@@ -342,10 +362,10 @@ class DocumentationExportTest {
                 50,
                 documentsUtils,
                 exportUtils,
-                seriesUtils,
-                operationsUtils,
-                indicatorsUtils,
-                parentUtils,
+                seriesRepository,
+                operationsRepository,
+                indicatorsRepository,
+                operationsParentRepository,
                 codeListService,
                 organizationsService,
                 organisationService,
@@ -356,22 +376,22 @@ class DocumentationExportTest {
         String idDatabase = "p1723";
         Map<String, String> xmlContent = new HashMap<>();
 
-        // Mock parentUtils to return INDICATOR targetType
-        when(parentUtils.getDocumentationTargetTypeAndId(id))
+        // Mock operationsParentRepository to return INDICATOR targetType
+        when(operationsParentRepository.getDocumentationTargetTypeAndId(id))
                 .thenReturn(new String[]{Constants.INDICATOR_UP, idDatabase});
 
-        // Mock indicatorsUtils to return an indicator
+        // Mock indicatorsRepository to return an indicator
         fr.insee.rmes.model.operations.Indicator indicator = createIndicatorForTest();
-        when(indicatorsUtils.getIndicatorById(idDatabase, true))
+        when(indicatorsRepository.getIndicatorById(idDatabase, true))
                 .thenReturn(indicator);
 
-        // Mock seriesUtils for the series referenced by the indicator
+        // Mock seriesRepository for the series referenced by the indicator
         Series series = new Series();
         series.setId("s1034");
         series.setPrefLabelLg1("Autres indicateurs");
         series.setPrefLabelLg2("Other indexes");
         series.setCreators(new ArrayList<>());
-        when(seriesUtils.getSeriesById("s1034", fr.insee.rmes.utils.EncodingType.XML))
+        when(seriesRepository.getSeriesById("s1034", fr.insee.rmes.utils.EncodingType.XML))
                 .thenReturn(series);
 
         // Mock organizations
@@ -380,12 +400,12 @@ class DocumentationExportTest {
         // Mock batch organization lookups for creators using OrganisationService from module-domain
         when(organisationService.getOrganisationsMap(List.of("HIE2004993")))
                 .thenReturn(Map.of(
-                        "HIE2004993", new fr.insee.rmes.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
+                        "HIE2004993", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("HIE2004993", "Organisation HIE2004993")
                 ));
         // Mock batch organization lookup for contributors (now resolved to labels like creators)
         when(organisationService.getOrganisationsMap(List.of("DG75-L002")))
                 .thenReturn(Map.of(
-                        "DG75-L002", new fr.insee.rmes.domain.model.OrganisationOption("DG75-L002", "Administration du comité du Label")
+                        "DG75-L002", new fr.insee.rmes.modules.organisations.domain.model.OrganisationOption("DG75-L002", "Administration du comité du Label")
                 ));
 
         // Mock documentation

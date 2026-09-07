@@ -1,0 +1,33 @@
+# Fixture dédiée au test d'intégration de suppression structurée
+# (RepositoryGestion.clearStructureNodeAndComponents → RepositoryUtils.clearStructureAndComponents).
+#
+# La structure porte deux component specifications (cs1, cs2) ; cs1 porte en plus un nœud
+# imbriqué relié par qb:component (dim) afin d'exercer la récursion à deux niveaux de
+# clearStructureAndComponents. IRIs volontairement uniques (suffixe -it) car le conteneur
+# GraphDB est partagé entre toutes les classes de test d'intégration.
+@prefix qb:   <http://purl.org/linked-data/cube#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+<http://rdf.insee.fr/graphes/structures> {
+  <http://bauhaus/structures/struct-delete-it>
+      a qb:DataStructureDefinition ;
+      dct:identifier "struct-delete-it" ;
+      rdfs:label "Structure à supprimer"@fr ;
+      qb:component <http://bauhaus/structures/struct-delete-it/cs1> ,
+                   <http://bauhaus/structures/struct-delete-it/cs2> .
+
+  <http://bauhaus/structures/struct-delete-it/cs1>
+      a qb:ComponentSpecification ;
+      rdfs:label "Composant 1"@fr ;
+      qb:component <http://bauhaus/structures/struct-delete-it/cs1/dim> .
+
+  <http://bauhaus/structures/struct-delete-it/cs1/dim>
+      a qb:DimensionProperty ;
+      rdfs:label "Dimension imbriquée"@fr .
+
+  <http://bauhaus/structures/struct-delete-it/cs2>
+      a qb:ComponentSpecification ;
+      rdfs:label "Composant 2"@fr .
+}

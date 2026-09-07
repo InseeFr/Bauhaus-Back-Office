@@ -10,6 +10,16 @@ COPY . .
 RUN chmod +x mvnw
 RUN ./mvnw -T 1C clean install -Dmaven.test.skip=true -X --no-transfer-progress --batch-mode --errors --fail-at-end --show-version
 
+# Éclate l'uber-jar dans la disposition « efficiente » recommandée par Spring Boot
+# (https://docs.spring.io/spring-boot/reference/packaging/efficient.html) : les dépendances
+# sont posées à plat dans lib/, et bauhaus.jar ne contient plus que le code applicatif avec
+# un Class-Path qui référence lib/. On ne charge donc plus les classes depuis des jars
+# imbriqués, ce qui accélère le démarrage et rend l'image compatible avec le cache AOT.
+# --layers découpe la sortie en couches de volatilité croissante (dependencies, loader,
+# snapshot-dependencies, application), copiées ensuite une par une côté runtime.
+RUN cp module-bauhaus-bo/target/module-bauhaus-bo-*.jar bauhaus.jar \
+ && java -Djarmode=tools -jar bauhaus.jar extract --layers --destination extracted
+
 FROM eclipse-temurin:25-jre-jammy
 
 ARG ELASTIC_APM_VERSION=1.55.4
@@ -23,8 +33,34 @@ ADD https://repo.maven.apache.org/maven2/co/elastic/apm/elastic-apm-agent/$ELAST
 RUN chown -R 10000:10000 /opt/elastic_apm/
 
 USER 10000
-COPY --from=builder /opt/app/module-bauhaus-bo/target/*.jar /opt/app/bauhaus.jar
+WORKDIR /opt/app
+
+# Une couche Docker par couche du jar : les ~90 Mo de dépendances ne sont réécrits (et
+# repoussés au registry) que lorsqu'ils changent vraiment, pas à chaque livraison applicative.
+COPY --from=builder --chown=10000:10000 /opt/app/extracted/dependencies/ ./
+COPY --from=builder --chown=10000:10000 /opt/app/extracted/spring-boot-loader/ ./
+COPY --from=builder --chown=10000:10000 /opt/app/extracted/snapshot-dependencies/ ./
+COPY --from=builder --chown=10000:10000 /opt/app/extracted/application/ ./
+
+# Training run du cache AOT (Java 25+) : démarre le contexte Spring et sort juste après le
+# refresh (spring.context.exit=onRefresh). Aucun service externe n'est requis à ce stade —
+# les échecs de connexion GraphDB/Colectica sont déjà rattrapés et loggés, et les
+# CommandLineRunner / ApplicationReadyEvent (init des groupes Colectica, préchauffage du
+# cache des codes mutualisés) ne s'exécutent pas avant le refresh.
+#
+# --add-modules java.instrument : le cache n'est mappable que si le graphe de modules du
+# runtime est identique à celui de l'entraînement. Sans ce drapeau, injecter un -javaagent
+# (agent APM Elastic embarqué ci-dessus) via JAVA_TOOL_OPTIONS ferait échouer le mappage et
+# annulerait tout le gain. Avec, le même cache sert dans les deux cas.
+RUN java --add-modules java.instrument \
+         -XX:AOTCacheOutput=bauhaus.aot \
+         -Dspring.context.exit=onRefresh \
+         -jar bauhaus.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar",  "/opt/app/bauhaus.jar"]
+# Chemins volontairement relatifs à WORKDIR : le cache mémorise la chaîne de classpath
+# telle quelle, un « -jar /opt/app/bauhaus.jar » absolu ne le mapperait plus.
+# Si le cache ne peut pas être mappé (GC ZGC, autre version de JVM, classpath différent),
+# la JVM le signale sur la sortie d'erreur et démarre normalement sans lui.
+ENTRYPOINT ["java", "--add-modules", "java.instrument", "-XX:AOTCache=bauhaus.aot", "-jar", "bauhaus.jar"]

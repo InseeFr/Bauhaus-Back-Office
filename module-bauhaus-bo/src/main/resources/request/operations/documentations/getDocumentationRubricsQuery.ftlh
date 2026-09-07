@@ -1,12 +1,12 @@
 SELECT distinct ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDocLg1 ?hasDocLg2 ?maxOccurs ?uri
-	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
-	FROM <${CODELIST_GRAPH}> 
-	FROM <${ORGANIZATIONS_GRAPH}>
-	FROM <${ORG_INSEE_GRAPH}>
-	FROM <${COG_GRAPH}>
-	FROM <${DOCUMENTATIONS_GEO_GRAPH}>
+	FROM ${DOCUMENTATION_GRAPH_IRI}
+	FROM ${CODELIST_GRAPH} 
+	FROM ${ORGANIZATIONS_GRAPH}
+	FROM ${ORG_INSEE_GRAPH}
+	FROM ${COG_GRAPH}
+	FROM ${DOCUMENTATIONS_GEO_GRAPH}
 
-    FROM NAMED  <${MSD_GRAPH}> 
+    FROM NAMED  ${MSD_GRAPH} 
 
 WHERE { 
 			?report rdf:type sdmx-mm:MetadataReport .
@@ -21,8 +21,8 @@ WHERE {
  		<#-- RangeType.DATE : value -->
 		{{
 			?reportAttr ?attr ?value . 
-			FILTER ( datatype(?value) = <${DATE.rdfType}> ) 
-			BIND('${DATE.jsonType}' AS ?rangeType) .
+			FILTER ( datatype(?value) = ${DATE_RDF_TYPE} ) 
+			BIND(${DATE_JSON_TYPE} AS ?rangeType) .
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 
 		} 
@@ -35,7 +35,7 @@ WHERE {
 			OPTIONAL{
 				?reportAttr ?attr ?textLg1 .
 				?textLg1 rdf:type dcmitype:Text .
-				?textLg1 dcterms:language <${LG1_CL}> .
+				?textLg1 dcterms:language ${LG1_CL} .
 				?textLg1 rdf:value ?labelLg1 .
 			}
 			BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
@@ -43,7 +43,7 @@ WHERE {
 			OPTIONAL {
 				?reportAttr ?attr ?textLg2 .
 				?textLg2 rdf:type dcmitype:Text .
-				?textLg2 dcterms:language <${LG2_CL}> .
+				?textLg2 dcterms:language ${LG2_CL} .
 				BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2) .
 
 				OPTIONAL{
@@ -53,19 +53,19 @@ WHERE {
 
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
 
-			BIND('${RICHTEXT.jsonType}' AS ?rangeType) .
+			BIND(${RICHTEXT_JSON_TYPE} AS ?rangeType) .
 		}
 
 		<#-- RangeType.STRING : value -->
 		UNION {
 			 ?reportAttr ?attr ?labelTemp .
              OPTIONAL{?reportAttr ?attr ?labelLg1 .
-			 FILTER(lang(?labelLg1) = '${LG1}')  }
+			 FILTER(lang(?labelLg1) = ${LG1})  }
 
 			 OPTIONAL{?reportAttr ?attr ?labelLg2 .
-			 	FILTER(lang(?labelLg2) = '${LG2}') }
+			 	FILTER(lang(?labelLg2) = ${LG2}) }
 
-			 BIND('${STRING.jsonType}' AS ?rangeType) . 
+			 BIND(${STRING_JSON_TYPE} AS ?rangeType) . 
 			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
 			 FILTER ( bound(?labelLg1) || bound(?labelLg2) )
 		} 
@@ -77,10 +77,10 @@ WHERE {
 			?codeUri skos:notation ?value .
 			?codeUri skos:inScheme ?listUri .
 			?listUri skos:notation ?codeList .
-			BIND('${CODELIST.jsonType}' AS ?rangeType) .
+			BIND(${CODELIST_JSON_TYPE} AS ?rangeType) .
 						
 			OPTIONAL {
-				GRAPH  <${MSD_GRAPH}>  {
+				GRAPH  ${MSD_GRAPH}  {
 					?mas sdmx-mm:metadataAttributeProperty ?attr . 
 					?mas sdmx-mm:maxOccurs ?maxOccurs
 				}
@@ -94,14 +94,14 @@ WHERE {
 
 			OPTIONAL{
                 ?organisationUri skos:prefLabel ?labelLg1 .
-                FILTER(lang(?labelLg1) = '${LG1}')
+                FILTER(lang(?labelLg1) = ${LG1})
             }
             OPTIONAL{
                 ?organisationUri skos:prefLabel ?labelLg2 .
-                FILTER(lang(?labelLg2) = '${LG2}')
+                FILTER(lang(?labelLg2) = ${LG2})
             }
 
-			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
+			BIND(${ORGANIZATION_JSON_TYPE} AS ?rangeType) .
 		} 
 		
 		<#-- RangeType.GEOGRAPHY : value (uri), value -->
@@ -109,7 +109,7 @@ WHERE {
 			?reportAttr ?attr ?uri . 
 			?uri igeo:nom ?igeoNom .
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
-			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
+			BIND(${GEOGRAPHY_JSON_TYPE} AS ?rangeType) .
 		} }
 
 		UNION {

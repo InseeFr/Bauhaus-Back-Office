@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -27,19 +27,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class OperationPublication extends RdfService{
 
-	private final ParentUtils ownersUtils;
+	private final OperationsParentRepository operationsParentRepository;
 
 	public OperationPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
 								RepositoryPublication repositoryPublication,
 								PublicationUtils publicationUtils,
-								ParentUtils ownersUtils) {
+								OperationsParentRepository operationsParentRepository) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.ownersUtils = ownersUtils;
+		this.operationsParentRepository = operationsParentRepository;
 	}
 
 	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
 
 	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
+		PublicationUtils.rejectIfAlreadyPublished("Operation", operationId, operationsParentRepository.getFamOpSerValidationStatus(operationId));
+
 		checkSeriesIsPublished(operationId, operationJson);
 
 		Model model = new LinkedHashModel();
@@ -77,7 +79,7 @@ public class OperationPublication extends RdfService{
 	private void checkSeriesIsPublished(String operationId, JSONObject operationJson)
 			throws RmesException {
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
-		String status = ownersUtils.getValidationStatus(seriesId);
+		String status = operationsParentRepository.getValidationStatus(seriesId);
 
 		if (PublicationUtils.isUnublished(status)) {
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,

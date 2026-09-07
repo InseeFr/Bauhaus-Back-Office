@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,5 +15,8 @@ public interface GroupService extends DdiItemService<Ddi4Group> {
 
     List<PartialGroup> getAll();
 
-    void deprecateAll();
+    /**
+     * Deprecates only the existing groups whose identifier is in {@code groupIds}.
+     */
+    void deprecate(Collection<String> groupIds);
 }

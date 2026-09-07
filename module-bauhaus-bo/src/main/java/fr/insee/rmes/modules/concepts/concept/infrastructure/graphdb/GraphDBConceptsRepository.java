@@ -1,22 +1,23 @@
 package fr.insee.rmes.modules.concepts.concept.infrastructure.graphdb;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.commons.hexagonal.ServerSideAdaptor;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.port.serverside.ConceptsRepository;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Lazy;
@@ -24,8 +25,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,18 +41,18 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     private final ConceptCollectionsQueries conceptCollectionsQueries;
     private final ConceptConceptsQueries conceptConceptsQueries;
     private final BauhausLanguagesProperties languages;
-    private final ConceptsUtils conceptsUtils;
+    private final LegacyConceptsRepository legacyConceptsRepository;
 
     public GraphDBConceptsRepository(RepositoryGestion repositoryGestion,
                                      ConceptCollectionsQueries conceptCollectionsQueries,
                                      ConceptConceptsQueries conceptConceptsQueries,
                                      BauhausLanguagesProperties languages,
-                                     @Lazy ConceptsUtils conceptsUtils) {
+                                     @Lazy LegacyConceptsRepository legacyConceptsRepository) {
         this.repositoryGestion = repositoryGestion;
         this.conceptCollectionsQueries = conceptCollectionsQueries;
         this.conceptConceptsQueries = conceptConceptsQueries;
         this.languages = languages;
-        this.conceptsUtils = conceptsUtils;
+        this.legacyConceptsRepository = legacyConceptsRepository;
     }
 
     @Override
@@ -88,24 +90,24 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
         JSONArray result = repositoryGestion.getResponseAsArray(query);
         if (result == null) return new JSONArray();
         JSONArray out = new JSONArray();
-        for (int i = 0; i < result.length(); i++) {
-            String label = result.getJSONObject(i).optString("altLabel");
-            if (!label.isEmpty()) {
-                out.put(label);
-            }
-        }
+        JSONUtils.stream(result)
+                .map(altLabel -> altLabel.optString("altLabel"))
+                .filter(label -> !label.isEmpty())
+                .forEach(out::put);
         return out;
     }
 
     @Override
-    public List<CompactConcept> getConcepts() throws ConceptsFetchException {
+    public List<PartialConcept> getConcepts() throws ConceptsFetchException {
         try {
             JSONArray rows = repositoryGestion.getResponseAsArray(conceptConceptsQueries.conceptsQuery());
             if (rows == null) return List.of();
             GraphDBPartialConcept[] mapped = Deserializer.deserializeJSONArray(rows, GraphDBPartialConcept[].class);
-            Set<String> seenIds = new HashSet<>();
-            return Arrays.stream(mapped)
-                    .filter(row -> seenIds.add(row.id()))
+            Map<String, GraphDBPartialConcept> byId = new LinkedHashMap<>();
+            for (GraphDBPartialConcept row : mapped) {
+                byId.merge(row.id(), row, GraphDBPartialConcept::mergeAltLabelOf);
+            }
+            return byId.values().stream()
                     .map(GraphDBPartialConcept::toDomain)
                     .toList();
         } catch (RmesException e) {
@@ -159,7 +161,7 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     private void delegateUpsert(Concept concept) throws ConceptsSaveException {
         try {
             String body = toLegacyJsonBody(concept);
-            conceptsUtils.setConcept(concept.id().value(), body);
+            legacyConceptsRepository.setConcept(concept.id().value(), body);
         } catch (RmesException e) {
             throw new ConceptsSaveException(e);
         }
@@ -211,12 +213,26 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     }
 
     @Override
+    public Set<String> findValidatedConceptIds(List<String> ids) throws ConceptsFetchException {
+        if (ids.isEmpty()) return Set.of();
+        try {
+            JSONArray results = repositoryGestion.getResponseAsArray(conceptConceptsQueries.findValidatedConceptIds(ids));
+            if (results == null) return Set.of();
+            return IntStream.range(0, results.length())
+                    .mapToObj(i -> results.getJSONObject(i).getString("id"))
+                    .collect(Collectors.toSet());
+        } catch (RmesException e) {
+            throw new ConceptsFetchException(e);
+        }
+    }
+
+    @Override
     public void validate(List<ConceptId> ids) throws ConceptsSaveException {
         if (ids.isEmpty()) return;
         try {
             JSONArray body = new JSONArray();
             ids.forEach(id -> body.put(id.value()));
-            conceptsUtils.conceptsValidation(body.toString());
+            legacyConceptsRepository.conceptsValidation(body.toString());
         } catch (RmesException e) {
             throw new ConceptsSaveException(e);
         }
@@ -225,7 +241,7 @@ public class GraphDBConceptsRepository implements ConceptsRepository {
     @Override
     public void delete(ConceptId id) throws ConceptsSaveException {
         try {
-            conceptsUtils.deleteConcept(id.value());
+            legacyConceptsRepository.deleteConcept(id.value());
         } catch (RmesException e) {
             throw new ConceptsSaveException(e);
         }

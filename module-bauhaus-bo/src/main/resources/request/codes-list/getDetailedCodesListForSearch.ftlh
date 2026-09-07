@@ -1,5 +1,5 @@
 SELECT DISTINCT ?id ?labelLg1 ?creator ?validationState
-FROM <${CODES_LISTS_GRAPH}>
+FROM ${CODES_LISTS_GRAPH}
 WHERE {
 <#if PARTIAL>
     ?list rdf:type skos:Collection .
@@ -10,6 +10,6 @@ WHERE {
     dc:creator ?creator ;
     insee:validationState ?validationState ;
     skos:prefLabel ?labelLg1 .
-    FILTER(lang(?labelLg1) = '${LG1}') .
+    FILTER(lang(?labelLg1) = ${LG1}) .
 }
 ORDER BY ?labelLg1

@@ -22,7 +22,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -147,7 +146,7 @@ public class XMLUtils {
 		final Pattern pattern7 = Pattern.compile(regex7, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern7.matcher(ret).replaceAll("&lt;");
 
-		return new String(ret.getBytes(), StandardCharsets.UTF_8);
+		return ret;
 	}
 
 	public static String solveSpecialXmlcharacters(String rubric) {
@@ -168,7 +167,7 @@ public class XMLUtils {
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
 		
-		return new String(ret.getBytes(), StandardCharsets.UTF_8);
+		return ret;
 	}
 
 	private static TransformerFactory initTransformerFactory() {

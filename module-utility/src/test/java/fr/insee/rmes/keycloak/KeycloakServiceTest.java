@@ -53,7 +53,7 @@ class KeycloakServiceTest {
                 return "token";
             }
         };
-        when(responseSpec.body(eq(Token.class))).thenReturn(token);
+        when(responseSpec.body(Token.class)).thenReturn(token);
     }
 
     @Test
@@ -70,7 +70,7 @@ class KeycloakServiceTest {
     void getAccessToken_shouldCallKeycloakServerWithDefaultRealm() {
         keycloakService.getAccessToken();
         verify(requestBodyUriSpec).uri(
-                eq("keycloak.test/realms/default-realm/protocol/openid-connect/token")
+                "keycloak.test/realms/default-realm/protocol/openid-connect/token"
         );
     }
 
@@ -126,7 +126,7 @@ class KeycloakServiceTest {
     }
 
     private void stubKeycloakReturns(String accessToken) {
-        when(responseSpec.body(eq(Token.class))).thenReturn(new Token() {
+        when(responseSpec.body(Token.class)).thenReturn(new Token() {
             @Override
             public String getAccessToken() {
                 return accessToken;

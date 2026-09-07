@@ -1,8 +1,8 @@
 SELECT ?distributionId ?distributionLabelLg1 ?distributionValidationStatus ?distributionCreated ?distributionUpdated ?altIdentifier
 ?id ?labelLg1 ?creator ?disseminationStatus ?validationStatus ?wasGeneratedIRIs ?created ?updated
 
-FROM <${DATASET_GRAPH}>
-FROM <${ADMS_GRAPH}>
+FROM ${DATASET_GRAPH}
+FROM ${ADMS_GRAPH}
 
 WHERE {
     ?uri rdf:type dcat:Distribution .
@@ -14,7 +14,7 @@ WHERE {
 
     OPTIONAL {
         ?uri dcterms:title ?distributionLabelLg1
-        FILTER (lang(?distributionLabelLg1) = '${LG1}') .
+        FILTER (lang(?distributionLabelLg1) = ${LG1}) .
     }
 
     OPTIONAL {
@@ -39,7 +39,7 @@ WHERE {
 
     OPTIONAL {
         ?uriDataset dcterms:title ?labelLg1
-        FILTER (lang(?labelLg1) = '${LG1}') .
+        FILTER (lang(?labelLg1) = ${LG1}) .
     }
 
     OPTIONAL {
@@ -63,6 +63,6 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uriDataset ^foaf:primaryTopic/dcterms:modified ?modified .
+        ?uriDataset ^foaf:primaryTopic/dcterms:modified ?updated .
     }
 }

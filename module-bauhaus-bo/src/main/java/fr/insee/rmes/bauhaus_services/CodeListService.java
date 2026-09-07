@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.CodeList;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.modules.codeslists.codeslists.webservice.CodeRequest;
 import fr.insee.rmes.modules.codeslists.partialcodeslists.model.PartialCodesList;
 
 import java.util.List;
@@ -13,7 +14,6 @@ public interface CodeListService {
 
     String getCodeListJson(String codeListUri) throws RmesException;
 
-    String getCode(String notation, String id) throws RmesException;
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
@@ -39,9 +39,9 @@ public interface CodeListService {
 
     String getCodesJson(String notation, int page, Integer perPage) throws RmesException;
 
-    String updateCodeFromCodeList(String notation, String code, String body) throws RmesException;
+    String updateCodeFromCodeList(String notation, String code, CodeRequest body) throws RmesException;
 
-    String addCodeFromCodeList(String notation, String body) throws RmesException;
+    String addCodeFromCodeList(String notation, CodeRequest body) throws RmesException;
 
     String deleteCodeFromCodeList(String notation, String code) throws RmesException;
 

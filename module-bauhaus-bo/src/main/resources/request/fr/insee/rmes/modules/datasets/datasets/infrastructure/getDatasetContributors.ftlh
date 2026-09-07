@@ -1,5 +1,5 @@
 SELECT ?contributors
-FROM <${GRAPH}>
+FROM ${GRAPH}
 WHERE {
-    <${IRI}> dc:contributor ?contributors .
+    ${IRI} dc:contributor ?contributors .
 }

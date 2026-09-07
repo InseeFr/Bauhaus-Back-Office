@@ -1,0 +1,47 @@
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Graphes dédiés aux tests de distribution : le container GraphDB est partagé par toutes
+# les classes qui étendent WithGraphDBContainer, on isole donc ces triplets du graphe
+# `catalogue` utilisé par DatasetQueriesTest.
+<http://rdf.insee.fr/graphes/catalogue-distributions-test> {
+	<http://bauhaus/catalogues/entreeCatalogue/jeuDeDonneesAvecDistribution> a dcat:CatalogRecord;
+		dc:creator "DG75-L001";
+		dc:contributor "DG75-L201";
+		dct:created "2020-03-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-03-01T00:00:00.000"^^xsd:dateTime;
+		foaf:primaryTopic <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesAvecDistribution>;
+	.
+
+	<http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesAvecDistribution> rdf:type dcat:Dataset;
+		dct:identifier "jeuDeDonneesAvecDistribution";
+		adms:identifier <http://bauhaus/identifiantsAlternatifs/jeuDeDonnees/jeuDeDonneesAvecDistribution>;
+		dct:title "Jeu de données avec une distribution"@fr, "Dataset with one distribution"@en;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished";
+		prov:wasGeneratedBy <http://bauhaus/operations/serie/s1034>;
+		dcat:distribution <http://bauhaus/catalogues/distribution/distributionAvecDates>;
+	.
+
+	<http://bauhaus/catalogues/distribution/distributionAvecDates> rdf:type dcat:Distribution;
+		dct:identifier "distributionAvecDates";
+		dct:title "Distribution avec dates"@fr, "Distribution with dates"@en;
+		insee:validationState "Unpublished";
+		dct:created "2022-03-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2023-03-01T00:00:00.000"^^xsd:dateTime;
+	.
+}
+
+<http://rdf.insee.fr/graphes/adms-distributions-test> {
+	<http://bauhaus/identifiantsAlternatifs/jeuDeDonnees/jeuDeDonneesAvecDistribution> a adms:Identifier;
+		skos:notation "DATASET_WITH_DISTRIBUTION";
+	.
+}

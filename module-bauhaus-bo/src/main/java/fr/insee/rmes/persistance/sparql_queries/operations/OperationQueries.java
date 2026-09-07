@@ -5,6 +5,7 @@ import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +30,9 @@ public class OperationQueries {
 
 	private Map<String, Object> initParams() {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("OPERATIONS_GRAPH", graphs.operationsGraph());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("OPERATIONS_GRAPH", SparqlLiterals.iri(graphs.operationsGraph()));
 		return params;
 	}
 
@@ -43,20 +44,20 @@ public class OperationQueries {
 	 */
 	public String checkIfFamOpeSerExists(String uri) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(Constants.URI, uri);
+		params.put(Constants.URI, SparqlLiterals.iri(uri));
 		return buildOperationRequest("checkIfFamSerOpeExistsQuery.ftlh", params);
 	}
 
 	public String getPublicationState(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(Constants.ID, id);
+		params.put(Constants.ID, SparqlLiterals.literal(id));
 		return buildOperationRequest("getPublicationStatusQuery.ftlh", params);
 	}
 
 	public String setPublicationState(IRI familyURI, String newState) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(Constants.ID, familyURI);
-		params.put("newState", newState);
+		params.put("famopeserURI", SparqlLiterals.iri(familyURI.stringValue()));
+		params.put("newState", SparqlLiterals.iri(newState));
 		return buildOperationRequest("changePublicationStatusQuery.ftlh", params);
 	}
 

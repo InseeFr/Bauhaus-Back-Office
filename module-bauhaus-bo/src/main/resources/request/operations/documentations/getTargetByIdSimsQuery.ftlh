@@ -1,5 +1,5 @@
 SELECT ?idOperation ?idSeries ?idIndicator
-FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
+FROM ${DOCUMENTATION_GRAPH_IRI}
 WHERE { 
  ?report rdf:type sdmx-mm:MetadataReport .
  ?report sdmx-mm:target ?target . 

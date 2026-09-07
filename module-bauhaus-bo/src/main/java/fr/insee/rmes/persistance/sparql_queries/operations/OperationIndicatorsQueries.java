@@ -6,6 +6,7 @@ import fr.insee.rmes.GraphsProperties;
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.graphdb.SparqlLiterals;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 
@@ -35,125 +36,93 @@ public class OperationIndicatorsQueries {
 
 	public String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
-		params.put("LANG", lang);
-		params.put("ID", id);
-		params.put("LABEL", label);
-		params.put("URI_PREFIX", "/produits/indicateur/");
+		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("LABEL", SparqlLiterals.literal(label, lang));
+		params.put("URI_SUFFIX", SparqlLiterals.literal("/produits/indicateur/" + id));
 		params.put("TYPE", "insee:StatisticalIndicator");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
 	public String getPublicationState(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
-		params.put(Constants.ID, id);
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put(Constants.ID, SparqlLiterals.literal(id));
 		return buildIndicatorRequest("getPublicationStatusQuery.ftlh", params);
 	}
 
 	public String indicatorsQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("PRODUCT_BASE_URI_PREFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/"));
 		return buildIndicatorRequest("getIndicators.ftlh", params);
 	}
 
-	public String indicatorsQueryForSearch() throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		return buildIndicatorRequest("getIndicatorsQueryForSearch.ftlh", params);
+	public String indicatorQuery(String id) throws RmesException {
+		return indicatorFullObjectQuery(id, true);
 	}
 
-	public String indicatorQuery(String id, boolean indicatorsRichTextNexStructure) throws RmesException {
-		return indicatorFullObjectQuery(id, true, indicatorsRichTextNexStructure);
-	}
-
-	private String indicatorFullObjectQuery(String id, boolean withLimit, boolean indicatorsRichTextNexStructure) throws RmesException {
+	private String indicatorFullObjectQuery(String id, boolean withLimit) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", id);
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/produits/indicateur/" + id));
 		params.put("WITH_LIMIT", withLimit);
-		params.put("INDICATORS_RICH_TEXT_NEXT_STRUCTURE", indicatorsRichTextNexStructure);
 		return buildIndicatorRequest("getIndicator.ftlh", params);
 	}
 
 	public String getCreatorsById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
-		params.put("ID", id);
+		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("getCreatorsById.ftlh", params);
 	}
 
 	public String getPublishersById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
-		params.put("ID", id);
+		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal(uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("getPublishersById.ftlh", params);
 	}
 
 	public String getContributorsById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put(OPERATIONS_GRAPH, graphs.productsGraph());
-		params.put("ID", id);
+		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal(uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("getContributorsById.ftlh", params);
 	}
 
 	public String indicatorLinks(String id, IRI linkPredicate) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", id);
-		params.put("LINKPREDICATE", linkPredicate);
-		params.put(OPERATIONS_GRAPH, graphs.operationsGraph());
-		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
+		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
+		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
+		params.put("LINKPREDICATE", SparqlLiterals.iri(linkPredicate.stringValue()));
+		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.operationsGraph()));
+		params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
 		return buildIndicatorRequest("getIndicatorLinks.ftlh", params);
-	}
-
-	public String getMultipleOrganizations(String idIndicator, IRI linkPredicate) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("LG1", languages.lg1());
-		params.put("LG2", languages.lg2());
-		params.put("ID", idIndicator);
-		params.put("LINKPREDICATE", linkPredicate);
-		return buildIndicatorRequest("getMultipleOrganizations.ftlh", params);
 	}
 
 	public String lastID() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
+		params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("PRODUCT_BASE_URI_PREFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/"));
 		return buildIndicatorRequest("getLastIndicatorId.ftlh", params);
 	}
 
 	public String checkIfExists(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put(PRODUCTS_GRAPH, graphs.productsGraph());
-		params.put(PRODUCT_BASE_URI, uris.productsBaseUri());
-		params.put("ID", id);
+		params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
+		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("checkIfIndicatorExists.ftlh", params);
-	}
-
-	public String getCreatorsByIndicatorUri(String uris) throws RmesException {
-		Map<String, Object> params = new HashMap<>();
-		params.put("URIS", uris);
-		return buildIndicatorRequest("getCreatorsByIndicatorUri.ftlh", params);
 	}
 
 	public String indicatorsWithSimsQuery() throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", languages.lg1());
+		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		return buildIndicatorRequest("getIndicatorsWithSims.ftlh", params);
 	}
 }

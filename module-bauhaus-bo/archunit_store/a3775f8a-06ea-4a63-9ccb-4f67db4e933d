@@ -1,0 +1,5 @@
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository> is not annotated with @ServerSidePort in (DDIRepository.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DdiItemRepository> is not annotated with @ServerSidePort in (DdiItemRepository.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.GroupRepository> is not annotated with @ServerSidePort in (GroupRepository.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.StudyUnitRepository> is not annotated with @ServerSidePort in (StudyUnitRepository.java:0)
+Class <fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort> is not annotated with @ServerSidePort in (SeriesCreatorsPort.java:0)

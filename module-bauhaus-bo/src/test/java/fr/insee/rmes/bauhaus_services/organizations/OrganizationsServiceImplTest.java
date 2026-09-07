@@ -19,19 +19,19 @@ class OrganizationsServiceImplTest {
     OrganizationsServiceImpl organizationsService;
 
     @Mock
-    OrganizationUtils organizationUtils;
+    OrganizationRepository organizationRepository;
 
     @Test
     void shouldGetOrganizationJsonString() throws RmesException {
         JSONObject jsonObject = new JSONObject().put("color","blue");
-        when(organizationUtils.getOrganizationJson("45")).thenReturn(jsonObject);
+        when(organizationRepository.getOrganizationJson("45")).thenReturn(jsonObject);
         assertNotNull(organizationsService.getOrganizationJsonString("45"));
     }
 
     @Test
     void shouldGetOrganization() throws RmesException {
         IdLabelTwoLangs idLabelTwoLangs = IdLabelTwoLangs.of("id","label1","label2");
-        when(organizationUtils.buildOrganizationFromJson(organizationUtils.getOrganizationJson("45"))).thenReturn(idLabelTwoLangs);
+        when(organizationRepository.buildOrganizationFromJson(organizationRepository.getOrganizationJson("45"))).thenReturn(idLabelTwoLangs);
         assertNotNull(organizationsService.getOrganization("45"));
     }
 

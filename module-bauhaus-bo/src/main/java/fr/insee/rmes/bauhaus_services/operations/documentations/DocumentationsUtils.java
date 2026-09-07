@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.DocumentationsProperties;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -23,9 +23,10 @@ import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -60,17 +61,17 @@ public class DocumentationsUtils  {
     private final DocumentationsProperties documentations;
 	private final DocumentationsRubricsUtils documentationsRubricsUtils;
 	private final DocumentationPublication documentationPublication;
-	private final ParentUtils parentUtils;
+	private final OperationsParentRepository operationsParentRepository;
 	private final DocumentationQueries documentationQueries;
 
-    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages, DocumentationsProperties documentations, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, ParentUtils parentUtils, DocumentationQueries documentationQueries) {
+    public DocumentationsUtils(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, BauhausLanguagesProperties languages, DocumentationsProperties documentations, DocumentationsRubricsUtils documentationsRubricsUtils, DocumentationPublication documentationPublication, OperationsParentRepository operationsParentRepository, DocumentationQueries documentationQueries) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.languages = languages;
         this.documentations = documentations;
         this.documentationsRubricsUtils = documentationsRubricsUtils;
         this.documentationPublication = documentationPublication;
-        this.parentUtils = parentUtils;
+        this.operationsParentRepository = operationsParentRepository;
         this.documentationQueries = documentationQueries;
     }
 
@@ -80,13 +81,19 @@ public class DocumentationsUtils  {
 	 * @return
 	 * @throws RmesException
 	 */
-	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
-
-		// Get general informations
+	/** Titre du SIMS, ou 404 s'il n'existe pas : seule sonde d'existence d'un rapport de métadonnées. */
+	private JSONObject getExistingDocumentationTitle(String idSims) throws RmesException {
 		JSONObject doc = repoGestion.getResponseAsObject(documentationQueries.getDocumentationTitleQuery(idSims));
 		if (doc.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Documentation not found", idSims);
 		}
+		return doc;
+	}
+
+	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
+
+		// Get general informations
+		JSONObject doc = getExistingDocumentationTitle(idSims);
 		doc.put(Constants.ID, idSims);
 
 		// Get all rubrics
@@ -117,7 +124,7 @@ public class DocumentationsUtils  {
 		sims.setLabelLg1(jsonSims.getString(Constants.LABEL_LG1));
 		sims.setLabelLg2(jsonSims.getString(Constants.LABEL_LG2));
 
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(idSims);
+		String[] target = operationsParentRepository.getDocumentationTargetTypeAndId(idSims);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
@@ -132,13 +139,10 @@ public class DocumentationsUtils  {
 
 		if(jsonSims.has("rubrics")) {
 			JSONArray docRubrics = jsonSims.getJSONArray("rubrics");
-			DocumentationRubric currentRubric ;
 
-			for (int i = 0; i < docRubrics.length(); i++) {
-				JSONObject rubric = docRubrics.getJSONObject(i);
-				currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric,forXml);
-				rubrics.add(currentRubric);
-			}	
+			JSONUtils.stream(docRubrics)
+					.map(rubric -> documentationsRubricsUtils.buildRubricFromJson(rubric, forXml))
+					.forEach(rubrics::add);
 			sims.setRubrics(rubrics);
 		}
 		return sims;
@@ -197,13 +201,12 @@ public class DocumentationsUtils  {
 	private Set<String> getAutoUpdatedAttributeIds() throws RmesException {
 		JSONArray attributes = repoGestion.getResponseAsArray(documentationQueries.getAttributesQuery());
 		Set<String> ids = new HashSet<>();
-		for (int i = 0; i < attributes.length(); i++) {
-			JSONObject attribute = attributes.getJSONObject(i);
+		JSONUtils.stream(attributes).forEach(attribute -> {
 			if (AutoUpdatedDateRubrics.DCTERMS_MODIFIED.equals(attribute.optString("subPropertyOf", null))) {
 				String id = attribute.optString(Constants.ID, null);
 				if (id != null) ids.add(id.toUpperCase());
 			}
-		}
+		});
 		return ids;
 	}
 
@@ -224,15 +227,17 @@ public class DocumentationsUtils  {
 	public void publishMetadataReport(String id) throws RmesException {
 
 		// Find target
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
+		String[] target = operationsParentRepository.getDocumentationTargetTypeAndId(id);
 		String targetId = target[1];
 
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
+		PublicationUtils.rejectIfAlreadyPublished("MetadataReport", id, getDocumentationValidationStatus(id));
+
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
-		String status = parentUtils.getValidationStatus(targetId);
+		String status = operationsParentRepository.getValidationStatus(targetId);
 		if (PublicationUtils.isUnublished(status)) {
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
 					"This metadataReport cannot be published before its target is published. ",
@@ -270,7 +275,7 @@ public class DocumentationsUtils  {
 		if (StringUtils.isNotEmpty(sims.getIdIndicator())) {				 
 			target = RdfUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
 		}
-		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) target = null; 
+		if (!operationsParentRepository.checkIfParentExists(RdfUtils.toString(target))) target = null; 
 		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
 			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
@@ -401,13 +406,10 @@ public class DocumentationsUtils  {
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
-		MAS currentRubric;
 
-		for (int i = 0; i < jsonMsd.length(); i++) {
-			JSONObject rubric = jsonMsd.getJSONObject(i);
-			currentRubric = buildMSDRubricFromJson(rubric);
-			msd.add(currentRubric);
-		}	
+		JSONUtils.stream(jsonMsd)
+				.map(this::buildMSDRubricFromJson)
+				.forEach(msd::add);
 		return MSD.of(msd) ;
 	}
 
@@ -439,6 +441,7 @@ public class DocumentationsUtils  {
 
 
 	public HttpStatus deleteMetadataReport(String id) throws RmesException {
+		getExistingDocumentationTitle(id);
 		Resource graph = RdfUtils.simsGraph(id);
 
 		HttpStatus result =  repoGestion.executeUpdate(documentationQueries.deleteGraph(graph));

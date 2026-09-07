@@ -1,8 +1,8 @@
 SELECT DISTINCT ?id ?label
 WHERE {
-    GRAPH <${GRAPH}> {
+    GRAPH ${GRAPH} {
         ?families skos:prefLabel ?label .
-        FILTER (lang(?label) = '${LG1}')
+        FILTER (lang(?label) = ${LG1})
         FILTER(REGEX(STR(?families),'/familleDeNomenclatures/')) .
         BIND(STRAFTER(STR(?families),'/codes/familleDeNomenclatures/') AS ?id)
     }

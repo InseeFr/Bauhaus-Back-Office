@@ -1,8 +1,8 @@
 SELECT ?document
-FROM <${DOCUMENTS_GRAPH}>
+FROM ${DOCUMENTS_GRAPH}
 WHERE { 
 	 ?document rdf:type foaf:Document .
 	 ?document <http://schema.org/url> ?url 
 	 
-	 FILTER(lcase(STR(?url)) = '${url}')
+	 FILTER(lcase(STR(?url)) = ${url})
  }

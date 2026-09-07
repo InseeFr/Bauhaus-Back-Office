@@ -29,6 +29,13 @@
       <artifactId>junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
     </dependency>
+
+    <!-- GraphDBResetExtension vit dans src/main : l'API JUnit doit être en scope compile ici,
+         alors que testcontainers:junit-jupiter ne la déclare qu'en provided. -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+    </dependency>
     
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>

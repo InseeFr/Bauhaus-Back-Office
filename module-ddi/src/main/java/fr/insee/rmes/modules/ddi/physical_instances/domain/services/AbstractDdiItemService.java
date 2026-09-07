@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Provides the common {@code createOrUpdate} logic by delegating to the
  * underlying {@link DdiItemRepository}. Subclasses can add domain-specific
- * operations (e.g. {@code deprecateAll()} for Groups).
+ * operations (e.g. {@code deprecate(...)} for Groups).
  *
  * @param <T> the DDI4 item type
  */

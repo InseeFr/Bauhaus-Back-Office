@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Citation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -10,24 +11,40 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodeListScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CategoryCodeListUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeListVariableUsage;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialGroup;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialLogicalProduct;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceParents;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstanceSearchRow;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UsageItem;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidSentinelValuesException;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.DDIRepository;
 import fr.insee.rmes.modules.operation.series.domain.port.serverside.SeriesCreatorsPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,13 +56,22 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DDIServiceImplTest {
+
+    private static final Clock FIXED_CLOCK =
+            Clock.fixed(Instant.parse("2026-08-03T08:00:00Z"), ZoneOffset.ofHours(2));
 
     @Mock
     private DDIRepository ddiRepository;
@@ -57,7 +83,7 @@ class DDIServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort);
+        ddiService = new DDIServiceImpl(ddiRepository, seriesCreatorsPort, FIXED_CLOCK);
     }
 
     @Test
@@ -68,7 +94,7 @@ class DDIServiceImplTest {
                 new PartialPhysicalInstance("pi-2", "Physical Instance 2", new Date(), "fr.insee"),
                 new PartialPhysicalInstance("pi-3", "Physical Instance 3", new Date(), "fr.insee")
         );
-        when(ddiRepository.getPhysicalInstances()).thenReturn(expectedInstances);
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(expectedInstances);
 
         // When
         List<PartialPhysicalInstance> result = ddiService.getPhysicalInstances();
@@ -83,12 +109,12 @@ class DDIServiceImplTest {
         assertEquals("pi-3", result.get(2).id());
         assertEquals("Physical Instance 3", result.get(2).label());
 
-        verify(ddiRepository).getPhysicalInstances();
+        verify(ddiRepository).getPhysicalInstancesViaAdvancedQuery();
     }
 
     @Test
     void getPhysicalInstances_shouldBeSortedByLabelAscending() {
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(
                 new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee"),
                 new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee"),
                 new PartialPhysicalInstance("pi-b", "Bravo", new Date(), "fr.insee")
@@ -104,7 +130,7 @@ class DDIServiceImplTest {
     void getPhysicalInstancesFilteredByStamp_shouldBeSortedByLabelAscending() {
         PartialPhysicalInstance piC = new PartialPhysicalInstance("pi-c", "Charlie", new Date(), "fr.insee");
         PartialPhysicalInstance piA = new PartialPhysicalInstance("pi-a", "alpha", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(piC, piA));
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(piC, piA));
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-c"))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su", "fr.insee", "g1"));
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-a"))
@@ -119,6 +145,44 @@ class DDIServiceImplTest {
 
         assertEquals(List.of("alpha", "Charlie"),
                 result.stream().map(PartialPhysicalInstance::label).toList());
+    }
+
+    @Test
+    void searchPhysicalInstances_returnsRepositoryRowsSortedByLabelWithResolvedParentLabels() {
+        PhysicalInstanceSearchRow charlie = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-c", "Charlie", new Date(),
+                "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        PhysicalInstanceSearchRow alpha = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-a", "alpha", new Date(),
+                "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        when(ddiRepository.getPhysicalInstanceSearchRows()).thenReturn(List.of(charlie, alpha));
+
+        List<PhysicalInstanceSearchRow> rows = ddiService.searchPhysicalInstances();
+
+        assertEquals(List.of("alpha", "Charlie"),
+                rows.stream().map(PhysicalInstanceSearchRow::label).toList());
+        assertEquals("Study One", rows.get(0).studyUnitLabel());
+        assertEquals("Group One", rows.get(0).groupLabel());
+    }
+
+    @Test
+    void searchPhysicalInstancesFilteredByStamp_keepsRowsWhoseGroupCreatorMatchesAndDropsOrphans() {
+        String iri = "http://id.insee.fr/operations/serie/s1";
+        PhysicalInstanceSearchRow kept = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Kept", new Date(),
+                "fr.insee", "su-1", "Study One", "fr.insee", "g1", "Group One");
+        PhysicalInstanceSearchRow orphan = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-3", "Orphan", new Date(),
+                null, null, null, null, null, null);
+        when(ddiRepository.getPhysicalInstanceSearchRows()).thenReturn(List.of(kept, orphan));
+        when(ddiRepository.getGroup("fr.insee", "g1")).thenReturn(groupResponseWithSeries("g1", iri));
+        when(seriesCreatorsPort.getCreatorsForSeries(List.of(iri)))
+                .thenReturn(Map.of(iri, List.of("stamp-A")));
+
+        List<PhysicalInstanceSearchRow> rows =
+                ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"));
+
+        assertEquals(List.of("Kept"), rows.stream().map(PhysicalInstanceSearchRow::label).toList());
     }
 
     @Test
@@ -260,6 +324,47 @@ class DDIServiceImplTest {
         verify(ddiRepository).getCodeListsByCodeListScheme("fr.insee", "cls-2");
     }
 
+    /** Valeurs sentinelles (#1566) : le service délègue la liste des MMVR réutilisables au repository. */
+    @Test
+    void shouldGetMissingValuesRepresentationsByGroup() {
+        List<PartialMissingValuesRepresentation> expected = List.of(
+                new PartialMissingValuesRepresentation("mmvr-1", "fr.insee", "1",
+                        "Valeurs sentinelles NSP/REF", "cl-sentinelles", List.of("NSP", "REF")));
+        when(ddiRepository.getMissingValuesRepresentationsByGroup("fr.insee", "group-1"))
+                .thenReturn(expected);
+
+        List<PartialMissingValuesRepresentation> result =
+                ddiService.getMissingValuesRepresentationsByGroup("fr.insee", "group-1");
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void shouldExcludeSentinelCodeListsFromGroupCodeLists() {
+        // Given : le CLS du groupe contient une liste « classique » et la liste de valeurs
+        // sentinelles (cf. #1566), cette dernière étant aussi référencée par une MMVR du groupe.
+        when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-1")).thenReturn(List.of(
+                new PartialLogicalProduct("lp-1", "Produit Logique 1", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListSchemesByLogicalProduct("fr.insee", "lp-1")).thenReturn(List.of(
+                new PartialCodeListScheme("cls-1", "Schéma 1", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getCodeListsByCodeListScheme("fr.insee", "cls-1")).thenReturn(List.of(
+                new PartialCodesList("cl-1", "Liste 1", new Date(), "fr.insee"),
+                new PartialCodesList("cl-sentinel", "Valeurs sentinelles", new Date(), "fr.insee")
+        ));
+        when(ddiRepository.getMissingCodesListsByGroup("fr.insee", "group-1")).thenReturn(List.of(
+                new PartialCodesList("cl-sentinel", "Valeurs sentinelles", new Date(), "fr.insee")
+        ));
+
+        // When
+        List<PartialCodesList> result = ddiService.getCodeListsByGroup("fr.insee", "group-1");
+
+        // Then : la liste sentinelle est exclue des listes de codes du groupe.
+        assertEquals(1, result.size());
+        assertEquals("cl-1", result.get(0).id());
+    }
+
     @Test
     void shouldReturnEmptyListWhenGroupHasNoLogicalProduct() {
         when(ddiRepository.getLogicalProductsByGroup("fr.insee", "group-empty")).thenReturn(List.of());
@@ -272,10 +377,24 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetMissingCodesListsByGroup() {
+        // Délégation pure au repository (la marche Group → LP → MRS → MMVR → CodeList y est faite).
+        List<PartialCodesList> expected = List.of(
+                new PartialCodesList("cl-1", "Sentinelles âge", new Date(), "fr.insee"));
+        when(ddiRepository.getMissingCodesListsByGroup("fr.insee", "group-1")).thenReturn(expected);
+
+        List<PartialCodesList> result = ddiService.getMissingCodesListsByGroup("fr.insee", "group-1");
+
+        assertEquals(expected, result);
+        verify(ddiRepository).getMissingCodesListsByGroup("fr.insee", "group-1");
+    }
+
+    @Test
     void shouldGetVariablesUsingCodeList() {
         // Given
         List<CodeListVariableUsage> expected = List.of(
-                new CodeListVariableUsage("fr.insee", "pi-1", "fr.insee", "var-1")
+                new CodeListVariableUsage("fr.insee", "su-1", "Recensement 2024",
+                        "fr.insee", "pi-1", "Fichier détail", "fr.insee", "var-1", "Sexe")
         );
         when(ddiRepository.getVariablesUsingCodeList("fr.insee", "cl-1")).thenReturn(expected);
 
@@ -292,6 +411,30 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetCodeListsUsingCategory() {
+        // Given
+        List<CategoryCodeListUsage> expected = List.of(
+                new CategoryCodeListUsage(
+                        new UsageItem("fr.insee", "grp-1", "Groupe démographie"),
+                        new UsageItem("fr.insee", "su-1", "Recensement 2024"),
+                        new UsageItem("fr.insee", "pi-1", "Fichier détail"),
+                        new UsageItem("fr.insee", "var-1", "Sexe"),
+                        new UsageItem("fr.insee", "cl-1", "Pays")));
+        when(ddiRepository.getCodeListsUsingCategory("fr.insee", "cat-1")).thenReturn(expected);
+
+        // When
+        List<CategoryCodeListUsage> result = ddiService.getCodeListsUsingCategory("fr.insee", "cat-1");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("cl-1", result.get(0).codeList().id());
+        assertEquals("Pays", result.get(0).codeList().label());
+
+        verify(ddiRepository).getCodeListsUsingCategory("fr.insee", "cat-1");
+    }
+
+    @Test
     void shouldGetDdi4PhysicalInstance() {
         // Given
         String agencyId = "fr.insee";
@@ -304,7 +447,7 @@ class DDIServiceImplTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
         when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(expectedResponse);
 
         // When
@@ -315,6 +458,29 @@ class DDIServiceImplTest {
         assertEquals("test-schema", result.schema());
 
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
+    }
+
+    @Test
+    void getDdi4PhysicalInstance_sortsVariablesByNameAscending() {
+        String agencyId = "fr.insee";
+        String instanceId = "pi-1";
+        Ddi4Response repoResponse = new Ddi4Response(
+                Ddi4Response.SCHEMA, List.of(), List.of(), List.of(),
+                List.of(variableWithName("v-c", "charlie"),
+                        variableWithName("v-a", "alpha"),
+                        variableWithName("v-b", "bravo")),
+                List.of(), List.of(), null);
+        when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(repoResponse);
+
+        Ddi4Response result = ddiService.getDdi4PhysicalInstance(agencyId, instanceId);
+
+        assertEquals(List.of("alpha", "bravo", "charlie"),
+                result.variable().stream().map(v -> v.variableName().getFirst().value()).toList());
+    }
+
+    private Ddi4Variable variableWithName(String id, String name) {
+        return new Ddi4Variable(Ddi4Variable.TYPE, null, "urn:ddi:fr.insee:" + id + ":1",
+                "fr.insee", id, "1", null, LangStrings.of("fr-FR", name), null, null, null, null);
     }
 
     @Test
@@ -329,6 +495,7 @@ class DDIServiceImplTest {
                 "urn:ddi:fr.insee:cl-1:1",
                 agencyId, "cl-1", "1",
                 LangStrings.of("fr-FR", "ma cl"),
+                null,
                 List.<Code>of()
         ));
         when(ddiRepository.getPhysicalInstanceCodeLists(agencyId, instanceId)).thenReturn(expected);
@@ -357,7 +524,7 @@ class DDIServiceImplTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
         when(ddiRepository.getPhysicalInstance(agencyId, instanceId)).thenReturn(expectedResponse);
 
         // When
@@ -368,6 +535,117 @@ class DDIServiceImplTest {
         assertEquals("updated-schema", result.schema());
         verify(ddiRepository).updatePhysicalInstance(agencyId, instanceId, request);
         verify(ddiRepository).getPhysicalInstance(agencyId, instanceId);
+    }
+
+    @Test
+    void shouldKeepStoredVersionDateForUnchangedItemsOnFullUpdate() {
+        // Given : l'état stocké et un payload au même contenu mais avec une autre date
+        CogsDate storedDate = CogsDate.ofDateTime("2020-01-01T00:00:00Z");
+        Ddi4Response stored = physicalInstanceOnlyResponse(storedDate, "Ma PI");
+        Ddi4Response incoming = physicalInstanceOnlyResponse(
+                CogsDate.ofDateTime("2026-01-01T00:00:00Z"), "Ma PI");
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+
+        // When
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        // Then : GET préalable, puis update avec le payload réconcilié (date stockée)
+        InOrder inOrder = inOrder(ddiRepository);
+        inOrder.verify(ddiRepository).getFullPhysicalInstance("fr.insee", "pi-1");
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        inOrder.verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        assertEquals(storedDate, saved.getValue().physicalInstance().getFirst().versionDate());
+    }
+
+    @Test
+    void shouldStampModifiedItemsWithClockNowOnFullUpdate() {
+        // Given : le contenu de la PI change (titre)
+        Ddi4Response stored = physicalInstanceOnlyResponse(
+                CogsDate.ofDateTime("2020-01-01T00:00:00Z"), "Ma PI");
+        Ddi4Response incoming = physicalInstanceOnlyResponse(
+                CogsDate.ofDateTime("2020-01-01T00:00:00Z"), "Ma PI modifiée");
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(stored);
+
+        // When
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        // Then : date à « maintenant » selon l'horloge injectée
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        assertEquals(CogsDate.ofDateTime("2026-08-03T10:00:00+02:00"),
+                saved.getValue().physicalInstance().getFirst().versionDate());
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : les labels de la MMVR et de sa CodeList de sentinelles sont
+     * obligatoires — un payload qui les omet est rejeté avant toute écriture.
+     */
+    @Test
+    void shouldRejectFullUpdateWhenMmvrHasNoLabel() {
+        Ddi4ManagedMissingValuesRepresentation mmvrSansLabel = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, null,
+                "urn:ddi:fr.insee:mmvr-1:1", "fr.insee", "mmvr-1", "1",
+                null,
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
+                null, null, List.of(mmvrSansLabel));
+
+        InvalidSentinelValuesException exception = assertThrows(InvalidSentinelValuesException.class,
+                () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
+
+        assertTrue(exception.getMessage().contains("mmvr-1"));
+        verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
+    }
+
+    @Test
+    void shouldRejectFullUpdateWhenSentinelCodeListHasNoLabel() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, null,
+                "urn:ddi:fr.insee:mmvr-1:1", "fr.insee", "mmvr-1", "1",
+                LangStrings.of("fr-FR", "Sentinelles"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        // La CodeList de sentinelles référencée par la MMVR est dans le payload, sans label.
+        Ddi4CodeList sentinelCodeListSansLabel = new Ddi4CodeList(Ddi4CodeList.TYPE, null,
+                "urn:ddi:fr.insee:cl-sent:1", "fr.insee", "cl-sent", "1", null, null, List.of());
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
+                List.of(sentinelCodeListSansLabel), null, List.of(mmvr));
+
+        InvalidSentinelValuesException exception = assertThrows(InvalidSentinelValuesException.class,
+                () -> ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming));
+
+        assertTrue(exception.getMessage().contains("cl-sent"));
+        verify(ddiRepository, never()).updateFullPhysicalInstance(anyString(), anyString(), any());
+    }
+
+    @Test
+    void shouldAcceptFullUpdateWhenSentinelLabelsArePresent() {
+        Ddi4ManagedMissingValuesRepresentation mmvr = new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE, null,
+                "urn:ddi:fr.insee:mmvr-1:1", "fr.insee", "mmvr-1", "1",
+                LangStrings.of("fr-FR", "Sentinelles"),
+                List.of(new CodeRepresentation(CodeRepresentation.TYPE, false,
+                        Reference.of("fr.insee", "cl-sent", "1", "CodeList"))));
+        Ddi4CodeList sentinelCodeList = new Ddi4CodeList(Ddi4CodeList.TYPE, null,
+                "urn:ddi:fr.insee:cl-sent:1", "fr.insee", "cl-sent", "1",
+                LangStrings.of("fr-FR", "Sentinelles"), null, List.of());
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null, null, null, null,
+                List.of(sentinelCodeList), null, List.of(mmvr));
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1")).thenReturn(null);
+
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), any());
+    }
+
+    private static Ddi4Response physicalInstanceOnlyResponse(CogsDate date, String title) {
+        Ddi4PhysicalInstance physicalInstance = new Ddi4PhysicalInstance(
+                Ddi4PhysicalInstance.TYPE, date,
+                Reference.synthesizeUrn("fr.insee", "pi-1", "1"), "fr.insee", "pi-1", "1", null,
+                new Citation(List.of(new LangString("fr", title))), null);
+        return new Ddi4Response(Ddi4Response.SCHEMA, null,
+                List.of(physicalInstance), null, null, null, null, null);
     }
 
     @Test
@@ -387,7 +665,7 @@ class DDIServiceImplTest {
             List.of(),
             List.of(),
             List.of()
-        );
+        , null);
         when(ddiRepository.createPhysicalInstance(request)).thenReturn(expectedResponse);
 
         // When
@@ -579,7 +857,7 @@ class DDIServiceImplTest {
         String agencyId = "fr.insee";
         String id = "fc65a527-a04b-4505-85de-0a181e54dbad";
         Ddi4Response expectedResponse = new Ddi4Response(
-                "ddi:4.0", List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+                "ddi:4.0", List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), null);
         when(ddiRepository.getMutualizedCodesList(agencyId, id)).thenReturn(expectedResponse);
 
         // When
@@ -687,10 +965,37 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetPhysicalInstanceParents_resolvesStudyUnitLabel() {
+        String agencyId = "fr.insee";
+        String id = "pi-123";
+
+        when(ddiRepository.getPhysicalInstanceParents(agencyId, id))
+                .thenReturn(new PhysicalInstanceParents("fr.insee", "su-456", "fr.insee", "grp-789"));
+
+        Ddi4Group group = new Ddi4Group(Ddi4Group.TYPE,
+                CogsDate.ofDateTime("2025-01-09T09:00:00Z"),
+                "urn:ddi:fr.insee:grp-789:1",
+                "fr.insee", "grp-789", "1",
+                "bauhaus", null, null, List.of(),
+                "insee:StatisticalOperationSeries"
+        );
+        // Le groupe parent files ses study units ; on retrouve le label de l'étude rattachée
+        // à la PI (su-456) dans cette même liste, sans appel Colectica supplémentaire.
+        when(ddiRepository.getGroup("fr.insee", "grp-789")).thenReturn(
+                new Ddi4GroupResponse("ddi:4.0", List.of(), List.of(group),
+                        List.of(studyUnitWithTitle("su-000", "Autre enquête"),
+                                studyUnitWithTitle("su-456", "Enquête emploi 2024"))));
+
+        PhysicalInstanceParents result = ddiService.getPhysicalInstanceParents(agencyId, id);
+
+        assertEquals("Enquête emploi 2024", result.studyUnitLabel());
+    }
+
+    @Test
     void shouldGetPhysicalInstancesFilteredByStamp_keepsOnlyInstancesOfUserGroups() {
         PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
         PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(pi1, pi2));
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
 
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
                 .thenReturn(new PhysicalInstanceParents("fr.insee", "su-1", "fr.insee", "g1"));
@@ -718,7 +1023,7 @@ class DDIServiceImplTest {
     void shouldGetPhysicalInstancesFilteredByStamp_resolvesGroupStampsOncePerGroup() {
         PartialPhysicalInstance pi1 = new PartialPhysicalInstance("pi-1", "PI 1", new Date(), "fr.insee");
         PartialPhysicalInstance pi2 = new PartialPhysicalInstance("pi-2", "PI 2", new Date(), "fr.insee");
-        when(ddiRepository.getPhysicalInstances()).thenReturn(List.of(pi1, pi2));
+        when(ddiRepository.getPhysicalInstancesViaAdvancedQuery()).thenReturn(List.of(pi1, pi2));
 
         // les deux PI partagent le même groupe parent g1
         when(ddiRepository.getPhysicalInstanceParents("fr.insee", "pi-1"))
@@ -805,6 +1110,30 @@ class DDIServiceImplTest {
     }
 
     @Test
+    void shouldGetStudyUnitByOperationIri_returnsDdi4WhenFound() {
+        String operationIri = "http://id.insee.fr/operations/operation/op1";
+        Ddi4StudyUnitResponse expected = new Ddi4StudyUnitResponse(
+                Ddi4Response.SCHEMA, List.of(), List.of(), List.of());
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri))
+                .thenReturn(Optional.of(expected));
+
+        Optional<Ddi4StudyUnitResponse> result = ddiService.getStudyUnitByOperationIri(operationIri);
+
+        assertTrue(result.isPresent());
+        assertEquals(expected, result.get());
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Test
+    void shouldGetStudyUnitByOperationIri_returnsEmptyWhenNotFound() {
+        String operationIri = "http://id.insee.fr/operations/operation/unknown";
+        when(ddiRepository.findStudyUnitByOperationIri(operationIri)).thenReturn(Optional.empty());
+
+        assertFalse(ddiService.getStudyUnitByOperationIri(operationIri).isPresent());
+        verify(ddiRepository).findStudyUnitByOperationIri(operationIri);
+    }
+
+    @Test
     void shouldGetGroupsFilteredByStamp_returnsAllGroups_whenAdmin() {
         String iri1 = "http://id.insee.fr/operations/serie/s1001";
         String iri2 = "http://id.insee.fr/operations/serie/s1002";
@@ -821,5 +1150,53 @@ class DDIServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
+    }
+
+    /**
+     * Le GET de référence exclut volontairement les CodeList/Category du payload : si la
+     * réconciliation s'appuyait sur lui seul, toute liste de codes accompagnant le PUT passerait
+     * pour nouvelle et redaterait, par propagation, les variables qui la référencent — y compris
+     * celles que l'utilisateur n'a pas touchées.
+     */
+    @Test
+    void shouldKeepStoredVersionDateOfUntouchedVariableWhenItsCodeListIsPartOfThePayload() {
+        // Given : une variable code inchangée, dont la liste de codes (inchangée elle aussi)
+        // accompagne le payload parce qu'une autre variable l'a chargée.
+        CogsDate storedDate = CogsDate.ofDateTime("2020-01-01T00:00:00Z");
+        Ddi4Variable variable = codeVariable(storedDate);
+        Ddi4CodeList codeList = sharedCodeList(storedDate);
+
+        when(ddiRepository.getFullPhysicalInstance("fr.insee", "pi-1"))
+                .thenReturn(new Ddi4Response(Ddi4Response.SCHEMA, null,
+                        null, null, List.of(variable), List.of(codeList), null, null));
+
+        Ddi4Response incoming = new Ddi4Response(Ddi4Response.SCHEMA, null,
+                null, null, List.of(variable), List.of(codeList), null, null);
+
+        // When
+        ddiService.updateFullPhysicalInstance("fr.insee", "pi-1", incoming);
+
+        // Then
+        ArgumentCaptor<Ddi4Response> saved = ArgumentCaptor.forClass(Ddi4Response.class);
+        verify(ddiRepository).updateFullPhysicalInstance(eq("fr.insee"), eq("pi-1"), saved.capture());
+        assertEquals(storedDate, saved.getValue().variable().getFirst().versionDate());
+    }
+
+    private static Ddi4Variable codeVariable(CogsDate date) {
+        return new Ddi4Variable(Ddi4Variable.TYPE, date,
+                Reference.synthesizeUrn("fr.insee", "var-1", "1"), "fr.insee", "var-1", "1", null,
+                List.of(new LangString("fr", "VAR1")), List.of(new LangString("fr", "Variable 1")),
+                null,
+                new VariableRepresentation(null,
+                        new CodeRepresentation(CodeRepresentation.TYPE, null,
+                                Reference.of("fr.insee", "cl-1", "1", Ddi4CodeList.TYPE)),
+                        null, null, null, null),
+                null);
+    }
+
+    private static Ddi4CodeList sharedCodeList(CogsDate date) {
+        return new Ddi4CodeList(Ddi4CodeList.TYPE, date,
+                Reference.synthesizeUrn("fr.insee", "cl-1", "1"), "fr.insee", "cl-1", "1",
+                List.of(new LangString("fr", "Liste 1")), null, null);
     }
 }

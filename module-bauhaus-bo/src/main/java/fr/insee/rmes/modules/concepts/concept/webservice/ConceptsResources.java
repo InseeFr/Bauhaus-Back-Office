@@ -2,10 +2,11 @@ package fr.insee.rmes.modules.concepts.concept.webservice;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidConceptIdException;
@@ -50,7 +51,10 @@ public class ConceptsResources {
     public ResponseEntity<List<PartialConceptResponse>> getConcepts() {
         try {
             List<PartialConceptResponse> responses = conceptsService.getAllConcepts().stream()
-                    .map(compact -> new PartialConcept(compact.id().value(), compact.prefLabel().value(), null))
+                    .map(concept -> new PartialConcept(
+                            concept.id().value(),
+                            concept.defaultLabel().value(),
+                            concept.alternativeLabel() == null ? null : concept.alternativeLabel().value()))
                     .map(partial -> {
                         var response = PartialConceptResponse.fromDomain(partial);
                         response.add(linkTo(ConceptsResources.class).slash("concept").slash(partial.id()).withSelfRel());
@@ -163,7 +167,7 @@ public class ConceptsResources {
         try {
             List<ConceptId> conceptIds = idsToValidate.stream().map(ConceptId::new).toList();
             conceptsService.validateConcepts(conceptIds);
-        } catch (InvalidConceptIdException e) {
+        } catch (InvalidConceptIdException | ConceptAlreadyPublishedException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (ConceptsFetchException | ConceptsSaveException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);

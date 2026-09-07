@@ -7,7 +7,7 @@ FROM <http://rdf.insee.fr/graphes/catalogue>
 
 WHERE {
     ?uri a dcat:Dataset ;
-         dcterms:identifier '${ID}' ;
+         dcterms:identifier ${ID} ;
          dcterms:identifier ?id ;
 
     OPTIONAL {?uri prov:wasDerivedFrom ?wasDerivedFrom .

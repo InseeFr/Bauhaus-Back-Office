@@ -1,5 +1,5 @@
 SELECT ?id
-FROM <${STRUCTURES_GRAPH}>
+FROM ${STRUCTURES_GRAPH}
 WHERE {
 	?s a <http://purl.org/linked-data/cube#DataStructureDefinition> ;
     	dcterms:identifier ?idFull .

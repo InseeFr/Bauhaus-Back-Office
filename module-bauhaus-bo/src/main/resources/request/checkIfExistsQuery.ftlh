@@ -1,5 +1,5 @@
 ASK
  WHERE 
   { 
-  	{<${uri}> a ?b}
+  	{${uri} a ?b}
   }

@@ -1,10 +1,8 @@
 SELECT ?uri ?label
-FROM <${CONCEPTS_GRAPH}>
+FROM ${THEMES_GRAPH}
 {
-    ?uri skos:prefLabel ?label .
-    OPTIONAL {
-        ?uri skos:inScheme ?uriConceptScheme
-    }
+    ?uri a ${THEME_TYPE} ;
+        skos:prefLabel ?label .
 
-    FILTER (lang(?label) = '${LG1}') .
+    FILTER (lang(?label) = ${LG1}) .
 } ORDER BY ASC(?label)

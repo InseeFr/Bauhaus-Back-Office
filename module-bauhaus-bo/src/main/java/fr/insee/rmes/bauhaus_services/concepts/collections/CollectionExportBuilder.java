@@ -7,9 +7,12 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLabelResolver;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -17,6 +20,7 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueri
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.utils.XsltUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
@@ -40,15 +44,18 @@ import java.util.zip.ZipOutputStream;
 @Component
 public class CollectionExportBuilder extends RdfService {
 
+	private final OrganisationService organisationService;
+
 	private final ExportUtils exportUtils;
 
 	private final ConceptCollectionsQueries conceptCollectionsQueries;
 
 	public CollectionExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
 								   RepositoryPublication repositoryPublication,
-								   PublicationUtils publicationUtils,
+								   PublicationUtils publicationUtils, OrganisationService organisationService,
 								   ExportUtils exportUtils, ConceptCollectionsQueries conceptCollectionsQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+		this.organisationService = organisationService;
 		this.exportUtils = exportUtils;
 		this.conceptCollectionsQueries = conceptCollectionsQueries;
 	}
@@ -73,9 +80,7 @@ public class CollectionExportBuilder extends RdfService {
 		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionConceptsQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
-		for (int i = 0; i < members.length(); i++) {
-			orderMembers.add(members.getJSONObject(i));
-		}
+		JSONUtils.stream(members).forEach(orderMembers::add);
 
 		instance.setStrength(Collator.NO_DECOMPOSITION);
 
@@ -109,11 +114,25 @@ public class CollectionExportBuilder extends RdfService {
 			collection.setModified(DateUtils.toDate(collection.getModified()));
 			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
 
+			resolveOrganisationLabels(collection);
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
 		}
 
 		return collection;
+	}
+
+	private void resolveOrganisationLabels(CollectionForExport collection) {
+		List<String> identifiers = new ArrayList<>();
+		identifiers.add(collection.getCreator());
+		identifiers.add(collection.getContributor());
+		collection.getMembersLg().forEach(member -> identifiers.add(member.getCreator()));
+
+		Map<String, OrganisationOption> organisations = OrganisationLabelResolver.organisationsByIdentifier(organisationService, identifiers);
+
+		collection.setCreator(OrganisationLabelResolver.labelOrReadableIdentifier(collection.getCreator(), organisations));
+		collection.setContributor(OrganisationLabelResolver.labelOrReadableIdentifier(collection.getContributor(), organisations));
+		collection.getMembersLg().forEach(member -> member.setCreator(OrganisationLabelResolver.labelOrReadableIdentifier(member.getCreator(), organisations)));
 	}
 
 
@@ -241,9 +260,7 @@ public class CollectionExportBuilder extends RdfService {
 		JSONArray members = repoGestion.getResponseAsArray(conceptCollectionsQueries.collectionMembersQuery(id));
 
 		List<JSONObject> orderMembers = new ArrayList<>();
-		for (int i = 0; i < members.length(); i++) {
-			orderMembers.add(members.getJSONObject(i));
-		}
+		JSONUtils.stream(members).forEach(orderMembers::add);
 
 		instance.setStrength(Collator.NO_DECOMPOSITION);
 
@@ -275,6 +292,7 @@ public class CollectionExportBuilder extends RdfService {
 			collection.setModified(DateUtils.toDate(collection.getModified()));
 			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
 
+			resolveOrganisationLabels(collection);
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
 		}

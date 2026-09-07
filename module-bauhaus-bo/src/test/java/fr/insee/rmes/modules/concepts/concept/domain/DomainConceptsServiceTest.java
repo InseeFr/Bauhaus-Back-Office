@@ -1,14 +1,15 @@
 package fr.insee.rmes.modules.concepts.concept.domain;
 
+import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptAlreadyPublishedException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptNotFoundException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsFetchException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.ConceptsSaveException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidConceptIdException;
 import fr.insee.rmes.modules.concepts.concept.domain.exceptions.InvalidCreateConceptCommandException;
-import fr.insee.rmes.modules.concepts.concept.domain.model.CompactConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.Concept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptDashboardItem;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptId;
+import fr.insee.rmes.modules.concepts.concept.domain.model.PartialConcept;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptToValidate;
 import fr.insee.rmes.modules.concepts.concept.domain.model.ConceptVersion;
 import fr.insee.rmes.modules.concepts.concept.domain.model.commands.CreateConceptCommand;
@@ -98,14 +99,15 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void getAllConcepts_returns_compact_list_from_repository() throws ConceptsFetchException {
-        var compact1 = new CompactConcept(new ConceptId("c00001"), LocalisedLabel.ofDefaultLanguage("A"));
-        var compact2 = new CompactConcept(new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("B"));
-        when(conceptsRepository.getConcepts()).thenReturn(List.of(compact1, compact2));
+    void getAllConcepts_returns_partial_list_from_repository() throws ConceptsFetchException {
+        var partial1 = new PartialConcept(new ConceptId("c00001"), LocalisedLabel.ofDefaultLanguage("A"),
+                LocalisedLabel.ofDefaultLanguage("RNIPP"));
+        var partial2 = new PartialConcept(new ConceptId("c00002"), LocalisedLabel.ofDefaultLanguage("B"), null);
+        when(conceptsRepository.getConcepts()).thenReturn(List.of(partial1, partial2));
 
-        List<CompactConcept> result = domainConceptsService.getAllConcepts();
+        List<PartialConcept> result = domainConceptsService.getAllConcepts();
 
-        assertThat(result).containsExactly(compact1, compact2);
+        assertThat(result).containsExactly(partial1, partial2);
     }
 
     @Test
@@ -215,7 +217,7 @@ class DomainConceptsServiceTest {
 
     @Test
     void validateConcepts_delegates_to_repository_when_all_ids_exist()
-            throws ConceptsFetchException, ConceptsSaveException {
+            throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         var id1 = new ConceptId("c00001");
         var id2 = new ConceptId("c00002");
         when(conceptsRepository.findExistingConceptIds(List.of("c00001", "c00002")))
@@ -241,7 +243,22 @@ class DomainConceptsServiceTest {
     }
 
     @Test
-    void validateConcepts_is_a_noop_on_empty_input() throws ConceptsFetchException, ConceptsSaveException {
+    void validateConcepts_throws_when_at_least_one_concept_is_already_published()
+            throws ConceptsFetchException {
+        var id1 = new ConceptId("c00001");
+        var id2 = new ConceptId("c00002");
+        when(conceptsRepository.findExistingConceptIds(List.of("c00001", "c00002")))
+                .thenReturn(Set.of("c00001", "c00002"));
+        when(conceptsRepository.findValidatedConceptIds(List.of("c00001", "c00002")))
+                .thenReturn(Set.of("c00002"));
+
+        assertThatThrownBy(() -> domainConceptsService.validateConcepts(List.of(id1, id2)))
+                .isInstanceOf(ConceptAlreadyPublishedException.class)
+                .hasMessageContaining("c00002");
+    }
+
+    @Test
+    void validateConcepts_is_a_noop_on_empty_input() throws ConceptsFetchException, ConceptsSaveException, ConceptAlreadyPublishedException {
         domainConceptsService.validateConcepts(List.of());
 
         verify(conceptsRepository, never()).validate(any());

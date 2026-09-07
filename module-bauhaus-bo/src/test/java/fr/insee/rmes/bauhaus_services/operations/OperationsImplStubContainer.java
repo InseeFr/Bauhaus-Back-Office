@@ -9,6 +9,6 @@ public class OperationsImplStubContainer extends OperationsImpl {
 
     public OperationsImplStubContainer(RdfConnectionDetails rdfGestionConectionDetails) {
         super(new RepositoryGestion(rdfGestionConectionDetails, new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED)),
-                null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null);
     }
 }

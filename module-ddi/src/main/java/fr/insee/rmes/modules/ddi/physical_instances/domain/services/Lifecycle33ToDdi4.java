@@ -2,11 +2,16 @@ package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.group.GroupType;
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.ddi.lifecycle33.logicalproduct.BaseLogicalProductType;
+import fr.insee.ddi.lifecycle33.logicalproduct.CategorySchemeType;
+import fr.insee.ddi.lifecycle33.logicalproduct.LogicalProductType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CategoryType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListSchemeType;
+import fr.insee.ddi.lifecycle33.logicalproduct.VariableSchemeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeListType;
 import fr.insee.ddi.lifecycle33.logicalproduct.CodeType;
 import fr.insee.ddi.lifecycle33.logicalproduct.DataRelationshipType;
+import fr.insee.ddi.lifecycle33.logicalproduct.LevelType;
 import fr.insee.ddi.lifecycle33.logicalproduct.LogicalRecordType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableRepresentationType;
 import fr.insee.ddi.lifecycle33.logicalproduct.VariableType;
@@ -19,6 +24,7 @@ import fr.insee.ddi.lifecycle33.reusable.CodeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.ContentType;
 import fr.insee.ddi.lifecycle33.reusable.DateTimeRepresentationBaseType;
 import fr.insee.ddi.lifecycle33.reusable.LabelType;
+import fr.insee.ddi.lifecycle33.reusable.ManagedMissingValuesRepresentationType;
 import fr.insee.ddi.lifecycle33.reusable.NameType;
 import fr.insee.ddi.lifecycle33.reusable.NumberRangeType;
 import fr.insee.ddi.lifecycle33.reusable.NumberRangeValueType;
@@ -38,15 +44,21 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CodeRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.DateTimeRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4VariableScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4LogicalProduct;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangStrings;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LogicalRecord;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumberRange;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.NumericRepresentation;
@@ -55,12 +67,17 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.model.TextRepresentat
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.ValueType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariableRepresentation;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.VariablesInRecord;
+import org.apache.xmlbeans.QNameSet;
 import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlObject;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Lifecycle33ToDdi4 {
+
+    private static final String DDI_REUSABLE_NS = "ddi:reusable:3_3";
 
     public Ddi4PhysicalInstance toPhysicalInstance(FragmentDocument doc) {
         PhysicalInstanceType pi = doc.getFragment().getPhysicalInstance();
@@ -130,17 +147,17 @@ public class Lifecycle33ToDdi4 {
         if (cl == null) {
             throw new IllegalArgumentException("Fragment does not contain a CodeList");
         }
+        List<Level> levels = new ArrayList<>();
+        for (LevelType l : cl.getLevelArray()) {
+            levels.add(new Level(
+                    Level.TYPE,
+                    l.getLevelNumber() != null ? l.getLevelNumber().intValue() : null,
+                    l.sizeOfLevelNameArray() > 0 ? readName(l.getLevelNameArray(0)) : null,
+                    l.isSetCategoryRelationship() ? l.getCategoryRelationship().toString() : null));
+        }
         List<Code> codes = new ArrayList<>();
         for (CodeType c : cl.getCodeArray()) {
-            Reference catRef = readReference(c.getCategoryReference());
-            codes.add(new Code(
-                    Code.TYPE,
-                    c.getURNArray(0).getStringValue(),
-                    c.getAgencyArray(0),
-                    c.getIDArray(0).getStringValue(),
-                    c.getVersionArray(0),
-                    catRef,
-                    c.getValue() != null ? ValueType.of(c.getValue().getStringValue()) : null));
+            codes.add(toCode(c));
         }
         return new Ddi4CodeList(
                 Ddi4CodeList.TYPE,
@@ -149,9 +166,27 @@ public class Lifecycle33ToDdi4 {
                 cl.getAgencyArray(0),
                 cl.getIDArray(0).getStringValue(),
                 cl.getVersionArray(0),
+                readBasedOnObject(cl.getBasedOnObject()),
                 cl.sizeOfLabelArray() > 0 ? readLabel(cl.getLabelArray(0)) : null,
+                levels.isEmpty() ? null : levels,
                 codes.isEmpty() ? null : codes
         );
+    }
+
+    private Code toCode(CodeType c) {
+        List<Code> children = new ArrayList<>();
+        for (CodeType child : c.getCodeArray()) {
+            children.add(toCode(child));
+        }
+        return new Code(
+                Code.TYPE,
+                c.getURNArray(0).getStringValue(),
+                c.getAgencyArray(0),
+                c.getIDArray(0).getStringValue(),
+                c.getVersionArray(0),
+                readReference(c.getCategoryReference()),
+                c.getValue() != null ? ValueType.of(c.getValue().getStringValue()) : null,
+                children.isEmpty() ? null : children);
     }
 
     public Ddi4CodeListScheme toCodeListScheme(FragmentDocument doc) {
@@ -175,6 +210,147 @@ public class Lifecycle33ToDdi4 {
         );
     }
 
+    /**
+     * QNames sous lesquels un membre d'un ManagedRepresentationScheme peut être référencé : la tête
+     * du groupe de substitution {@code ManagedRepresentationReference} (données historiques) et ses
+     * éléments concrets par type ({@code ManagedMissingValuesRepresentationReference}…). L'accesseur
+     * généré {@code getManagedRepresentationReferenceArray} est inutilisable : son QNameSet est
+     * erroné (partagé avec la propriété in-line {@code ManagedRepresentation}) et ne matche aucun de
+     * ces éléments — d'où la sélection manuelle par QName.
+     */
+    private static final QNameSet MANAGED_REPRESENTATION_REFERENCE_QNAMES = QNameSet.forArray(new QName[]{
+            new QName(DDI_REUSABLE_NS, "ManagedRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedTextRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedNumericRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedDateTimeRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedScaleRepresentationReference"),
+            new QName(DDI_REUSABLE_NS, "ManagedMissingValuesRepresentationReference")});
+
+    public Ddi4ManagedRepresentationScheme toManagedRepresentationScheme(FragmentDocument doc) {
+        var scheme = doc.getFragment().getManagedRepresentationScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a ManagedRepresentationScheme");
+        }
+        List<Reference> managedRepresentationReferences = new ArrayList<>();
+        for (XmlObject child : scheme.selectChildren(MANAGED_REPRESENTATION_REFERENCE_QNAMES)) {
+            managedRepresentationReferences.add(readReference((ReferenceType) child));
+        }
+        return new Ddi4ManagedRepresentationScheme(
+                Ddi4ManagedRepresentationScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                managedRepresentationReferences.isEmpty() ? null : managedRepresentationReferences
+        );
+    }
+
+    public Ddi4ManagedMissingValuesRepresentation toManagedMissingValuesRepresentation(FragmentDocument doc) {
+        ManagedMissingValuesRepresentationType mmvr =
+                doc.getFragment().getManagedMissingValuesRepresentation();
+        if (mmvr == null) {
+            throw new IllegalArgumentException(
+                    "Fragment does not contain a ManagedMissingValuesRepresentation");
+        }
+        List<CodeRepresentation> missingCodeRepresentations = new ArrayList<>();
+        for (CodeRepresentationBaseType rep : mmvr.getMissingCodeRepresentationArray()) {
+            Reference clRef = rep.isSetCodeListReference()
+                    ? readReference(rep.getCodeListReference())
+                    : null;
+            missingCodeRepresentations.add(
+                    new CodeRepresentation(CodeRepresentation.TYPE, rep.getBlankIsMissingValue(), clRef));
+        }
+        return new Ddi4ManagedMissingValuesRepresentation(
+                Ddi4ManagedMissingValuesRepresentation.TYPE,
+                mmvr.isSetVersionDate() ? CogsDate.ofDateTime(mmvr.xgetVersionDate().getStringValue()) : null,
+                mmvr.getURNArray(0).getStringValue(),
+                mmvr.getAgencyArray(0),
+                mmvr.getIDArray(0).getStringValue(),
+                mmvr.getVersionArray(0),
+                mmvr.sizeOfLabelArray() > 0 ? readLabel(mmvr.getLabelArray(0)) : null,
+                missingCodeRepresentations.isEmpty() ? null : missingCodeRepresentations
+        );
+    }
+
+    public Ddi4CategoryScheme toCategoryScheme(FragmentDocument doc) {
+        CategorySchemeType scheme = doc.getFragment().getCategoryScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a CategoryScheme");
+        }
+        List<Reference> categoryReferences = new ArrayList<>();
+        for (ReferenceType ref : scheme.getCategoryReferenceArray()) {
+            categoryReferences.add(readReference(ref));
+        }
+        return new Ddi4CategoryScheme(
+                Ddi4CategoryScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                categoryReferences.isEmpty() ? null : categoryReferences
+        );
+    }
+
+    public Ddi4VariableScheme toVariableScheme(FragmentDocument doc) {
+        VariableSchemeType scheme = doc.getFragment().getVariableScheme();
+        if (scheme == null) {
+            throw new IllegalArgumentException("Fragment does not contain a VariableScheme");
+        }
+        List<Reference> variableReferences = new ArrayList<>();
+        for (ReferenceType ref : scheme.getVariableReferenceArray()) {
+            variableReferences.add(readReference(ref));
+        }
+        return new Ddi4VariableScheme(
+                Ddi4VariableScheme.TYPE,
+                CogsDate.ofDateTime(scheme.xgetVersionDate().getStringValue()),
+                scheme.getURNArray(0).getStringValue(),
+                scheme.getAgencyArray(0),
+                scheme.getIDArray(0).getStringValue(),
+                scheme.getVersionArray(0),
+                scheme.sizeOfLabelArray() > 0 ? readLabel(scheme.getLabelArray(0)) : null,
+                variableReferences.isEmpty() ? null : variableReferences
+        );
+    }
+
+    /**
+     * Parses a DDI 3.3 {@code <LogicalProduct>} fragment. The element is a substitution-group member
+     * of {@code BaseLogicalProduct} — the only logical-product element the generated
+     * {@code FragmentType} exposes — so it is read through the head element and re-typed, the mirror
+     * image of what {@link Ddi4ToLifecycle33#toLogicalProduct} does when serializing.
+     */
+    public Ddi4LogicalProduct toLogicalProduct(FragmentDocument doc) {
+        BaseLogicalProductType base = doc.getFragment().getBaseLogicalProduct();
+        if (base == null) {
+            throw new IllegalArgumentException("Fragment does not contain a LogicalProduct");
+        }
+        LogicalProductType lp = (LogicalProductType) base.changeType(LogicalProductType.type);
+        return new Ddi4LogicalProduct(
+                Ddi4LogicalProduct.TYPE,
+                CogsDate.ofDateTime(lp.xgetVersionDate().getStringValue()),
+                lp.getURNArray(0).getStringValue(),
+                lp.getAgencyArray(0),
+                lp.getIDArray(0).getStringValue(),
+                lp.getVersionArray(0),
+                lp.sizeOfLabelArray() > 0 ? readLabel(lp.getLabelArray(0)) : null,
+                readSchemeReferences(lp.getCodeListSchemeReferenceArray()),
+                readSchemeReferences(lp.getCategorySchemeReferenceArray()),
+                readSchemeReferences(lp.getVariableSchemeReferenceArray()),
+                readSchemeReferences(lp.getManagedRepresentationSchemeReferenceArray())
+        );
+    }
+
+    private static List<Reference> readSchemeReferences(ReferenceType[] refs) {
+        List<Reference> references = new ArrayList<>();
+        for (ReferenceType ref : refs) {
+            references.add(readReference(ref));
+        }
+        return references.isEmpty() ? null : references;
+    }
+
     public Ddi4Category toCategory(FragmentDocument doc) {
         CategoryType cat = doc.getFragment().getCategory();
         if (cat == null) {
@@ -187,6 +363,7 @@ public class Lifecycle33ToDdi4 {
                 cat.getAgencyArray(0),
                 cat.getIDArray(0).getStringValue(),
                 cat.getVersionArray(0),
+                readBasedOnObject(cat.getBasedOnObject()),
                 cat.sizeOfLabelArray() > 0 ? readLabel(cat.getLabelArray(0)) : null
         );
     }
@@ -276,7 +453,8 @@ public class Lifecycle33ToDdi4 {
                 "CodeRepresentation".equals(repName) ? readCodeRepresentation(rep) : null,
                 "NumericRepresentation".equals(repName) ? readNumericRepresentation(rep) : null,
                 "DateTimeRepresentation".equals(repName) ? readDateTimeRepresentation(rep) : null,
-                "TextRepresentation".equals(repName) ? readTextRepresentation(rep) : null
+                "TextRepresentation".equals(repName) ? readTextRepresentation(rep) : null,
+                vr.isSetMissingValuesReference() ? readReference(vr.getMissingValuesReference()) : null
         );
     }
 

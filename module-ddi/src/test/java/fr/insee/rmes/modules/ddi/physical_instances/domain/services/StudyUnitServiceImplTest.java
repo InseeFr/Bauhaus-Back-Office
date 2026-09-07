@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -72,5 +73,14 @@ class StudyUnitServiceImplTest {
 
         assertThat(result).extracting(PartialStudyUnit::label)
                 .containsExactly("Charlie", "Bravo", "alpha");
+    }
+
+    @Test
+    void deprecate_shouldDelegateToRepository() {
+        Set<String> ids = Set.of("su-id-1", "su-id-2");
+
+        studyUnitService.deprecate(ids);
+
+        verify(studyUnitRepository).deprecate(ids);
     }
 }

@@ -4,15 +4,15 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
 import fr.insee.rmes.bauhaus_services.code_list.export.ExportedCodesList;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsRepository;
+import fr.insee.rmes.bauhaus_services.operations.operations.OperationsRepository;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.OrganisationOption;
-import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
@@ -49,13 +49,13 @@ public class DocumentationExport {
 	public static final String DOCUMENTATION = "documentation";
 	final ExportUtils exportUtils;
 	
-	final SeriesUtils seriesUtils;
+	final SeriesRepository seriesRepository;
 	
-	final OperationsUtils operationsUtils;
+	final OperationsRepository operationsRepository;
 	
-	final IndicatorsUtils indicatorsUtils;
+	final IndicatorsRepository indicatorsRepository;
 	
-	final ParentUtils parentUtils;
+	final OperationsParentRepository operationsParentRepository;
 	
 	final CodesListExport codeListServiceImpl;
 	
@@ -77,14 +77,14 @@ public class DocumentationExport {
 			@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength,
 			DocumentsUtils documentsUtils,
 			ExportUtils exportUtils,
-			SeriesUtils seriesUtils,
-			OperationsUtils operationsUtils,
-			IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
+			SeriesRepository seriesRepository,
+			OperationsRepository operationsRepository,
+			IndicatorsRepository indicatorsRepository, OperationsParentRepository operationsParentRepository, CodesListExport codeListServiceImpl, OrganizationsService organizationsServiceImpl, OrganisationService organisationService, DocumentationsUtils documentationsUtils) {
 		this.exportUtils = exportUtils;
-		this.seriesUtils = seriesUtils;
-		this.operationsUtils = operationsUtils;
-		this.indicatorsUtils = indicatorsUtils;
-		this.parentUtils = parentUtils;
+		this.seriesRepository = seriesRepository;
+		this.operationsRepository = operationsRepository;
+		this.indicatorsRepository = indicatorsRepository;
+		this.operationsParentRepository = operationsParentRepository;
 		this.codeListServiceImpl = codeListServiceImpl;
 		this.organizationsServiceImpl = organizationsServiceImpl;
 		this.organisationService = organisationService;
@@ -241,19 +241,19 @@ public class DocumentationExport {
 		String seriesXML = emptyXML;
 		String indicatorXML;
 
-		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
+		String[] target = operationsParentRepository.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
 		List<String> neededCodeLists=new ArrayList<>();
 
 		if (targetType.equals(Constants.OPERATION_UP)) {
-			operation=operationsUtils.getOperationById(idDatabase);
+			operation=operationsRepository.getOperationById(idDatabase);
 			operationXML = XMLUtils.produceXMLResponse(operation);
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
+			series=seriesRepository.getSeriesById(idSeries,EncodingType.XML);
 			transformCreatorsStampsToLabels(series);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
@@ -262,7 +262,7 @@ public class DocumentationExport {
 
 
 		if (targetType.equals(Constants.INDICATOR_UP)) {
-			Indicator indicator = indicatorsUtils.getIndicatorById(idDatabase,true);
+			Indicator indicator = indicatorsRepository.getIndicatorById(idDatabase,true);
 			transformIndicatorCreatorsStampsToLabels(indicator);
 			indicatorXML=XMLUtils.produceXMLResponse(indicator);
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
@@ -272,7 +272,7 @@ public class DocumentationExport {
 							indicatorXML,
 							Constants.WASGENERATEDBY).getFirst(),
 					Constants.ID).getFirst();
-			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
+			series=seriesRepository.getSeriesById(idSeries,EncodingType.XML);
 			transformCreatorsStampsToLabels(series);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
@@ -281,7 +281,7 @@ public class DocumentationExport {
 
 
 		if (targetType.equals(Constants.SERIES_UP)) {
-			series = seriesUtils.getSeriesById(idDatabase,EncodingType.XML);
+			series = seriesRepository.getSeriesById(idDatabase,EncodingType.XML);
 			transformCreatorsStampsToLabels(series);
 			seriesXML=XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));

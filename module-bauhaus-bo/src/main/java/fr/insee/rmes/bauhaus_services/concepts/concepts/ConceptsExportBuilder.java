@@ -7,13 +7,15 @@ import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.bauhaus_services.utils.OrganisationLabelResolver;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.modules.commons.domain.model.DisseminationStatus;
-import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.utils.*;
 import org.apache.http.HttpStatus;
@@ -24,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Map;
 
 @Component
@@ -31,8 +34,8 @@ public class ConceptsExportBuilder extends RdfService {
 
     private static final String CONCEPT_VERSION = "conceptVersion";
 
-    private final ConceptsUtils conceptsUtils;
-    private final OrganisationsService organisationsService;
+    private final LegacyConceptsRepository legacyConceptsRepository;
+    private final OrganisationService organisationService;
     private final ExportUtils exportUtils;
     private final ConceptConceptsQueries conceptConceptsQueries;
 
@@ -43,10 +46,10 @@ public class ConceptsExportBuilder extends RdfService {
     public ConceptsExportBuilder(RepositoryGestion repoGestion, IdGenerator idGenerator,
                                  RepositoryPublication repositoryPublication,
                                  PublicationUtils publicationUtils,
-                                 ConceptsUtils conceptsUtils, OrganisationsService organisationsService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
+                                 LegacyConceptsRepository legacyConceptsRepository, OrganisationService organisationService, ExportUtils exportUtils, ConceptConceptsQueries conceptConceptsQueries) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-        this.conceptsUtils = conceptsUtils;
-        this.organisationsService = organisationsService;
+        this.legacyConceptsRepository = legacyConceptsRepository;
+        this.organisationService = organisationService;
         this.exportUtils = exportUtils;
         this.conceptConceptsQueries = conceptConceptsQueries;
     }
@@ -68,7 +71,7 @@ public class ConceptsExportBuilder extends RdfService {
 
     public ConceptForExport getConceptData(String id) throws RmesException {
         ConceptForExport concept;
-        JSONObject general = conceptsUtils.getConceptById(id);
+        JSONObject general = legacyConceptsRepository.getConceptById(id);
         transformAltLabelListInString(general);
 
 
@@ -92,11 +95,7 @@ public class ConceptsExportBuilder extends RdfService {
             concept.setModified(DateUtils.toDate(concept.getModified()));
             concept.setValid(DateUtils.toDate(concept.getValid()));
 
-
-            String creatorLabel = getHieLabel(concept.getCreator());
-            String contributorLabel = getHieLabel(concept.getContributor());
-            concept.setCreator(creatorLabel);
-            concept.setContributor(contributorLabel);
+            resolveOrganisationLabels(concept);
         } catch (JsonProcessingException e) {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
         }
@@ -104,12 +103,11 @@ public class ConceptsExportBuilder extends RdfService {
 
     }
 
-    private String getHieLabel(String hie) {
-        try {
-            return organisationsService.getCompactOrganisation(hie).label().value();
-        } catch (OrganisationFetchException e) {
-            return hie;
-        }
+    private void resolveOrganisationLabels(ConceptForExport concept) {
+        Map<String, OrganisationOption> organisations = OrganisationLabelResolver.organisationsByIdentifier(
+                organisationService, Arrays.asList(concept.getCreator(), concept.getContributor()));
+        concept.setCreator(OrganisationLabelResolver.labelOrReadableIdentifier(concept.getCreator(), organisations));
+        concept.setContributor(OrganisationLabelResolver.labelOrReadableIdentifier(concept.getContributor(), organisations));
     }
 
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {

@@ -2,14 +2,15 @@ package fr.insee.rmes.bauhaus_services.utils;
 
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.OrganisationOption;
-import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
+import fr.insee.rmes.json.JSONUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +66,10 @@ public class OrganisationLookup {
         if (rows == null || rows.isEmpty()) {
             return result;
         }
-        List<String> values = new ArrayList<>(rows.length());
-        for (int i = 0; i < rows.length(); i++) {
-            Object raw = rows.get(i);
-            if (raw != null) {
-                values.add(raw.toString());
-            }
-        }
+        List<String> values = JSONUtils.streamValues(rows)
+                .filter(Objects::nonNull)
+                .map(Object::toString)
+                .toList();
         if (values.isEmpty()) {
             return result;
         }

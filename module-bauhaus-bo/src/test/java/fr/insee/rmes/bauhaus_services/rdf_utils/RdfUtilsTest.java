@@ -4,8 +4,6 @@ import fr.insee.rmes.graphdb.ObjectType;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -97,24 +95,6 @@ class RdfUtilsTest {
         RdfUtils.addTripleDateTime(objectIri,predicateExample,value,modelExample,graphExample);
         int modelSizeAfter = modelExample.size();
         assertTrue(modelSizeBefore<modelSizeAfter);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"fr","example","2025" })
-    void shouldAddTripleLanguage(String value) {
-        int modelSizeBefore = modelExample.size();
-        RdfUtils.addTripleLanguage(objectIri,predicateExample,value,modelExample,graphExample);
-        int modelSizeAfter = modelExample.size();
-        assertTrue(modelSizeBefore<modelSizeAfter);
-    }
-
-    @Test
-    void shouldAddTripleStringMdToXhtml2() {
-        IRI resultFirst = RdfUtils. addTripleStringMdToXhtml2(objectIri, predicateExample,"https://", "lang", "prefix", modelExample, graphExample);
-        IRI resultSecond = RdfUtils. addTripleStringMdToXhtml2(objectIri, predicateExample,"", "lang", "prefix",modelExample, graphExample);
-        boolean createUri = "https://namespaceObjectlocalNameObject/prefix/lang".equals(resultFirst.toString());
-        boolean notCreateUri = resultSecond==null;
-        assertTrue(createUri && notCreateUri);
     }
 
     @Test
@@ -236,32 +216,8 @@ class RdfUtilsTest {
     }
 
     @Test
-    void shouldReturnNullWhenCallingAddTripeStringMdToXhtml2WithNullValue(){
-        IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
-        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");
-        String value = null;
-        String lang = "fr";
-        String prefix = "prefix";
-        Model model = new LinkedHashModel();
-        Resource graph = null;
-        Assertions.assertNull(RdfUtils.addTripleStringMdToXhtml2(iri, predicate, value, lang, prefix, model, graph));
-    }
-
-    @Test
-    void shouldReturnNullWhenCallingAddTripeStringMdToXhtml2WithEmptyValue(){
-        IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
-        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");
-        String value = "";
-        String lang = "fr";
-        String prefix = "prefix";
-        Model model = new LinkedHashModel();
-        Resource graph = null;
-        Assertions.assertNull(RdfUtils.addTripleStringMdToXhtml2(iri, predicate, value, lang, prefix, model, graph));
-    }
-
-    @Test
     void objectIRIPrefixesPlainIdsWithTheGestionBaseUri(){
-        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
 
         IRI iri = RdfUtils.objectIRI(ObjectType.CONCEPT, "c123");
 
@@ -270,7 +226,7 @@ class RdfUtilsTest {
 
     @Test
     void objectIRIIsIdempotentWhenGivenAnAbsoluteConceptUri(){
-        RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("concepts/definitions")));
 
         // Defensive: callers occasionally pass a fully-qualified concept URI instead of the
         // bare notation (#1494). Re-prefixing produces malformed URIs like
@@ -281,19 +237,5 @@ class RdfUtilsTest {
         IRI iri = RdfUtils.objectIRI(ObjectType.CONCEPT, alreadyAbsolute);
 
         assertEquals(alreadyAbsolute, iri.toString());
-    }
-
-    @Test
-    void shouldUpdateModelWhenCallingAddTripeStringMdToXhtml2WithValidValue(){
-        IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
-        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");
-        String value = "value";
-        String lang = "fr";
-        String prefix = "prefix";
-        Model model = new LinkedHashModel();
-        Resource graph = null;
-
-        RdfUtils.addTripleStringMdToXhtml2(iri, predicate, value, lang, prefix, model, graph);
-        assertEquals("[(http://iri, http://predicate, http://iri/prefix/fr) [null], (http://iri/prefix/fr, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf-vocabulary.ddialliance.org/xkos#ExplanatoryNote) [null], (http://iri/prefix/fr, http://eurovoc.europa.eu/schema#noteLiteral, \"<p>value</p>\"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>) [null], (http://iri/prefix/fr, http://www.w3.org/2001/XMLSchema#language, \"fr\"^^<http://www.w3.org/2001/XMLSchema#language>) [null]]", model.toString());
     }
 }

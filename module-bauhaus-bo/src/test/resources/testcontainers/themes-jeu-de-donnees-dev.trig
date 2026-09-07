@@ -1,0 +1,256 @@
+####################################################################################################
+# Jeu de donnees de developpement pour la liste deroulante des themes (issue InseeFr/Bauhaus#1573).
+#
+# ATTENTION : ce fichier n'est utilise par AUCUN test automatise, contrairement aux autres .trig
+# de ce repertoire. C'est un jeu d'amorcage pour tester la liste deroulante a la main dans l'IHM.
+# Ne pas le supprimer en croyant a une fixture morte. La couverture automatisee du ticket est dans
+# fr/insee/rmes/modules/commons/themes-end-to-end-test.trig (+ ThemesEndToEndTest).
+#
+# Chargement dans GraphDB local :
+#   Import > RDF > Upload RDF files > themes-jeu-de-donnees-dev.trig
+#   (format TriG : les graphes nommes sont dans le fichier, ne PAS forcer de contexte a l'import)
+#
+# Utilisation depuis un test, si besoin un jour :
+#   container.withInitFolder("testcontainers").withTrigFiles("themes-jeu-de-donnees-dev.trig")
+#
+# Ce que le jeu couvre :
+#   1. Les 10 themes attendus dans la liste deroulante  -> graphe <.../graphes/concepts>
+#   2. Des domaines statistiques, meme graphe, autre type -> ne doivent PAS apparaitre
+#   3. Des concepts de definition                        -> graphe <.../graphes/concepts/definitions>
+#      C'est ce graphe que la requete interrogeait a tort : avant le correctif ces 3 concepts
+#      polluaient la liste, apres le correctif ils doivent avoir disparu.
+#   4. Deux jeux de donnees, dont un qui reference un concept de definition comme theme,
+#      pour reproduire la puce vide sur la fiche /datasets/:id
+####################################################################################################
+
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix dcat:  <http://www.w3.org/ns/dcat#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+####################################################################################################
+# 1 + 2 — Le graphe des concepts : c'est celui que la liste deroulante doit interroger.
+####################################################################################################
+
+<http://rdf.insee.fr/graphes/concepts> {
+
+    # ---------- Les themes : seules ces 10 ressources doivent alimenter la liste ----------
+
+    <http://bauhaus/concepts/themes/Theme> rdf:type rdfs:Class ;
+        rdfs:label "Thème statistique"@fr, "Statistical theme"@en ;
+    .
+
+    <http://bauhaus/concepts/themes> rdf:type skos:ConceptScheme ;
+        skos:notation "inseeTheme" ;
+        skos:prefLabel "Thèmes statistiques"@fr, "Statistical themes"@en ;
+        skos:hasTopConcept
+            <http://bauhaus/concepts/theme/agr>, <http://bauhaus/concepts/theme/com>,
+            <http://bauhaus/concepts/theme/eco>, <http://bauhaus/concepts/theme/edu>,
+            <http://bauhaus/concepts/theme/emp>, <http://bauhaus/concepts/theme/env>,
+            <http://bauhaus/concepts/theme/ind>, <http://bauhaus/concepts/theme/log>,
+            <http://bauhaus/concepts/theme/pop>, <http://bauhaus/concepts/theme/san> ;
+    .
+
+    <http://bauhaus/concepts/theme/agr> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "AGR" ;
+        skos:prefLabel "Agriculture, sylviculture, pêche"@fr, "Agriculture, forestry, fishing"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/com> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "COM" ;
+        skos:prefLabel "Commerce, artisanat, services"@fr, "Trade, crafts, services"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    # Accent initial : avec ORDER BY ASC(?label) en SPARQL (ordre par point de code),
+    # ce theme et le suivant se retrouvent APRES "Santé" dans la liste. Voir point 3 de la revue.
+    <http://bauhaus/concepts/theme/eco> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "ECO" ;
+        skos:prefLabel "Économie – Conjoncture – Comptes nationaux"@fr, "Economy – Economic outlook – National accounts"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/edu> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "EDU" ;
+        skos:prefLabel "Éducation, formation"@fr, "Education, training"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/emp> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "EMP" ;
+        skos:prefLabel "Emploi, salaires, revenus"@fr, "Employment, wages, income"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/env> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "ENV" ;
+        skos:prefLabel "Environnement, énergie"@fr, "Environment, energy"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/ind> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "IND" ;
+        skos:prefLabel "Industrie, construction"@fr, "Industry, construction"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/log> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "LOG" ;
+        skos:prefLabel "Logement"@fr, "Housing"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/pop> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "POP" ;
+        skos:prefLabel "Démographie"@fr, "Demography"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    <http://bauhaus/concepts/theme/san> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme> ;
+        skos:notation "SAN" ;
+        skos:prefLabel "Santé, handicap, dépendance"@fr, "Health, disability, dependency"@en ;
+        skos:inScheme <http://bauhaus/concepts/themes> ;
+        skos:topConceptOf <http://bauhaus/concepts/themes> ;
+    .
+
+    # ---------- Cas negatif A : meme graphe, type different ----------
+    # Les domaines statistiques cohabitent avec les themes dans <.../graphes/concepts>.
+    # Le filtre porte sur le type, donc ils n'apparaissent PAS dans la liste deroulante.
+    # A noter : l'ancienne propriete morte theme.conceptSchemeFilter valait
+    # "classificationOfStatisticalDomain,inseeTheme", ce qui laisse penser qu'on voulait
+    # a l'origine afficher les DEUX. Le ticket #1573 tranche pour les themes seuls.
+
+    <http://bauhaus/concepts/statisticalDomains/StatisticalDomain> rdf:type rdfs:Class ;
+        rdfs:label "Domaine statistique"@fr, "Statistical domain"@en ;
+    .
+
+    <http://bauhaus/concepts/statisticalDomains> rdf:type skos:ConceptScheme ;
+        skos:notation "classificationOfStatisticalDomain" ;
+        skos:prefLabel "Domaines statistiques"@fr, "Statistical Domains"@en ;
+        skos:hasTopConcept <http://bauhaus/concepts/statisticalDomain/sd1>,
+                           <http://bauhaus/concepts/statisticalDomain/sd2> ;
+    .
+
+    <http://bauhaus/concepts/statisticalDomain/sd1> rdf:type skos:Concept, <http://bauhaus/concepts/statisticalDomains/StatisticalDomain> ;
+        skos:notation "1" ;
+        skos:prefLabel "1 Statistiques démographiques et sociales"@fr, "1 Demographic and social statistics"@en ;
+        skos:inScheme <http://bauhaus/concepts/statisticalDomains> ;
+        skos:topConceptOf <http://bauhaus/concepts/statisticalDomains> ;
+    .
+
+    <http://bauhaus/concepts/statisticalDomain/sd2> rdf:type skos:Concept, <http://bauhaus/concepts/statisticalDomains/StatisticalDomain> ;
+        skos:notation "2" ;
+        skos:prefLabel "2 Statistiques économiques"@fr, "2 Economic statistics"@en ;
+        skos:inScheme <http://bauhaus/concepts/statisticalDomains> ;
+        skos:topConceptOf <http://bauhaus/concepts/statisticalDomains> ;
+    .
+}
+
+####################################################################################################
+# 3 — Cas negatif B : le graphe des definitions, celui que la requete interrogeait a tort.
+#     Avant le correctif ces 3 concepts remontaient dans la liste deroulante des themes.
+#     Apres, ils ne doivent plus y etre : c'est le test visuel principal du ticket.
+####################################################################################################
+
+<http://rdf.insee.fr/graphes/concepts/definitions> {
+
+    <http://bauhaus/concepts/definition/c2000> rdf:type skos:Concept ;
+        skos:notation "c2000" ;
+        skos:prefLabel "Chômage au sens du BIT"@fr, "ILO unemployment"@en ;
+        skos:definition "Un chômeur au sens du BIT est une personne en âge de travailler qui n'a pas travaillé, est disponible et recherche activement un emploi."@fr ;
+    .
+
+    <http://bauhaus/concepts/definition/c2001> rdf:type skos:Concept ;
+        skos:notation "c2001" ;
+        skos:prefLabel "Ménage (au sens du recensement)"@fr, "Household (census definition)"@en ;
+        skos:definition "Ensemble des occupants d'un même logement, sans que ces personnes soient nécessairement unies par des liens de parenté."@fr ;
+    .
+
+    <http://bauhaus/concepts/definition/c2002> rdf:type skos:Concept ;
+        skos:notation "c2002" ;
+        skos:prefLabel "Zone d'emploi"@fr, "Employment zone"@en ;
+        skos:definition "Espace géographique à l'intérieur duquel la plupart des actifs résident et travaillent."@fr ;
+    .
+}
+
+####################################################################################################
+# 4 — Deux jeux de donnees pour la fiche /datasets/:id.
+#     jeuDeDonneesThemesValides  : 2 themes valides, les libelles doivent s'afficher.
+#     jeuDeDonneesThemeOrphelin  : reference un concept de DEFINITION comme theme, ce que la liste
+#                                  polluee permettait de faire. La fiche affiche une puce VIDE
+#                                  (GlobalInformationBlock.tsx:103, fallback `?? ""`) et le
+#                                  formulaire perd la valeur a la reouverture.
+####################################################################################################
+
+<http://rdf.insee.fr/graphes/catalogue> {
+
+    <http://bauhaus/catalogues/entreeCatalogue/jeuDeDonneesThemesValides> rdf:type dcat:CatalogRecord ;
+        dc:creator "DG75-L001" ;
+        dc:contributor "DG75-L201" ;
+        dct:created "2026-01-15T00:00:00.000"^^xsd:dateTime ;
+        dct:modified "2026-06-01T00:00:00.000"^^xsd:dateTime ;
+        foaf:primaryTopic <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesThemesValides> ;
+    .
+
+    <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesThemesValides> rdf:type dcat:Dataset ;
+        dct:identifier "jeuDeDonneesThemesValides" ;
+        insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique> ;
+        insee:validationState "Unpublished" ;
+        dct:title "Jeu de données avec des thèmes valides"@fr, "Dataset with valid themes"@en ;
+        dct:abstract "Les deux thèmes doivent s'afficher avec leur libellé sur la fiche."@fr, "Both themes should render with their label."@en ;
+        prov:wasGeneratedBy <http://bauhaus/operations/serie/s1034> ;
+        dcat:theme <http://bauhaus/concepts/theme/pop>, <http://bauhaus/concepts/theme/eco> ;
+    .
+
+    <http://bauhaus/catalogues/entreeCatalogue/jeuDeDonneesThemeOrphelin> rdf:type dcat:CatalogRecord ;
+        dc:creator "DG75-L001" ;
+        dc:contributor "DG75-L201" ;
+        dct:created "2026-01-15T00:00:00.000"^^xsd:dateTime ;
+        dct:modified "2026-06-01T00:00:00.000"^^xsd:dateTime ;
+        foaf:primaryTopic <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesThemeOrphelin> ;
+    .
+
+    <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesThemeOrphelin> rdf:type dcat:Dataset ;
+        dct:identifier "jeuDeDonneesThemeOrphelin" ;
+        insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique> ;
+        insee:validationState "Unpublished" ;
+        dct:title "Jeu de données avec un thème orphelin"@fr, "Dataset with an orphan theme"@en ;
+        dct:abstract "Le thème pointe vers un concept de définition : puce vide attendue sur la fiche."@fr, "The theme points to a definition concept: an empty bullet is expected."@en ;
+        prov:wasGeneratedBy <http://bauhaus/operations/serie/s1034> ;
+        dcat:theme <http://bauhaus/concepts/theme/pop>, <http://bauhaus/concepts/definition/c2000> ;
+    .
+}
+
+####################################################################################################
+# Serie referencee par prov:wasGeneratedBy sur les deux jeux de donnees ci-dessus.
+# Presente pour que le fichier soit chargeable seul, sans dependance a un autre jeu de test.
+####################################################################################################
+
+<http://rdf.insee.fr/graphes/operations> {
+
+    <http://bauhaus/operations/famille/s88> rdf:type insee:StatisticalOperationFamily ;
+        skos:prefLabel "Voir également"@fr, "See also"@en ;
+        dct:hasPart <http://bauhaus/operations/serie/s1034> ;
+    .
+
+    <http://bauhaus/operations/serie/s1034> rdf:type insee:StatisticalOperationSeries ;
+        skos:prefLabel "Autres indicateurs"@fr, "Other indexes"@en ;
+        dct:isPartOf <http://bauhaus/operations/famille/s88> ;
+    .
+}

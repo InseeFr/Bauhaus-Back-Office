@@ -1,15 +1,13 @@
 package fr.insee.rmes.integration.authorizations.operations;
 
-import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
-import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.infrastructure.JwtProperties;
-import fr.insee.rmes.domain.model.operations.families.OperationFamily;
-import fr.insee.rmes.domain.port.clientside.FamilyService;
+import fr.insee.rmes.modules.operations.families.domain.model.OperationFamily;
+import fr.insee.rmes.modules.operations.families.domain.port.clientside.FamilyService;
 import fr.insee.rmes.modules.operations.families.webservice.FamilyResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -60,12 +58,6 @@ class TestFamiliesResourcesEnvProd {
     protected JwtProperties jwtProperties;
 
     @MockitoBean
-    private OperationsService operationsService;
-
-    @MockitoBean
-    private OperationsDocumentationsService operationsDocumentationsService;
-
-    @MockitoBean
     private FamilyService familyService;
 
     @MockitoBean(name = "propertiesAccessPrivilegesChecker")
@@ -79,6 +71,11 @@ class TestFamiliesResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
+
+    /** Les deux libellés sont obligatoires : sans eux, la validation du corps répondrait 400. */
+    private static final String FAMILY_BODY = """
+            {"prefLabelLg1": "Famille", "prefLabelLg2": "Family"}
+            """;
 
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
@@ -135,7 +132,7 @@ class TestFamiliesResourcesEnvProd {
         var request = put("/operations/family/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content("{\"id\": \"1\"}");
+                .content(FAMILY_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
@@ -157,7 +154,7 @@ class TestFamiliesResourcesEnvProd {
         var request = post("/operations/family")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}");
+                        .content(FAMILY_BODY);
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));

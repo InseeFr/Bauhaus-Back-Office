@@ -24,9 +24,9 @@ public class GraphDBThemeRepository implements ThemeRepository {
     }
 
     @Override
-    public List<Theme> getThemes(String conceptSchemeFilter) throws ThemeFetchException {
+    public List<Theme> getThemes() throws ThemeFetchException {
         try {
-            var results = repositoryGestion.getResponseAsArray(themeQueries.getThemesQuery(conceptSchemeFilter));
+            var results = repositoryGestion.getResponseAsArray(themeQueries.getThemesQuery());
             return Arrays.stream(Deserializer.deserializeJSONArray(results, GraphDBTheme[].class))
                     .map(GraphDBTheme::toDomain)
                     .toList();

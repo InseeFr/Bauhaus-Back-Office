@@ -1,6 +1,6 @@
 SELECT DISTINCT ?id ?uri ?labelLg1 ?labelLg2 ?code ?typeTerritory ?dateCreation ?dateSuppression ?hasComposition
-FROM <${COG_GRAPH}>
-FROM <${GEO_SIMS_GRAPH}>
+FROM ${COG_GRAPH}
+FROM ${GEO_SIMS_GRAPH}
  WHERE { 
 		{	?uri igeo:nom ?labelLg1 .
 			?uri igeo:nom ?labelLg2 .
@@ -27,12 +27,12 @@ FROM <${GEO_SIMS_GRAPH}>
 	{
 			OPTIONAL {
 				?uri skos:prefLabel ?labelLg1 .
-				FILTER (lang(?labelLg1) = '${LG1}')
+				FILTER (lang(?labelLg1) = ${LG1})
 			}
 
 			OPTIONAL {
 				?uri skos:prefLabel ?labelLg2 .
-				FILTER (lang(?labelLg2) = '${LG2}')
+				FILTER (lang(?labelLg2) = ${LG2})
 			}
 
 			?uri a 	igeo:TerritoireStatistique .
@@ -63,8 +63,8 @@ FROM <${GEO_SIMS_GRAPH}>
 
 			BIND(EXISTS{?uri geo:union ?unionFeat}||EXISTS{?uri geo:difference ?diffFeat} AS ?hasComposition)
 			
-<#if uriFeature != "">
-			   FILTER (?uri = <${uriFeature}>)
+<#if uriFeature??>
+			   FILTER (?uri = ${uriFeature})
 </#if>
 		
 		}

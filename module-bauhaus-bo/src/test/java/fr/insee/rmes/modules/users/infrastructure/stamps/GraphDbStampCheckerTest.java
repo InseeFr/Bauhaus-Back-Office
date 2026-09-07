@@ -1,8 +1,8 @@
 package fr.insee.rmes.modules.users.infrastructure.stamps;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.domain.model.OrganisationOption;
-import fr.insee.rmes.domain.port.clientside.OrganisationService;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4GroupResponse;
@@ -117,6 +117,22 @@ class GraphDbStampCheckerTest {
         List<String> result = checker.getCreatorsStamps(RBAC.Module.DDI_PHYSICALINSTANCE, "fr.insee|group-id");
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void get_contributors_stamps_reports_a_fetch_failure_when_the_id_cannot_be_injected() throws Exception {
+        // Un identifiant qui ne peut pas être sérialisé en IRI fait échouer la construction de la
+        // requête : c'est un échec de récupération du timbre, pas un plantage du contrôle d'accès.
+        IRI structureIri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/structures/structure/1234");
+        when(structureQueries.getContributorsByStructureUri(structureIri.toString()))
+                .thenThrow(new IllegalArgumentException("Character forbidden in an IRI"));
+
+        try (MockedStatic<RdfUtils> mocked = mockStatic(RdfUtils.class)) {
+            mocked.when(() -> RdfUtils.objectIRI(ObjectType.STRUCTURE, "1234")).thenReturn(structureIri);
+
+            assertThatThrownBy(() -> checker.getContributorsStamps(RBAC.Module.STRUCTURE_STRUCTURE, "1234"))
+                    .isInstanceOf(StampFetchException.class);
+        }
     }
 
     @Test

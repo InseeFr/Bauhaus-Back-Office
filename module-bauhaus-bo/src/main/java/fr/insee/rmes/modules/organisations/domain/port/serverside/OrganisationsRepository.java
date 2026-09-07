@@ -1,5 +1,7 @@
 package fr.insee.rmes.modules.organisations.domain.port.serverside;
 
+import fr.insee.rmes.modules.commons.hexagonal.ServerSidePort;
+
 import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
 import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationSummary;
@@ -33,6 +35,7 @@ import java.util.Optional;
  * @see OrganisationFetchException
  * @since 4.17.0
  */
+@ServerSidePort
 public interface OrganisationsRepository {
 
     /**

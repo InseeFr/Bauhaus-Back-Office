@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.series.validation;
 
+import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.bauhaus_services.utils.OrganisationLookup;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -33,7 +34,7 @@ class SeriesDefaultValidatorTest {
     private OrganisationLookup organisationLookup;
 
     private SeriesDefaultValidator validator() {
-        return new SeriesDefaultValidator(repositoryGestion, "fr", "en", operationSeriesQueries, organisationLookup);
+        return new SeriesDefaultValidator(repositoryGestion, new BauhausLanguagesProperties("fr", "en"), operationSeriesQueries, organisationLookup);
     }
 
     private Series newSeries() {

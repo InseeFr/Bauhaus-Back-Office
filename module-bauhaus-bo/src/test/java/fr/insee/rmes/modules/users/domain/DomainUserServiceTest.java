@@ -19,11 +19,10 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import fr.insee.rmes.domain.auth.Source;
+import fr.insee.rmes.modules.users.domain.model.Source;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -111,7 +110,7 @@ class DomainUserServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result).contains(modulePrivileges);
         verify(userDecoder).fromPrincipal(principal);
-        verify(rbacFetcher).computePrivileges(eq(List.of("ADMIN", "USER")), eq(Source.INSEE));
+        verify(rbacFetcher).computePrivileges(List.of("ADMIN", "USER"), Source.INSEE);
     }
 
     @Test
@@ -148,7 +147,7 @@ class DomainUserServiceTest {
         Set<ModuleAccessPrivileges> result = userService.computePrivileges(principal);
 
         assertThat(result).isEmpty();
-        verify(rbacFetcher).computePrivileges(eq(List.of()), eq(Source.INSEE));
+        verify(rbacFetcher).computePrivileges(List.of(), Source.INSEE);
     }
 
     @Test

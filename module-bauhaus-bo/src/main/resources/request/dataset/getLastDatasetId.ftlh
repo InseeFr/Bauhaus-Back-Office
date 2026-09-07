@@ -1,5 +1,5 @@
 SELECT ?id
-FROM <${DATASET_GRAPH}>
+FROM ${DATASET_GRAPH}
 WHERE {
     ?s a dcat:Dataset ;
        dcterms:identifier ?idFull .

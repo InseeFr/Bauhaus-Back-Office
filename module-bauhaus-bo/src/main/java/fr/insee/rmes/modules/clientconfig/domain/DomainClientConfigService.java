@@ -3,6 +3,7 @@ package fr.insee.rmes.modules.clientconfig.domain;
 import fr.insee.rmes.modules.clientconfig.domain.model.ModuleConfig;
 import fr.insee.rmes.modules.clientconfig.domain.model.ClientConfigProperties;
 import fr.insee.rmes.modules.clientconfig.domain.port.clientside.ClientConfigService;
+import fr.insee.rmes.modules.shared_kernel.domain.model.ConfiguredLanguages;
 
 import java.util.List;
 
@@ -11,8 +12,7 @@ public class DomainClientConfigService implements ClientConfigService {
     private final String appHost;
     private final String maxLengthScopeNote;
     private final String defaultContributor;
-    private final String lg1;
-    private final String lg2;
+    private final ConfiguredLanguages languages;
     private final String env;
     private final List<ModuleConfig> modules;
     private final String version;
@@ -25,8 +25,7 @@ public class DomainClientConfigService implements ClientConfigService {
             String appHost,
             String maxLengthScopeNote,
             String defaultContributor,
-            String lg1,
-            String lg2,
+            ConfiguredLanguages languages,
             String env,
             List<ModuleConfig> modules,
             String version,
@@ -37,8 +36,7 @@ public class DomainClientConfigService implements ClientConfigService {
         this.appHost = appHost;
         this.maxLengthScopeNote = maxLengthScopeNote;
         this.defaultContributor = defaultContributor;
-        this.lg1 = lg1;
-        this.lg2 = lg2;
+        this.languages = languages;
         this.env = env;
         this.modules = modules;
         this.version = version;
@@ -54,8 +52,8 @@ public class DomainClientConfigService implements ClientConfigService {
                 appHost,
                 defaultContributor,
                 maxLengthScopeNote,
-                lg1,
-                lg2,
+                languages.lg1(),
+                languages.lg2(),
                 getAuthType(env),
                 modules,
                 version,

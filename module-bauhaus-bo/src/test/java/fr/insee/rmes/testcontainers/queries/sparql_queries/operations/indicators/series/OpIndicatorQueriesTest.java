@@ -1,5 +1,6 @@
 package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.indicators.series;
 
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.graphdb.RepositoryInitiator;
 import fr.insee.rmes.graphdb.RepositoryUtils;
@@ -15,6 +16,8 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -71,25 +74,17 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
         assertNotNull(results);
         assertEquals(2, results.length(), "Should return two linked series");
 
-        boolean hasS1221 = false;
-        boolean hasS1189 = false;
+        JSONUtils.stream(results)
+                .filter(serie -> "s1221".equals(serie.getString("id")) || "s1189".equals(serie.getString("id")))
+                .forEach(serie -> assertEquals("http://rdf.insee.fr/def/base#StatisticalOperationSeries",
+                                               serie.getString("typeOfObject")));
 
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject serie = results.getJSONObject(i);
-            String id = serie.getString("id");
-            if ("s1221".equals(id)) {
-                hasS1221 = true;
-                assertEquals("http://rdf.insee.fr/def/base#StatisticalOperationSeries",
-                             serie.getString("typeOfObject"));
-            } else if ("s1189".equals(id)) {
-                hasS1189 = true;
-                assertEquals("http://rdf.insee.fr/def/base#StatisticalOperationSeries",
-                             serie.getString("typeOfObject"));
-            }
-        }
+        List<String> serieIds = JSONUtils.stream(results)
+                .map(serie -> serie.getString("id"))
+                .toList();
 
-        assertTrue(hasS1221, "Should contain serie s1221");
-        assertTrue(hasS1189, "Should contain serie s1189");
+        assertTrue(serieIds.contains("s1221"), "Should contain serie s1221");
+        assertTrue(serieIds.contains("s1189"), "Should contain serie s1189");
     }
 
     @Test
@@ -133,17 +128,8 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
-    void should_return_indicators_for_search() throws Exception {
-        String query = operationIndicatorsQueries.indicatorsQueryForSearch();
-        JSONArray results = repositoryGestion.getResponseAsArray(query);
-
-        assertNotNull(results);
-        assertTrue(results.length() > 0, "Should return at least one indicator");
-    }
-
-    @Test
     void should_return_single_indicator_by_id() throws Exception {
-        String query = operationIndicatorsQueries.indicatorQuery("p1651", true);
+        String query = operationIndicatorsQueries.indicatorQuery("p1651");
 
         JSONArray results = repositoryGestion.getResponseAsArray(query);
 
@@ -162,19 +148,6 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
-    void should_return_indicator_with_rich_text_structure_flag_false() throws Exception {
-        String query = operationIndicatorsQueries.indicatorQuery("p1651", false);
-
-        JSONArray results = repositoryGestion.getResponseAsArray(query);
-
-        assertNotNull(results);
-        assertTrue(results.length() > 0, "Should return at least one result");
-
-        JSONObject result = results.getJSONObject(0);
-        assertTrue(result.length() > 0, "Result should have at least one property");
-    }
-
-    @Test
     void should_return_creators_for_indicator() throws Exception {
         String query = operationIndicatorsQueries.getCreatorsById("p1651");
         JSONArray results = repositoryGestion.getResponseAsArray(query);
@@ -185,16 +158,6 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
     @Test
     void should_return_publishers_for_indicator() throws Exception {
         String query = operationIndicatorsQueries.getPublishersById("p1651");
-        JSONArray results = repositoryGestion.getResponseAsArray(query);
-
-        assertNotNull(results);
-    }
-
-    @Test
-    void should_return_multiple_organizations_for_indicator() throws Exception {
-        IRI creator = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/terms/creator");
-
-        String query = operationIndicatorsQueries.getMultipleOrganizations("p1651", creator);
         JSONArray results = repositoryGestion.getResponseAsArray(query);
 
         assertNotNull(results);
@@ -254,21 +217,13 @@ class OpIndicatorQueriesTest extends WithGraphDBContainer {
         assertNotNull(results);
         assertEquals(3, results.length(), "Should return three seeAlso links");
 
-        boolean hasP1661 = false;
-        boolean hasP1623 = false;
-        boolean hasP1650 = false;
+        List<String> linkedIndicatorIds = JSONUtils.stream(results)
+                .map(linkedIndicator -> linkedIndicator.getString("id"))
+                .toList();
 
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject linkedIndicator = results.getJSONObject(i);
-            String id = linkedIndicator.getString("id");
-            if ("p1661".equals(id)) hasP1661 = true;
-            if ("p1623".equals(id)) hasP1623 = true;
-            if ("p1650".equals(id)) hasP1650 = true;
-        }
-
-        assertTrue(hasP1661, "Should contain linked indicator p1661");
-        assertTrue(hasP1623, "Should contain linked indicator p1623");
-        assertTrue(hasP1650, "Should contain linked indicator p1650");
+        assertTrue(linkedIndicatorIds.contains("p1661"), "Should contain linked indicator p1661");
+        assertTrue(linkedIndicatorIds.contains("p1623"), "Should contain linked indicator p1623");
+        assertTrue(linkedIndicatorIds.contains("p1650"), "Should contain linked indicator p1650");
     }
 
     @Test

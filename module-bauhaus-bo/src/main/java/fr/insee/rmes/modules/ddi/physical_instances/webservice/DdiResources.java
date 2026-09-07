@@ -2,30 +2,27 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.modules.commons.configuration.ConditionalOnModule;
 import fr.insee.rmes.modules.commons.security.PublicEndpoint;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi3Response;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Response;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnitResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialCodesList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PartialPhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.UpdatePhysicalInstanceRequest;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.exceptions.InvalidDdi4JsonException;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3toDDI4ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.CodeListSummaryResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PartialPhysicalInstanceResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceParentsResponse;
+import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.PhysicalInstanceSearchResponse;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.model.RBAC;
@@ -33,14 +30,10 @@ import fr.insee.rmes.modules.users.domain.model.User;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
 import fr.insee.rmes.modules.users.webservice.HasAccess;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +62,8 @@ public class DdiResources {
     private final DDIItemConvertService ddiItemConvertService;
     private final UserProvider userProvider;
     private final RbacFetcher rbacFetcher;
-    private final UriUtils uriUtils;
+    private final BauhausUriBuilder bauhausUriBuilder;
+    private final Ddi4SchemaService ddi4SchemaService;
 
     public DdiResources(
         DDIService ddiService,
@@ -78,7 +72,8 @@ public class DdiResources {
         DDIItemConvertService ddiItemConvertService,
         UserProvider userProvider,
         RbacFetcher rbacFetcher,
-        UriUtils uriUtils
+        BauhausUriBuilder bauhausUriBuilder,
+        Ddi4SchemaService ddi4SchemaService
     ) {
         this.ddiService = ddiService;
         this.ddi4toDdi3ConverterService = ddi4toDdi3ConverterService;
@@ -86,7 +81,8 @@ public class DdiResources {
         this.ddiItemConvertService = ddiItemConvertService;
         this.userProvider = userProvider;
         this.rbacFetcher = rbacFetcher;
-        this.uriUtils = uriUtils;
+        this.bauhausUriBuilder = bauhausUriBuilder;
+        this.ddi4SchemaService = ddi4SchemaService;
     }
 
     @GetMapping("/physical-instance")
@@ -121,6 +117,27 @@ public class DdiResources {
             .body(responses);
     }
 
+    @GetMapping("/physical-instance/search")
+    @HasAccess(
+        module = RBAC.Module.DDI_PHYSICALINSTANCE,
+        privilege = RBAC.Privilege.READ
+    )
+    public ResponseEntity<
+        List<PhysicalInstanceSearchResponse>
+    > searchPhysicalInstances() {
+        List<PhysicalInstanceSearchResponse> responses = resolveByReadStampStrategy(
+            ddiService::searchPhysicalInstancesFilteredByStamp,
+            ddiService::searchPhysicalInstances
+        )
+            .stream()
+            .map(PhysicalInstanceSearchResponse::fromDomain)
+            .toList();
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(responses);
+    }
+
     @GetMapping("/mutualized-codes-list")
     @HasAccess(
         module = RBAC.Module.DDI_PHYSICALINSTANCE,
@@ -146,7 +163,9 @@ public class DdiResources {
                 new CodeListSummaryResponse(
                     codesList.agency(),
                     codesList.id(),
-                    codesList.label()
+                    codesList.label(),
+                    codesList.name(),
+                    codesList.versionDate()
                 )
             )
             .toList();
@@ -368,19 +387,10 @@ public class DdiResources {
         module = RBAC.Module.DDI_PHYSICALINSTANCE,
         privilege = RBAC.Privilege.READ
     )
-    public ResponseEntity<String> getDdiSchema() throws IOException {
-        ClassPathResource resource = new ClassPathResource("ddi-schema.json");
-        String schema;
-        try (InputStream is = resource.getInputStream()) {
-            schema = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        // Remove BOM if present
-        if (schema.startsWith("\uFEFF")) {
-            schema = schema.substring(1);
-        }
+    public ResponseEntity<String> getDdiSchema() {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(schema);
+            .body(ddi4SchemaService.schemaDocument());
     }
 
     @GetMapping(
@@ -513,26 +523,48 @@ public class DdiResources {
         return DdiResponses.json(ddiService.getCodeList(agency, id, null));
     }
 
+    /**
+     * Endpoint #496 : {@code GET /ddi/operation/{id}/fichiers} renvoie le StudyUnit d'une opération
+     * en DDI 3.3 XML ou DDI 4 JSON selon la négociation de contenu (en-tête {@code Accept}), de manière
+     * cohérente avec les autres services DDI ({@code /ddi/item}, {@code /ddi/codelist}).
+     * <p>
+     * Depuis #1145 la sortie ne se limite plus au StudyUnit : les PhysicalInstances qu'il référence
+     * sont déréférencées et l'accompagnent — fragments d'une même {@code <FragmentInstance>} côté
+     * XML, items de l'enveloppe {@code topLevelReferences}/{@code items} côté JSON.
+     */
     @GetMapping(
-        value = "/public/operation/{id}/studyUnit",
+        value = "/public/operation/{id}/fichiers",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PublicEndpoint
-    public ResponseEntity<String> getOperationStudyUnitJson(
+    public ResponseEntity<Ddi4StudyUnitResponse> getOperationStudyUnitJson(
         @PathVariable(Constants.ID) String id
-    ) throws RmesException {
-        String operationIri = uriUtils.getCompleteUriPublication(
+    ) {
+        String operationIri = bauhausUriBuilder.getCompleteUriPublication(
             "operation",
             id
         );
-        return ddiService
-            .getStudyUnitXmlByOperationIri(operationIri)
-            .map(xml ->
-                ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(ddiItemConvertService.convert(xml).toString())
-            )
-            .orElse(ResponseEntity.notFound().build());
+
+        return DdiResponses.json(
+            ddiService.getStudyUnitByOperationIri(operationIri).orElse(null)
+        );
+    }
+
+    @GetMapping(
+        value = "/public/operation/{id}/fichiers",
+        produces = MediaType.APPLICATION_XML_VALUE
+    )
+    @PublicEndpoint
+    public ResponseEntity<String> getOperationStudyUnitXml(
+        @PathVariable(Constants.ID) String id
+    ) {
+        String operationIri = bauhausUriBuilder.getCompleteUriPublication(
+            "operation",
+            id
+        );
+        return DdiResponses.xml(
+            ddiService.getStudyUnitXmlByOperationIri(operationIri).orElse(null)
+        );
     }
 
     @PostMapping("/validate")
@@ -544,50 +576,22 @@ public class DdiResources {
         @RequestBody String jsonData
     ) {
         try {
-            // Load schema
-            ClassPathResource resource = new ClassPathResource(
-                "ddi-schema.json"
-            );
-            String schemaContent;
-            try (InputStream is = resource.getInputStream()) {
-                schemaContent = new String(
-                    is.readAllBytes(),
-                    StandardCharsets.UTF_8
-                );
-            }
-            // Remove BOM if present
-            if (schemaContent.startsWith("\uFEFF")) {
-                schemaContent = schemaContent.substring(1);
-            }
+            // Le DDI 4 circule déjà sous l'enveloppe du schéma ({topLevelReferences, items}) :
+            // rien à traduire ici. Le schéma est compilé une fois pour toutes par le validateur.
+            List<String> errors = ddi4SchemaService.validate(jsonData);
 
-            // Create schema factory and parse schema
-            JsonSchemaFactory factory = JsonSchemaFactory.getInstance(
-                SpecVersion.VersionFlag.V202012
-            );
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode schemaNode = mapper.readTree(schemaContent);
-            JsonSchema schema = factory.getSchema(schemaNode);
-
-            // Parse and validate JSON data
-            JsonNode jsonNode = mapper.readTree(jsonData);
-            Set<ValidationMessage> validationMessages = schema.validate(
-                jsonNode
-            );
-
-            if (validationMessages.isEmpty()) {
+            if (errors.isEmpty()) {
                 return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(ValidationResponse.success());
             } else {
-                List<String> errors = validationMessages
-                    .stream()
-                    .map(ValidationMessage::getMessage)
-                    .toList();
                 return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(ValidationResponse.failure(errors));
             }
-        } catch (Exception e) {
+        } catch (InvalidDdi4JsonException e) {
+            // Seul un document mal formé vaut un 400 : une panne de chargement du schéma doit
+            // remonter en 500 plutôt que de se déguiser en erreur de saisie.
             return ResponseEntity.badRequest()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(

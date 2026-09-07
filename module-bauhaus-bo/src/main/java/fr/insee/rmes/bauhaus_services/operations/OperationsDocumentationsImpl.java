@@ -12,7 +12,7 @@ import fr.insee.rmes.modules.operations.msd.domain.port.serverside.Documentation
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	private final DocumentationsUtils documentationsUtils;
 
-	private final ParentUtils ownersUtils;
+	private final OperationsParentRepository operationsParentRepository;
 
 	private final DocumentationRepository documentationRepository;
 
@@ -45,13 +45,13 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 										PublicationUtils publicationUtils,
 										@Value("classpath:bauhaus-sims.json") org.springframework.core.io.Resource simsDefaultValue,
 										DocumentationsUtils documentationsUtils,
-										ParentUtils ownersUtils,
+										OperationsParentRepository operationsParentRepository,
 										DocumentationRepository documentationRepository,
 										DocumentationQueries documentationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
 		this.simsDefaultValue = simsDefaultValue;
 		this.documentationsUtils = documentationsUtils;
-		this.ownersUtils = ownersUtils;
+		this.operationsParentRepository = operationsParentRepository;
 		this.documentationRepository = documentationRepository;
 		this.documentationQueries = documentationQueries;
 	}
@@ -98,7 +98,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
-		return ownersUtils.getDocumentationOwnersByIdSims(id);
+		return operationsParentRepository.getDocumentationOwnersByIdSims(id);
 	}
 
 

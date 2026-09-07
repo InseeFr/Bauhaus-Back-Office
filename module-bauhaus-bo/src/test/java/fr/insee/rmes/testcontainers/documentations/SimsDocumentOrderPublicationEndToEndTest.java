@@ -3,10 +3,11 @@ package fr.insee.rmes.testcontainers.documentations;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.domain.Roles;
+import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Roles;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.modules.users.domain.port.clientside.AccessPrivilegesCheckerService;
-import fr.insee.rmes.onion.infrastructure.graphdb.operations.GraphDBDocumentationRepository;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.GraphDBDocumentationRepository;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
@@ -152,9 +153,9 @@ class SimsDocumentOrderPublicationEndToEndTest extends WithGraphDBContainer {
         JSONArray published = repositoryPublication.getResponseAsArray(orderedListQuery);
 
         List<String> publishedDocs = new ArrayList<>(published.length());
-        for (int i = 0; i < published.length(); i++) {
-            publishedDocs.add(published.getJSONObject(i).getString("doc"));
-        }
+        JSONUtils.stream(published)
+                .map(row -> row.getString("doc"))
+                .forEach(publishedDocs::add);
 
         assertThat(publishedDocs)
                 .as("Les documents doivent être publiés dans le graphe de publication, "

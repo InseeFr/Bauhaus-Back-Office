@@ -37,7 +37,8 @@ public class ColecticaCacheConfiguration {
         );
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
             ColecticaCacheNames.MUTUALIZED_CODES_LISTS,
-            ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS
+            ColecticaCacheNames.MUTUALIZED_PACKAGE_CODE_LIST_REFS,
+            ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS
         );
         cacheManager.setCaffeine(Caffeine.newBuilder().expireAfterWrite(ttl));
         return cacheManager;

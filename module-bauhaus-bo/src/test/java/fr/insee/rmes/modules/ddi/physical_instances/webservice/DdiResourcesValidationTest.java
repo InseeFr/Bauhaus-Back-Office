@@ -4,7 +4,11 @@ import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI3t
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDI4toDDI3ConverterService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIItemConvertService;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.DDIService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.clientside.Ddi4SchemaService;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.port.serverside.Ddi4SchemaRepository;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.services.DomainDdi4SchemaService;
+import fr.insee.rmes.modules.ddi.physical_instances.infrastructure.schema.NetworkntDdi4SchemaValidator;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.modules.ddi.physical_instances.webservice.response.ValidationResponse;
 import fr.insee.rmes.modules.users.domain.port.serverside.RbacFetcher;
 import fr.insee.rmes.modules.users.infrastructure.UserProvider;
@@ -13,21 +17,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -55,7 +54,7 @@ class DdiResourcesValidationTest {
     private RbacFetcher rbacFetcher;
 
     @Mock
-    private UriUtils uriUtils;
+    private BauhausUriBuilder bauhausUriBuilder;
 
     private DdiResources ddiResources;
 
@@ -86,7 +85,11 @@ class DdiResourcesValidationTest {
 
     @BeforeEach
     void setUp() {
-        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, uriUtils);
+        // Le vrai schéma DDI 4 est joué par DdiResourcesSchemaValidationTest : ici on injecte un
+        // schéma bouchon, ce qui garde ces tests sur le comportement du endpoint.
+        Ddi4SchemaRepository schemaRepository = () -> TEST_SCHEMA;
+        ddiResources = new DdiResources(ddiService, ddi4toDdi3ConverterService, ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher, bauhausUriBuilder,
+                new DomainDdi4SchemaService(schemaRepository, new NetworkntDdi4SchemaValidator(schemaRepository)));
 
         // Setup mock request context
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -113,21 +116,14 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
 
-            ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.OK, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().valid());
-            assertEquals(0, result.getBody().errors().size());
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertTrue(result.getBody().valid());
+        assertEquals(0, result.getBody().errors().size());
     }
 
     @Test
@@ -148,21 +144,14 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
 
-            ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(validJson);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.OK, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertTrue(result.getBody().valid());
-            assertEquals(0, result.getBody().errors().size());
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertTrue(result.getBody().valid());
+        assertEquals(0, result.getBody().errors().size());
     }
 
     @Test
@@ -176,22 +165,14 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
 
-            ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().valid());
-            assertTrue(!result.getBody().errors().isEmpty());
-            assertTrue(result.getBody().errors().size() > 0);
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertFalse(result.getBody().valid());
+        assertFalse(result.getBody().errors().isEmpty());
     }
 
     @Test
@@ -205,21 +186,14 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
 
-            ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().valid());
-            assertTrue(result.getBody().errors().size() > 0);
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertFalse(result.getBody().valid());
+        assertFalse(result.getBody().errors().isEmpty());
     }
 
     @Test
@@ -239,25 +213,18 @@ class DdiResourcesValidationTest {
                 """;
 
         // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
 
-            ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(invalidJson);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().valid());
-            assertTrue(result.getBody().errors().size() > 0);
-            // The error message should mention the missing field (version)
-            String errorMessage = result.getBody().errors().get(0);
-            assertTrue(errorMessage.contains("required") || errorMessage.contains("version"),
-                    "Error message should mention 'required' or 'version', but was: " + errorMessage);
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertFalse(result.getBody().valid());
+        assertFalse(result.getBody().errors().isEmpty());
+        // The error message should mention the missing field (version)
+        String errorMessage = result.getBody().errors().get(0);
+        assertTrue(errorMessage.contains("required") || errorMessage.contains("version"),
+                "Error message should mention 'required' or 'version', but was: " + errorMessage);
     }
 
     @Test
@@ -266,42 +233,37 @@ class DdiResourcesValidationTest {
         String malformedJson = "{ invalid json }";
 
         // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+        ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(malformedJson);
 
-            ResponseEntity<ValidationResponse> result = ddiResources.validateDdi4(malformedJson);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().valid());
-            assertEquals(1, result.getBody().errors().size());
-            assertTrue(result.getBody().errors().get(0).startsWith("Invalid JSON:"));
-        }
+        // Then
+        assertNotNull(result);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertFalse(result.getBody().valid());
+        assertEquals(1, result.getBody().errors().size());
+        assertTrue(result.getBody().errors().get(0).startsWith("Invalid JSON:"));
     }
 
     @Test
-    void shouldGetDdiSchema() throws IOException {
-        // When
-        try (MockedConstruction<ClassPathResource> mockedResource = mockConstruction(ClassPathResource.class,
-                (mock, context) -> {
-                    when(mock.getInputStream())
-                            .thenReturn(new ByteArrayInputStream(TEST_SCHEMA.getBytes(StandardCharsets.UTF_8)));
-                })) {
+    void shouldServeTheSchemaDocument() {
+        ResponseEntity<String> result = ddiResources.getDdiSchema();
 
-            ResponseEntity<String> result = ddiResources.getDdiSchema();
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(TEST_SCHEMA, result.getBody());
+    }
 
-            // Then
-            assertNotNull(result);
-            assertEquals(HttpStatus.OK, result.getStatusCode());
-            assertNotNull(result.getBody());
-            assertFalse(result.getBody().isEmpty());
-            assertTrue(result.getBody().length() > 0);
-            assertTrue(result.getBody().contains("$schema"));
-        }
+    /**
+     * Un schéma illisible est une panne, pas une saisie fautive : le endpoint ne doit plus la
+     * maquiller en 400 comme le faisait son {@code catch (Exception)}.
+     */
+    @Test
+    void shouldNotDisguiseASchemaFailureAsAValidationError() {
+        Ddi4SchemaService failing = mock(Ddi4SchemaService.class);
+        when(failing.validate(any())).thenThrow(new IllegalStateException("Schéma DDI 4 illisible"));
+        DdiResources resources = new DdiResources(ddiService, ddi4toDdi3ConverterService,
+                ddi3toDdi4ConverterService, ddiItemConvertService, userProvider, rbacFetcher,
+                bauhausUriBuilder, failing);
+
+        assertThrows(IllegalStateException.class, () -> resources.validateDdi4("{}"));
     }
 }

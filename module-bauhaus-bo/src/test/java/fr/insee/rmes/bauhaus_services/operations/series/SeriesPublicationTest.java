@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
@@ -11,7 +11,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
-import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 class SeriesPublicationTest {
 
     @Mock
-    ParentUtils parentUtils;
+    OperationsParentRepository operationsParentRepository;
 
     @Mock
     PublicationUtils publicationUtils;
@@ -82,7 +82,7 @@ class SeriesPublicationTest {
 
     @BeforeEach
     void setUp() {
-        seriesPublication = new SeriesPublication(parentUtils, publicationUtils, repoGestion, repositoryPublication, operationSeriesQueries);
+        seriesPublication = new SeriesPublication(operationsParentRepository, publicationUtils, repoGestion, repositoryPublication, operationSeriesQueries);
         
         JSONObject familyJson = new JSONObject();
         familyJson.put(Constants.ID, "family123");
@@ -92,11 +92,38 @@ class SeriesPublicationTest {
     }
 
     @Test
+    void publishSeries_shouldThrowRmesBadRequestException_whenSeriesIsAlreadyPublished() throws RmesException {
+        String seriesId = "series123";
+
+        when(operationsParentRepository.getFamOpSerValidationStatus(seriesId)).thenReturn(ValidationStatus.VALIDATED.getValue());
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> seriesPublication.publishSeries(seriesId, seriesJson));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("Series: " + seriesId);
+        verify(repoGestion, never()).getConnection();
+    }
+
+    @Test
+    void publishSeries_shouldNotThrow_whenSeriesHasBeenModifiedSinceItsPublication() throws RmesException {
+        String seriesId = "series123";
+
+        when(operationsParentRepository.getFamOpSerValidationStatus(seriesId)).thenReturn(ValidationStatus.MODIFIED.getValue());
+        when(operationsParentRepository.getValidationStatus("family123")).thenReturn(ValidationStatus.UNPUBLISHED.getValue());
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> seriesPublication.publishSeries(seriesId, seriesJson));
+
+        assertThat(exception.getDetails()).contains("cannot be published before its family is published");
+    }
+
+    @Test
     void publishSeries_shouldThrowRmesBadRequestException_whenFamilyIsUnpublished() throws RmesException {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(ValidationStatus.UNPUBLISHED.getValue());
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(ValidationStatus.UNPUBLISHED.getValue());
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class)) {
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(ValidationStatus.UNPUBLISHED.getValue()))
@@ -114,7 +141,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
         when(repoGestion.getConnection()).thenReturn(repositoryConnection);
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
@@ -139,7 +166,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
         when(repoGestion.getConnection()).thenReturn(repositoryConnection);
 
         JSONArray operations = new JSONArray();
@@ -214,7 +241,7 @@ class SeriesPublicationTest {
 
         seriesPublication.transformSubjectAndObject(model, statement);
 
-        verify(publicationUtils, times(2)).tranformBaseURIToPublish(eq(resource));
+        verify(publicationUtils, times(2)).tranformBaseURIToPublish(resource);
         assertThat(model.size()).isEqualTo(1);
     }
 
@@ -223,7 +250,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
         when(repoGestion.getConnection()).thenReturn(repositoryConnection);
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);
@@ -245,7 +272,7 @@ class SeriesPublicationTest {
 
     @Test
     void constructor_shouldCreateInstanceWithAllDependencies() {
-        SeriesPublication publication = new SeriesPublication(parentUtils, publicationUtils, repoGestion, repositoryPublication, operationSeriesQueries);
+        SeriesPublication publication = new SeriesPublication(operationsParentRepository, publicationUtils, repoGestion, repositoryPublication, operationSeriesQueries);
         
         assertThat(publication).isNotNull();
     }
@@ -263,7 +290,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(Constants.UNDEFINED);
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(Constants.UNDEFINED);
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class)) {
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(Constants.UNDEFINED))
@@ -281,7 +308,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(ValidationStatus.MODIFIED.getValue());
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(ValidationStatus.MODIFIED.getValue());
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class)) {
             mockedPublicationUtils.when(() -> PublicationUtils.isUnublished(ValidationStatus.MODIFIED.getValue()))
@@ -299,7 +326,7 @@ class SeriesPublicationTest {
         String seriesId = "series123";
         String familyId = "family123";
 
-        when(parentUtils.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
+        when(operationsParentRepository.getValidationStatus(familyId)).thenReturn(ValidationStatus.VALIDATED.getValue());
         when(repoGestion.getConnection()).thenReturn(repositoryConnection);
 
         try (MockedStatic<PublicationUtils> mockedPublicationUtils = mockStatic(PublicationUtils.class);

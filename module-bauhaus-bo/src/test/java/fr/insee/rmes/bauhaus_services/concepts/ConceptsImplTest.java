@@ -2,23 +2,17 @@ package fr.insee.rmes.bauhaus_services.concepts;
 
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
 import fr.insee.rmes.domain.exceptions.RmesException;
-import fr.insee.rmes.domain.model.Language;
+import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
+import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
+import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.model.concepts.CollectionForExportOld;
-import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
-import fr.insee.rmes.modules.organisations.domain.model.CompactOrganisation;
-import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationsService;
-import fr.insee.rmes.modules.shared_kernel.domain.model.Lang;
-import fr.insee.rmes.modules.shared_kernel.domain.model.LocalisedLabel;
-import fr.insee.rmes.onion.domain.port.serverside.concepts.CollectionRepository;
+import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -39,6 +33,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -46,14 +42,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConceptsImplTest {
 
     @Mock
-    ConceptsUtils conceptsUtils;
+    LegacyConceptsRepository legacyConceptsRepository;
 
     @Mock
     RepositoryGestion repoGestion;
@@ -69,7 +64,7 @@ class ConceptsImplTest {
     CollectionRepository collectionRepository;
 
     @Mock
-    OrganisationsService organisationsService;
+    OrganisationService organisationService;
 
     @Mock
     ConceptConceptsQueries conceptConceptsQueries;
@@ -161,10 +156,10 @@ class ConceptsImplTest {
         assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, Language.lg2));
     }
     @Test
-    void exportConceptTest() throws RmesException, IOException, URISyntaxException, OrganisationFetchException {
+    void exportConceptTest() throws RmesException, IOException, URISyntaxException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, conceptsUtils, organisationsService, new ExportUtils(200, null), conceptConceptsQueries);
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(repoGestion, null, null, null, legacyConceptsRepository, organisationService, new ExportUtils(200, null), conceptConceptsQueries);
 
         ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, null, conceptsExportBuilder, null, null, 10, null, conceptConceptsQueries);
 
@@ -183,21 +178,17 @@ class ConceptsImplTest {
                     "conceptVersion": "2"
                 }
                 """);
-        SimpleValueFactory factory = SimpleValueFactory.getInstance();
-        IRI iri1 = factory.createIRI("http://example.org/organisation/SSM-SDES");
-        IRI iri2 = factory.createIRI("http://example.org/organisation/DG75-L201");
-        CompactOrganisation org1 = new CompactOrganisation(iri1, "SSM-SDES", new LocalisedLabel("SSM-SDES", Lang.FR));
-        CompactOrganisation org2 = new CompactOrganisation(iri2, "DG75-L201", new LocalisedLabel("DG75-L201", Lang.FR));
-
-        when(conceptsUtils.getConceptById(idConcept)).thenReturn(jsonConcept);
-        when(organisationsService.getCompactOrganisation("SSM-SDES")).thenReturn(org1);
-        when(organisationsService.getCompactOrganisation("DG75-L201")).thenReturn(org2);
+        when(legacyConceptsRepository.getConceptById(idConcept)).thenReturn(jsonConcept);
+        when(organisationService.getOrganisationsMap(List.of("SSM-SDES", "DG75-L201")))
+                .thenReturn(Map.of(
+                        "SSM-SDES", new OrganisationOption("SSM-SDES", "Service des données et études statistiques (SDES)"),
+                        "DG75-L201", new OrganisationOption("DG75-L201", "Division Concepts, harmonisation et nomenclatures")));
         when(repoGestion.getResponseAsArray(any())).thenReturn(new JSONArray());
         when(repoGestion.getResponseAsObject(any())).thenReturn(new JSONObject(
         """
                 {
                     "definitionLg2": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.<\\/p><\\/div>",
-                    "definitionLg1": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.<\\/p><\\/div>",
+                    "definitionLg1": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.<\\/p><ul><li>aucun diplôme :<ul><li>pas de scolarité<\\/li><li>scolarité jusqu'à la fin du collège<\\/li><\\/ul><\\/li><li>CAP, BEP<\\/li><\\/ul><\\/div>",
                     "editorialNoteLg1": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Les accidents corporels de la circulation sont définis par l'arrêté du 27 mars 2007 relatif aux conditions d'élaboration des statistiques relatives aux accidents corporels de la circulation.<\\/p><\\/div>",
                     "changeNoteLg1": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Ajout définition courte<\\/p><\\/div>",
                     "editorialNoteLg2": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Accidents involving bodily injury are defined by the order of 27 March 2007 relating to the conditions for compiling statistics on accidents involving bodily injury.<\\/p><\\/div>",

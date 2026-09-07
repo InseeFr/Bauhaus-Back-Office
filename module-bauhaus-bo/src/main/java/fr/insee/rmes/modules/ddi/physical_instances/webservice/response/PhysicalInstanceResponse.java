@@ -2,7 +2,7 @@ package fr.insee.rmes.modules.ddi.physical_instances.webservice.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.PhysicalInstance;
-import fr.insee.rmes.webservice.response.BaseResponse;
+import fr.insee.rmes.modules.commons.webservice.BaseResponse;
 
 public class PhysicalInstanceResponse extends BaseResponse<PhysicalInstanceResponse, PhysicalInstance> {
     public PhysicalInstanceResponse(PhysicalInstance domainObject) {

@@ -4,8 +4,11 @@ import fr.insee.rmes.colectica.client.auth.ColecticaCredentials;
 import fr.insee.rmes.colectica.client.dto.AuthenticationRequest;
 import fr.insee.rmes.colectica.client.dto.AuthenticationResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaCreateItemRequest;
+import fr.insee.rmes.colectica.client.dto.ColecticaAdvancedResponse;
+import fr.insee.rmes.colectica.client.dto.ColecticaItem;
 import fr.insee.rmes.colectica.client.dto.ColecticaItemResponse;
 import fr.insee.rmes.colectica.client.dto.ColecticaResponse;
+import fr.insee.rmes.colectica.client.dto.QueryAdvancedRequest;
 import fr.insee.rmes.colectica.client.dto.ColecticaSetItem;
 import fr.insee.rmes.colectica.client.dto.GetDescriptionsRequest;
 import fr.insee.rmes.colectica.client.dto.QueryRequest;
@@ -33,6 +36,8 @@ import java.util.function.Function;
  * the server root used by the token endpoint (e.g. {@code https://host}).
  */
 public class ColecticaClient {
+
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final RestClient restClient;
     private final String baseApiUrl;
@@ -63,10 +68,26 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "_query")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(new QueryRequest(itemTypes))
             .retrieve()
             .body(ColecticaResponse.class));
+    }
+
+    /**
+     * Searches items by type via {@code POST _query/advanced} (latest version), asking Colectica to
+     * include all per-item properties. Unlike {@link #query(List)}, the response carries the rich
+     * property bags — notably {@code DateProperties.versionDate} — see {@link ColecticaAdvancedItem}.
+     */
+    public ColecticaAdvancedResponse queryAdvanced(List<String> itemTypes) {
+        return withAuth(token -> restClient
+            .post()
+            .uri(baseApiUrl + "_query/advanced")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+            .body(new QueryAdvancedRequest(itemTypes))
+            .retrieve()
+            .body(ColecticaAdvancedResponse.class));
     }
 
     /**
@@ -77,7 +98,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "item/_getList")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(new GetDescriptionsRequest(identifiers))
             .retrieve()
             .body(ColecticaItemResponse[].class));
@@ -97,9 +118,24 @@ public class ColecticaClient {
         return withAuth(token -> restClient
             .get()
             .uri(finalUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .body(ColecticaItemResponse.class));
+    }
+
+    /**
+     * Deletes every version of an item via {@code DELETE item/{agency}/{id}} (URL-encoded segments).
+     */
+    public void deleteItem(String agency, String id) {
+        String url = baseApiUrl + "item/"
+            + URLEncoder.encode(agency, StandardCharsets.UTF_8) + "/"
+            + URLEncoder.encode(id, StandardCharsets.UTF_8);
+        withAuth(token -> restClient
+            .delete()
+            .uri(url)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+            .retrieve()
+            .toBodilessEntity());
     }
 
     /**
@@ -115,7 +151,7 @@ public class ColecticaClient {
         return withAuth(token -> restClient
             .get()
             .uri(finalUrl)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .body(ColecticaSetItem[].class));
     }
@@ -129,7 +165,7 @@ public class ColecticaClient {
         return withAuth(token -> restClient
             .get()
             .uri(baseApiUrl + "ddiset/" + agency + "/" + id)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .retrieve()
             .body(byte[].class));
     }
@@ -142,7 +178,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "item")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(request)
             .retrieve()
             .body(String.class));
@@ -156,7 +192,7 @@ public class ColecticaClient {
             .post()
             .uri(baseApiUrl + "item/_updateState")
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(request)
             .retrieve()
             .body(String.class));
@@ -185,10 +221,38 @@ public class ColecticaClient {
             .post()
             .uri(url)
             .contentType(MediaType.APPLICATION_JSON)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
             .body(query)
             .retrieve()
             .body(ItemReference[].class));
+        return response == null ? List.of() : List.of(response);
+    }
+
+    /**
+     * Same {@code _query/relationship/.../descriptions} call as {@link #findRelatedDescriptions}, but
+     * keeps the full description objects (with their {@code ItemName}/{@code Label} dictionaries)
+     * instead of collapsing them to bare {@link ItemReference}s. Use this when you need the related
+     * items' labels: it avoids a separate repository-wide label query, since the descriptions endpoint
+     * already returns them.
+     */
+    public List<ColecticaItem> findRelatedItems(
+        RelationshipDirection direction,
+        ItemReference target,
+        List<String> itemTypes
+    ) {
+        String url = baseApiUrl + "_query/relationship/" + direction.urlSegment() + "/descriptions";
+        RelationshipQuery query = new RelationshipQuery(
+            itemTypes,
+            new RelationshipQuery.TargetItem(target.agencyId(), target.identifier())
+        );
+        ColecticaItem[] response = withAuth(token -> restClient
+            .post()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+            .body(query)
+            .retrieve()
+            .body(ColecticaItem[].class));
         return response == null ? List.of() : List.of(response);
     }
 

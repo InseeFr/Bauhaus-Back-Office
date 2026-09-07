@@ -4,10 +4,10 @@ WHERE {
         ?classification rdf:type skos:ConceptScheme .
         FILTER(regex(str(?classification),'/codes/'))
         ?classification skos:prefLabel ?label .
-        FILTER (lang(?label) = '${LG1}')
+        FILTER (lang(?label) = ${LG1})
         OPTIONAL {
             ?classification skos:altLabel ?altLabels .
-            FILTER (lang(?altLabels) = '${LG1}')
+            FILTER (lang(?altLabels) = ${LG1})
         }
         BIND(STRBEFORE(STRAFTER(STR(?classification),'/codes/'), '/') AS ?id)
     }

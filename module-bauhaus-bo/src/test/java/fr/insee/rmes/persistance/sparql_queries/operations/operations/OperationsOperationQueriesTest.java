@@ -2,8 +2,6 @@ package fr.insee.rmes.persistance.sparql_queries.operations.operations;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
-import fr.insee.rmes.BauhausLanguagesProperties;
-import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.freemarker.FreeMarkerUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationsOperationQueries;
@@ -39,12 +37,10 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "op123".equals(map.get("ID")) &&
-                               "Test Operation".equals(map.get("LABEL")) &&
-                               "en".equals(map.get("LANG")) &&
-                               "/operations/operation/".equals(map.get("URI_PREFIX")) &&
+                        return "\"Test Operation\"@en".equals(map.get("LABEL")) &&
+                               "\"/operations/operation/op123\"".equals(map.get("URI_SUFFIX")) &&
                                "insee:StatisticalOperation".equals(map.get("TYPE")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH"));
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH"));
                     })));
         }
     }
@@ -62,9 +58,9 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperations.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                        return ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }
@@ -82,10 +78,10 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "op123".equals(map.get("ID")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                        return "\"/operations/operation/op123\"".equals(map.get("OPERATION_URI_SUFFIX")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }
@@ -103,10 +99,10 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/series/"), eq("getSeries.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "op123".equals(map.get("ID")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                        return "\"/operations/operation/op123\"".equals(map.get("OPERATION_URI_SUFFIX")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }
@@ -124,10 +120,10 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/series/"), eq("getOperationsWithoutSimsQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "series123".equals(map.get("ID")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                        return "\"/operations/serie/series123\"".equals(map.get("SERIES_URI_SUFFIX")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }
@@ -145,10 +141,10 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/series/"), eq("getOperationsWithSimsQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "series456".equals(map.get("ID")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                        return "\"/operations/serie/series456\"".equals(map.get("SERIES_URI_SUFFIX")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }
@@ -166,32 +162,18 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/series/"), eq("getSeriesWithSimsQuery.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "family789".equals(map.get("ID_FAMILY")) &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                        return "\"/operations/famille/family789\"".equals(map.get("FAMILY_URI_SUFFIX")) &&
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }
 
     @Test
-    void shouldHandleNullValuesInCheckPrefLabelUnicity() throws RmesException {
-        try (MockedStatic<FreeMarkerUtils> mockedFreeMarker = mockStatic(FreeMarkerUtils.class)) {
-            mockedFreeMarker.when(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"), any(Map.class)))
-                    .thenReturn("ASK { ?s skos:prefLabel ?value }");
-
-            String result = operationsOperationQueries.checkPrefLabelUnicity(null, null, null);
-
-            assertNotNull(result);
-            assertEquals("ASK { ?s skos:prefLabel ?value }", result);
-            mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("checkFamilyPrefLabelUnicity.ftlh"),
-                    argThat(params -> {
-                        Map<String, Object> map = (Map<String, Object>) params;
-                        return map.get("ID") == null &&
-                               map.get("LABEL") == null &&
-                               map.get("LANG") == null;
-                    })));
-        }
+    void shouldRejectNullValuesInCheckPrefLabelUnicity() {
+        assertThrows(IllegalArgumentException.class,
+                () -> operationsOperationQueries.checkPrefLabelUnicity(null, null, null));
     }
 
     @Test
@@ -207,7 +189,7 @@ class OperationsOperationQueriesTest {
             mockedFreeMarker.verify(() -> FreeMarkerUtils.buildRequest(eq("operations/"), eq("getOperation.ftlh"),
                     argThat(params -> {
                         Map<String, Object> map = (Map<String, Object>) params;
-                        return "".equals(map.get("ID"));
+                        return "\"/operations/operation/\"".equals(map.get("OPERATION_URI_SUFFIX"));
                     })));
         }
     }
@@ -226,9 +208,9 @@ class OperationsOperationQueriesTest {
                         return map.containsKey("OPERATIONS_GRAPH") &&
                                map.containsKey("LG1") &&
                                map.containsKey("LG2") &&
-                               GraphsPropertiesStub.stub().operationsGraph().equals(map.get("OPERATIONS_GRAPH")) &&
-                               "fr".equals(map.get("LG1")) &&
-                               "en".equals(map.get("LG2"));
+                               ("<" + GraphsPropertiesStub.stub().operationsGraph() + ">").equals(map.get("OPERATIONS_GRAPH")) &&
+                               "\"fr\"".equals(map.get("LG1")) &&
+                               "\"en\"".equals(map.get("LG2"));
                     })));
         }
     }

@@ -13,7 +13,7 @@ public record PhysicalInstanceParentsResponse(
 
     public static PhysicalInstanceParentsResponse fromDomain(PhysicalInstanceParents parents) {
         return new PhysicalInstanceParentsResponse(
-            new ParentRef(parents.studyUnitAgency(), parents.studyUnitId(), null),
+            new ParentRef(parents.studyUnitAgency(), parents.studyUnitId(), parents.studyUnitLabel()),
             new ParentRef(parents.groupAgency(), parents.groupId(), parents.groupLabel()),
             parents.stamps()
         );

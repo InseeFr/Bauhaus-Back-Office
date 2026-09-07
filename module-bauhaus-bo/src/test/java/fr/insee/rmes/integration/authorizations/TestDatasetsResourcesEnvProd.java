@@ -1,11 +1,15 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesExceptionHandler;
 import fr.insee.rmes.modules.commons.configuration.LogRequestFilter;
 import fr.insee.rmes.modules.users.domain.exceptions.MissingUserInformationException;
 import fr.insee.rmes.integration.AbstractResourcesEnvProd;
 import fr.insee.rmes.modules.datasets.datasets.webservice.DatasetResources;
 import fr.insee.rmes.config.auth.UserAuthTestConfiguration;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,10 +26,12 @@ import java.util.Collections;
 import java.util.stream.Stream;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -39,7 +45,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @Import({
         DatasetResources.class,
-        UserAuthTestConfiguration.class
+        UserAuthTestConfiguration.class,
+        RmesExceptionHandler.class
 })
 class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
 
@@ -165,6 +172,23 @@ class TestDatasetsResourcesEnvProd extends AbstractResourcesEnvProd {
         request.header("Authorization", "Bearer toto");
 
         mvc.perform(request).andExpect(status().is(code));
+    }
+
+    @Test
+    void shouldReturn400WhenDeletingANotUnpublishedDataset() throws Exception, MissingUserInformationException {
+        when(checker.hasAccess(any(), any(), any(), any())).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, Collections.emptyList());
+        doThrow(new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted"))
+                .when(datasetService).deleteDatasetId("1");
+
+        var request = delete("/datasets/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
+        request.header("Authorization", "Bearer toto");
+
+        mvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Only unpublished datasets can be deleted")));
     }
 
 

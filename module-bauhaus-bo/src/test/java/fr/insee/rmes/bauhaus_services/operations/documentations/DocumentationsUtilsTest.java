@@ -2,10 +2,10 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.OperationsParentRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ObjectType;
@@ -19,7 +19,7 @@ import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
-import fr.insee.rmes.onion.infrastructure.graphdb.operations.queries.DocumentationQueries;
+import fr.insee.rmes.modules.operations.msd.infrastructure.graphdb.DocumentationQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -60,7 +60,7 @@ class DocumentationsUtilsTest {
 
 
 	@Mock
-	private ParentUtils parentUtils;
+	private OperationsParentRepository operationsParentRepository;
 
 	@Mock
 	private DocumentationsRubricsUtils documentationsRubricsUtils;
@@ -80,7 +80,7 @@ class DocumentationsUtilsTest {
 	@BeforeEach
 	void initStaticGraphs() {
 		RdfUtils.setGraphs(GraphsPropertiesStub.stub());
-		RdfUtils.setUriUtils(new UriUtils("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
+		RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("http://bauhaus/publication/", "http://bauhaus/", p -> Optional.of("/operations")));
 	}
 
 	@Test
@@ -109,11 +109,24 @@ class DocumentationsUtilsTest {
 	}
 
 	@Test
+	void deleteMetadataReport_whenSimsDoesNotExist_shouldThrowNotFound() throws RmesException {
+		String id = "unknown";
+		when(documentationQueries.getDocumentationTitleQuery(id)).thenReturn("mock-title-query");
+		when(repoGestion.getResponseAsObject("mock-title-query")).thenReturn(new JSONObject());
+
+		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.deleteMetadataReport(id));
+
+		assertTrue(exception.getDetails().contains("Documentation not found"));
+	}
+
+	@Test
 	void deleteMetadataReport_shouldSucceed_regardlessOfTargetType() throws RmesException {
 		// La suppression d'un SIMS est désormais autorisée pour tout type de cible
 		// (série, opération ou indicateur) — cf. retrait de la contrainte "Only a sims
 		// that documents a series can be deleted".
 		String id = "2025";
+		when(documentationQueries.getDocumentationTitleQuery(id)).thenReturn("mock-title-query");
+		when(repoGestion.getResponseAsObject("mock-title-query")).thenReturn(new JSONObject().put(Constants.LABEL_LG1, "Sims"));
 		when(documentationQueries.deleteGraph(any(Resource.class))).thenReturn("delete-graph-query");
 		when(repoGestion.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
 		when(repositoryPublication.executeUpdate("delete-graph-query")).thenReturn(HttpStatus.OK);
@@ -127,7 +140,7 @@ class DocumentationsUtilsTest {
 	@Test
 	void shouldThrowRmesNotFoundExceptionIfParentTargetIsUnpublished() throws RmesException {
 		String[] target = {"series", ""};
-		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		when(operationsParentRepository.getDocumentationTargetTypeAndId("1")).thenReturn(target);
 		RmesException exception = assertThrows(RmesNotFoundException.class, () -> documentationsUtils.publishMetadataReport("1"));
 		assertTrue(exception.getDetails().contains("target not found for this Sims"));
 	}
@@ -135,10 +148,30 @@ class DocumentationsUtilsTest {
 	@Test
 	void shouldThrowRmesBadRequestExceptionIfParentTargetIsUnpublished() throws RmesException {
 		String[] target = {"series", "seriesExample"};
-		when(parentUtils.getDocumentationTargetTypeAndId("1")).thenReturn(target);
-		when(parentUtils.getValidationStatus("seriesExample")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
+		when(operationsParentRepository.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		givenMetadataReportState("1", ValidationStatus.UNPUBLISHED);
+		when(operationsParentRepository.getValidationStatus("seriesExample")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
 		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
 		assertTrue(exception.getDetails().contains("This metadataReport cannot be published before its target is published. "));
+	}
+
+	@Test
+	void shouldThrowRmesBadRequestExceptionIfMetadataReportIsAlreadyPublished() throws RmesException {
+		String[] target = {"series", "seriesExample"};
+		when(operationsParentRepository.getDocumentationTargetTypeAndId("1")).thenReturn(target);
+		givenMetadataReportState("1", ValidationStatus.VALIDATED);
+
+		RmesException exception = assertThrows(RmesBadRequestException.class, () -> documentationsUtils.publishMetadataReport("1"));
+
+		assertTrue(exception.getDetails().contains("\"code\":1301"));
+		assertTrue(exception.getDetails().contains("MetadataReport: 1"));
+		verify(documentationPublication, org.mockito.Mockito.never()).publishSims(anyString());
+	}
+
+	private void givenMetadataReportState(String id, ValidationStatus status) throws RmesException {
+		String query = "getPublicationState-" + id;
+		when(documentationQueries.getPublicationState(id)).thenReturn(query);
+		when(repoGestion.getResponseAsObject(query)).thenReturn(new JSONObject().put("state", status.getValue()));
 	}
 
 	@Test
@@ -161,7 +194,7 @@ class DocumentationsUtilsTest {
 		when(documentationsRubricsUtils.buildRubricFromJson(letterA,true)).thenReturn(docA);
 		when(documentationsRubricsUtils.buildRubricFromJson(letterB,true)).thenReturn(docB);
 		when(documentationsRubricsUtils.buildRubricFromJson(letterC,true)).thenReturn(docC);
-		when(parentUtils.getDocumentationTargetTypeAndId(anyString())).thenReturn(st);
+		when(operationsParentRepository.getDocumentationTargetTypeAndId(anyString())).thenReturn(st);
 
 		JSONObject jsonSims = new JSONObject()
 										.put("rubrics", alphabet)

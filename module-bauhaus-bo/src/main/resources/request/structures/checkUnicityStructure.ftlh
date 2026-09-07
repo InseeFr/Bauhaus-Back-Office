@@ -1,6 +1,6 @@
 ASK
-FROM<${STRUCTURES_COMPONENTS_GRAPH}>
-FROM<${STRUCTURES_GRAPH}>
+FROM${STRUCTURES_COMPONENTS_GRAPH}
+FROM${STRUCTURES_GRAPH}
 {
     FILTER(?nbComponent = ${NB_COMPONENT} && ?nbShared = ?nbComponent )
     {
@@ -12,13 +12,13 @@ FROM<${STRUCTURES_GRAPH}>
                 ?componentSpec (qb:attribute | qb:dimension | qb:measure) / dcterms:identifier ?id .
                 FILTER(
 <#list IDS as id>
-?id = "${id}" <#sep> ||
+?id = ${id} <#sep> ||
 </#list>
  )
             }
 <#if STRUCTURE_ID??>
             FILTER NOT EXISTS {
-                ?dsd dcterms:identifier '${STRUCTURE_ID}' .
+                ?dsd dcterms:identifier ${STRUCTURE_ID} .
             }
 </#if>
         }

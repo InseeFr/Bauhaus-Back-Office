@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.classifications;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.Constants;
+import fr.insee.rmes.GraphsProperties;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -40,10 +42,11 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 	private final ClassificationSeriesQueries classificationSeriesQueries;
 	private final ClassificationFamiliesQueries classificationFamiliesQueries;
 	private final ClassificationCorrespondencesQueries classificationCorrespondencesQueries;
+	private final GraphsProperties graphs;
 
 	static final Logger logger = LoggerFactory.getLogger(ClassificationsServiceImpl.class);
 
-	public ClassificationsServiceImpl(RepositoryGestion repoGestion, ClassificationRepository classificationUtils, ClassificationPublication classificationPublication, ClassificationsQueries classificationsQueries, ClassificationLevelsQueries classificationLevelsQueries, ClassificationSeriesQueries classificationSeriesQueries, ClassificationFamiliesQueries classificationFamiliesQueries, ClassificationCorrespondencesQueries classificationCorrespondencesQueries) {
+	public ClassificationsServiceImpl(RepositoryGestion repoGestion, ClassificationRepository classificationUtils, ClassificationPublication classificationPublication, ClassificationsQueries classificationsQueries, ClassificationLevelsQueries classificationLevelsQueries, ClassificationSeriesQueries classificationSeriesQueries, ClassificationFamiliesQueries classificationFamiliesQueries, ClassificationCorrespondencesQueries classificationCorrespondencesQueries, GraphsProperties graphs) {
 		this.repoGestion = repoGestion;
 		this.classificationUtils = classificationUtils;
 		this.classificationPublication = classificationPublication;
@@ -52,6 +55,7 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 		this.classificationSeriesQueries = classificationSeriesQueries;
 		this.classificationFamiliesQueries = classificationFamiliesQueries;
 		this.classificationCorrespondencesQueries = classificationCorrespondencesQueries;
+		this.graphs = graphs;
 	}
 
 	@Override
@@ -178,26 +182,45 @@ public class ClassificationsServiceImpl implements ClassificationsService {
 
 	@Override
 	public void setClassificationValidation(String classificationId) throws RmesException {
+		logger.debug("setClassificationValidation - starting publication of classification {}", classificationId);
 		//GET graph
 		JSONObject listGraph = repoGestion.getResponseAsObject(classificationsQueries.getGraphUriById(classificationId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
 		if (listGraph.isEmpty()) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classificationId);}
+		JSONObject classification = repoGestion.getResponseAsObject(classificationsQueries.classificationQuery(classificationId));
+		PublicationUtils.rejectIfAlreadyPublished("Classification", classificationId, classification.optString("validationState"));
+
 		String graph = listGraph.getString("graph");
 		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
+		logger.debug("setClassificationValidation - graphIri=[{}], classifUri=[{}]", graphIri, classifUriString);
 
 
 		//PUBLISH
 		classificationPublication.publishClassification(graphIri);
+		logger.debug("setClassificationValidation - publication completed for graph {}", graphIri);
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
+		// Le statut de validation est porté par le graphe des nomenclatures (= classifFamiliesGraph),
+		// celui que lisent getClassification et ClassificationRepository. L'écrire dans le graphe
+		// par-id le rendrait invisible du GET : la nomenclature publiée apparaîtrait sans état.
+		// objectValidation purge le validationState de tous les graphes avant d'appliquer ce modèle.
+		Resource validationGraph = RdfUtils.createIRI(graphs.classifFamiliesGraph());
 		Model model = new LinkedHashModel();
 		IRI classificationURI = RdfUtils.toURI(classifUriString);
-		model.add(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graphIri);
-		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graphIri);
-		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
+		model.add(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), validationGraph);
 		logger.info("Validate classification : {}", classifUriString);
-		repoGestion.objectValidation(classificationURI, model);
+		try {
+			repoGestion.objectValidation(classificationURI, model);
+		} catch (RmesException e) {
+			// La diffusion a réussi mais la gestion n'a pas pu être marquée : les deux dépôts divergent
+			// et rien ne rattrape l'écart automatiquement. On journalise de quoi rejouer l'opération.
+			logger.error("setClassificationValidation - INCONSISTENT STATE: classification {} was published from graph {} " +
+					"but the management repository could not be marked as {}. Publication and management repositories are out of sync; " +
+					"replay the validation for this classification.", classificationId, graphIri, ValidationStatus.VALIDATED, e);
+			throw e;
+		}
+		logger.debug("setClassificationValidation - validation state updated in the management repository for {}", classifUriString);
 
 	}
 }

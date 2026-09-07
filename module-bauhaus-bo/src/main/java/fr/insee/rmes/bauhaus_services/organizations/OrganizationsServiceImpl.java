@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.organizations;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.OperationsObjectMapper;
 import fr.insee.rmes.graphdb.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -24,32 +24,32 @@ import java.util.List;
 @Service
 public class OrganizationsServiceImpl  extends RdfService implements OrganizationsService {
 
-	private final OrganizationUtils organizationUtils;
+	private final OrganizationRepository organizationRepository;
 
-	private final FamOpeSerIndUtils famOpeSerUtils;
+	private final OperationsObjectMapper operationsObjectMapper;
 
 	private final OrganizationQueries organizationQueries;
 
 	public OrganizationsServiceImpl(RepositoryGestion repoGestion, IdGenerator idGenerator,
 									RepositoryPublication repositoryPublication,
 									PublicationUtils publicationUtils,
-									OrganizationUtils organizationUtils, FamOpeSerIndUtils famOpeSerUtils,
+									OrganizationRepository organizationRepository, OperationsObjectMapper operationsObjectMapper,
 									OrganizationQueries organizationQueries) {
 		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
-		this.organizationUtils = organizationUtils;
-		this.famOpeSerUtils = famOpeSerUtils;
+		this.organizationRepository = organizationRepository;
+		this.operationsObjectMapper = operationsObjectMapper;
 		this.organizationQueries = organizationQueries;
 	}
 	
 	@Override
 	public String getOrganizationJsonString(String organizationIdentifier) throws RmesException {
-		JSONObject orgaJson = organizationUtils.getOrganizationJson(organizationIdentifier);
+		JSONObject orgaJson = organizationRepository.getOrganizationJson(organizationIdentifier);
 		return QueryUtils.correctEmptyGroupConcat(orgaJson.toString());
 	}
 
 	@Override
 	public IdLabelTwoLangs getOrganization(String organizationIdentifier) throws RmesException {
-		return organizationUtils.buildOrganizationFromJson(organizationUtils.getOrganizationJson(organizationIdentifier));
+		return organizationRepository.buildOrganizationFromJson(organizationRepository.getOrganizationJson(organizationIdentifier));
 	}
 	
 
@@ -64,7 +64,7 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	@Override
 	public List<Organization> getOrganizations() throws RmesException {
 		JSONArray orgsJson = repoGestion.getResponseAsArray(organizationQueries.organizationsTwoLangsQuery());
-		List<Object> objects = 	famOpeSerUtils.buildObjectListFromJson(
+		List<Object> objects = 	operationsObjectMapper.buildObjectListFromJson(
 				orgsJson,
 				Organization.getClassOperationsLink());
 		List<Organization> result = new ArrayList<>();

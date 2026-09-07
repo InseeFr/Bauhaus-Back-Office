@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesMissingDocumentsException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.graphdb.ontologies.DCMITYPE;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
@@ -77,6 +78,13 @@ public class DocumentationPublication {
 		if (simsId == null || simsId.isBlank()) {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST,
 				"simsId cannot be null or empty", "Invalid SIMS ID");
+		}
+
+		// Pre-check before any write : if a referenced document is missing from storage,
+		// block the whole publication (no RDF write, no file copy) so production stays consistent.
+		Set<String> missingDocuments = documentsPublication.findMissingDocuments(simsId);
+		if (!missingDocuments.isEmpty()) {
+			throw new RmesMissingDocumentsException(missingDocuments);
 		}
 
 		Model model = new LinkedHashModel();

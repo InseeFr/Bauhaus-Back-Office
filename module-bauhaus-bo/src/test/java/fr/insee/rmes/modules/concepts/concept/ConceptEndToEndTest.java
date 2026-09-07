@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.concept;
 
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -239,6 +240,90 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
 
     @Test
     @Order(7)
+    @DisplayName("GET /concepts/advanced-search returns the altLabel of a concept")
+    void advanced_search_returns_alt_label() {
+        RestClient restClient = RestClient.create();
+
+        String conceptWithAltLabelJson = """
+                {
+                    "prefLabelLg1": "Concept E2E avec sigle",
+                    "prefLabelLg2": "E2E concept with acronym",
+                    "altLabelLg1": ["Sigle E2E"],
+                    "creator": "%s",
+                    "contributor": "%s",
+                    "disseminationStatus": "%s",
+                    "versionableNotes": [
+                        {"noteType": "scopeNoteLg1", "content": "<div>Note de portée FR</div>"}
+                    ]
+                }
+                """.formatted(CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS_PRIVE);
+
+        String id = restClient.post()
+                .uri(conceptsBaseUrl() + "/concept")
+                .body(conceptWithAltLabelJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        var listing = restClient.get()
+                .uri(conceptsBaseUrl() + "/advanced-search")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        JSONObject created = findById(new JSONArray(listing), id);
+        assertThat(created)
+                .as("advanced-search payload should reference newly created concept %s", id)
+                .isNotNull();
+        assertThat(created.optString("altLabel"))
+                .as("advanced-search entry must expose the concept altLabel so the front can filter on it")
+                .isEqualTo("Sigle E2E");
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("GET /concepts returns the altLabel of a concept")
+    void list_all_concepts_returns_alt_label() {
+        RestClient restClient = RestClient.create();
+
+        String conceptWithAltLabelJson = """
+                {
+                    "prefLabelLg1": "Concept E2E listé avec sigle",
+                    "prefLabelLg2": "E2E listed concept with acronym",
+                    "altLabelLg1": ["Sigle E2E liste"],
+                    "creator": "%s",
+                    "contributor": "%s",
+                    "disseminationStatus": "%s",
+                    "versionableNotes": [
+                        {"noteType": "scopeNoteLg1", "content": "<div>Note de portée FR</div>"}
+                    ]
+                }
+                """.formatted(CREATOR, CONTRIBUTOR, DISSEMINATION_STATUS_PRIVE);
+
+        String id = restClient.post()
+                .uri(conceptsBaseUrl() + "/concept")
+                .body(conceptWithAltLabelJson)
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        var listing = restClient.get()
+                .uri(conceptsBaseUrl())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
+
+        JSONObject created = findById(new JSONArray(listing), id);
+        assertThat(created)
+                .as("the concepts listing should reference newly created concept %s", id)
+                .isNotNull();
+        assertThat(created.optString("altLabel"))
+                .as("the concepts listing must expose the concept altLabel so the front can filter on it")
+                .isEqualTo("Sigle E2E liste");
+    }
+
+    @Test
+    @Order(9)
     @DisplayName("GET /concepts/concept/{id}/links returns a JSON array for a concept without links")
     void links_endpoint_returns_empty_array_for_isolated_concept() {
         RestClient restClient = RestClient.create();
@@ -261,7 +346,7 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     }
 
     @Test
-    @Order(8)
+    @Order(10)
     @DisplayName("GET /concepts/concept/export/{id} returns a downloadable document")
     void export_concept_returns_attachment() {
         RestClient restClient = RestClient.create();
@@ -290,7 +375,7 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     }
 
     @Test
-    @Order(9)
+    @Order(11)
     @DisplayName("POST /concepts/concept with a malformed JSON body returns a 4xx/5xx error")
     void post_concept_with_malformed_body_fails() {
         RestClient restClient = RestClient.create();
@@ -307,7 +392,7 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
     }
 
     @Test
-    @Order(10)
+    @Order(12)
     @DisplayName("DELETE /concepts/{id} removes an isolated concept and a subsequent GET returns 404")
     void delete_isolated_concept_then_get_returns_404() {
         RestClient restClient = RestClient.create();
@@ -334,13 +419,19 @@ class ConceptEndToEndTest extends WithGraphDBContainer {
                 .toBodilessEntity();
     }
 
+    private static JSONObject findById(JSONArray array, String id) {
+        return JSONUtils.streamValues(array)
+                .filter(JSONObject.class::isInstance)
+                .map(JSONObject.class::cast)
+                .filter(obj -> id.equals(obj.optString("id")))
+                .findFirst()
+                .orElse(null);
+    }
+
     private static boolean toValidateContainsId(JSONArray array, String id) {
-        for (int i = 0; i < array.length(); i++) {
-            Object item = array.get(i);
-            if (item instanceof JSONObject obj && id.equals(obj.optString("id"))) {
-                return true;
-            }
-        }
-        return false;
+        return JSONUtils.streamValues(array)
+                .filter(JSONObject.class::isInstance)
+                .map(JSONObject.class::cast)
+                .anyMatch(obj -> id.equals(obj.optString("id")));
     }
 }

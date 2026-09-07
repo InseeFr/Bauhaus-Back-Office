@@ -412,10 +412,10 @@
                                 <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Statut de diffusion : Public générique</text:p>
                             </text:list-item>
                             <text:list-item>
-                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre propriétaire : SSM-SDES</text:p>
+                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre propriétaire : Service des données et études statistiques (SDES)</text:p>
                             </text:list-item>
                             <text:list-item>
-                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre gestionnaire : DG75-L201</text:p>
+                                <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">Timbre gestionnaire : Division Concepts, harmonisation et nomenclatures</text:p>
                             </text:list-item>
                             <text:list-item>
                                 <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="InfoGeContent">État du concept : Provisoire</text:p>
@@ -553,6 +553,22 @@
                 <table:table-row>
                     <table:table-cell table:style-name="Tableau3Col.A1" office:value-type="string">
                         <text:p xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="ContentCellFr">Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.</text:p>
+                        <text:list xmlns:xhtml="http://www.w3.org/1999/xhtml" text:style-name="L1">
+                            <text:list-item>
+                                <text:p text:style-name="ContentCellFr">aucun diplôme :</text:p>
+                                <text:list>
+                                    <text:list-item>
+                                        <text:p text:style-name="ContentCellFr">pas de scolarité</text:p>
+                                    </text:list-item>
+                                    <text:list-item>
+                                        <text:p text:style-name="ContentCellFr">scolarité jusqu'à la fin du collège</text:p>
+                                    </text:list-item>
+                                </text:list>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="ContentCellFr">CAP, BEP</text:p>
+                            </text:list-item>
+                        </text:list>
                     </table:table-cell>
                     <table:table-cell office:value-type="string">
                         <text:p text:style-name="Standard"/>

@@ -1,0 +1,157 @@
+package fr.insee.rmes.bauhaus_services.notes;
+
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.Concept;
+import fr.insee.rmes.modules.concepts.concept.domain.model.notes.DatableNote;
+import fr.insee.rmes.modules.concepts.concept.domain.model.notes.VersionableNote;
+import fr.insee.rmes.graphdb.ontologies.EVOC;
+import fr.insee.rmes.graphdb.ontologies.INSEE;
+import fr.insee.rmes.graphdb.ontologies.PAV;
+import fr.insee.rmes.graphdb.ontologies.XKOS;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptNotesQueries;
+import fr.insee.rmes.json.JSONUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Component
+public class NotesRepository  extends RdfService {
+
+	private final ConceptNotesQueries conceptNotesQueries;
+
+	public NotesRepository(RepositoryGestion repoGestion, IdGenerator idGenerator,
+						   RepositoryPublication repositoryPublication,
+						   PublicationUtils publicationUtils,
+						   ConceptNotesQueries conceptNotesQueries) {
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+		this.conceptNotesQueries = conceptNotesQueries;
+	}
+
+	private static final String ONE = "1";
+	private static final String ZERO = "0";
+	
+
+	public void createRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model) {
+		IRI note = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
+		model.add(RdfUtils.conceptIRI(conceptId), versionableNote.getPredicat(), note, RdfUtils.conceptGraph());
+		model.add(note, RDF.TYPE, XKOS.EXPLANATORY_NOTE, RdfUtils.conceptGraph());
+		model.add(note, DCTERMS.LANGUAGE, RdfUtils.setLiteralLanguage(versionableNote.getLang()), RdfUtils.conceptGraph());
+		model.add(note, PAV.VERSION, RdfUtils.setLiteralInt(versionableNote.getVersion()), RdfUtils.conceptGraph());
+		model.add(note, INSEE.CONCEPT_VERSION, RdfUtils.setLiteralInt(versionableNote.getConceptVersion()), RdfUtils.conceptGraph());
+		model.add(note, INSEE.VALIDFROM, RdfUtils.setLiteralDateTime(versionableNote.getValidFrom()), RdfUtils.conceptGraph());
+		model.add(note, EVOC.NOTE_LITERAL, RdfUtils.setLiteralXML(XhtmlToMarkdownUtils.markdownToXhtml(versionableNote.getContent())), RdfUtils.conceptGraph());
+		model.add(note, RDF.VALUE, RdfUtils.setLiteralString(versionableNote.getContent()), RdfUtils.conceptGraph());
+	}
+	
+	public void closeRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
+		IRI noteURIPreviousVersion = RdfUtils.previousVersionableNoteIRI(conceptId, versionableNote);
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(conceptNotesQueries.isExist(noteURIPreviousVersion));
+		if (Boolean.TRUE.equals(isNoteExist)) {
+			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(conceptNotesQueries.isClosed(noteURIPreviousVersion));
+			if (Boolean.FALSE.equals(isNoteClosed)) {
+				model.add(noteURIPreviousVersion, INSEE.VALIDUNTIL, RdfUtils.setLiteralDateTime(LocalDateTime.now().toString()), RdfUtils.conceptGraph());
+			}
+		}
+	}
+	
+	public void keepNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
+		IRI conceptURI = RdfUtils.conceptIRI(conceptId);
+		IRI noteURI = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(conceptNotesQueries.isExist(noteURI));
+		if (Boolean.TRUE.equals(isNoteExist)) {
+			model.add(conceptURI, versionableNote.getPredicat(), noteURI, RdfUtils.conceptGraph());
+		}
+	}
+	
+	public void keepHistoricalNotes(String conceptId, String conceptVersion, Model model)  throws RmesException{
+		JSONArray notes = repoGestion.getResponseAsArray(
+				conceptNotesQueries.getHistoricalNotes(conceptId, conceptVersion));
+		JSONUtils.stream(notes).forEach(note -> {
+			IRI predicat = RdfUtils.toURI(note.getString("predicat"));
+			IRI noteURI = RdfUtils.toURI(note.getString("note"));
+			model.add(RdfUtils.conceptIRI(conceptId), predicat, noteURI, RdfUtils.conceptGraph());
+		});
+	}
+	
+	public void updateNoteConceptVersion(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
+		IRI noteURI = RdfUtils.versionableNoteIRI(conceptId, versionableNote);
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(conceptNotesQueries.isExist(noteURI));
+		if (Boolean.TRUE.equals(isNoteExist)) {
+			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(conceptNotesQueries.isClosed(noteURI));
+			if (Boolean.FALSE.equals(isNoteClosed)) {
+				String newConceptVersion = String.valueOf(Integer.parseInt(versionableNote.getConceptVersion()) + 1);
+				model.add(noteURI, INSEE.CONCEPT_VERSION, RdfUtils.setLiteralInt(newConceptVersion), RdfUtils.conceptGraph());
+			}
+		}
+	}
+
+	public void createRdfDatableNote(String conceptId, DatableNote datableNote, Model model) {
+		IRI note = RdfUtils.datableNoteIRI(conceptId, datableNote);
+		model.add(RdfUtils.conceptIRI(conceptId), datableNote.getPredicat(), note, RdfUtils.conceptGraph());
+		model.add(note, RDF.TYPE, XKOS.EXPLANATORY_NOTE, RdfUtils.conceptGraph());
+		model.add(note, DCTERMS.LANGUAGE, RdfUtils.setLiteralLanguage(datableNote.getLang()), RdfUtils.conceptGraph());
+		model.add(note, INSEE.CONCEPT_VERSION, RdfUtils.setLiteralInt(datableNote.getConceptVersion()), RdfUtils.conceptGraph());
+		model.add(note, DCTERMS.ISSUED, RdfUtils.setLiteralDateTime(datableNote.getIssued()), RdfUtils.conceptGraph());	
+		model.add(note, EVOC.NOTE_LITERAL, RdfUtils.setLiteralXML(datableNote.getContent()), RdfUtils.conceptGraph());
+		model.add(note, RDF.VALUE, RdfUtils.setLiteralString(datableNote.getContent()), RdfUtils.conceptGraph());
+	}
+	
+	public void deleteDatableNote(String conceptId, DatableNote datableNote, List<IRI> notesToDelete)  throws RmesException{
+		JSONObject noteToDelete = repoGestion.getResponseAsObject(conceptNotesQueries.getChangeNoteToDelete(conceptId, datableNote));
+		if (!noteToDelete.isEmpty()) {
+			notesToDelete.add(RdfUtils.toURI(noteToDelete.getString("changeNoteURI")));
+		}
+	}
+	
+	public String getVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException {
+		if (Boolean.TRUE.equals(concept.getCreation())) {
+			return ONE;
+		}
+		if (Boolean.FALSE.equals(concept.getVersioning())) {
+			return getLastVersion(concept, note, defaultVersion);
+		}
+		// A note left empty until now has no version to increment : it starts at 1, not at 2.
+		return String.valueOf(Integer.parseInt(getLastVersion(concept, note, ZERO)) + 1);
+	}
+	
+	public String getLastVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException{
+		if (Boolean.TRUE.equals(concept.getCreation())) {
+			return ONE;
+		} else {
+			JSONObject jsonVersion = repoGestion.getResponseAsObject(
+					conceptNotesQueries.getLastVersionnableNoteVersion(concept.getId(), note.getPredicat()));
+			if (jsonVersion.isEmpty()) {
+				return defaultVersion;
+			}
+			return  jsonVersion.getString("version");
+		}
+	}
+	
+	public String getConceptVersion(Concept concept)  throws RmesException{
+		String conceptVersion = ONE;
+		JSONObject jsonConceptVersion = repoGestion.getResponseAsObject(conceptNotesQueries.getConceptVersion(concept.getId()));
+		if (jsonConceptVersion.isEmpty()) {
+			return conceptVersion;
+		}
+		conceptVersion = jsonConceptVersion.getString("conceptVersion");
+		if (Boolean.TRUE.equals(concept.getVersioning())) {
+			conceptVersion = String.valueOf(Integer.parseInt(conceptVersion)+1) ;
+		}
+		return conceptVersion;
+		
+	}
+}

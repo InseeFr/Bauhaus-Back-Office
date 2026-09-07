@@ -1,7 +1,6 @@
 package fr.insee.rmes.model.operations.documentations;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

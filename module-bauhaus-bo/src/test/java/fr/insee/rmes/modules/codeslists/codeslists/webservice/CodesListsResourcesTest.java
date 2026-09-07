@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListKind;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.model.CodesListId;
+import fr.insee.rmes.modules.codeslists.codeslists.domain.port.clientside.CodesListsService;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.Id;
 import fr.insee.rmes.modules.commons.configuration.swagger.model.code_list.Page;
 import fr.insee.rmes.domain.exceptions.RmesException;
@@ -23,19 +25,31 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CodesListsResourcesTest {
+
+    private static final CodeRequest MOCKED_CODE = new CodeRequest("mocked code", "mocked labelLg1", "mocked labelLg2", null, null);
+
+    private static final CodesListRequest MOCKED_CODES_LIST = new CodesListRequest(
+            "mocked id", "mocked labelLg1", "mocked labelLg2", null, null,
+            "http://bauhaus/HIE000000", List.of(), "http://disseminationStatus",
+            "mocked-list-segment", "MockedClass", "mocked-code-segment", null);
+
     @Mock
     CodeListService codeListService;
+
+    @Mock
+    CodesListsService codesListsService;
 
     @InjectMocks
     CodesListsResources codeListsResources;
 
     @Test
-    void shouldReturnResponseWhenSetCodesList()  throws RmesException {
+    void shouldReturnResponseWhenSetCodesList() throws Exception {
         // Given
         MockHttpServletRequest req = new MockHttpServletRequest("POST", "/codeList");
         req.setServerName("localhost");
@@ -43,12 +57,12 @@ class CodesListsResourcesTest {
         req.setScheme("http");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(req));
 
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         String expectedId = "mocked-result";
-        when(codeListService.setCodesList("mocked body", CodeListKind.FULL)).thenReturn(expectedId);
+        when(codesListsService.create(any())).thenReturn(new CodesListId(expectedId));
 
         // When
-        ResponseEntity<String> response = myCodeListsResources.setCodesList("mocked body");
+        ResponseEntity<String> response = myCodeListsResources.setCodesList(MOCKED_CODES_LIST);
 
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -60,24 +74,24 @@ class CodesListsResourcesTest {
     }
 
     @Test
-    void shouldReturnResponseWhenUpdateCodesList()  throws RmesException {
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
-        when(codeListService.setCodesList("mocked id", "mocked body", CodeListKind.FULL)).thenReturn("mocked result");
-        String actual = myCodeListsResources.updateCodesList("mocked id", "mocked body").toString();
+    void shouldReturnResponseWhenUpdateCodesList() throws Exception {
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
+        when(codesListsService.update(any(), any())).thenReturn(new CodesListId("mocked id"));
+        String actual = myCodeListsResources.updateCodesList("mocked id", MOCKED_CODES_LIST).toString();
         Assertions.assertEquals("<200 OK OK,mocked id,[]>",actual);
     }
 
     @Test
     void shouldReturnResponseWhenDeleteCodeList()  throws RmesException {
         doNothing().when(codeListService).deleteCodeList("notation", CodeListKind.FULL);
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         String actual = myCodeListsResources.deleteCodeList("notation").toString();
         Assertions.assertEquals("<200 OK OK,[]>",actual);
     }
 
     @Test
     void shouldReturnResponseWhenGetDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         when(codeListService.getDetailedCodesListForSearch(CodeListKind.FULL)).thenReturn(null);
         String actual = myCodeListsResources.getDetailedCodesLisForSearch().toString();
         Assertions.assertEquals("<200 OK OK,[]>",actual);
@@ -85,7 +99,7 @@ class CodesListsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenGetDetailedCodesListByNotation() throws RmesException {
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         when(codeListService.getDetailedCodesList("mocked notation")).thenReturn(null);
         String actual = myCodeListsResources.getDetailedCodesListByNotation("mocked notation").toString();
         Assertions.assertEquals("<200 OK OK,[]>",actual);
@@ -93,7 +107,7 @@ class CodesListsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenGetPaginatedCodesForCodeList() throws RmesException {
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         when(codeListService.getCodesForCodeList("mocked notation",null,5,5,"mocked sort")).thenReturn(null);
         String actual = myCodeListsResources.getPaginatedCodesForCodeList("mocked notation",null,5,5,"mocked sort").toString();
         Assertions.assertEquals("<200 OK OK,[]>",actual);
@@ -101,7 +115,7 @@ class CodesListsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenDeleteCodeForCodeList() throws RmesException {
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         when(codeListService.deleteCodeFromCodeList("mocked notation", "mocked ")).thenReturn(null);
         String actual = myCodeListsResources.deleteCodeForCodeList("mocked notation", "mocked ").toString();
         Assertions.assertEquals("<200 OK OK,[]>",actual);
@@ -109,17 +123,17 @@ class CodesListsResourcesTest {
 
     @Test
     void shouldReturnResponseWhenUpdateCodeForCodeList() throws RmesException{
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
-        when(codeListService.updateCodeFromCodeList("mocked notation", "mocked code", "mocked body")).thenReturn("mocked result");
-        String actual = myCodeListsResources.updateCodeForCodeList("mocked notation", "mocked code", "mocked body").toString();
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
+        when(codeListService.updateCodeFromCodeList("mocked notation", "mocked code", MOCKED_CODE)).thenReturn("mocked result");
+        String actual = myCodeListsResources.updateCodeForCodeList("mocked notation", "mocked code", MOCKED_CODE).toString();
         Assertions.assertTrue(actual.startsWith("<200 OK OK"));
     }
 
     @Test
     void shouldReturnResponseWhenAddCodeForCodeList() throws RmesException {
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
-        when(codeListService.addCodeFromCodeList("mocked notation", "mocked body")).thenReturn("mocked result");
-        String actual = myCodeListsResources.addCodeForCodeList("mocked notation", "mocked body").toString();
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
+        when(codeListService.addCodeFromCodeList("mocked notation", MOCKED_CODE)).thenReturn("mocked result");
+        String actual = myCodeListsResources.addCodeForCodeList("mocked notation", MOCKED_CODE).toString();
         Assertions.assertTrue(actual.startsWith("<201 CREATED"));
     }
 
@@ -127,7 +141,7 @@ class CodesListsResourcesTest {
     void shouldReturnResponseWhenPublishFullCodeList() throws RmesException {
         Id id = new Id("mocked Id");
         doNothing().when(codeListService).publishCodeList("mocked Id", CodeListKind.FULL);
-        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService);
+        CodesListsResources myCodeListsResources= new CodesListsResources(codeListService, codesListsService);
         String actual = myCodeListsResources.publishFullCodeList(id).toString();
         Assertions.assertEquals("<200 OK OK,Id[identifier=mocked Id],[]>",actual);
     }
@@ -187,31 +201,31 @@ class CodesListsResourcesTest {
 
     @Test
     void shouldReturn200WithUpdateCodeForCodeList() throws RmesException {
-        when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenReturn("code1");
-        ResponseEntity<CodeListItem> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
+        when(codeListService.updateCodeFromCodeList("notation", "1", MOCKED_CODE)).thenReturn("code1");
+        ResponseEntity<CodeListItem> response = codeListsResources.updateCodeForCodeList("notation", "1", MOCKED_CODE);
         assertEquals("code1", response.getBody().getCode());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void shouldThrowErrorWithUpdateCodeForCodeList() throws RmesException {
-        when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
-        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.updateCodeForCodeList("notation", "1", "body"));
+        when(codeListService.updateCodeFromCodeList("notation", "1", MOCKED_CODE)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
+        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.updateCodeForCodeList("notation", "1", MOCKED_CODE));
         Assertions.assertEquals(500, exception.getStatus());
     }
 
     @Test
     void shouldReturn201WithAddCodeForCodeList() throws RmesException {
-        when(codeListService.addCodeFromCodeList("notation", "body")).thenReturn("id1");
-        ResponseEntity<CodeListItem> response = codeListsResources.addCodeForCodeList("notation", "body");
+        when(codeListService.addCodeFromCodeList("notation", MOCKED_CODE)).thenReturn("id1");
+        ResponseEntity<CodeListItem> response = codeListsResources.addCodeForCodeList("notation", MOCKED_CODE);
         assertEquals("id1", response.getBody().getCode());
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     @Test
     void shouldThrowErrorWithAddCodeForCodeList() throws RmesException {
-        when(codeListService.addCodeFromCodeList("notation", "body")).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
-        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.addCodeForCodeList("notation","body"));
+        when(codeListService.addCodeFromCodeList("notation", MOCKED_CODE)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "", ""));
+        RmesException exception = assertThrows(RmesException.class, () -> codeListsResources.addCodeForCodeList("notation", MOCKED_CODE));
         Assertions.assertEquals(500, exception.getStatus());
     }
 }

@@ -1,13 +1,13 @@
 SELECT ?labelLg1 ?labelLg2 ?altLabel ?acronym ?type ?motherOrganization ?linkedTo ?seeAlso
-FROM <${ORGANIZATIONS_GRAPH}>
-FROM <${ORGANIZATIONS_INSEE_GRAPH}>
+FROM ${ORGANIZATIONS_GRAPH}
+FROM ${ORGANIZATIONS_INSEE_GRAPH}
 WHERE {
-    ?organization adms:identifier '${IDENTIFIER}' .
+    ?organization adms:identifier ${IDENTIFIER} .
 
     OPTIONAL { ?organization skos:prefLabel ?labelLg1 .
-    FILTER (lang(?labelLg1) = '${LG1}')}
+    FILTER (lang(?labelLg1) = ${LG1})}
     OPTIONAL {?organization skos:prefLabel ?labelLg2 .
-    FILTER (lang(?labelLg2) = '${LG2}') }
+    FILTER (lang(?labelLg2) = ${LG2}) }
     OPTIONAL {?organization skos:altLabel ?altLabel .}
     OPTIONAL {?organization vaem:acronym ?acronym .}
 

@@ -9,7 +9,7 @@ import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.OperationSeriesQueries;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
-import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.json.JSONUtils;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,6 +35,17 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
     static void initData(){
         container.withTrigFiles("all-operations-and-indicators.trig");
         container.withTrigFiles("sims-all.trig");
+        container.withTrigFiles("a6-appariement-variables-it.trig");
+    }
+
+    @Test
+    void should_not_return_the_abstract_of_another_series() throws Exception {
+        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("sA6"));
+
+        assertThat(result.getString("prefLabelLg1")).hasToString("Série A6 (test)");
+        assertThat(result.has("abstractLg1"))
+                .as("le résumé doit être joint à la série interrogée, pas à une variable libre")
+                .isFalse();
     }
 
     @BeforeEach
@@ -56,7 +67,7 @@ class OperationSeriesQueriesTest extends WithGraphDBContainer {
 
     @Test
     void should_return_series() throws Exception {
-        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("s1226", false));
+        JSONObject result = repositoryGestion.getResponseAsObject(operationSeriesQueries.oneSeriesQuery("s1226"));
         assertThat(result.getString("validationState")).hasToString("Validated");
         assertThat(result.getString("altLabelLg1")).hasToString("EVA");
         assertThat(result.getString("altLabelLg2")).hasToString("EVA");

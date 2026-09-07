@@ -7,12 +7,12 @@ SELECT ?id ?altIdentifier ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrual
 ?validationState ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
 ?catalogRecordCreated ?catalogRecordUpdated ?catalogRecordCreator ?catalogRecordContributor
 
-FROM <${DATASET_GRAPH}>
-FROM <${ADMS_GRAPH}>
+FROM ${DATASET_GRAPH}
+FROM ${ADMS_GRAPH}
 WHERE {
     ?uri rdf:type dcat:Dataset .
     ?uri dcterms:identifier ?id .
-    ?uri dcterms:identifier '${ID}' .
+    ?uri dcterms:identifier ${ID} .
 
     <#include "getDatasetIncludes/generalInformations.ftlh">
 
@@ -23,37 +23,37 @@ WHERE {
     }
     OPTIONAL {
         ?uri dcat:landingPage ?landingPageLg2
-        FILTER (lang(?landingPageLg2) = '${LG2}') .
+        FILTER (lang(?landingPageLg2) = ${LG2}) .
     }
 
     OPTIONAL {
         ?uri dcterms:description ?descriptionLg1
-        FILTER (lang(?descriptionLg1) = '${LG1}') .
+        FILTER (lang(?descriptionLg1) = ${LG1}) .
     }
 
     OPTIONAL {
         ?uri dcterms:description ?descriptionLg2
-        FILTER (lang(?descriptionLg2) = '${LG2}') .
+        FILTER (lang(?descriptionLg2) = ${LG2}) .
     }
 
     OPTIONAL {
         ?uri dcterms:abstract ?abstractLg1
-        FILTER (lang(?abstractLg1) = '${LG1}') .
+        FILTER (lang(?abstractLg1) = ${LG1}) .
     }
 
     OPTIONAL {
         ?uri dcterms:abstract ?abstractLg2
-        FILTER (lang(?abstractLg2) = '${LG2}') .
+        FILTER (lang(?abstractLg2) = ${LG2}) .
     }
 
     OPTIONAL {
         ?uri skos:scopeNote ?cautionLg1
-        FILTER (lang(?cautionLg1) = '${LG1}') .
+        FILTER (lang(?cautionLg1) = ${LG1}) .
     }
 
     OPTIONAL {
         ?uri skos:scopeNote ?cautionLg2
-        FILTER (lang(?cautionLg2) = '${LG2}') .
+        FILTER (lang(?cautionLg2) = ${LG2}) .
     }
 
 

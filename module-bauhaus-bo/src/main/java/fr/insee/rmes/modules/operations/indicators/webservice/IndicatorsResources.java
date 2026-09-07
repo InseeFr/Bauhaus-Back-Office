@@ -58,14 +58,6 @@ public class IndicatorsResources {
 	}
 
 	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
-	@GetMapping(value="/indicators/advanced-search", produces=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
-		String indicators = operationsService.getIndicatorsForSearch();
-		return ResponseEntity.status(HttpStatus.OK).body(indicators);
-
-	}
-
-	@HasAccess(module = RBAC.Module.OPERATION_INDICATOR, privilege = RBAC.Privilege.READ)
 	@GetMapping(value="/indicator/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<Object> getIndicatorByID(
             @PathVariable(Constants.ID) String id,

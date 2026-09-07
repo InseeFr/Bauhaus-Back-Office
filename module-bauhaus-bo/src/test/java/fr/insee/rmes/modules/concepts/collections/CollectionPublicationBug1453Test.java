@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections;
 
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestClient;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,9 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * « Quand je publie une collection, l'état de la collecte n'est pas modifié ».
  *
  * Cause racine : `RdfUtils.collectionIRI` produit une IRI doublée
- * (`http://bauhaus/http://bauhaus/...`) car `UriUtils.getBaseUriGestion(COLLECTION)`
+ * (`http://bauhaus/http://bauhaus/...`) car `BauhausUriBuilder.getBaseUriGestion(COLLECTION)`
  * concatène `baseUriGestion` avec une `baseURI` qui le contient déjà. Côté legacy,
- * `CollectionsUtils.collectionsValidation` et `ConceptsPublication.publishCollection`
+ * `LegacyCollectionsRepository.collectionsValidation` et `ConceptsPublication.publishCollection`
  * écrivaient donc à la mauvaise IRI ; les triplets `isValidated true` n'étaient
  * jamais lisibles ni dans le graphe gestion ni dans le graphe publication.
  *
@@ -140,19 +142,15 @@ class CollectionPublicationBug1453Test extends WithGraphDBContainer {
     }
 
     private static void assertCollectionInDashboard(JSONArray dashboard, String id, String expectedValidationState, int expectedCount) {
-        long matches = 0;
-        for (int i = 0; i < dashboard.length(); i++) {
-            JSONObject row = dashboard.getJSONObject(i);
-            if (id.equals(row.getString("id"))) {
-                matches++;
-                assertThat(row.getString("validationState"))
-                        .as("validationState for collection %s", id)
-                        .isEqualTo(expectedValidationState);
-            }
-        }
-        assertThat(matches)
+        List<JSONObject> matchingRows = JSONUtils.stream(dashboard)
+                .filter(row -> id.equals(row.getString("id")))
+                .toList();
+        matchingRows.forEach(row -> assertThat(row.getString("validationState"))
+                .as("validationState for collection %s", id)
+                .isEqualTo(expectedValidationState));
+        assertThat(matchingRows)
                 .as("Number of rows for collection %s in dashboard (duplicates indicate duplicated validationState triples — bug #1453)", id)
-                .isEqualTo(expectedCount);
+                .hasSize(expectedCount);
     }
 
     private static String askValidatedWithPrefix(String collectionId, String prefix) {

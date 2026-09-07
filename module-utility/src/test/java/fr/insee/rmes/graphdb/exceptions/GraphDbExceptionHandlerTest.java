@@ -1,5 +1,7 @@
 package fr.insee.rmes.graphdb.exceptions;
 
+import fr.insee.rmes.graphdb.RepositoryInitiator;
+import org.eclipse.rdf4j.http.protocol.UnauthorizedException;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,18 @@ class GraphDbExceptionHandlerTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals(errorMessage, response.getBody());
+    }
+
+    @Test
+    void shouldReturnAnExplicitBodyWhenGraphDbAnswersUnauthorized() {
+        GraphDbUnauthorizedException unauthorized = new GraphDbUnauthorizedException(
+                new UnauthorizedException(), "SELECT * WHERE { ?s ?p ?o }", RepositoryInitiator.Type.DISABLED);
+
+        ResponseEntity<String> response = handler.genericInternalServerException(unauthorized);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertTrue(response.getBody().contains("401"));
+        assertTrue(response.getBody().contains("fr.insee.rmes.bauhaus.rdf.auth=DISABLED"));
     }
 
     @Test

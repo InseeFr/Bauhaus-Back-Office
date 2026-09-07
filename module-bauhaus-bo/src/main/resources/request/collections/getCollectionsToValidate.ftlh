@@ -6,6 +6,6 @@ WHERE {
     ?collection dc:creator ?creator .
     ?collection insee:validationState ?validationState .
     FILTER(?validationState != 'Validated') .
-    FILTER (lang(?label) = '${LG1}')
+    FILTER (lang(?label) = ${LG1})
 }
 ORDER BY ?label

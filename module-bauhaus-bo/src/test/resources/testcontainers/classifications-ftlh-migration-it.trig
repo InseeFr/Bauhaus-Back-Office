@@ -1,0 +1,94 @@
+# Fixture dédiée aux requêtes de nomenclatures migrées de la concaténation Java vers FreeMarker :
+#   - classifications/families/getFamily.ftlh          (familyQuery)
+#   - classifications/families/getFamilyMembers.ftlh   (familyMembersQuery)
+#   - classifications/series/getOneSeries.ftlh         (oneSeriesQuery)
+#   - classifications/series/getSeriesMembers.ftlh     (seriesMembersQuery)
+#   - classifications/getClassificationLevel.ftlh      (levelQuery)
+#   - classifications/getClassificationLevelMembers.ftlh (levelMembersQuery)
+#
+# Les IRIs reproduisent les formes exigées par les BIND/FILTER de ces templates :
+#   - famille : .../codes/familleDeNomenclatures/<id>   (BIND STRAFTER '/codes/familleDeNomenclatures/')
+#   - série   : .../codes/serieDeNomenclatures/<id>     (BIND STRAFTER '/codes/serieDeNomenclatures/')
+#   - nomenclature : .../codes/<idClassif>/            (BIND STRBEFORE(STRAFTER '/codes/', '/'))
+#   - niveau  : .../codes/<idClassif>/<idNiveau>       (FILTER STRENDS '/codes/<id>/<niveau>')
+#
+# La liste rdf:first/rdf:rest chaîne les deux niveaux : c'est elle qui alimente
+# ?narrowerLg1/?broaderLg1 dans getClassificationLevel.ftlh.
+#
+# IRIs suffixées « Mig » et uniques : le conteneur GraphDB est partagé entre classes de test,
+# et plusieurs de ces requêtes interrogent le graphe par défaut (union de tous les graphes).
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix xkos:    <http://rdf-vocabulary.ddialliance.org/xkos#> .
+@prefix dc:      <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix evoc:    <http://eurovoc.europa.eu/schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+<http://rdf.insee.fr/graphes/codes/nomenclatures> {
+
+  <http://rdf.insee.fr/codes/familleDeNomenclatures/famMig>
+      skos:prefLabel "Famille migration (test)"@fr ;
+      skos:prefLabel "Migration family (test)"@en .
+
+  <http://rdf.insee.fr/codes/serieDeNomenclatures/serMig>
+      skos:prefLabel "Serie migration (test)"@fr ;
+      skos:prefLabel "Migration series (test)"@en ;
+      skos:altLabel  "SerMig court (test)"@fr ;
+      skos:altLabel  "SerMig short (test)"@en ;
+      dc:subject     "Sujet migration (test)" ;
+      dc:publisher   "Insee migration (test)" ;
+      xkos:covers    "Champ migration (test)" ;
+      skos:scopeNote <http://rdf.insee.fr/codes/serieDeNomenclatures/serMig/note/fr> ;
+      skos:scopeNote <http://rdf.insee.fr/codes/serieDeNomenclatures/serMig/note/en> ;
+      xkos:belongsTo <http://rdf.insee.fr/codes/familleDeNomenclatures/famMig> .
+
+  <http://rdf.insee.fr/codes/serieDeNomenclatures/serMig/note/fr>
+      dcterms:language  "fr"^^xsd:language ;
+      evoc:noteLiteral  "Remarque migration (fr)" .
+
+  <http://rdf.insee.fr/codes/serieDeNomenclatures/serMig/note/en>
+      dcterms:language  "en"^^xsd:language ;
+      evoc:noteLiteral  "Remarque migration (en)" .
+
+  <http://rdf.insee.fr/codes/clsMig/>
+      a skos:ConceptScheme ;
+      skos:prefLabel "Nomenclature migration (test)"@fr ;
+      skos:prefLabel "Migration classification (test)"@en ;
+      xkos:belongsTo <http://rdf.insee.fr/codes/serieDeNomenclatures/serMig> .
+
+  <http://rdf.insee.fr/codes/clsMig/lvlMig1>
+      a xkos:ClassificationLevel ;
+      skos:prefLabel       "Niveau 1 migration (test)"@fr ;
+      skos:prefLabel       "Level 1 migration (test)"@en ;
+      xkos:depth           "1"^^xsd:int ;
+      skos:notation        "N1MIG" ;
+      xkos:notationPattern "[0-9]{2}" ;
+      skos:member          <http://rdf.insee.fr/codes/clsMig/item1> ;
+      skos:member          <http://rdf.insee.fr/codes/clsMig/item2> .
+
+  <http://rdf.insee.fr/codes/clsMig/lvlMig2>
+      a xkos:ClassificationLevel ;
+      skos:prefLabel       "Niveau 2 migration (test)"@fr ;
+      skos:prefLabel       "Level 2 migration (test)"@en ;
+      xkos:depth           "2"^^xsd:int ;
+      skos:notation        "N2MIG" ;
+      xkos:notationPattern "[0-9]{4}" .
+
+  _:nodeMig1 rdf:first <http://rdf.insee.fr/codes/clsMig/lvlMig1> ;
+             rdf:rest  _:nodeMig2 .
+  _:nodeMig2 rdf:first <http://rdf.insee.fr/codes/clsMig/lvlMig2> ;
+             rdf:rest  rdf:nil .
+
+  <http://rdf.insee.fr/codes/clsMig/item1>
+      a skos:Concept ;
+      skos:prefLabel "Poste 1 migration (test)"@fr ;
+      skos:prefLabel "Item 1 migration (test)"@en ;
+      skos:notation  "01MIG" .
+
+  <http://rdf.insee.fr/codes/clsMig/item2>
+      a skos:Concept ;
+      skos:prefLabel "Poste 2 migration (test)"@fr ;
+      skos:prefLabel "Item 2 migration (test)"@en ;
+      skos:notation  "02MIG" .
+}

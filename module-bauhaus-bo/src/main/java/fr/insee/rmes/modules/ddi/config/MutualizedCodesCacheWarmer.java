@@ -47,6 +47,11 @@ public class MutualizedCodesCacheWarmer {
     }
 
     private void warmUp() {
+        warmUpMutualizedCodesLists();
+        warmUpPhysicalInstanceSearchRows();
+    }
+
+    private void warmUpMutualizedCodesLists() {
         logger.info("Mutualized codes list cache warm-up started");
         long startedAt = System.currentTimeMillis();
         try {
@@ -55,6 +60,25 @@ public class MutualizedCodesCacheWarmer {
                 count, System.currentTimeMillis() - startedAt);
         } catch (RuntimeException e) {
             logger.warn("Mutualized codes list cache warm-up failed after {} ms; "
+                + "the cache will be loaded lazily on the first request: {}",
+                System.currentTimeMillis() - startedAt, e.getMessage());
+        }
+    }
+
+    /**
+     * Pré-charge le cache des lignes de recherche avancée d'instances physiques : la descente
+     * Colectica Group → StudyUnit → PhysicalInstance est coûteuse, on la paie une fois au démarrage
+     * plutôt qu'à la première ouverture de la page de recherche.
+     */
+    private void warmUpPhysicalInstanceSearchRows() {
+        logger.info("Physical instance search rows cache warm-up started");
+        long startedAt = System.currentTimeMillis();
+        try {
+            int count = ddiRepository.getPhysicalInstanceSearchRows().size();
+            logger.info("Physical instance search rows cache warm-up finished: {} rows loaded in {} ms",
+                count, System.currentTimeMillis() - startedAt);
+        } catch (RuntimeException e) {
+            logger.warn("Physical instance search rows cache warm-up failed after {} ms; "
                 + "the cache will be loaded lazily on the first request: {}",
                 System.currentTimeMillis() - startedAt, e.getMessage());
         }

@@ -1,5 +1,6 @@
 package fr.insee.rmes.modules.concepts.collections;
 
+import fr.insee.rmes.json.JSONUtils;
 import fr.insee.rmes.testcontainers.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.DisplayName;
@@ -49,13 +50,8 @@ class LegacyCollectionIdReadTest extends WithGraphDBContainer {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         JSONArray rows = new JSONArray(response.getBody());
-        boolean foundLegacy = false;
-        for (int i = 0; i < rows.length(); i++) {
-            if ("Legacy_collection_001".equals(rows.getJSONObject(i).getString("id"))) {
-                foundLegacy = true;
-                break;
-            }
-        }
+        boolean foundLegacy = JSONUtils.stream(rows)
+                .anyMatch(row -> "Legacy_collection_001".equals(row.getString("id")));
         assertThat(foundLegacy)
                 .as("La collection legacy 'Legacy_collection_001' (ID avec underscore) doit être listée comme les autres")
                 .isTrue();

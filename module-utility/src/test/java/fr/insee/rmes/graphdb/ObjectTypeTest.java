@@ -2,6 +2,8 @@ package fr.insee.rmes.graphdb;
 
 import fr.insee.rmes.Constants;
 import fr.insee.rmes.graphdb.ontologies.INSEE;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
@@ -13,6 +15,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ObjectTypeTest {
+
+    private static final IRI UNKNOWN_URI = SimpleValueFactory.getInstance().createIRI("urn:example:example");
 
     @Test
     void shouldGetEnumByLabel() {
@@ -49,6 +53,7 @@ class ObjectTypeTest {
     @Test
     void shouldReturnUndefinedForUnknownUri() {
         assertEquals(ObjectType.UNDEFINED, ObjectType.getEnum(null));
+        assertEquals(ObjectType.UNDEFINED, ObjectType.getEnum(UNKNOWN_URI));
     }
 
     @Test
@@ -63,6 +68,7 @@ class ObjectTypeTest {
     @Test
     void shouldReturnUndefinedLabelForUnknownUri() {
         assertEquals(Constants.UNDEFINED, ObjectType.getLabelType(null));
+        assertEquals(Constants.UNDEFINED, ObjectType.getLabelType(UNKNOWN_URI));
     }
 
     @Test

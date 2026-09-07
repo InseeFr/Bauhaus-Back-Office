@@ -6,7 +6,7 @@ import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetQueries;
 import fr.insee.rmes.persistance.sparql_queries.datasets.DatasetDistributionQueries;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesRepository;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -38,12 +38,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class DatasetServiceImplTest {
 
-    private SeriesUtils seriesUtils;
+    private SeriesRepository seriesRepository;
     private IdGenerator idGenerator;
     private PublicationUtils publicationUtils;
     private RepositoryGestion repositoryGestion;
@@ -59,7 +60,7 @@ class DatasetServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        seriesUtils = mock(SeriesUtils.class);
+        seriesRepository = mock(SeriesRepository.class);
         idGenerator = mock(IdGenerator.class);
         publicationUtils = mock(PublicationUtils.class);
         repositoryGestion = mock(RepositoryGestion.class);
@@ -73,7 +74,7 @@ class DatasetServiceImplTest {
                 mock(RepositoryPublication.class),
                 new BauhausLanguagesProperties("fr", "en"),
                 publicationUtils,
-                seriesUtils,
+                seriesRepository,
                 datasetQueries,
                 datasetDistributionQueries,
                 organizationsService,
@@ -317,7 +318,7 @@ class DatasetServiceImplTest {
         body.put("altIdentifier", "abc");
         body.put("catalogRecord", this.generateCatalogRecord());
 
-        when(seriesUtils.isSeriesAndOperationsExist(any())).thenReturn(false);
+        when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(false);
 
         when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
             JSONObject lastId = new JSONObject();
@@ -336,7 +337,7 @@ class DatasetServiceImplTest {
         body.put("disseminationStatus", "disseminationStatus");
         body.put("catalogRecord", this.generateCatalogRecord());
 
-        when(seriesUtils.isSeriesAndOperationsExist(anyList())).thenReturn(false);
+        when(seriesRepository.isSeriesAndOperationsExist(anyList())).thenReturn(false);
 
         when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
             JSONObject lastId = new JSONObject();
@@ -373,7 +374,7 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
         JSONArray array = new JSONArray().put(object);
-        when(seriesUtils.isSeriesAndOperationsExist(any())).thenReturn(true);
+        when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
         doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
 
         when(datasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
@@ -484,7 +485,7 @@ class DatasetServiceImplTest {
             when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
-            when(seriesUtils.isSeriesAndOperationsExist(anyList())).thenReturn(true);
+            when(seriesRepository.isSeriesAndOperationsExist(anyList())).thenReturn(true);
 
 
             String id = datasetService.create(body.toString());
@@ -562,7 +563,7 @@ class DatasetServiceImplTest {
             when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
-            when(seriesUtils.isSeriesAndOperationsExist(any())).thenReturn(true);
+            when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
 
             String id = datasetService.update("jd1001", body.toString());
 
@@ -583,9 +584,40 @@ class DatasetServiceImplTest {
     }
 
     @Test
+    void shouldNotPublishAnAlreadyPublishedDatasetAndReturn400() throws RmesException {
+        givenDatasetWithValidationState("Validated");
+
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.publishDataset("1"));
+
+        assertThat(exception.getDetails()).contains("\"code\":1301");
+        assertThat(exception.getDetails()).contains("This dataset is already published");
+        assertThat(exception.getDetails()).contains("Dataset: 1");
+        verify(repositoryGestion, never()).objectValidation(any(), any());
+    }
+
+    @Test
+    void shouldPublishADatasetModifiedSinceItsPublication() throws RmesException {
+        IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
+        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
+        givenDatasetWithValidationState("Modified");
+
+        doNothing().when(publicationUtils).publishResource(iri, Set.of());
+        doNothing().when(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
+
+        Assertions.assertEquals("1", datasetService.publishDataset("1"));
+    }
+
+    private void givenDatasetWithValidationState(String validationState) throws RmesException {
+        JSONArray dataset = new JSONArray("[{\"id\": \"1\", \"validationState\": \"" + validationState + "\"}]");
+        when(datasetQueries.getDataset(any(), any(), any())).thenReturn("get-dataset-query");
+        when(repositoryGestion.getResponseAsArray("get-dataset-query")).thenReturn(dataset);
+    }
+
+    @Test
     void shouldPublishADataset() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
+        givenDatasetWithValidationState("Unpublished");
 
         doNothing().when(publicationUtils).publishResource(iri, Set.of());
         doNothing().when(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));

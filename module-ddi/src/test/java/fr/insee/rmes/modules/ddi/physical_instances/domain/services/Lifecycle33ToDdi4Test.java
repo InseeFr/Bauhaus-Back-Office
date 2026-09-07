@@ -1,15 +1,20 @@
 package fr.insee.rmes.modules.ddi.physical_instances.domain.services;
 
 import fr.insee.ddi.lifecycle33.instance.FragmentDocument;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Code;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeListScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4DataRelationship;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Group;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedMissingValuesRepresentation;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4ManagedRepresentationScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4PhysicalInstance;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4StudyUnit;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Variable;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.LangString;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Level;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference;
 import org.apache.xmlbeans.XmlException;
 import org.junit.jupiter.api.Test;
 
@@ -230,6 +235,40 @@ class Lifecycle33ToDdi4Test {
         assertThat(var.variableRepresentation().numericRepresentation()).isNull();
     }
 
+    /**
+     * Valeurs sentinelles (#1566) : {@code MissingValuesReference} (élément local du namespace
+     * logicalproduct, frère de la représentation) est lu sur le wrapper {@code VariableRepresentation}.
+     */
+    @Test
+    void shouldParseVariableWithMissingValuesReference() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
+                    <VariableRepresentation>
+                        <r:CodeRepresentation blankIsMissingValue="false">
+                            <r:CodeListReference>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                                <r:TypeOfObject>CodeList</r:TypeOfObject>
+                            </r:CodeListReference>
+                        </r:CodeRepresentation>
+                        <MissingValuesReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
+                        </MissingValuesReference>
+                    </VariableRepresentation>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable var = converter.toVariable(doc);
+
+        assertThat(var.variableRepresentation().missingValuesReference())
+                .isEqualTo(Reference.of("fr.insee", "mmvr-1", "1", "ManagedMissingValuesRepresentation"));
+        assertThat(var.variableRepresentation().codeRepresentation().codeListReference().id()).isEqualTo("cl-id");
+    }
+
     @Test
     void shouldParseVariableWithNumericRepresentation() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""
@@ -257,6 +296,32 @@ class Lifecycle33ToDdi4Test {
         assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0);
         assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().isInclusive()).isEqualTo(true);
         assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(100.0);
+    }
+
+    @Test
+    void shouldParseVariableWithDecimalNumericBounds() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Variable xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:var:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>var</r:ID><r:Version>1</r:Version>
+                    <VariableRepresentation>
+                        <r:NumericRepresentation blankIsMissingValue="false">
+                            <r:NumberRange>
+                                <r:Low isInclusive="true">0.0001</r:Low>
+                                <r:High isInclusive="true">12345678.5</r:High>
+                            </r:NumberRange>
+                            <r:NumericTypeCode>Decimal</r:NumericTypeCode>
+                        </r:NumericRepresentation>
+                    </VariableRepresentation>
+                </Variable>
+            </Fragment>
+            """);
+
+        Ddi4Variable var = converter.toVariable(doc);
+
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().low().value()).isEqualTo(0.0001);
+        assertThat(var.variableRepresentation().numericRepresentation().numberRange().high().value()).isEqualTo(12345678.5);
     }
 
     @Test
@@ -335,6 +400,153 @@ class Lifecycle33ToDdi4Test {
     }
 
     @Test
+    void shouldParseCategoryBasedOnObject() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <Category xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:variant-cat:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>variant-cat</r:ID><r:Version>1</r:Version>
+                    <r:BasedOnObject>
+                        <r:BasedOnReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>original-cat</r:ID><r:Version>3</r:Version>
+                            <r:TypeOfObject>Category</r:TypeOfObject>
+                        </r:BasedOnReference>
+                    </r:BasedOnObject>
+                </Category>
+            </Fragment>
+            """);
+
+        Ddi4Category cat = converter.toCategory(doc);
+
+        assertThat(cat.basedOnObject()).isNotNull();
+        assertThat(cat.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-cat");
+        assertThat(cat.basedOnObject().basedOnReferences().get(0).version()).isEqualTo("3");
+    }
+
+    @Test
+    void shouldParseCodeListBasedOnObject() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:variant-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>variant-id</r:ID><r:Version>1</r:Version>
+                    <r:BasedOnObject>
+                        <r:BasedOnReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>original-cl-id</r:ID><r:Version>2</r:Version>
+                            <r:TypeOfObject>CodeList</r:TypeOfObject>
+                        </r:BasedOnReference>
+                    </r:BasedOnObject>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.basedOnObject()).isNotNull();
+        assertThat(cl.basedOnObject().basedOnReferences()).hasSize(1);
+        assertThat(cl.basedOnObject().basedOnReferences().get(0).id()).isEqualTo("original-cl-id");
+        assertThat(cl.basedOnObject().basedOnReferences().get(0).version()).isEqualTo("2");
+    }
+
+    @Test
+    void shouldParseCodeListLevels() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+                    <Level levelNumber="0">
+                        <LevelName><r:String xml:lang="fr-FR">NUTS 0</r:String></LevelName>
+                        <CategoryRelationship>Nominal</CategoryRelationship>
+                    </Level>
+                    <Level levelNumber="1">
+                        <LevelName><r:String xml:lang="fr-FR">NUTS 1</r:String></LevelName>
+                        <CategoryRelationship>Ordinal</CategoryRelationship>
+                    </Level>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.level()).hasSize(2);
+        Level level0 = cl.level().get(0);
+        assertThat(level0.levelNumber()).isEqualTo(0);
+        assertThat(level0.levelName()).extracting(LangString::value).containsExactly("NUTS 0");
+        assertThat(level0.levelName()).extracting(LangString::language).containsExactly("fr-FR");
+        assertThat(level0.categoryRelationship()).isEqualTo("Nominal");
+        Level level1 = cl.level().get(1);
+        assertThat(level1.levelNumber()).isEqualTo(1);
+        assertThat(level1.levelName()).extracting(LangString::value).containsExactly("NUTS 1");
+        assertThat(level1.categoryRelationship()).isEqualTo("Ordinal");
+    }
+
+    @Test
+    void shouldParseHierarchicalCodeListWithNestedCodes() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <CodeList xmlns="ddi:logicalproduct:3_3" isUniversallyUnique="true" versionDate="2025-12-23T09:52:06.355Z">
+                    <r:URN>urn:ddi:fr.insee:cl-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>cl-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">NUTS</r:Content></r:Label>
+                    <Code isUniversallyUnique="true">
+                        <r:URN>urn:ddi:fr.insee:code-at:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>code-at</r:ID><r:Version>1</r:Version>
+                        <r:CategoryReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cat-at</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>Category</r:TypeOfObject>
+                        </r:CategoryReference>
+                        <r:Value>AT</r:Value>
+                        <Code isUniversallyUnique="true">
+                            <r:URN>urn:ddi:fr.insee:code-at2:1</r:URN>
+                            <r:Agency>fr.insee</r:Agency><r:ID>code-at2</r:ID><r:Version>1</r:Version>
+                            <r:CategoryReference>
+                                <r:Agency>fr.insee</r:Agency><r:ID>cat-at2</r:ID><r:Version>1</r:Version>
+                                <r:TypeOfObject>Category</r:TypeOfObject>
+                            </r:CategoryReference>
+                            <r:Value>AT2</r:Value>
+                            <Code isUniversallyUnique="true">
+                                <r:URN>urn:ddi:fr.insee:code-at21:1</r:URN>
+                                <r:Agency>fr.insee</r:Agency><r:ID>code-at21</r:ID><r:Version>1</r:Version>
+                                <r:CategoryReference>
+                                    <r:Agency>fr.insee</r:Agency><r:ID>cat-at21</r:ID><r:Version>1</r:Version>
+                                    <r:TypeOfObject>Category</r:TypeOfObject>
+                                </r:CategoryReference>
+                                <r:Value>AT21</r:Value>
+                            </Code>
+                        </Code>
+                    </Code>
+                    <Code isUniversallyUnique="true">
+                        <r:URN>urn:ddi:fr.insee:code-be:1</r:URN>
+                        <r:Agency>fr.insee</r:Agency><r:ID>code-be</r:ID><r:Version>1</r:Version>
+                        <r:CategoryReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cat-be</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>Category</r:TypeOfObject>
+                        </r:CategoryReference>
+                        <r:Value>BE</r:Value>
+                    </Code>
+                </CodeList>
+            </Fragment>
+            """);
+
+        Ddi4CodeList cl = converter.toCodeList(doc);
+
+        assertThat(cl.code()).extracting(c -> c.value().stringValue()).containsExactly("AT", "BE");
+        Code at = cl.code().get(0);
+        assertThat(at.code()).hasSize(1);
+        Code at2 = at.code().get(0);
+        assertThat(at2.value().stringValue()).isEqualTo("AT2");
+        assertThat(at2.categoryReference().id()).isEqualTo("cat-at2");
+        assertThat(at2.code()).hasSize(1);
+        Code at21 = at2.code().get(0);
+        assertThat(at21.value().stringValue()).isEqualTo("AT21");
+        assertThat(at21.urn()).isEqualTo("urn:ddi:fr.insee:code-at21:1");
+        assertThat(at21.code()).isNull();
+        assertThat(cl.code().get(1).code()).isNull();
+    }
+
+    @Test
     void shouldParseCodeListSchemeWithCodeListReferences() throws XmlException {
         FragmentDocument doc = FragmentDocument.Factory.parse("""
             <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
@@ -363,6 +575,79 @@ class Lifecycle33ToDdi4Test {
         assertThat(scheme.codeListReference())
                 .extracting(fr.insee.rmes.modules.ddi.physical_instances.domain.model.Reference::id)
                 .containsExactly("cl-1", "cl-2");
+    }
+
+    @Test
+    void shouldParseManagedRepresentationSchemeWithMemberReferences() throws XmlException {
+        // XML tel que renvoyé par Colectica GET item (le MRS est dans le namespace reusable).
+        // Les membres peuvent être référencés par l'élément concret du type
+        // (ManagedMissingValuesRepresentationReference…) ou, dans des données historiques, par la
+        // tête générique ManagedRepresentationReference : les deux doivent être lus.
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <r:ManagedRepresentationScheme isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:mrs-id:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>mrs-id</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">ManagedRepresentationScheme Label</r:Content></r:Label>
+                    <r:ManagedMissingValuesRepresentationReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>ManagedMissingValuesRepresentation</r:TypeOfObject>
+                    </r:ManagedMissingValuesRepresentationReference>
+                    <r:ManagedRepresentationReference>
+                        <r:Agency>fr.insee</r:Agency><r:ID>mr-legacy</r:ID><r:Version>1</r:Version>
+                        <r:TypeOfObject>ManagedTextRepresentation</r:TypeOfObject>
+                    </r:ManagedRepresentationReference>
+                </r:ManagedRepresentationScheme>
+            </Fragment>
+            """);
+
+        Ddi4ManagedRepresentationScheme scheme = converter.toManagedRepresentationScheme(doc);
+
+        assertThat(scheme.id()).isEqualTo("mrs-id");
+        assertThat(scheme.agency()).isEqualTo("fr.insee");
+        assertThat(scheme.version()).isEqualTo("1");
+        assertThat(scheme.label().get(0).value()).isEqualTo("ManagedRepresentationScheme Label");
+        assertThat(scheme.managedRepresentationReference())
+                .extracting(Reference::id)
+                .containsExactly("mmvr-1", "mr-legacy");
+        assertThat(scheme.managedRepresentationReference().get(0).type())
+                .isEqualTo("ManagedMissingValuesRepresentation");
+    }
+
+    /**
+     * Valeurs sentinelles (#1566) : lecture d'un fragment MMVR (miroir de
+     * {@link Ddi4ToLifecycle33#toManagedMissingValuesRepresentation}) — Label et
+     * MissingCodeRepresentation in-line avec sa CodeListReference.
+     */
+    @Test
+    void shouldParseManagedMissingValuesRepresentation() throws XmlException {
+        FragmentDocument doc = FragmentDocument.Factory.parse("""
+            <Fragment xmlns="ddi:instance:3_3" xmlns:r="ddi:reusable:3_3">
+                <r:ManagedMissingValuesRepresentation isUniversallyUnique="true" versionDate="2026-04-03T12:00:00Z">
+                    <r:URN>urn:ddi:fr.insee:mmvr-1:1</r:URN>
+                    <r:Agency>fr.insee</r:Agency><r:ID>mmvr-1</r:ID><r:Version>1</r:Version>
+                    <r:Label><r:Content xml:lang="fr-FR">Valeurs sentinelles NSP/REF</r:Content></r:Label>
+                    <r:MissingCodeRepresentation blankIsMissingValue="false">
+                        <r:CodeListReference>
+                            <r:Agency>fr.insee</r:Agency><r:ID>cl-sentinelles</r:ID><r:Version>1</r:Version>
+                            <r:TypeOfObject>CodeList</r:TypeOfObject>
+                        </r:CodeListReference>
+                    </r:MissingCodeRepresentation>
+                </r:ManagedMissingValuesRepresentation>
+            </Fragment>
+            """);
+
+        Ddi4ManagedMissingValuesRepresentation mmvr = converter.toManagedMissingValuesRepresentation(doc);
+
+        assertThat(mmvr).isNotNull();
+        assertThat(mmvr.id()).isEqualTo("mmvr-1");
+        assertThat(mmvr.agency()).isEqualTo("fr.insee");
+        assertThat(mmvr.version()).isEqualTo("1");
+        assertThat(mmvr.urn()).isEqualTo("urn:ddi:fr.insee:mmvr-1:1");
+        assertThat(mmvr.label().get(0).value()).isEqualTo("Valeurs sentinelles NSP/REF");
+        assertThat(mmvr.missingCodeRepresentation()).hasSize(1);
+        assertThat(mmvr.missingCodeRepresentation().get(0).codeListReference())
+                .isEqualTo(Reference.of("fr.insee", "cl-sentinelles", "1", "CodeList"));
     }
 
     @Test

@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
 import fr.insee.rmes.graphdb.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.modules.users.domain.model.Stamp;
@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static fr.insee.rmes.persistance.sparql_queries.SparqlQueryNormalizer.normalize;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -34,12 +35,12 @@ class OperationSeriesQueriesTest {
         var id="s2132";
         prepareRdfUtils();
         String expectedGeneratedQuery= """
-                SELECT ?creators\s
+                SELECT ?creators
                 FROM <http://rdf.insee.fr/graphes/operations>
                 	WHERE	{
                 		{
                 			?series dc:creator ?creators .
-                			VALUES ?series { <http://bauhaus/operations/serie/s2132>}
+                			VALUES ?series { <http://bauhaus/operations/serie/s2132> }
                 		}
                 		UNION
                 		{
@@ -49,11 +50,11 @@ class OperationSeriesQueriesTest {
                 	}""";
         assertThatCode(()->actualRequest= operationSeriesQueries.getCreatorsBySeriesUri(RdfUtils.objectIRI(ObjectType.SERIES,id).toString()))
                 .doesNotThrowAnyException();
-        assertThat(actualRequest).isEqualToIgnoringNewLines(expectedGeneratedQuery);
+        assertThat(normalize(actualRequest)).isEqualTo(normalize(expectedGeneratedQuery));
     }
 
     private void prepareRdfUtils() {
-        RdfUtils.setUriUtils(new UriUtils("","http://bauhaus/",p-> Optional.of(SERIES_BASE_URI)));
+        RdfUtils.setBauhausUriBuilder(new BauhausUriBuilder("","http://bauhaus/",p-> Optional.of(SERIES_BASE_URI)));
     }
 
     @Test

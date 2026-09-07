@@ -1,6 +1,6 @@
 SELECT DISTINCT ?key ?stamp ?label
-FROM <${ORGANIZATIONS_GRAPH}>
-FROM <${ORGANIZATIONS_INSEE_GRAPH}>
+FROM ${ORGANIZATIONS_GRAPH}
+FROM ${ORGANIZATIONS_INSEE_GRAPH}
 WHERE {
 <#if (LITERAL_IDENTIFIERS?size > 0) && (IRI_IDENTIFIERS?size > 0)>
     {
@@ -11,11 +11,11 @@ WHERE {
         # Input is a legacy stamp literal: resolve to organization IRI via adms:identifier
         VALUES ?stamp {
             <#list LITERAL_IDENTIFIERS as identifier>
-            "${identifier}"
+            ${identifier}
             </#list>
         }
         ?organization adms:identifier ?stamp .
-        OPTIONAL { ?organization skos:prefLabel ?labelLang . FILTER(lang(?labelLang) = '${LANG}') }
+        OPTIONAL { ?organization skos:prefLabel ?labelLang . FILTER(lang(?labelLang) = ${LANG}) }
         OPTIONAL { ?organization skos:prefLabel ?labelAny . }
         BIND(COALESCE(?labelLang, ?labelAny) AS ?label)
         BIND(?stamp AS ?key)
@@ -32,11 +32,11 @@ WHERE {
         # and skos:prefLabel may not be tagged with the requested language.
         VALUES ?organization {
             <#list IRI_IDENTIFIERS as identifier>
-            <${identifier}>
+            ${identifier}
             </#list>
         }
         OPTIONAL { ?organization adms:identifier ?stamp . }
-        OPTIONAL { ?organization skos:prefLabel ?labelLang . FILTER(lang(?labelLang) = '${LANG}') }
+        OPTIONAL { ?organization skos:prefLabel ?labelLang . FILTER(lang(?labelLang) = ${LANG}) }
         OPTIONAL { ?organization skos:prefLabel ?labelAny . }
         BIND(COALESCE(?labelLang, ?labelAny) AS ?label)
         BIND(STR(?organization) AS ?key)

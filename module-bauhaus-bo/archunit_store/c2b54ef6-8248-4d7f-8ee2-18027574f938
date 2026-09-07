@@ -1,0 +1,5 @@
+Class <fr.insee.rmes.exceptions.RmesExceptionHandler> is meta-annotated with @ControllerAdvice in (RmesExceptionHandler.java:0)
+Class <fr.insee.rmes.graphdb.exceptions.GraphDbExceptionHandler> is meta-annotated with @ControllerAdvice in (GraphDbExceptionHandler.java:0)
+Class <fr.insee.rmes.modules.commons.webservice.DomainExceptionHandler> is meta-annotated with @ControllerAdvice in (DomainExceptionHandler.java:0)
+Class <fr.insee.rmes.modules.commons.webservice.RmesRuntimeExceptionHandler> is meta-annotated with @ControllerAdvice in (RmesRuntimeExceptionHandler.java:0)
+Class <fr.insee.rmes.modules.ddi.physical_instances.webservice.DdiExceptionHandler> is meta-annotated with @ControllerAdvice in (DdiExceptionHandler.java:0)

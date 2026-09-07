@@ -15,6 +15,8 @@ import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.persistance.sparql_queries.operations.OperationDocumentsQueries;
+import fr.insee.rmes.json.JSONUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -29,7 +31,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class DocumentsPublication  extends RdfService{
@@ -43,6 +47,8 @@ public class DocumentsPublication  extends RdfService{
 
     private final DocumentsStorageProperties documentsStorage;
 
+    private final OperationDocumentsQueries operationDocumentsQueries;
+
     public DocumentsPublication(
             RepositoryGestion repoGestion,
             IdGenerator idGenerator,
@@ -51,13 +57,38 @@ public class DocumentsPublication  extends RdfService{
             DocumentsUtils docUtils,
             FilesOperations filesOperations,
             StorageProperties storageProperties,
-            DocumentsStorageProperties documentsStorage
+            DocumentsStorageProperties documentsStorage,
+            OperationDocumentsQueries operationDocumentsQueries
     ) {
         super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
         this.docUtils = docUtils;
         this.filesOperations = filesOperations;
         this.storageProperties = storageProperties;
         this.documentsStorage = documentsStorage;
+        this.operationDocumentsQueries = operationDocumentsQueries;
+    }
+
+    /**
+     * Pre-check executed before any publication write : collects the ids of the documents
+     * referenced by the SIMS whose physical file is absent from the management storage.
+     * Mirrors the existence check already used on the export path
+     * ({@link DocumentsUtils#existsInStorage(String)}) so that a publication can be blocked
+     * upfront instead of failing half-way through copying files.
+     *
+     * @param idSims the SIMS identifier
+     * @return the ids of the missing documents (empty if every document exists)
+     */
+    public Set<String> findMissingDocuments(String idSims) throws RmesException {
+        JSONArray listDoc = docUtils.getListDocumentSims(idSims);
+        Set<String> missingDocuments = new HashSet<>();
+        for (Object doc : listDoc) {
+            JSONObject document = (JSONObject) doc;
+            String filename = DocumentsUtils.getDocumentNameFromUrl(DocumentsUtils.getDocumentUrlFromDocument(document));
+            if (!docUtils.existsInStorage(filename)) {
+                missingDocuments.add(document.getString(Constants.ID));
+            }
+        }
+        return missingDocuments;
     }
 
     public void publishAllDocumentsInSims(String idSims) throws RmesException {
@@ -140,11 +171,7 @@ public class DocumentsPublication  extends RdfService{
 		
 		try {
 			JSONArray tuples = repoGestion.getResponseAsArray(
-                    "select ?predicat ?obj FROM <"+RdfUtils.documentsGraph()+"> "
-					+ "WHERE {"
-					+ "?document ?predicat ?obj . "
-					+ "FILTER (?document = <"+document+">) "
-					+ "}");
+					operationDocumentsQueries.getDocumentPredicatesAndObjects(document));
 
 			if (tuples.isEmpty()) {
 				throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);
@@ -161,12 +188,11 @@ public class DocumentsPublication  extends RdfService{
 
 	private void transformTuplesToPublish(String filename, Model model, Resource document, JSONArray tuples) {
 		Resource newSubject = publicationUtils.tranformBaseURIToPublish(document);
-		Value object ;
-		
-		for (int i = 0; i < tuples.length(); i++) {
-			JSONObject tuple = (JSONObject) tuples.get(i);
+
+		JSONUtils.stream(tuples).forEach(tuple -> {
 			String predicatString = tuple.getString("predicat");
-			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
+			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));
+			Value object;
 			if (predicatString.endsWith(Constants.URL)) {
 				String newUrl = documentsStorage.baseUrl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
@@ -182,7 +208,7 @@ public class DocumentsPublication  extends RdfService{
 				}
 			}
 			model.add(newSubject, predicate, object, RdfUtils.documentsGraph());
-		}
+		});
 	}
 	
 	private Model getLinkModelToPublish(String linkId) throws RmesException {

@@ -1,5 +1,5 @@
 SELECT ?labelLg1 ?labelLg2 ?idOperation ?idSeries ?idIndicator ?validationState ?created ?updated
-FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>  
+FROM ${DOCUMENTATION_GRAPH_IRI}  
 WHERE {  
 	?report rdf:type sdmx-mm:MetadataReport . 				
 		
@@ -16,13 +16,13 @@ WHERE {
 	
 	
 	 OPTIONAL{ ?report rdfs:label ?labelLg1 . 
-		FILTER(lang(?labelLg1) = '${LG1}') 
+		FILTER(lang(?labelLg1) = ${LG1}) 
 	 }
 	 OPTIONAL{ ?report rdfs:label ?labelLg2 . 
-		FILTER(lang(?labelLg2) = '${LG2}')  
+		FILTER(lang(?labelLg2) = ${LG2})  
 	 }
 	OPTIONAL{ ?report insee:validationState ?validationState .
 	 }
 	  						
-	FILTER(STRENDS(STR(?report), '${idSims}')) 
+	FILTER(STRENDS(STR(?report), ${idSims})) 
 }

@@ -70,6 +70,8 @@ public class ClassificationItem {
 
     public String changeNoteLg2;
 
+    public String validationState;
+
     public String getId() {
         return id;
     }
@@ -332,5 +334,13 @@ public class ClassificationItem {
 
     public void setChangeNoteLg2(String changeNoteLg2) {
         this.changeNoteLg2 = changeNoteLg2;
+    }
+
+    public String getValidationState() {
+        return validationState;
+    }
+
+    public void setValidationState(String validationState) {
+        this.validationState = validationState;
     }
 }

@@ -1,0 +1,68 @@
+# Fixture du ticket A6 « variables mal appariées : produits cartésiens silencieux ».
+#
+# Chaque bloc reproduit exactement la forme interrogée par son template, de façon à rendre
+# observable la variable mal appariée — sans elle le défaut reste muet :
+#   - structures/getUriClasseOwl.ftlh       : ?uriClasseOWL a owl:Class / ?uriClasseOwl rdfs:seeAlso …
+#   - operations/famOpeSer/getFamily.ftlh   : le bloc « Lg1 » contraint ?abstractLg2Uri
+#   - operations/series/getSeriesById.ftlh  : ?family n'est lié nulle part ailleurs
+#
+# Les prédicats xsd:language et xkos:ExplanatoryNote sont bien ceux que les templates
+# recherchent, aussi discutables soient-ils : la fixture décrit la requête, pas le modèle idéal.
+#
+# IRIs suffixées « A6 » et uniques : le conteneur GraphDB est partagé entre classes de test.
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix evoc:    <http://eurovoc.europa.eu/schema#> .
+@prefix xkos:    <http://rdf-vocabulary.ddialliance.org/xkos#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+# getUriClasseOwl : une seule des deux ressources pointant vers sa liste de codes est une
+# owl:Class. La présence de la première suffit à satisfaire ?uriClasseOWL, donc à laisser
+# passer la seconde tant que les deux variables ne sont pas appariées.
+<http://rdf.insee.fr/graphes/codes> {
+
+  <http://bauhaus/codes/classeOwlA6>
+      a          owl:Class ;
+      rdfs:seeAlso <http://bauhaus/codes/listeAvecClasseA6> .
+
+  <http://bauhaus/codes/nonClasseA6>
+      rdfs:seeAlso <http://bauhaus/codes/listeSansClasseA6> .
+}
+
+<http://rdf.insee.fr/graphes/operations> {
+
+  # getFamily : résumés portés par des notes versionnées, une par langue. Le bloc « Lg1 »
+  # du template épingle ?abstractLg2Uri sur la note française, ce qui rend le bloc « Lg2 »
+  # insatisfiable et fait disparaître le résumé anglais.
+  <http://bauhaus/operations/famille/famA6>
+      skos:prefLabel   "Famille A6 (test)"@fr , "A6 family (test)"@en ;
+      dcterms:abstract <http://bauhaus/operations/famille/famA6/resume/fr> ,
+                       <http://bauhaus/operations/famille/famA6/resume/en> .
+
+  <http://bauhaus/operations/famille/famA6/resume/fr>
+      a                xkos:ExplanatoryNote ;
+      evoc:noteLiteral "Résumé A6 (fr)" ;
+      xsd:language     "fr"^^xsd:language .
+
+  <http://bauhaus/operations/famille/famA6/resume/en>
+      a                xkos:ExplanatoryNote ;
+      evoc:noteLiteral "Résumé A6 (en)" ;
+      xsd:language     "en"^^xsd:language .
+
+  # getSeriesById : la série interrogée n'a aucun résumé, une ressource voisine en a un porté
+  # par une note. Avec ?family non liée, c'est le résumé de la voisine qui remonte.
+  # Ni la série ni la famille ne sont typées : plusieurs tests de ce conteneur partagé
+  # comptent les insee:StatisticalOperationSeries / Family du graphe des opérations.
+  <http://bauhaus/operations/serie/sA6>
+      skos:prefLabel "Série A6 (test)"@fr .
+
+  <http://bauhaus/operations/famille/famA6Voisine>
+      skos:prefLabel   "Famille voisine A6 (test)"@fr ;
+      dcterms:abstract <http://bauhaus/operations/famille/famA6Voisine/resume> .
+
+  <http://bauhaus/operations/famille/famA6Voisine/resume>
+      xkos:ExplanatoryNote "Résumé de la famille voisine A6"@fr .
+}

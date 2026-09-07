@@ -1,3 +1,3 @@
 ASK {
-<${NOTE}> insee:validUntil ?c
+${NOTE} insee:validUntil ?c
 }

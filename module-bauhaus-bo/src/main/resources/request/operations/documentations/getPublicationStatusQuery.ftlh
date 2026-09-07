@@ -1,6 +1,6 @@
 SELECT ?state 
-FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>  
+FROM ${DOCUMENTATION_GRAPH_IRI}  
   WHERE {  
 	?doc insee:validationState ?state . 
-	 FILTER(STRENDS(STR(?doc), '${idSims}'))
+	 FILTER(STRENDS(STR(?doc), ${idSims}))
   }  

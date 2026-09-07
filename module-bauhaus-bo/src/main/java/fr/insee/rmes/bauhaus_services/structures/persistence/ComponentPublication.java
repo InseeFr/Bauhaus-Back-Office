@@ -1,0 +1,67 @@
+package fr.insee.rmes.bauhaus_services.structures.persistence;
+
+import fr.insee.rmes.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.utils.IdGenerator;
+import fr.insee.rmes.domain.exceptions.RmesException;
+import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class ComponentPublication extends RdfService {
+
+	public ComponentPublication(RepositoryGestion repoGestion, IdGenerator idGenerator,
+								RepositoryPublication repositoryPublication,
+								PublicationUtils publicationUtils) {
+		super(repoGestion, idGenerator, repositoryPublication, publicationUtils);
+	}
+
+	public void publishComponent(Resource component, IRI type) throws RmesException {
+
+		Model model = new LinkedHashModel();
+		try (RepositoryConnection con = repoGestion.getConnection();
+			 RepositoryResult<Statement> statements = repoGestion.getStatements(con, component)) {
+			while (statements.hasNext()) {
+				Statement st = statements.next();
+				String pred = RdfUtils.toString(st.getPredicate());
+				if (pred.endsWith("validationState") || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith(Constants.CREATOR)) {
+					// nothing, wouldn't copy this attr
+				}else if (pred.endsWith("attribute")
+						|| pred.endsWith("dimension")
+						|| pred.endsWith("measure")
+						|| pred.endsWith(Constants.CODELIST)
+						|| pred.endsWith(Constants.CONCEPT)
+						|| pred.endsWith("range")) {
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+				}
+				else {
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+							st.getPredicate(),
+							st.getObject(),
+							st.getContext());
+				}
+
+			}
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+		}
+		Resource componentToPublishRessource = publicationUtils.tranformBaseURIToPublish(component);
+		repositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
+
+	}
+
+}
+

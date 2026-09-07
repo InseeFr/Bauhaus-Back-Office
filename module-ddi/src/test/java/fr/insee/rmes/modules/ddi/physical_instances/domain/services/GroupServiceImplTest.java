@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -78,9 +79,11 @@ class GroupServiceImplTest {
     }
 
     @Test
-    void deprecateAll_shouldDelegateToRepository() {
-        groupService.deprecateAll();
+    void deprecate_shouldDelegateToRepository() {
+        Set<String> ids = Set.of("group-id-1", "group-id-2");
 
-        verify(groupRepository).deprecateAll();
+        groupService.deprecate(ids);
+
+        verify(groupRepository).deprecate(ids);
     }
 }
