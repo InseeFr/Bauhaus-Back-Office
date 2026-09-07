@@ -19,6 +19,7 @@ public class OperationIndicatorsQueries {
 	public static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 	public static final String PRODUCTS_GRAPH = "PRODUCTS_GRAPH";
 	public static final String PRODUCT_BASE_URI = "PRODUCT_BASE_URI";
+	private static final String INDICATOR_URI_SUFFIX = "INDICATOR_URI_SUFFIX";
 
     private final BauhausUriProperties uris;
     private final BauhausLanguagesProperties languages;
@@ -69,7 +70,7 @@ public class OperationIndicatorsQueries {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/produits/indicateur/" + id));
+		params.put(INDICATOR_URI_SUFFIX, SparqlLiterals.literal("/produits/indicateur/" + id));
 		params.put("WITH_LIMIT", withLimit);
 		return buildIndicatorRequest("getIndicator.ftlh", params);
 	}
@@ -77,27 +78,27 @@ public class OperationIndicatorsQueries {
 	public String getCreatorsById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
-		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
+		params.put(INDICATOR_URI_SUFFIX, SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("getCreatorsById.ftlh", params);
 	}
 
 	public String getPublishersById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
-		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal(uris.productsBaseUri() + "/" + id));
+		params.put(INDICATOR_URI_SUFFIX, SparqlLiterals.literal(uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("getPublishersById.ftlh", params);
 	}
 
 	public String getContributorsById(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
-		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal(uris.productsBaseUri() + "/" + id));
+		params.put(INDICATOR_URI_SUFFIX, SparqlLiterals.literal(uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("getContributorsById.ftlh", params);
 	}
 
 	public String indicatorLinks(String id, IRI linkPredicate) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
+		params.put(INDICATOR_URI_SUFFIX, SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put("LINKPREDICATE", SparqlLiterals.iri(linkPredicate.stringValue()));
@@ -116,7 +117,7 @@ public class OperationIndicatorsQueries {
 	public String checkIfExists(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put(PRODUCTS_GRAPH, SparqlLiterals.iri(graphs.productsGraph()));
-		params.put("INDICATOR_URI_SUFFIX", SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
+		params.put(INDICATOR_URI_SUFFIX, SparqlLiterals.literal("/" + uris.productsBaseUri() + "/" + id));
 		return buildIndicatorRequest("checkIfIndicatorExists.ftlh", params);
 	}
 

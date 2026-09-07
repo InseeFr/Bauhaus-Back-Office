@@ -16,6 +16,9 @@ import static fr.insee.rmes.persistance.sparql_queries.operations.OperationsOper
 @Component
 public class OperationFamilyQueries {
 
+    private static final String FAMILY_URI_SUFFIX = "FAMILY_URI_SUFFIX";
+    private static final String FAMILY_PATH = "/operations/famille/";
+
     private final BauhausLanguagesProperties languages;
     private final String baseGraph;
     private final String operationsGraph;
@@ -47,7 +50,7 @@ public class OperationFamilyQueries {
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
         params.put("ID", SparqlLiterals.literal(id));
-        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + id));
+        params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + id));
         return  buildRequest("getFamily.ftlh", params);
     }
 
@@ -56,7 +59,7 @@ public class OperationFamilyQueries {
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + idFamily));
+        params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + idFamily));
         return  buildRequest("getSeries.ftlh", params);
     }
 
@@ -69,7 +72,7 @@ public class OperationFamilyQueries {
         HashMap<String, Object> params = new HashMap<>();
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
         params.put("LABEL", SparqlLiterals.literal(label, language == Language.lg1 ? languages.lg1() : languages.lg2()));
-        params.put("URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + id));
+        params.put("URI_SUFFIX", SparqlLiterals.literal(FAMILY_PATH + id));
         params.put("TYPE", "insee:StatisticalOperationFamily");
         return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
     }
@@ -82,7 +85,7 @@ public class OperationFamilyQueries {
         HashMap<String, Object> params = new HashMap<>();
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + idFamily));
+        params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + idFamily));
         return FreeMarkerUtils.buildRequest("operations/series/", "getSeriesWithSimsQuery.ftlh", params);
     }
 
@@ -91,7 +94,7 @@ public class OperationFamilyQueries {
         params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(baseGraph + operationsGraph));
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
         params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-        params.put("FAMILY_URI_SUFFIX", SparqlLiterals.literal("/operations/famille/" + idFamily));
+        params.put(FAMILY_URI_SUFFIX, SparqlLiterals.literal(FAMILY_PATH + idFamily));
         return  buildRequest("getSubjects.ftlh", params);
     }
 }

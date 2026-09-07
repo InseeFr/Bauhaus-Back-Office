@@ -17,6 +17,7 @@ import java.util.Map;
 public class DocumentationQueries {
 
     private static final String ID_SIMS = Constants.ID_SIMS;
+    private static final String DOCUMENTATION_GRAPH_IRI = "DOCUMENTATION_GRAPH_IRI";
 
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
@@ -60,14 +61,14 @@ public class DocumentationQueries {
     public String getDocumentationTitleQuery(String idSims) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(ID_SIMS, SparqlLiterals.literal(idSims));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         return buildRequest("getDocumentationTitleQuery.ftlh", params);
     }
 
     public String getTargetByIdSims(String idSims) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(ID_SIMS, SparqlLiterals.literal(idSims));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         return buildRequest("getTargetByIdSimsQuery.ftlh", params);
     }
 
@@ -80,7 +81,7 @@ public class DocumentationQueries {
     public String getDocumentationRubricsQuery(String idSims, String clLg1, String clLg2) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(ID_SIMS, SparqlLiterals.literal(idSims));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + idSims));
         params.put("DATE_JSON_TYPE", SparqlLiterals.literal(RangeType.DATE.getJsonType()));
         params.put("DATE_RDF_TYPE", SparqlLiterals.iri(RangeType.DATE.getRdfType().stringValue()));
         params.put("STRING_JSON_TYPE", SparqlLiterals.literal(RangeType.STRING.getJsonType()));
@@ -105,7 +106,7 @@ public class DocumentationQueries {
     public String getPublicationState(String id) throws RmesException {
         Map<String, Object> params = initParams();
         params.put(Constants.ID_SIMS, SparqlLiterals.literal(id));
-        params.put("DOCUMENTATION_GRAPH_IRI", SparqlLiterals.iri(graphs.documentationsGraph() + "/" + id));
+        params.put(DOCUMENTATION_GRAPH_IRI, SparqlLiterals.iri(graphs.documentationsGraph() + "/" + id));
         
         return buildRequest("getPublicationStatusQuery.ftlh", params);
     }

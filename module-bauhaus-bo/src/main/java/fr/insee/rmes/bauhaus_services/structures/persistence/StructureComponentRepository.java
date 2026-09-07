@@ -324,14 +324,14 @@ public class StructureComponentRepository extends RdfService {
     }
 
     public void deleteComponent(JSONObject component, String id, String type) throws RmesException {
-        String state = component.getString("validationState");
+        String state = component.getString(Constants.VALIDATION_STATE);
         if(state.equals(VALIDATED) || state.equals(MODIFIED)){
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
         }
         JSONArray structures = component.getJSONArray("structures");
 
         boolean findPublishedStructure = JSONUtils.stream(structures)
-                .map(structure -> structure.getString("validationState"))
+                .map(structure -> structure.getString(Constants.VALIDATION_STATE))
                 .anyMatch(stateStructure -> stateStructure.equals(VALIDATED) || stateStructure.equals(MODIFIED));
 
         if(findPublishedStructure){
@@ -349,7 +349,7 @@ public class StructureComponentRepository extends RdfService {
     }
 
     public String publishComponent(JSONObject component) throws RmesException {
-        PublicationUtils.rejectIfAlreadyPublished("Component", component.optString(Constants.ID), component.optString("validationState"));
+        PublicationUtils.rejectIfAlreadyPublished("Component", component.optString(Constants.ID), component.optString(Constants.VALIDATION_STATE));
 
         if(jsonObjecthasPropertyNullOrEmpty(component, Constants.CREATOR)){
             throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());

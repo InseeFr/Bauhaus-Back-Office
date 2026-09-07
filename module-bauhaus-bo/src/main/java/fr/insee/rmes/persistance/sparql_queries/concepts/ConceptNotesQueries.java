@@ -16,6 +16,8 @@ public class ConceptNotesQueries {
 
 	private static final String NOTES_FOLDER = "concepts/notes/";
 	private static final String CONCEPT_ID = "CONCEPT_ID";
+	private static final String CONCEPT_URI_PATTERN = "CONCEPT_URI_PATTERN";
+	private static final String CONCEPT_PATH = "/concepts/definition/";
 
     private final GraphsProperties graphs;
 
@@ -29,20 +31,20 @@ public class ConceptNotesQueries {
 
 	public String getLastVersionnableNoteVersion(String conceptId, IRI predicat) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
+		params.put(CONCEPT_URI_PATTERN, SparqlLiterals.literal(CONCEPT_PATH + conceptId));
 		params.put("PREDICAT", SparqlLiterals.iri(predicat.stringValue()));
 		return buildRequest("getLastVersionnableNoteVersion.ftlh", params);
 	}
 
 	public String getConceptVersion(String conceptId) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
+		params.put(CONCEPT_URI_PATTERN, SparqlLiterals.literal(CONCEPT_PATH + conceptId));
 		return buildRequest("getConceptVersion.ftlh", params);
 	}
 
 	public String getChangeNoteToDelete(String conceptId, DatableNote datableNote) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
+		params.put(CONCEPT_URI_PATTERN, SparqlLiterals.literal(CONCEPT_PATH + conceptId));
 		params.put("LANG", SparqlLiterals.literal(datableNote.getLang()));
 		params.put("CONCEPT_VERSION", SparqlLiterals.literal(String.valueOf(datableNote.getConceptVersion())));
 		return buildRequest("getChangeNoteToDelete.ftlh", params);
@@ -50,7 +52,7 @@ public class ConceptNotesQueries {
 
 	public String getHistoricalNotes(String conceptId, String maxVersion) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("CONCEPT_URI_PATTERN", SparqlLiterals.literal("/concepts/definition/" + conceptId));
+		params.put(CONCEPT_URI_PATTERN, SparqlLiterals.literal(CONCEPT_PATH + conceptId));
 		params.put("MAX_VERSION", maxVersion);
 		params.put("CONCEPTS_GRAPH", SparqlLiterals.iri(graphs.conceptsGraph()));
 		return buildRequest("getHistoricalNotes.ftlh", params);

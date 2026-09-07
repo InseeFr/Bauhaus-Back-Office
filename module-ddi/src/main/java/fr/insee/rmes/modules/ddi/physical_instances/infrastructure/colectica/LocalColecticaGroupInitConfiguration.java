@@ -577,13 +577,13 @@ public class LocalColecticaGroupInitConfiguration {
                         "1",
                         LangStrings.of(defaultLang, groupLabel + " Sentinel Values"),
                         List.of(new CodeRepresentation(CodeRepresentation.TYPE, Boolean.FALSE,
-                                Reference.of(defaultAgencyId, codeListId, "1", "CodeList"))));
+                                Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE))));
         logger.info("Creating sentinel managed missing values representation: id={}",
                 managedMissingValuesRepresentationId);
         ddiService.createManagedMissingValuesRepresentation(managedMissingValuesRepresentation);
 
         return new SentinelValuesExample(
-                Reference.of(defaultAgencyId, codeListId, "1", "CodeList"),
+                Reference.of(defaultAgencyId, codeListId, "1", Ddi4CodeList.TYPE),
                 categoryReferences,
                 Reference.of(defaultAgencyId, managedMissingValuesRepresentationId, "1",
                         "ManagedMissingValuesRepresentation"));
@@ -614,7 +614,7 @@ public class LocalColecticaGroupInitConfiguration {
             String variableId = generateDeterministicUuid("example:variable:missing-code-list");
             // Liste de codes qui n'existe pas : un UUID volontairement absent de Colectica.
             Reference missingCodeListRef = Reference.of(
-                    defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", "CodeList");
+                    defaultAgencyId, "00000000-0000-0000-0000-000000000000", "1", Ddi4CodeList.TYPE);
 
             Ddi4Variable variable = new Ddi4Variable(
                     Ddi4Variable.TYPE,

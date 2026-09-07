@@ -14,6 +14,9 @@ import java.util.Map;
 @Component
 public class ConceptCollectionsQueries {
 
+	private static final String COLLECTION_URI_SUFFIX = "COLLECTION_URI_SUFFIX";
+	private static final String COLLECTIONS_PATH = "/concepts/definitions/";
+
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
 
@@ -48,7 +51,7 @@ public class ConceptCollectionsQueries {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-		params.put("COLLECTION_URI_SUFFIX", SparqlLiterals.literal("/concepts/definitions/" + id));
+		params.put(COLLECTION_URI_SUFFIX, SparqlLiterals.literal(COLLECTIONS_PATH + id));
 		return buildRequest("getCollection.ftlh", params);
 	}
 
@@ -56,7 +59,7 @@ public class ConceptCollectionsQueries {
 		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-		params.put("COLLECTION_URI_SUFFIX", SparqlLiterals.literal("/concepts/definitions/" + id));
+		params.put(COLLECTION_URI_SUFFIX, SparqlLiterals.literal(COLLECTIONS_PATH + id));
 		return buildRequest("getCollectionMembers.ftlh", params);
 	}
 
@@ -72,7 +75,7 @@ public class ConceptCollectionsQueries {
 
 	public String collectionExistsById(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("COLLECTION_URI_SUFFIX", SparqlLiterals.literal("/concepts/definitions/" + id));
+		params.put(COLLECTION_URI_SUFFIX, SparqlLiterals.literal(COLLECTIONS_PATH + id));
 		return buildRequest("collectionExistsById.ftlh", params);
 	}
 
@@ -96,7 +99,7 @@ public class ConceptCollectionsQueries {
 
 	public String linkConceptToCollection(String collectionId, String conceptUri, String graph) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("COLLECTION_URI_SUFFIX", SparqlLiterals.literal("/concepts/definitions/" + collectionId));
+		params.put(COLLECTION_URI_SUFFIX, SparqlLiterals.literal(COLLECTIONS_PATH + collectionId));
 		params.put("CONCEPT_URI", SparqlLiterals.iri(conceptUri));
 		params.put("GRAPH", SparqlLiterals.iri(graph));
 		return buildRequest("linkConceptToCollection.ftlh", params);
@@ -104,7 +107,7 @@ public class ConceptCollectionsQueries {
 
 	public String unlinkConceptFromCollection(String collectionId, String conceptUri, String graph) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("COLLECTION_URI_SUFFIX", SparqlLiterals.literal("/concepts/definitions/" + collectionId));
+		params.put(COLLECTION_URI_SUFFIX, SparqlLiterals.literal(COLLECTIONS_PATH + collectionId));
 		params.put("CONCEPT_URI", SparqlLiterals.iri(conceptUri));
 		params.put("GRAPH", SparqlLiterals.iri(graph));
 		return buildRequest("unlinkConceptFromCollection.ftlh", params);

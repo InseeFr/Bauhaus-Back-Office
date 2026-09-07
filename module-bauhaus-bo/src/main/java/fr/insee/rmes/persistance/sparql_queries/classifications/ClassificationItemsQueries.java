@@ -14,6 +14,9 @@ public class ClassificationItemsQueries {
 
 	public static final String CLASSIFICATION_ID = "CLASSIFICATION_ID";
 	public static final String ITEM_ID = "ITEM_ID";
+	private static final String CLASSIFICATION_URI_PATTERN = "CLASSIFICATION_URI_PATTERN";
+	private static final String ITEM_URI_SUFFIX = "ITEM_URI_SUFFIX";
+	private static final String CODES_PATH = "/codes/";
 
     private final BauhausLanguagesProperties languages;
 
@@ -30,8 +33,8 @@ public class ClassificationItemsQueries {
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(CLASSIFICATION_ID, SparqlLiterals.literal(classificationId));
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationId + "/"));
-		params.put("ITEM_URI_SUFFIX", SparqlLiterals.literal("/" + itemId));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + classificationId + "/"));
+		params.put(ITEM_URI_SUFFIX, SparqlLiterals.literal("/" + itemId));
 
 		return buildRequest("getClassificationItem.ftlh", params);
 	}
@@ -41,8 +44,8 @@ public class ClassificationItemsQueries {
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(CLASSIFICATION_ID, SparqlLiterals.literal(classificationId));
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationId + "/"));
-		params.put("ITEM_URI_SUFFIX", SparqlLiterals.literal("/" + itemId));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + classificationId + "/"));
+		params.put(ITEM_URI_SUFFIX, SparqlLiterals.literal("/" + itemId));
 
 		return buildRequest("getClassificationItemAltLabels.ftlh", params);
 	}
@@ -52,8 +55,8 @@ public class ClassificationItemsQueries {
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(CLASSIFICATION_ID, SparqlLiterals.literal(classificationId));
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationId + "/"));
-		params.put("ITEM_URI_SUFFIX", SparqlLiterals.literal("/" + itemId));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + classificationId + "/"));
+		params.put(ITEM_URI_SUFFIX, SparqlLiterals.literal("/" + itemId));
 		params.put("CONCEPT_VERSION", SparqlLiterals.literal(String.valueOf(conceptVersion)));
 
 		return buildRequest("getClassificationItemNotes.ftlh", params);
@@ -64,8 +67,8 @@ public class ClassificationItemsQueries {
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put(CLASSIFICATION_ID, SparqlLiterals.literal(classificationId));
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationId + "/"));
-		params.put("ITEM_URI_SUFFIX", SparqlLiterals.literal("/" + itemId));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + classificationId + "/"));
+		params.put(ITEM_URI_SUFFIX, SparqlLiterals.literal("/" + itemId));
 
 		return buildRequest("getClassificationItemNarrowers.ftlh", params);
 	}

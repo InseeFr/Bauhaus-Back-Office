@@ -13,6 +13,7 @@ import java.util.Map;
 public class ClassificationCorrespondencesQueries {
 
 	public static final String CLASSIFICATIONS = "classifications/";
+	private static final String CODES_PATH = "/codes/";
 
     private final BauhausLanguagesProperties languages;
 
@@ -29,11 +30,11 @@ public class ClassificationCorrespondencesQueries {
 	public String correspondenceQuery(String id) throws RmesException {
 		String[] classificationsIds = id.split("-");
 		Map<String, Object> params = new HashMap<>();
-		params.put("CORRESPONDENCE_URI_SUFFIX", SparqlLiterals.literal("/codes/" + id));
+		params.put("CORRESPONDENCE_URI_SUFFIX", SparqlLiterals.literal(CODES_PATH + id));
 		params.put("FIRST_ID", SparqlLiterals.literal(classificationsIds[0]));
 		params.put("SECOND_ID", SparqlLiterals.literal(classificationsIds[1]));
-		params.put("FIRST_CLASS_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationsIds[0] + "/"));
-		params.put("SECOND_CLASS_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationsIds[1] + "/"));
+		params.put("FIRST_CLASS_URI_PATTERN", SparqlLiterals.literal(CODES_PATH + classificationsIds[0] + "/"));
+		params.put("SECOND_CLASS_URI_PATTERN", SparqlLiterals.literal(CODES_PATH + classificationsIds[1] + "/"));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getCorrespondence.ftlh", params);
@@ -41,7 +42,7 @@ public class ClassificationCorrespondencesQueries {
 
 	public String correspondenceAssociationsQuery(String correspondenceId) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("CORRESPONDENCE_URI_PATTERN", SparqlLiterals.literal("/codes/" + correspondenceId));
+		params.put("CORRESPONDENCE_URI_PATTERN", SparqlLiterals.literal(CODES_PATH + correspondenceId));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getCorrespondenceAssociations.ftlh", params);
@@ -51,14 +52,14 @@ public class ClassificationCorrespondencesQueries {
 		String[] classificationsIds = correspondenceId.split("-");
 		String[] itemsIds = associationId.split("-");
 		Map<String, Object> params = new HashMap<>();
-		params.put("CORRESPONDENCE_URI_SUFFIX", SparqlLiterals.literal("/codes/" + correspondenceId));
+		params.put("CORRESPONDENCE_URI_SUFFIX", SparqlLiterals.literal(CODES_PATH + correspondenceId));
 		params.put("ASSOCIATION_URI_SUFFIX",
-				SparqlLiterals.literal("/codes/" + correspondenceId + "/association/" + associationId));
+				SparqlLiterals.literal(CODES_PATH + correspondenceId + "/association/" + associationId));
 		params.put("ASSOCIATION_ID", SparqlLiterals.literal(associationId));
 		params.put("SOURCE_CLASS_ID", SparqlLiterals.literal(classificationsIds[0]));
 		params.put("TARGET_CLASS_ID", SparqlLiterals.literal(classificationsIds[1]));
-		params.put("SOURCE_CLASS_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationsIds[0] + "/"));
-		params.put("TARGET_CLASS_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationsIds[1] + "/"));
+		params.put("SOURCE_CLASS_URI_PATTERN", SparqlLiterals.literal(CODES_PATH + classificationsIds[0] + "/"));
+		params.put("TARGET_CLASS_URI_PATTERN", SparqlLiterals.literal(CODES_PATH + classificationsIds[1] + "/"));
 		params.put("SOURCE_ITEM_ID", SparqlLiterals.literal(itemsIds[0]));
 		params.put("TARGET_ITEM_ID", SparqlLiterals.literal(itemsIds[1]));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));

@@ -31,6 +31,9 @@ class ColecticaGroupSetReader {
 
     private static final Logger logger = LoggerFactory.getLogger(ColecticaGroupSetReader.class);
 
+    private static final String AGENCY = "Agency";
+    private static final String VERSION = "Version";
+
     private final ColecticaClient colecticaClient;
     private final String defaultLang;
 
@@ -98,9 +101,9 @@ class ColecticaGroupSetReader {
             Ddi4Group.TYPE,
             versionDate.isEmpty() ? null : CogsDate.ofDateTime(versionDate),
             ColecticaXml.textContent(groupElement, REUSABLE_NS, "URN"),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "Agency"),
+            ColecticaXml.textContent(groupElement, REUSABLE_NS, AGENCY),
             ColecticaXml.textContent(groupElement, REUSABLE_NS, "ID"),
-            ColecticaXml.textContent(groupElement, REUSABLE_NS, "Version"),
+            ColecticaXml.textContent(groupElement, REUSABLE_NS, VERSION),
             ColecticaXml.textContent(groupElement, REUSABLE_NS, "VersionResponsibility"),
             parseCitation(groupElement),
             parseStudyUnitReferences(groupElement),
@@ -116,9 +119,9 @@ class ColecticaGroupSetReader {
             Ddi4StudyUnit.TYPE,
             (versionDate == null || versionDate.isEmpty()) ? null : CogsDate.ofDateTime(versionDate),
             ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "URN"),
-            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "Agency"),
+            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, AGENCY),
             ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "ID"),
-            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, "Version"),
+            ColecticaXml.textContent(studyUnitElement, REUSABLE_NS, VERSION),
             parseCitation(studyUnitElement),
             (operationIri == null || operationIri.isEmpty()) ? null : operationIri,
             null);
@@ -152,9 +155,9 @@ class ColecticaGroupSetReader {
         for (int i = 0; i < refNodes.getLength(); i++) {
             Element refElement = (Element) refNodes.item(i);
             references.add(Reference.of(
-                ColecticaXml.textContent(refElement, REUSABLE_NS, "Agency"),
+                ColecticaXml.textContent(refElement, REUSABLE_NS, AGENCY),
                 ColecticaXml.textContent(refElement, REUSABLE_NS, "ID"),
-                ColecticaXml.textContent(refElement, REUSABLE_NS, "Version"),
+                ColecticaXml.textContent(refElement, REUSABLE_NS, VERSION),
                 ColecticaXml.textContent(refElement, REUSABLE_NS, "TypeOfObject")));
         }
         return references;

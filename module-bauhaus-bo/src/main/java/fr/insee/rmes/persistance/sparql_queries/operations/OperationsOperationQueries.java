@@ -15,6 +15,7 @@ public class OperationsOperationQueries {
 	public static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 	public static final String OPERATIONS_SERIES_FOLDER = "operations/series/";
 	public static final String OPERATIONS_FOLDER = "operations/";
+	private static final String OPERATION_PATH = "/operations/operation/";
 
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
@@ -36,7 +37,7 @@ public class OperationsOperationQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.operationsGraph()));
 		params.put("LABEL", SparqlLiterals.literal(label, lang));
-		params.put("URI_SUFFIX", SparqlLiterals.literal("/operations/operation/" + id));
+		params.put("URI_SUFFIX", SparqlLiterals.literal(OPERATION_PATH + id));
 		params.put("TYPE", "insee:StatisticalOperation");
 		return FreeMarkerUtils.buildRequest(OPERATIONS_FOLDER, "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
@@ -48,13 +49,13 @@ public class OperationsOperationQueries {
 
 	public String operationQuery(String id) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("OPERATION_URI_SUFFIX", SparqlLiterals.literal("/operations/operation/" + id));
+		params.put("OPERATION_URI_SUFFIX", SparqlLiterals.literal(OPERATION_PATH + id));
 		return FreeMarkerUtils.buildRequest(OPERATIONS_FOLDER, "getOperation.ftlh", params);
 	}
 
 	public String seriesQuery(String idOperation) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("OPERATION_URI_SUFFIX", SparqlLiterals.literal("/operations/operation/" + idOperation));
+		params.put("OPERATION_URI_SUFFIX", SparqlLiterals.literal(OPERATION_PATH + idOperation));
 		return FreeMarkerUtils.buildRequest(OPERATIONS_SERIES_FOLDER, "getSeries.ftlh", params);
 	}
 

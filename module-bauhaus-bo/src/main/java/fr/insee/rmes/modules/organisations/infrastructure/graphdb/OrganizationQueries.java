@@ -17,6 +17,7 @@ public class OrganizationQueries {
 	public static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
 	public static final String ORGANIZATIONS_INSEE_GRAPH = "ORGANIZATIONS_INSEE_GRAPH";
 	public static final String ORGANIZATIONS_FOLDER = "fr/insee/rmes/modules/organisations/infrastructure/";
+	private static final String IDENTIFIER = "IDENTIFIER";
 
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
@@ -31,7 +32,7 @@ public class OrganizationQueries {
         params.put(ORGANIZATIONS_GRAPH, SparqlLiterals.iri(graphs.organizationsGraph()));
         params.put(ORGANIZATIONS_INSEE_GRAPH, SparqlLiterals.iri(graphs.orgInseeGraph()));
         params.put("LG1", SparqlLiterals.literal(languages.lg1()));
-        params.put("IDENTIFIER", SparqlLiterals.literal(identifier));
+        params.put(IDENTIFIER, SparqlLiterals.literal(identifier));
         return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "compactOrganisationQuery.ftlh", params);
     }
 
@@ -58,7 +59,7 @@ public class OrganizationQueries {
 		params.put(ORGANIZATIONS_INSEE_GRAPH, SparqlLiterals.iri(graphs.orgInseeGraph()));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
-		params.put("IDENTIFIER", SparqlLiterals.literal(identifier));
+		params.put(IDENTIFIER, SparqlLiterals.literal(identifier));
 		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getOrganization.ftlh", params);
 	}
 
@@ -84,7 +85,7 @@ public class OrganizationQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(ORGANIZATIONS_GRAPH, SparqlLiterals.iri(graphs.organizationsGraph()));
 		params.put(ORGANIZATIONS_INSEE_GRAPH, SparqlLiterals.iri(graphs.orgInseeGraph()));
-		params.put("IDENTIFIER", SparqlLiterals.literal(identifier));
+		params.put(IDENTIFIER, SparqlLiterals.literal(identifier));
 		return FreeMarkerUtils.buildRequest(ORGANIZATIONS_FOLDER, "getUriById.ftlh", params);
 	}
 

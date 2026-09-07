@@ -58,6 +58,7 @@ public class StructureRepository extends RdfService {
     public static final String COMPONENT_DEFINITION_CREATED = "componentDefinitionCreated";
     public static final String COMPONENT_DEFINITION_MODIFIED = "componentDefinitionModified";
     public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
+    private static final String COMPONENT = "component";
 
     private final StructureComponent structureComponent;
 
@@ -146,9 +147,9 @@ public class StructureRepository extends RdfService {
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
 
-            this.repoGestion.getMultipleTripletsForObject(componentDefinitionFlat, "contributor", structureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
-            componentDefinitionFlat.remove("component");
-            componentDefinition.put("component", componentDefinitionFlat);
+            this.repoGestion.getMultipleTripletsForObject(componentDefinitionFlat, "contributor", structureQueries.getComponentContributors(componentDefinitionFlat.getString(COMPONENT)), "contributor");
+            componentDefinitionFlat.remove(COMPONENT);
+            componentDefinition.put(COMPONENT, componentDefinitionFlat);
 
 
             componentDefinitions.put(componentDefinition);

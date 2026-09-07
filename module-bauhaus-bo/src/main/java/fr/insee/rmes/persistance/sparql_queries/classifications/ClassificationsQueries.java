@@ -14,6 +14,8 @@ import java.util.HashMap;
 public class ClassificationsQueries {
 
 	public static final String CLASSIFICATIONS = "classifications/";
+	private static final String CLASSIFICATION_URI_PATTERN = "CLASSIFICATION_URI_PATTERN";
+	private static final String CODES_PATH = "/codes/";
 
     private final BauhausLanguagesProperties languages;
     private final GraphsProperties graphs;
@@ -31,13 +33,13 @@ public class ClassificationsQueries {
 
 	public String getGraphUriById(String classifId) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + classifId + "/"));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + classifId + "/"));
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getGraphUriById.ftlh", params);
 	}
 
 	public String classificationQuery(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + id + "/"));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + id + "/"));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put("GRAPH", SparqlLiterals.iri(graphs.classifFamiliesGraph()));
@@ -46,13 +48,13 @@ public class ClassificationsQueries {
 
 	public String classificationQueryUri(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + id + "/"));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + id + "/"));
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassificationUri.ftlh", params);
 	}
 
 	public String classificationItemsQuery(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + id + "/"));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + id + "/"));
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassificationItems.ftlh", params);
@@ -66,7 +68,7 @@ public class ClassificationsQueries {
 
 	public String classificationItemQueryUri(String classificationId, String itemId) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("CLASSIFICATION_URI_PATTERN", SparqlLiterals.literal("/codes/" + classificationId + "/"));
+		params.put(CLASSIFICATION_URI_PATTERN, SparqlLiterals.literal(CODES_PATH + classificationId + "/"));
 		params.put("CLASSIFICATION_ITEM_ID", SparqlLiterals.literal(itemId));
 		return FreeMarkerUtils.buildRequest(CLASSIFICATIONS, "getClassificationItemUri.ftlh", params);
 	}

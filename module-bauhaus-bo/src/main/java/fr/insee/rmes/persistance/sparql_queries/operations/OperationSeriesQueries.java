@@ -34,12 +34,14 @@ public class OperationSeriesQueries {
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 	private static final String ORG_INSEE_GRAPH = "ORG_INSEE_GRAPH";
 	private static final String LINK_PREDICATE = "LINK_PREDICATE";
+	private static final String SERIES_URI_SUFFIX = "SERIES_URI_SUFFIX";
+	private static final String SERIES_PATH = "/operations/serie/";
 
 	public String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, SparqlLiterals.iri(graphs.operationsGraph()));
 		params.put("LABEL", SparqlLiterals.literal(label, lang));
-		params.put("URI_SUFFIX", SparqlLiterals.literal("/operations/serie/" + id));
+		params.put("URI_SUFFIX", SparqlLiterals.literal(SERIES_PATH + id));
 		params.put("TYPE", "insee:StatisticalOperationSeries");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
@@ -49,7 +51,7 @@ public class OperationSeriesQueries {
 		params.put("LG1", SparqlLiterals.literal(languages.lg1()));
 		params.put("LG2", SparqlLiterals.literal(languages.lg2()));
 		params.put("ID", SparqlLiterals.literal(id));
-		params.put("SERIES_URI_SUFFIX", SparqlLiterals.literal("/operations/serie/" + id));
+		params.put(SERIES_URI_SUFFIX, SparqlLiterals.literal(SERIES_PATH + id));
 
 		return FreeMarkerUtils.buildRequest("operations/series/", "getSeriesById.ftlh", params);
 	}
@@ -83,7 +85,7 @@ public class OperationSeriesQueries {
 	 */
 	private static void putSeriesUriSuffix(Map<String, Object> params, String idSeries) {
 		if (idSeries != null && !idSeries.isEmpty()) {
-			params.put("SERIES_URI_SUFFIX", SparqlLiterals.literal("/operations/serie/" + idSeries));
+			params.put(SERIES_URI_SUFFIX, SparqlLiterals.literal(SERIES_PATH + idSeries));
 		}
 	}
 
@@ -98,7 +100,7 @@ public class OperationSeriesQueries {
 	 */
 	public String getFamily(String idSeries) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("SERIES_URI_SUFFIX", SparqlLiterals.literal("/operations/serie/" + idSeries));
+		params.put(SERIES_URI_SUFFIX, SparqlLiterals.literal(SERIES_PATH + idSeries));
 		return buildSeriesRequest("getSeriesFamilyQuery.ftlh", params);
 	}
 
@@ -134,7 +136,7 @@ public class OperationSeriesQueries {
 	 */
 	public String getGeneratedWith(String idSeries) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("SERIES_URI_SUFFIX", SparqlLiterals.literal("/operations/serie/" + idSeries));
+		params.put(SERIES_URI_SUFFIX, SparqlLiterals.literal(SERIES_PATH + idSeries));
 		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);
 	}
 
@@ -145,7 +147,7 @@ public class OperationSeriesQueries {
 	 */
 	public String getOperations(String idSeries) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put("SERIES_URI_SUFFIX", SparqlLiterals.literal("/operations/serie/" + idSeries));
+		params.put(SERIES_URI_SUFFIX, SparqlLiterals.literal(SERIES_PATH + idSeries));
 		return buildSeriesRequest("getSeriesOperationsQuery.ftlh", params);
 	}
 
