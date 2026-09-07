@@ -14,7 +14,7 @@ class CollectionForExportTest {
     private CollectionForExport collectionForExport;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         collectionForExport = new CollectionForExport();
     }
 

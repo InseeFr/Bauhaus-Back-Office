@@ -36,7 +36,7 @@ class IntegrationMinioFilesOperation {
     static final MinIOContainer container = new MinIOContainer(MINIO_IMAGE);
 
     @BeforeAll
-    public static void configureSlf4j() {
+    static void configureSlf4j() {
         System.setProperty("org.slf4j.simpleLogger.log."+MinioFilesOperation.class.getName(), "debug");
         System.setProperty("slf4j.provider", "org.slf4j.simple.SimpleServiceProvider");
     }
