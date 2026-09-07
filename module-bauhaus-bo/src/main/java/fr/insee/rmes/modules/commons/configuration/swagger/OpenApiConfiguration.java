@@ -149,13 +149,17 @@ public class OpenApiConfiguration {
             return;
         }
 
-        log.info("Swagger UI : jeton demandé à l'émetteur qui protège l'API ({}), donc mêmes rôles et mêmes "
-                + "droits qu'un appel du front", issuerUri);
-        log.info("Swagger UI : autorisation {} | jeton {} | client_id « {} » | scope « {} »",
-                authorizationUrl(), tokenUrl(), clientId.isEmpty() ? "<absent>" : clientId, OPENID_SCOPE);
-        log.info("Swagger UI : le client Keycloak doit avoir le flow standard activé et autoriser la redirect "
-                + "URI <origine>{}{} (PKCE S256), sans quoi Keycloak répondra « Invalid parameter: redirect_uri »",
-                contextPath, OAUTH_REDIRECT_PATH);
+        // Garde explicite : les URLs tracées ci-dessous sont construites par appel de méthode, donc
+        // calculées même si INFO est coupé.
+        if (log.isInfoEnabled()) {
+            log.info("Swagger UI : jeton demandé à l'émetteur qui protège l'API ({}), donc mêmes rôles et mêmes "
+                    + "droits qu'un appel du front", issuerUri);
+            log.info("Swagger UI : autorisation {} | jeton {} | client_id « {} » | scope « {} »",
+                    authorizationUrl(), tokenUrl(), clientId.isEmpty() ? "<absent>" : clientId, OPENID_SCOPE);
+            log.info("Swagger UI : le client Keycloak doit avoir le flow standard activé et autoriser la redirect "
+                    + "URI <origine>{}{} (PKCE S256), sans quoi Keycloak répondra « Invalid parameter: redirect_uri »",
+                    contextPath, OAUTH_REDIRECT_PATH);
+        }
 
         if (clientId.isEmpty()) {
             log.warn("Swagger UI : aucun client_id ({} non renseigné), la fenêtre « Authorize » s'ouvrira avec "
