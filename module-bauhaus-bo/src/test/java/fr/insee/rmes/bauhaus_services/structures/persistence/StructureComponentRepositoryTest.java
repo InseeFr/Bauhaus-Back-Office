@@ -2,11 +2,12 @@ package fr.insee.rmes.bauhaus_services.structures.persistence;
 
 import fr.insee.rmes.BauhausLanguagesProperties;
 import fr.insee.rmes.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausIriFactory;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.config.GraphsPropertiesStub;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.domain.exceptions.RmesException;
 import fr.insee.rmes.graphdb.ontologies.QB;
-import fr.insee.rmes.modules.shared_kernel.domain.model.ValidationStatus;
 import fr.insee.rmes.modules.structures.components.domain.model.MutualizedComponent;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import org.eclipse.rdf4j.model.IRI;
@@ -24,10 +25,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.MODIFIED;
 import static fr.insee.rmes.bauhaus_services.structures.persistence.StructureComponentRepository.VALIDATED;
@@ -38,6 +39,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StructureComponentRepositoryTest {
+
+    private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
 
     @InjectMocks
     StructureComponentRepository structureComponentRepository;
@@ -51,6 +54,16 @@ class StructureComponentRepositoryTest {
 
     @Mock
     ComponentPublication componentPublication;
+
+    /**
+     * Fabrique réelle, et non bouchon : les IRI des composants et le graphe de destination font
+     * partie de ce que ce test vérifie. Le {@code @Spy} n'est là que pour qu'elle soit injectée
+     * dans {@code @InjectMocks} comme les autres collaborateurs.
+     */
+    @Spy
+    BauhausIriFactory iriFactory = new BauhausIriFactory(
+            GraphsPropertiesStub.stub(),
+            new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("composants/")));
 
     @Test
     void shouldThrowRmesExceptionWhenUpdateComponent() {
@@ -144,91 +157,63 @@ class StructureComponentRepositoryTest {
 
     @Test
     void shouldStoreCreatorAndContributorAsUriForComponent() throws RmesException {
-        IRI componentIri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/structureComponent/dimension/d1000");
-        IRI graphIri = SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/structures/components");
-        org.eclipse.rdf4j.model.Literal fakeDateLiteral = SimpleValueFactory.getInstance().createLiteral("2024-01-15T10:00:00");
+        MutualizedComponent component = dimension();
+        component.setCreator("http://creator-uri");
+        component.setContributor(List.of("http://contributor-uri"));
 
-        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.structureComponentDimensionIRI("d1000")).thenReturn(componentIri);
-            rdfUtilsMock.when(RdfUtils::structureComponentGraph).thenReturn(graphIri);
-            rdfUtilsMock.when(() -> RdfUtils.toString(any(IRI.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(anyString())).thenReturn(fakeDateLiteral);
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(IRI.class), any(IRI.class), anyString(), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
+        structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-
-            MutualizedComponent component = new MutualizedComponent();
-            component.setIdentifiant("identifiant");
-            component.setLabelLg1("label fr");
-            component.setLabelLg2("label en");
-            component.setType(QB.DIMENSION_PROPERTY.toString());
-            component.setCreator("http://creator-uri");
-            component.setContributor(List.of("http://contributor-uri"));
-
-            structureComponentRepository.createComponent(component, "d1000", new JSONObject());
-
-            ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-            verify(repoGestion).loadSimpleObject(eq(componentIri), modelCaptor.capture(), isNull());
-
-            Model model = modelCaptor.getValue();
-            IRI expectedCreatorIri = SimpleValueFactory.getInstance().createIRI("http://creator-uri");
-            IRI expectedContributorIri = SimpleValueFactory.getInstance().createIRI("http://contributor-uri");
-
-            assertThat(model).anyMatch(stmt ->
-                stmt.getPredicate().equals(DC.CREATOR) && stmt.getObject().equals(expectedCreatorIri)
-            );
-            assertThat(model).anyMatch(stmt ->
-                stmt.getPredicate().equals(DC.CONTRIBUTOR) && stmt.getObject().equals(expectedContributorIri)
-            );
-        }
+        assertThat(storedModel()).anyMatch(stmt ->
+                stmt.getPredicate().equals(DC.CREATOR)
+                        && stmt.getObject().equals(VF.createIRI("http://creator-uri")));
+        assertThat(storedModel()).anyMatch(stmt ->
+                stmt.getPredicate().equals(DC.CONTRIBUTOR)
+                        && stmt.getObject().equals(VF.createIRI("http://contributor-uri")));
     }
 
     @Test
     void shouldNotStoreNullCreatorInModel() throws RmesException {
-        IRI componentIri = SimpleValueFactory.getInstance().createIRI("http://bauhaus/structureComponent/dimension/d1000");
-        IRI graphIri = SimpleValueFactory.getInstance().createIRI("http://rdf.insee.fr/graphes/structures/components");
-        org.eclipse.rdf4j.model.Literal fakeDateLiteral = SimpleValueFactory.getInstance().createLiteral("2024-01-15T10:00:00");
+        MutualizedComponent component = dimension();
+        component.setContributor(List.of());
 
-        try (MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)) {
-            rdfUtilsMock.when(() -> RdfUtils.structureComponentDimensionIRI("d1000")).thenReturn(componentIri);
-            rdfUtilsMock.when(RdfUtils::structureComponentGraph).thenReturn(graphIri);
-            rdfUtilsMock.when(() -> RdfUtils.toString(any(IRI.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralString(any(ValidationStatus.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(anyString())).thenReturn(fakeDateLiteral);
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(IRI.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(IRI.class), any(IRI.class), anyString(), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(IRI.class), any(IRI.class), any(IRI.class), any(Model.class), any(Resource.class))).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(Resource.class), any(IRI.class), anyString(), any(Model.class), any(Resource.class))).thenCallRealMethod();
+        structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
+        assertThat(storedModel()).noneMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR));
+    }
 
-            MutualizedComponent component = new MutualizedComponent();
-            component.setIdentifiant("identifiant");
-            component.setLabelLg1("label fr");
-            component.setLabelLg2("label en");
-            component.setType(QB.DIMENSION_PROPERTY.toString());
-            component.setContributor(List.of());
+    /**
+     * L'IRI du composant et le graphe qui l'accueille se déduisent de la configuration : ce test
+     * vérifie qu'ils sont bien portés par les triplets écrits, et non seulement par l'appel au
+     * dépôt.
+     */
+    @Test
+    void shouldStoreTheComponentInTheComponentsGraphUnderItsTypedIri() throws RmesException {
+        MutualizedComponent component = dimension();
+        component.setContributor(List.of());
 
-            structureComponentRepository.createComponent(component, "d1000", new JSONObject());
+        structureComponentRepository.createComponent(component, "d1000", new JSONObject());
 
-            ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-            verify(repoGestion).loadSimpleObject(eq(componentIri), modelCaptor.capture(), isNull());
+        IRI expectedIri = VF.createIRI("http://bauhaus/composants/dimension/d1000");
+        Resource expectedGraph = VF.createIRI("http://rdf.insee.fr/graphes/composants");
 
-            Model model = modelCaptor.getValue();
-            assertThat(model).noneMatch(stmt -> stmt.getPredicate().equals(DC.CREATOR));
-        }
+        verify(repoGestion).loadSimpleObject(eq(expectedIri), any(Model.class), isNull());
+        assertThat(storedModel()).allMatch(stmt ->
+                stmt.getSubject().equals(expectedIri) && expectedGraph.equals(stmt.getContext()));
+    }
+
+    private static MutualizedComponent dimension() throws RmesException {
+        MutualizedComponent component = new MutualizedComponent();
+        component.setIdentifiant("identifiant");
+        component.setLabelLg1("label fr");
+        component.setLabelLg2("label en");
+        component.setType(QB.DIMENSION_PROPERTY.toString());
+        return component;
+    }
+
+    private Model storedModel() throws RmesException {
+        ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repoGestion).loadSimpleObject(any(IRI.class), modelCaptor.capture(), isNull());
+        return modelCaptor.getValue();
     }
 
 }
-
-
-
-
