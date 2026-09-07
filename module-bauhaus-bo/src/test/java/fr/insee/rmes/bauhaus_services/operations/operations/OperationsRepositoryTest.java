@@ -155,7 +155,7 @@ class OperationsRepositoryTest {
                 if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                     fail("La création d'une opération sur une série avec SIMS ne devrait plus lever 406 : " + e.getDetails());
                 }
-            } catch (Exception ignored) {
+            } catch (Exception _) {
                 // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
             }
         }

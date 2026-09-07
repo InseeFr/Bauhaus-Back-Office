@@ -97,7 +97,7 @@ public class GraphDbStampChecker implements StampChecker {
                 }
                 default -> throw new UnsupportedModuleException(module);
             };
-        } catch (RmesException | IllegalArgumentException e) {
+        } catch (RmesException | IllegalArgumentException _) {
             // IllegalArgumentException : l'identifiant ne donne pas une IRI injectable dans la requête.
             throw new StampFetchException(module, id);
         }
@@ -126,7 +126,7 @@ public class GraphDbStampChecker implements StampChecker {
                 default -> throw new UnsupportedModuleException(module);
             };
             return normalizeOrganisationStamps(this.getStamps("contributors", query));
-        } catch (RmesException | IllegalArgumentException e){
+        } catch (RmesException | IllegalArgumentException _){
             // IllegalArgumentException : l'identifiant ne donne pas une IRI injectable dans la requête.
             throw new StampFetchException(module, id);
         }

@@ -84,7 +84,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
                     .bucket(bucketName)
                     .object(document.getFullPath())
                     .build()).size() > 0;
-        } catch (MinioException e) {
+        } catch (MinioException _) {
             return false;
         }
     }

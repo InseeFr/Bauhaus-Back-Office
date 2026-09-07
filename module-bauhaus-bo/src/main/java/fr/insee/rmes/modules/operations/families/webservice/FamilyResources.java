@@ -132,7 +132,7 @@ public class FamilyResources  {
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			familyService.validateFamily(id);
-		} catch (FamilyAlreadyPublishedException e) {
+		} catch (FamilyAlreadyPublishedException _) {
 			throw new RmesBadRequestException(ErrorCodes.ALREADY_PUBLISHED,
 					"This family is already published", "Family: " + id);
 		}

@@ -147,7 +147,7 @@ class SeriesRepositoryTest {
             if (e.getDetails().contains("A series cannot have both a Sims and Operation(s)")) {
                 fail("La mise à jour d'une série combinant idSims et operations ne devrait plus lever 406 : " + e.getDetails());
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             // d'autres exceptions sont attendues car les mocks ne couvrent pas tout le flow
         }
     }

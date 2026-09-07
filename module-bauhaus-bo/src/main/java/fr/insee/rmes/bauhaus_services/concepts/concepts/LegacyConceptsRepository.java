@@ -270,7 +270,7 @@ public class LegacyConceptsRepository extends RdfService {
 			if (response != null && response.has("state")) {
 				return response.getString("state");
 			}
-		} catch (JSONException e) {
+		} catch (JSONException _) {
 			logger.debug("No current validation status for concept {}", id);
 		}
 		return ValidationStatus.UNPUBLISHED.getValue();
