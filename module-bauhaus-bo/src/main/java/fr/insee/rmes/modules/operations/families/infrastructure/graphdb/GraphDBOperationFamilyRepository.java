@@ -113,9 +113,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         List<OperationFamilySeries> series = new ArrayList<>();
 
         if (!array.isEmpty()) {
-            JSONUtils.stream(array).forEach(attribute -> {
-                series.add(OperationFamilySeries.fromJSON(attribute));
-            });
+            JSONUtils.stream(array).forEach(attribute -> series.add(OperationFamilySeries.fromJSON(attribute)));
         }
         return series;
     }
@@ -126,9 +124,7 @@ public class GraphDBOperationFamilyRepository implements OperationFamilyReposito
         List<OperationFamilySubject> subjects = new ArrayList<>();
 
         if (!array.isEmpty()) {
-            JSONUtils.stream(array).forEach(attribute -> {
-                subjects.add(OperationFamilySubject.fromJSON(attribute));
-            });
+            JSONUtils.stream(array).forEach(attribute -> subjects.add(OperationFamilySubject.fromJSON(attribute)));
         }
         return subjects;
     }

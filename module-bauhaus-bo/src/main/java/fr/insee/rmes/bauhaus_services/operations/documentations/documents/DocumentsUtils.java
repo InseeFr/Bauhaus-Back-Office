@@ -180,9 +180,7 @@ public class DocumentsUtils extends RdfService {
 
     private void formatDateInJsonArray(JSONArray allDocs) {
         if (!allDocs.isEmpty()) {
-            JSONUtils.stream(allDocs).forEach(doc -> {
-                formatDateInJsonObject(doc);
-            });
+            JSONUtils.stream(allDocs).forEach(this::formatDateInJsonObject);
         }
     }
 
