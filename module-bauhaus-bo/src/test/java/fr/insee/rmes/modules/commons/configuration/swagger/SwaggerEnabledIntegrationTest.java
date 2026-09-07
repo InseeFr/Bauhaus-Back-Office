@@ -16,7 +16,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,7 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest(classes = SwaggerEnabledIntegrationTest.TestConfiguration.class)
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "fr.insee.rmes.bauhaus.swagger.enabled=true")
+@TestPropertySource(properties = {
+        "fr.insee.rmes.bauhaus.swagger.enabled=true",
+        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://auth.test/realms/bauhaus",
+        "fr.insee.rmes.bauhaus.swagger.oauth.client-id=bauhaus-swagger"
+})
 class SwaggerEnabledIntegrationTest {
 
     @Configuration
@@ -64,6 +70,32 @@ class SwaggerEnabledIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme").value("bearer"))
                 .andExpect(jsonPath("$.security[0].bearerAuth").exists());
+    }
+
+    @Test
+    void should_declare_an_oauth2_scheme_pointing_at_the_issuer_that_protects_the_api() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.components.securitySchemes.oauth2.type").value("oauth2"))
+                .andExpect(jsonPath("$.components.securitySchemes.oauth2.flows.authorizationCode.authorizationUrl")
+                        .value("https://auth.test/realms/bauhaus/protocol/openid-connect/auth"))
+                .andExpect(jsonPath("$.components.securitySchemes.oauth2.flows.authorizationCode.tokenUrl")
+                        .value("https://auth.test/realms/bauhaus/protocol/openid-connect/token"))
+                .andExpect(jsonPath("$.components.securitySchemes.oauth2.flows.authorizationCode.refreshUrl")
+                        .value("https://auth.test/realms/bauhaus/protocol/openid-connect/token"))
+                .andExpect(jsonPath("$.components.securitySchemes.oauth2.flows.authorizationCode.scopes.openid")
+                        .exists())
+                .andExpect(jsonPath("$.security[?(@.oauth2)]").exists());
+    }
+
+    @Test
+    void should_hand_the_client_id_to_the_ui_so_it_fetches_the_token_itself() throws Exception {
+        mvc.perform(get("/swagger-ui/swagger-initializer.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("initOAuth")))
+                .andExpect(content().string(containsString("bauhaus-swagger")))
+                .andExpect(content().string(containsString("usePkceWithAuthorizationCodeGrant")))
+                .andExpect(content().string(containsString("openid")));
     }
 
     @Test
