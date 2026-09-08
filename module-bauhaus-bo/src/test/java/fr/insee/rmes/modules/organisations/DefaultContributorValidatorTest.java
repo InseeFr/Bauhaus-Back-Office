@@ -22,15 +22,17 @@ class DefaultContributorValidatorTest {
     @Test
     void should_accept_an_iri_that_exists_in_the_management_database() throws OrganisationFetchException {
         when(organisationsRepository.checkIfOrganisationExists(VALID_IRI)).thenReturn(true);
+        DefaultContributorValidator validator = validatorFor(VALID_IRI);
 
-        assertThatCode(() -> validatorFor(VALID_IRI).validate()).doesNotThrowAnyException();
+        assertThatCode(validator::validate).doesNotThrowAnyException();
     }
 
     @Test
     void should_reject_an_iri_absent_from_the_management_database() throws OrganisationFetchException {
         when(organisationsRepository.checkIfOrganisationExists(VALID_IRI)).thenReturn(false);
+        DefaultContributorValidator validator = validatorFor(VALID_IRI);
 
-        assertThatThrownBy(() -> validatorFor(VALID_IRI).validate())
+        assertThatThrownBy(validator::validate)
                 .isInstanceOf(InvalidDefaultContributorException.class)
                 .hasMessageContaining("fr.insee.rmes.bauhaus.defaultContributor")
                 .hasMessageContaining(VALID_IRI)
@@ -39,7 +41,9 @@ class DefaultContributorValidatorTest {
 
     @Test
     void should_reject_a_value_that_is_not_an_absolute_uri() {
-        assertThatThrownBy(() -> validatorFor("HIE3014990").validate())
+        DefaultContributorValidator validator = validatorFor("HIE3014990");
+
+        assertThatThrownBy(validator::validate)
                 .isInstanceOf(InvalidDefaultContributorException.class)
                 .hasMessageContaining("fr.insee.rmes.bauhaus.defaultContributor")
                 .hasMessageContaining("HIE3014990")
@@ -48,14 +52,18 @@ class DefaultContributorValidatorTest {
 
     @Test
     void should_reject_a_malformed_uri() {
-        assertThatThrownBy(() -> validatorFor("http://bauhaus/organisations/ insee").validate())
+        DefaultContributorValidator validator = validatorFor("http://bauhaus/organisations/ insee");
+
+        assertThatThrownBy(validator::validate)
                 .isInstanceOf(InvalidDefaultContributorException.class)
                 .hasMessageContaining("URI absolue");
     }
 
     @Test
     void should_reject_a_blank_value() {
-        assertThatThrownBy(() -> validatorFor("   ").validate())
+        DefaultContributorValidator validator = validatorFor("   ");
+
+        assertThatThrownBy(validator::validate)
                 .isInstanceOf(InvalidDefaultContributorException.class)
                 .hasMessageContaining("est vide");
     }
@@ -64,8 +72,9 @@ class DefaultContributorValidatorTest {
     void should_reject_when_the_management_database_cannot_answer() throws OrganisationFetchException {
         OrganisationFetchException cause = new OrganisationFetchException();
         when(organisationsRepository.checkIfOrganisationExists(VALID_IRI)).thenThrow(cause);
+        DefaultContributorValidator validator = validatorFor(VALID_IRI);
 
-        assertThatThrownBy(() -> validatorFor(VALID_IRI).validate())
+        assertThatThrownBy(validator::validate)
                 .isInstanceOf(InvalidDefaultContributorException.class)
                 .hasMessageContaining("n'a pas pu être vérifié")
                 .hasCause(cause);
