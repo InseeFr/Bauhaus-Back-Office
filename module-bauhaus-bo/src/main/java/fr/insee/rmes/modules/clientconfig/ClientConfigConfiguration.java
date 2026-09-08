@@ -19,7 +19,7 @@ public class ClientConfigConfiguration {
             BauhausConfiguration bauhausConfiguration,
             BauhausLanguagesProperties languages,
             @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
-            @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
+            @Value("${fr.insee.rmes.bauhaus.defaultContributor}") String defaultContributor,
             @Value("${fr.insee.rmes.bauhaus.validation.operation_series}") List<String> extraMandatoryFields,
             ColecticaConfiguration colecticaConfiguration) {
         return new DomainClientConfigService(

@@ -1,0 +1,77 @@
+package fr.insee.rmes.modules.organisations;
+
+import fr.insee.rmes.modules.organisations.domain.exceptions.OrganisationFetchException;
+import fr.insee.rmes.modules.organisations.domain.port.serverside.OrganisationsRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class DefaultContributorValidatorTest {
+
+    private static final String VALID_IRI = "http://bauhaus/organisations/insee/HIE3014990";
+
+    @Mock
+    private OrganisationsRepository organisationsRepository;
+
+    @Test
+    void should_accept_an_iri_that_exists_in_the_management_database() throws OrganisationFetchException {
+        when(organisationsRepository.checkIfOrganisationExists(VALID_IRI)).thenReturn(true);
+
+        assertThatCode(() -> validatorFor(VALID_IRI).validate()).doesNotThrowAnyException();
+    }
+
+    @Test
+    void should_reject_an_iri_absent_from_the_management_database() throws OrganisationFetchException {
+        when(organisationsRepository.checkIfOrganisationExists(VALID_IRI)).thenReturn(false);
+
+        assertThatThrownBy(() -> validatorFor(VALID_IRI).validate())
+                .isInstanceOf(InvalidDefaultContributorException.class)
+                .hasMessageContaining("fr.insee.rmes.bauhaus.defaultContributor")
+                .hasMessageContaining(VALID_IRI)
+                .hasMessageContaining("n'existe pas");
+    }
+
+    @Test
+    void should_reject_a_value_that_is_not_an_absolute_uri() {
+        assertThatThrownBy(() -> validatorFor("HIE3014990").validate())
+                .isInstanceOf(InvalidDefaultContributorException.class)
+                .hasMessageContaining("fr.insee.rmes.bauhaus.defaultContributor")
+                .hasMessageContaining("HIE3014990")
+                .hasMessageContaining("URI absolue");
+    }
+
+    @Test
+    void should_reject_a_malformed_uri() {
+        assertThatThrownBy(() -> validatorFor("http://bauhaus/organisations/ insee").validate())
+                .isInstanceOf(InvalidDefaultContributorException.class)
+                .hasMessageContaining("URI absolue");
+    }
+
+    @Test
+    void should_reject_a_blank_value() {
+        assertThatThrownBy(() -> validatorFor("   ").validate())
+                .isInstanceOf(InvalidDefaultContributorException.class)
+                .hasMessageContaining("est vide");
+    }
+
+    @Test
+    void should_reject_when_the_management_database_cannot_answer() throws OrganisationFetchException {
+        OrganisationFetchException cause = new OrganisationFetchException();
+        when(organisationsRepository.checkIfOrganisationExists(VALID_IRI)).thenThrow(cause);
+
+        assertThatThrownBy(() -> validatorFor(VALID_IRI).validate())
+                .isInstanceOf(InvalidDefaultContributorException.class)
+                .hasMessageContaining("n'a pas pu être vérifié")
+                .hasCause(cause);
+    }
+
+    private DefaultContributorValidator validatorFor(String defaultContributor) {
+        return new DefaultContributorValidator(defaultContributor, organisationsRepository);
+    }
+}
