@@ -7,7 +7,7 @@ fr.insee.rmes.bauhaus.colectica:
   # serves a real request in a test context.
   cache-warmup-enabled: false
 
-fr.insee.rmes.bauhaus.concepts:
+fr.insee.rmes.bauhaus:
   # Disable the defaultContributor startup check (DefaultContributorValidator): test contexts have
   # no reachable management database, so the ASK query could only fail the context refresh.
   default-contributor-check-enabled: false
