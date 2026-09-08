@@ -61,6 +61,19 @@ class OrganizationQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
+    void should_return_stamp_of_organizations() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsQuery());
+
+        JSONObject hieOrg = JSONUtils.stream(result)
+                .filter(obj -> "HIE2000069".equals(obj.getString("id")))
+                .findFirst()
+                .orElse(null);
+
+        assertNotNull(hieOrg);
+        assertEquals("DR86-DIR", hieOrg.optString("stamp"));
+    }
+
+    @Test
     void should_return_organizations_two_langs() throws Exception {
         JSONArray result = repositoryGestion.getResponseAsArray(organizationQueries.organizationsTwoLangsQuery());
         assertEquals(219, result.length());

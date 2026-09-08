@@ -53,6 +53,7 @@ public class GraphDBOrganisationsRepository implements OrganisationsRepository {
                 result.add(new OrganisationSummary(
                         org.optString("iri", null),
                         org.optString("id", null),
+                        org.optString("stamp", null),
                         OrganisationLabel.withAcronym(org.optString("label", null), acronym),
                         OrganisationLabel.withAcronym(org.optString("labelLg2", null), acronym)));
             });

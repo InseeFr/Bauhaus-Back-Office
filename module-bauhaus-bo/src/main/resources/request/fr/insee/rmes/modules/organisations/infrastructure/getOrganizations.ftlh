@@ -1,8 +1,12 @@
-SELECT DISTINCT ?iri ?id ?label ?labelLg2 ?acronym
+SELECT DISTINCT ?iri ?id ?stamp ?label ?labelLg2 ?acronym
 FROM ${ORGANIZATIONS_GRAPH}
 FROM ${ORGANIZATIONS_INSEE_GRAPH}
 WHERE {
     ?iri adms:identifier ?id .
+
+    # Le timbre : les utilisateurs sont identifiés par lui (claim `stamp`), pas
+    # par l'adms:identifier, et le front doit pouvoir faire le rapprochement.
+    OPTIONAL { ?iri dcterms:identifier ?stamp . }
 
     OPTIONAL { ?iri skos:prefLabel ?label .
     FILTER (lang(?label) = ${LG1})}
@@ -16,5 +20,5 @@ WHERE {
 
     BIND(if(bound(?label2), ?label2, ?label) AS ?labelLg2)
 }
-GROUP BY ?iri ?id ?label ?labelLg2 ?acronym
+GROUP BY ?iri ?id ?stamp ?label ?labelLg2 ?acronym
 ORDER BY ?label

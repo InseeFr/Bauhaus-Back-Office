@@ -63,8 +63,8 @@ class DomainOrganisationsServiceTest {
     void shouldGetAllOrganisationsDelegatingToRepository() throws OrganisationFetchException {
         // Given
         List<OrganisationSummary> expected = List.of(
-            new OrganisationSummary("http://bauhaus/organisations/ORG-001", "ORG-001", "Direction des statistiques", "Statistics Directorate"),
-            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
+            new OrganisationSummary("http://bauhaus/organisations/ORG-001", "ORG-001", null, "Direction des statistiques", "Statistics Directorate"),
+            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", null, "Service des données", "Data Department")
         );
         when(organisationsRepository.getOrganisations()).thenReturn(expected);
 

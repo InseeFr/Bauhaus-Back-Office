@@ -29,8 +29,8 @@ class OrganisationsResourcesTest {
     void shouldListOrganisationsFromNewServiceMappingIdentifierToId() throws Throwable {
         // Given
         when(organisationsService.getOrganisations()).thenReturn(List.of(
-                new OrganisationSummary("http://bauhaus/organisations/ORG-001", "ORG-001", "Direction des statistiques", "Statistics Directorate"),
-                new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
+                new OrganisationSummary("http://bauhaus/organisations/ORG-001", "ORG-001", "DG75-L001", "Direction des statistiques", "Statistics Directorate"),
+                new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "DG75-L002", "Service des données", "Data Department")
         ));
         var resources = new OrganisationsResources(organisationsService, organizationsService);
 
@@ -40,8 +40,8 @@ class OrganisationsResourcesTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(List.of(
-                new OrganisationResponse("http://bauhaus/organisations/ORG-001", "ORG-001", "Direction des statistiques", "Statistics Directorate"),
-                new OrganisationResponse("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
+                new OrganisationResponse("http://bauhaus/organisations/ORG-001", "ORG-001", "DG75-L001", "Direction des statistiques", "Statistics Directorate"),
+                new OrganisationResponse("http://bauhaus/organisations/ORG-002", "ORG-002", "DG75-L002", "Service des données", "Data Department")
         ));
         verifyNoInteractions(organizationsService);
     }

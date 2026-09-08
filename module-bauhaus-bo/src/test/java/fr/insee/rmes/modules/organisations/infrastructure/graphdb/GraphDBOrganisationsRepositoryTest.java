@@ -63,10 +63,33 @@ class GraphDBOrganisationsRepositoryTest {
 
         // Then
         assertThat(result).containsExactly(
-            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", "Service des données", "Data Department")
+            new OrganisationSummary("http://bauhaus/organisations/ORG-002", "ORG-002", null, "Service des données", "Data Department")
         );
 
         verify(repositoryGestion).getResponseAsArray("mock-query");
+    }
+
+    @Test
+    void shouldMapStampFromSparqlRow() throws RmesException, OrganisationFetchException {
+        // Given
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(new JSONObject("""
+            {
+                "iri": "http://bauhaus/organisations/insee/HIE2001201",
+                "id": "HIE2001201",
+                "stamp": "DG75-L201",
+                "label": "Division Agriculture et Environnement",
+                "labelLg2": "Agriculture and Environment Division"
+            }
+            """));
+
+        when(repositoryGestion.getResponseAsArray("mock-query")).thenReturn(jsonArray);
+
+        // When
+        List<OrganisationSummary> result = repository.getOrganisations();
+
+        // Then
+        assertThat(result).extracting(OrganisationSummary::stamp).containsExactly("DG75-L201");
     }
 
     @Test
@@ -92,6 +115,7 @@ class GraphDBOrganisationsRepositoryTest {
         assertThat(result).containsExactly(new OrganisationSummary(
                 "http://bauhaus/organisations/5c499713",
                 "HIE2171581",
+                null,
                 "Direction générale de l'Administration et de la Fonction publique (DGAFP)",
                 "Directorate-General for Administration and the Civil Service (DGAFP)"));
     }
@@ -115,7 +139,7 @@ class GraphDBOrganisationsRepositoryTest {
 
         // Then
         assertThat(result).containsExactly(
-            new OrganisationSummary("http://bauhaus/organisations/d94861cf", "HIE-DGPN", "DGPN", "DGPN"));
+            new OrganisationSummary("http://bauhaus/organisations/d94861cf", "HIE-DGPN", null, "DGPN", "DGPN"));
     }
 
     @Test
