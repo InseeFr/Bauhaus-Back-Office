@@ -5,88 +5,54 @@ import fr.insee.rmes.modules.commons.configuration.OnModuleCondition;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.context.annotation.ConditionContext;
-import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.mock.env.MockEnvironment;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class OnModuleConditionTest {
 
+    private static final String MODULES_PROPERTY = "fr.insee.rmes.bauhaus.modules";
+
+    private final OnModuleCondition condition = new OnModuleCondition();
+
     @Test
-    void shouldMatchWhenModuleIsActive() {
-        OnModuleCondition condition = new OnModuleCondition();
-        ConditionContext context = mock(ConditionContext.class);
-        Environment environment = mock(Environment.class);
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+    void shouldMatchWhenModuleIsDeclared() {
+        ConditionOutcome outcome = evaluate("ddi", "concepts", "ddi", "operations");
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "ddi");
-
-        when(context.getEnvironment()).thenReturn(environment);
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].identifier")).thenReturn("concepts");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[1].identifier")).thenReturn("ddi");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[1].disabled", "false")).thenReturn("false");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[2].identifier")).thenReturn("operations");
-        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertTrue(outcome.isMatch(), "Should match when module 'ddi' is in modules and not disabled");
+        assertTrue(outcome.isMatch(), "Should match when module 'ddi' is declared in modules");
     }
 
     @Test
-    void shouldNotMatchWhenModuleIsNotActive() {
-        OnModuleCondition condition = new OnModuleCondition();
-        ConditionContext context = mock(ConditionContext.class);
-        Environment environment = mock(Environment.class);
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+    void shouldNotMatchWhenModuleIsNotDeclared() {
+        ConditionOutcome outcome = evaluate("ddi", "concepts", "operations");
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "ddi");
-
-        when(context.getEnvironment()).thenReturn(environment);
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].identifier")).thenReturn("concepts");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[1].identifier")).thenReturn("operations");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[2].identifier")).thenReturn(null);
-        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertFalse(outcome.isMatch(), "Should not match when module 'ddi' is not in modules");
+        assertFalse(outcome.isMatch(), "Should not match when module 'ddi' is not declared in modules");
     }
 
     @Test
     void shouldNotMatchWhenModulesPropertyIsEmpty() {
-        OnModuleCondition condition = new OnModuleCondition();
-        ConditionContext context = mock(ConditionContext.class);
-        Environment environment = mock(Environment.class);
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "ddi");
-
-        when(context.getEnvironment()).thenReturn(environment);
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].identifier")).thenReturn(null);
-        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
+        ConditionOutcome outcome = evaluate("ddi");
 
         assertFalse(outcome.isMatch(), "Should not match when modules property is empty");
     }
 
     @Test
-    void shouldNotMatchWhenAttributesAreNull() {
-        OnModuleCondition condition = new OnModuleCondition();
-        ConditionContext context = mock(ConditionContext.class);
-        Environment environment = mock(Environment.class);
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+    void shouldMatchWhenModuleIsTheOnlyDeclaredModule() {
+        ConditionOutcome outcome = evaluate("ddi", "ddi");
 
-        when(context.getEnvironment()).thenReturn(environment);
+        assertTrue(outcome.isMatch(), "Should match when module is the only declared module");
+    }
+
+    @Test
+    void shouldNotMatchWhenAttributesAreNull() {
+        ConditionContext context = mock(ConditionContext.class);
+        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
         when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(null);
 
         ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
@@ -94,45 +60,19 @@ class OnModuleConditionTest {
         assertFalse(outcome.isMatch(), "Should not match when annotation attributes are null");
     }
 
-    @Test
-    void shouldMatchWhenModuleIsOnlyActiveModule() {
-        OnModuleCondition condition = new OnModuleCondition();
+    private ConditionOutcome evaluate(String requiredModule, String... declaredModules) {
+        MockEnvironment environment = new MockEnvironment();
+        for (int i = 0; i < declaredModules.length; i++) {
+            environment.setProperty(MODULES_PROPERTY + "[" + i + "].identifier", declaredModules[i]);
+        }
+
         ConditionContext context = mock(ConditionContext.class);
-        Environment environment = mock(Environment.class);
-        AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "ddi");
-
         when(context.getEnvironment()).thenReturn(environment);
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].identifier")).thenReturn("ddi");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].disabled", "false")).thenReturn("false");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[1].identifier")).thenReturn(null);
-        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(attributes);
 
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertTrue(outcome.isMatch(), "Should match when module is the only active module");
-    }
-
-    @Test
-    void shouldNotMatchWhenModuleIsDisabled() {
-        OnModuleCondition condition = new OnModuleCondition();
-        ConditionContext context = mock(ConditionContext.class);
-        Environment environment = mock(Environment.class);
         AnnotatedTypeMetadata metadata = mock(AnnotatedTypeMetadata.class);
+        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName()))
+                .thenReturn(Map.of("value", requiredModule));
 
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("value", "ddi");
-
-        when(context.getEnvironment()).thenReturn(environment);
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].identifier")).thenReturn("ddi");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[0].disabled", "false")).thenReturn("true");
-        when(environment.getProperty("fr.insee.rmes.bauhaus.modules[1].identifier")).thenReturn(null);
-        when(metadata.getAnnotationAttributes(ConditionalOnModule.class.getName())).thenReturn(attributes);
-
-        ConditionOutcome outcome = condition.getMatchOutcome(context, metadata);
-
-        assertFalse(outcome.isMatch(), "Should not match when module 'ddi' is disabled");
+        return condition.getMatchOutcome(context, metadata);
     }
 }

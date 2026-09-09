@@ -10,14 +10,14 @@ import java.lang.annotation.Target;
 
 /**
  * Conditional annotation that checks if a specific module is active.
- * A module is considered active if it appears in {@code fr.insee.rmes.bauhaus.modules}
- * with {@code disabled} not set to {@code true}.
+ * A module is active when it is declared in {@code fr.insee.rmes.bauhaus.modules};
+ * to deactivate it, remove it from that list.
  *
  * <p>Example usage:</p>
  * <pre>
  * {@literal @}ConditionalOnModule("ddi")
  * public class DdiResources {
- *     // This class will only be loaded if 'ddi' is in modules and not disabled
+ *     // This class will only be loaded if 'ddi' is declared in modules
  * }
  * </pre>
  *
@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
  * <pre>
  * fr.insee.rmes.bauhaus.modules[0].identifier=concepts
  * fr.insee.rmes.bauhaus.modules[1].identifier=ddi
- * fr.insee.rmes.bauhaus.modules[1].disabled=true
  * </pre>
  */
 @Target({ElementType.TYPE, ElementType.METHOD})

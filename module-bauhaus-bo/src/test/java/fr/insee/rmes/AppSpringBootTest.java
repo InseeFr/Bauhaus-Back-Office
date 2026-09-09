@@ -24,19 +24,9 @@ import java.lang.annotation.Target;
                 "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
                 "fr.insee.rmes.bauhaus.datasets.record.baseURI=recordIRI",
                 "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
-                "fr.insee.rmes.bauhaus.modules[0].identifier=concepts",
-                "fr.insee.rmes.bauhaus.modules[0].disabled=true",
-                "fr.insee.rmes.bauhaus.modules[1].identifier=classifications",
-                "fr.insee.rmes.bauhaus.modules[1].disabled=true",
-                "fr.insee.rmes.bauhaus.modules[2].identifier=operations",
-                "fr.insee.rmes.bauhaus.modules[3].identifier=structures",
-                "fr.insee.rmes.bauhaus.modules[3].disabled=true",
-                "fr.insee.rmes.bauhaus.modules[4].identifier=codelists",
-                "fr.insee.rmes.bauhaus.modules[4].disabled=true",
-                "fr.insee.rmes.bauhaus.modules[5].identifier=datasets",
-                "fr.insee.rmes.bauhaus.modules[5].disabled=true",
-                "fr.insee.rmes.bauhaus.modules[6].identifier=ddi",
-                "fr.insee.rmes.bauhaus.modules[6].disabled=true",
+                // La liste des modules declaree ici remplace entierement celle de bauhaus.yml :
+                // seul 'operations' est actif, les controleurs des autres modules ne sont pas charges.
+                "fr.insee.rmes.bauhaus.modules[0].identifier=operations",
                 "spring.hateoas.use-hal-as-default-json-media-type=true"
         }
 )
