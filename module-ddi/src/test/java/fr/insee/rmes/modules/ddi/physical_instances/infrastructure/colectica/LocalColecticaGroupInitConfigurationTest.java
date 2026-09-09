@@ -406,7 +406,7 @@ class LocalColecticaGroupInitConfigurationTest {
     }
 
     @Test
-    void shouldCreateOneVariableSchemeAndStudyUnitLogicalProductPerSeriesReferencedByEachStudyUnit() throws Exception {
+    void shouldCreateOneVariableSchemeAndLogicalProductPerStudyUnit() throws Exception {
         // Given: 1 series with 1 operation
         JSONArray sparqlResults = new JSONArray();
         sparqlResults.put(new JSONObject()
@@ -432,40 +432,51 @@ class LocalColecticaGroupInitConfigurationTest {
 
         int variants = LocalColecticaGroupInitConfiguration.VARIANT_LABEL_WORDS.size();
 
-        // Exactly ONE VariableScheme for the series (not per variant), created empty
+        // Une VariableScheme par StudyUnit (donc par variante), créée vide
         ArgumentCaptor<Ddi4VariableScheme> vsCaptor = ArgumentCaptor.forClass(Ddi4VariableScheme.class);
-        verify(ddiService, times(1)).createVariableScheme(vsCaptor.capture());
-        Ddi4VariableScheme variableScheme = vsCaptor.getValue();
-        assertThat(variableScheme.agency()).isEqualTo("fr.insee");
-        assertThat(variableScheme.variableReference()).isNullOrEmpty();
+        verify(ddiService, times(variants)).createVariableScheme(vsCaptor.capture());
+        List<Ddi4VariableScheme> variableSchemes = vsCaptor.getAllValues();
+        assertThat(variableSchemes).allSatisfy(vs -> {
+            assertThat(vs.agency()).isEqualTo("fr.insee");
+            assertThat(vs.variableReference()).isNullOrEmpty();
+        });
+        assertThat(variableSchemes).extracting(Ddi4VariableScheme::id).doesNotHaveDuplicates();
 
-        // Exactly ONE study-unit LogicalProduct for the series, filing that VariableScheme
-        // (distinguishable from the group LogicalProducts by its variableSchemeReference)
+        // Un LogicalProduct de study unit par StudyUnit (repérable à sa variableSchemeReference),
+        // classant la VariableScheme de cette même StudyUnit
         ArgumentCaptor<Ddi4LogicalProduct> lpCaptor = ArgumentCaptor.forClass(Ddi4LogicalProduct.class);
         verify(ddiService, atLeastOnce()).createLogicalProduct(lpCaptor.capture());
         List<Ddi4LogicalProduct> studyUnitLps = lpCaptor.getAllValues().stream()
                 .filter(lp -> lp.variableSchemeReference() != null && !lp.variableSchemeReference().isEmpty())
                 .toList();
-        assertThat(studyUnitLps).hasSize(1);
-        Ddi4LogicalProduct studyUnitLp = studyUnitLps.get(0);
-        assertThat(studyUnitLp.variableSchemeReference().get(0).id()).isEqualTo(variableScheme.id());
-        assertThat(studyUnitLp.variableSchemeReference().get(0).type()).isEqualTo("VariableScheme");
-        assertThat(studyUnitLp.codeListSchemeReference()).isNullOrEmpty();
+        assertThat(studyUnitLps).hasSize(variants);
+        assertThat(studyUnitLps).extracting(Ddi4LogicalProduct::id).doesNotHaveDuplicates();
+        for (int variant = 0; variant < variants; variant++) {
+            Ddi4LogicalProduct studyUnitLp = studyUnitLps.get(variant);
+            assertThat(studyUnitLp.variableSchemeReference()).hasSize(1);
+            assertThat(studyUnitLp.variableSchemeReference().get(0).id())
+                    .isEqualTo(variableSchemes.get(variant).id());
+            assertThat(studyUnitLp.variableSchemeReference().get(0).type()).isEqualTo("VariableScheme");
+            assertThat(studyUnitLp.codeListSchemeReference()).isNullOrEmpty();
+        }
 
-        // Every study unit (all variants of the operation) files that per-series study-unit LogicalProduct
+        // Chaque StudyUnit ne classe QUE son propre LogicalProduct : aucun LogicalProduct partagé
         ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
         verify(studyUnitService, times(variants)).createOrUpdate(suCaptor.capture());
-        assertThat(suCaptor.getAllValues()).allSatisfy(su -> {
-            assertThat(su.logicalProductReferences()).hasSize(1);
-            assertThat(su.logicalProductReferences().get(0).id()).isEqualTo(studyUnitLp.id());
-            assertThat(su.logicalProductReferences().get(0).type()).isEqualTo("LogicalProduct");
-        });
+        List<Ddi4StudyUnit> studyUnits = suCaptor.getAllValues();
+        for (int variant = 0; variant < variants; variant++) {
+            Ddi4StudyUnit studyUnit = studyUnits.get(variant);
+            assertThat(studyUnit.logicalProductReferences()).hasSize(1);
+            assertThat(studyUnit.logicalProductReferences().get(0).id())
+                    .isEqualTo(studyUnitLps.get(variant).id());
+            assertThat(studyUnit.logicalProductReferences().get(0).type()).isEqualTo("LogicalProduct");
+        }
 
-        // Ordering: the VariableScheme and its LogicalProduct exist before the study units that reference them
+        // Ordre : la VariableScheme et son LogicalProduct existent avant la StudyUnit qui les référence
         InOrder inOrder = inOrder(ddiService, studyUnitService);
         inOrder.verify(ddiService).createVariableScheme(any());
         inOrder.verify(ddiService).createLogicalProduct(any());
-        inOrder.verify(studyUnitService, atLeastOnce()).createOrUpdate(any());
+        inOrder.verify(studyUnitService).createOrUpdate(any());
     }
 
     @Test

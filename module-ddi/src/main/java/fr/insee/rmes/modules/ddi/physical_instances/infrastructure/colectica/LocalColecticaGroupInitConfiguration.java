@@ -126,10 +126,10 @@ public class LocalColecticaGroupInitConfiguration {
     private static final String SENTINEL_MMVR_SEED_SUFFIX = "#managedmissingvaluesrepresentation";
 
     /**
-     * Suffixes appended to a <em>series</em> seed (variant-independent) to derive the deterministic
-     * ids of the study unit's LogicalProduct and its (initially empty) VariableScheme. There is a
-     * single study-unit LogicalProduct per series, filed by every StudyUnit of that series, exposing
-     * the StudyUnit → LogicalProduct → VariableScheme chain.
+     * Suffixes appended to a <em>study unit</em> seed (l'IRI de l'opération et sa variante) pour
+     * dériver les ids déterministes du LogicalProduct de cette StudyUnit et de sa VariableScheme
+     * (initialement vide). Un LogicalProduct n'est classé que par une seule StudyUnit, exposant la
+     * chaîne StudyUnit → LogicalProduct → VariableScheme.
      */
     private static final String STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX = "#studyunitlogicalproduct";
     private static final String VARIABLE_SCHEME_SEED_SUFFIX = "#variablescheme";
@@ -205,27 +205,22 @@ public class LocalColecticaGroupInitConfiguration {
             int physicalInstancesCreated = 0;
 
             for (SeriesWithOperations series : seriesData) {
-                // Un unique LogicalProduct de StudyUnit par série (et sa VariableScheme, initialement
-                // vide), créés AVANT les StudyUnits pour que Colectica ne fabrique pas de stubs vides
-                // des items référencés (même contrainte d'ordre que pour les Groups). Ignoré si la
-                // série n'a aucune opération : sans StudyUnit, personne ne classerait ce LogicalProduct.
-                Reference studyUnitLogicalProductRef = null;
-                if (!series.operations().isEmpty()) {
-                    try {
-                        studyUnitLogicalProductRef = createStudyUnitLogicalProduct(ddiService, series, defaultAgencyId, defaultLang);
-                    } catch (Exception e) {
-                        logger.error("Failed to create the study unit logical product / variable scheme for series: id={}", series.seriesId(), e);
-                    }
-                }
-
                 for (OperationInfo operation : series.operations()) {
                     // Une StudyUnit (et sa PhysicalInstance) par variante, aux libellés distincts.
                     for (int variant = 0; variant < VARIANT_LABEL_WORDS.size(); variant++) {
                         String variantWord = VARIANT_LABEL_WORDS.get(variant);
                         try {
-                            String studyUnitId = generateDeterministicUuid(operation.operationIri() + VARIANT_SEED_SEPARATOR + variant);
+                            String studyUnitSeed = operation.operationIri() + VARIANT_SEED_SEPARATOR + variant;
+                            String studyUnitId = generateDeterministicUuid(studyUnitSeed);
                             String studyUnitLabel = operation.operationLabel() + " " + variantWord + " Study Unit";
                             String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+                            // Le LogicalProduct de cette StudyUnit (et sa VariableScheme, initialement
+                            // vide), créés AVANT elle pour que Colectica ne fabrique pas de stubs vides
+                            // des items référencés (même contrainte d'ordre que pour les Groups).
+                            Reference studyUnitLogicalProductRef = createStudyUnitLogicalProduct(
+                                    ddiService, studyUnitSeed, operation.operationLabel() + " " + variantWord,
+                                    defaultAgencyId, defaultLang);
 
                             Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
                                     Ddi4StudyUnit.TYPE,
@@ -237,7 +232,7 @@ public class LocalColecticaGroupInitConfiguration {
                                     new Citation(LangStrings.of(defaultLang, studyUnitLabel)),
                                     operation.operationIri(),
                                     null,
-                                    studyUnitLogicalProductRef != null ? List.of(studyUnitLogicalProductRef) : null
+                                    List.of(studyUnitLogicalProductRef)
                             );
 
                             logger.info("Creating study unit: operationId={}, uri={}, variant={}, generatedUuid={}, label='{}'",
@@ -452,17 +447,17 @@ public class LocalColecticaGroupInitConfiguration {
     }
 
     /**
-     * Crée, pour une série, l'unique VariableScheme (initialement vide) puis le LogicalProduct de
-     * StudyUnit qui le classe, et renvoie la référence vers ce LogicalProduct (destinée à être classée
-     * par chaque StudyUnit de la série). Le VariableScheme est créé avant le LogicalProduct qui le
-     * référence, lui-même avant les StudyUnits, pour éviter que Colectica ne fabrique des stubs vides.
-     * Contrairement au LogicalProduct du Group (un par variante), il n'y en a qu'un seul par série.
+     * Crée, pour une StudyUnit, sa VariableScheme (initialement vide) puis le LogicalProduct qui la
+     * classe, et renvoie la référence vers ce LogicalProduct (destinée à être classée par cette seule
+     * StudyUnit). Le VariableScheme est créé avant le LogicalProduct qui le référence, lui-même avant
+     * la StudyUnit, pour éviter que Colectica ne fabrique des stubs vides. Comme le LogicalProduct du
+     * Group, il n'est classé que par un seul conteneur.
      */
-    private Reference createStudyUnitLogicalProduct(DDIService ddiService, SeriesWithOperations series,
+    private Reference createStudyUnitLogicalProduct(DDIService ddiService, String studyUnitSeed, String labelPrefix,
                                                     String defaultAgencyId, String defaultLang) {
         String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
-        String variableSchemeId = generateDeterministicUuid(series.seriesIri() + VARIABLE_SCHEME_SEED_SUFFIX);
+        String variableSchemeId = generateDeterministicUuid(studyUnitSeed + VARIABLE_SCHEME_SEED_SUFFIX);
         Ddi4VariableScheme variableScheme = new Ddi4VariableScheme(
                 Ddi4VariableScheme.TYPE,
                 CogsDate.ofDateTime(versionDate),
@@ -470,13 +465,13 @@ public class LocalColecticaGroupInitConfiguration {
                 defaultAgencyId,
                 variableSchemeId,
                 "1",
-                LangStrings.of(defaultLang, series.seriesLabel() + " Variable Scheme"),
+                LangStrings.of(defaultLang, labelPrefix + " Variable Scheme"),
                 List.of()
         );
-        logger.info("Creating variable scheme: id={}, series={}", variableSchemeId, series.seriesId());
+        logger.info("Creating variable scheme: id={}, studyUnitSeed={}", variableSchemeId, studyUnitSeed);
         ddiService.createVariableScheme(variableScheme);
 
-        String studyUnitLogicalProductId = generateDeterministicUuid(series.seriesIri() + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
+        String studyUnitLogicalProductId = generateDeterministicUuid(studyUnitSeed + STUDY_UNIT_LOGICAL_PRODUCT_SEED_SUFFIX);
         Ddi4LogicalProduct studyUnitLogicalProduct = new Ddi4LogicalProduct(
                 Ddi4LogicalProduct.TYPE,
                 CogsDate.ofDateTime(versionDate),
@@ -484,13 +479,13 @@ public class LocalColecticaGroupInitConfiguration {
                 defaultAgencyId,
                 studyUnitLogicalProductId,
                 "1",
-                LangStrings.of(defaultLang, series.seriesLabel() + " Study Unit Logical Product"),
+                LangStrings.of(defaultLang, labelPrefix + " Study Unit Logical Product"),
                 null,
                 null,
                 List.of(Reference.of(defaultAgencyId, variableSchemeId, "1", "VariableScheme"))
         );
-        logger.info("Creating study unit logical product: id={}, series={}, variableScheme={}",
-                studyUnitLogicalProductId, series.seriesId(), variableSchemeId);
+        logger.info("Creating study unit logical product: id={}, studyUnitSeed={}, variableScheme={}",
+                studyUnitLogicalProductId, studyUnitSeed, variableSchemeId);
         ddiService.createLogicalProduct(studyUnitLogicalProduct);
 
         return Reference.of(defaultAgencyId, studyUnitLogicalProductId, "1", "LogicalProduct");
