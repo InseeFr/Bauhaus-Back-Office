@@ -3,7 +3,6 @@ fr.insee.rmes.bauhaus.colectica:
     - fr-FR
     - en-GB
   init: false
-  mock-server-enabled: false
 
   server:
     # Primary Colectica Instance
