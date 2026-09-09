@@ -124,9 +124,10 @@ class ColecticaCatalogRepository {
             return List.of();
         }
 
-        Map<String, List<String>> seriesIrisByGroupId = seriesIrisByGroupId(response.results());
+        List<ColecticaItem> groups = ColecticaItems.latestVersions(response.results());
+        Map<String, List<String>> seriesIrisByGroupId = seriesIrisByGroupId(groups);
 
-        return response.results().stream()
+        return groups.stream()
             .map(item -> new PartialGroup(
                 item.identifier(),
                 labels.of(item),
@@ -165,7 +166,7 @@ class ColecticaCatalogRepository {
             return List.of();
         }
 
-        return response.results().stream()
+        return ColecticaItems.latestAdvancedVersions(response.results()).stream()
             .map(item -> new PartialPhysicalInstance(
                 item.identifier(),
                 labels.ofAdvanced(item),
@@ -207,16 +208,17 @@ class ColecticaCatalogRepository {
         Set<String> attachedKeys = new HashSet<>();
 
         for (PartialGroup group : getGroups()) {
-            List<ColecticaItem> studyUnits = colecticaClient.findRelatedItems(
+            List<ColecticaItem> studyUnits = ColecticaItems.latestVersions(colecticaClient.findRelatedItems(
                 RelationshipDirection.BY_SUBJECT,
                 new ItemReference(group.agency(), group.id()),
-                List.of(STUDY_UNIT_UUID));
+                List.of(STUDY_UNIT_UUID)));
             for (ColecticaItem studyUnit : studyUnits) {
                 String studyUnitLabel = labels.of(studyUnit);
-                List<ItemReference> piRefs = colecticaClient.findRelatedDescriptions(
-                    RelationshipDirection.BY_SUBJECT,
-                    ColecticaItems.itemRef(studyUnit),
-                    List.of(physicalInstanceType));
+                List<ItemReference> piRefs = ColecticaItems.distinctReferences(
+                    colecticaClient.findRelatedDescriptions(
+                        RelationshipDirection.BY_SUBJECT,
+                        ColecticaItems.itemRef(studyUnit),
+                        List.of(physicalInstanceType)));
                 for (ItemReference piRef : piRefs) {
                     String piKey = ColecticaItems.key(piRef.agencyId(), piRef.identifier());
                     PartialPhysicalInstance pi = piByKey.get(piKey);
@@ -368,7 +370,7 @@ class ColecticaCatalogRepository {
         if (response == null || response.results() == null) {
             return List.of();
         }
-        return response.results().stream()
+        return ColecticaItems.latestVersions(response.results()).stream()
             .map(item -> factory.create(
                 item.identifier(),
                 labels.of(item),

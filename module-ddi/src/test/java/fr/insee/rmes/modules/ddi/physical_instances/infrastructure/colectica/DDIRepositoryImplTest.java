@@ -3567,6 +3567,177 @@ class DDIRepositoryImplTest {
         assertNull(rows.get(0).groupLabel());
     }
 
+    @Test
+    void getPhysicalInstanceSearchRows_keepsOnlyTheLatestVersionOfEachStudyUnit() {
+        // Colectica indexe les relations par PAIRE VERSIONNÉE : une StudyUnit en 2 versions sous le
+        // même groupe ressort deux fois de _query/relationship/bysubject/descriptions.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency, "pi-1", 1, piType, false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(), Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agency, "g1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024", 1),
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024 (v2)", 2)));
+        when(colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agency, "su-1"),
+                List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(1, rows.size());
+        assertEquals("pi-1", rows.get(0).id());
+        assertEquals("su-1", rows.get(0).studyUnitId());
+        assertEquals("Recensement 2024 (v2)", rows.get(0).studyUnitLabel());
+        // Une seule descente par StudyUnit, pas une par version.
+        verify(colecticaClient, times(1)).findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT, new ItemReference(agency, "su-1"), List.of(piType));
+    }
+
+    @Test
+    void getPhysicalInstanceSearchRows_doesNotRepeatAPhysicalInstanceReferencedBySeveralRelationshipVersions() {
+        // Même cause côté StudyUnit -> PhysicalInstance : une PI en plusieurs versions produit
+        // autant de descriptions de relation, que le DTO ItemReference rend indiscernables.
+        String agency = "agency1";
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        ColecticaAdvancedItem pi = new ColecticaAdvancedItem(
+                agency, "pi-1", 1, piType, false,
+                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                Map.of(), Map.of("isPublished", false));
+        when(colecticaClient.queryAdvanced(anyList()))
+                .thenReturn(new ColecticaAdvancedResponse(List.of(pi), 1, null));
+        when(colecticaClient.query(List.of(GROUP_ITEM_TYPE)))
+                .thenReturn(new ColecticaResponse(
+                        List.of(labelItem(GROUP_ITEM_TYPE, agency, "g1", "Groupe BPE")), 1, 1, null, null, null));
+        when(colecticaClient.getDescriptions(anyList())).thenReturn(null);
+        when(colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agency, "g1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
+                .thenReturn(List.of(labelItem(STUDY_UNIT_ITEM_TYPE, agency, "su-1", "Recensement 2024")));
+        when(colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_SUBJECT,
+                new ItemReference(agency, "su-1"),
+                List.of(piType)))
+                .thenReturn(List.of(new ItemReference(agency, "pi-1"), new ItemReference(agency, "pi-1")));
+
+        List<PhysicalInstanceSearchRow> rows = ddiRepository.getPhysicalInstanceSearchRows();
+
+        assertEquals(1, rows.size());
+        assertEquals("pi-1", rows.get(0).id());
+    }
+
+    @Test
+    void getStudyUnits_keepsOnlyTheLatestVersionOfEachStudyUnit() {
+        when(colecticaClient.query(anyList())).thenReturn(new ColecticaResponse(
+                List.of(
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024", 1),
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024 (v3)", 3),
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-1", "Recensement 2024 (v2)", 2),
+                        versionedLabelItem(STUDY_UNIT_ITEM_TYPE, "fr.insee", "su-2", "BPE 2023", 1)),
+                4, 4, null, null, null));
+
+        List<PartialStudyUnit> result = ddiRepository.getStudyUnits();
+
+        assertEquals(2, result.size());
+        assertEquals("su-1", result.get(0).id());
+        assertEquals("Recensement 2024 (v3)", result.get(0).label());
+        assertEquals("su-2", result.get(1).id());
+    }
+
+    @Test
+    void getPhysicalInstancesViaAdvancedQuery_keepsOnlyTheLatestVersionOfEachPhysicalInstance() {
+        String piType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of("PhysicalInstance", piType));
+        when(colecticaClient.queryAdvanced(anyList())).thenReturn(new ColecticaAdvancedResponse(
+                List.of(
+                        new ColecticaAdvancedItem("fr.insee", "pi-1", 1, piType, false,
+                                Map.of("label", List.of(new LocalizedText("Fichier détail", "fr-FR"))),
+                                Map.of(), Map.of()),
+                        new ColecticaAdvancedItem("fr.insee", "pi-1", 2, piType, false,
+                                Map.of("label", List.of(new LocalizedText("Fichier détail (v2)", "fr-FR"))),
+                                Map.of(), Map.of())),
+                2, null));
+
+        List<PartialPhysicalInstance> result = ddiRepository.getPhysicalInstancesViaAdvancedQuery();
+
+        assertEquals(1, result.size());
+        assertEquals("pi-1", result.get(0).id());
+        assertEquals("Fichier détail (v2)", result.get(0).label());
+    }
+
+    @Test
+    void getVariablesUsingCodeList_keepsOnlyTheLatestVersionOfEachVariableAndPhysicalInstance() {
+        String agencyId = "fr.insee";
+        String variableType = "683889c6-f74b-4d5e-92ed-908c0a42bb2d";
+        String dataRelationshipType = "e5bf1809-e5f2-4e7a-b9f9-f1e7c6e0b1e0";
+        String physicalInstanceType = "a51e85bb-6259-4488-8df2-f08cb43485f8";
+        when(instanceConfiguration.itemTypes()).thenReturn(Map.of(
+            "Variable", variableType,
+            "DataRelationship", dataRelationshipType,
+            "PhysicalInstance", physicalInstanceType,
+            "StudyUnit", STUDY_UNIT_ITEM_TYPE));
+
+        // La variable et la PI sont chacune en 2 versions : autant de descriptions de relation.
+        when(colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "cl-1"),
+                List.of(variableType)))
+            .thenReturn(List.of(
+                versionedLabelItem(variableType, agencyId, "var-1", "Sexe", 1),
+                versionedLabelItem(variableType, agencyId, "var-1", "Sexe (v2)", 2)));
+        when(colecticaClient.findRelatedDescriptions(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "var-1"),
+                List.of(dataRelationshipType)))
+            .thenReturn(List.of(new ItemReference(agencyId, "dr-1"), new ItemReference(agencyId, "dr-1")));
+        when(colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "dr-1"),
+                List.of(physicalInstanceType)))
+            .thenReturn(List.of(
+                versionedLabelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail", 1),
+                versionedLabelItem(physicalInstanceType, agencyId, "pi-1", "Fichier détail (v2)", 2)));
+        when(colecticaClient.findRelatedItems(
+                RelationshipDirection.BY_OBJECT,
+                new ItemReference(agencyId, "pi-1"),
+                List.of(STUDY_UNIT_ITEM_TYPE)))
+            .thenReturn(List.of(
+                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024", 1),
+                versionedLabelItem(STUDY_UNIT_ITEM_TYPE, agencyId, "su-1", "Recensement 2024 (v2)", 2)));
+
+        List<CodeListVariableUsage> result = ddiRepository.getVariablesUsingCodeList(agencyId, "cl-1");
+
+        assertEquals(1, result.size());
+        CodeListVariableUsage usage = result.get(0);
+        assertEquals("Sexe (v2)", usage.variableLabel());
+        assertEquals("Fichier détail (v2)", usage.physicalInstanceLabel());
+        assertEquals("Recensement 2024 (v2)", usage.studyUnitLabel());
+    }
+
+    private static ColecticaItem versionedLabelItem(
+            String itemType, String agency, String id, String label, int version) {
+        return new ColecticaItem(
+                null, Map.of("fr-FR", label), null, null, null, 0, "test-repo", true, List.of(),
+                itemType, agency, version, id, null, null, null, null,
+                true, false, false, "DDI", 1L, 0);
+    }
+
     private static ColecticaItem labelItem(String itemType, String agency, String id, String label) {
         return new ColecticaItem(
                 null,                       // summary
