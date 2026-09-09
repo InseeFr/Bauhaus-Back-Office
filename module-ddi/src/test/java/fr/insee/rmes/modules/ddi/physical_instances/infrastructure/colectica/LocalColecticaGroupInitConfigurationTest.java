@@ -1,6 +1,7 @@
 package fr.insee.rmes.modules.ddi.physical_instances.infrastructure.colectica;
 
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CogsDate;
+import fr.insee.rmes.modules.ddi.physical_instances.domain.model.CreatePhysicalInstanceRequest;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4Category;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CategoryScheme;
 import fr.insee.rmes.modules.ddi.physical_instances.domain.model.Ddi4CodeList;
@@ -617,5 +618,45 @@ class LocalColecticaGroupInitConfigurationTest {
                 .isEqualTo(generateDeterministicUuid("http://id.insee.fr/operations/operation/op1"));
         assertThat(association.operations().get(1).studyUnitId())
                 .isEqualTo(generateDeterministicUuid("http://id.insee.fr/operations/operation/op2"));
+    }
+
+    @Test
+    void versionedStudyUnitExample_createsAStudyUnitInTwoVersionsBothCarryingTheSameBasicPhysicalInstance() throws Exception {
+        when(ddiService.createPhysicalInstance(any())).thenReturn(piResponse("fr.insee", "pi-two-versions"));
+
+        LocalColecticaGroupInitConfiguration config = new LocalColecticaGroupInitConfiguration();
+        CommandLineRunner runner = config.initColecticaVersionedStudyUnitExample(
+                groupService, studyUnitService, ddiService, createColecticaConfig());
+
+        runner.run();
+
+        // Une seule PhysicalInstance, très basique (libellé seul).
+        ArgumentCaptor<CreatePhysicalInstanceRequest> piCaptor =
+                ArgumentCaptor.forClass(CreatePhysicalInstanceRequest.class);
+        verify(ddiService).createPhysicalInstance(piCaptor.capture());
+        assertThat(piCaptor.getValue().physicalInstanceLabel())
+                .isEqualTo(LocalColecticaGroupInitConfiguration.VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL);
+
+        // La MÊME StudyUnit enregistrée en version 1 puis en version 2, les deux référençant la PI.
+        ArgumentCaptor<Ddi4StudyUnit> suCaptor = ArgumentCaptor.forClass(Ddi4StudyUnit.class);
+        verify(studyUnitService, times(2)).createOrUpdate(suCaptor.capture());
+        List<Ddi4StudyUnit> versions = suCaptor.getAllValues();
+        String expectedStudyUnitId =
+                generateDeterministicUuid(LocalColecticaGroupInitConfiguration.VERSIONED_EXAMPLE_STUDY_UNIT_SEED);
+        assertThat(versions).extracting(Ddi4StudyUnit::id).containsExactly(expectedStudyUnitId, expectedStudyUnitId);
+        assertThat(versions).extracting(Ddi4StudyUnit::version).containsExactly("1", "2");
+        assertThat(versions).allSatisfy(su -> {
+            assertThat(su.urn()).isEqualTo("urn:ddi:fr.insee:%s:%s".formatted(su.id(), su.version()));
+            assertThat(su.physicalInstanceReferences())
+                    .extracting(Reference::id)
+                    .containsExactly("pi-two-versions");
+        });
+
+        // Un groupe dédié, pour que la SU soit atteinte par la descente Group -> StudyUnit -> PI.
+        ArgumentCaptor<Ddi4Group> groupCaptor = ArgumentCaptor.forClass(Ddi4Group.class);
+        verify(groupService).createOrUpdate(groupCaptor.capture());
+        assertThat(groupCaptor.getValue().studyUnitReference())
+                .extracting(Reference::id)
+                .containsExactly(expectedStudyUnitId);
     }
 }

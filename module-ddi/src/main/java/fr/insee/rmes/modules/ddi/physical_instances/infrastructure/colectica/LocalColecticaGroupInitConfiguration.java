@@ -42,6 +42,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -390,6 +392,105 @@ public class LocalColecticaGroupInitConfiguration {
             // Step 4: Verify items in Colectica by querying back
             logger.info("Step 4: Verifying created items in Colectica via _query");
             verifyItemsInColectica(colecticaClient);
+        };
+    }
+
+    /**
+     * Graine des ids déterministes de l'exemple « StudyUnit en deux versions » (cf. la duplication
+     * des lignes de recherche avancée) : un groupe, une StudyUnit enregistrée en version 1 puis en
+     * version 2, et une PhysicalInstance très basique référencée par les deux versions.
+     */
+    static final String VERSIONED_EXAMPLE_STUDY_UNIT_SEED = "example:studyunit:two-versions";
+    private static final String VERSIONED_EXAMPLE_GROUP_SEED = "example:group:two-versions";
+
+    /** Libellé de la PhysicalInstance basique portée par les deux versions de la StudyUnit. */
+    static final String VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL =
+            "EXEMPLE - PI d'une study unit en 2 versions";
+
+    /**
+     * Exemple de données volontairement versionnées : un Group → une StudyUnit enregistrée en
+     * version 1 <em>puis</em> en version 2 → une PhysicalInstance très basique, référencée à
+     * l'identique par les deux versions de la StudyUnit.
+     * <p>
+     * Il sert à reproduire, sur un jeu de données local, ce que l'on observe sur les environnements
+     * où les items ont été versionnés : la descente Group → StudyUnit → PhysicalInstance de la
+     * recherche avancée passe par {@code _query/relationship/.../descriptions}, qui renvoie une
+     * description par relation <em>versionnée</em> et non une par item — la même PhysicalInstance
+     * ressort donc plusieurs fois.
+     * <p>
+     * Volontairement indépendant de {@link #initColecticaGroups} (il ne dérive de aucune série ni
+     * opération SPARQL) : ses ids sont déterministes, donc l'init reste rejouable.
+     */
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    CommandLineRunner initColecticaVersionedStudyUnitExample(
+            GroupService groupService,
+            StudyUnitService studyUnitService,
+            DDIService ddiService,
+            ColecticaConfiguration colecticaConfiguration
+    ) {
+        return args -> {
+            logger.info("=== Creating the example study unit in two versions with a basic physical instance ===");
+
+            String defaultAgencyId = colecticaConfiguration.server().defaultAgencyId();
+            String defaultLang = colecticaConfiguration.langs().getFirst();
+            String versionResponsibility = colecticaConfiguration.server().versionResponsibility();
+            String versionDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+            try {
+                // La PhysicalInstance d'abord : les deux versions de la StudyUnit la référencent, et
+                // Colectica ne doit pas en fabriquer un stub vide.
+                Ddi4Response piResponse = ddiService.createPhysicalInstance(new CreatePhysicalInstanceRequest(
+                        VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL, VERSIONED_EXAMPLE_PHYSICAL_INSTANCE_LABEL,
+                        null, null, null, null, null));
+                Ddi4PhysicalInstance physicalInstance = piResponse.physicalInstance().getFirst();
+                Reference physicalInstanceReference = Reference.of(
+                        physicalInstance.agency(), physicalInstance.id(), physicalInstance.version(),
+                        "PhysicalInstance");
+                logger.info("Example physical instance created: {}/{}",
+                        physicalInstance.agency(), physicalInstance.id());
+
+                String studyUnitId = generateDeterministicUuid(VERSIONED_EXAMPLE_STUDY_UNIT_SEED);
+                for (String version : List.of("1", "2")) {
+                    Ddi4StudyUnit studyUnit = new Ddi4StudyUnit(
+                            Ddi4StudyUnit.TYPE,
+                            CogsDate.ofDateTime(versionDate),
+                            "urn:ddi:%s:%s:%s".formatted(defaultAgencyId, studyUnitId, version),
+                            defaultAgencyId,
+                            studyUnitId,
+                            version,
+                            new Citation(LangStrings.of(defaultLang,
+                                    "EXEMPLE - study unit en 2 versions (v" + version + ")")),
+                            null,
+                            List.of(physicalInstanceReference),
+                            null
+                    );
+                    logger.info("Creating the example study unit: id={}, version={}", studyUnitId, version);
+                    studyUnitService.createOrUpdate(studyUnit);
+                }
+
+                // Le groupe : sans lui la PhysicalInstance serait « orpheline » et n'apparaîtrait
+                // qu'une fois dans la recherche avancée, qui descend depuis les groupes.
+                String groupId = generateDeterministicUuid(VERSIONED_EXAMPLE_GROUP_SEED);
+                Ddi4Group group = new Ddi4Group(
+                        Ddi4Group.TYPE,
+                        CogsDate.ofDateTime(versionDate),
+                        "urn:ddi:%s:%s:1".formatted(defaultAgencyId, groupId),
+                        defaultAgencyId,
+                        groupId,
+                        "1",
+                        versionResponsibility,
+                        new Citation(LangStrings.of(defaultLang, "EXEMPLE - groupe de la study unit en 2 versions")),
+                        List.of(Reference.of(defaultAgencyId, studyUnitId, "1", "StudyUnit")),
+                        List.of(),
+                        "insee:StatisticalOperationSeries",
+                        null
+                );
+                logger.info("Creating the example group: id={}, studyUnit={}", groupId, studyUnitId);
+                groupService.createOrUpdate(group);
+            } catch (Exception e) {
+                logger.error("Failed to create the example study unit in two versions", e);
+            }
         };
     }
 
