@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers = CodesListsResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=codelists",
+                "fr.insee.rmes.bauhaus.modules.codelists.enabled=true",
                 "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         }
 )

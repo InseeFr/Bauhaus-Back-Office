@@ -28,7 +28,7 @@ public class ClientConfigConfiguration {
                 defaultContributor,
                 languages.toDomain(),
                 bauhausConfiguration.env(),
-                bauhausConfiguration.modules(),
+                bauhausConfiguration.enabledModules(),
                 bauhausConfiguration.version(),
                 extraMandatoryFields,
                 colecticaConfiguration.server().defaultAgencyId(),

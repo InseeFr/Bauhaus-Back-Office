@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class,
         properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=datasets"
+                "fr.insee.rmes.bauhaus.modules.datasets.enabled=true"
         }
 )
 @AutoConfigureMockMvc(addFilters = false)

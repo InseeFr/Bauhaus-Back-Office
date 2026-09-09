@@ -52,7 +52,7 @@ import static org.mockito.Mockito.when;
                 "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
                 "fr.insee.rmes.bauhaus.datasets.record.baseURI=recordIRI",
                 "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
-                "fr.insee.rmes.bauhaus.modules[0].identifier=operations",
+                "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
                 "fr.insee.rmes.bauhaus.documentation.geographie.baseUri=http://bauhaus/qualite/territoire/",
                 "fr.insee.rmes.bauhaus.documentation.titlePrefixLg1=Rapport qualité :",
                 "fr.insee.rmes.bauhaus.documentation.titlePrefixLg2=Quality report:",

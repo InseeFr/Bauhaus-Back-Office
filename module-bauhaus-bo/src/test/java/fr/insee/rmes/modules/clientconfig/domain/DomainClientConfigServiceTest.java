@@ -22,7 +22,7 @@ class DomainClientConfigServiceTest {
                 "DG75-L201",
                 new ConfiguredLanguages("fr", "en"),
                 "dev",
-                List.of(new ModuleConfig("concepts"), new ModuleConfig("classifications")),
+                List.of(new ModuleConfig("concepts", true, true), new ModuleConfig("classifications", true, true)),
                 "1.0.0",
                 List.of("altLabel"),
                 "fr.insee",
@@ -43,7 +43,7 @@ class DomainClientConfigServiceTest {
         assertThat(properties.authType()).isEqualTo("NoAuthImpl");
         assertThat(properties.version()).isEqualTo("1.0.0");
         assertThat(properties.defaultAgencyId()).isEqualTo("fr.insee");
-        assertThat(properties.modules()).containsExactly(new ModuleConfig("concepts"), new ModuleConfig("classifications"));
+        assertThat(properties.modules()).containsExactly(new ModuleConfig("concepts", true, true), new ModuleConfig("classifications", true, true));
         assertThat(properties.extraMandatoryFields()).containsExactly("altLabel");
         assertThat(properties.colecticaLangs()).containsExactly("fr-FR", "en-GB");
         assertThat(properties.enableDevTools()).isTrue();

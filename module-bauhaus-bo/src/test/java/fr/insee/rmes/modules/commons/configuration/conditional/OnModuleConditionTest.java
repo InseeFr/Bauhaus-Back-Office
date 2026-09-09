@@ -29,6 +29,16 @@ class OnModuleConditionTest {
     }
 
     @Test
+    void shouldNotMatchWhenModuleIsDisabled() {
+        MockEnvironment environment = new MockEnvironment();
+        environment.setProperty(MODULES_PROPERTY + ".ddi.enabled", "false");
+
+        ConditionOutcome outcome = evaluate("ddi", environment);
+
+        assertFalse(outcome.isMatch(), "Should not match when module 'ddi' is disabled");
+    }
+
+    @Test
     void shouldNotMatchWhenModuleIsNotDeclared() {
         ConditionOutcome outcome = evaluate("ddi", "concepts", "operations");
 
@@ -62,10 +72,14 @@ class OnModuleConditionTest {
 
     private ConditionOutcome evaluate(String requiredModule, String... declaredModules) {
         MockEnvironment environment = new MockEnvironment();
-        for (int i = 0; i < declaredModules.length; i++) {
-            environment.setProperty(MODULES_PROPERTY + "[" + i + "].identifier", declaredModules[i]);
+        for (String declaredModule : declaredModules) {
+            environment.setProperty(MODULES_PROPERTY + "." + declaredModule + ".enabled", "true");
         }
 
+        return evaluate(requiredModule, environment);
+    }
+
+    private ConditionOutcome evaluate(String requiredModule, MockEnvironment environment) {
         ConditionContext context = mock(ConditionContext.class);
         when(context.getEnvironment()).thenReturn(environment);
 

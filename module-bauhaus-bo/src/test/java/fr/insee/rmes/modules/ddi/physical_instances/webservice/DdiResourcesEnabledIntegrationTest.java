@@ -20,7 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = DdiResourcesEnabledIntegrationTest.TestConfiguration.class)
-@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules[0].identifier=ddi")
+@TestPropertySource(properties = "fr.insee.rmes.bauhaus.modules.ddi.enabled=true")
 class DdiResourcesEnabledIntegrationTest {
 
     @Configuration

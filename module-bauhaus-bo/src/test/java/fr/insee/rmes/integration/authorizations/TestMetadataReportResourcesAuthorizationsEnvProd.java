@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers = MetadataReportResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=operations",
+                "fr.insee.rmes.bauhaus.modules.operations.enabled=true",
                 "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         }
 )

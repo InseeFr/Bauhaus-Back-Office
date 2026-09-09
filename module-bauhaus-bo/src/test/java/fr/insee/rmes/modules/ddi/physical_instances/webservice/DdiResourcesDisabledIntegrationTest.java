@@ -17,8 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 )
 @TestPropertySource(
     properties = {
-        // 'ddi' est absent de la liste : le module est inactif.
-        "fr.insee.rmes.bauhaus.modules[0].identifier=concepts",
+        "fr.insee.rmes.bauhaus.modules.ddi.enabled=false",
     }
 )
 class DdiResourcesDisabledIntegrationTest {

@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         controllers = DatasetResources.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = LogRequestFilter.class),
         properties = {
-                "fr.insee.rmes.bauhaus.modules[0].identifier=datasets",
+                "fr.insee.rmes.bauhaus.modules.datasets.enabled=true",
                 "fr.insee.rmes.bauhaus.extensions=pdf,odt"
         }
 )
