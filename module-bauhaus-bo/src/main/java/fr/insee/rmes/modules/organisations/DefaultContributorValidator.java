@@ -49,7 +49,7 @@ public class DefaultContributorValidator {
         String iri = requireAbsoluteUri();
         if (!existsInManagementDatabase(iri)) {
             throw new InvalidDefaultContributorException(PROPERTY_NAME + " = " + iri
-                    + " : cette organisation n'existe pas en base de gestion.");
+                    + " : this organisation does not exist in the management database.");
         }
         logger.info("{} = {} : organisation trouvée en base de gestion", PROPERTY_NAME, iri);
     }

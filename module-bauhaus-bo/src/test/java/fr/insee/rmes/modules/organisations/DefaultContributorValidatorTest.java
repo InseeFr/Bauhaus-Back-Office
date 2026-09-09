@@ -36,7 +36,7 @@ class DefaultContributorValidatorTest {
                 .isInstanceOf(InvalidDefaultContributorException.class)
                 .hasMessageContaining("fr.insee.rmes.bauhaus.defaultContributor")
                 .hasMessageContaining(VALID_IRI)
-                .hasMessageContaining("n'existe pas");
+                .hasMessageContaining("does not exist in the management database");
     }
 
     @Test

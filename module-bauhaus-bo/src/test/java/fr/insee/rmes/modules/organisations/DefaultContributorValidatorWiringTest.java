@@ -30,7 +30,7 @@ class DefaultContributorValidatorWiringTest {
                         .getFailure()
                         .rootCause()
                         .isInstanceOf(InvalidDefaultContributorException.class)
-                        .hasMessageContaining("n'existe pas"));
+                        .hasMessageContaining("does not exist in the management database"));
     }
 
     @Test
