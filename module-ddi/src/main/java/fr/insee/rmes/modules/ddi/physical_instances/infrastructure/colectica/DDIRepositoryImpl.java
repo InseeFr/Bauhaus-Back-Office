@@ -124,6 +124,18 @@ public class DDIRepositoryImpl implements DDIRepository {
         return catalog.getPhysicalInstanceSearchRows();
     }
 
+    /**
+     * Vide la région {@link ColecticaCacheNames#PHYSICAL_INSTANCE_SEARCH_ROWS} pour que le prochain
+     * {@link #getPhysicalInstanceSearchRows()} reparcoure Colectica. Les écritures de PhysicalInstance
+     * l'évincent déjà ; ceci couvre les changements survenus hors de Bauhaus, qu'aucune écriture locale
+     * ne signale.
+     */
+    @Override
+    @CacheEvict(cacheNames = ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS, allEntries = true)
+    public void evictPhysicalInstanceSearchRowsCache() {
+        logger.info("Physical instance search rows cache evicted");
+    }
+
     @Override
     public List<PartialLogicalProduct> getLogicalProducts() {
         return catalog.getLogicalProducts();

@@ -85,4 +85,19 @@ class MutualizedCacheEvictionIntegrationTest {
         assertThat(codesLists.get("k")).isNull();
         assertThat(packageRefs.get("k")).isNull();
     }
+
+    @Test
+    void evictPhysicalInstanceSearchRowsCache_clearsTheSearchRowsRegionOnly() {
+        Cache searchRows = cacheManager.getCache(ColecticaCacheNames.PHYSICAL_INSTANCE_SEARCH_ROWS);
+        Cache codesLists = cacheManager.getCache(ColecticaCacheNames.MUTUALIZED_CODES_LISTS);
+        assertThat(searchRows).isNotNull();
+        assertThat(codesLists).isNotNull();
+        searchRows.put("k", List.of());
+        codesLists.put("k", List.of());
+
+        ddiRepository.evictPhysicalInstanceSearchRowsCache();
+
+        assertThat(searchRows.get("k")).isNull();
+        assertThat(codesLists.get("k")).isNotNull();
+    }
 }

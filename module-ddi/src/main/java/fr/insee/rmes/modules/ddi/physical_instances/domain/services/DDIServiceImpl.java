@@ -421,6 +421,12 @@ public class DDIServiceImpl implements DDIService {
     }
 
     @Override
+    public void evictPhysicalInstanceSearchRowsCache() {
+        logger.info("Evicting physical instance search rows cache");
+        ddiRepository.evictPhysicalInstanceSearchRowsCache();
+    }
+
+    @Override
     public Ddi4Response getMutualizedCodesList(String agencyId, String id) {
         logger.info("Getting mutualized codes list {}/{}", agencyId, id);
         return ddiRepository.getMutualizedCodesList(agencyId, id);

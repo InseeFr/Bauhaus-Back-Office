@@ -676,7 +676,7 @@ class DdiResourcesTest {
         when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
-                ddiResources.searchPhysicalInstances();
+                ddiResources.searchPhysicalInstances(null);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -692,6 +692,45 @@ class DdiResourcesTest {
     }
 
     @Test
+    void searchPhysicalInstances_withCacheControlNoCache_evictsCacheThenServesFreshRows() {
+        PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
+                "fr.insee", "pi-1", "Instance A", new Date(),
+                "fr.insee", "su-1", "Study One",
+                "fr.insee", "g1", "Group One");
+        when(ddiService.searchPhysicalInstances()).thenReturn(List.of(row));
+
+        ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
+                ddiResources.searchPhysicalInstances("no-cache");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+
+        // The cache must be cleared *before* the rows are (re)computed, otherwise the stale entry is served.
+        InOrder inOrder = inOrder(ddiService);
+        inOrder.verify(ddiService).evictPhysicalInstanceSearchRowsCache();
+        inOrder.verify(ddiService).searchPhysicalInstances();
+    }
+
+    @Test
+    void searchPhysicalInstances_withCacheControlNoStoreIgnoringCase_evictsCache() {
+        when(ddiService.searchPhysicalInstances()).thenReturn(List.of());
+
+        ddiResources.searchPhysicalInstances("No-Store");
+
+        verify(ddiService).evictPhysicalInstanceSearchRowsCache();
+    }
+
+    @Test
+    void searchPhysicalInstances_withoutCacheControl_keepsTheCache() {
+        when(ddiService.searchPhysicalInstances()).thenReturn(List.of());
+
+        ddiResources.searchPhysicalInstances(null);
+
+        verify(ddiService, never()).evictPhysicalInstanceSearchRowsCache();
+    }
+
+    @Test
     void searchPhysicalInstances_appliesStampStrategy() throws MissingUserInformationException, RmesException {
         PhysicalInstanceSearchRow row = new PhysicalInstanceSearchRow(
                 "fr.insee", "pi-1", "Instance A", new Date(),
@@ -704,7 +743,7 @@ class DdiResourcesTest {
         when(ddiService.searchPhysicalInstancesFilteredByStamp(Set.of("stamp-A"))).thenReturn(List.of(row));
 
         ResponseEntity<List<PhysicalInstanceSearchResponse>> response =
-                ddiResources.searchPhysicalInstances();
+                ddiResources.searchPhysicalInstances(null);
 
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());

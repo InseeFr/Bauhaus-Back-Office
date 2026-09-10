@@ -124,7 +124,15 @@ public class DdiResources {
     )
     public ResponseEntity<
         List<PhysicalInstanceSearchResponse>
-    > searchPhysicalInstances() {
+    > searchPhysicalInstances(
+        @RequestHeader(
+            value = HttpHeaders.CACHE_CONTROL,
+            required = false
+        ) String cacheControl
+    ) {
+        if (requestsCacheBypass(cacheControl)) {
+            ddiService.evictPhysicalInstanceSearchRowsCache();
+        }
         List<PhysicalInstanceSearchResponse> responses = resolveByReadStampStrategy(
             ddiService::searchPhysicalInstancesFilteredByStamp,
             ddiService::searchPhysicalInstances
@@ -176,9 +184,9 @@ public class DdiResources {
     }
 
     /**
-     * Le client peut forcer un rafraîchissement du cache mutualisé en envoyant l'en-tête HTTP
-     * standard {@code Cache-Control: no-cache} (ou {@code no-store}) sur le GET : le cache est alors
-     * vidé avant que la liste ne soit recalculée depuis Colectica.
+     * Le client peut forcer un rafraîchissement en envoyant l'en-tête HTTP standard
+     * {@code Cache-Control: no-cache} (ou {@code no-store}) sur le GET : la région concernée est
+     * alors vidée avant que la réponse ne soit recalculée depuis Colectica.
      */
     private static boolean requestsCacheBypass(String cacheControl) {
         if (cacheControl == null) {

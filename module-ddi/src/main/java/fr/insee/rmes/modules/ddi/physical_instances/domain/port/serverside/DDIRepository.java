@@ -71,6 +71,7 @@ public interface DDIRepository {
     void createCategory(Ddi4Category category);
     List<PartialCodesList> getMutualizedCodesLists();
     void evictMutualizedCodesListsCache();
+    void evictPhysicalInstanceSearchRowsCache();
     Ddi4Response getMutualizedCodesList(String agencyId, String id);
     Ddi4Response getCodeList(String agencyId, String id, String version);
     String getCodeListXml(String agencyId, String id, String version);
