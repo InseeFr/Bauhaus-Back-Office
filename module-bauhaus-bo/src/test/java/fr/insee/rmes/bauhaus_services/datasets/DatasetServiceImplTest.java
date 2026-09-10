@@ -825,4 +825,124 @@ class DatasetServiceImplTest {
                     .deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
         }
     }
+
+    @Test
+    void shouldReturnTheArchivageUnits() throws RmesException {
+        when(datasetQueries.getArchivageUnits()).thenReturn("archivage-query");
+        when(repositoryGestion.getResponseAsArray("archivage-query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "au1")));
+
+        assertThat(datasetService.getArchivageUnits()).contains("\"id\":\"au1\"");
+    }
+
+    /** Un patch qui ne porte aucune des cinq propriétés patchables n'a rien à appliquer. */
+    @Test
+    void shouldRejectAnEmptyPatch() throws RmesException {
+        givenExistingDataset(datasetJson("jd1001"));
+
+        RmesRuntimeBadRequestException exception = assertThrows(
+                RmesRuntimeBadRequestException.class,
+                () -> datasetService.patchDataset("jd1001", new PatchDataset(null, null, null, null, null)));
+
+        assertThat(exception.getMessage())
+                .contains(
+                        "One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
+    }
+
+    @Test
+    void shouldStoreTheNumberOfTimeSeriesPatchedOnTheDataset() throws RmesException {
+        givenExistingDataset(datasetJson("jd1001"));
+
+        datasetService.patchDataset("jd1001", new PatchDataset(null, null, null, 12, null));
+
+        assertThat(storedDatasetModel().toString()).contains("http://data.europa.eu/m8g/numSeries");
+    }
+
+    @Test
+    void shouldStoreATemporalCoverageExpressedInDatesAsDates() throws RmesException {
+        JSONObject dataset = datasetJson("jd1001")
+                .put("temporalCoverageStartDate", "2023-01-01")
+                .put("temporalCoverageEndDate", "2023-12-31")
+                .put("temporalCoverageDataType", "http://www.w3.org/2001/XMLSchema#date");
+        givenExistingDataset(dataset);
+
+        datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
+
+        String model = storedDatasetModel().toString();
+        assertThat(model).contains("2023-01-01");
+        assertThat(model).contains("2023-12-31");
+        assertThat(model).contains(DCAT.START_DATE.stringValue());
+        assertThat(model).contains(DCAT.END_DATE.stringValue());
+    }
+
+    @Test
+    void shouldStoreATemporalCoverageExpressedInYearsAsYears() throws RmesException {
+        JSONObject dataset = datasetJson("jd1001")
+                .put("temporalCoverageStartDate", "2023-01-01")
+                .put("temporalCoverageEndDate", "2024-12-31");
+        givenExistingDataset(dataset);
+
+        datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
+
+        String model = storedDatasetModel().toString();
+        assertThat(model).contains("gYear");
+    }
+
+    @Test
+    void shouldStoreTheKeywordsAndTheLinkedDocumentsOfTheDataset() throws RmesException {
+        givenExistingDataset(datasetJson("jd1001").put("linkedDocuments", List.of("http://document")));
+        when(datasetQueries.getKeywords(eq("jd1001"), any())).thenReturn("keywords-query");
+        when(repositoryGestion.getResponseAsArray("keywords-query"))
+                .thenReturn(new JSONArray()
+                        .put(new JSONObject().put("lang", "fr").put("keyword", "mot clé"))
+                        .put(new JSONObject().put("lang", "en").put("keyword", "keyword")));
+
+        datasetService.patchDataset("jd1001", new PatchDataset(null, null, 5, null, null));
+
+        String model = storedDatasetModel().toString();
+        assertThat(model).contains("mot clé");
+        assertThat(model).contains("keyword");
+        assertThat(model).contains("http://document");
+    }
+
+    /**
+     * Rejoue le décor de {@code shouldPatchDataset} : la lecture d'un jeu de données déclenche une
+     * dizaine de requêtes, toutes bouchonnées ici pour que le test porte sur ce qui est écrit.
+     */
+    private void givenExistingDataset(JSONObject dataset) throws RmesException {
+        when(datasetDistributionQueries.getDatasetDistributions(any(), any())).thenReturn("distributions-query");
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
+        when(seriesRepository.isSeriesAndOperationsExist(any())).thenReturn(true);
+        doCallRealMethod().when(repositoryGestion).getMultipleTripletsForObject(any(), any(), any(), any());
+
+        String datasetId = dataset.getString("id");
+        when(datasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
+        when(datasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
+        when(datasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
+        when(datasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributor");
+        when(datasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put(dataset));
+        when(repositoryGestion.getResponseAsArray("query-creators"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
+        when(repositoryGestion.getResponseAsArray("query-contributor"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("contributor", "http://contributor")));
+        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray());
+        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray());
+    }
+
+    private JSONObject datasetJson(String id) {
+        JSONObject dataset = new JSONObject().put("id", id);
+        generateGeneralInformation(dataset);
+        dataset.put("disseminationStatus", "http://disseminationStatus");
+        dataset.put("catalogRecordCreator", "http://creator");
+        dataset.put("catalogRecordContributor", List.of("http://contributor"));
+        return dataset;
+    }
+
+    private Model storedDatasetModel() throws RmesException {
+        IRI datasetIri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion).loadSimpleObject(eq(datasetIri), model.capture(), any());
+        return model.getValue();
+    }
 }

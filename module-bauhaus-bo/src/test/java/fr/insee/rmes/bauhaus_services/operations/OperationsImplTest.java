@@ -184,4 +184,51 @@ class OperationsImplTest {
                 "[{\"firstExample\":\"mockedFirstExample\"},{\"secondExample\":\"mockedSecondExample\"}]",
                 operationsImpl.getOperationsWithoutReport("2025"));
     }
+
+    /**
+     * Une requête SPARQL qui ne trouve rien renvoie tout de même une ligne, vide : la liste
+     * d'opérations doit alors ressortir vide, et non porter un objet fantôme.
+     */
+    @Test
+    void shouldDropTheEmptyRowWhenNoOperationIsWithoutReport() throws RmesException {
+        when(operationsOperationQueries.operationsWithoutSimsQuery("s1000")).thenReturn("query");
+        when(repoGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put(new JSONObject()));
+
+        assertEquals("[]", operationsImpl.getOperationsWithoutReport("s1000"));
+    }
+
+    @Test
+    void shouldListTheOperationsWithoutReport() throws RmesException {
+        when(operationsOperationQueries.operationsWithoutSimsQuery("s1000")).thenReturn("query");
+        when(repoGestion.getResponseAsArray("query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "o1000")));
+
+        assertThat(operationsImpl.getOperationsWithoutReport("s1000")).contains("o1000");
+    }
+
+    @Test
+    void shouldDropTheEmptyRowWhenNoOperationHasAReport() throws RmesException {
+        when(operationsOperationQueries.operationsWithSimsQuery("s1000")).thenReturn("query");
+        when(repoGestion.getResponseAsArray("query")).thenReturn(new JSONArray().put(new JSONObject()));
+
+        assertEquals("[]", operationsImpl.getOperationsWithReport("s1000"));
+    }
+
+    @Test
+    void shouldListTheOperationsWithAReport() throws RmesException {
+        when(operationsOperationQueries.operationsWithSimsQuery("s1000")).thenReturn("query");
+        when(repoGestion.getResponseAsArray("query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "o1000")));
+
+        assertThat(operationsImpl.getOperationsWithReport("s1000")).contains("o1000");
+    }
+
+    @Test
+    void shouldListTheIndicatorsThatCarryAReport() throws RmesException {
+        when(operationIndicatorsQueries.indicatorsWithSimsQuery()).thenReturn("query");
+        when(repoGestion.getResponseAsArray("query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "p1000")));
+
+        assertThat(operationsImpl.getIndicatorsWithSims()).contains("p1000");
+    }
 }

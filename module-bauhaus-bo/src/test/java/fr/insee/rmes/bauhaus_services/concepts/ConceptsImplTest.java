@@ -3,18 +3,24 @@ package fr.insee.rmes.bauhaus_services.concepts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.LegacyConceptsRepository;
+import fr.insee.rmes.bauhaus_services.rdf_utils.BauhausUriBuilder;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.domain.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.modules.concepts.collections.domain.port.serverside.CollectionRepository;
 import fr.insee.rmes.modules.organisations.domain.model.OrganisationOption;
 import fr.insee.rmes.modules.organisations.domain.port.clientside.OrganisationService;
 import fr.insee.rmes.modules.shared_kernel.domain.model.Language;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptCollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptConceptsQueries;
 import fr.insee.rmes.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.utils.ExportUtils;
@@ -28,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.json.JSONArray;
@@ -66,6 +73,9 @@ class ConceptsImplTest {
 
     @Mock
     ConceptConceptsQueries conceptConceptsQueries;
+
+    @Mock
+    ConceptCollectionsQueries conceptCollectionsQueries;
 
     @Test
     void shouldReturnFileNameForExport() {
@@ -248,5 +258,105 @@ class ConceptsImplTest {
             }
         }
         return null;
+    }
+
+    @Test
+    void shouldListTheConceptsWaitingForValidation() throws RmesException {
+        when(conceptConceptsQueries.conceptsToValidateQuery()).thenReturn("to-validate-query");
+        when(repoGestion.getResponseAsArray("to-validate-query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "c1000")));
+
+        assertThat(conceptsImpl().getConceptsToValidate()).contains("c1000");
+    }
+
+    @Test
+    void shouldListTheCollectionsWaitingForValidation() throws RmesException {
+        when(conceptCollectionsQueries.collectionsToValidateQuery()).thenReturn("to-validate-query");
+        when(repoGestion.getResponseAsArray("to-validate-query"))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "col1000")));
+
+        assertThat(conceptsImpl().getCollectionsToValidate()).contains("col1000");
+    }
+
+    @Test
+    void shouldReadTheNotesOfAGivenVersionOfTheConcept() throws RmesException {
+        when(conceptConceptsQueries.conceptNotesQuery("c1000", 2)).thenReturn("notes-query");
+        when(repoGestion.getResponseAsObject("notes-query"))
+                .thenReturn(new JSONObject().put("definitionLg1", "définition"));
+
+        assertThat(conceptsImpl().getConceptNotesByID("c1000", 2)).contains("définition");
+    }
+
+    /** Un concept qui vit dans plusieurs graphes ne peut pas être supprimé depuis l'un d'eux. */
+    @Test
+    void shouldRejectTheDeletionOfAConceptUsedInSeveralGraphs() throws RmesException {
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
+        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
+                .thenReturn(new JSONArray().put("http://graphe/1").put("http://graphe/2"));
+
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> conceptsImpl().deleteConcept("c1000"));
+
+        assertThat(exception.getDetails()).contains("cannot be deleted because it is used in several graphs");
+    }
+
+    @Test
+    void shouldRejectTheDeletionOfAConceptLinkedToAnotherOne() throws RmesException {
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
+        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
+                .thenReturn(new JSONArray().put("http://graphe/1"));
+        when(legacyConceptsRepository.getRelatedConcepts(anyString()))
+                .thenReturn(new JSONArray().put(new JSONObject().put("id", "c1001")));
+
+        RmesException exception =
+                assertThrows(RmesBadRequestException.class, () -> conceptsImpl().deleteConcept("c1000"));
+
+        assertThat(exception.getDetails()).contains("cannot be deleted because it is linked to other concepts");
+    }
+
+    @Test
+    void shouldReportADeletionThatTheRepositoryDidNotAccept() throws RmesException {
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
+        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
+                .thenReturn(new JSONArray().put("http://graphe/1"));
+        when(legacyConceptsRepository.getRelatedConcepts(anyString())).thenReturn(new JSONArray());
+        when(legacyConceptsRepository.deleteConcept("c1000")).thenReturn(HttpStatus.CONFLICT);
+
+        RmesException exception =
+                assertThrows(RmesException.class, () -> conceptsImpl().deleteConcept("c1000"));
+
+        assertThat(exception.getStatus()).isEqualTo(500);
+    }
+
+    @Test
+    void shouldDeleteAConceptThatIsNeitherSharedNorLinked() throws RmesException {
+        RdfUtils.setBauhausUriBuilder(
+                new BauhausUriBuilder("http://publication/", "http://bauhaus/", name -> Optional.of("concepts")));
+        when(legacyConceptsRepository.getGraphsWithConcept(anyString()))
+                .thenReturn(new JSONArray().put("http://graphe/1"));
+        when(legacyConceptsRepository.getRelatedConcepts(anyString())).thenReturn(new JSONArray());
+        when(legacyConceptsRepository.deleteConcept("c1000")).thenReturn(HttpStatus.OK);
+
+        conceptsImpl().deleteConcept("c1000");
+
+        verify(legacyConceptsRepository).deleteConcept("c1000");
+    }
+
+    private ConceptsImpl conceptsImpl() {
+        return new ConceptsImpl(
+                repoGestion,
+                null,
+                null,
+                null,
+                legacyConceptsRepository,
+                null,
+                collectionExport,
+                null,
+                10,
+                conceptCollectionsQueries,
+                conceptConceptsQueries);
     }
 }

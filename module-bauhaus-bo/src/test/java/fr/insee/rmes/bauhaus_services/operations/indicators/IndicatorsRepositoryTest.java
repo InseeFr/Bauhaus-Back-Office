@@ -2,6 +2,8 @@ package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -433,5 +435,69 @@ class IndicatorsRepositoryTest {
         assertThat(contributors).hasSize(1);
         assertThat(contributors.get(0)).isInstanceOf(IRI.class);
         assertThat(contributors.get(0).stringValue()).isEqualTo("http://bauhaus/organisations/DG75-A001");
+    }
+
+    /**
+     * La lecture d'un indicateur rassemble, autour de la requête principale, ses liens vers les
+     * autres objets et les organisations qui le créent, le publient et y contribuent.
+     */
+    @Test
+    void shouldReadTheIndicatorWithItsLinksAndItsOrganisations() throws RmesException {
+        IndicatorsRepository indicatorsRepository = indicatorsRepository();
+        when(operationIndicatorsQueries.checkIfExists("p1000")).thenReturn("exists-query");
+        when(repositoryGestion.getResponseAsBoolean("exists-query")).thenReturn(true);
+        when(operationIndicatorsQueries.indicatorQuery("p1000")).thenReturn("indicator-query");
+        when(repositoryGestion.getResponseAsObject("indicator-query"))
+                .thenReturn(new JSONObject().put("prefLabelLg1", "label fr"));
+        when(operationIndicatorsQueries.indicatorLinks(eq("p1000"), any(IRI.class)))
+                .thenReturn("links-query");
+        when(repositoryGestion.getResponseAsArray("links-query"))
+                .thenReturn(new JSONArray()
+                        .put(new JSONObject().put(Constants.ID, "s1000").put("type", "http://type/serie")));
+        when(operationIndicatorsQueries.getCreatorsById("p1000")).thenReturn("creators-query");
+        when(repositoryGestion.getResponseAsJSONList("creators-query"))
+                .thenReturn(new JSONArray().put("http://creator"));
+        when(operationIndicatorsQueries.getPublishersById("p1000")).thenReturn("publishers-query");
+        when(repositoryGestion.getResponseAsJSONList("publishers-query"))
+                .thenReturn(new JSONArray().put("http://publisher"));
+        when(operationIndicatorsQueries.getContributorsById("p1000")).thenReturn("contributors-query");
+        when(repositoryGestion.getResponseAsJSONList("contributors-query"))
+                .thenReturn(new JSONArray().put("http://contributor"));
+
+        JSONObject indicator = indicatorsRepository.getIndicatorJsonById("p1000");
+
+        assertThat(indicator.getString(Constants.ID)).isEqualTo("p1000");
+        assertThat(indicator.getJSONArray(Constants.CREATORS).getString(0)).isEqualTo("http://creator");
+        assertThat(indicator.getJSONArray(Constants.PUBLISHERS).getString(0)).isEqualTo("http://publisher");
+        assertThat(indicator.getJSONArray(Constants.CONTRIBUTORS).getString(0)).isEqualTo("http://contributor");
+        assertThat(indicator.getJSONArray(DCTERMS.REPLACES.getLocalName()).length())
+                .isEqualTo(1);
+    }
+
+    @Test
+    void shouldRejectTheReadOfAnIndicatorThatDoesNotExist() throws RmesException {
+        IndicatorsRepository indicatorsRepository = indicatorsRepository();
+        when(operationIndicatorsQueries.checkIfExists("p9999")).thenReturn("exists-query");
+        when(repositoryGestion.getResponseAsBoolean("exists-query")).thenReturn(false);
+
+        RmesException exception =
+                assertThrows(RmesException.class, () -> indicatorsRepository.getIndicatorJsonById("p9999"));
+
+        assertThat(exception.getStatus()).isEqualTo(404);
+    }
+
+    private IndicatorsRepository indicatorsRepository() {
+        return new IndicatorsRepository(
+                repositoryGestion,
+                null,
+                null,
+                null,
+                operationsObjectMapper,
+                null,
+                null,
+                null,
+                new BauhausLanguagesProperties("fr", "en"),
+                operationIndicatorsQueries,
+                null);
     }
 }

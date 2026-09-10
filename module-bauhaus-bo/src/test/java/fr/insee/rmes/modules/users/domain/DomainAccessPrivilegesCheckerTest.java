@@ -20,6 +20,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -368,5 +370,78 @@ class DomainAccessPrivilegesCheckerTest {
         boolean hasAccess = accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal);
 
         assertThat(hasAccess).isTrue();
+    }
+
+    /**
+     * La stratégie ALL ouvre la lecture à tout le monde, mais écrire suppose un timbre : un
+     * utilisateur sans timbre ne peut ni créer, ni modifier, ni supprimer, ni publier, ni administrer.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"CREATE", "UPDATE", "DELETE", "PUBLISH", "ADMINISTRATION"})
+    void should_deny_a_write_privilege_with_all_strategy_to_a_user_without_any_stamp(String privilegeName)
+            throws MissingUserInformationException {
+        var user = new User("user123", List.of("USER"), Set.of(), "insee");
+        Object principal = "somePrincipal";
+
+        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.valueOf(privilegeName), RBAC.Strategy.ALL);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+
+        assertThat(accessChecker.hasAccess("CONCEPT_CONCEPT", privilegeName, "resource-id", principal))
+                .isFalse();
+    }
+
+    @Test
+    void should_grant_a_read_privilege_with_all_strategy_to_a_user_without_any_stamp()
+            throws MissingUserInformationException {
+        var user = new User("user123", List.of("USER"), Set.of(), "insee");
+        Object principal = "somePrincipal";
+
+        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.READ, RBAC.Strategy.ALL);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.CONCEPT_CONCEPT, Set.of(privilege));
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+
+        assertThat(accessChecker.hasAccess("CONCEPT_CONCEPT", "READ", "resource-id", principal))
+                .isTrue();
+    }
+
+    @Test
+    void should_check_the_contributors_stamps_of_a_component()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
+        Object principal = "somePrincipal";
+
+        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.STRUCTURE_COMPONENT, Set.of(privilege));
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+        when(stampChecker.getContributorsStamps(RBAC.Module.STRUCTURE_COMPONENT, "resource-id"))
+                .thenReturn(List.of("STAMP-01"));
+
+        assertThat(accessChecker.hasAccess("STRUCTURE_COMPONENT", "UPDATE", "resource-id", principal))
+                .isTrue();
+    }
+
+    @Test
+    void should_check_the_contributors_stamps_of_a_dataset()
+            throws MissingUserInformationException, StampFetchException, UnsupportedModuleException {
+        var user = new User("user123", List.of("USER"), Set.of("STAMP-01"), "ssm");
+        Object principal = "somePrincipal";
+
+        var privilege = new ModuleAccessPrivileges.Privilege(RBAC.Privilege.UPDATE, RBAC.Strategy.STAMP);
+        var modulePrivileges = new ModuleAccessPrivileges(RBAC.Module.DATASET_DATASET, Set.of(privilege));
+
+        when(userDecoder.fromPrincipal(principal)).thenReturn(Optional.of(user));
+        when(rbacFetcher.computePrivileges(anyList(), any())).thenReturn(Set.of(modulePrivileges));
+        when(stampChecker.getContributorsStamps(RBAC.Module.DATASET_DATASET, "resource-id"))
+                .thenReturn(List.of("STAMP-02"));
+
+        assertThat(accessChecker.hasAccess("DATASET_DATASET", "UPDATE", "resource-id", principal))
+                .isFalse();
     }
 }

@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,6 +23,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.base.InternedIRI;
 import org.eclipse.rdf4j.model.impl.GenericStatement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.jupiter.api.Assertions;
@@ -136,5 +138,55 @@ class CodeListPublicationTest {
                 "[(http://codes-list/1, http://example.org/predicate1, \"Object 1\") [http://example.org/context]]",
                 model.getValue().toString());
         verify(repositoryGestion).closeStatements(any());
+    }
+
+    /**
+     * Publier une liste publie aussi ses codes : le type et l'appartenance au scheme sont des
+     * ressources dont l'URI est réécrite, les libellés des littéraux recopiés tels quels, et les
+     * attributs de gestion ne suivent pas.
+     */
+    @Test
+    void shouldPublishTheCodesOfTheCodeListRewritingTheirLinks() throws RmesException {
+        SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
+        IRI codeListIri = valueFactory.createIRI("http://codes-list/1");
+        IRI codeIri = valueFactory.createIRI("http://codes-list/1/A");
+        IRI graph = valueFactory.createIRI("http://example.org/context");
+
+        Statement inScheme = valueFactory.createStatement(codeIri, SKOS.IN_SCHEME, codeListIri, graph);
+        Statement type = valueFactory.createStatement(codeIri, RDF.TYPE, SKOS.CONCEPT, graph);
+        Statement label =
+                valueFactory.createStatement(codeIri, SKOS.PREF_LABEL, valueFactory.createLiteral("A"), graph);
+        Statement creator = valueFactory.createStatement(
+                codeIri,
+                valueFactory.createIRI("http://purl.org/dc/elements/1.1/creator"),
+                valueFactory.createLiteral("DG75-F302"),
+                graph);
+
+        when(publicationUtils.tranformBaseURIToPublish(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repositoryGestion.getConnection()).thenReturn(null);
+        when(repositoryGestion.getStatements(any(), eq(codeListIri)))
+                .thenReturn(new RepositoryResult<>(new CloseableIteratorIteration<>(
+                        List.of(codeListStatement(codeListIri, graph)).iterator())));
+        when(repositoryGestion.getStatementsPredicateObject(any(), eq(SKOS.IN_SCHEME), eq(codeListIri)))
+                .thenReturn(new RepositoryResult<>(
+                        new CloseableIteratorIteration<>(List.of(inScheme).iterator())));
+        when(repositoryGestion.getStatements(any(), eq(codeIri)))
+                .thenReturn(new RepositoryResult<>(new CloseableIteratorIteration<>(
+                        List.of(inScheme, type, label, creator).iterator())));
+
+        codeListPublication.publishCodeListAndCodes(codeListIri);
+
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryPublication, times(2)).publishResource(any(), model.capture(), eq(Constants.CODELIST));
+        Model codeModel = model.getAllValues().getFirst();
+        assertTrue(codeModel.contains(codeIri, RDF.TYPE, SKOS.CONCEPT));
+        assertTrue(codeModel.contains(codeIri, SKOS.IN_SCHEME, codeListIri));
+        assertTrue(codeModel.contains(codeIri, SKOS.PREF_LABEL, valueFactory.createLiteral("A")));
+        Assertions.assertEquals(3, codeModel.size(), "le créateur du code reste en gestion");
+    }
+
+    private static Statement codeListStatement(IRI codeListIri, IRI graph) {
+        SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
+        return valueFactory.createStatement(codeListIri, SKOS.NOTATION, valueFactory.createLiteral("cl1"), graph);
     }
 }
